@@ -144,6 +144,9 @@ public class CsvReport extends Report {
 							for (Object o : lines) {
 								if (!(o instanceof JsonObject)) continue;
 								final JsonObject line = (JsonObject) o;
+								if (Report.State.DELETED.name().equals(line.getString("oState"))) {
+									continue;
+								}
 								final Map<String, Integer> columnCount = new HashMap<>();
 								final String [] l = new String[strings.length];
 								int i = 0;

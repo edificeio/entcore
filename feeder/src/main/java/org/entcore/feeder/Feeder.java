@@ -491,7 +491,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 									JsonObject j = (JsonObject) o;
 									String filename = j.getString("profile");
 									r.addUser(filename, j.put("state", r.translate(Report.State.DELETED.name()))
-											.put("translatedProfile", r.translate(j.getString("profile"))));
+											.put("translatedProfile", r.translate(j.getString("profile")))
+											.put("oState", Report.State.DELETED.name())
+									);
 								}
 								r.getResult().put("usersExternalIds", externalIds);
 							} else {
