@@ -870,8 +870,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							);
 							for (Object sec : softErrorsContext) {
 								JsonObject err = (JsonObject)sec;
-								addSoftErrorByFile(profile,
-										err.getString("reason"), "" + (i + 1), err.getString("attribute"), err.getString("value"));
+									addSoftErrorByFile(profile,
+											err.getString("reason"), "" + (i + 1),
+											translate(err.getString("attribute")), err.getString("value"),
+											err.getString("errorLevel")
+									);
 							}
 						}
 						i++;
