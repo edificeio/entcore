@@ -288,6 +288,7 @@ public class Validator {
 					errorsContext.add(new JsonObject()
 							.put("reason", "missing.attribute")
 							.put("attribute", o.toString())
+							.put("errorLevel", "hard")
 					);
 				}
 				res = i18n.translate("missing.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage,

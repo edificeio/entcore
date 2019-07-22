@@ -138,6 +138,9 @@ public class Report {
 				.put("reason", key)
 				.put("attribute", errors.length > 0 ? errors[0] : "")
 				.put("value", errors.length > 1 ? errors[1] : "");
+		if (errors.length == 3 && "hard".equals(errors[2])) {
+			error.put("hardError", true);
+		}
 
 		List<String> errorContext = new ArrayList<>(Arrays.asList(errors)); // Hack to support "add" operation
 		errorContext.add(0, lineNumber);
