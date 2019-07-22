@@ -4,6 +4,7 @@ import {
 import { BundlesService } from 'sijil'
 import { ComponentDescriptor, DynamicComponentDirective } from '../../shared/ux/directives'
 import { SimpleSelectComponent } from '../../shared/ux/components'
+import { Option } from '../../shared/ux/components/value-editable/simple-select.component';
 
 
 @Component({
@@ -52,7 +53,7 @@ import { SimpleSelectComponent } from '../../shared/ux/components'
     `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MappingsTable implements OnInit, AfterViewInit { 
+export class MappingsTable { 
     constructor (
         private bundles: BundlesService)  {}
     
@@ -77,8 +78,14 @@ export class MappingsTable implements OnInit, AfterViewInit {
         return Object.keys(this.mappings);
     }
 
-    newSimpleSelect():ComponentDescriptor {
-        return new ComponentDescriptor(SimpleSelectComponent, {model: this.mappings, options : this.availables});
+    newSimpleSelect = (): ComponentDescriptor => {
+        return new ComponentDescriptor(
+            SimpleSelectComponent
+            , {
+                model: this.mappings, 
+                options : this.getAvailablesOptions(this.availables), 
+                ignoreOption: {value: 'ignore', label: this.translate('ignore')}
+            });
     }
 
     loadAvailables(value:string, index:number) {
@@ -92,7 +99,12 @@ export class MappingsTable implements OnInit, AfterViewInit {
         }
     }
 
-    ngOnInit() {}
-
-    ngAfterViewInit() {}
+    getAvailablesOptions = (availables: String[]): Option[] => {
+        return availables
+            .filter(available => available !== 'ignore')
+            .map((field: String) => {
+                return {value: field, label: this.translate(field)
+            }
+        }) as Option[];
+    }
 }
