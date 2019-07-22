@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.*;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class ProfileColumnsMapper {
 
@@ -231,9 +232,15 @@ public class ProfileColumnsMapper {
 	}
 
 	void getColumsNames(String profile, String[] strings, List<String> columns, Handler<Message<JsonObject>> handler) {
+		boolean existEmptyCm = false;
 		for (int j = 0; j < strings.length; j++) {
 			String cm = columnsNameMapping(profile, strings[j]);
 			if (profilesNamesMapping.get(profile).containsValue(cm)) {
+				if (existEmptyCm) {
+					columns.clear();
+					handler.handle(new ResultMessage().error("invalid.column " + cm));
+					return;
+				}
 				try {
 					columns.add(j, cm);
 				} catch (ArrayIndexOutOfBoundsException e) {
@@ -241,10 +248,12 @@ public class ProfileColumnsMapper {
 					handler.handle(new ResultMessage().error("invalid.column " + cm));
 					return;
 				}
-			} else {
+			} else if (isNotEmpty(cm)) {
 				columns.clear();
 				handler.handle(new ResultMessage().error("invalid.column " + cm));
 				return;
+			} else {
+				existEmptyCm = true;
 			}
 		}
 	}
