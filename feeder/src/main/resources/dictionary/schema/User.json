@@ -106,6 +106,10 @@
 		"loginAlias" : {
 			"type": "login-alias",
 			"validator": "loginAlias"
+		},
+		"classes" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
 		}
 	},
 	"generate" : {
