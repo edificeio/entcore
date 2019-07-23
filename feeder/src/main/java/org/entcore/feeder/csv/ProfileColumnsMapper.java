@@ -249,9 +249,11 @@ public class ProfileColumnsMapper {
 					return;
 				}
 			} else if (isNotEmpty(cm)) {
-				columns.clear();
-				handler.handle(new ResultMessage().error("invalid.column " + cm));
-				return;
+				// Fix ticket #24705
+				columns.add(j, "ignore");
+//				columns.clear();
+//				handler.handle(new ResultMessage().error("invalid.column " + cm));
+//				return;
 			} else {
 				existEmptyCm = true;
 			}
