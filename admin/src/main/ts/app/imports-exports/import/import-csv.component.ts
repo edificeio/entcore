@@ -173,7 +173,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                         <th>
                             <select [(ngModel)]="report.columnFilter.classesStr">
                                 <option [value]=""></option>
-                                <option *ngFor="let c of classes.getAvailableClasses()" [value]="c">
+                                <option *ngFor="let c of report.getAvailableClasses()" [value]="c">
                                     {{ c }}
                                 </option>
                             </select>
@@ -449,12 +449,13 @@ export class ImportCSV implements OnInit, OnDestroy {
                             availables.push(el);
                         }
                     });
-                } else {
-                    classesMapping.dbClasses.forEach(el => {
-                        if (availables.indexOf(el) == -1) {
-                            availables.push(el);
-                        }
-                    });
+                    if (classesMapping.dbClasses) {
+                        classesMapping.dbClasses.forEach(dbClass => {
+                            if (availables.indexOf(dbClass) == -1) {
+                                availables.push(dbClass);
+                            }    
+                        });
+                    }
                 }
                 this.availableClasses[p] = availables;
             }
@@ -473,20 +474,6 @@ export class ImportCSV implements OnInit, OnDestroy {
         // Use for Guest or Personnel profiles
         noClassesMapping() {
             return !this.hasWarning() && this.profiles.length === 0;
-        },
-        getAvailableClasses() {
-            let res:string[] = [];
-            for (let p of Object.keys(this.availableClasses)) {
-                if (p === 'dbClasses'){
-                    continue;
-                }
-                this.availableClasses[p].forEach(el => {
-                    if (el && el.length > 0 && res.indexOf(el) == -1) {
-                        res.push(el);
-                    }
-                });
-            }
-            return res;
         }
     };
 
@@ -615,6 +602,17 @@ export class ImportCSV implements OnInit, OnDestroy {
             return profiles.map((p) => {
                 return translate(p)
             }).join(',');
+        },
+        getAvailableClasses() {
+            let res: string[] = [];
+            this.users.forEach(user => {
+                if (user.classesStr 
+                    && user.classesStr.length > 0 
+                    && res.indexOf(user.classesStr) == -1) {
+                    res.push(user.classesStr);
+                }
+            });
+            return res;
         }
     }
 
