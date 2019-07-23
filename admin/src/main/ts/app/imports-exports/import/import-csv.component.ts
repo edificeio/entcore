@@ -35,7 +35,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
             <h3>{{ 'import.header.selectFile' | translate }}</h3>
             <p *ngFor="let p of profiles.asArray(true)">
                 <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]" />
-                <label>{{'import.file.'+p | translate}}</label>
+                <label class="step1-file__label">{{'import.file.'+p | translate}}</label>
                 <input type="file" name="{{p}}" (change)="loadFile($event)" [hidden]="!isLoaded(p)" />
                 <message-box *ngIf="globalError.profile['error.'+p]" [type]="'danger'" 
                     [messages]="globalError.profile['error.'+p]"></message-box>
@@ -274,13 +274,14 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         div.pager { padding: 1em 0 }
         a:hover { cursor: pointer; }
         .report-filter .button { margin-right: .5rem; }
-        table.report {width: auto;}
+        table.report { table-layout: auto; }
         table.report tr.state-delete { background: #fdd; }
-        table.report td.clickable:hover { border: 1px dashed #ff8352; cursor:pointer; }
+        table.report td.clickable:hover { border: 2px dashed #ff8352; cursor:pointer; }
         table.report td.is-danger { border: 2px dashed indianred; }
         table.report td.is-success { border: 2px dashed mediumseagreen; }
         table.report td input[disabled] { background : transparent; border:0; cursor:pointer; }
         table.report td i.fa-pencil { float: right; display: none }
+        .step1-file__label {min-width: 200px; display: inline-block;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
