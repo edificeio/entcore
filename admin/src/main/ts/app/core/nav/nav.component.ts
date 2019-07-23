@@ -52,7 +52,7 @@ import { Config } from '../resolvers/Config';
                 <i class="fa fa-exchange"
                     *ngIf="currentStructure"
                     [title]="'imports.exports' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/import-csv'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)">
                 </i>
                 <i class="fa fa-exclamation-triangle"
