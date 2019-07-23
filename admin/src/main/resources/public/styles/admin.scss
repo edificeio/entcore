@@ -499,6 +499,8 @@ i.group_add {
     padding: 10px 20px !important;
     font-size: 0.9em;
     font-weight: initial;
+    max-height: 400px;
+    overflow: auto;
     &::before {
       font-family: "FontAwesome";
       display: inline-block;
