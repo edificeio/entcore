@@ -100,6 +100,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                     [availables]="classes.availableClasses[profile]"
                     [emptyLabel]="'import.classesChecking.warning.create'"
                     [emptyWarning]="'import.classesChecking.warning.create.1'"
+                    [mappingsKeySort]="true"
                 >
                 </mappings-table>
             </panel-section>
