@@ -65,6 +65,7 @@ export class MappingsTable {
     @Input() availables : String[];
     @Input() emptyLabel : String;
     @Input() emptyWarning : String;
+    @Input() mappingsKeySort: boolean;
 
     private readonly emptyValue:String[] = ['ignore', '']; // 'ignore' is use for FieldsMapping and '' for ClassesMapping
 
@@ -75,6 +76,9 @@ export class MappingsTable {
     mappingsKeys = function() : String[] {
         if (!this.mappings) 
             return [];
+        if (this.mappingsKeySort) {
+            return Object.keys(this.mappings).sort();
+        }
         return Object.keys(this.mappings);
     }
 
