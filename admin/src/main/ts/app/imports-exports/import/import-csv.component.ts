@@ -15,7 +15,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
     template : `
         <lightbox-confirm
             [show]="confirmCancel"
-            [title]="'warning'"
+            [lightboxTitle]="'warning'"
             (onConfirm)="cancel(); confirmCancel = false;"
             (onCancel)="confirmCancel = false">
             <p>{{ 'import.cancel.message' | translate }}</p>
