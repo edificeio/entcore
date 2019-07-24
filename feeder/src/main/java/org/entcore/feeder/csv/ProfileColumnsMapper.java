@@ -69,6 +69,7 @@ public class ProfileColumnsMapper {
 				.put("libelleclasse", "classes")
 				.put("classeouregroupement", "classes")
 				.put("datedenaissance", "birthDate")
+				.put("date_naiss", "birthDate")
 				.put("datenaissance", "birthDate")
 				.put("birthdate", "birthDate")
 				.put("fechadenacimiento", "birthDate")
@@ -153,6 +154,7 @@ public class ProfileColumnsMapper {
 				.put("statut", "status")
 				.put("regroupement(s)", "groups")
 				.put("regroupement", "groups")
+				.put("groupes", "groups")
 				.put("persreleleve", "relative")
 				.put("ine", "ine")
 				.put("niveau", "level")
@@ -165,6 +167,11 @@ public class ProfileColumnsMapper {
 				.put("codematiere", "fieldOfStudy")
 				.put("matiere", "fieldOfStudyLabels")
 				.put("persreleleve", "relative")
+				.put("relative", "relative")
+				.put("r1_nom", "r_nom")
+				.put("r1_prenom", "r_prenom")
+				.put("r2_nom", "r_nom")
+				.put("r2_prenom", "r_prenom")
 				.put("boursier", "scholarshipHolder");
 		JsonObject relativeMapping = baseMappings.copy()
 				.put("nomresponsable", "lastName")
@@ -265,6 +272,8 @@ public class ProfileColumnsMapper {
 		for (int j = 0; j < strings.length; j++) {
 			String cm = columnsNameMapping(profile, strings[j]);
 			if (profilesNamesMapping.get(profile).containsValue(cm)) {
+				columns.add(j, cm);
+			} else if ("Student".equals(profile) && "relative".equals(cm)) {
 				columns.add(j, cm);
 			} else {
 				errors.add(cm);

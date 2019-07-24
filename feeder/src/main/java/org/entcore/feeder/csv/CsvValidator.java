@@ -412,7 +412,13 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			int i = 0;
 			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					addHeader(profile, new JsonArray(Arrays.asList(strings)));
+					List<String> stringsHeader = new ArrayList<>(Arrays.asList(strings));
+					if (stringsHeader.contains("R1_NOM")) {
+						stringsHeader.add("relative");
+						stringsHeader.add("relative");
+						setNotReverseFilesOrder(true);
+					}
+					addHeader(profile, new JsonArray(stringsHeader));
 					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
@@ -688,7 +694,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						final State state;
 						final String externalId = user.getString("externalId");
 						if (externalId == null || externalId.trim().isEmpty()) {
-							generateUserExternalId(user, ca, structure, seed);
+							if ("Relative".equals(profile)) {
+								generateRelativeUserExternalId(user, structure);
+							} else {
+								generateUserExternalId(user, ca, structure, seed);
+							}
 							state = State.NEW;
 						} else {
 							if (existExternalId.contains(externalId)) {
@@ -699,6 +709,34 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							}
 						}
 						switch (profile) {
+							case "Student":
+								JsonArray relative = null;
+								if (user.containsKey("r_nom") && user.containsKey("r_prenom")) {
+									relative = new JsonArray();
+									if (user.getValue("r_nom") instanceof JsonArray &&
+											user.getValue("r_prenom") instanceof JsonArray) {
+										final JsonArray rNames = user.getJsonArray("r_nom");
+										final JsonArray rFirstnames = user.getJsonArray("r_prenom");
+										for (int k = 0; k < rNames.size(); k++) {
+											final JsonObject rUser = new JsonObject()
+													.put("lastName", rNames.getString(k))
+													.put("firstName", rFirstnames.getString(k));
+											final String extId = getRelativeHashMapping(rUser, structure);
+											relative.add(extId);
+										}
+									} else if (user.getValue("r_nom") instanceof String &&
+											user.getValue("r_prenom") instanceof String) {
+										final JsonObject rUser = new JsonObject()
+												.put("lastName", user.getString("r_nom"))
+												.put("firstName", user.getString("r_prenom"));
+										final String extId = getRelativeHashMapping(rUser, structure);
+										relative.add(extId);
+									}
+								}
+								if (relative != null && relative.size() > 0) {
+									user.put("relative", relative);
+								}
+								break;
 							case "Relative":
 								boolean checkChildMapping = true;
 								linkStudents = new fr.wseduc.webutils.collections.JsonArray();
