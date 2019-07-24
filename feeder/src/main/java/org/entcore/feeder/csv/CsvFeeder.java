@@ -23,6 +23,7 @@ import com.opencsv.CSVReader;
 import org.entcore.feeder.Feed;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
+import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.utils.*;
@@ -134,7 +135,11 @@ public class CsvFeeder implements Feed {
 
 	private void launchFiles(final String path, final List<String> files, final Structure structure,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
-		Collections.sort(files, Collections.reverseOrder());
+		if (importer.getReport() != null && importer.getReport().isNotReverseFilesOrder()) { // pronote case
+			Collections.sort(files);
+		} else {
+			Collections.sort(files, Collections.reverseOrder());
+		}
 		final Set<String> parsedFiles = new HashSet<>();
 		final Handler[] handlers = new Handler[files.size() + 1];
 		handlers[handlers.length -1] = new Handler<Void>() {
@@ -413,7 +418,11 @@ public class CsvFeeder implements Feed {
 						ca = String.valueOf(i);
 						seed = System.currentTimeMillis();
 					}
-					generateUserExternalId(user, ca, structure, seed);
+					if ("Relative".equals(profile)) {
+						generateRelativeUserExternalId(user, structure);
+					} else {
+						generateUserExternalId(user, ca, structure, seed);
+					}
 					if ("Student".equals(profile)) {
 						studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), user.getString("externalId"));
 					}
@@ -429,10 +438,29 @@ public class CsvFeeder implements Feed {
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Student":
+							JsonArray relative = user.getJsonArray("relative");
+							if (relative == null && user.containsKey("r_nom") && user.containsKey("r_prenom")) {
+								relative = new JsonArray();
+								if (user.getValue("r_nom") instanceof JsonArray) {
+									final JsonArray rNames = user.getJsonArray("r_nom");
+									final JsonArray rFirstnames = user.getJsonArray("r_prenom");
+									for (int k = 0; k < rNames.size(); k++) {
+										final JsonObject rUser = new JsonObject()
+												.put("lastName", rNames.getString(k))
+												.put("firstName", rFirstnames.getString(k));
+										relative.add(getRelativeHashMapping(rUser, structure));
+									}
+								} else if (user.getValue("r_nom") instanceof String) {
+									final JsonObject rUser = new JsonObject()
+											.put("lastName", user.getString("r_nom"))
+											.put("firstName", user.getString("r_prenom"));
+									relative.add(getRelativeHashMapping(rUser, structure));
+								}
+							}
 							importer.createOrUpdateStudent(user, STUDENT_PROFILE_EXTERNAL_ID, null, null,
 									classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]),
-									null, true, true);
+									relative, true, true);
 							break;
 						case "Relative":
 							if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||
@@ -558,6 +586,11 @@ public class CsvFeeder implements Feed {
 					importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
 					importer.addRelativeProperties(getSource());
 					break;
+				case "Student":
+					if (importer.getReport() != null && importer.getReport().isNotReverseFilesOrder()) {
+						importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
+					}
+					break;
 			}
 		} catch (Exception e) {
 			handler.handle(new ResultMessage().error("csv.exception"));
@@ -602,6 +635,28 @@ public class CsvFeeder implements Feed {
 				props.getString("email","")+props.getString("title","")+
 				props.getString("homePhone","")+props.getString("mobile","")+
 				c+seed;
+		try {
+			return Hash.sha1(mapping.getBytes("UTF-8"));
+		} catch (NoSuchAlgorithmException |UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	public static void generateRelativeUserExternalId(JsonObject props, Structure structure) {
+		String externalId = props.getString("externalId");
+		if (externalId != null && !externalId.trim().isEmpty()) {
+			return;
+		}
+		String hash = getRelativeHashMapping(props, structure);
+		if (hash != null) {
+			props.put("externalId", hash);
+		}
+	}
+
+	protected static String getRelativeHashMapping(JsonObject props, Structure structure) {
+		String mapping = structure.getExternalId()+
+				props.getString("lastName", "")+props.getString("firstName", "");
 		try {
 			return Hash.sha1(mapping.getBytes("UTF-8"));
 		} catch (NoSuchAlgorithmException |UnsupportedEncodingException e) {

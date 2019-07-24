@@ -59,6 +59,7 @@ public class Report {
 	private long endTime;
 	private long startTime;
 	private Set<String> loadedFiles = new HashSet<>();
+	private boolean notReverseFilesOrder = false;
 
 	public enum State {
 		NEW, UPDATED, DELETED
@@ -473,6 +474,15 @@ public class Report {
 
 	public String getSource() {
 		return "REPORT";
+	}
+
+
+	public boolean isNotReverseFilesOrder() {
+		return notReverseFilesOrder;
+	}
+
+	public void setNotReverseFilesOrder(boolean notReverseFilesOrder) {
+		this.notReverseFilesOrder = notReverseFilesOrder;
 	}
 
 }

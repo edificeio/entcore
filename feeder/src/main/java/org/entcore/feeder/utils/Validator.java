@@ -450,7 +450,8 @@ public class Validator {
 			return i18n.translate("null.array.validator", I18n.DEFAULT_DOMAIN, acceptLanguage);
 		}
 		if (!(value instanceof JsonArray)) {
-			return i18n.translate("invalid.array.type", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, value.getClass().getSimpleName());
+			return i18n.translate("invalid.array.type", I18n.DEFAULT_DOMAIN, acceptLanguage, attr,
+					value != null ? value.getClass().getSimpleName() : "null");
 		}
 		String err = null;
 		switch (validator) {

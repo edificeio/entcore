@@ -616,6 +616,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(final Report report) {
 				if (report != null && !report.containsErrors()) {
+					if (report.isNotReverseFilesOrder()) {
+						message.body().put("notReverseFilesOrder", true);
+					}
 					doImport(message, feed, new Handler<Report>() {
 						@Override
 						public void handle(final Report importReport) {
@@ -656,6 +659,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
+		final boolean notReverseFilesOrder = message.body().getBoolean("notReverseFilesOrder", false);
 
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
@@ -672,6 +676,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						return;
 					}
 					final Report report = importer.getReport();
+					if (notReverseFilesOrder) {
+						report.setNotReverseFilesOrder(true);
+					}
 					try {
 						Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
 							@Override

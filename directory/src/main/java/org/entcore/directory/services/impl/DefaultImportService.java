@@ -224,7 +224,7 @@ public class DefaultImportService implements ImportService {
 	}
 
 	protected void sendCommand(final Handler<Either<JsonObject, JsonObject>> handler, JsonObject action) {
-		eb.send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(600000L), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
