@@ -568,6 +568,7 @@ export class ImportCSV implements OnInit, OnDestroy {
                 },
                 page : {offset: 0, limit: 30, total: 0},
             });
+            this.setFilter('none');
         },
         async update(user:User, property:UserEditableProps) {
             try {
