@@ -39,6 +39,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -508,7 +509,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	private void filterExternalIdExists(List<String> admlStructures, String profile,
 			Set<String> externalIds, final Handler<JsonArray> handler) {
-		final JsonObject params = new JsonObject().put("externalIds", new JsonArray(new ArrayList<>(externalIds)));
+		final List<String> cleanExtIds = externalIds.stream()
+				.map(s -> s.contains(" ") ? s.replaceAll("\\s+", "") : s)
+				.collect(Collectors.toList());
+		final JsonObject params = new JsonObject().put("externalIds", new JsonArray(cleanExtIds));
 		try {
 			final TransactionHelper tx = TransactionManager.getTransaction();
 			final String query =
@@ -692,7 +696,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							seed = System.currentTimeMillis();
 						}
 						final State state;
-						final String externalId = user.getString("externalId");
+						String externalId = user.getString("externalId");
 						if (externalId == null || externalId.trim().isEmpty()) {
 							if ("Relative".equals(profile)) {
 								generateRelativeUserExternalId(user, structure);
@@ -701,6 +705,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							}
 							state = State.NEW;
 						} else {
+							if (externalId.contains(" ")) {
+								externalId = externalId.replaceAll("\\s+", "");
+								user.put("externalId", externalId);
+							}
 							if (existExternalId.contains(externalId)) {
 								state = State.UPDATED;
 								studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), externalId);
@@ -753,10 +761,19 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										Object o = user.getValue(attr);
 										if (o instanceof JsonArray) {
 											for (Object c : (JsonArray) o) {
-												linkStudents.add(c);
+												if (!(c instanceof String)) continue;
+												String childExtId = (String) c;
+												if (childExtId.contains(" ")) {
+													childExtId = childExtId.replaceAll("\\s+", "");
+												}
+												linkStudents.add(childExtId);
 											}
-										} else {
-											linkStudents.add(o);
+										} else if (o instanceof String){
+											String childExtId = (String) o;
+											if (childExtId.contains(" ")) {
+												childExtId = childExtId.replaceAll("\\s+", "");
+											}
+											linkStudents.add(childExtId);
 										}
 									} else if ("childUsername".equals(attr)) {
 										Object childUsername = user.getValue(attr);
