@@ -284,7 +284,7 @@ public class Validator {
 		String res = null;
 		for (Object o : required) {
 			if (!m.containsKey(o.toString())) {
-				if (errorsContext != null) {
+				if (errorsContext != null && !generate.containsKey(o.toString())) {
 					errorsContext.add(new JsonObject()
 							.put("reason", "missing.attribute")
 							.put("attribute", o.toString())
