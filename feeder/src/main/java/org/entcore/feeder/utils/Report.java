@@ -139,7 +139,10 @@ public class Report {
 				.put("reason", key)
 				.put("attribute", errors.length > 0 ? errors[0] : "")
 				.put("value", errors.length > 1 ? errors[1] : "");
-		if (errors.length == 3 && "hard".equals(errors[2])) {
+		if (errors.length > 2 && errors[2] != null && errors[2].startsWith("nta-")) {
+			error.put("attribute", errors[2].replace("nta-", ""));
+		}
+		if (errors.length == 4 && "hard".equals(errors[3])) {
 			error.put("hardError", true);
 		}
 

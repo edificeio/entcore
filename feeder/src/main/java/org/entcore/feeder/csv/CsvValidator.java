@@ -928,6 +928,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 									addSoftErrorByFile(profile,
 											err.getString("reason"), "" + (i + 1),
 											translate(err.getString("attribute")), err.getString("value"),
+											"nta-" + err.getString("attribute"),
 											err.getString("errorLevel")
 									);
 							}
