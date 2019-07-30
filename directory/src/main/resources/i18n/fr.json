@@ -728,7 +728,7 @@
     "wizard.less.infos": "Masquer les détails",
     "invalid.structure.name": "Nom de l'établissement invalide.",
     "wizard.transition.details": "Attention : <br /> - Toutes les classes absentes du fichier vont être supprimées. <br /> - Les classes et les groupes de classes existants sont supprimés puis recréés. <br /> - Les partages associés à ces classes et ces groupes sont également supprimés. <br /> - Les règles de communication sont réinitialisées (retour aux règles par défaut).",
-    "wizard.preDelete.details": "Les comptes des utilisateurs qui ne figurent pas dans les fichiers seront automatiquement pré-supprimés.<br />Ces utilisateurs pourront continuer à accéder à l'ENT pour récupérer leurs données pendant un délai de 90 jours.<br />Leurs comptes seront définitivement supprimés après ce délai.<br />",
+    "wizard.preDelete.details": "Les comptes des utilisateurs <strong>de source CSV uniquement</strong> qui ne figurent pas dans les fichiers seront automatiquement pré-supprimés. Ces utilisateurs pourront continuer à accéder à l'ENT pour récupérer leurs données pendant un délai de 90 jours. Leurs comptes seront définitivement supprimés après ce délai.<br />",
     "wizard.export.validate": "Télécharger le rapport intermédiaire",
     "wizard.tooltip.structure": "",
     "wizard.tooltip.type": "",
