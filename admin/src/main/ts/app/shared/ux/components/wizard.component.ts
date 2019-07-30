@@ -123,7 +123,8 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
         this.activeStep = 0;
         this.steps.forEach((step, index) => {
             index == 0 ? step.isActived = true : step.isActived = false; 
-        })
+        });
+        this.canDoNext = true;
     }
 
     onPreviousStep() {
@@ -135,17 +136,18 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
             this.steps.toArray()[this.activeStep].isActived = false;
             this.steps.toArray()[this.activeStep -1].isActived = true;
             this.activeStep--;
+            this.canDoNext = true;
         }
     }
 
-    canDoNext:boolean = true;
+    public canDoNext:boolean = true;
 
     onNextStep() {
         this.nextStep.emit(this.activeStep);
     }
-    doNextStep() {
+    doNextStep(error?: boolean) {
         if (this.activeStep < this.steps.length -1) {
-            this.canDoNext = true;
+            this.canDoNext = !error;
             this.steps.toArray()[this.activeStep].isActived = false;
             this.steps.toArray()[this.activeStep + 1].isActived = true;
             this.activeStep++;

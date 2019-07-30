@@ -107,13 +107,18 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2>{{ 'import.report' | translate }}</h2>
-            <message-box *ngIf="!report.hasErrors() && !report.hasToDelete()" [type]="'success'" [messages]="['import.report.success']"></message-box>
+            <message-box *ngIf="!report.hasErrors() && !report.hasToDelete() && !globalError.message" [type]="'success'" [messages]="['import.report.success']">
+            </message-box>
             <message-box *ngIf="report.hasToDelete()" [type]="'warning'" [messages]="['import.report.warning.hasToDelete']">
                 <strong><a (click)="report.setFilter('state','Supprimé'); report.page.offset=0">
                     {{'import.report.displayUsersToDelete' | translate}}
                 </a></strong>
             </message-box>
-            <message-box *ngIf="report.hasErrors()" [type]="'warning'" [messages]="['import.report.warning.hasErrors']"></message-box>
+            <message-box *ngIf="report.hasErrors() && !report.hasSoftErrorsWithHardError()" [type]="'warning'" [messages]="['import.report.warning.hasErrors']">
+            </message-box>
+            <message-box *ngIf="report.hasSoftErrorsWithHardError()" [type]="'danger'" [messages]="['import.report.softError.hardError']">
+            </message-box>
+            
             <div *ngIf="report.hasErrors()" class="report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
                     class="button"
@@ -121,124 +126,133 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                 'is-warning':report.hasErrorType(r,'warning'),
                                 'is-success':report.countByReason(r) == 0,
                                 'is-outlined':!report.hasFilter('reasons',r)}"
-                    (click)="report.setFilter('reasons',r); report.page.offset=0"
-                >
+                    (click)="toggleReportFilter(r); report.page.offset=0">
                 {{ r | translate }}
                 </a>
             </div>
+            
             <message-box *ngIf="!!report.filter().reasons" [type]="report.errorType[report.filter().reasons]" 
                 [messages]="report.errorReasonMessage(report.filter().reasons)">
             </message-box>
-            <div class="pager has-text-right">
-                <a (click)="report.setFilter('none')">{{'pager.displayAll' | translate}}</a>
-                <pager 
-                    [(offset)]="report.page.offset"
-                    [limit]="report.page.limit"
-                    [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
-                </pager>
+
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            
+            <panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="true"> 
+                <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
+            </panel-section>
+
+            <div *ngIf="!globalError.message">
+                <div class="pager has-text-right">
+                    <a (click)="report.setFilter('none')">{{'pager.displayAll' | translate}}</a>
+                    <pager 
+                        [(offset)]="report.page.offset"
+                        [limit]="report.page.limit"
+                        [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
+                    </pager>
+                </div>
+                <table class="report">
+                    <thead>
+                        <tr>
+                            <th>{{ 'line' | translate }}</th>
+                            <th>{{ 'operation' | translate }}</th>
+                            <th>{{ 'lastName' | translate }}</th>
+                            <th>{{ 'firstName' | translate }}</th>
+                            <th>{{ 'birthDate' | translate }}</th>
+                            <th>{{ 'login' | translate }}</th>
+                            <th>{{ 'profile' | translate }}</th>
+                            <th>{{ 'externalId.short'| translate }}</th>
+                            <th>{{ 'classes' | translate }}</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
+                            </th>
+                            <th>
+                                <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
+                            </th>
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <select [(ngModel)]="report.columnFilter.profiles">
+                                    <option [value]=""></option>
+                                    <option *ngFor="let p of columns.profiles" [value]="p">
+                                        {{ p | translate }}
+                                    </option>
+                                </select>
+                            </th>
+                            <th></th>
+                            <th>
+                                <select [(ngModel)]="report.columnFilter.classesStr">
+                                    <option [value]=""></option>
+                                    <option *ngFor="let c of report.getAvailableClasses()" [value]="c">
+                                        {{ c }}
+                                    </option>
+                                </select>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
+                        [ngClass]="{'state-delete':user.state == 'Supprimé', 'state-error': user.hasErrorsNotCorrected()}"
+                    >
+                            <td>{{user.line}}</td>
+                            <td>
+                                <select (change)="report.changeState($event, user)">
+                                    <option *ngFor="let state of report.possibleState(user.state)" [value]="state" [selected]="state === user.state">
+                                        {{state}}
+                                    </option>
+                                </select>
+                            </td>
+                            <td (mouseenter)="lastNameEditIcon.hide = false" (mouseleave)="lastNameEditIcon.hide = true; editLastName.disabled = true"
+                                [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
+                                <i #lastNameEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'display': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'none' : 'inline'}"
+                                    (click)="editLastName.disabled = undefined"></i>
+                                <input 
+                                    [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
+                                    (keyup.enter)="report.update(user, 'lastName')"
+                                    (blur)="report.update(user, 'lastName')"
+                                    disabled="true"
+                                    #editLastName
+                                />
+                            </td>
+                            <td (mouseenter)="firstNameEditIcon.hide = false" (mouseleave)="firstNameEditIcon.hide = true; editFirstName.disabled = true"
+                                [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
+                                <i #firstNameEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'display': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'none' : 'inline'}"
+                                    (click)="editFirstName.disabled = undefined"></i>
+                                <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
+                                    (keyup.enter)="report.update(user, 'firstName')"
+                                    (blur)="report.update(user, 'firstName')"
+                                    disabled="true"
+                                    #editFirstName
+                                />            
+                            </td>
+                            <td (mouseenter)="birthDateEditIcon.hide = false" (mouseleave)="birthDateEditIcon.hide = true; editBirthDate.disabled = true"
+                                [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
+                                <i #birthDateEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'display': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'none' : 'inline'}"
+                                    (click)="editBirthDate.disabled = undefined"></i>
+                                <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
+                                    (keyup.enter)="report.update(user, 'birthDate')"
+                                    (blur)="report.update(user, 'birthDate')"
+                                    disabled="true"
+                                    #editBirthDate
+                                />
+                            </td>
+                            <td class="clickable"><span>{{user.login}}</span></td>
+                            <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
+                            <td><span>{{user.externalId}}</span></td>
+                            <td class="clickable"><span>{{user.classesStr}}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table class="report">
-                <thead>
-                    <tr>
-                        <th>{{ 'line' | translate }}</th>
-                        <th>{{ 'operation' | translate }}</th>
-                        <th>{{ 'lastName' | translate }}</th>
-                        <th>{{ 'firstName' | translate }}</th>
-                        <th>{{ 'birthDate' | translate }}</th>
-                        <th>{{ 'login' | translate }}</th>
-                        <th>{{ 'profile' | translate }}</th>
-                        <th>{{ 'externalId.short'| translate }}</th>
-                        <th>{{ 'classes' | translate }}</th>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th>
-                            <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
-                        </th>
-                        <th>
-                            <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
-                        </th>
-                        <th></th>
-                        <th></th>
-                        <th>
-                            <select [(ngModel)]="report.columnFilter.profiles">
-                                <option [value]=""></option>
-                                <option *ngFor="let p of columns.profiles" [value]="p">
-                                    {{ p | translate }}
-                                </option>
-                            </select>
-                        </th>
-                        <th></th>
-                        <th>
-                            <select [(ngModel)]="report.columnFilter.classesStr">
-                                <option [value]=""></option>
-                                <option *ngFor="let c of report.getAvailableClasses()" [value]="c">
-                                    {{ c }}
-                                </option>
-                            </select>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
-                    [ngClass]="{'state-delete':user.state == 'Supprimé'}"
-                >
-                        <td>{{user.line}}</td>
-                        <td>
-                            <select (change)="report.changeState($event, user)">
-                                <option *ngFor="let state of report.possibleState(user.state)" [value]="state" [selected]="state === user.state">
-                                    {{state}}
-                                </option>
-                            </select>
-                        </td>
-                        <td (mouseenter)="lastNameEditIcon.hide = false" (mouseleave)="lastNameEditIcon.hide = true; editLastName.disabled = true"
-                            [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
-                            <i #lastNameEditIcon 
-                                class="fa fa-pencil" 
-                                [ngStyle]="{'display': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'none' : 'inline'}"
-                                (click)="editLastName.disabled = undefined"></i>
-                            <input 
-                                [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
-                                (keyup.enter)="report.update(user, 'lastName')"
-                                (blur)="report.update(user, 'lastName')"
-                                disabled="true"
-                                #editLastName
-                            />
-                        </td>
-                        <td (mouseenter)="firstNameEditIcon.hide = false" (mouseleave)="firstNameEditIcon.hide = true; editFirstName.disabled = true"
-                            [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
-                            <i #firstNameEditIcon 
-                                class="fa fa-pencil" 
-                                [ngStyle]="{'display': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'none' : 'inline'}"
-                                (click)="editFirstName.disabled = undefined"></i>
-                            <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
-                                (keyup.enter)="report.update(user, 'firstName')"
-                                (blur)="report.update(user, 'firstName')"
-                                disabled="true"
-                                #editFirstName
-                            />            
-                        </td>
-                        <td (mouseenter)="birthDateEditIcon.hide = false" (mouseleave)="birthDateEditIcon.hide = true; editBirthDate.disabled = true"
-                            [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
-                            <i #birthDateEditIcon 
-                                class="fa fa-pencil" 
-                                [ngStyle]="{'display': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'none' : 'inline'}"
-                                (click)="editBirthDate.disabled = undefined"></i>
-                            <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
-                                (keyup.enter)="report.update(user, 'birthDate')"
-                                (blur)="report.update(user, 'birthDate')"
-                                disabled="true"
-                                #editBirthDate
-                            />
-                        </td>
-                        <td class="clickable"><span>{{user.login}}</span></td>
-                        <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
-                        <td><span>{{user.externalId}}</span></td>
-                        <td class="clickable"><span>{{user.classesStr}}</span></td>
-                    </tr>
-                </tbody>
-            </table>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
             <div *ngIf="globalError.message else noGlobalError">
@@ -276,10 +290,11 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .report-filter .button { margin-right: .5rem; }
         table.report { table-layout: auto; }
         table.report tr.state-delete { background: #fdd; }
+        table.report tr.state-error { background: #f7e5e5; }
         table.report td.clickable:hover { border: 2px dashed #ff8352; cursor:pointer; }
         table.report td.is-danger { border: 2px dashed indianred; }
         table.report td.is-success { border: 2px dashed mediumseagreen; }
-        table.report td input[disabled] { background : transparent; border:0; cursor:pointer; }
+        table.report td input[disabled] { background : transparent; border:0; cursor:pointer; opacity: 1;}
         table.report td i.fa-pencil { float: right; display: none }
         .step1-file__label {min-width: 200px; display: inline-block;}
     `]
@@ -302,8 +317,13 @@ export class ImportCSV implements OnInit, OnDestroy {
     private structureSubscriber: Subscription;
     private routerSubscriber:Subscription;
 
-    @ViewChild(WizardComponent) wizardEl: WizardComponent;
+    @ViewChild(WizardComponent) 
+    public wizardEl: WizardComponent;
     
+    enableButtonNextStep = () => {
+        this.wizardEl.canDoNext = true;
+    }
+
     globalError:{ message:string,profile:{},reset:Function } = {
         message:undefined,
         profile:{},
@@ -484,7 +504,8 @@ export class ImportCSV implements OnInit, OnDestroy {
         users : [],
         softErrors : {
             reasons : [],
-            list :  []
+            list :  [],
+            hardError: false
         },
         page : {offset: 0, limit: 30, total: 0},
         filter : User.filter,
@@ -493,6 +514,8 @@ export class ImportCSV implements OnInit, OnDestroy {
         hasFilter : User.hasFilter,
         possibleState : User.possibleState,
         ns : this.ns,
+        cdRef: this.cdRef,
+        enableButtonNextStep: this.enableButtonNextStep,
         init(data:{importId:string, softErrors:any}, profiles):void {
             this.importId = data.importId
             for (let p of profiles.asArray()) {
@@ -506,20 +529,23 @@ export class ImportCSV implements OnInit, OnDestroy {
                     let errors = data.softErrors[p].filter(err => !['login','displayName'].includes(err.attribute));
                     this.softErrors.list.push(...errors);
                     this.markUserErrors(errors, p);
+                    this.softErrors.hardError = data.softErrors[p].some(softError => softError['hardError'] == true);
                 }
             }
             // Set report total user
             this.page.total = this.users.length;
             if (data.softErrors) {
                 this.softErrors.reasons = data.softErrors.reasons;
-                this.setFilter('errors');
             }
         },
         hasToDelete() {
             return this.users.filter(el => el.state == "Supprimé").length > 0;
         },
         hasErrors():boolean {
-            return this.softErrors.reasons.length > 0;
+            return this.softErrors.list && this.softErrors.list.length > 0;
+        },
+        hasSoftErrorsWithHardError(): boolean {
+            return this.softErrors.hardError;
         },
         errorType : {
             'missing.student.soft' : 'warning',
@@ -536,8 +562,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             // Add server-side translations just for warning 
             // because some informations can't be gracefully display in report'table
             if (this.errorType[r] == 'warning') {
-                res.push(...this.softErrors.list
-                    .filter(el => el.reason == r).map(el =>  el.translation));
+                res.push(...this.softErrors.list.filter(el => el.reason == r).map(el =>  el.translation));
             }
             return res;
         },
@@ -581,10 +606,19 @@ export class ImportCSV implements OnInit, OnDestroy {
                         1
                     );
                     user.errors.get(property).corrected = true;
-                } 
-                this.ns.success('import.report.notifySuccessEdit');
+
+                    if (this.softErrors.list.length == 0) {
+                        this.softErrors.hardError = false;
+                        this.enableButtonNextStep();
+                    }
+                }
+                this.ns.success('import.report.line.edit.notify.success.content'
+                , 'import.report.line.edit.notify.success.title');
+                this.cdRef.markForCheck();
             } catch (error) {
-                this.ns.error('import.report.notifyErrorEdit');
+                this.ns.error('import.report.line.edit.notify.error.content'
+                    , 'import.report.line.edit.notify.error.title'
+                    , error);
             }
         },
         async changeState(event, user:User) {
@@ -677,6 +711,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     previousStep (activeStep: Number) {
+        this.globalError.reset();
         this.wizardEl.doPreviousStep();
     }
 
@@ -726,19 +761,31 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.cdRef.markForCheck();
     }
 
+    public toggleReportFilter(r) {
+        if(this.report.hasFilter('reasons', r)) {
+            this.report.setFilter('none');
+        } else {
+            this.report.setFilter('reasons', r);
+        }
+    }
+
     private async validate() {
         this.report.reset();
         this.globalError.reset();
         let data = await this.spinner.perform('portal-content', ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings)); 
         if (data.errors) {
-            this.globalError.message = 'import.error.validationGlobalError'
+            this.globalError.message = 'import.global.error'
             this.globalError.profile = data.errors;
         } else if (!data.importId) {
             this.globalError.message = 'import.error.importIdNotFound'
         } else { 
             this.report.init(data, this.profiles);
         }
-        this.wizardEl.doNextStep();
+        if (this.globalError.message || this.report.hasSoftErrorsWithHardError()) {
+            this.wizardEl.doNextStep(true);
+        } else {
+            this.wizardEl.doNextStep();
+        }
         this.cdRef.markForCheck();
     }
     
