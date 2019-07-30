@@ -524,6 +524,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					"WHERE u.externalId in {externalIds} " +
 					"RETURN COLLECT(u.externalId) as ids";
 			tx.add(query, params);
+			final String q2 =
+					"MATCH (u:User) " +
+					"WHERE u.externalId IN {externalIds} AND u.source IN ['AAF', 'AAF1D'] " +
+					"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
+					"RETURN COLLECT(u.externalId) as ids";
+			tx.add(q2, params);
 			if (admlStructures != null && admlStructures.size() > 0) {
 				final String q =
 						"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
@@ -534,8 +540,15 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			tx.commit(event -> {
 				JsonArray results = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && results != null) {
+					final JsonArray aafExternalIds = results.getJsonArray(1)
+							.getJsonObject(0).getJsonArray("ids");
+					if (aafExternalIds != null && !aafExternalIds.isEmpty()) {
+						addErrorByFile(profile, "externalId.used.in.aaf", Joiner.on(", ").join(aafExternalIds));
+						handler.handle(null);
+						return;
+					}
 					if (admlStructures != null && admlStructures.size() > 0) {
-						final JsonArray usedStructures = results.getJsonArray(1)
+						final JsonArray usedStructures = results.getJsonArray(2)
 								.getJsonObject(0).getJsonArray("structureIds");
 						if (admlStructures.containsAll(usedStructures.getList())) {
 							handler.handle(results.getJsonArray(0)
