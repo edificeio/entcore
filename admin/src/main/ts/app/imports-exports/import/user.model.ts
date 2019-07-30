@@ -126,4 +126,24 @@ export class User {
             throw new Error(res.error);
         }
     }
+
+    hasErrorsNotCorrected(): boolean {
+        let res = false;
+        if (this.errors) {
+            const nbErrors = this.errors.size;
+            if (nbErrors > 0) {
+                res = true;
+                let nbCorrected = 0;
+                this.errors.forEach(error => {
+                    if (error.corrected) {
+                        nbCorrected++;
+                    }
+                });
+                if (nbCorrected === nbErrors) {
+                    res = false;
+                }
+            }
+        } 
+        return res;
+    }
 }
