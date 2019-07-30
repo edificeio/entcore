@@ -127,11 +127,12 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         }
     }
     const createUserAndAttach = async () => {
-        const { firstName, lastName, birthDate, type, relatives } = $scope.userCreate.form;
+        const { firstName, lastName, birthDate, type, relatives, email } = $scope.userCreate.form;
         const res = await directoryService.saveUserForClass(classroom.id, {
             birthDate,
             lastName,
             firstName,
+            email,
             childrenIds: relatives && relatives.map(c => c.id),
             type
         });
