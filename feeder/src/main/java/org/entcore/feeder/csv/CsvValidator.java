@@ -50,6 +50,8 @@ import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends CsvReport implements ImportValidator {
 
+	private boolean enableRelativeStudentLinkCheck = true;
+
 	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING, CLASSES_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
@@ -418,6 +420,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						stringsHeader.add("relative");
 						stringsHeader.add("relative");
 						setNotReverseFilesOrder(true);
+					} else if (stringsHeader.contains("L_PROVINCE")) {
+						enableRelativeStudentLinkCheck = false;
 					}
 					addHeader(profile, new JsonArray(stringsHeader));
 					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
@@ -872,7 +876,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 											classesNames.add(classesNamesMapping.get(o));
 										}
 									}
-									if (classesNames.size() == 0) {
+									if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
 										addSoftErrorByFile(profile, "missing.student.soft", "" + (i + 1),
 												user.getString("firstName"), user.getString("lastName"));
 									}
@@ -897,7 +901,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										}
 									}
 								}
-								if (classesNames.size() == 0) {
+								if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
 									// "NO_ATTR" is used because we can't map this soft error to any attribute
 									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1), "NO_ATTR",
 											user.getString("firstName"), user.getString("lastName"));
