@@ -428,11 +428,13 @@ public class CsvFeeder implements Feed {
 					}
 					switch (profile) {
 						case "Teacher":
+							createFunctionDisciplineGroup(profile, structure, user, groups);
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Personnel":
+							createFunctionDisciplineGroup(profile, structure, user, groups);
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
@@ -603,6 +605,25 @@ public class CsvFeeder implements Feed {
 //			}
 //		});
 	//	importer.persist(handler);
+	}
+
+	private void createFunctionDisciplineGroup(String profile, Structure structure, JsonObject user, List<String[]> groups) {
+		if (user.getJsonArray("functions") != null && user.getJsonArray("functions").size() > 0) {
+			for (Object o: user.getJsonArray("functions")) {
+				if (!(o instanceof String)) continue;
+				final String groupExternalId = (String) o;
+				final String name = groupExternalId.substring(structure.getExternalId().length() + 1);
+				if ("Teacher".equals(profile)) {
+					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
+				} else if ("Personnel".equals(profile)) {
+					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
+				}
+				final String[] groupId = new String[3];
+				groupId[0] = structure.getExternalId();
+				groupId[1] = groupExternalId;
+				groups.add(groupId);
+			}
+		}
 	}
 
 	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
