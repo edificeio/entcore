@@ -1,0 +1,4 @@
+externalid;Prénom*;Nom*;date de naissance;fonction;telephone;telephonetravail;email;adresse;cp;ville;pays
+CSV_Numero-RNE_P00003;Olivier;BARBOZA;13/08/1980;CPE;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_P00002;Julien;PERCEVAULT;13/08/1980;Direction;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_P00001;George;CALAMARO;13/08/1980;AED;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
