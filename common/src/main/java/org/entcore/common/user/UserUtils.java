@@ -33,10 +33,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -660,6 +657,14 @@ public class UserUtils {
 		}).map(e->{
 			return (Set<String>)e;
 		}).setHandler(h);
+	}
+
+	public static boolean isSuperAdmin(UserInfos user) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			return false;
+		}
+		return functions.containsKey(DefaultFunctions.SUPER_ADMIN);
 	}
 
 }

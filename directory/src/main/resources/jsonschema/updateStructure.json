@@ -8,6 +8,9 @@
     },
     "UAI": {
       "type": "string"
+    },
+    "hasApp": {
+      "type": "boolean"
     }
   },
   "required": [
