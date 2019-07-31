@@ -195,7 +195,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                     </thead>
                     <tbody>
                     <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
-                        [ngClass]="{'state-delete':user.state == 'Supprimé', 'state-error': user.hasErrorsNotCorrected()}"
+                        [ngClass]="{'state-delete':user.state == 'Supprimé', 'is-danger': user.hasErrorsNotCorrected(), 'is-warning': user.hasWarnings()}"
                     >
                             <td>{{user.line}}</td>
                             <td>
@@ -290,7 +290,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .report-filter .button { margin-right: .5rem; }
         table.report { table-layout: auto; }
         table.report tr.state-delete { background: #fdd; }
-        table.report tr.state-error { background: #f7e5e5; }
+        table.report tr.is-danger { background: #f7e5e5; }
+        table.report tr.is-warning { background: #fff7dc; }
         table.report td.clickable:hover { border: 2px dashed #ff8352; cursor:pointer; }
         table.report td.is-danger { border: 2px dashed indianred; }
         table.report td.is-success { border: 2px dashed mediumseagreen; }
