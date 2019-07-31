@@ -146,4 +146,11 @@ export class User {
         } 
         return res;
     }
+
+    hasWarnings(): boolean {
+        if (this.errors && this.errors.size === 0) {
+            return false;
+        }
+        return Array.from(this.errors.values()).every(error => error.reason === 'missing.student.soft');
+    }
 }
