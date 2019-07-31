@@ -1,0 +1,6 @@
+externalId;Prénom*;Nom*;telephone;telephonetravail;email;adresse;cp;ville;pays;Childexternalid*;Childexternalid;Childexternalid;Childexternalid;Childexternalid
+CSV_Numero-RNE_R00005;Amélie;RAISON;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00005;;;;
+CSV_Numero-RNE_R00003;Nathanael;RAISON;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00005;;;;
+CSV_Numero-RNE_R00001;Marie;POULARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00002;;;;
+CSV_Numero-RNE_R00004;Jean-Pierre;PALARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00003;CSV_Numero-RNE_S00002;;;
+CSV_Numero-RNE_R00002;Bernadette;PALARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00003;;;;
