@@ -90,8 +90,14 @@ public class StructureController extends BaseController {
 		bodyToJson(request, pathPrefix + "updateStructure", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
-				String structureId = request.params().get("structureId");
-				structureService.update(structureId, body, defaultResponseHandler(request));
+				UserUtils.getUserInfos(eb, request, user -> {
+					if (user == null || !UserUtils.isSuperAdmin(user)) {
+						body.remove("UAI");
+						body.remove("hasApp");
+					}
+					String structureId = request.params().get("structureId");
+					structureService.update(structureId, body, defaultResponseHandler(request));
+				});
 			}
 		});
 	}

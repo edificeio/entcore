@@ -30,10 +30,18 @@
         </div>
         <hr class="separator cell">
         <div class="twelve cell padding-top-5"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
-        <div class="twelve cell padding-top-5"><strong class="four cell">[[lang.translate("directory.uai")]] :</strong> [[structure.UAI]]</div>
+        <div class="twelve cell padding-top-5" ng-if="!isCentralAdmin()"><strong class="four cell">[[lang.translate("directory.uai")]] :</strong> [[structure.UAI]]</div>
+        <div class="twelve cell padding-top-5" ng-if="isCentralAdmin()">
+            <strong class="four cell">[[lang.translate("directory.uai")]] :</strong>
+            <input class="eight cell" type="text" ng-model="structure.UAI"/>
+        </div>
         <div class="twelve cell padding-top-5">
             <strong class="four cell">[[lang.translate("directory.name")]]</strong>
             <input class="eight cell" type="text" ng-model="structure.name"/>
+        </div>
+        <div class="twelve cell padding-top-5" ng-if="isCentralAdmin()">
+            <strong class="four cell">[[lang.translate("directory.has.app")]] :</strong>
+            <input class="eight cell" type="checkbox" ng-model="structure.hasApp"/>
         </div>
         <div class="twelve cell" ng-if="structure.parents">
             <strong class="four cell padding-top-5">[[lang.translate("directory.structure.parents")]]</strong>
@@ -194,6 +202,14 @@
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
             <input class="eight cell" type="text" ng-model="createdStructure.name"/>
+        </div>
+        <div class="twelve cell">
+            <strong class="four cell padding-top-5">[[lang.translate("directory.uai")]]</strong>
+            <input class="eight cell" type="text" ng-model="createdStructure.UAI"/>
+        </div>
+        <div class="twelve cell">
+            <strong class="four cell padding-top-5">[[lang.translate("directory.has.app")]]</strong>
+            <input class="eight cell" type="checkbox" ng-model="createdStructure.hasApp"/>
         </div>
     </div>
 </article>

@@ -103,6 +103,9 @@
 		"academy" : {
 			"type" : "string",
 			"validator" : "notEmpty"
+		},
+		"hasApp" : {
+			"type" : "boolean"
 		}
 	},
 	"generate" : {
@@ -111,5 +114,5 @@
 		"modified" : { "generator" : "nowDate", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
-	"modifiable" : ["name", "UAI"]
+	"modifiable" : ["name", "UAI", "hasApp"]
 }

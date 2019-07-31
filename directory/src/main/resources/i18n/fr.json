@@ -832,5 +832,6 @@
     "directory.profile.otp" : "Mot de passe à usage unique",
     "directory.generate.otp" : "Générer",
     "csv.file.too.long" : "Fichier trop volumineux. La taille maximum est d'un méga-octets par fichier.",
-    "csv.file.size.error": "Erreur lors du calcul de la taille du fichier."
+    "csv.file.size.error": "Erreur lors du calcul de la taille du fichier.",
+    "directory.has.app": "Application mobile"
 }
