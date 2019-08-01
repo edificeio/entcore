@@ -583,7 +583,7 @@ export class ImportCSV implements OnInit, OnDestroy {
                 return;
             for (let err of errors) {
                 let user:User = this.users.find(el => { 
-                    return (el.line.toString() == err.line) && el.hasProfile(p)
+                    return (el.line && el.line.toString() == err.line) && el.hasProfile(p)
                 });
                 user.errors.set(err.attribute, err);
                 user.errors.get(err.attribute).corrected = false;
