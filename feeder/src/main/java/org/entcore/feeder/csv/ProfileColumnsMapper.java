@@ -123,6 +123,7 @@ public class ProfileColumnsMapper {
 				.put("correoelectronico", "email")
 				.put("courriel", "email")
 				.put("sexe", "gender")
+				.put("alias", "loginAlias")
 				.put("login", "loginAlias")
 				//.put("importid", "importId")
 				.put("identifiantclasse", "ignore")
