@@ -415,6 +415,19 @@ i.group_add {
   transition: background 0.25s, color 0.25s, border 0.25s;
   font-family: 'Open Sans', sans-serif;
   font-size: 0.85rem;
+  &.is-outlined {
+    color: $accent;
+    padding: 10px 15px;
+    border: 1px solid $grey-light;
+    border-radius: 3px;
+    transition: background 0.25s, color 0.25s, border 0.25s;
+    line-height: 1.5em;
+    &:hover:not(:disabled) {
+      background-color: $accent;
+      color: white;
+      border-color: $accent;
+    }
+  }
   &.is-primary {
     color: $accent;
     border: 1px solid $accent;
@@ -2309,7 +2322,8 @@ div.legend-square.outlined, input.outlined {
   z-index: 0;
 }
 
-/* <message-sticker> */
+/* <
+> */
 message-sticker {
     i.fa {
         transition: color 0.25s;

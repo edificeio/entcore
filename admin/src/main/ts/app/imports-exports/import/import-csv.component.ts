@@ -267,7 +267,6 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
             <ng-template #noGlobalError>
                 <h2>{{ 'import.finish' | translate }}</h2>            
                 <message-box [type]="'success'" [messages]="['import.finish.success']">
-                    <a object-url>{{ 'import.finish.report' | translate }}</a>
                 </message-box>
                 <button 
                     (click)="cancel()"
@@ -279,6 +278,10 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                     [queryParams]="{sync: true}"
                     [title]="'import.finish.usersList' | translate">
                     {{ 'import.finish.usersList' | translate }}
+                </button>
+                <button
+                    (click)="downloadReport()">
+                    {{ 'import.finish.report' | translate }}
                 </button>
             </ng-template>
         </step>
@@ -336,6 +339,9 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     // Control displaying of cancel confirmation lightbox
     confirmCancel : boolean;
+
+    downloadAnchor = null;
+    downloadObjectUrl: string = '';
 
     profiles = { 
         Student:false, 
@@ -797,15 +803,46 @@ export class ImportCSV implements OnInit, OnDestroy {
         let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
         if (data.errors && data.errors.errors) {
             this.globalError.message = data.errors.errors['error.global'];
-        } else {
-            // TODO maybe set objectURL directive by @input
-            this.objectURLEl.create(
-                new Blob([JSON.stringify(data,null, '\t')], { type: 'text/json' }), 
-                this.translate('import.finish.report')
-            );
         }
         this.wizardEl.doNextStep();
         this.cdRef.markForCheck();
+    }
+
+    public downloadReport(): void {
+		const bom: string = '\ufeff';
+        const headers: string = ['lastName', 'firstName', 'profile', 'import.report.export.newclasses', 'operation']
+            .map(h => this.translate(h))
+            .join(';');
+        const content: string = this.report.users
+            .map(u => `\r\n${u.lastName};${u.firstName};${u.profiles.map(p => this.translate(p)).join("-")};${u.classesStr};${u.state}`)
+            .join('');
+		this.ajaxDownload(
+            new Blob([`${bom}${headers}${content}`]), 
+            `${this.translate('import.finish.report.filename')}-${this.importInfos.structureName}.csv`);
+    };
+    
+    private createDownloadAnchor(): void {
+        this.downloadAnchor = document.createElement('a');
+        this.downloadAnchor.style = "display: none";
+        document.body.appendChild(this.downloadAnchor);
+    }
+
+    private ajaxDownload(blob, filename): void {
+        if (window.navigator.msSaveOrOpenBlob) {
+            //IE specific
+            window.navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+            //Other browsers
+            if (this.downloadAnchor === null)
+                this.createDownloadAnchor()
+            if (this.downloadObjectUrl !== null)
+                window.URL.revokeObjectURL(this.downloadObjectUrl);
+            this.downloadObjectUrl = window.URL.createObjectURL(blob)
+            let anchor = this.downloadAnchor
+            anchor.href = this.downloadObjectUrl
+            anchor.download = filename
+            anchor.click()
+        }
     }
 }
 
