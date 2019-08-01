@@ -207,48 +207,48 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             </td>
                             <td (mouseenter)="lastNameEditIcon.hide = false" (mouseleave)="lastNameEditIcon.hide = true; editLastName.disabled = true"
                                 [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
-                                <i #lastNameEditIcon 
-                                    class="fa fa-pencil" 
-                                    [ngStyle]="{'display': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'none' : 'inline'}"
-                                    (click)="editLastName.disabled = undefined"></i>
                                 <input 
                                     [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
                                     (keyup.enter)="report.update(user, 'lastName')"
                                     (blur)="report.update(user, 'lastName')"
                                     disabled="true"
                                     #editLastName
-                                />
+                                    />
+                                <i #lastNameEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'visibility': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'hidden' : 'visible'}"
+                                    (click)="editLastName.disabled = undefined"></i>
                             </td>
                             <td (mouseenter)="firstNameEditIcon.hide = false" (mouseleave)="firstNameEditIcon.hide = true; editFirstName.disabled = true"
                                 [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
-                                <i #firstNameEditIcon 
-                                    class="fa fa-pencil" 
-                                    [ngStyle]="{'display': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'none' : 'inline'}"
-                                    (click)="editFirstName.disabled = undefined"></i>
                                 <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
                                     (keyup.enter)="report.update(user, 'firstName')"
                                     (blur)="report.update(user, 'firstName')"
                                     disabled="true"
                                     #editFirstName
-                                />            
+                                />
+                                <i #firstNameEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'visibility': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'hidden' : 'visible'}"
+                                    (click)="editFirstName.disabled = undefined"></i>
                             </td>
                             <td (mouseenter)="birthDateEditIcon.hide = false" (mouseleave)="birthDateEditIcon.hide = true; editBirthDate.disabled = true"
                                 [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
-                                <i #birthDateEditIcon 
-                                    class="fa fa-pencil" 
-                                    [ngStyle]="{'display': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'none' : 'inline'}"
-                                    (click)="editBirthDate.disabled = undefined"></i>
                                 <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
                                     (keyup.enter)="report.update(user, 'birthDate')"
                                     (blur)="report.update(user, 'birthDate')"
                                     disabled="true"
                                     #editBirthDate
                                 />
+                                <i #birthDateEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'visibility': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'hidden' : 'visible'}"
+                                    (click)="editBirthDate.disabled = undefined"></i>
                             </td>
-                            <td class="clickable"><span>{{user.login}}</span></td>
+                            <td><span>{{user.login}}</span></td>
                             <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
                             <td><span>{{user.externalId}}</span></td>
-                            <td class="clickable"><span>{{user.classesStr}}</span></td>
+                            <td><span>{{user.classesStr}}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -296,7 +296,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         table.report td.is-danger { border: 2px dashed indianred; }
         table.report td.is-success { border: 2px dashed mediumseagreen; }
         table.report td input[disabled] { background : transparent; border:0; cursor:pointer; opacity: 1;}
-        table.report td i.fa-pencil { float: right; display: none }
+        table.report td i.fa-pencil { padding: 5px; }
         .step1-file__label {min-width: 200px; display: inline-block;}
     `]
 })
