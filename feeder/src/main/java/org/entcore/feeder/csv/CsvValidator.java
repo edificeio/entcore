@@ -20,6 +20,7 @@
 package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
+import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
@@ -463,15 +464,17 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			return;
 		}
 		if (filterExternalId.get() >= 0) {
-			filterExternalIdExists(admlStructures, profile, externalIds, new Handler<JsonArray>() {
-				@Override
-				public void handle(JsonArray externalIdsExists) {
+			filterExternalIdExists(admlStructures, profile, externalIds, ar -> {
+				if (ar.succeeded()) {
+					final JsonArray externalIdsExists = ar.result();
 					if (externalIdsExists != null) {
 						validateFile(path, profile, columns, externalIdsExists, charset, handler);
 					} else {
 						addError(profile, "error.find.externalIds");
 						handler.handle(result);
 					}
+				} else {
+					handler.handle(result);
 				}
 			});
 		}
@@ -512,7 +515,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	private void filterExternalIdExists(List<String> admlStructures, String profile,
-			Set<String> externalIds, final Handler<JsonArray> handler) {
+			Set<String> externalIds, final Handler<AsyncResult<JsonArray>> handler) {
 		final List<String> cleanExtIds = externalIds.stream()
 				.map(s -> s.contains(" ") ? s.replaceAll("\\s+", "") : s)
 				.collect(Collectors.toList());
@@ -544,25 +547,25 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							.getJsonObject(0).getJsonArray("ids");
 					if (aafExternalIds != null && !aafExternalIds.isEmpty()) {
 						addErrorByFile(profile, "externalId.used.in.aaf", Joiner.on(", ").join(aafExternalIds));
-						handler.handle(null);
+						handler.handle(Future.failedFuture("externalId.used.in.aaf"));
 						return;
 					}
 					if (admlStructures != null && admlStructures.size() > 0) {
 						final JsonArray usedStructures = results.getJsonArray(2)
 								.getJsonObject(0).getJsonArray("structureIds");
 						if (admlStructures.containsAll(usedStructures.getList())) {
-							handler.handle(results.getJsonArray(0)
-									.getJsonObject(0).getJsonArray("ids"));
+							handler.handle(Future.succeededFuture(results.getJsonArray(0)
+									.getJsonObject(0).getJsonArray("ids")));
 						} else {
 							addError(profile, "externalId.used.in.not.adml.structure");
-							handler.handle(null);
+							handler.handle(Future.failedFuture("externalId.used.in.not.adml.structure"));
 						}
 					} else {
-						handler.handle(results.getJsonArray(0)
-								.getJsonObject(0).getJsonArray("ids"));
+						handler.handle(Future.succeededFuture(results.getJsonArray(0)
+								.getJsonObject(0).getJsonArray("ids")));
 					}
 				} else {
-					handler.handle(null);
+					handler.handle(Future.succeededFuture(null));
 				}
 			});
 		} catch (TransactionException e) {
