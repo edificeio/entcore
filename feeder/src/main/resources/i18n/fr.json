@@ -71,5 +71,6 @@
   "validator.errorWithLine" : "Ligne {0} : {1}",
   "invalid.child.mapping" : "Ligne {0} : valeur(s) invalide(s) associée(s) au(x) champs {1} ",
   "duplicate.externalId.in.file" : "Ligne {0} : identifiant {1} dupliqué dans le fichier.",
-  "externalId.used.in.aaf" : "L'import contient des identifiants AAF. Il n'est pas possible d'utiliser ces identifiants : {0}."
+  "externalId.used.in.aaf" : "L'import contient des identifiants AAF. Il n'est pas possible d'utiliser ces identifiants : {0}.",
+  "externalId.used.in.not.adml.structure" : "L'import contient des identifiants externes déjà utilisés sur d'autres établissements."
 }
