@@ -373,9 +373,11 @@
     "import.report.line.edit.notify.success.content" : "La ligne a bien été modifiée",
     "import.report.line.edit.notify.success.title" : "Ligne modifée avec succès",
     "import.report.export.newclasses": "Nouvelle(s) classe(s)",
+    "import.report.column.loginAlias": "Alias",
     "empty.lastName":"pas de prénom",
     "empty.firstName":"pas de nom",
     "empty.birthDate":"pas de date de naissance",
+    "empty.loginAlias": "pas d'alias",
 
     "import.finish":"Import effectué",
     "import.finish.success":"L'import s'est correctement déroulé.",

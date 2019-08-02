@@ -158,7 +158,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             <th>{{ 'lastName' | translate }}</th>
                             <th>{{ 'firstName' | translate }}</th>
                             <th>{{ 'birthDate' | translate }}</th>
-                            <th>{{ 'login' | translate }}</th>
+                            <th *ngIf="!showAlias()">{{ 'login' | translate }}</th>
+                            <th *ngIf="showAlias()">{{ 'import.report.column.loginAlias' | translate }}</th>
                             <th>{{ 'profile' | translate }}</th>
                             <th>{{ 'externalId.short'| translate }}</th>
                             <th>{{ 'classes' | translate }}</th>
@@ -209,52 +210,69 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                 <input [(ngModel)]="user.lastName" 
                                     placeholder="{{'empty.lastName' | translate}}" 
                                     type="text" 
-                                    (keyup.enter)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; editLastName.disabled = true; lastNameEditIcon.show = true;"
+                                    (keyup.enter)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; lastNameInput.disabled = true; lastNameEditIcon.show = true;"
                                     disabled="true"
-                                    #editLastName />
+                                    #lastNameInput />
                                 <i #lastNameEditIcon 
                                     class="fa fa-pencil" 
                                     [ngStyle]="{'display': lastNameValidateIcon.show == true ? 'none' : 'inline'}"
-                                    (click)="editLastName.disabled = undefined; lastNameEditIcon.show = false; lastNameValidateIcon.show = true"></i>
+                                    (click)="lastNameInput.disabled = undefined; lastNameEditIcon.show = false; lastNameValidateIcon.show = true"></i>
                                 <i #lastNameValidateIcon
                                     class="fa fa-check"
                                     [ngStyle]="{'display': lastNameValidateIcon.show == undefined || lastNameValidateIcon.show == false ? 'none' : 'inline'}"
-                                    (click)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; editLastName.disabled = true; lastNameEditIcon.show = true;"></i>
+                                    (click)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; lastNameInput.disabled = true; lastNameEditIcon.show = true;"></i>
                             </td>
                             <td [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
                                 <input [(ngModel)]="user.firstName" 
                                     placeholder="{{'empty.firstName' | translate}}" 
                                     type="text" 
-                                    (keyup.enter)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; editFirstName.disabled = true; firstNameEditIcon.show = true;"
+                                    (keyup.enter)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; firstNameInput.disabled = true; firstNameEditIcon.show = true;"
                                     disabled="true"
-                                    #editFirstName />
+                                    #firstNameInput />
                                 <i #firstNameEditIcon 
                                     class="fa fa-pencil" 
                                     [ngStyle]="{'display': firstNameValidateIcon.show == true ? 'none': 'inline'}"
-                                    (click)="editFirstName.disabled = undefined; firstNameEditIcon.show = false; firstNameValidateIcon.show = true;"></i>
+                                    (click)="firstNameInput.disabled = undefined; firstNameEditIcon.show = false; firstNameValidateIcon.show = true;"></i>
                                 <i #firstNameValidateIcon
                                     class="fa fa-check"
                                     [ngStyle]="{'display': firstNameValidateIcon.show ? 'inline': 'none'}"
-                                    (click)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; editFirstName.disabled = true; firstNameEditIcon.show = true;"></i>
+                                    (click)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; firstNameInput.disabled = true; firstNameEditIcon.show = true;"></i>
                             </td>
                             <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
                                 <input [(ngModel)]="user.birthDate"
                                     class="report_birthday--input" 
                                     placeholder="{{'empty.birthDate' | translate}}" 
                                     type="text" 
-                                    (keyup.enter)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; editBirthDate.disabled = true; birthDateEditIcon.show = true;"
+                                    (keyup.enter)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; birthDateInput.disabled = true; birthDateEditIcon.show = true;"
                                     disabled="true"
-                                    #editBirthDate />
+                                    #birthDateInput />
                                 <i #birthDateEditIcon 
                                     class="fa fa-pencil" 
                                     [ngStyle]="{'display': birthDateValidateIcon.show ? 'none' : 'inline'}"
-                                    (click)="editBirthDate.disabled = undefined; birthDateEditIcon.show = false; birthDateValidateIcon.show = true"></i>
+                                    (click)="birthDateInput.disabled = undefined; birthDateEditIcon.show = false; birthDateValidateIcon.show = true"></i>
                                 <i #birthDateValidateIcon
                                     class="fa fa-check"
                                     [ngStyle]="{'display': birthDateValidateIcon.show == undefined || birthDateValidateIcon.show == false ? 'none' : 'inline'}"
-                                    (click)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; editBirthDate.disabled = true; birthDateEditIcon.show = true;"></i>
+                                    (click)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; birthDateInput.disabled = true; birthDateEditIcon.show = true;"></i>
                             </td>
-                            <td><span>{{user.login}}</span></td>
+                            <td *ngIf="!showAlias()"><span>{{user.login}}</span></td>
+                            <td *ngIf="showAlias()" 
+                                [ngClass]="{'is-success':user.isCorrected('loginAlias'), 'is-danger': user.isWrong('loginAlias'), 'clickable':true}">
+                                <input [(ngModel)]="user.loginAlias"
+                                    placeholder="{{'empty.loginAlias' | translate}}" 
+                                    type="text" 
+                                    (keyup.enter)="report.update(user, 'loginAlias'); loginAliasValidateIcon.show = false; loginAliasInput.disabled = true; loginAliasEditIcon.show = true;"
+                                    disabled="true"
+                                    #loginAliasInput />
+                                <i #loginAliasEditIcon 
+                                    class="fa fa-pencil" 
+                                    [ngStyle]="{'display': loginAliasValidateIcon.show ? 'none' : 'inline'}"
+                                    (click)="loginAliasInput.disabled = undefined; loginAliasEditIcon.show = false; loginAliasValidateIcon.show = true"></i>
+                                <i #loginAliasValidateIcon
+                                    class="fa fa-check"
+                                    [ngStyle]="{'display': loginAliasValidateIcon.show == undefined || loginAliasValidateIcon.show == false ? 'none' : 'inline'}"
+                                    (click)="report.update(user, 'loginAlias'); loginAliasValidateIcon.show = false; loginAliasInput.disabled = true; loginAliasEditIcon.show = true;"></i>
+                            </td>
                             <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
                             <td><span>{{user.externalId}}</span></td>
                             <td><span>{{user.classesStr}}</span></td>
@@ -854,6 +872,10 @@ export class ImportCSV implements OnInit, OnDestroy {
             anchor.download = filename
             anchor.click()
         }
+    }
+
+    public showAlias(): boolean {
+        return this.report.users.some(user => user.loginAlias);
     }
 }
 
