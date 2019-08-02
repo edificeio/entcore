@@ -15,7 +15,7 @@ export type Error = {
 
 export class User {
 
-    private attributes = ['line','firstName','lastName', 'birthDate','login','externalId','profiles','classesStr','state','profile'];
+    private attributes = ['line','firstName','lastName', 'birthDate','login','loginAlias','externalId','profiles','classesStr','state','profile'];
 
     constructor(data:any){
         this.attributes.forEach(attr => { this[attr] = data[attr] });
@@ -28,6 +28,7 @@ export class User {
     lastName: string;
     birthDate : string;
     login: string;
+    loginAlias: string;
     externalId: string;
     profiles: string[];
     classesStr: string;
