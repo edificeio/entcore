@@ -665,9 +665,11 @@ export class ImportCSV implements OnInit, OnDestroy {
                     case 'Modifié': await user.keep(this.importId); break;
                     case 'Supprimé': await user.delete(this.importId); break; 
                 }
-                this.ns.success('import.report.notifySuccessEdit');
+                this.ns.success('import.report.line.operation.edit.notify.success.content'
+                    , 'import.report.line.operation.edit.notify.success.title');
             } catch (error) {
-                this.ns.error('import.report.notifyErrorEdit');
+                this.ns.error('import.report.line.operation.edit.notify.error.content'
+                    , 'import.report.line.operation.edit.notify.error.title');
             }
         },
         getTranslatedProfiles(profiles: Array<string>, translate: Function) {
