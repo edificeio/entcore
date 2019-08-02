@@ -1,5 +1,5 @@
-externalid;Prénom*;Nom*;Classe;Date de naissance*;telephone;telephonetravail;email;adresse;cp;ville;pays
+externalid;PrÃ©nom*;Nom*;Classe;Date de naissance*;telephone;telephonetravail;email;adresse;cp;ville;pays
 CSV_Numero-RNE_S00005;Pablo;RAISON;CSV1;13/08/2000;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
-CSV_Numero-RNE_S00002;Hervé;POULAD-MALIN;CSV2;02/01/2000;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
-CSV_Numero-RNE_S00003;Néo;PALARD;CSV2;22/11/2001;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_S00002;HervÃ©;POULAD-MALIN;CSV2;02/01/2000;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_S00003;NÃ©o;PALARD;CSV2;22/11/2001;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
 CSV_Numero-RNE_S00004;Malo;FORT;1COM1;28/09/2001;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France

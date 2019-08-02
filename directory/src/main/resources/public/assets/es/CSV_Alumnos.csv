@@ -1,4 +1,4 @@
-id externo;Nombre*;Apellido*;Fecha de nacimiento*;correo electrónico ;clase;teléfono;dirección;código postal;ciudad;país
+id externo;Nombre*;Apellido*;Fecha de nacimiento*;correo electrÃ³nico ;clase;telÃ©fono;direcciÃ³n;cÃ³digo postal;ciudad;paÃ­s
 Alumno-ColegioX-001;Carlos ;AGUILAR;01/01/2006;;1A;;;;;
 Alumno-ColegioX-002;Maria;RODRIGUEZ;01/01/2008;;3A;;;;;
 Alumno-ColegioX-003;Juan;RODRIGUEZ;01/01/2007;;2A;;;;;
