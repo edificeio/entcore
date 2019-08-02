@@ -26,6 +26,7 @@ export interface ClassAdminControllerScope extends UserListDelegateScope, UserIn
 	resetPasswords(user?: User);
 	goToImport();
 	importCSV();
+	hasONDE():boolean
 }
 export const classAdminController = ng.controller('ClassAdminController', ['$scope', ($scope: ClassAdminControllerScope) => {
 	// === Init delegates
@@ -112,4 +113,8 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	$scope.getProfileColor = function (user:User) {
 		return ui.profileColors.match(user.profile);
 	};
+	$scope.hasONDE = function(){
+		const currentLanguage = (window as any).currentLanguage || window.navigator.language;
+		return currentLanguage=="fr";
+	}
 }]);
