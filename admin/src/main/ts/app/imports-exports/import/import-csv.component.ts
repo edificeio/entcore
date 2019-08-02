@@ -319,7 +319,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         a:hover { cursor: pointer; }
         .report-filter .button { margin-right: .5rem; }
         table.report { table-layout: auto; }
-        table.report tr.state-delete { background: #fdd; }
+        table.report tr.state-delete { background: #fff7dc; }
         table.report tr.is-danger { background: #f7e5e5; }
         table.report tr.is-warning { background: #fff7dc; }
         table.report td.clickable:hover { border: 2px dashed #ff8352; cursor:pointer; }
