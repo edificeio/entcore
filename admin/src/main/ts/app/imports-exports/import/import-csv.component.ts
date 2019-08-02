@@ -205,45 +205,54 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                     </option>
                                 </select>
                             </td>
-                            <td (mouseenter)="lastNameEditIcon.hide = false" (mouseleave)="lastNameEditIcon.hide = true; editLastName.disabled = true"
-                                [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
-                                <input 
-                                    [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
-                                    (keyup.enter)="report.update(user, 'lastName')"
-                                    (blur)="report.update(user, 'lastName')"
+                            <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
+                                <input [(ngModel)]="user.lastName" 
+                                    placeholder="{{'empty.lastName' | translate}}" 
+                                    type="text" 
+                                    (keyup.enter)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; editLastName.disabled = true; lastNameEditIcon.show = true;"
                                     disabled="true"
-                                    #editLastName
-                                    />
+                                    #editLastName />
                                 <i #lastNameEditIcon 
                                     class="fa fa-pencil" 
-                                    [ngStyle]="{'visibility': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'hidden' : 'visible'}"
-                                    (click)="editLastName.disabled = undefined"></i>
+                                    [ngStyle]="{'display': lastNameValidateIcon.show == true ? 'none' : 'inline'}"
+                                    (click)="editLastName.disabled = undefined; lastNameEditIcon.show = false; lastNameValidateIcon.show = true"></i>
+                                <i #lastNameValidateIcon
+                                    class="fa fa-check"
+                                    [ngStyle]="{'display': lastNameValidateIcon.show == undefined || lastNameValidateIcon.show == false ? 'none' : 'inline'}"
+                                    (click)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; editLastName.disabled = true; lastNameEditIcon.show = true;"></i>
                             </td>
-                            <td (mouseenter)="firstNameEditIcon.hide = false" (mouseleave)="firstNameEditIcon.hide = true; editFirstName.disabled = true"
-                                [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
-                                <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
-                                    (keyup.enter)="report.update(user, 'firstName')"
-                                    (blur)="report.update(user, 'firstName')"
+                            <td [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
+                                <input [(ngModel)]="user.firstName" 
+                                    placeholder="{{'empty.firstName' | translate}}" 
+                                    type="text" 
+                                    (keyup.enter)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; editFirstName.disabled = true; firstNameEditIcon.show = true;"
                                     disabled="true"
-                                    #editFirstName
-                                />
+                                    #editFirstName />
                                 <i #firstNameEditIcon 
                                     class="fa fa-pencil" 
-                                    [ngStyle]="{'visibility': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'hidden' : 'visible'}"
-                                    (click)="editFirstName.disabled = undefined"></i>
+                                    [ngStyle]="{'display': firstNameValidateIcon.show == true ? 'none': 'inline'}"
+                                    (click)="editFirstName.disabled = undefined; firstNameEditIcon.show = false; firstNameValidateIcon.show = true;"></i>
+                                <i #firstNameValidateIcon
+                                    class="fa fa-check"
+                                    [ngStyle]="{'display': firstNameValidateIcon.show ? 'inline': 'none'}"
+                                    (click)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; editFirstName.disabled = true; firstNameEditIcon.show = true;"></i>
                             </td>
-                            <td (mouseenter)="birthDateEditIcon.hide = false" (mouseleave)="birthDateEditIcon.hide = true; editBirthDate.disabled = true"
-                                [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
-                                <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
-                                    (keyup.enter)="report.update(user, 'birthDate')"
-                                    (blur)="report.update(user, 'birthDate')"
+                            <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
+                                <input [(ngModel)]="user.birthDate"
+                                    class="report_birthday--input" 
+                                    placeholder="{{'empty.birthDate' | translate}}" 
+                                    type="text" 
+                                    (keyup.enter)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; editBirthDate.disabled = true; birthDateEditIcon.show = true;"
                                     disabled="true"
-                                    #editBirthDate
-                                />
+                                    #editBirthDate />
                                 <i #birthDateEditIcon 
                                     class="fa fa-pencil" 
-                                    [ngStyle]="{'visibility': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'hidden' : 'visible'}"
-                                    (click)="editBirthDate.disabled = undefined"></i>
+                                    [ngStyle]="{'display': birthDateValidateIcon.show ? 'none' : 'inline'}"
+                                    (click)="editBirthDate.disabled = undefined; birthDateEditIcon.show = false; birthDateValidateIcon.show = true"></i>
+                                <i #birthDateValidateIcon
+                                    class="fa fa-check"
+                                    [ngStyle]="{'display': birthDateValidateIcon.show == undefined || birthDateValidateIcon.show == false ? 'none' : 'inline'}"
+                                    (click)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; editBirthDate.disabled = true; birthDateEditIcon.show = true;"></i>
                             </td>
                             <td><span>{{user.login}}</span></td>
                             <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
@@ -299,8 +308,10 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         table.report td.is-danger { border: 2px dashed indianred; }
         table.report td.is-success { border: 2px dashed mediumseagreen; }
         table.report td input[disabled] { background : transparent; border:0; cursor:pointer; opacity: 1;}
-        table.report td i.fa-pencil { padding: 5px; }
+        table.report td i.fa { padding: 5px; }
+        table.report td i.fa-check { font-size: 1.2em; }
         .step1-file__label {min-width: 200px; display: inline-block;}
+        .report_birthday--input {width: 100px;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
