@@ -1,0 +1,4 @@
+externalid;Prénom*;Nom*;Classes;date de naissance;telephone;telephonetravail;email;adresse;cp;ville;pays
+CSV_Numero-RNE_G00003;David;FORNARI;CSV 1;13/08/1980;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_G00002;Thibaut;PEREZ;CSV 2;13/08/1980;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+CSV_Numero-RNE_G00001;Claire;FABRE;CSV 3;13/08/1980;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France

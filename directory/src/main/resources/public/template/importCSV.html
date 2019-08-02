@@ -6,8 +6,11 @@
 	<h2 class="vertical-spacing-twice" translate content="classAdmin.importFile"></h2>
 
 	<div class="info vertical-spacing-twice">
-		<strong translate content="classAdmin.import.message"></strong>
-		<br /><span translate content="classAdmin.fileHelp"></span>
+		<strong translate content="classAdmin.import.begin"></strong>
+		<ul>
+			<li ng-if="hasONDE()"><span translate content="classAdmin.import.onde"></span></li>
+			<li><span translate content="classAdmin.import.csv"></span></li>
+		</ul>
 	</div>
 
 	<div class="flex-row vertical-spacing-twice justify-between">
