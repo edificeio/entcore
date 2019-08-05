@@ -378,8 +378,8 @@
     "import.report.line.operation.edit.notify.success.title": "Opération modifiée avec succès",
     "import.report.export.newclasses": "Nouvelle(s) classe(s)",
     "import.report.column.loginAlias": "Alias",
-    "empty.lastName":"pas de prénom",
-    "empty.firstName":"pas de nom",
+    "empty.lastName":"pas de nom",
+    "empty.firstName":"pas de prénom",
     "empty.birthDate":"pas de date de naissance",
     "empty.loginAlias": "pas d'alias",
 
