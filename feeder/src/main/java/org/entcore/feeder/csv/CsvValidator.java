@@ -26,7 +26,7 @@ import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.entcore.feeder.utils.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -537,7 +537,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				final String q =
 						"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 						"WHERE u.externalId in {externalIds} " +
-						"RETURN COLLECT(distinct s.id) as structureIds";
+						"RETURN s.id as structureId, COLLECT(distinct u.externalId) as userExtIds ";
 				tx.add(q, params);
 			}
 			tx.commit(event -> {
@@ -550,14 +550,21 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						handler.handle(Future.failedFuture("externalId.used.in.aaf"));
 						return;
 					}
-					if (admlStructures != null && admlStructures.size() > 0) {
-						final JsonArray usedStructures = results.getJsonArray(2)
-								.getJsonObject(0).getJsonArray("structureIds");
-						if (admlStructures.containsAll(usedStructures.getList())) {
+					if (admlStructures != null && admlStructures.size() > 0 && results.getJsonArray(2) != null) {
+						final JsonArray resUsedStructures = results.getJsonArray(2);
+						final Set<String> usedStructsUserIds = new HashSet<>();
+						for (Object o: resUsedStructures) {
+							if (!(o instanceof JsonObject)) continue;
+							final JsonObject structUsers = (JsonObject) o;
+							if (!admlStructures.contains(structUsers.getString("structureId"))) {
+								usedStructsUserIds.addAll(structUsers.getJsonArray("userExtIds").getList());
+							}
+						}
+						if (usedStructsUserIds.isEmpty()) {
 							handler.handle(Future.succeededFuture(results.getJsonArray(0)
 									.getJsonObject(0).getJsonArray("ids")));
 						} else {
-							addError(profile, "externalId.used.in.not.adml.structure");
+							addErrorByFile(profile, "externalId.used.in.not.adml.structure", Joiner.on(", ").join(usedStructsUserIds));
 							handler.handle(Future.failedFuture("externalId.used.in.not.adml.structure"));
 						}
 					} else {
