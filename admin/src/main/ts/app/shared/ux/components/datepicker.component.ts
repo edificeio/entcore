@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewChild, ElementRef, Input, OnDestroy, AfterViewInit, Renderer } from '@angular/core'
+import { Component, forwardRef, ViewChild, ElementRef, Input, OnDestroy, AfterViewInit, Renderer, EventEmitter, Output } from '@angular/core'
 
 import { NgModel } from '@angular/forms';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -59,6 +59,9 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
     @Input()
     maxDate
 
+    @Output()
+    changeDate: EventEmitter<string> = new EventEmitter<string>();
+
     constructor(private renderer: Renderer, 
         private labelsService: LabelsService) {}
 
@@ -67,9 +70,17 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
     }
 
     set value(v: any) {
+        let init: boolean = false;
+        if (this.innerValue === undefined) {
+            init = true;
+        }
         if (v !== this.innerValue) {
             this.innerValue = v
             this.onChangeCallback(v)
+            if (!init) {
+                this.changeDate.emit(v);
+            }
+
         }
     }
 
