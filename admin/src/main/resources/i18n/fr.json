@@ -390,6 +390,7 @@
     "import.finish.usersList":"Accéder à la liste des utilisateurs",
     "import.finish.report":"Télécharger le rapport d'import",
     "import.finish.report.filename": "Import",
+    "import.finish.notabene.sync": "N.B.: Suite à l'import il est possible que les données de classe ne soit pas synchronisées sur la vue Utilisateurs. Dans ce cas procéder à un rafraichissement de la vue Utilisateurs via la touche F5.",
 
     "import.cancel.header" : "Annuler l'import ?",
     "import.cancel.message":"Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données importées et modifiées dans l'assistant d'import seront perdues. Êtes-vous sûr de vouloir annuler l'import ?",
