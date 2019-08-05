@@ -286,21 +286,26 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 <h2>{{ 'import.finish' | translate }}</h2>            
                 <message-box [type]="'success'" [messages]="['import.finish.success']">
                 </message-box>
-                <button 
-                    (click)="cancel()"
-                    [title]="'import.finish.otherImport' | translate">
-                    {{ 'import.finish.otherImport' | translate }}
-                </button>
-                <button
-                    [routerLink]="'/admin/' + importInfos.structureId + '/users'"
-                    [queryParams]="{sync: true}"
-                    [title]="'import.finish.usersList' | translate">
-                    {{ 'import.finish.usersList' | translate }}
-                </button>
-                <button
-                    (click)="downloadReport()">
-                    {{ 'import.finish.report' | translate }}
-                </button>
+                <div>
+                    <button 
+                        (click)="cancel()"
+                        [title]="'import.finish.otherImport' | translate">
+                        {{ 'import.finish.otherImport' | translate }}
+                    </button>
+                    <button
+                        [routerLink]="'/admin/' + importInfos.structureId + '/users'"
+                        [queryParams]="{sync: true}"
+                        [title]="'import.finish.usersList' | translate">
+                        {{ 'import.finish.usersList' | translate }}
+                    </button>
+                    <button
+                        (click)="downloadReport()">
+                        {{ 'import.finish.report' | translate }}
+                    </button>
+                </div>
+                <div class="step5-notebene">
+                    <s5l>import.finish.notabene.sync</s5l>
+                </div>
             </ng-template>
         </step>
     </wizard>
@@ -320,7 +325,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         table.report td i.fa { padding: 5px; }
         table.report td i.fa-check { font-size: 1.2em; }
         .step1-file__label {min-width: 200px; display: inline-block;}
-        .report_birthday--input {width: 100px;}
+        .step5-notebene {font-size: 0.9em;padding: 10px 0;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
