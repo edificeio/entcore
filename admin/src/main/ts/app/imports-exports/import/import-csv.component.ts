@@ -239,21 +239,12 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                     (click)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; firstNameInput.disabled = true; firstNameEditIcon.show = true;"></i>
                             </td>
                             <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
-                                <input [(ngModel)]="user.birthDate"
-                                    class="report_birthday--input" 
-                                    placeholder="{{'empty.birthDate' | translate}}" 
-                                    type="text" 
-                                    (keyup.enter)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; birthDateInput.disabled = true; birthDateEditIcon.show = true;"
-                                    disabled="true"
-                                    #birthDateInput />
-                                <i #birthDateEditIcon 
-                                    class="fa fa-pencil" 
-                                    [ngStyle]="{'display': birthDateValidateIcon.show ? 'none' : 'inline'}"
-                                    (click)="birthDateInput.disabled = undefined; birthDateEditIcon.show = false; birthDateValidateIcon.show = true"></i>
-                                <i #birthDateValidateIcon
-                                    class="fa fa-check"
-                                    [ngStyle]="{'display': birthDateValidateIcon.show == undefined || birthDateValidateIcon.show == false ? 'none' : 'inline'}"
-                                    (click)="report.update(user, 'birthDate'); birthDateValidateIcon.show = false; birthDateInput.disabled = true; birthDateEditIcon.show = true;"></i>
+                                <date-picker [(ngModel)]="user.birthDate"
+                                    (changeDate)="report.update(user, 'birthDate')"
+                                    name="birthDate"
+                                    minDate="1900-01-01"
+                                    maxDate="today">
+                                </date-picker>
                             </td>
                             <td *ngIf="!showAlias()"><span>{{user.login}}</span></td>
                             <td *ngIf="showAlias()" 
