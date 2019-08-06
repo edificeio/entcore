@@ -364,7 +364,7 @@
     "import.report.success":"Vos fichiers sont valides, vous pouvez valider votre import !",
     "line" : "N°",
     "operation" : "Opération",
-    "import.report.warning.hasErrors" : "Vos fichiers contiennent une ou plusieurs lignes avec des erreurs. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
+    "import.report.warning.hasSoftErrors" : "Vos fichiers contiennent une ou plusieurs lignes avec des avertissements. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
     "import.report.warning.hasToDelete" : "Attention, certains utilisateurs vont être supprimés.",
     "import.report.softError.hardError": "Vos fichiers contiennent une ou plusieurs lignes avec des erreurs bloquantes. Vous pouvez les afficher en cliquant sur les boutons rouges ci-dessous. Veuillez corriger les erreurs afin de pouvoir poursuivre l'import.",
     "import.report.displayUsersToDelete" : "Afficher les utilisateurs à supprimer",

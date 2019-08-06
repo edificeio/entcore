@@ -107,35 +107,33 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2>{{ 'import.report' | translate }}</h2>
-            <message-box *ngIf="!report.hasErrors() && !report.hasToDelete() && !globalError.message" [type]="'success'" [messages]="['import.report.success']">
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <message-box *ngIf="!report.hasSoftErrors() && !report.hasToDelete() && !globalError.message" [type]="'success'" [messages]="['import.report.success']">
             </message-box>
             <message-box *ngIf="report.hasToDelete()" [type]="'warning'" [messages]="['import.report.warning.hasToDelete']">
                 <strong><a (click)="report.setFilter('state','Supprimé'); report.page.offset=0">
                     {{'import.report.displayUsersToDelete' | translate}}
                 </a></strong>
             </message-box>
-            <message-box *ngIf="report.hasErrors() && !report.hasSoftErrorsWithHardError()" [type]="'warning'" [messages]="['import.report.warning.hasErrors']">
-            </message-box>
             <message-box *ngIf="report.hasSoftErrorsWithHardError()" [type]="'danger'" [messages]="['import.report.softError.hardError']">
             </message-box>
-            
-            <div *ngIf="report.hasErrors()" class="report-filter">
+            <message-box *ngIf="report.hasSoftErrors() && !report.hasSoftErrorsWithHardError()" [type]="'warning'" [messages]="['import.report.warning.hasSoftErrors']">
+            </message-box>
+            <div *ngIf="report.hasSoftErrors()" class="report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
                     class="button"
-                    [ngClass]="{'is-danger':report.hasErrorType(r,'danger'),
-                                'is-warning':report.hasErrorType(r,'warning'),
-                                'is-success':report.countByReason(r) == 0,
-                                'is-outlined':!report.hasFilter('reasons',r)}"
+                    [ngClass]="{'is-danger': report.hasErrorType(r,'danger'),
+                                'is-warning': report.hasErrorType(r,'warning'),
+                                'is-outlined': !report.hasFilter('reasons',r),
+                                'is-hidden': !report.hasError(r)}"
                     (click)="toggleReportFilter(r); report.page.offset=0">
                 {{ r | translate }}
                 </a>
             </div>
-            
-            <message-box *ngIf="!!report.filter().reasons" [type]="report.errorType[report.filter().reasons]" 
+            <message-box *ngIf="!!report.filter().reasons" 
+                [type]="report.errorType[report.filter().reasons]" 
                 [messages]="report.errorReasonMessage(report.filter().reasons)">
             </message-box>
-
-            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
             
             <panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="true"> 
                 <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
@@ -326,6 +324,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         table.report td i.fa-check { font-size: 1.2em; }
         .step1-file__label {min-width: 200px; display: inline-block;}
         .step5-notebene {font-size: 0.9em;padding: 10px 0;}
+        .step4 message-box .message-body {max-width:200px;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
@@ -561,7 +560,6 @@ export class ImportCSV implements OnInit, OnDestroy {
                     let errors = data.softErrors[p].filter(err => !['login','displayName'].includes(err.attribute));
                     this.softErrors.list.push(...errors);
                     this.markUserErrors(errors, p);
-                    this.softErrors.hardError = data.softErrors[p].some(softError => softError['hardError'] == true);
                 }
             }
             // Set report total user
@@ -573,27 +571,30 @@ export class ImportCSV implements OnInit, OnDestroy {
         hasToDelete() {
             return this.users.filter(el => el.state == "Supprimé").length > 0;
         },
-        hasErrors():boolean {
+        hasSoftErrors():boolean {
             return this.softErrors.list && this.softErrors.list.length > 0;
         },
         hasSoftErrorsWithHardError(): boolean {
-            return this.softErrors.hardError;
+            return this.softErrors.list.some(softError => softError['hardError'] == true);
         },
         errorType : {
             'missing.student.soft' : 'warning',
-            'missing.attribute' : 'danger',
-            'invalid.value' : 'danger'
+            'invalid.value' : 'warning',
+            'missing.attribute' : 'danger'
+        },
+        hasError(r:string) {
+            return this.countByReason(r) > 0;
         },
         hasErrorType (r:string, type:'warning' | 'danger') {
             return this.errorType[r] == type && this.countByReason(r) > 0;
         },
         errorReasonMessage(r:string):(string | [string,Object])[] {
             let res:(string | [string,Object])[] = [];
-            // Main message
-            res.push([r + '.message', { errorNumber:this.countByReason(r)}])
-            // Add server-side translations just for warning 
-            // because some informations can't be gracefully display in report'table
-            if (this.errorType[r] == 'warning') {
+            if (this.softErrors.list.some(softError => softError.reason == r)) {
+                // Main message
+                res.push([r + '.message', { errorNumber:this.countByReason(r)}])
+                // Add server-side translations just for warning 
+                // because some informations can't be gracefully display in report'table
                 res.push(...this.softErrors.list.filter(el => el.reason == r).map(el =>  el.translation));
             }
             return res;
@@ -639,8 +640,8 @@ export class ImportCSV implements OnInit, OnDestroy {
                     );
                     user.errors.get(property).corrected = true;
 
-                    if (this.softErrors.list.length == 0) {
-                        this.softErrors.hardError = false;
+                    if (!this.hasSoftErrorsWithHardError()) {
+                        this.setFilter('none');
                         this.enableButtonNextStep();
                     }
                 }
