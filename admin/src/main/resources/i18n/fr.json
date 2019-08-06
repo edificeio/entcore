@@ -414,7 +414,7 @@
     "missing.attribute": "Attribut manquant",
     "missing.attribute.message": "{{errorNumber}} champ(s) obligatoire(s) ne sont pas renseigné(s)",
     "invalid.value" : "Valeur invalide",
-    "invalid.value.message" : "{{errorNumber}} champ(s) sont renseigné(s) avec une valeur invalide (ex : mauvais format de date de naisssance)",
+    "invalid.value.message" : "{{errorNumber}} champ(s) sont renseigné(s) avec une valeur invalide",
 
     "import.info.file.0": "Notice d'utilisation de l'import de fichiers CSV",
     "import.info.file.1":"Si vous souhaitez importer des utilisateurs à partir de fichiers csv constitués à la main ou issus d'un logiciel, vous devez suivre les consignes suivantes :",
