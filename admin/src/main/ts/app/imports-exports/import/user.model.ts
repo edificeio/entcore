@@ -152,6 +152,6 @@ export class User {
         if (this.errors && this.errors.size === 0) {
             return false;
         }
-        return Array.from(this.errors.values()).every(error => error.reason === 'missing.student.soft');
+        return Array.from(this.errors.values()).every(error => error.reason !== 'missing.attribute');
     }
 }
