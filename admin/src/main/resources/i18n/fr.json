@@ -425,7 +425,7 @@
     "import.info.file.6":"- Chaque fichier commence par une colonne externalID. Elle permet de gérer les modifications de comptes directement dans le fichier CSV. Cette colonne correspond à la ligne \"identifiant externe\" sur la fiche de l'utilisateur dans la console d'administration de l'ENT.",
     "import.info.file.7":"- Pour éviter d'entrer en conflit avec des comptes d'autres établissements, il est conseillé de renseigner le champ externalID lors du premier import. Vous pouvez utiliser les identifiants externes de votre choix, par exemple sur le modèle \"RNE_enseignant_1\", \"RNE_enseignant_2\" afin de ne pas utiliser d'identifiants externes déjà présents.",
     "import.info.file.8":"- Le champ externalID permet de reconnaître un utilisateur entre deux imports successifs et de mettre à jour ses informations personnelles.",
-    "import.info.file.9":"- Le fichier des élèves doit obligatoirement être chargé avant le fichier des parents. Pour que les parents soit rattachés aux bons élèves, il faut indiquer l'identifiant correspondant à(aux) enfant(s) dans le fichier des parents au moyen de la colonne childexternalid.",
+    "import.info.file.9":"- Le fichier des élèves doit obligatoirement être chargé avant le fichier des parents. Pour que les parents soient rattachés aux bons élèves, il faut indiquer l'identifiant correspondant à(aux) enfant(s) dans le fichier des parents au moyen de la colonne childexternalid.",
     "import.info.file.10":"- <strong>Attention, le traitement des fichiers de parents peut parfois prendre plusieurs minutes.</strong>",
     "import.info.transition.1":"<strong>Attention</strong> : ",
     "import.info.transition.2":"- Toutes les classes absentes du fichier vont être supprimées  ",
