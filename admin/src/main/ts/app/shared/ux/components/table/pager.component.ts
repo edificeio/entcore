@@ -5,15 +5,18 @@ import { BundlesService } from 'sijil'
 @Component({
     selector: 'pager',
     template: `
-    <button (click)="previousPage()" class="button" [disabled]="offset - limit < 0">
-        {{'previous' | translate}}
-    </button>
-    <span>{{"pager.position" | translate : {offset : offset+1,  offsetLimit:offsetLimit(), total:total} }}</span>
-    <button (click)="nextPage()" class="button" [disabled]="offset + limit  > total">
-        {{'next' | translate}}
-    </button>
+        <strong><s5l>pager.page</s5l></strong>
+        <a class="button" [ngClass]="{'is-hidden': offset - limit < 0}" (click)="previousPage()">
+            <i class="fa fa-chevron-left"></i> <s5l>pager.page.previous</s5l>
+        </a>
+        <span>{{"pager.position" | translate : {offset : offset+1,  offsetLimit:offsetLimit(), total:total} }}</span>
+        <a class="button" [ngClass]="{'is-hidden': offset + limit  > total}" (click)="nextPage()">
+            <s5l>pager.page.next</s5l> <i class="fa fa-chevron-right"></i>
+        </a>
     `,
-    styles: [``],
+    styles: [`
+        i {cursor: pointer; padding: 0 2px;}
+    `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PagerComponent { 

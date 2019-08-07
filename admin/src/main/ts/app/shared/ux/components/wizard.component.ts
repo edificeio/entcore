@@ -51,13 +51,13 @@ export class StepComponent {
                         (click)="onPreviousStep()" 
                         *ngIf="activeStep > 0" 
                         [title]="'previous' | translate">
-                        {{ 'previous' | translate }}
+                        {{ 'wizard.previous' | translate }}
                     </button>
                     <button class="wizard-content-nav__button wizard-content-nav__button--next" 
                         (click)="onNextStep()" 
                         [disabled]="!canDoNext"
                         [title]="'next' | translate">
-                        {{ 'next' | translate }}
+                        {{ 'wizard.next' | translate }}
                     </button>
                 </nav>
             </section>
