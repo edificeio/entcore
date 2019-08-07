@@ -105,7 +105,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 </mappings-table>
             </panel-section>
         </step>
-        <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
+        <step #step4 class="step4" name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2>{{ 'import.report' | translate }}</h2>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
             <message-box *ngIf="!report.hasSoftErrors() && !report.hasToDelete() && !globalError.message" [type]="'success'" [messages]="['import.report.success']">
@@ -140,14 +140,6 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
             </panel-section>
 
             <div *ngIf="!globalError.message">
-                <div class="pager has-text-right">
-                    <a (click)="report.setFilter('none')">{{'pager.displayAll' | translate}}</a>
-                    <pager 
-                        [(offset)]="report.page.offset"
-                        [limit]="report.page.limit"
-                        [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
-                    </pager>
-                </div>
                 <table class="report">
                     <thead>
                         <tr>
@@ -166,15 +158,22 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             <th></th>
                             <th></th>
                             <th>
-                                <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
+                                <input type="text" 
+                                    [ngModel]="report.columnFilter.lastName" 
+                                    (ngModelChange)="report.columnFilter.lastName = $event; report.page.offset = 0;" 
+                                    [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th>
-                                <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
+                                <input type="text" 
+                                    [ngModel]="report.columnFilter.firstName" 
+                                    (ngModelChange)="report.columnFilter.firstName = $event; report.page.offset = 0;"
+                                    [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th></th>
                             <th></th>
                             <th>
-                                <select [(ngModel)]="report.columnFilter.profiles">
+                                <select [ngModel]="report.columnFilter.profiles" 
+                                        (ngModelChange)="report.columnFilter.profiles = $event; report.page.offset = 0;">
                                     <option [value]=""></option>
                                     <option *ngFor="let p of columns.profiles" [value]="p">
                                         {{ p | translate }}
@@ -183,7 +182,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             </th>
                             <th></th>
                             <th>
-                                <select [(ngModel)]="report.columnFilter.classesStr">
+                                <select [ngModel]="report.columnFilter.classesStr"
+                                        (ngModelChange)="report.columnFilter.classesStr = $event; report.page.offset = 0;">
                                     <option [value]=""></option>
                                     <option *ngFor="let c of report.getAvailableClasses()" [value]="c">
                                         {{ c }}
@@ -268,6 +268,13 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                         </tr>
                     </tbody>
                 </table>
+                <div class="pager">
+                    <pager 
+                        [(offset)]="report.page.offset"
+                        [limit]="report.page.limit"
+                        [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
+                    </pager>
+                </div>
             </div>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
@@ -309,8 +316,9 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
     </wizard>
     `,
     styles : [`
-        div.pager { padding: 1em 0 }
-        a:hover { cursor: pointer; }
+        div.pager {padding-top: 10px;}
+        a:hover {cursor: pointer;}
+        .report-filter {margin: 20px 0;}
         .report-filter .button { margin-right: .5rem; }
         table.report { table-layout: auto; }
         table.report tr.state-delete { background: #fff7dc; }
@@ -325,6 +333,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .step1-file__label {min-width: 200px; display: inline-block;}
         .step5-notebene {font-size: 0.9em;padding: 10px 0;}
         .step4 message-box .message-body {max-width:200px;}
+        .step4 {padding-bottom: 0; overflow: hidden;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
@@ -538,7 +547,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             list :  [],
             hardError: false
         },
-        page : {offset: 0, limit: 30, total: 0},
+        page : {offset: 0, limit: 10, total: 0},
         filter : User.filter,
         columnFilter : { lastName: '', firstName: '', profiles : '', classesStr : '' },
         setFilter : User.setFilter,
@@ -624,7 +633,7 @@ export class ImportCSV implements OnInit, OnDestroy {
                     reasons:[],
                     list: []
                 },
-                page : {offset: 0, limit: 30, total: 0},
+                page : {offset: 0, limit: 10, total: 0},
             });
             this.setFilter('none');
         },
