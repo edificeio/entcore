@@ -177,7 +177,7 @@ export async function UserFindDelegate($scope: UserFindDelegateScope) {
             const classIds = _selectedUsers.map(u => u.classId);
             await directoryService.changeUsersClass(users, classIds, {
                 withRelative: true,
-                toClass: _selectedClassroom.id
+                toClass: _classroom.id
             });
             notify.info("classAdmin.userFind.success")
             $scope.closeLightbox();
