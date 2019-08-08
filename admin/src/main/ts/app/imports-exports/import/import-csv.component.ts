@@ -185,8 +185,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                 <select [ngModel]="report.columnFilter.classesStr"
                                         (ngModelChange)="report.columnFilter.classesStr = $event; report.page.offset = 0;">
                                     <option [value]=""></option>
-                                    <option *ngFor="let c of report.getAvailableClasses()" [value]="c">
-                                        {{ c }}
+                                    <option *ngFor="let c of report.getAvailableClasses() | orderBy: 'name'" [value]="c">
+                                        {{ c.name }}
                                     </option>
                                 </select>
                             </th>
@@ -684,12 +684,12 @@ export class ImportCSV implements OnInit, OnDestroy {
             }).join(',');
         },
         getAvailableClasses() {
-            let res: string[] = [];
+            let res: {name: string}[] = [];
             this.users.forEach(user => {
                 if (user.classesStr 
                     && user.classesStr.length > 0 
-                    && res.indexOf(user.classesStr) == -1) {
-                    res.push(user.classesStr);
+                    && res.filter(classe => classe.name === user.classesStr).length === 0) {
+                    res.push({name: user.classesStr});
                 }
             });
             return res;
