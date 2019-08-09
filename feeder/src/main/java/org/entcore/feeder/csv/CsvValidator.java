@@ -670,7 +670,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 									}
 									if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) || "groups".equals(c)) &&
 											!v.startsWith(structure.getExternalId() + "$")) {
-										a.add(structure.getExternalId() + "$" + v);
+										if ("functions".equals(c) && !v.contains("$")) {
+											a.add(structure.getExternalId() + "$$$$" + v);
+										} else {
+											a.add(structure.getExternalId() + "$" + v);
+										}
 									} else {
 										a.add(v);
 									}
