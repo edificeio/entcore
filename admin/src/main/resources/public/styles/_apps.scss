@@ -433,3 +433,10 @@ i.system {
   @include fonticon;
   &::before {content: "\e854"}
 }
+
+i.account-large {
+  @include fonticon;
+  &::before {
+    content: "\e905";
+  }
+}
