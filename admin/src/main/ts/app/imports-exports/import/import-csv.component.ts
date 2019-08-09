@@ -659,8 +659,8 @@ export class ImportCSV implements OnInit, OnDestroy {
                 this.cdRef.markForCheck();
             } catch (error) {
                 this.ns.error('import.report.line.edit.notify.error.content'
-                    , 'import.report.line.edit.notify.error.title'
-                    , error);
+                    , 'import.report.line.edit.notify.error.title');
+                console.error(error);
             }
         },
         async changeState(event, user:User) {
