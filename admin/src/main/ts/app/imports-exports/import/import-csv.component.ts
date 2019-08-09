@@ -266,7 +266,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             </td>
                             <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
                             <td><span>{{user.externalId}}</span></td>
-                            <td><span>{{user.classesStr}}</span></td>
+                            <td class="report-td-classes"><span>{{user.classesStr}}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -336,6 +336,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .step5-notebene {font-size: 0.9em;padding: 10px 0;}
         .step4 message-box .message-body {max-width:200px;}
         .step4 {padding-bottom: 0; overflow: hidden;}
+        .report-td-classes {min-width: 60px;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
