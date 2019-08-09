@@ -172,7 +172,6 @@
     "classes":"Classes",
     "title":"Titre",
     "teaches":"Enseignements",
-    "ignore":"IGNORER",
     "ine":"INE",
     "address2":"Adresse 2",
     "mobile":"Téléphone mobile",
@@ -339,6 +338,8 @@
     "import.header.parameters" : "Paramètres de l'import",
     "import.deleteAccountOption" :  "Pré-supprimer les comptes des utilisateurs absents des fichiers",
     "import.transitionOption" : "Changement d'année scolaire",
+
+    "import.mapping.ignore": "-- IGNORER --",
 
     "import.fieldsChecking": "Vérification des champs",
     "import.fieldFromFile":"Champs de votre fichier",

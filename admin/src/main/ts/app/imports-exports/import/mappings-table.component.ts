@@ -66,6 +66,7 @@ export class MappingsTable {
     @Input() emptyLabel : String;
     @Input() emptyWarning : String;
     @Input() mappingsKeySort: boolean;
+    @Input() type: 'user' | 'class';
 
     private readonly emptyValue:String[] = ['ignore', '']; // 'ignore' is use for FieldsMapping and '' for ClassesMapping
 
@@ -83,13 +84,20 @@ export class MappingsTable {
     }
 
     newSimpleSelect = (): ComponentDescriptor => {
-        return new ComponentDescriptor(
-            SimpleSelectComponent
-            , {
+        let config = {};
+        if (this.type == 'class') {
+            config = {
+                model: this.mappings, 
+                options : this.getAvailablesOptions(this.availables)
+            }
+        } else if (this.type == 'user') {
+            config = {
                 model: this.mappings, 
                 options : this.getAvailablesOptions(this.availables), 
-                ignoreOption: {value: 'ignore', label: this.translate('ignore')}
-            });
+                ignoreOption: {value: 'ignore', label: this.translate('import.mapping.ignore')}
+            }
+        }
+        return new ComponentDescriptor(SimpleSelectComponent, config);
     }
 
     loadAvailables(value:string, index:number) {
