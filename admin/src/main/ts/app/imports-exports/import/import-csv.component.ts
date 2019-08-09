@@ -449,7 +449,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableFields : {},
         mappings : {},
         profiles : [],
-        checkErrors(globalError:GlobalError, translate:Function){
+        checkErrors(globalError:GlobalError, translate:Function): boolean {
             let res = {};
             for (let p of this.profiles) {
                 for (let requiered of this.requieredFields[p]) {
@@ -783,8 +783,11 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
             this.columns.profiles = this.profiles.asArray();
-            this.columns.checkErrors(this.globalError, this.translate)
-            this.wizardEl.doNextStep();
+            if (this.columns.checkErrors(this.globalError, this.translate)) {
+                this.wizardEl.doNextStep(true);
+            } else {
+                this.wizardEl.doNextStep();
+            }
         }
         this.cdRef.markForCheck();
     
