@@ -66,24 +66,28 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteUsers(JsonArray users) {
-		String query =
-				"MATCH (u:UserBook)-[r]-(n) " +
-				"WHERE (n:Hobby OR n:UserBook) AND NOT(u<--(:User)) " +
-				"DETACH DELETE u, r, n";
-		StatementsBuilder b = new StatementsBuilder().add(query);
-		query = "MATCH (p:UserAppConf) " +
-				"WHERE NOT(p<--(:User)) " +
-				"DETACH DELETE p";
-		b.add(query);
-		b.add("MATCH (sb:ShareBookmark) WHERE NOT(sb<--(:User)) DELETE sb");
-		Neo4j.getInstance().executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error("Error deleting userbook data : " + event.body().encode());
+		if (users == null) return;
+
+		if (users.size() > 1) {
+			String query =
+					"MATCH (u:UserBook)-[r]-(n) " +
+					"WHERE (n:Hobby OR n:UserBook) AND NOT(u<--(:User)) " +
+					"DETACH DELETE u, r, n";
+			StatementsBuilder b = new StatementsBuilder().add(query);
+			query = "MATCH (p:UserAppConf) " +
+					"WHERE NOT(p<--(:User)) " +
+					"DETACH DELETE p";
+			b.add(query);
+			b.add("MATCH (sb:ShareBookmark) WHERE NOT(sb<--(:User)) DELETE sb");
+			Neo4j.getInstance().executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if (!"ok".equals(event.body().getString("status"))) {
+						log.error("Error deleting userbook data : " + event.body().encode());
+					}
 				}
-			}
-		});
+			});
+		}
 		List<String> userIds = users.stream().filter(u -> u instanceof JsonObject)
 				.map(u -> ((JsonObject) u).getString("id")).collect(Collectors.toList());
 		userBookService.cleanAvatarCache(userIds, res -> {
