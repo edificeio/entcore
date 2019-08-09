@@ -48,6 +48,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.csv.CsvFeeder.*;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
+import static org.entcore.feeder.utils.Validator.removeAccents;
 
 public class CsvValidator extends CsvReport implements ImportValidator {
 
@@ -647,6 +648,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 							switch (validator.getType(c)) {
 								case "login-alias":
+									user.put(c, removeAccents(v).replaceAll("\\s+", "").toLowerCase());
+									break;
 								case "string":
 									if ("birthDate".equals(c)) {
 										Matcher m = frenchDatePatter.matcher(v);
