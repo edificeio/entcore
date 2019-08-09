@@ -908,7 +908,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 									}
 									if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
 										addSoftErrorByFile(profile, "missing.student.soft", "" + (i + 1),
-												user.getString("firstName"), user.getString("lastName"));
+												getOrElse(user.getString("firstName"), ""),
+												getOrElse(user.getString("lastName"), ""));
 									}
 								} else {
 									Object c = user.getValue("childExternalId");
@@ -934,7 +935,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
 									// "NO_ATTR" is used because we can't map this soft error to any attribute
 									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1), "NO_ATTR",
-											user.getString("firstName"), user.getString("lastName"));
+											getOrElse(user.getString("firstName"), ""),
+											getOrElse(user.getString("lastName"), ""));
 								}
 								break;
 						}
@@ -992,7 +994,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 											if (!(o instanceof JsonObject)) continue;
 											JsonObject user = (JsonObject) o;
 											addSoftErrorByFile(profile, "missing.student.soft", "" + (user.getInteger("line") + 1),
-													user.getString("firstName"), user.getString("lastName"));
+													getOrElse(user.getString("firstName"), ""),
+													getOrElse(user.getString("lastName"), ""));
 										}
 									}
 								}
