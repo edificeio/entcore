@@ -69,6 +69,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 <message-box *ngIf="globalError.profile[p]" [type]="'danger'" 
                     [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-box>
                 <mappings-table 
+                    [type]="'user'"
                     [headers]="['import.fieldFromFile','import.fieldToMap']"
                     [mappings]="columns.mappings[p]"
                     [availables]="columns.availableFields[p]"
@@ -95,6 +96,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 </span>
 
                 <mappings-table
+                    [type]="'class'"
                     [headers]="['import.classFromFile','import.classToMap']"
                     [mappings]="classes.mappings[profile]"
                     [availables]="classes.availableClasses[profile]"
@@ -501,7 +503,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.availableClasses = {};
             this.profiles = [];    
             for (let p of Object.keys(classesMapping)) {
-                let availables = [''];
+                let availables = [];
                 if (p != 'dbClasses') {
                     this.profiles.push(p);
                     this.mappings[p] = classesMapping[p];
