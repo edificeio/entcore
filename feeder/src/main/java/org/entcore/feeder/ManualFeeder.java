@@ -664,6 +664,7 @@ public class ManualFeeder extends BusModBase {
 							return;
 						}
 					}
+					user.put("checksum", "manual");
 					String query =
 							"MATCH (u:User { id : {userId}}) " +
 							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
