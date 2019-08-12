@@ -611,8 +611,26 @@ public class CsvFeeder implements Feed {
 		if (user.getJsonArray("functions") != null && user.getJsonArray("functions").size() > 0) {
 			for (Object o: user.getJsonArray("functions")) {
 				if (!(o instanceof String)) continue;
-				final String groupExternalId = (String) o;
-				final String name = groupExternalId.substring(structure.getExternalId().length() + 1);
+				String groupExternalId = null;
+				String name = null;
+
+				String [] g = ((String) o).split("\\$");
+				if (g.length == 5) {
+					if ("ENS".equals(g[1])) {
+						groupExternalId = structure.getExternalId() + "$" + g[3];
+						name = g[4];
+					} else if (!g[1].isEmpty() && !"-".equals(g[1])) {
+						groupExternalId = structure.getExternalId() + "$" + g[1];
+						name = g[2];
+					}
+				}
+
+				if (groupExternalId == null) {
+					groupExternalId = ((String) o).replaceFirst("\\${4}", "\\$");
+				}
+				if (name == null) {
+					name = groupExternalId.substring(structure.getExternalId().length() + 1);
+				}
 				if ("Teacher".equals(profile)) {
 					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
 				} else if ("Personnel".equals(profile)) {
