@@ -434,9 +434,7 @@ i.system {
   &::before {content: "\e854"}
 }
 
-i.account-large {
+i.dashboard {
   @include fonticon;
-  &::before {
-    content: "\e905";
-  }
+  &::before {content: "\e94b"}
 }

@@ -19,7 +19,7 @@ import { Config } from '../resolvers/Config';
                 </span>
             </div>
             <div header-right>
-                <i class="fa fa-home" aria-hidden="true"    
+                <i class="dashboard" aria-hidden="true"
                     *ngIf="currentStructure"
                     [title]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"

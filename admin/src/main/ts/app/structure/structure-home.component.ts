@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs/Subscription'
     selector: 'structure-home',
     template: `
         <div>
-            <h1><i class="fa fa-cogs"></i><s5l>admin.title</s5l></h1>
+            <h1><i class="dashboard"></i><s5l>admin.title</s5l></h1>
             <div class="card-layout">
                 <quick-actions-card></quick-actions-card>
                 <user-search-card [structure]="structure" class="align-start"></user-search-card>
