@@ -648,7 +648,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 							switch (validator.getType(c)) {
 								case "login-alias":
-									user.put(c, removeAccents(v).replaceAll("\\s+", "").toLowerCase());
+									user.put(c, removeAccents(v).replaceAll("_", "-").toLowerCase()
+											.replaceAll("[^0-9a-z\\-\\.]", ""));
 									break;
 								case "string":
 									if ("birthDate".equals(c)) {
