@@ -204,8 +204,6 @@ public class ProfileColumnsMapper {
 				.put("fonction", "functions")
 				.put("mef", "module")
 				.put("libellemef", "moduleName")
-				.put("codematiere", "fieldOfStudy")
-				.put("matiere", "fieldOfStudyLabels")
 				.put("professeurprincipal", "headTeacher")
 				.put("discipline", "classCategories")
 				.put("matiereenseignee", "subjectTaught")
