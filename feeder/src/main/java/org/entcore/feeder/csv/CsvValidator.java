@@ -906,11 +906,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 											classesNames.add(classesNamesMapping.get(o));
 										}
 									}
-									if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
-										addSoftErrorByFile(profile, "missing.student.soft", "" + (i + 1),
-												getOrElse(user.getString("firstName"), ""),
-												getOrElse(user.getString("lastName"), ""));
-									}
+//									if (classesNames.size() == 0 && enableRelativeStudentLinkCheck) {
+//										addSoftErrorByFile(profile, "missing.student.soft", "" + (i + 1),
+//												getOrElse(user.getString("firstName"), ""),
+//												getOrElse(user.getString("lastName"), ""));
+//									}
 								} else {
 									Object c = user.getValue("childExternalId");
 									JsonObject u = new JsonObject()
