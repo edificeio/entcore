@@ -41,7 +41,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class CsvReport extends Report {
 
-	private static final String MAPPINGS = "mappings";
+	public static final String MAPPINGS = "mappings";
 	private static final String CLASSES_MAPPING = "classesMapping";
 	private static final String HEADERS = "headers";
 	private final Vertx vertx;
