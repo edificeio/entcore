@@ -38,9 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -647,5 +645,103 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles))
 				.put("roleIds", new fr.wseduc.webutils.collections.JsonArray(rolesId));
 		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void massAuthorization(JsonArray data, Handler<Either<String, JsonObject>> handler) {
+
+		String matchRole =
+				"MATCH (r:Role {id: {roleId}}), ";
+
+		String matchWidget =
+				"MATCH (r:Widget {id: {widgetId}}), ";
+
+		String matchProfilesGroup =
+				"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE p.name IN {profiles} ";
+
+		String matchAdminGroup =
+				"(s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group) " +
+						"WHERE g.externalId =~ '.*ADMIN_LOCAL'";
+
+		String authorize =
+						"AND NOT(g-[:AUTHORIZED]->r) " +
+						"CREATE UNIQUE g-[:AUTHORIZED]->r";
+
+		String unauthorize =
+						"MATCH r<-[a:AUTHORIZED]-g " +
+						"DELETE a";
+
+
+		StatementsBuilder s = new StatementsBuilder();
+
+		data.forEach(entry -> {
+
+			JsonObject jo  = (JsonObject)entry;
+
+			JsonArray profilesAuthorized = new JsonArray();
+			JsonArray profilesUnauthorized = new JsonArray();
+
+			if (jo.getBoolean("Teacher")) profilesAuthorized.add("Teacher");
+			else profilesUnauthorized.add("Teacher");
+			if (jo.getBoolean("Student")) profilesAuthorized.add("Student");
+			else profilesUnauthorized.add("Student");
+			if (jo.getBoolean("Relative")) profilesAuthorized.add("Relative");
+			else profilesUnauthorized.add("Relative");
+			if (jo.getBoolean("Personnel")) profilesAuthorized.add("Personnel");
+			else profilesUnauthorized.add("Personnel");
+			if (jo.getBoolean("Guest")) profilesAuthorized.add("Guest");
+			else profilesUnauthorized.add("Guest");
+
+			String structureId = jo.getString("ent_structure_id");
+			String roleId = jo.getString("ent_role_id");
+			String widgetId = jo.getString("ent_widget_id");
+
+			JsonObject paramsAuthorized = new JsonObject().put("roleId", roleId)
+					.put("structureId", structureId).put("profiles", profilesAuthorized);
+			JsonObject paramsUnauthorized = new JsonObject().put("roleId", roleId)
+					.put("structureId", structureId).put("profiles", profilesUnauthorized);
+
+			String authorizeQuery = "";
+			String unauthorizeQuery = "";
+
+			JsonObject paramsAdmin = new JsonObject().put("structureId", structureId);
+
+			if (roleId != null) {
+				authorizeQuery += matchRole + matchProfilesGroup + authorize;
+				unauthorizeQuery += matchRole + matchProfilesGroup + unauthorize;
+				paramsAuthorized.put("roleId", roleId);
+				paramsUnauthorized.put("roleId", roleId);
+			} else if (widgetId != null) {
+				authorizeQuery += matchWidget + matchProfilesGroup + authorize;
+				unauthorizeQuery += matchWidget + matchProfilesGroup + unauthorize;
+				paramsAuthorized.put("widgetId", widgetId);
+				paramsUnauthorized.put("widgetId", widgetId);
+			}
+
+			s.add(authorizeQuery, paramsAuthorized);
+			s.add(unauthorizeQuery, paramsUnauthorized);
+
+			if (jo.getBoolean("AdminLocal")) {
+				if (roleId != null) {
+					paramsAdmin.put("roleId", roleId);
+					s.add(matchRole + matchAdminGroup + authorize, paramsAdmin);
+				}
+				if (widgetId != null) {
+					paramsAdmin.put("widgetId", widgetId);
+					s.add(matchWidget + matchAdminGroup + authorize, paramsAdmin);
+				}
+			} else {
+				if (roleId != null) {
+					paramsAdmin.put("roleId", roleId);
+					s.add(matchRole + matchAdminGroup + unauthorize, paramsAdmin);
+				}
+				if (widgetId != null) {
+					paramsAdmin.put("widgetId", widgetId);
+					s.add(matchWidget + matchAdminGroup + unauthorize, paramsAdmin);
+				}
+			}
+		});
+		neo.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
 	}
 }
