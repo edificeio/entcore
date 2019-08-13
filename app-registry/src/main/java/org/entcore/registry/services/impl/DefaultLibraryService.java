@@ -1,5 +1,7 @@
 package org.entcore.registry.services.impl;
 
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
@@ -25,7 +27,7 @@ public class DefaultLibraryService implements LibraryService {
     }
 
     @Override
-    public CompletableFuture<JsonObject> add() {
+    public CompletableFuture<JsonObject> publish(MultiMap form, Buffer cover) {
         boolean isLibraryEnabled = config.getBoolean(CONFIG_LIBRARY_ENABLED, false);
         String libraryApiUrl = config.getString(CONFIG_LIBRARY_API_URL);
         String libraryToken = config.getString(CONFIG_LIBRARY_TOKEN);
@@ -41,7 +43,11 @@ public class DefaultLibraryService implements LibraryService {
         }
 
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
-        HttpClientRequest request = http.postAbs(libraryApiUrl.concat(RESSOURCE_ENDPOINT), response -> {
+
+        String boundary = "myBoundary";
+        Buffer multipartBody = generateMultipartBody(boundary, form, cover);
+        HttpClientRequest request = http.postAbs(libraryApiUrl.concat(RESSOURCE_ENDPOINT));
+        request.handler(response -> {
             if (response.statusCode() == 401) {
                 future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.WRONG_TOKEN));
             } else if (response.statusCode() == 200) {
@@ -51,6 +57,9 @@ public class DefaultLibraryService implements LibraryService {
             }
         });
         request.putHeader("Authorization", "Bearer ".concat(libraryToken));
+        request.putHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+        request.putHeader("Content-Length", String.valueOf(multipartBody.length()));
+        request.write(multipartBody);
         request.end();
         return future;
     }
@@ -60,5 +69,39 @@ public class DefaultLibraryService implements LibraryService {
                 .put("success", success)
                 .put("reason", reason.name())
                 .put("message", message.name());
+    }
+
+    private Buffer generateMultipartBody(String boundary, MultiMap form, Buffer cover) {
+        Buffer buffer = Buffer.buffer();
+        buffer.appendBuffer(generateMultipartBodyMultiMap(boundary, form));
+        buffer.appendBuffer(generateMultipartBodyCover(boundary, cover));
+        return buffer;
+    }
+
+    private Buffer generateMultipartBodyCover(String boundary, Buffer cover) {
+        Buffer buffer = Buffer.buffer();
+        String body = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"cover\"; filename=\"cover.png\"\r\n" +
+                "Content-Type: image/png\r\n" +
+                "\r\n" +
+                cover.toString() + "\r\n";
+
+        buffer.appendString(body);
+        return buffer;
+    }
+    private Buffer generateMultipartBodyMultiMap(String boundary, MultiMap form) {
+        Buffer buffer = Buffer.buffer();
+        form.forEach(entry -> buffer.appendBuffer(generateMultipartBodyAttribute(boundary, entry.getKey(), entry.getValue())));
+        return buffer;
+    }
+    private Buffer generateMultipartBodyAttribute(String boundary, String attribute, String value) {
+        Buffer buffer = Buffer.buffer();
+        String body = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\""+attribute+"\"\r\n" +
+                "\r\n" +
+                value + "\r\n";
+
+        buffer.appendString(body);
+        return buffer;
     }
 }

@@ -21,8 +21,10 @@ package org.entcore.registry.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
+import org.entcore.common.appregistry.LibraryBusObject;
+import org.entcore.common.appregistry.LibraryBusObjectCodec;
 import org.entcore.registry.services.LibraryService;
 import org.entcore.registry.services.impl.DefaultLibraryService;
 
@@ -31,8 +33,11 @@ import static org.entcore.common.appregistry.LibraryUtils.LIBRARY_BUS_ADDRESS;
 public class LibraryController extends BaseController {
 
     @BusAddress(LIBRARY_BUS_ADDRESS)
-    public void add(final Message<JsonObject> message) {
+    public void publish(final Message<Buffer> message) {
+        LibraryBusObjectCodec libraryBusObjectCodec = new LibraryBusObjectCodec();
         LibraryService service = new DefaultLibraryService(vertx.createHttpClient(), config);
-        service.add().thenAccept(message::reply);
+        Buffer body = message.body();
+        LibraryBusObject libraryBusObject = libraryBusObjectCodec.decodeFromWire(0, body);
+        service.publish(libraryBusObject.getForm(), libraryBusObject.getCover()).thenAccept(message::reply);
     }
 }
