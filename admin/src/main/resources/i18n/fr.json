@@ -710,5 +710,6 @@
     "group.communication.groups-that-can-communicate-with-group": "Groupes pouvant voir le groupe sélectionné",
     "group.communication.current-group": "Groupe sélectionné",
     "group.details.button.comm.rules": "Règles de communication du groupe",
-    "create.flash.message": "Créer un message flash"
+    "create.flash.message": "Créer un message flash",
+    "searchengine": "Recherche Transverse"
 }
