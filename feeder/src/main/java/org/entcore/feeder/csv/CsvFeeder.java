@@ -55,7 +55,7 @@ public class CsvFeeder implements Feed {
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Logger log = LoggerFactory.getLogger(CsvFeeder.class);
 	private long defaultStudentSeed = 0l;
-	private final ProfileColumnsMapper columnsMapper;
+	private ProfileColumnsMapper columnsMapper;
 	private final Vertx vertx;
 	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
 
@@ -70,7 +70,9 @@ public class CsvFeeder implements Feed {
 	}
 
 	@Override
-	public void launch(final Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
+	public void launch(final Importer importer, final String path, final JsonObject mappings,
+			final Handler<Message<JsonObject>> handler) throws Exception {
+		columnsMapper = new ProfileColumnsMapper(mappings);
 		studentExternalIdMapping.clear();
 		defaultStudentSeed = new Random().nextLong();
 		importer.createOrUpdateProfile(STUDENT_PROFILE);

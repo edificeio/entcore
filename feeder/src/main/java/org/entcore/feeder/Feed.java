@@ -28,7 +28,7 @@ public interface Feed {
 
 	void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception;
 
-	void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception;
+	void launch(Importer importer, String path, JsonObject mappings, Handler<Message<JsonObject>> handler) throws Exception;
 
 	String getSource();
 

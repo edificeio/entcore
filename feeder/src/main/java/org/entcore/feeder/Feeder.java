@@ -58,6 +58,7 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
+import static org.entcore.feeder.csv.CsvReport.MAPPINGS;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -710,7 +711,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							}
 						};
 						if (importPath != null && !importPath.trim().isEmpty()) {
-							feed.launch(importer, importPath, handler);
+							feed.launch(importer, importPath, message.body().getJsonObject(MAPPINGS), handler);
 						} else {
 							feed.launch(importer, handler);
 						}

@@ -194,11 +194,8 @@ public class ProfileColumnsMapper {
 				.put("idexternohijo", "childExternalId")
 				.put("idexternofilho", "childExternalId")
 				.put("nomenfant", "childLastName")
-				.put("prenomenfant", "childFirstName")
-				.put("classeenfant", "childClasses")
 				.put("nomdusageenfant", "childUsername")
-				.put("nomdefamilleenfant", "childLastName")
-				.put("classesenfants", "childClasses");
+				.put("nomdefamilleenfant", "childLastName");
 		JsonObject teacherMapping = baseMappings.copy()
 				.put("presencedevanteleves", "teaches")
 				.put("fonction", "functions")

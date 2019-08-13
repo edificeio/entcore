@@ -118,7 +118,7 @@ public class Aaf1dFeeder implements Feed {
 	}
 
 	@Override
-	public void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception {
+	public void launch(Importer importer, String path, JsonObject mappings, Handler<Message<JsonObject>> handler) throws Exception {
 		launch(importer, handler);
 	}
 
