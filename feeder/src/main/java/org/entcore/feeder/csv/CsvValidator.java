@@ -441,7 +441,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						findUsersEnabled = false;
 						findUsers(path, profile, admlStructures, columns, charset, handler);
 					} else {
-						validateFile(path, profile, columns, null, charset, handler);
+						validateFile(path, profile, columns, new HashMap<>(), charset, handler);
 					}
 				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
@@ -467,9 +467,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		if (filterExternalId.get() >= 0) {
 			filterExternalIdExists(admlStructures, profile, externalIds, ar -> {
 				if (ar.succeeded()) {
-					final JsonArray externalIdsExists = ar.result();
-					if (externalIdsExists != null) {
-						validateFile(path, profile, columns, externalIdsExists, charset, handler);
+					final JsonArray externalIdsLogins = ar.result();
+					if (externalIdsLogins != null) {
+						final Map<String, String> externalIdsLoginsExists = new HashMap<>();
+						externalIdsLogins.stream().forEach(el -> externalIdsLoginsExists
+								.put(((JsonArray) el).getString(0), ((JsonArray) el).getString(1)));
+						validateFile(path, profile, columns, externalIdsLoginsExists, charset, handler);
 					} else {
 						addError(profile, "error.find.externalIds");
 						handler.handle(result);
@@ -526,7 +529,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			final String query =
 					"MATCH (u:User) " +
 					"WHERE u.externalId in {externalIds} " +
-					"RETURN COLLECT(u.externalId) as ids";
+					"RETURN COLLECT([u.externalId, u.login]) as ids";
 			tx.add(query, params);
 			final String q2 =
 					"MATCH (u:User) " +
@@ -593,7 +596,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		handler.handle(result);
 	}
 
-	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
+	private void validateFile(final String path, final String profile, final List<String> columns,
+			final Map<String, String> existExternalIdLogin, final String charset, final Handler<JsonObject> handler) {
 		addProfile(profile);
 		final Validator validator = profiles.get(profile);
 		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<Structure>() {
@@ -744,7 +748,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								externalId = externalId.replaceAll("\\s+", "");
 								user.put("externalId", externalId);
 							}
-							if (existExternalId.contains(externalId)) {
+							if (existExternalIdLogin.containsKey(externalId)) {
 								state = State.UPDATED;
 								studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), externalId);
 							} else {
@@ -953,6 +957,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							final String classesStr = Joiner.on(", ").join(classesNames);
 							if (!"Relative".equals(profile)) {
 								classesNamesMapping.put(user.getString("externalId"), classesStr);
+							}
+							final String existsLogin = existExternalIdLogin.get(user.getString("externalId"));
+							if (existsLogin != null && !existsLogin.equals(user.getString("login"))) {
+								user.put("login", existsLogin);
 							}
 							addUser(profile, user.put("state", translate(state.name()))
 									.put("translatedProfile", translate(profile))
