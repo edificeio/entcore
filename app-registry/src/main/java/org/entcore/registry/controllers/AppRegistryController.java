@@ -604,6 +604,10 @@ public class AppRegistryController extends BaseController {
 			case "list-cas-connectors" :
 				appRegistryService.listCasConnectors(busArrayHandler(message));
 				break;
+			case "set-roles-and-profiles-by-structureId" :
+				JsonArray data = message.body().getJsonArray("data");
+				appRegistryService.massAuthorization(data, busResponseHandler(message));
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));
