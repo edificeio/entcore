@@ -1,6 +1,8 @@
 package org.entcore.registry.services.impl;
 
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
@@ -31,14 +33,14 @@ public class DefaultLibraryServiceTest {
         this.handler = ArgumentCaptor.forClass(Handler.class);
         this.request = mock(HttpClientRequest.class);
         this.response = mock(HttpClientResponse.class);
-        when(http.put(any(String.class), handler.capture())).thenReturn(request);
+        when(http.postAbs(any(String.class))).thenReturn(request);
     }
 
     @Test
     public void add_shouldDisabledMessage_WhenLibraryIsNotEnabled() {
         config = new LibraryConfigBuilder().setEnabled(false).value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
         assertTrue(future.isDone());
         try {
             JsonObject json = future.get();
@@ -54,7 +56,7 @@ public class DefaultLibraryServiceTest {
     public void add_shouldReturnApiUrlNotSetMessage_WhenLibraryApiUrlIsNotSet() {
         config = new LibraryConfigBuilder().setApiUrl(null).value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
         assertTrue(future.isDone());
         try {
             JsonObject json = future.get();
@@ -70,7 +72,7 @@ public class DefaultLibraryServiceTest {
     public void add_shouldReturnWrongTokenMessage_WhenLibraryTokenIsNotSet() {
         config = new LibraryConfigBuilder().setToken(null).value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
         assertTrue(future.isDone());
         try {
             JsonObject json = future.get();
@@ -86,7 +88,7 @@ public class DefaultLibraryServiceTest {
         config = new LibraryConfigBuilder().setToken("tokenA").value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
 
-        service.add();
+        service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
 
         verify(request).putHeader("Authorization", "Bearer tokenA");
         verify(request).end();
@@ -97,7 +99,8 @@ public class DefaultLibraryServiceTest {
         config = new LibraryConfigBuilder().value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
         when(response.statusCode()).thenReturn(401);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
+        verify(request).handler(handler.capture());
         handler.getValue().handle(response);
         assertTrue(future.isDone());
         try {
@@ -115,7 +118,8 @@ public class DefaultLibraryServiceTest {
         config = new LibraryConfigBuilder().value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
         when(response.statusCode()).thenReturn(200);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
+        verify(request).handler(handler.capture());
         handler.getValue().handle(response);
         assertTrue(future.isDone());
         try {
@@ -133,7 +137,8 @@ public class DefaultLibraryServiceTest {
         config = new LibraryConfigBuilder().value();
         DefaultLibraryService service = new DefaultLibraryService(http, config);
         when(response.statusCode()).thenReturn(500);
-        CompletableFuture<JsonObject> future = service.add();
+        CompletableFuture<JsonObject> future = service.publish(MultiMap.caseInsensitiveMultiMap(), Buffer.buffer());
+        verify(request).handler(handler.capture());
         handler.getValue().handle(response);
         assertTrue(future.isDone());
         try {
