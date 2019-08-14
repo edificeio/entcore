@@ -82,7 +82,8 @@ public class ManualFeeder extends BusModBase {
 					"CREATE (s:Structure {props}) " +
 					"WITH s " +
 					"MATCH (p:Profile) " +
-					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->s " +
+					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
+					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
 					"SET g.id = id(g)+'-'+timestamp() " +
 					"RETURN DISTINCT s.id as id ";
 			JsonObject params = new JsonObject()
@@ -116,7 +117,8 @@ public class ManualFeeder extends BusModBase {
 					"SET c.externalId = s.externalId + '$' + c.name " +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->g " +
+					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, " +
+					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
 					"SET pg.id = id(pg)+'-'+timestamp() " +
 					"RETURN DISTINCT c.id as id ";
 			JsonObject params = new JsonObject()
