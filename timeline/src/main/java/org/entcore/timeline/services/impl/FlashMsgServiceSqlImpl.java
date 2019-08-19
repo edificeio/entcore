@@ -116,15 +116,28 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 
 	@Override
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
-		String myStructuresIds = "NULL";
-		String myADMLStructuresId = "NULL";
-		boolean isADMLOfOneStructure = false;
+		String myStructuresIds;
+		String myADMLStructuresId;
+		boolean isADMLOfOneStructure;
 		try {
-			myStructuresIds = String.join(",", user.getStructures().stream().map(id -> "'"+id+"'").toArray(String[]::new));
-			myADMLStructuresId = String.join(",", user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'"+id+"'").toArray(String[]::new));
-			isADMLOfOneStructure = !user.getFunctions().get(ADMIN_LOCAL).getScope().isEmpty();
+			myStructuresIds = String.join(",", user.getStructures().stream().map(id -> "'" + id + "'").toArray(String[]::new));
+			if (myStructuresIds.isEmpty())
+				myStructuresIds = "NULL";
+		} catch (Exception e) {
+			myStructuresIds = "NULL";
 		}
-		catch(NullPointerException npe){}
+		try {
+			myADMLStructuresId = String.join(",", user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'" + id + "'").toArray(String[]::new));
+			if (myADMLStructuresId.isEmpty())
+				myADMLStructuresId = "NULL";
+		} catch (Exception e) {
+			myADMLStructuresId = "NULL";
+		}
+		try {
+			isADMLOfOneStructure = !user.getFunctions().get(ADMIN_LOCAL).getScope().isEmpty();
+		} catch(Exception e) {
+			isADMLOfOneStructure = false;
+		}
 		String query = "SELECT id, contents, color, \"customColor\" FROM " + resourceTable + " m " +
 			"WHERE contents -> '"+ lang +"' IS NOT NULL " +
 			"AND trim(contents ->> '"+ lang +"') <> '' " +
