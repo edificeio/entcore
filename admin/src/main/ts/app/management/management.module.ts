@@ -11,6 +11,7 @@ import { EditMessageFlashComponent } from './message-flash/form/edit-message-fla
 import { DuplicateMessageFlashComponent } from './message-flash/form/duplicate-message-flash.component'
 import { CreateMessageFlashComponent } from './message-flash/form/create-message-flash.component'
 import { MessageFlashFormComponent } from './message-flash/form/message-flash-form.component'
+import { MessageFlashPreviewComponent } from './message-flash/form/message-flash-preview.component'
 import { MessageFlashStore } from './message-flash/message-flash.store'
 import { MessageFlashResolver } from './message-flash/message-flash.resolver'
 
@@ -29,7 +30,8 @@ import { MessageFlashResolver } from './message-flash/message-flash.resolver'
         EditMessageFlashComponent,
         DuplicateMessageFlashComponent,
         CreateMessageFlashComponent,
-        MessageFlashFormComponent
+        MessageFlashFormComponent,
+        MessageFlashPreviewComponent
     ],
     exports: [
         RouterModule

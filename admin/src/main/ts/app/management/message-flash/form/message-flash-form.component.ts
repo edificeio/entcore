@@ -92,6 +92,11 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                 <button [disabled]="!isUploadable()" (click)="upload()"><s5l>management.message.flash.upload</s5l></button>
             </div>
 
+            <message-flash-preview
+                [text]="message.contents[selectedLanguage]"
+                [color]="message.color || message.customColor ">
+            </message-flash-preview>
+
             <lightbox *ngIf="structure"
                 [show]="showLightbox" (onClose)="closeLightbox()">
                 <h2><s5l>management.message.flash.lightbox.title</s5l></h2>
