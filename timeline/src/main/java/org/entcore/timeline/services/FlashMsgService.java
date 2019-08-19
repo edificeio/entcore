@@ -43,4 +43,6 @@ public interface FlashMsgService {
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler);
 	public void markAsRead(UserInfos user, String id, Handler<Either<String, JsonObject>> handler);
 
+	default public void purgeMessagesRead(Handler<Either<String, JsonObject>> handler){};
+
 }

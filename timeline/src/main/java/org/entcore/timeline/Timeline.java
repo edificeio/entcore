@@ -31,14 +31,12 @@ import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
-import org.entcore.timeline.services.impl.DefaultPushNotifService;
-import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
-import org.entcore.timeline.services.impl.DefaultTimelineMailerService;
+import org.entcore.timeline.services.FlashMsgService;
+import org.entcore.timeline.services.impl.*;
 import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
-import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
 import org.entcore.common.notification.ws.OssFcm;
 import io.vertx.core.json.JsonObject;
 
@@ -90,8 +88,10 @@ public class Timeline extends BaseServer {
 
 		timelineController.setNotificationHelper(notificationHelper);
 
-
-		addController(new FlashMsgController());
+		final FlashMsgService flashMsgService = new FlashMsgServiceSqlImpl("flashmsg", "messages");
+		final FlashMsgController flashMsgController = new FlashMsgController();
+		flashMsgController.setFlashMessagesService(flashMsgService);
+		addController(flashMsgController);
 
 		setRepositoryEvents(new FlashMsgRepositoryEventsSql());
 
@@ -107,6 +107,23 @@ public class Timeline extends BaseServer {
 			new CronTrigger(vertx, weeklyMailingCron).schedule(new WeeklyMailingCronTask(mailerService, weeklyDayDelta));
 		} catch (ParseException e) {
 			log.error("Failed to start mailing crons.");
+		}
+
+		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
+		if (purgeMessagesReadCron != null) {
+			try {
+				new CronTrigger(vertx, purgeMessagesReadCron).schedule(l -> {
+					flashMsgService.purgeMessagesRead(res -> {
+						if (res.isLeft()) {
+							log.error("[Timeline - FlashMessages] - Purge of flashmsg.messages_read failed - " + res.left().getValue());
+						} else {
+							log.info("[Timeline - FlashMessages] - Purge of flashmsg.messages_read succeeded");
+						}
+					});
+				});
+			} catch (ParseException e) {
+				log.error("Invalid cron expression.", e);
+			}
 		}
 	}
 

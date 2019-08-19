@@ -48,7 +48,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class FlashMsgController extends BaseController {
 
-	private FlashMsgService service = new FlashMsgServiceSqlImpl("flashmsg", "messages");
+	private FlashMsgService service;
 	private TimelineHelper notification;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -239,5 +239,10 @@ public class FlashMsgController extends BaseController {
 			}
 		});
 	}
+
+	public void setFlashMessagesService(FlashMsgService flashMessagesService) {
+		this.service = flashMessagesService;
+	}
+
 
 }
