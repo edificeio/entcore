@@ -191,4 +191,12 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 		sql.insert(JOIN_TABLE, params, validUniqueResultHandler(handler));
 	}
 
+	@Override
+	public void purgeMessagesRead(Handler<Either<String, JsonObject>> handler) {
+		String query = "DELETE FROM " + JOIN_TABLE + " " +
+				"WHERE message_id IN (SELECT id FROM " + resourceTable + " " +
+					"WHERE " + resourceTable + ".\"endDate\" <= NOW())";
+		sql.raw(query, validUniqueResultHandler(handler));
+	}
+
 }
