@@ -73,8 +73,8 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     <span class="is-flex-none">
                         <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren() || !isToday()">
                         <s5l>management.message.flash.notification.email</s5l>
-                        <input class="has-left-margin-40 is-hidden" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren() || !isToday()">
-                        <s5l class="is-hidden">management.message.flash.notification.mobile</s5l>
+                        <input class="has-left-margin-40" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren() || !isToday()">
+                        <s5l>management.message.flash.notification.mobile</s5l>
                     </span>
                 </form-field>
                 <div *ngIf="areSelectedChildren() || !isToday()">

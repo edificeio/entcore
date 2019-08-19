@@ -153,6 +153,7 @@
     "timeline.notification" : "Signalements",
     "timeline.notify-report": "Signalement d'une notification",
     "timeline.send-flash-message-mail": "Publication d'un nouveau message flash",
+    "timeline.send-flash-message-push": "Publication d'un nouveau message flash",
     "timeline.notification.is.deleted": "La demande a été supprimée",
     "timeline.pulsar.notifications": "Grâce au fil de nouveautés vous retrouvez dès la page d’accueil toutes les informations qui vous concernent. Ainsi, vous pouvez accéder aux contenus mis à jour en un seul clic.",
     "timeline.pulsar.settings": "Activez ou désactivez les widgets (outils) de votre choix qui s’afficheront sur votre page d’accueil.",

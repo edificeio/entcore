@@ -230,7 +230,8 @@ public class FlashMsgController extends BaseController {
 						}
 
 						if (sendPushNotification && !recipientIds.isEmpty()) {
-							// TO DO: Send push notifications
+							notification.notifyTimeline(request, "timeline.send-flash-message-push", user,
+							recipientIds, params);
 						}
 
 						request.response().setStatusCode(200).end();
