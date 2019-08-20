@@ -27,6 +27,7 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
 import io.vertx.core.Handler;
@@ -222,7 +223,8 @@ public class FlashMsgController extends BaseController {
 						final JsonObject params = new JsonObject()
 							.put("username", user.getUsername())
 							.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-							.put("content", content);
+							.put("content", content)
+							.put("disableAntiFlood", true);
 
 						if (sendMailNotification && !recipientIds.isEmpty()) {
 							notification.notifyTimeline(request, "timeline.send-flash-message-mail", user,
@@ -230,6 +232,8 @@ public class FlashMsgController extends BaseController {
 						}
 
 						if (sendPushNotification && !recipientIds.isEmpty()) {
+							params.put("pushNotif", new JsonObject().put("title", "push.notif.new.flash.message").put("body", user.getUsername()+ " : " + StringUtils.stripHtmlTag(content)));
+							params.put("disableMailNotification", true);
 							notification.notifyTimeline(request, "timeline.send-flash-message-push", user,
 							recipientIds, params);
 						}
