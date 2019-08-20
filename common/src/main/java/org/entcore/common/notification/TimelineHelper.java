@@ -124,6 +124,7 @@ public class TimelineHelper {
 			}
 
 			event.put("pushNotif", params.remove("pushNotif"));
+			event.put("disableMailNotification", params.remove("disableMailNotification"));
 
 			HttpServerRequest request;
 			if (req == null) {

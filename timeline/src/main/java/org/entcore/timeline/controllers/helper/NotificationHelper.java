@@ -53,6 +53,7 @@ public class NotificationHelper {
         //Get notification properties (mixin : admin console configuration which overrides default properties)
         final String notificationName = json.getString("notificationName");
         final JsonObject notification = json.getJsonObject("notification");
+        final Boolean disableMailNotification = json.getBoolean("disableMailNotification", false);
         configService.getNotificationProperties(notificationName,  new Handler<Either<String, JsonObject>>() {
             public void handle(final Either<String, JsonObject> properties) {
                 if(properties.isLeft() || properties.right().getValue() == null){
@@ -67,7 +68,9 @@ public class NotificationHelper {
                             log.error("[NotificationHelper] Issue while retrieving users preferences.");
                             return;
                         }
-                        mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
+                        if (disableMailNotification == null || !disableMailNotification.booleanValue()) {
+                            mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
+                        }
 
                         if(pushNotifService != null && json.containsKey("pushNotif") && notificationProperties.getBoolean("push-notif") &&
                                 !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction")) &&

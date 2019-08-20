@@ -183,6 +183,8 @@
     "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services...",
     "panel.user.messagerie":"messagerie",
 
-    "AdminLocal": "Administrateurs locaux"
+    "AdminLocal": "Administrateurs locaux",
+
+    "push.notif.new.flash.message": "Nouveau message flash"
 
 }
