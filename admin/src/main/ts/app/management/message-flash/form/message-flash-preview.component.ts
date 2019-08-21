@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core'
+import { MessageFlashService } from '../message-flash.service';
 
 @Component({
     selector: 'message-flash-preview',
@@ -26,10 +27,14 @@ export class MessageFlashPreviewComponent implements OnInit{
     
     @Input() text: string;
     @Input() color: string;
+
+    themePath: string;
     
     constructor() {}
 
-    ngOnInit() {}
+    ngOnInit() {
+        MessageFlashService.getTheme().then(path => this.themePath = path);
+    }
 
     ngOnDestroy() {}
 
