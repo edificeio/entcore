@@ -140,4 +140,14 @@ export class MessageFlashService {
         date.setHours(23,59,59,999);
         return date.toISOString();
     }
+
+    static async getTheme() {
+        let response;
+        try {
+            response = await http.get(`/theme`);
+            return response.data.skin + 'theme.css';
+        }catch(error){
+            return error.response.data
+        }
+    }
 }
