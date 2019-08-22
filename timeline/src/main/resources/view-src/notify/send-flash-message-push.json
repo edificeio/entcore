@@ -1,4 +1,5 @@
 {
   "default-frequency": "IMMEDIATE",
+  "restrict": "EXTERNAL",
   "push-notif" : true
 }
