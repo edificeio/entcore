@@ -1,9 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core'
+import { DomSanitizer } from '@angular/platform-browser'
 import { Subscription } from 'rxjs'
 import { ActivatedRoute, Router, Data, NavigationEnd, Params } from '@angular/router'
 import { routing } from '../../../core/services/routing.service'
 import { StructureModel, FlashMessageModel } from '../../../core/store'
-import { SpinnerService, NotifyService } from '../../../core/services'
+import { NotifyService } from '../../../core/services'
 import { MessageFlashService } from '../message-flash.service'
 import { MessageFlashStore } from '../message-flash.store'
 import { BundlesService } from 'sijil'
@@ -89,7 +90,7 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                         <textarea id="trumbowyg-editor">{{ message.contents[selectedLanguage] }}</textarea>
                     </div>
                     <message-flash-preview
-                        [text]="message.contents[selectedLanguage]"
+                        [text]="sanitized.bypassSecurityTrustHtml(message.contents[selectedLanguage])"
                         [color]="message.color"
                         [customColor]="message.customColor"
                         style="width:50%;">
@@ -155,8 +156,9 @@ export class MessageFlashFormComponent implements OnInit {
         public router: Router,
         public cdRef: ChangeDetectorRef,
         public bundles: BundlesService,
-        private ns: NotifyService,
-        public messageStore: MessageFlashStore) { }
+        public ns: NotifyService,
+        public messageStore: MessageFlashStore,
+        public sanitized: DomSanitizer) { }
 
     ngOnInit(): void {
 
@@ -191,6 +193,9 @@ export class MessageFlashFormComponent implements OnInit {
                         this.message.subStructures = data.map(item => item['structure_id']);
                         this.cdRef.detectChanges();
                     });
+            }
+            if (this.action === 'create') {
+                this.message.color = 'red';
             }
             this.cdRef.detectChanges();
         })
