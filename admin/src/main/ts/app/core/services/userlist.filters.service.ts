@@ -207,6 +207,19 @@ class AdmlFilter extends UserFilter<string> {
     }
 }
 
+class BlockedFilter extends UserFilter<string> {
+    type = 'blocked'
+    label = 'blocked.multi.combo.title'
+    comboModel = [ 'users.blocked', 'users.not.blocked' ]
+
+    filter = (blocked: boolean) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 
+            || outputModel.indexOf('users.blocked') >= 0 && blocked 
+            || outputModel.indexOf('users.not.blocked') >= 0 && !blocked
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -225,6 +238,7 @@ export class UserlistFiltersService {
     private mailFilter = new MailFilter(this.updateSubject);
     private admlFilter = new AdmlFilter(this.updateSubject);
     private dateFilter = new DateFilter(this.updateSubject);
+    private blockedFilter = new BlockedFilter(this.updateSubject);
 
     filters : UserFilterList<any> = [
         this.profileFilter,
@@ -237,7 +251,8 @@ export class UserlistFiltersService {
         this.duplicatesFilter,
         this.mailFilter,
         this.admlFilter,
-        this.dateFilter
+        this.dateFilter,
+        this.blockedFilter
     ]
 
     resetFilters(){
@@ -284,6 +299,10 @@ export class UserlistFiltersService {
 
     setDateComboModel(combos: {date: Date, comparison: string}[]) {
         this.dateFilter.comboModel = combos;
+    }
+
+    setBlockedComboModel(combos: string[]) {
+        this.blockedFilter.comboModel = combos;
     }
 
     getFormattedFilters() : Object {

@@ -105,5 +105,4 @@ public class DefaultProfileService implements ProfileService {
 		}
 		neo4j.executeTransaction(sb.build(), null, true, validEmptyHandler(handler));
 	}
-
 }

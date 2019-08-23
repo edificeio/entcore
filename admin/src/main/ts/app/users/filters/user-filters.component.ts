@@ -72,10 +72,15 @@ export class UserFilters implements OnInit, OnDestroy {
         this.usersStore.user = null;
 
         this.routeSubscriber = this.route.queryParams.subscribe(params => {
-            if(params['duplicates']) {
+            if (params['duplicates']) {
                 let filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'duplicates');
                 if (filter) {
                     filter.outputModel = ['users.duplicated'];
+                }
+            } else if (params['blocked']) {
+                let filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'blocked');
+                if (filter) {
+                    filter.outputModel = ['users.blocked'];
                 }
             }
         });
