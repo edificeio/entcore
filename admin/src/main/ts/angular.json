@@ -29,7 +29,8 @@
               "src/assets/admin.scss"
             ],
             "scripts": [
-              "node_modules/jquery/dist/jquery.min.js"
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/trumbowyg/dist/trumbowyg.js"
             ]
           },
           "configurations": {
@@ -42,7 +43,7 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "extractCss": true,
               "namedChunks": false,
               "aot": true,
@@ -97,7 +98,10 @@
               "node_modules/flatpickr/dist/themes/confetti.css",
               "src/assets/admin.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/trumbowyg/dist/trumbowyg.js"
+            ]
           }
         },
         "lint": {
