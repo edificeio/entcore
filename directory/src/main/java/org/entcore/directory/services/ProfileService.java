@@ -41,5 +41,4 @@ public interface ProfileService {
 	void listProfiles(Handler<Either<String,JsonArray>> eitherHandler);
 
 	void blockProfiles(JsonObject profiles, Handler<Either<String,JsonObject>> handler);
-
 }

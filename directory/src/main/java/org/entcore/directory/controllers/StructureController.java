@@ -611,6 +611,7 @@ public class StructureController extends BaseController {
 					@Override
 					public void handle(JsonObject r) {
 						if ("ok".equals(r.getString("status"))) {
+							request.response().setStatusCode(204);
 							request.response().end();
 							JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 							for (Object userId : usersId) {
