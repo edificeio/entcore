@@ -143,7 +143,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			"AND trim(contents ->> '"+ lang +"') <> '' " +
 			"AND (profiles ? '" + user.getType() + "' " +
 				"OR (profiles ? 'AdminLocal' AND ("+
-				"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "1=1" : "1=2") + ") " +
+				"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "TRUE" : "FALSE") + ") " +
 				"OR (\"structureId\" IN (" + myADMLStructuresId + ") " +
 				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + ")))))) " +
 			"AND \"startDate\" <= now() " +

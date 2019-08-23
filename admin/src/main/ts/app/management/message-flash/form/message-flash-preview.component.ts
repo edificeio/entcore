@@ -8,19 +8,16 @@ import { MessageFlashService } from '../message-flash.service';
     <link rel="stylesheet" #myTheme type="text/css" media="screen" />
 
 
-    <article class="content-box stripes-background" style="flex: 1 1; margin: 10px; padding: 10px; height: 98%;">
-    
-        <div ng-transclude="" class="twelve cell">
-        <div *ngIf="customColor != undefined"  class="flashmsg"
-        [ngStyle]="{'background-color': customColor}">
-            <i class="close-2x right-magnet"></i>
-        <div [innerHTML]="text"></div>
-    </div>
-    <div *ngIf="customColor == undefined" class="flashmsg"
-        [ngClass]="color">
-        <i class="close-2x right-magnet"></i>
-        <div [innerHTML]="text"></div>
-    </div>
+    <article class="content-box" style="flex: 1 1; margin: 10px; padding: 10px; height: 98%;">
+        <div class="twelve cell">
+            <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
+                <i class="close-2x right-magnet"></i>
+                <div [innerHTML]="text"></div>
+            </div>
+            <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
+                <i class="close-2x right-magnet"></i>
+                <div [innerHTML]="text"></div>
+            </div>
         </div>
     </article>
        
@@ -30,12 +27,7 @@ import { MessageFlashService } from '../message-flash.service';
         `.flashmsg {
             min-height: 20px;
             margin-right: 0px !important;
-        }
-        .stripes-background {
-            background-color: #EEE !important;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.5) 35px, rgba(255, 255, 255, 0.5) 70px) !important;
-        }
-        `
+        }`
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -47,18 +39,14 @@ export class MessageFlashPreviewComponent implements OnInit {
 
     @ViewChild('myTheme') myTheme;
 
-    themePath: string;
-    testVar: boolean;
-    constructor(public renderer: Renderer2) { }
+    constructor(public renderer: Renderer2) {}
+
     ngOnInit() {
         MessageFlashService.getTheme().then(path => {
             this.renderer.setAttribute(this.myTheme.nativeElement, "href", path);
         });
-        if (!this.color) {
-            this.color = "red";
-        }
     }
 
-    ngOnDestroy() { }
+    ngOnDestroy() {}
 
 }

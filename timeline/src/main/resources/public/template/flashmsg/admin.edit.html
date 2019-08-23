@@ -36,7 +36,7 @@
         </div>
         <div>
             <label><i18n>timeline.admin.flashmsg.banner.color</i18n>*</label>
-            <div class="legend-square [[color]]" ng-class="{ outlined: color === edited.message.color }"
+            <div class="legend-square flash[[color]]" ng-class="{ outlined: color === edited.message.color }"
                 style="margin-right: 10px" ng-click="setColor(color)" ng-repeat="color in banner.colors"></div>
             <input type="color" ng-model="edited.message.customColor" ng-class="{ outlined: edited.message.customColor }"
                 ng-change="edited.message.color = null" ng-init="setSpectrum()" class="inline-middle">
