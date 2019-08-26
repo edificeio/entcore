@@ -1,5 +1,13 @@
 {
   "navbar.myapps.more": "Cliquez sur \"plus\" pour sélectionner vos applications favorites.",
+  "navbar.home": "Accueil",
+  "navbar.community": "Communautés",
+  "navbar.applications": "Mes applis",
+  "navbar.messages": "Messagerie",
+  "navbar.search": "Recherche transverse",
+  "navbar.help": "Aide en ligne",
+  "navbar.myaccount": "Mon compte",
+  "navbar.disconnect": "Déconnexion",
   "add": "Ajouter",
   "admin.appRegistry": "Applications",
   "admin.communication": "Communication",
