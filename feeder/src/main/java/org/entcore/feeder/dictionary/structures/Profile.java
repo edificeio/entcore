@@ -56,7 +56,7 @@ public class Profile {
 		if (struct != null && externalId != null && externalId.equals(struct.getString("externalId"))) {
 			this.id = struct.getString("id");
 		} else {
-			throw new IllegalArgumentException("Invalid structure with externalId : " + externalId);
+			throw new IllegalArgumentException("Invalid profile with externalId : " + externalId);
 		}
 		this.externalId = externalId;
 		this.profile = struct;

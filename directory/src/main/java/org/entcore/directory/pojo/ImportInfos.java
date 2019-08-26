@@ -157,6 +157,9 @@ public class ImportInfos {
 	}
 
 	public void validate(final boolean isAdmc, final Vertx vertx, final Handler<AsyncResult<String>> handler) {
+		if (isAdmc && isEmpty(structureExternalId)) {
+			structureExternalId = UUID.randomUUID().toString();
+		}
 		if (!isAdmc && isEmpty(structureId)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.id"));
 		} else if (isEmpty(structureName)) {

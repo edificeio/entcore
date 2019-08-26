@@ -67,7 +67,9 @@ public class DefaultSchoolService implements SchoolService {
 
 	@Override
 	public void get(String id, Handler<Either<String, JsonObject>> result) {
-		String query = "match (s:`Structure`) where s.id = {id} return s.id as id, s.UAI as UAI, s.name as name";
+		String query =
+				"match (s:`Structure`) where s.id = {id} " +
+				"return s.id as id, s.externalId as externalId, s.UAI as UAI, s.name as name";
 		neo.execute(query, new JsonObject().put("id", id), validUniqueResultHandler(result));
 	}
 
