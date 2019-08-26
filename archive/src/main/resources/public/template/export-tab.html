@@ -1,0 +1,54 @@
+<section class="twelve cell" ng-controller="ExportController">
+    <div class="row">
+        <div class="twelve cell reduce-block-eight">
+            <div ng-if="!isPreDeleted">
+                <div class="twelve cell info vertical-spacing-twice" ng-if="!loading">
+                    <i18n>archive.info</i18n>
+                </div>
+                <label class="checkbox top-spacing-twice aligned archive" ng-if="!loading">
+                    <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll($event)" />
+                    <span></span>
+                    <span><i18n>archive.all</i18n></span>
+                </label>
+                <div class="left-spacing-four">
+                    <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
+                        <input type="checkbox" ng-model="selectedApps[app]" />
+                        <span></span>
+                        <span translate content="[[app]]"></span>
+                    </label>
+                </div>
+                <hr>
+                <div class="row centered" ng-if="!loading">
+                    <button ng-disabled="areNoneSelected()" ng-click="initiateExport('apps')">
+                        <i18n>export</i18n>
+                    </button>
+                </div>
+            </div>
+            <div ng-if="isPreDeleted && !loading">
+                <div class="row centered">
+                    <button ng-click="initiateExport('docsOnly')">
+                        <i18n>export.docs</i18n>
+                    </button>
+                </div>
+                <div class="twelve cell info">
+                    <i18n>archive.download.docs</i18n>
+                </div>
+                <hr>
+                <div class="row centered">
+                    <button ng-click="initiateExport('all')">
+                        <i18n>export.all</i18n>
+                    </button>
+                </div>
+                <div class="twelve cell info">
+                    <i18n>archive.download.all</i18n>
+                </div>
+            </div>
+            <div class="row centered" ng-if="loading">
+                <i18n>archive.waiting</i18n>
+            </div>
+            <div class="row centered-text" ng-if="loadingSpinner">
+                <i class="loading loadingExport"></i>
+            </div>
+        </div>
+    </div>
+</section>

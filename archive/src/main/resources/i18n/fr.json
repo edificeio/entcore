@@ -2,7 +2,7 @@
     "archive.info": "Sélectionnez les applications dont vous voulez exporter les données et les documents.<br>Note : l'export des applications autres que Espace Documentaire ou Casier sera au format brut json.",
     "archive.download.docs": "Vos documents de l'espace documentaire et du casier seront exportés.",
     "archive.download.all": "Toutes vos données seront exportées mais ne seront pas toutes dans un format lisible.",
-    "archive.title": "Export",
+    "archive.title": "Mes données",
     "archive.waiting": "Le téléchargement va démarrer automatiquement dans quelques instants. L'attente peut prendre plusieurs minutes pour les fichiers volumineux. Si vous quittez cette page avant le début du téléchargement, un lien sera envoyé sur votre fil de nouveautés.",
     "archive.all": "Tous",
     "archive.error": "L'export de vos données n'a pas pu être réalisé. Vous allez être redirigé.",
@@ -27,5 +27,9 @@
     "export.signature": "L'équipe Open Digital Education",
     "exportId.not.found": "L'export demandé n'existe pas.",
     "get.export.path.error": "Erreur lors de la recherche de l'export.",
-    "zip.export.error": "Erreur durant la création de l'archive"
+    "zip.export.error": "Erreur durant la création de l'archive",
+    "archive.export": "Exporter",
+    "archive.import": "Importer",
+
+    "import.info": "Importer votre fichier d'export au format .zip, attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"."
 }
