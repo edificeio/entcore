@@ -13,16 +13,15 @@ object ImportScenario {
     .formParam("""password""", """password""")
     .check(status.is(302)))
     .exec(http("Directory : list Schools")
-    .get("""/directory/api/ecole""")
-    .check(status.is(200), jsonPath("$.status").is("ok"), jsonPath("$.result").find.saveAs("schools")))
+      .get("""/directory/api/ecole""")
+      .check(status.is(200), jsonPath("$.status").is("ok"), jsonPath("$.result").find.saveAs("schools")))
     .doIf(session => session("schools").asOption[String].getOrElse("") == "{}") {
       exec(http("Directory : import schools")
         .post("""/directory/wizard/import""")
         .formParamMap(Map(
           "type" -> "CSV",
-          "newStructureName" -> "Ecole primaire Emile Zola",
-          "StructureName" -> "Ecole primaire Emile Zola"
-          ))
+          "structureName" -> "Ecole primaire Emile Zola"
+        ))
         .bodyPart(RawFileBodyPart("Teacher", "sample-be1d/EcoleprimaireEmileZola/CSVExtraction-enseignants.csv").fileName("CSVExtraction-enseignants.csv").transferEncoding("binary"))
         .bodyPart(RawFileBodyPart("Student", "sample-be1d/EcoleprimaireEmileZola/CSVExtraction-eleves.csv").fileName("CSVExtraction-eleves.csv").transferEncoding("binary"))
         .bodyPart(RawFileBodyPart("Relative", "sample-be1d/EcoleprimaireEmileZola/CSVExtraction-responsables.csv").fileName("CSVExtraction-responsables.csv").transferEncoding("binary"))
