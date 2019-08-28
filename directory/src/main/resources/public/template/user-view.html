@@ -32,9 +32,12 @@
 
 	<lightbox show="display.otp" on-close="display.otp = false">
 		<h2><i18n>directory.otp.title</i18n></h2>
-		<span ng-if="account.otp">[[account.otp.message]]</span>
-		<br />
+		<span ng-if="account.otp"><i18n>directory.otp.message</i18n></span>
+		<br /><br />
+		<span ng-if="account.otp">[[account.otp.login]] <a ng-click="copyToClipboard()"><i18n>directory.otp.copy</i18n></a></span>
+		<br /><br />
 		<span ng-if="account.otp"><i18n>directory.otp.info</i18n></span>
+		<input type="hidden" id="otpInput"></input>
 	</lightbox>
 
 	<article class="rigid-grid cell twelve">
@@ -64,7 +67,7 @@
 					<i18n>userBook.profile.login</i18n>
 				</div>
 				<em class="seven cell">
-					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]] 
+					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]]
 					<a ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
 						<i18n>directory.login.update.button</i18n>
 					</a>
