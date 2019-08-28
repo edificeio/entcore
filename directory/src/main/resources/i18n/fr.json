@@ -826,9 +826,11 @@
     "cgu.title": "Conditions générales d'utilisation",
     "directory.blocked.label": "Bloqué",
     "directory.resetted.label": "Code temporaire: [[resetCode]] (jusqu'au [[resetCodeDate]])",
-    "directory.otp.title": "Mot de passe à usage unique",
-    "directory.otp.content": "Vous pouvez à présent utiliser le login [[login]] et le mot de passe [[otp]] pour vous connecter à l'application mobile.",
+    "directory.otp.title": "Connexion à l'application mobile",
+    "directory.otp.content": "Vous pouvez utiliser les informations de connexion indiquées si dessous pour vous connectez à l'application mobile :",
+    "directory.otp.login": "Identifiant : [[login]] / Mot de passe : [[otp]]",
+    "directory.otp.copy": "Copier le mot de passe",
     "directory.otp.info" : "Le mot de passe est à usage unique et restera valide pendant 10 minutes.",
-    "directory.profile.otp" : "Mot de passe à usage unique",
-    "directory.generate.otp" : "Générer"
+    "directory.profile.otp" : "Connexion à l'application mobile",
+    "directory.generate.otp" : "Générer mon mot de passe temporaire"
 }

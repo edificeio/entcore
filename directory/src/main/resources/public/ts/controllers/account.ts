@@ -80,11 +80,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			if(!$scope.account.themes){
 				$scope.account.themes = {};
 			}
-			
+
 			$scope.$apply();
 		}
 	}
-	
+
 	const xhr = new XMLHttpRequest();
 	xhr.open('get', '/assets/theme-conf.js');
 	xhr.onload = async () => {
@@ -96,7 +96,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		else{
 			$scope.themes = conf.overriding;
 		}
-		
+
 	};
 	xhr.send();
 
@@ -153,7 +153,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	$scope.setThemePreferences = (themeName: string) => {
 		const addedThemes = [];
-			
+
 		for(let name in $scope.account.themes){
 			if($scope.account.themes[name]){
 				addedThemes.push(name);
@@ -186,11 +186,19 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		directory.account.generateOTP(function(res) {
 			if (res && res.status == 200 && res.data.otp && res.data.otp.length == 8) {
 				$scope.account.otp = res.data;
-				let content = lang.translate("directory.otp.content").replace("[[login]]", model.me.login).replace("[[otp]]", res.data.otp);
-				$scope.account.otp.message = content;
+				let content = lang.translate("directory.otp.login").replace("[[login]]", model.me.login).replace("[[otp]]", res.data.otp);
+				(<HTMLInputElement>document.getElementById("otpInput")).value = res.data.otp;
+				$scope.account.otp.login = content;
 				$scope.display.otp = true;
 				$scope.$apply();
 			}
+		});
+	};
+
+	$scope.copyToClipboard = function() {
+		directory.account.copyToClipboard(function() {
+			(<HTMLInputElement>document.getElementById("otpInput")).select();
+			document.execCommand( 'copy' );
 		});
 	};
 
