@@ -1,5 +1,8 @@
 import { model, idiom as lang, notify } from "entcore";
 import http from 'axios';
+import Axios from 'axios';
+
+var source;
 
 export const archiveService = {
 
@@ -23,5 +26,16 @@ export const archiveService = {
         }
 
         return {activatedUserApps, preDeletedUserApps, isPreDeleted};
+    },
+
+    async uploadArchive(file: FormData) {
+        const CancelToken = Axios.CancelToken;
+        source = CancelToken.source();
+        return await http.post('archive/import/upload', file, { headers: { 'Content-Type': 'multipart/form-data' }, 
+        cancelToken: source.token });
+    },
+
+    cancelUpload() {
+        source.cancel();
     }
 }

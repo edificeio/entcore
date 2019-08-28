@@ -15,11 +15,13 @@ public class UserExport implements Shareable, Serializable {
 	private AtomicLong progress;
 	private AtomicInteger counter;
 	private final Set<String> expectedExport;
+	private final String exportId;
 
-	public UserExport(Set<String> expectedExport) {
+	public UserExport(Set<String> expectedExport, String exportId) {
 		this.progress = new AtomicLong(System.currentTimeMillis());
 		this.counter = new AtomicInteger(0);
 		this.expectedExport = Collections.unmodifiableSet(expectedExport);
+		this.exportId = exportId;
 	}
 
 	public Long getProgress() {
@@ -37,4 +39,8 @@ public class UserExport implements Shareable, Serializable {
 	public Set<String> getExpectedExport() {
 		return this.expectedExport;
 	}
+
+    public String getExportId() {
+        return exportId;
+    }
 }

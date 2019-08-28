@@ -1,9 +1,65 @@
-<section class="twelve cell" ng-controller="ExportController">
-        <div class="row">
-            <div class="twelve cell reduce-block-eight">
-                <div class="twelve cell info vertical-spacing-twice">
-                    <i18n>import.info</i18n>
-                </div>
+<section class="twelve cell" ng-controller="ImportController">
+    <div class="row">
+        <div class="twelve cell reduce-block-eight">
+            <div class="twelve cell info vertical-spacing-twice">
+                <i18n>import.info</i18n>
             </div>
         </div>
+    </div>
+
+    <div class="row media-library" style="max-width: 45%">
+       <div class="drop-zone import-files" style="border: 2px dashed #008db1;" ng-hide="isImporting">
+           <article class="drop flex-row align-center" ng-hide="display.dropFolderError">
+                   <i class="two cloud-upload"></i>
+                   <div class="ten help">
+                       <em><i18n>import.drop-files</i18n></em>
+                   </div>
+           </article>
+           <article class="default flex-row align-center" ng-hide="display.dropFolderError">
+               <div class="three select-file">
+                   <div class="hidden-content">
+                       <input type="file" files-input-change="importFile()" ng-model="upload.files" >
+                   </div>
+                   <button class="file-button no-margin"><i18n>import.browse</i18n></button>
+               </div>
+               <i class="two cloud-upload"></i>
+               <div class="seven help">
+                   <em><i18n>import.drag-drop-info</i18n></em>
+               </div>
+           </article>
+           <!--<article class="drop flex-row align-center ng-hide" ng-show="display.dropFolderError">
+               <i class="two close warning-color"></i>
+               <div class="seven help">
+                   <em><i18n><span class="no-style ng-scope">Il est impossible d'importer un dossier</span></i18n><br><i18n><span class="no-style ng-scope">Veuillez importer un ou plusieurs <b>fichiers</b></span></i18n></em>
+               </div>
+               <div class="three select-file">
+                       <button class="file-button no-margin" ng-click="hideDropFolderError($event)"><i18n><span class="no-style ng-scope">J'ai compris</span></i18n></button>
+                   </div>	
+           </article>-->
+   
+       </div>
+
+        <div class="drop-zone import-files" style="border: 2px dashed #606060;" ng-hide="!isImporting">
+            <div class="loading-list drop-zone">
+                <ul>
+                    <li class="loading">
+                        <div class="icon">
+                            <i class="zip"></i>
+                        </div>
+                        <div class="title">[[filename]]</div>
+                        <div class="status-infos">
+                            <span>[[filesize.quantity]]</span><span style="margin-left: 5px; margin-right: 15px;" translate content="[[filesize.unity]]"></span>
+                            <i ng-class="{
+                                loading: uploadStatus === 'loading',
+                                loaded: uploadStatus === 'loaded',
+                                failed: uploadStatus === 'failed'}">
+                            </i>
+                        </div>
+                        <i class="close" ng-click="abortOrDelete()"></i>
+                    </li>
+                </ul>
+            </div>
+        </div>
+   </div>
+
     </section>
