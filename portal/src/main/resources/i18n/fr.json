@@ -8,6 +8,7 @@
   "navbar.help": "Aide en ligne",
   "navbar.myaccount": "Mon compte",
   "navbar.disconnect": "Déconnexion",
+  "navbar.tools": "Personnaliser l'accueil",
   "add": "Ajouter",
   "admin.appRegistry": "Applications",
   "admin.communication": "Communication",
@@ -403,5 +404,15 @@
   "edumedia.choose": "Choisissez une matière...",
   "edumedia.fullscreen": "Afficher en plein écran",
   "worksapce.external.folder.notfound": "Les ressources intéractives sont inactives pour ce compte",
-  "datepicker.format": "dd/mm/yyyy"
+  "empty.filters.title": "Qui a éteint la lumière ?",
+  "empty.filters": "Oups, vous avez décochez tous les filtres… Sélectionnez une rubrique pour accéder aux contenus.",
+  "empty.trash1": "Zéro. C’est le nombre astronomique de contenu dans cette corbeille.",
+  "empty.trash2": "Euh… Vous cherchez quoi ? Votre corbeille est vide.",
+  "empty.trash3": "Leçon n°1 : une corbeille vide peut toujours servir à jouer au basket.",
+  "empty.trash4": "Vide n.m. : Espace qui n'est pas occupé par de la matière. Exemple : Votre corbeille est vide.",
+  "empty.trash5": "C’est complètement vide… Pas l’ombre d’un document dans cette corbeille.",
+  "empty.blog.creation.title": "Lancez votre premier blog !",
+  "empty.blog.creation": "Vous partez en voyage linguistique et souhaitez partager toutes vos aventures ? Devenez apprentis reporter ! Seul ou à plusieurs, publier et partager facilement textes, photos et vidéos.",
+  "empty.blog.consultation.title": "C'est un peu calme ici...",
+  "empty.blog.consultation": "Il n’y a pas encore de blog. Patience ! Des sujets passionnants s’apprêtent à déferler sur cette page."
 }
