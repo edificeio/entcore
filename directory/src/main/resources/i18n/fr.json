@@ -832,15 +832,15 @@
     "label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
     "cgu.title": "Conditions générales d'utilisation",
     "directory.blocked.label": "Bloqué",
-    "directory.resetted.label": "Code temporaire: [[resetCode]]",
+    "directory.resetted.label": "Code temporaire: [[resetCode]] (jusqu'au [[resetCodeDate]])",
     "directory.otp.title": "Connexion à l'application mobile",
     "directory.otp.content": "Vous pouvez utiliser les informations de connexion indiquées si dessous pour vous connectez à l'application mobile :",
     "directory.otp.login": "Identifiant : [[login]] / Mot de passe : [[otp]]",
     "directory.otp.copy": "Copier le mot de passe",
     "directory.otp.info" : "Le mot de passe est à usage unique et restera valide pendant 10 minutes.",
-    "directory.profile.otp" : "Mot de passe à usage unique",
-    "directory.generate.otp" : "Générer",
     "csv.file.too.long" : "Fichier trop volumineux. La taille maximum est d'un méga-octets par fichier.",
     "csv.file.size.error": "Erreur lors du calcul de la taille du fichier.",
-    "directory.has.app": "Application mobile"
+    "directory.has.app": "Application mobile",
+    "directory.profile.otp" : "Connexion à l'application mobile",
+    "directory.generate.otp" : "Générer mon mot de passe temporaire"
 }
