@@ -31,6 +31,8 @@ public interface ExportService {
 
 	void userExportExists(UserInfos user, Handler<Boolean> handler);
 
+	void userExportId(UserInfos user, Handler<String> handler);
+
 	boolean userExportExists(String exportId);
 
 	void waitingExport(String exportId, Handler<Boolean> handler);

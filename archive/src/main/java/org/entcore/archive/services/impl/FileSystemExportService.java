@@ -66,6 +66,7 @@ public class FileSystemExportService implements ExportService {
 	private final Map<String, UserExport> userExport;
 	private final TimelineHelper timeline;
 
+	private static final long DOWNLOAD_READY = -1l;
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
 	private static final long EXPORT_ERROR = -4l;
 
@@ -93,7 +94,7 @@ public class FileSystemExportService implements ExportService {
 					long now = System.currentTimeMillis();
 					final String exportId = now + "_" +user.getUserId();
 					userExportInProgress.put(user.getUserId(), now);
-					userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList())));
+					userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList()), exportId));
 					final String exportDirectory = exportPath + File.separator + exportId;
 					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>() {
 						@Override
@@ -135,6 +136,19 @@ public class FileSystemExportService implements ExportService {
 	public void userExportExists(UserInfos user, final Handler<Boolean> handler) {
 		handler.handle(userExportInProgress.containsKey(user.getUserId()));
 	}
+
+	@Override
+	public void userExportId(UserInfos user, Handler<String> handler) {
+		String userId = user.getUserId();
+		if (userExportInProgress.containsKey(userId)
+				&& userExportInProgress.get(userId) != DOWNLOAD_READY) {
+			UserExport ue = userExport.get(user.getUserId());
+			handler.handle(ue != null ? ue.getExportId() : null);
+		} else {
+			handler.handle(null);
+		}
+	}
+
 
 	@Override
 	public boolean userExportExists(String exportId) {
@@ -244,7 +258,7 @@ public class FileSystemExportService implements ExportService {
 												userExportInProgress.remove(userId);
 												publish(event);
 											} else {
-												userExportInProgress.put(userId,-1l);
+												userExportInProgress.put(userId,DOWNLOAD_READY);
 												MongoDb.getInstance().save(
 														Archive.ARCHIVES, new JsonObject().put("file_id", exportId)
 																.put("date", MongoDb.now()),
@@ -278,8 +292,11 @@ public class FileSystemExportService implements ExportService {
 											new Handler<AsyncResult<Message<JsonObject>>>() {
 												@Override
 												public void handle(AsyncResult<Message<JsonObject>> res) {
-													if (!res.succeeded() && userExportExists(exportId)
-															&& !downloadIsInProgress(exportId)) {
+													if ((!res.succeeded() && userExportExists(exportId)
+															&& !downloadIsInProgress(exportId))
+															|| (res.succeeded()
+															&& res.result().body().getBoolean("sendNotifications", false)
+															.booleanValue())) {
 														if (notification != null) {
 															sendExportEmail(exportId, locale,
 																	event.body().getString("status"), host);

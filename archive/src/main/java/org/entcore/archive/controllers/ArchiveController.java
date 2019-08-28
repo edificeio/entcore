@@ -57,6 +57,8 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
+
 public class ArchiveController extends BaseController {
 
 	private ExportService exportService;
@@ -101,6 +103,39 @@ public class ArchiveController extends BaseController {
 	public void view(HttpServerRequest request) {
 		renderView(request);
 		eventStore.createAndStoreEvent(ArchiveEvent.ACCESS.name(), request);
+	}
+
+	@Get("/wait")
+	public void wait(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			exportService.userExportId(user, exportId -> {
+				if (exportId != null) {
+					log.debug("waiting export true");
+					final String address = "export." + exportId;
+					final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+					final Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							event.reply(new JsonObject().put("status", "ok").put("sendNotifications", true));
+							renderJson(request, new JsonObject().put("status", "ok"));
+							consumer.unregister();
+						}
+					};
+					request.response().closeHandler(new Handler<Void>() {
+						@Override
+						public void handle(Void event) {
+							consumer.unregister();
+							if (log.isDebugEnabled()) {
+								log.debug("Unregister handler : " + address);
+							}
+						}
+					});
+					consumer.handler(handler);
+				} else {
+					renderJson(request, new JsonObject().put("status", "ok"));
+				}
+			});
+		});
 	}
 
 	@Post("/export")
@@ -189,6 +224,17 @@ public class ArchiveController extends BaseController {
 				} else if (!request.response().ended()) {
 					notFound(request);
 				}
+			}
+		});
+	}
+
+	@Post("/import/upload")
+	public void upload(final HttpServerRequest request) {
+		storage.writeUploadFile(request, uploaded -> {
+			if ("ok".equals(uploaded.getString("status"))) {
+				renderJson(request, uploaded);
+			} else {
+				badRequest(request, uploaded.getString("message"));
 			}
 		});
 	}
