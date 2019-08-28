@@ -186,7 +186,7 @@ public class TraceFilter implements Filter {
                     continue;
                 }
                 Matcher m = binding.getUriPattern().matcher(request.path());
-                return m.matches();
+                if (m.matches()) return true;
             }
         }
         return false;
