@@ -430,4 +430,9 @@
   "empty.workspace.shared": "Dans cet espace, retrouvez l’ensemble des documents que votre réseau vous aura partagé.",
   "empty.workspace.apps.title": "Oups, il n’y a rien sur l’étagère…",
   "empty.workspace.apps": "Vous avez ajouté une dizaine de photos directement dans votre Blog et voulez les réutiliser ? Pas de soucis ! Retrouverez les, bien rangées, juste ici.",
+
+  "empty.mindmap.creation.title": "Faites germer les bonnes idées !",
+  "empty.mindmap.creation": "Fatigué de laisser filer vos idées de génie ? L’appli Carte mentale permet non seulement de les noter, mais aussi d’y relier toutes les réflexions qui en découlent ! À tester absolument.",
+  "empty.mindmap.consultation.title": "Une carte pour faire grandir les idées !",
+  "empty.mindmap.consultation": "Avec la carte mentale, les idées se transforment en schémas structurés. Fiches de lecture, prise de notes, présentations orales… on mémorise tout plus facilement."
 }
