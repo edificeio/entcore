@@ -422,5 +422,12 @@
   "empty.scrapbook.creation.title": "C’est trop vide… Créez votre premier cahier multimédia",
   "empty.scrapbook.creation": "Avec le Cahier multimédia, donnez vie à vos cours et à vos exposés. Textes, sons, images ou vidéos, enfin un cahier intelligent !",
   "empty.scrapbook.consultation.title": "Une petite minute… Il n’y a pas encore de contenu.",
-  "empty.scrapbook.consultation": "Découvrez bientôt le cahier multimédia, un diaporama interactif avec des textes, des sons, des illustrations et des vidéos."
+  "empty.scrapbook.consultation": "Découvrez bientôt le cahier multimédia, un diaporama interactif avec des textes, des sons, des illustrations et des vidéos.",
+
+  "empty.workspace.title": "Vous n’avez pas encore de documents. Changeons ça !",
+  "empty.workspace": "Bienvenue dans votre espace documentaire, le cloud qui vous permet de stocker en ligne toutes vos ressources. Chargez ou téléchargez vos documents, commentez-les et partagez-les facilement aux membres de votre réseau !",
+  "empty.workspace.shared.title": "Oups, il n’y a rien sur l’étagère…",
+  "empty.workspace.shared": "Dans cet espace, retrouvez l’ensemble des documents que votre réseau vous aura partagé.",
+  "empty.workspace.apps.title": "Oups, il n’y a rien sur l’étagère…",
+  "empty.workspace.apps": "Vous avez ajouté une dizaine de photos directement dans votre Blog et voulez les réutiliser ? Pas de soucis ! Retrouverez les, bien rangées, juste ici.",
 }
