@@ -7,7 +7,10 @@ import { Injectable } from "@angular/core";
 export class BlockProfilesService {
     constructor(private httpClient: HttpClient) {}
 
-    update(structureId: string, profile: BlockProfileModel): Observable<BlockProfileModel> {
-        return this.httpClient.put<BlockProfileModel>(`/directory/structure/${structureId}/profile/block`, profile);
+    update(structureId: string, profile: BlockProfileModel): Observable<void> {
+        return this.httpClient
+            .put<BlockProfileModel>(`/directory/structure/${structureId}/profile/block`, profile)
+            .flatMap(() => this.httpClient.post('/admin/trace', {'action': profile.block ? "BLOCK": "UNBLOCK", profile: profile.profile}))
+            .map(res => console.log(res));
     }
 }
