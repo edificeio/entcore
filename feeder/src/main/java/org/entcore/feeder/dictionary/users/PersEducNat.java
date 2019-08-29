@@ -267,8 +267,8 @@ public class PersEducNat extends AbstractUser {
 		final String query =
 				"MATCH (f:FieldOfStudy)<-[r:TEACHES_FOS]-(u:User {source : {source}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure" + filter + ") " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
-				"ON CREATE SET sub.code = f.externalId, sub.label = f.name, sub.id = id(sub) + '-' + {now} " +
-				"SET sub.lastUpdated = {now}, sub.source = {source} " +
+				"ON CREATE SET sub.code = f.externalId, sub.id = id(sub) + '-' + {now} " +
+				"SET sub.label = f.name, sub.lastUpdated = {now}, sub.source = {source} " +
 				"WITH r, sub, u, s.externalId as sExternalId " +
 				"MERGE u-[r1:TEACHES]->sub " +
 				"SET r1.aafClasses = FILTER(cId IN coalesce(r.classes, []) WHERE cId starts with sExternalId), " +
