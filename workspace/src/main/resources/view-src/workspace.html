@@ -99,14 +99,14 @@
 							</button>
 						</div>
 						<!--SEARCH DESKTOP-->
-						<div class="cell eight search-pagination zero-mobile">
+						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.documents.length">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()" class="cell"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
 							<i class="search" ng-click="searchSubmit()"></i>
 						</div>
 						<!--VIEW MODE-->
-						<div class="cell right-magnet">
+						<div class="cell right-magnet" ng-if="openedFolder.documents.length">
 							<div class="choice-view">
 								<i class="show-icons" ng-class="{ selected: isViewMode('icons') }" ng-click="changeViewMode('icons')"></i>
 								<i class="show-list" ng-class="{ selected: isViewMode('list') }" ng-click="changeViewMode('list')"></i>
@@ -114,7 +114,7 @@
 							</div>
 						</div>
 						<!--SEARCH MOBILE-->
-						<div class="zero-desktop cell four search-pagination twelve-mobile vertical-spacing-twice">
+						<div class="zero-desktop cell four search-pagination twelve-mobile vertical-spacing-twice" ng-if="openedFolder.documents.length">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven twelve-1d':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
@@ -139,6 +139,48 @@
 					</div>
 				</nav>
 				<div class="twelve cell toggle-buttons-spacer">
+
+					<!-- Empty screen Owner -->
+					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.documents.length">
+						<h2 class="emptyscreen-header">
+							<i18n>empty.workspace.title</i18n>
+						</h2>
+						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
+						<p class="emptyscreen-footer">
+							<i18n>empty.workspace</i18n>
+						</p>
+						<a class="button">
+							<i18n>workspace.create.workspace</i18n>
+						</a>
+					</div>
+					<!-- Empty screen partagé avec moi -->
+					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.documents.length">
+						<h2 class="emptyscreen-header">
+							<i18n>empty.workspace.shared.title</i18n>
+						</h2>
+						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
+						<p class="emptyscreen-footer">
+							<i18n>empty.workspace.shared</i18n>
+						</p>
+					</div>
+					<!-- Empty screen depuis les apps -->
+					<div class="emptyscreen" ng-if="currentTree.filter === 'protected' && !openedFolder.documents.length">
+						<h2 class="emptyscreen-header">
+							<i18n>empty.workspace.apps.title</i18n>
+						</h2>
+						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
+						<p class="emptyscreen-footer">
+							<i18n>empty.workspace.apps</i18n>
+						</p>
+					</div>
+					<!-- Empty screen Si la corbeille est vide -->
+					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.documents.length">
+						<img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/empty-trash.svg">
+						<p class="emptyscreen-footer">
+							<i18n>empty.trash2</i18n>
+						</p>
+					</div>
+
 					<container template="documents" ng-hide="isSearching()"></container>
 					<div class="flex-row top-spacing-four" ng-show="isSearching()">
 						<div class="centered top-spacing-four">
