@@ -19,6 +19,7 @@
 package org.entcore.admin;
 
 import org.entcore.admin.controllers.AdminController;
+import org.entcore.admin.controllers.BlockProfileTraceController;
 import org.entcore.admin.controllers.PlatformInfoController;
 import org.entcore.common.http.BaseServer;
 import io.vertx.core.AsyncResult;
@@ -35,6 +36,7 @@ public class Admin extends BaseServer {
 		 super.start();
 		 
 		 addController(new AdminController());
+		 addController(new BlockProfileTraceController());
 		 
 		 final PlatformInfoController platformInfoController = new PlatformInfoController();
 
