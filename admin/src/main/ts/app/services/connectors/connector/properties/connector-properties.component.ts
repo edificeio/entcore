@@ -124,7 +124,7 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                         </mono-select>
                     </form-field>
 
-                    <form-field label="services.connector.cas.pattern">
+                    <form-field label="services.connector.cas.pattern" *ngIf="admc">
                         <input type="text"
                                [(ngModel)]="connector.casPattern"
                                name="casPattern"
@@ -232,6 +232,8 @@ export class ConnectorPropertiesComponent implements OnChanges {
     creationMode: boolean;
     @Input()
     disabled: boolean;
+    @Input()
+    admc: boolean;
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();

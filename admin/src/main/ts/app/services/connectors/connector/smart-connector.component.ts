@@ -134,6 +134,7 @@ import 'rxjs/add/operator/toPromise';
             [structureChildren]="hasStructureChildren()"
             [creationMode]="isCreationMode()"
             [disabled]="arePropertiesDisabled()"
+            [admc]="admc"
             (create)="onCreate($event)"
             (iconFileChanged)="onIconFileChanged($event)"
             (iconFileInvalid)="onIconFileInvalid($event)">
