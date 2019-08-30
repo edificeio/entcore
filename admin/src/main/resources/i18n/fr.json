@@ -1,5 +1,5 @@
 {
-    "message.new.console": "Bienvenue sur la version BETA de la nouvelle console d'administration. Toutes les fonctionnalités ne sont pas encore présentes. Pour revenir à la version stable de la console d'administration, veuillez cliquer ici : ",
+    "message.new.console": "Bienvenue sur la nouvelle version de la nouvelle console d'administration. Pour revenir à l'ancienne version de la console d'administration, veuillez cliquer ici : ",
     "admin.title": "Console d'administration",
     "search.structure": "Rechercher un établissement",
     "search.user": "Rechercher un utilisateur",
@@ -261,7 +261,7 @@
     "individual.massmail.pdf": "Fiche de connexion individuelle PDF",
     "individual.massmail.mail": "Fiche de connexion individuelle mail",
     "switch.old.admin.console": "Version classique",
-    "switch.old.admin.console.tooltip": "Quitter la version BETA et revenir à la version classique de la console d'administration",
+    "switch.old.admin.console.tooltip": "Quitter la nouvelle version et revenir à l'ancienne version de la console d'administration",
     "no.user.found": "Aucun utilisateur trouvé",
     "list.results.no.items": "Aucun élément",
     "list.results.no.users": "Aucun utilisateur",
