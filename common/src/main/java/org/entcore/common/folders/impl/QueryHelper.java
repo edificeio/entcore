@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 class QueryHelper {
+	final static int MAX_BATCH = 10;
 	final static long MAX_DEPTH = 10;
 	protected final MongoDb mongo = MongoDb.getInstance();
 	private final String collection;
@@ -166,6 +167,13 @@ class QueryHelper {
 			DBObject sub = new BasicDBObject();
 			sub.put("$eq", ancestorId);
 			builder.and(QueryBuilder.start("ancestors").elemMatch(sub).get());
+			return this;
+		}
+
+		public DocumentQueryBuilder withEparentNotIn(Set<String> eParents) {
+			builder.and(new QueryBuilder().or(//
+						QueryBuilder.start("eParent").exists(false).get(), //
+						QueryBuilder.start("eParent").notIn(eParents).get()).get());
 			return this;
 		}
 
@@ -477,7 +485,7 @@ class QueryHelper {
 				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
 		JsonObject command = agg.getCommand();
 		Future<List<String>> future = Future.future();
-		mongo.aggregate(command, message -> {
+		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				JsonArray results = (body.getJsonObject("result", new JsonObject())
@@ -557,7 +565,7 @@ class QueryHelper {
 		}
 		//
 		JsonObject command = agg.getCommand();
-		mongo.aggregate(command, message -> {
+		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(body.getJsonObject("result", new JsonObject()).getJsonObject("cursor", new JsonObject())
