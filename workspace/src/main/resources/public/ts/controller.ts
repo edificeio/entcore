@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, template, idiom as lang, notify, idiom, moment } from 'entcore';
+import { ng, template, idiom as lang, notify, idiom, moment, workspace } from 'entcore';
 import { NavigationDelegateScope, NavigationDelegate } from './delegates/navigation';
 import { ActionDelegate, ActionDelegateScope } from './delegates/actions';
 import { TreeDelegate, TreeDelegateScope } from './delegates/tree';
@@ -25,14 +25,13 @@ import { SearchDelegate, SearchDelegateScope } from './delegates/search';
 import { RevisionDelegateScope, RevisionDelegate } from './delegates/revisions';
 import { KeyboardDelegate, KeyboardDelegateScope } from './delegates/keyboard';
 import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
-import { models, workspaceService } from "./services";
+import { models, workspaceService, DocumentCursor, Document, DocumentCursorParams, CursorUpdate } from "./services";
 import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
 
 
-declare var ENABLE_LOOL:boolean;
-
+declare var ENABLE_LOOL: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope {
-	ENABLE_LOOL:boolean;
+	ENABLE_LOOL: boolean;
 	//new
 	lightboxDelegateClose: () => boolean
 	newFile: { chosenFiles: any[] }
@@ -46,16 +45,18 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	setLightboxDelegateClose(f: () => boolean)
 	resetLightboxDelegateClose()
 	//
-	showCarousel():boolean
+	showCarousel(): boolean
 	formatDocumentSize(size: number): string
 	shortDate(el: string | number): string
 	longDate(date: string): number
 	translate(key: string): string
 	cancelRequest(file)
 	isUploadedImage(): boolean
+	createDocumentCursor(onUpdate: CursorUpdate, params: DocumentCursorParams): void
 	//selection
 }
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route) => {
+	let _currentCursor: DocumentCursor = null;
 	$scope.lightboxDelegateClose = () => false;
 	$scope.setLightboxDelegateClose = function (f) {
 		$scope.lightboxDelegateClose = f;
@@ -63,6 +64,15 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.resetLightboxDelegateClose = function () {
 		$scope.lightboxDelegateClose = () => false;
 
+	}
+	const nextCursor = async () => {
+		if (_currentCursor != null) {
+			await _currentCursor.next();
+		}
+	}
+	$scope.createDocumentCursor = function (onUpdate, params) {
+		_currentCursor = new DocumentCursor(params, onUpdate);
+		nextCursor();
 	}
 	let displayNotFoundErrorLastId = null;
 	const displayNotFoundError = function (folderId) {
@@ -105,7 +115,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				$scope.setCurrentTree("owner")
 			})
 		},
-		openExternal:function(params){
+		openExternal: function (params) {
 			$scope.lastRoute = window.location.href;
 			$scope.onTreeInit(() => {
 				$scope.setCurrentTree("external")
@@ -145,10 +155,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	/**
 	 * INIT
 	 */
-	const allowAction = (type : DocumentActionType) => ()=>{
+	const allowAction = (type: DocumentActionType) => () => {
 		const items = $scope.selectedItems();
-        if(!workspaceService.isActionAvailable(type,items)){
-            return false;
+		if (!workspaceService.isActionAvailable(type, items)) {
+			return false;
 		}
 		return true
 	}
@@ -162,7 +172,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() { return false } }
 		],
 		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow:allowAction("move") },
+			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow: allowAction("move") },
 			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
@@ -182,15 +192,15 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		children: [],
 		helpbox: "workspace.help.2",
 		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow:allowAction("move") },
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow:allowAction("copy") },
+			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow: allowAction("move") },
+			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
 	}, {
 		name: lang.translate('externalDocs'),
 		filter: 'external',
 		get hidden() {
-			const tree = $scope.trees.find(e=>e.filter=="external");
+			const tree = $scope.trees.find(e => e.filter == "external");
 			return !tree || tree.children.length == 0;
 		},
 		buttons: [],
@@ -198,9 +208,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		children: [],
 		contextualButtons: [
 			{
-				text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, allow(){
+				text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, allow() {
 					//trash only files
-					return $scope.selectedFolders().length==0;
+					return $scope.selectedFolders().length == 0;
 				}
 			}
 		]
@@ -214,7 +224,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		hierarchical: true,
 		children: [],
 		contextualButtons: [
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow:allowAction("copy") },
+			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
 	}, {
@@ -273,7 +283,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			return ['png', 'jpg', 'jpeg', 'bmp'].indexOf(ext) > -1
 		}) > -1;
 	};
-	$scope.showCarousel = () =>{
+	$scope.showCarousel = () => {
 		return $scope.currentTree.filter != "external";
 	}
 

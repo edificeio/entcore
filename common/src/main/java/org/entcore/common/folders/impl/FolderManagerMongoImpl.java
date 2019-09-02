@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.vertx.core.json.Json;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -507,7 +508,15 @@ public class FolderManagerMongoImpl implements FolderManager {
 		if (query.getHierarchical() != null && query.getHierarchical()) {
 			queryHelper.listWithParents(builder).setHandler(handler);
 		} else {
-			queryHelper.findAll(builder).setHandler(handler);
+			if(query.isDirectShared()){
+				DocumentQueryBuilder pBuilder = new DocumentQueryBuilder().filterByInheritShareAndOwner(user).withFileType(FolderManager.FOLDER_TYPE).withProjection("_id");
+				queryHelper.findAllAsList(pBuilder).compose(folders->{
+					Set<String> eParents = folders.stream().map(f->(JsonObject)f).map(f->f.getString("_id")).collect(Collectors.toSet());
+					return queryHelper.findAll(builder.withEparentNotIn(eParents));
+				}).setHandler(handler);
+			}else{
+				queryHelper.findAll(builder).setHandler(handler);
+			}
 		}
 	}
 

@@ -552,6 +552,8 @@ public class WorkspaceController extends BaseController {
 		final String search = request.params().get("search");
 		final String id = request.params().get("id");
 		final boolean directShared = "true".equals(request.params().get("directShared"));
+		final String limit = getOrElse(request.params().get("limit"), null, false);
+		final String skip = getOrElse(request.params().get("skip"), null, false);
 		//
 		ElementQuery query = new ElementQuery(false);
 		query.setHierarchical(hierarchical != null && hierarchical.equals("true"));
@@ -560,6 +562,10 @@ public class WorkspaceController extends BaseController {
 		//find by id
 		if (!StringUtils.isEmpty(id)) {
 			query.setId(id);
+		}
+		if (limit != null && skip != null) {
+			query.setLimit(Integer.valueOf(limit));
+			query.setSkip(Integer.valueOf(skip));
 		}
 		// search
 		if (!StringUtils.isEmpty(search)) {
