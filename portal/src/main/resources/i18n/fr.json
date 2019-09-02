@@ -439,5 +439,10 @@
   "empty.timeline.creation.title": "Ne perdez plus le fil des événements",
   "empty.timeline.creation": "L’appli Frise chronologique a plus d’un tour dans son sac. Réalisez des fresques interactives, concevez des biographies ou créez un journal de bord de vos projets. Vous avez l’embarras du choix !",
   "empty.timeline.consultation.title": "Ne perdez plus le fil des événements",
-  "empty.timeline.consultation": "Mérovingiens, carolingiens, capétiens, les dynasties se sont succédées sur le trône de France… Oui, mais dans quel ordre ? Avec la Frise chronologique, mémorisez plus facilement les événements !"
+  "empty.timeline.consultation": "Mérovingiens, carolingiens, capétiens, les dynasties se sont succédées sur le trône de France… Oui, mais dans quel ordre ? Avec la Frise chronologique, mémorisez plus facilement les événements !",
+
+  "empty.wiki.creation.title": "Fabriquez votre encyclopédie collaborative",
+  "empty.wiki.creation": "Vous aimez partager votre savoir encyclopédique ? Cette appli est faite pour vous ! Expert ou débutant, créez des pages, ajoutez ou non des contributeurs, rédigez, le tour est joué ! On essaie ?",
+  "empty.wiki.consultation.title": "Bienvenue dans l’encyclopédie collaborative",
+  "empty.wiki.consultation": "Pour qui aime partager son savoir encyclopédique, il y a l’application Wiki ! Seul ou à plusieurs, on crée des pages de contenus"
 }
