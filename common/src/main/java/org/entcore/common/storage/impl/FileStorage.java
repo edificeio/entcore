@@ -74,16 +74,30 @@ public class FileStorage implements Storage {
 
 	@Override
 	public void writeUploadFile(final HttpServerRequest request, final Long maxSize, final Handler<JsonObject> handler) {
+		writeUploadFile(request, null, maxSize, handler);
+	}
+
+	@Override
+	public void writeUploadToFileSystem(HttpServerRequest request, String path, Handler<JsonObject> handler) {
+		writeUploadFile(request, path, null, handler);
+	}
+
+	private void writeUploadFile(final HttpServerRequest request, final String uploadPath, final Long maxSize,
+								final Handler<JsonObject> handler) {
 		request.pause();
 		final String id = UUID.randomUUID().toString();
 		final String path;
 		final JsonObject res = new JsonObject();
-		try {
-			path = getPath(id);
-		} catch (FileNotFoundException e) {
-			handler.handle(res.put("status", "error").put("message", "invalid.path"));
-			log.warn(e.getMessage(), e);
-			return;
+		if (uploadPath == null) {
+			try {
+				path = getPath(id);
+			} catch (FileNotFoundException e) {
+				handler.handle(res.put("status", "error").put("message", "invalid.path"));
+				log.warn(e.getMessage(), e);
+				return;
+			}
+		} else {
+			path = uploadPath + File.separator + id;
 		}
 		request.setExpectMultipart(true);
 		request.uploadHandler(new Handler<HttpServerFileUpload>() {

@@ -33,6 +33,8 @@ public interface Storage {
 
 	void writeUploadFile(HttpServerRequest request, Long maxSize, Handler<JsonObject> handler);
 
+    default void writeUploadToFileSystem(HttpServerRequest request, String path, Handler<JsonObject> handler){};
+
 	void writeBuffer(Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
 	void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);

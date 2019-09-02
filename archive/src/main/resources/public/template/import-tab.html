@@ -7,18 +7,18 @@
         </div>
     </div>
 
-    <div class="row media-library" style="max-width: 45%">
-       <div class="drop-zone import-files" style="border: 2px dashed #008db1;" ng-hide="isImporting">
-           <article class="drop flex-row align-center" ng-hide="display.dropFolderError">
+    <div class="row media-library archive-library">
+       <div class="drop-zone import-files file-browsing" ng-hide="isImporting">
+           <article class="drop flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
                    <i class="two cloud-upload"></i>
                    <div class="ten help">
                        <em><i18n>import.drop-files</i18n></em>
                    </div>
            </article>
-           <article class="default flex-row align-center" ng-hide="display.dropFolderError">
+           <article class="default flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
                <div class="three select-file">
                    <div class="hidden-content">
-                       <input type="file" files-input-change="importFile()" ng-model="upload.files" >
+                       <input type="file" files-input-change="importFile()" ng-model="upload.files" accept=".zip">
                    </div>
                    <button class="file-button no-margin"><i18n>import.browse</i18n></button>
                </div>
@@ -39,7 +39,7 @@
    
        </div>
 
-        <div class="drop-zone import-files" style="border: 2px dashed #606060;" ng-hide="!isImporting">
+        <div class="drop-zone import-files file-loading" ng-hide="!isImporting">
             <div class="loading-list drop-zone">
                 <ul>
                     <li class="loading">
@@ -48,18 +48,18 @@
                         </div>
                         <div class="title">[[filename]]</div>
                         <div class="status-infos">
-                            <span>[[filesize.quantity]]</span><span style="margin-left: 5px; margin-right: 15px;" translate content="[[filesize.unity]]"></span>
+                            <span>[[filesize.quantity]]</span><span class="file-size" translate content="[[filesize.unity]]"></span>
                             <i ng-class="{
                                 loading: uploadStatus === 'loading',
                                 loaded: uploadStatus === 'loaded',
                                 failed: uploadStatus === 'failed'}">
                             </i>
                         </div>
-                        <i class="close" ng-click="abortOrDelete()"></i>
+                        <i class="close" ng-if="uploadStatus === 'loading'" ng-click="abortOrDelete()"></i>
                     </li>
                 </ul>
             </div>
         </div>
-   </div>
+    </div>
 
-    </section>
+</section>
