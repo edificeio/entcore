@@ -21,28 +21,21 @@ export let routes : Routes = [
                 component: MessageFlashComponent,
                 resolve: {
                     messages: MessageFlashResolver
-                }
-            },
-            {
-                path: 'message-flash-edit/:messageId',
-                component: EditMessageFlashComponent,
-                resolve: {
-                    messages: MessageFlashResolver
-                }
-            },
-            {
-                path: 'message-flash-duplicate/:messageId',
-                component: DuplicateMessageFlashComponent,
-                resolve: {
-                    messages: MessageFlashResolver
-                }
-            },
-            {
-                path: 'message-flash-create',
-                component: CreateMessageFlashComponent,
-                resolve: {
-                    messages: MessageFlashResolver
-                }
+                },
+                children: [
+                    {
+                        path: 'edit/:messageId',
+                        component: EditMessageFlashComponent
+                    },
+                    {
+                        path: 'duplicate/:messageId',
+                        component: DuplicateMessageFlashComponent
+                    },
+                    {
+                        path: 'create',
+                        component: CreateMessageFlashComponent
+                    }
+                ]
             }
         ]
      }  
