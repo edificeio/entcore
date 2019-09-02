@@ -65,8 +65,4 @@ export class ManagementRoot implements OnInit, OnDestroy {
         this.error = error
     }
 
-    isActive(tab: {label: string, view: string, subs: string[]}): boolean {
-        return this.router.isActive(this.router.createUrlTree([tab.view], {relativeTo: this.route}), false) ||
-        (!!tab.subs && tab.subs.findIndex(sub => this.router.isActive(this.router.createUrlTree([sub], {relativeTo: this.route}), false)) != -1);
-      }
 }
