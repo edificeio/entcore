@@ -1851,6 +1851,8 @@ i.download {
   margin-right: auto;
   display: block;
   max-width: 100%;
+  display: flex;
+  margin: auto 25px;
 }
 pdf-viewer {
   display: block;
