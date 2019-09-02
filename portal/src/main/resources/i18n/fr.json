@@ -434,5 +434,10 @@
   "empty.mindmap.creation.title": "Faites germer les bonnes idées !",
   "empty.mindmap.creation": "Fatigué de laisser filer vos idées de génie ? L’appli Carte mentale permet non seulement de les noter, mais aussi d’y relier toutes les réflexions qui en découlent ! À tester absolument.",
   "empty.mindmap.consultation.title": "Une carte pour faire grandir les idées !",
-  "empty.mindmap.consultation": "Avec la carte mentale, les idées se transforment en schémas structurés. Fiches de lecture, prise de notes, présentations orales… on mémorise tout plus facilement."
+  "empty.mindmap.consultation": "Avec la carte mentale, les idées se transforment en schémas structurés. Fiches de lecture, prise de notes, présentations orales… on mémorise tout plus facilement.",
+
+  "empty.timeline.creation.title": "Ne perdez plus le fil des événements",
+  "empty.timeline.creation": "L’appli Frise chronologique a plus d’un tour dans son sac. Réalisez des fresques interactives, concevez des biographies ou créez un journal de bord de vos projets. Vous avez l’embarras du choix !",
+  "empty.timeline.consultation.title": "Ne perdez plus le fil des événements",
+  "empty.timeline.consultation": "Mérovingiens, carolingiens, capétiens, les dynasties se sont succédées sur le trône de France… Oui, mais dans quel ordre ? Avec la Frise chronologique, mémorisez plus facilement les événements !"
 }
