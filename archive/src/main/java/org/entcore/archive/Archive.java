@@ -21,9 +21,11 @@ package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
 import org.entcore.archive.controllers.ArchiveController;
+import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.filters.ArchiveFilter;
 import org.entcore.archive.services.impl.DeleteOldExports;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 
 import java.text.ParseException;
@@ -36,7 +38,12 @@ public class Archive extends BaseServer {
 	public void start() throws Exception {
 		setResourceProvider(new ArchiveFilter());
 		super.start();
-		addController(new ArchiveController());
+
+		Storage storage = new StorageFactory(vertx, config).getStorage();
+		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
+
+		addController(new ArchiveController(storage));
+		addController(new ImportController(vertx, storage, importPath));
 
 		String purgeArchivesCron = config.getString("purgeArchive");
 		if (purgeArchivesCron != null) {

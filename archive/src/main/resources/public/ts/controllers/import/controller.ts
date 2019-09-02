@@ -25,6 +25,9 @@ export let importController = ng.controller('ImportController', ['$scope', ($sco
                 $scope.uploadStatus = 'loading';
                 archiveService.uploadArchive(formData).then(res => {
                     $scope.uploadStatus = 'loaded';
+                    archiveService.analyseArchive(res.data.importId).then(r => {
+                        console.log(r);
+                    })
                     $scope.$apply();
                 }).catch(err => {
                     $scope.uploadStatus = 'failed';

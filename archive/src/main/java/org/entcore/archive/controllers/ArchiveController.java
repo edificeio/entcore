@@ -66,6 +66,10 @@ public class ArchiveController extends BaseController {
 	private Storage storage;
 	private enum ArchiveEvent { ACCESS }
 
+	public ArchiveController(Storage storage) {
+		this.storage = storage;
+	}
+
 	@Override
 	public void init(Vertx vertx, final JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -77,7 +81,6 @@ public class ArchiveController extends BaseController {
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
-		storage = new StorageFactory(vertx, config).getStorage();
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, notification, storage, exportInProgress, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
@@ -224,17 +227,6 @@ public class ArchiveController extends BaseController {
 				} else if (!request.response().ended()) {
 					notFound(request);
 				}
-			}
-		});
-	}
-
-	@Post("/import/upload")
-	public void upload(final HttpServerRequest request) {
-		storage.writeUploadFile(request, uploaded -> {
-			if ("ok".equals(uploaded.getString("status"))) {
-				renderJson(request, uploaded);
-			} else {
-				badRequest(request, uploaded.getString("message"));
 			}
 		});
 	}
