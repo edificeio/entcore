@@ -44,6 +44,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
+import org.entcore.communication.services.impl.XpCommunicationService;
 
 import java.util.List;
 
@@ -318,7 +319,8 @@ public class CommunicationController extends BaseController {
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getJsonObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
-				boolean myGroup = message.body().getBoolean("mygroup", false);
+				boolean myGroup = communicationService instanceof XpCommunicationService ? true :
+						message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
 						profile, preFilter, customReturn, ap, responseHandler);
