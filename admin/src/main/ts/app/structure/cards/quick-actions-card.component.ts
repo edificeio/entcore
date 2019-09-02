@@ -22,7 +22,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
                 <s5l>manage.duplicates</s5l>
                 <i class="fa fa-user-times"></i>
             </button>
-            <button routerLink="management/message-flash-create">
+            <button routerLink="management/message-flash/create">
                 <s5l>create.flash.message</s5l>
                 <i class="fa fa-bullhorn"></i>
             </button>

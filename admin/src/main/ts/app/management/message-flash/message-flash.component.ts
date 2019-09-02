@@ -12,7 +12,7 @@ import { BundlesService } from 'sijil'
 @Component({
     selector: 'message-flash',
     template: `
-        <div class="container has-shadow">
+        <div class="container has-shadow" *ngIf="router.isActive('/admin/' + structure?.id + '/management/message-flash', true)">
             <div class="has-vertical-padding">
                 <div class="has-vertical-padding is-display-flex">
                     <div class="checkbox__item">
@@ -72,6 +72,8 @@ import { BundlesService } from 'sijil'
                 </table>
             </div>
         </div>
+
+        <router-outlet></router-outlet>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -235,20 +237,20 @@ export class MessageFlashComponent implements OnInit{
     }
 
     createMessage(): void {
-        this.router.navigate(["/admin", this.structure.id, "management", "message-flash-create"]);
+        this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "create"]);
     }
 
     editMessage(messageId: string): void {
         let message: FlashMessageModel = this.displayedMessages.find(mess => mess.id === messageId);
         if (!!message) {
-            this.router.navigate(["/admin", this.structure.id, "management", "message-flash-edit", message.id]);
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "edit", message.id]);
         }
     }
 
     duplicateMessage(): void {
         let message: FlashMessageModel = this.displayedMessages.find(mess => this.checkboxes[mess.id]);
         if (!!message) {
-            this.router.navigate(["/admin", this.structure.id, "management", "message-flash-duplicate", message.id]);
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "duplicate", message.id]);
         }
     }
 
