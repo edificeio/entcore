@@ -29,7 +29,7 @@ import { OrderPipe } from '../../shared/ux/pipes';
 
                 <form-field label="profile">
                     <mono-select class="is-block" [(ngModel)]="profile" name="profile"
-                                 [options]="type.length === 0 ? profileOptionsWithAllProfiles : profileOptions">
+                                 [options]="getProfileOptions()">
                     </mono-select>
                 </form-field>
 
@@ -63,6 +63,15 @@ export class ExportComponent implements OnInit {
         value: '',
         label: 'export.all.profiles'
     }].concat(this.profileOptions);
+    public getProfileOptions(): SelectOption<string>[] {
+        if (this.type.length === 0) {
+            return this.profileOptionsWithAllProfiles;
+        }
+        if (this.profile.length === 0) {
+            this.profile = 'Teacher';
+        }
+        return this.profileOptions;
+    };
 
     dataSubscriber: Subscription;
     routerSubscriber: Subscription;
