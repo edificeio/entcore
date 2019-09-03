@@ -261,6 +261,13 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		dayDate.set(Calendar.MINUTE, 0);
 		dayDate.set(Calendar.SECOND, 0);
 		dayDate.set(Calendar.MILLISECOND, 0);
+		//
+		final Calendar weekEndDate = Calendar.getInstance();
+		weekEndDate.add(Calendar.DAY_OF_MONTH, dayDelta + 1);
+		weekEndDate.set(Calendar.HOUR_OF_DAY, 0);
+		weekEndDate.set(Calendar.MINUTE, 0);
+		weekEndDate.set(Calendar.SECOND, 0);
+		weekEndDate.set(Calendar.MILLISECOND, 0);
 
 		final JsonObject results = new JsonObject()
 				.put("mails.sent", 0)
@@ -307,7 +314,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 								}
 								final String userLanguage = mutableUserLanguage;
 
-								getUserNotifications(userPrefs.getString("userId", ""), dayDate.getTime(), new Handler<JsonArray>(){
+								getUserNotifications(userPrefs.getString("userId", ""), dayDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
 										if(notifications.size() == 0){
 											usersEndHandler.handle(null);
@@ -410,7 +417,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			}
 		};
 
-		getRecipientsUsers(dayDate.getTime(), new Handler<JsonArray>() {
+		getRecipientsUsers(dayDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {
 				if (event != null && event.size() > 0) {
@@ -448,6 +455,13 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		weekDate.set(Calendar.MINUTE, 0);
 		weekDate.set(Calendar.SECOND, 0);
 		weekDate.set(Calendar.MILLISECOND, 0);
+		//
+		final Calendar weekEndDate = Calendar.getInstance();
+		weekEndDate.add(Calendar.DAY_OF_MONTH, dayDelta + 1);
+		weekEndDate.set(Calendar.HOUR_OF_DAY, 0);
+		weekEndDate.set(Calendar.MINUTE, 0);
+		weekEndDate.set(Calendar.SECOND, 0);
+		weekEndDate.set(Calendar.MILLISECOND, 0);
 
 		final JsonObject results = new JsonObject()
 				.put("mails.sent", 0)
@@ -494,7 +508,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 								}
 								final String userLanguage = mutableUserLanguage;
 
-								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), new Handler<JsonArray>() {
+								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 									public void handle(JsonArray notifications) {
 										if (notifications.size() == 0) {
 											usersEndHandler.handle(null);
@@ -613,7 +627,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				}
 			}
 		};
-		getRecipientsUsers(weekDate.getTime(), new Handler<JsonArray>() {
+		getRecipientsUsers(weekDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {
 				if (event != null && event.size() > 0) {
@@ -679,11 +693,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	 * @param from : The starting date
 	 * @param handler : Handles the notifications
 	 */
-	private void getUserNotifications(String userId, Date from, final Handler<JsonArray> handler){
+	private void getUserNotifications(String userId, Date from, Date to, final Handler<JsonArray> handler){
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder
 						.start("recipients").elemMatch(QueryBuilder.start("userId").is(userId).get())
-						.and("date").greaterThanEquals(from));
+						.and("date").greaterThanEquals(from).lessThan(to));
 
 		JsonObject keys = new JsonObject()
 				.put("_id", 0)
@@ -714,7 +728,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		return userPrefs.getString(field, defaultPrefs.getString(field, ""));
 	}
 
-	private void getRecipientsUsers(Date from, final Handler<JsonArray> handler) {
+	private void getRecipientsUsers(Date from, Date to, final Handler<JsonArray> handler) {
 		final JsonObject aggregation = new JsonObject();
 		JsonArray pipeline = new fr.wseduc.webutils.collections.JsonArray();
 		aggregation
@@ -723,7 +737,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("pipeline", pipeline)
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
-		JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("date").greaterThanEquals(from));
+		JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("date").greaterThanEquals(from).lessThan(to));
 		JsonObject grouper = new JsonObject("{ \"_id\" : \"notifiedUsers\", \"recipients\" : {\"$addToSet\" : \"$recipients.userId\"}}");
 
 		pipeline.add(new JsonObject().put("$match", matcher));
@@ -781,9 +795,10 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	 *  Notifications are grouped by type & event-type.
 	 * @param userId : Userid
 	 * @param from : Starting date in the past
+	 * @param to : End date used to filter notifications
 	 * @param handler: Handles the notifications
 	 */
-	private void getAggregatedUserNotifications(String userId, Date from, final Handler<JsonArray> handler){
+	private void getAggregatedUserNotifications(String userId, Date from, Date to, final Handler<JsonArray> handler){
 		final JsonObject aggregation = new JsonObject();
 		JsonArray pipeline = new fr.wseduc.webutils.collections.JsonArray();
 		aggregation
@@ -795,7 +810,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder
 						.start("recipients").elemMatch(QueryBuilder.start("userId").is(userId).get())
-						.and("date").greaterThanEquals(from));
+						.and("date").greaterThanEquals(from).lessThan(to));
 		JsonObject grouper = new JsonObject("{ \"_id\" : { \"type\": \"$type\", \"event-type\": \"$event-type\"}, \"count\": { \"$sum\": 1 } }");
 		JsonObject transformer = new JsonObject("{ \"type\": \"$_id.type\", \"event-type\": \"$_id.event-type\", \"count\": 1, \"_id\": 0 }");
 
