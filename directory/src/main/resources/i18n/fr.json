@@ -832,5 +832,6 @@
     "directory.otp.copy": "Copier le mot de passe",
     "directory.otp.info" : "Le mot de passe est à usage unique et restera valide pendant 10 minutes.",
     "directory.profile.otp" : "Connexion à l'application mobile",
-    "directory.generate.otp" : "Générer mon mot de passe temporaire"
+    "directory.generate.otp" : "Générer mon mot de passe temporaire",
+	"error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance."
 }
