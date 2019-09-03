@@ -444,5 +444,10 @@
   "empty.wiki.creation.title": "Fabriquez votre encyclopédie collaborative",
   "empty.wiki.creation": "Vous aimez partager votre savoir encyclopédique ? Cette appli est faite pour vous ! Expert ou débutant, créez des pages, ajoutez ou non des contributeurs, rédigez, le tour est joué ! On essaie ?",
   "empty.wiki.consultation.title": "Bienvenue dans l’encyclopédie collaborative",
-  "empty.wiki.consultation": "Pour qui aime partager son savoir encyclopédique, il y a l’application Wiki ! Seul ou à plusieurs, on crée des pages de contenus"
+  "empty.wiki.consultation": "Pour qui aime partager son savoir encyclopédique, il y a l’application Wiki ! Seul ou à plusieurs, on crée des pages de contenus",
+
+  "empty.rack.creation.title": "C’est complètement vide…",
+  "empty.rack.creation": "Pas un seul document ! Vous n’avez encore rien déposé. On s’y met ?",
+  "empty.rack.consultation.title": "Remettre une copie en un clic",
+  "empty.rack.consultation": "L’application Casier sert à déposer ou rendre un devoir. Attention, une fois remis dans le casier personnel du professeur, on ne peut plus modifier ses réponses. Sûr de vous ? Lancez-vous !"
 }
