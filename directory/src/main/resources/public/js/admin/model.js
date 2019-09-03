@@ -432,7 +432,7 @@ Structure.prototype.create = function(hook){
     http().postJson("school", {
         name: that.name,
 		UAI: that.UAI,
-		hasApp: that.hasApp,
+		hasApp: (that.hasApp) ? that.hasApp : false,
     }).done(function(){
         notify.info(lang.translate("directory.notify.structureCreated"))
         hookCheck(hook)
@@ -444,7 +444,7 @@ Structure.prototype.update = function(hook){
     http().putJson("structure/"+that.id, {
         name: that.name,
 		UAI: (that.UAI) ? that.UAI : "",
-		hasApp: that.hasApp,
+		hasApp: (that.hasApp) ? that.hasApp : false,
     }).done(function(){
         notify.info(lang.translate("directory.notify.structureUpdate"))
         hookCheck(hook)
