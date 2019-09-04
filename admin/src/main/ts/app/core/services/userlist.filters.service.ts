@@ -22,6 +22,8 @@ export abstract class UserFilter<T> {
     display?: string
     order?: string
     filterProp?: string
+
+    datepicker?: boolean
 }
 
 export type UserFilterList<T> = UserFilter<T>[]
