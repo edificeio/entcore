@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Data } from "@angular/router";
 import { ServicesStore } from "../../services.store";
 import { RoleModel, GroupModel, StructureModel } from "../../../core/store";
 import { ServicesService } from "../../services.service";
+import { routing } from "../../../core/services";
 
 @Component({
     selector: 'smart-application',
@@ -59,6 +60,7 @@ export class SmartApplicationComponent implements OnInit, OnDestroy {
 
     private routeParamsSubscription: Subscription;
     private rolesSubscription: Subscription;
+    private structureSubscriber: Subscription;
 
     constructor(private activatedRoute: ActivatedRoute,
         public servicesStore: ServicesStore,
@@ -79,6 +81,14 @@ export class SmartApplicationComponent implements OnInit, OnDestroy {
                 this.servicesStore.application.roles = filterRolesByDistributions(
                     this.servicesStore.application.roles.filter(r => r.transverse == false),
                     this.servicesStore.structure.distributions);
+            }
+        });
+
+        this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
+            if (data['structure']) {
+                if (!this.structureHasChildren(this.servicesStore.structure) && this.currentTab === 'massAssignment') {
+                    this.currentTab = 'assignment';
+                }
             }
         });
     }
