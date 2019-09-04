@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
@@ -94,6 +95,8 @@ public class StructureController extends BaseController {
 					if (user == null || !UserUtils.isSuperAdmin(user)) {
 						body.remove("UAI");
 						body.remove("hasApp");
+					} else if (body.containsKey("UAI") && isEmpty(body.getString("UAI"))) {
+						body.putNull("UAI");
 					}
 					String structureId = request.params().get("structureId");
 					structureService.update(structureId, body, defaultResponseHandler(request));
