@@ -205,6 +205,9 @@ export function ExportDelegate($scope: ExportDelegateScope) {
     $scope.onClassLoaded.subscribe((s) => {
         _classroom = s;
     })
+    $scope.onClassRefreshed.subscribe((s) => {
+        _classroom = s;
+    })
     $scope.onSchoolLoaded.subscribe(loaded => {
         _schools = loaded;
     });
