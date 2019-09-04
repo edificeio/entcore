@@ -1534,6 +1534,18 @@ div.legend-square.grey {
 div.legend-square.black {
   background-color: black;
 }
+div.legend-square.flashred {
+  background-color: #e13a3a;
+}
+div.legend-square.flashorange {
+  background-color: #FF8500;
+}
+div.legend-square.flashgreen {
+  background-color: #46bfaf;
+}
+div.legend-square.flashblue {
+  background-color: #0c3848;
+}
 div.legend-separator {
   width: 100%;
   margin-top: 5px;
