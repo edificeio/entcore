@@ -79,6 +79,17 @@ export class UserFilters implements OnInit, OnDestroy {
                 }
             }
         });
+
+        for (let filter of this.listFilters.filters) {
+            if (filter.datepicker) {
+                if (filter.comboModel[0].date) {
+                    this.updateDate(filter.comboModel[0].date, filter);
+                } else if (filter.comboModel[1].date) {
+                    this.updateDate(filter.comboModel[1].date, filter);
+                }
+                break;
+            }
+        }
     }
 
     ngOnDestroy() {
