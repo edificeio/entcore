@@ -456,5 +456,10 @@
   "empty.schoolbook.consultation.title": "Il n’y a aucun mot dans votre carnet pour le moment... ",
   "empty.schoolbook.consultation": "Avec le carnet de liaison numérique, l’enseignant pourra facilement vous communiquer les informations les plus importantes et lire vos réponses en quelques clics !",
   "empty.schoolbook.shared.title": "Il n’y a pas de mots partagés pour le moment…",
-  "empty.schoolbook.shared": "Créez votre mot et donnez à vos pairs la possibilité de le gérer avec vous. Suivi des lectures, relances, impression en coupons… Tout devient plus facile à plusieurs !"
+  "empty.schoolbook.shared": "Créez votre mot et donnez à vos pairs la possibilité de le gérer avec vous. Suivi des lectures, relances, impression en coupons… Tout devient plus facile à plusieurs !",
+
+  "empty.collaborativewall.creation.title": "Pour les accros aux post-it",
+  "empty.collaborativewall.creation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
+  "empty.collaborativewall.consultation.title": "Pour les accros aux post-it",
+  "empty.collaborativewall.consultation": "déal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !"
 }
