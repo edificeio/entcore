@@ -48,11 +48,11 @@ import { Classe } from '../../../../core/store/models';
                           *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
                         <button class="noflex"
                                 *ngIf="!details.isHeadTeacherManual(this.structure.externalId, classe)"
-                                (click)="addHeadTeacherManual(this.structure.externalId, classe)">
+                                (click)="addHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
                             <s5l>headTeacherManual.add</s5l>
                         </button>
                         <button *ngIf="details.isHeadTeacherManual(this.structure.externalId, classe)"
-                                (click)="updateHeadTeacherManual(this.structure.externalId, classe)">
+                                (click)="updateHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
                             <s5l>headTeacherManual.remove</s5l>
                         </button>
                     </span>
@@ -122,8 +122,8 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
     /**
      * Ajout du droit de professeur principal
      */
-    addHeadTeacherManual(externalId: string, classe: any) {
-        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(externalId, classe))
+    addHeadTeacherManual(structureId: string, externalId: string, classe: any) {
+        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(structureId, externalId, classe))
             .then(() => {
                 this.ns.success({
                     key: 'notify.user.add.head.teacher.content',
@@ -141,8 +141,8 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
     /**
      * Suppression du droit de professeur principal
      */
-    updateHeadTeacherManual(externalId: string, classe: any) {
-        this.spinner.perform('portal-content', this.details.updateHeadTeacherManual(externalId, classe))
+    updateHeadTeacherManual(structureId: string, externalId: string, classe: any) {
+        this.spinner.perform('portal-content', this.details.updateHeadTeacherManual(structureId, externalId, classe))
             .then(() => {
                 this.ns.success({
                     key: 'notify.user.remove.head.teacher.content',
