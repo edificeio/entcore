@@ -449,5 +449,12 @@
   "empty.rack.creation.title": "C’est complètement vide…",
   "empty.rack.creation": "Pas un seul document ! Vous n’avez encore rien déposé. On s’y met ?",
   "empty.rack.consultation.title": "Remettre une copie en un clic",
-  "empty.rack.consultation": "L’application Casier sert à déposer ou rendre un devoir. Attention, une fois remis dans le casier personnel du professeur, on ne peut plus modifier ses réponses. Sûr de vous ? Lancez-vous !"
+  "empty.rack.consultation": "L’application Casier sert à déposer ou rendre un devoir. Attention, une fois remis dans le casier personnel du professeur, on ne peut plus modifier ses réponses. Sûr de vous ? Lancez-vous !",
+
+  "empty.schoolbook.creation.title": "Il est temps de créer votre premier mot !",
+  "empty.schoolbook.creation": "Besoin de communiquer avec les parents d’élèves ? Envoyez des mots grâce au carnet de liaison numérique ! Accédez au suivi de lecture et permettez aux parents de répondre directement. Simple et efficace.",
+  "empty.schoolbook.consultation.title": "Il n’y a aucun mot dans votre carnet pour le moment... ",
+  "empty.schoolbook.consultation": "Avec le carnet de liaison numérique, l’enseignant pourra facilement vous communiquer les informations les plus importantes et lire vos réponses en quelques clics !",
+  "empty.schoolbook.shared.title": "Il n’y a pas de mots partagés pour le moment…",
+  "empty.schoolbook.shared": "Créez votre mot et donnez à vos pairs la possibilité de le gérer avec vous. Suivi des lectures, relances, impression en coupons… Tout devient plus facile à plusieurs !"
 }
