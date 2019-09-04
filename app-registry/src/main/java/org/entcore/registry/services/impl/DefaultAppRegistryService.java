@@ -43,6 +43,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -618,32 +619,84 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 	@Override
 	public void massAuthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
-		String query =
-				"MATCH (r:Role), " +
-						"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+		String query = "";
+		if (profiles.contains("AdminLocal")) {
+			profiles = profiles.stream()
+					.filter(profile -> !"AdminLocal".equals(profile))
+					.collect(Collectors.toList());
+			if (profiles.size() == 0) {
+				// Only ADML
+				query = "MATCH (r:Role), (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE r.id IN {roleIds} AND fg.name ENDS WITH 'AdminLocal' AND NOT(fg-[:AUTHORIZED]->r) " +
+						"CREATE UNIQUE (fg)-[:AUTHORIZED]->(r)";
+			} else {
+				// Profiles + ADML
+				query = "MATCH (r:Role), (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
 						"WHERE r.id IN {roleIds} " +
-						"AND p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->r) " +
-						"CREATE UNIQUE g-[:AUTHORIZED]->r";
+						"WITH s, r " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->r) " +
+						"MERGE (g)-[:AUTHORIZED]->(r) " +
+						"WITH s, r " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE fg.name ENDS WITH 'AdminLocal' AND NOT(fg-[:AUTHORIZED]->r) " +
+						"MERGE (fg)-[:AUTHORIZED]->(r)";
+			}
+		} else {
+			// only Profiles (no ADML)
+			query = "MATCH (r:Role), (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE r.id IN {roleIds} AND p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->r) " +
+					"CREATE UNIQUE (g)-[:AUTHORIZED]->(r) ";
+		}
 		executeQueryForStructureProfilesAndRoles(query, structureId, profiles, rolesId, handler);
 	}
 
 	@Override
 	public void massUnauthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
-		String query =
-				"MATCH (r:Role), " +
-						"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+		String query = "";
+		if (profiles.contains("AdminLocal")) {
+			profiles = profiles.stream()
+					.filter(profile -> !"AdminLocal".equals(profile))
+					.collect(Collectors.toList());
+			if (profiles.size() == 0) {
+				// Only ADML
+				query = "MATCH (r:Role), (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
 						"WHERE r.id IN {roleIds} " +
-						"AND p.name IN {profiles} " +
-						"MATCH r<-[auth:AUTHORIZED]-g " +
+						"AND fg.name ENDS WITH 'AdminLocal' " +
+						"MATCH (fg)-[auth:AUTHORIZED]->(r) " +
 						"DELETE auth";
+			}
+			else {
+				// Profiles + ADML
+				query = "MATCH (r:Role), (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
+						"WHERE r.id IN {roleIds} " +
+						"WITH s, r " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (g)-[auth:AUTHORIZED]->(r)" +
+						"WHERE p.name IN {profiles} " +
+						"DELETE auth " +
+						"WITH s, r " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup), (fg)-[auth:AUTHORIZED]->(r) " +
+						"WHERE fg.name ENDS WITH 'AdminLocal' " +
+						"DELETE auth";
+			}
+		} else {
+			// only Profiles (no ADML)
+			query = "MATCH (r:Role), " +
+					"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+					"(r)<-[auth:AUTHORIZED]-(g) " +
+					"WHERE r.id IN {roleIds} AND p.name IN {profiles} " +
+					"DELETE auth";
+		}
 		executeQueryForStructureProfilesAndRoles(query, structureId, profiles, rolesId, handler);
 	}
 
 	private void executeQueryForStructureProfilesAndRoles(String query, String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
-		JsonObject params = new JsonObject()
-				.put("structureId", structureId)
-				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles))
-				.put("roleIds", new fr.wseduc.webutils.collections.JsonArray(rolesId));
+		JsonObject params = new JsonObject();
+		params.put("structureId", structureId);
+		if(profiles != null && profiles.size() > 0) {
+				params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+		}
+		params.put("roleIds", new fr.wseduc.webutils.collections.JsonArray(rolesId));
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
 

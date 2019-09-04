@@ -194,7 +194,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public admc: boolean;
     public admlOfConnectorStructure: boolean;
     public showDeleteConfirmation: boolean;
-    public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher'];
+    public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     private structureSubscriber: Subscription;
     
     @ViewChild(ConnectorPropertiesComponent)

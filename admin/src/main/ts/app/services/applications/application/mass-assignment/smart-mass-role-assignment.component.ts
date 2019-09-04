@@ -20,7 +20,7 @@ import { NotifyService } from '../../../../core/services';
 })
 export class SmartMassRoleAssignment implements OnInit, OnDestroy {
     public structure: Structure;
-    public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher'];
+    public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     public roles: Array<Role> = [];
     private routeDataSubscription: Subscription;
 
