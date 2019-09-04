@@ -26,6 +26,7 @@ import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -217,33 +218,97 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 	@Override
 	public void massAuthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
-		String query =
-			"MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-			"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-			"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-			"AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
-			"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
-		JsonObject params = new JsonObject()
-				.put("appId", appId)
-				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+		String query = "";
+		if (profiles.contains("AdminLocal")) {
+			profiles = profiles.stream()
+					.filter(profile -> !"AdminLocal".equals(profile))
+					.collect(Collectors.toList());
+			if (profiles.size() == 0) {
+				// Only ADML
+				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+						"AND fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) " +
+						"CREATE UNIQUE (fg)-[:AUTHORIZED]->(r) ";
+			} else {
+				// Profiles + ADML
+				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
+						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+						"WITH r, s " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
+						"MERGE (pg)-[:AUTHORIZED]->(r) " +
+						"WITH r, s " +
+						"OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) " +
+						"MERGE (fg)-[:AUTHORIZED]->(r)";
 
+			}
+		} else {
+			// only Profiles (no ADML)
+			query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+					"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+					"AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
+					"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
+		}
+
+		JsonObject params = new JsonObject();
+		params.put("appId", appId);
+		if (profiles != null && profiles.size() > 0) {
+			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+		}
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
 
 	@Override
 	public void massUnauthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
-		String query =
-				"MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-				"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-				"AND p.name IN {profiles} " +
-				"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +
-				"DELETE auth ";
-			JsonObject params = new JsonObject()
-					.put("appId", appId)
-					.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+		String query = "";
+		if (profiles.contains("AdminLocal")) {
+			profiles = profiles.stream()
+					.filter(profile -> !"AdminLocal".equals(profile))
+					.collect(Collectors.toList());
+			if (profiles.size() == 0) {
+				// Only ADML
+				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+						"AND fg.name ENDS WITH 'AdminLocal' " +
+						"MATCH (r)<-[auth:AUTHORIZED]-(fg) " +
+						"DELETE auth ";;
+			} else {
+				// Profiles + ADML
+				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
+						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+						"WITH r, s " +
+						"OPTIONAL MATCH (s)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (pg)-[auth:AUTHORIZED]->(r) " +
+						"WHERE p.name IN {profiles} " +
+						"DELETE auth " +
+						"WITH r, s " +
+						"OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(fg:FunctionGroup), (fg)-[auth:AUTHORIZED]->(r) " +
+						"WHERE fg.name ENDS WITH 'AdminLocal' " +
+						"DELETE auth";
 
-			neo.execute(query, params, validEmptyHandler(handler));
+			}
+		} else {
+			// only Profiles (no ADML)
+			query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
+					"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
+					"AND p.name IN {profiles} " +
+					"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +
+					"DELETE auth ";
+		}
+
+
+		JsonObject params = new JsonObject();
+		params.put("appId", appId);
+		if (profiles != null && profiles.size() > 0) {
+			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+		}
+		neo.execute(query, params, validEmptyHandler(handler));
 	}
 
 }

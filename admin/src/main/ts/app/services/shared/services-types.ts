@@ -5,7 +5,7 @@ export interface Role {
     name: string;
 }
 
-export type Profile = 'Teacher' | 'Student' | 'Relative' | 'Guest' | 'Personnel';
+export type Profile = 'Teacher' | 'Student' | 'Relative' | 'Guest' | 'Personnel' | 'AdminLocal';
 
 export interface Structure {
     id: string;
