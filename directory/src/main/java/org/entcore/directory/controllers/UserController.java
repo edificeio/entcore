@@ -372,7 +372,7 @@ public class UserController extends BaseController {
 		});
 	}
 
-	@Post("/user/headteacher/:userId")
+	@Post("/:structure/user/:userId/headteacher")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
 	@IgnoreCsrf
@@ -386,7 +386,7 @@ public class UserController extends BaseController {
 		});
 	}
 
-	@Put("/user/headteacher/:userId")
+	@Put("/:structure/user/:userId/headteacher")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
 	public void updateHeadTeacherManual(final HttpServerRequest request) {

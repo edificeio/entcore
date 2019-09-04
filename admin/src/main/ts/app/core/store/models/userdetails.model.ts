@@ -96,9 +96,9 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.put(`/directory/userbook/${this.id}`, {"picture":""});
     }
 
-    addHeadTeacherManual(structureExternalId: string, classe: any) {
+    addHeadTeacherManual(structureId: string, structureExternalId: string, classe: any) {
         let relationToAdd = classe.externalId;
-        return this.http.post(`/directory/user/headteacher/${this.id}`, {
+        return this.http.post(`/directory/${structureId}/user/${this.id}/headteacher`, {
             classExternalId: relationToAdd,
             structureExternalId : structureExternalId
         }).then(async (res) => {
@@ -109,9 +109,9 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
-    updateHeadTeacherManual(structureExternalId: string, classe: any) {
+    updateHeadTeacherManual(structureId: string, structureExternalId: string, classe: any) {
         let relationToRemove = classe.externalId;
-        return this.http.put(`/directory/user/headteacher/${this.id}`,{
+        return this.http.put(`/directory/${structureId}/user/${this.id}/headteacher`,{
             classExternalId: relationToRemove,
             structureExternalId : structureExternalId
         }).then(() => {
