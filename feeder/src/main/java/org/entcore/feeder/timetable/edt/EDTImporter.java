@@ -491,10 +491,20 @@ public class EDTImporter extends AbstractTimetableImporter {
 		endDate = endDate.plusSeconds(slots.get(String.valueOf((startPlace + placesNumber - 1))).getEnd());
 		final JsonObject c = new JsonObject()
 				.put("structureId", structureId)
-				.put("subjectId", subjects.get(entity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT)))
+//				.put("subjectId", subjects.get(entity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT)))
 				.put("startDate", startDate.toString())
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", startDate.getDayOfWeek());
+
+		final String codeMat = entity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT);
+		final String sId = subjects.get(codeMat);
+		if (isNotEmpty(sId)) {
+			c.put("timetableSubjectId", sId);
+		}
+		final String sBCNId = subjectsBCN.get(codeMat);
+		if (isNotEmpty(sBCNId)) {
+			c.put("subjectId", sBCNId);
+		}
 
 		for (int i = 0; i < enabledItems.size(); i++) {
 			if (enabledItems.get(i)) {
