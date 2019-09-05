@@ -42,7 +42,8 @@ public final class AAFHandler extends DefaultHandler {
 	private final ImportProcessing processing;
 	private final List<String> allowEmptyUpdate = Arrays.asList(
 			"ENTAuxEnsClassesPrincipal", "mobile", "ENTPersonMobileSMS", "ENTPersonAdresse",
-			"ENTPersonCodePostal", "ENTPersonVille", "ENTPersonPays", "ENTAuxEnsMEF", "ENTEleveMEF", "ENTEleveLibelleMEF");
+			"ENTPersonCodePostal", "ENTPersonVille", "ENTPersonPays", "ENTAuxEnsMEF", "ENTEleveMEF",
+			"ENTEleveLibelleMEF", "ENTEleveCodeEnseignements", "ENTEleveEnseignements");
 
 	public AAFHandler(ImportProcessing processing) {
 		this.processing = processing;
