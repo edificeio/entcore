@@ -599,7 +599,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		final String sId = subjects.get(entity.getString("mat"));
 		if (isNotEmpty(sId)) {
-			c.put("subjectId", sId);
+			c.put("timetableSubjectId", sId);
+		}
+		final String sBCNId = subjectsBCN.get(entity.getString("mat"));
+		if (isNotEmpty(sBCNId)) {
+			c.put("subjectId", sBCNId);
 		}
 		final String rId = rooms.get(entity.getString("salle"));
 		if (isNotEmpty(rId)) {
