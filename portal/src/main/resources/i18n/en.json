@@ -167,5 +167,6 @@
     "record.play": "Jouer le son",
     "record.remove": "Annuler l'enregistrement",
     "record.save": "Enregistrer l'enregistrement dans l'espace documentaire",
-    "help.icon": ""
+    "help.icon": "",
+    "datepicker.format": "mm/dd/yyyy"
 }
