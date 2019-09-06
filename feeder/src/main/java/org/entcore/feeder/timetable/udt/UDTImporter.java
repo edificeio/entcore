@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.timetable.udt;
 
-import fr.wseduc.swift.storage.DefaultAsyncResult;
+import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo4jUtils;
