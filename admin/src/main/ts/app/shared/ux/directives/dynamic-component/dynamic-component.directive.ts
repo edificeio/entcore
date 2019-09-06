@@ -13,7 +13,7 @@ export class DynamicComponentDirective {
         private componentFactoryResolver: ComponentFactoryResolver
     ) {}
 
-    private componentRef:ComponentRef<any>;
+    public componentRef:ComponentRef<any>;
 
     @Input("dynamic-component") 
     componentDesc: ComponentDescriptor;
