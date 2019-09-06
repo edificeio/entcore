@@ -385,7 +385,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 
 	private void persEducNatToSubjects(JsonObject object) {
-		final String subjectId = object.getString("subjectId");
+		final String subjectId = object.getString("timetableSubjectId");
 		final JsonArray teacherIds = object.getJsonArray("teacherIds");
 		if (isNotEmpty(subjectId) && teacherIds != null && teacherIds.size() > 0) {
 			final JsonObject params = new JsonObject()
@@ -661,9 +661,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			return;
 		}
 		final String updateSubjects =
-				"MATCH (:Structure {UAI : {UAI}})<-[:SUBJECT]-(:Subject {code:{codeBCN}})<-[r:TEACHES]-(u:User {id:{userId}}) " +
+				"MATCH (:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject {code:{codeBCN}}), (u:User {id:{userId}}) " +
+				"MERGE sub<-[r:TEACHES]-u " +
+				"ON CREATE SET r.source = {source}, r.classes = {classes}, r.groups = {groups} " +
 				"SET r.timetableClasses = {classes}, r.timetableGroups = {groups}, r.lastUpdated = {now} ";
-		final JsonObject p = new JsonObject().put("UAI", UAI).put("codeBCN", code).put("now", importTimestamp);
+		final JsonObject p = new JsonObject().put("UAI", UAI).put("codeBCN", code)
+				.put("now", importTimestamp).put("source", getSource());
 		for (Object o : teaches) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray j = (JsonArray) o;
