@@ -196,10 +196,8 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	};
 
 	$scope.copyToClipboard = function() {
-		directory.account.copyToClipboard(function() {
-			(<HTMLInputElement>document.getElementById("otpInput")).select();
-			document.execCommand( 'copy' );
-		});
+		(<HTMLInputElement>document.getElementById("otpInput")).select();
+		document.execCommand( 'copy' );
 	};
 
 	$scope.closePassword = function(){
