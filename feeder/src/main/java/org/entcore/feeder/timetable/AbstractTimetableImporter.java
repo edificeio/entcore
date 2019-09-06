@@ -52,7 +52,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractTimetableImporter.class);
 	protected static final JsonObject bcnSubjects = JsonUtil.loadFromResource("dictionary/bcn/n_matiere_enseignee.json");
-	public static final Pattern prefixCodeSubjectPatter = Pattern.compile("^[A-Z]+-([0-9]+)$");
+	protected static final Pattern prefixCodeSubjectPatter = Pattern.compile("^[A-Z]+-([0-9]+)$");
+	protected static final Pattern academyPrefixPatter = Pattern.compile("^([A-Z]+-)[0-9]+$");
 	private static final String CREATE_SUBJECT =
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
 			"MERGE (sub:TimetableSubject {externalId : {externalId}}) " +
@@ -145,6 +146,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, JsonObject> classes = new HashMap<>();
 	protected final Map<String, JsonObject> groups = new HashMap<>();
 	protected final Map<String, String> classNameExternalId = new HashMap<>();
+	protected String academyPrefix = "";
 
 	protected PersEducNat persEducNat;
 	protected TransactionHelper txXDT;
@@ -210,6 +212,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							if (!getSource().equals(a.getJsonObject(0).getString("timetable"))) {
 								handler.handle(new DefaultAsyncResult<Void>(new TransactionException("different.timetable.type")));
 								return;
+							}
+							final Matcher m = academyPrefixPatter.matcher(structureExternalId);
+							if (m.find()) {
+								academyPrefix = m.group(1);
 							}
 						} else {
 							handler.handle(new DefaultAsyncResult<Void>(new ValidationException("invalid.uai")));
@@ -290,10 +296,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		subjects.put(id, subjectId);
 		final String bcnCode = bcnSubjects.getString(code);
 		if (isNotEmpty(bcnCode)) {
-			final String bcnSubjectId = subjectsBCNMapping.get(bcnCode);
-			if (isNotEmpty(bcnSubjectId)) {
-				subjectsBCN.put(id, bcnSubjectId);
+			String bcnSubjectId = subjectsBCNMapping.get(bcnCode);
+			if (isEmpty(bcnSubjectId)) {
+				bcnSubjectId = UUID.randomUUID().toString();
+				createSubject(bcnSubjectId, academyPrefix + bcnCode, true, txXDT);
 			}
+			subjectsBCN.put(id, bcnSubjectId);
 		} else if (subjectsBCNMapping.containsKey(code)) {
 			subjectsBCN.put(id, subjectsBCNMapping.get(code));
 		}
@@ -627,6 +635,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private void createSubject(String code, boolean bcnSubject, TransactionHelper tx) {
+		createSubject(null, code, bcnSubject, tx);
+	}
+
+	private void createSubject(String id, String code, boolean bcnSubject, TransactionHelper tx) {
 		final String query = (bcnSubject ?
 				"MATCH (s:Structure {UAI : {UAI}}), (f:FieldOfStudy {externalId: {code}}) " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
@@ -634,8 +646,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(ts:TimetableSubject {mappingCode:{code}}) " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + {code}}) " +
 				"ON CREATE SET sub.label = ts.label") +
-				", sub.code = {code}, sub.id = id(sub) + '-' + timestamp() SET sub.source = {source} ";
+				", sub.code = {code}, sub.id = " + (id != null ? "{id}" : "id(sub) + '-' + timestamp()") +
+				" SET sub.source = {source} ";
 		JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getSource());
+		if (id != null) {
+			params.put("id", id);
+		}
 		tx.add(query, params);
 	}
 
