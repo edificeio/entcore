@@ -74,4 +74,6 @@ public interface SchoolService {
 
 	void getClasses(String structureId, Handler<Either<String, JsonObject>> handler);
 
+	void massDistributionAndLevelOfEducation(JsonArray data, Handler<Either<String, JsonObject>> handler);
+
 }
