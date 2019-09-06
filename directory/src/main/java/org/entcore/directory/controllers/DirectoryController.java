@@ -553,6 +553,10 @@ public class DirectoryController extends BaseController {
 				String slotProfileId = message.body().getString("slotProfileId");
 				slotProfileService.listSlots(slotProfileId, busResponseHandler(message));
 				break;
+			case "set-distrib-and-education-by-structureId" :
+				JsonArray data = message.body().getJsonArray("data");
+				schoolService.massDistributionAndLevelOfEducation(data, busResponseHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.put("status", "error")

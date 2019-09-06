@@ -24,6 +24,7 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
@@ -33,8 +34,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collector;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -413,5 +413,34 @@ public class DefaultSchoolService implements SchoolService {
 		String query = "MATCH (s: Structure {id: {structureId}})<-[:BELONGS]-(c:Class) " +
 				"RETURN FILTER(c IN COLLECT(DISTINCT { id: c.id, label: c.name }) WHERE NOT(c.id IS NULL)) as classes";
 		neo.execute(query, new JsonObject().put("structureId", structureId), validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void massDistributionAndLevelOfEducation(JsonArray data, Handler<Either<String, JsonObject>> handler) {
+
+		StatementsBuilder s = new StatementsBuilder();
+
+		data.forEach(entry -> {
+
+			JsonObject jo = (JsonObject) entry;
+			String structureId = jo.getString("ent_structure_id");
+			String distribution = jo.getString("distribution");
+			Integer education = jo.getInteger("education");
+
+			if (structureId != null) {
+				String query = "MATCH (s:Structure {id: {structureId}}) " +
+						"SET s.levelsOfEducation = {levelsOfEducation} " +
+						"SET s.distributions = {distributions} ";
+
+				JsonObject params = new JsonObject().put("structureId", structureId)
+						.put("levelsOfEducation", education != null ? Arrays.asList(education) : Collections.EMPTY_LIST)
+						.put("distributions", distribution != null ? Arrays.asList(distribution) : Collections.EMPTY_LIST);
+
+				s.add(query, params);
+			}
+
+		});
+
+		neo.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
 	}
 }
