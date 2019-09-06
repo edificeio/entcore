@@ -598,11 +598,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							final JsonObject s = (JsonObject) o;
 							final String mappingCode = s.getString("mappingCode");
 							if (mappingCode == null) continue;
-							String code = bcnSubjects.getString(mappingCode);
-							if (code != null && !subjectsExists.contains(code)) {
+							final String c = bcnSubjects.getString(mappingCode);
+							String code = academyPrefix + c;
+							if (c != null && !subjectsExists.contains(code)) {
 								subjectsExists.add(code);
 								createSubject(code, true, tx2);
-							} else if (code == null) {
+							} else if (c == null) {
 								code = mappingCode;
 								if (!subjectsExists.contains(code)) {
 									createSubject(code, false, tx2);
@@ -639,6 +640,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private void createSubject(String id, String code, boolean bcnSubject, TransactionHelper tx) {
+		if (bcnSubject) {
+			log.info("Timetable create BCN subject : " + code);
+		}
 		final String query = (bcnSubject ?
 				"MATCH (s:Structure {UAI : {UAI}}), (f:FieldOfStudy {externalId: {code}}) " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
