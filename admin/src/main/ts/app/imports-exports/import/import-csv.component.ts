@@ -75,6 +75,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                     [availables]="columns.availableFields[p]"
                     [emptyLabel]="'import.fieldsChecking.warning.ignore'"
                     [emptyWarning]="'import.fieldsChecking.warning.ignore.1'"
+                    (selectChange)="columns.selectChange(globalError, p, $event)"
                 >
                 </mappings-table>
             </panel-section>    
@@ -450,6 +451,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableFields : {},
         mappings : {},
         profiles : [],
+        enableButtonNextStep: this.enableButtonNextStep,
         checkErrors(globalError:GlobalError, translate:Function): boolean {
             let res = {};
             for (let p of this.profiles) {
@@ -481,6 +483,15 @@ export class ImportCSV implements OnInit, OnDestroy {
                 } 
             }
             return false;
+        },
+        selectChange(globalError: GlobalError , profile: string, value: string) {
+            if (this.requieredFields[profile].every(requiered => Object.values(this.mappings[profile]).includes(requiered))) {
+                if (globalError.message == 'import.error.requieredFieldNotFound.global') {
+                    globalError.message = '';
+                    globalError.profile[profile] = null;
+                    this.enableButtonNextStep();
+                }
+            }
         }
     };
  

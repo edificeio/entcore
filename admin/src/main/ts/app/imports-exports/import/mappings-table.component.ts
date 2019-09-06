@@ -1,6 +1,6 @@
 import { 
     ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit,
-    Component, Input, OnInit, ViewChildren, QueryList } from '@angular/core'
+    Component, Input, OnInit, ViewChildren, QueryList, Output, EventEmitter } from '@angular/core'
 import { BundlesService } from 'sijil'
 import { ComponentDescriptor, DynamicComponentDirective } from '../../shared/ux/directives'
 import { SimpleSelectComponent } from '../../shared/ux/components'
@@ -67,6 +67,7 @@ export class MappingsTable {
     @Input() emptyWarning : String;
     @Input() mappingsKeySort: boolean;
     @Input() type: 'user' | 'class';
+    @Output() selectChange: EventEmitter<string> = new EventEmitter<string>();
 
     private readonly emptyValue:String[] = ['ignore', '']; // 'ignore' is use for FieldsMapping and '' for ClassesMapping
 
@@ -102,6 +103,9 @@ export class MappingsTable {
 
     loadAvailables(value:string, index:number) {
         this.dComponents.toArray()[index].load({selected:value});
+        this.dComponents.toArray()[index].componentRef.instance.selectChange.subscribe(event => {
+            this.selectChange.emit(event);
+        });
     }
     selectIsLoaded(index:number):boolean {
         if (this.dComponents == undefined || this.dComponents.toArray()[index] == undefined) 
