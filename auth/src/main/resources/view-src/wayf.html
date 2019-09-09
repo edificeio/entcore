@@ -37,6 +37,11 @@
 					$(this).attr('href', $(this).attr('href') + encodingHash);
 				});
 			}
+
+			setTimeout(function() {
+				if ($("#message span")[0] && $("#message span")[0].innerHTML != 'wayf.message') { $("#message").attr('style','display : block'); }
+			}, 400);
+
 		}
 	</script>
 </head>
@@ -49,6 +54,9 @@
 	<div>
 		<section id="credentials-content">
 			<i class="logo"></i>
+			<h2 class="row vertical-spacing" style="display:none" id="message">
+				<i18n>wayf.message</i18n>
+			</h2>
 			<h2 class="row vertical-spacing">
 				<i18n>wayf.select.profile</i18n>
 			</h2>
