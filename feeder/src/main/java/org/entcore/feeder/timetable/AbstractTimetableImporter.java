@@ -52,6 +52,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractTimetableImporter.class);
 	protected static final JsonObject bcnSubjects = JsonUtil.loadFromResource("dictionary/bcn/n_matiere_enseignee.json");
+	protected static final JsonObject bcnSubjectsLong =
+			JsonUtil.loadFromResource("dictionary/bcn/n_matiere_enseignee_long.json");
 	protected static final Pattern prefixCodeSubjectPatter = Pattern.compile("^[A-Z]+-([0-9]+)$");
 	protected static final Pattern academyPrefixPatter = Pattern.compile("^([A-Z]+-)[0-9]+$");
 	private static final String CREATE_SUBJECT =
@@ -643,16 +645,28 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if (bcnSubject) {
 			log.info("Timetable create BCN subject : " + code);
 		}
-		final String query = (bcnSubject ?
-				"MATCH (s:Structure {UAI : {UAI}}), (f:FieldOfStudy {externalId: {code}}) " +
-				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
-				"ON CREATE SET sub.label = f.name" :
-				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(ts:TimetableSubject {mappingCode:{code}}) " +
-				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + {code}}) " +
-				"ON CREATE SET sub.label = ts.label") +
+		String query;
+		final JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getSource());
+		if (bcnSubject) {
+			final JsonObject bcnObject = bcnSubjectsLong.getJsonObject(code.substring(academyPrefix.length()));
+			if (bcnObject != null) {
+				query = "MATCH (s:Structure {UAI : {UAI}}) " +
+						"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + {code}}) " +
+						"ON CREATE SET sub.label = {subjectName}";
+				params.put("subjectName", bcnObject.getString("name"));
+			} else {
+				query = "MATCH (s:Structure {UAI : {UAI}}), (f:FieldOfStudy {externalId: {code}}) " +
+						"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
+						"ON CREATE SET sub.label = f.name";
+			}
+		} else {
+			query = "MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(ts:TimetableSubject {mappingCode:{code}}) " +
+					"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + {code}}) " +
+					"ON CREATE SET sub.label = ts.label";
+		}
+		query +=
 				", sub.code = {code}, sub.id = " + (id != null ? "{id}" : "id(sub) + '-' + timestamp()") +
 				" SET sub.source = {source} ";
-		JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getSource());
 		if (id != null) {
 			params.put("id", id);
 		}
