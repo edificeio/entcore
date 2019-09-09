@@ -54,6 +54,7 @@
 }
 
 .fullscreen-viewer{
+	position: absolute;
 	z-index: 100001;
 	width: 100%;
 	background: rgba(0,0,0,0.7);
@@ -62,10 +63,7 @@
 	min-height: calc(100% - 40px);
 	display: flex;
     justify-content: center;
-	align-items: center;
-	top: 0;
-	padding-top: 60px;
-
+    align-items: center;
 	.render{
 		margin-left: auto;
 		margin-right: auto;
