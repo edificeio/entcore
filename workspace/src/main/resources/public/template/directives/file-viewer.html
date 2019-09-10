@@ -3,9 +3,18 @@
 		<resource-right resource="ngModel" name="contrib">
 			<button class="cancel right-magnet" ng-click="editImage()" ng-if="!isFullscreen && ngModel.isEditableImage"><i18n>editImage</i18n></button>
 		</resource-right>
-		<button class="cancel right-magnet" ng-if="canDownload()" ng-click="download()" ng-if="!isFullscreen"><i18n>download</i18n></button>
 		<button class="cancel right-magnet" ng-click="fullscreen(true)" ng-if="!isFullscreen"><i18n>preview</i18n></button>
-		<i class="close" ng-click="fullscreen(false)" ng-if="isFullscreen"></i>
+
+		<div class="cancel right-magnet button">
+			<button class="top-spacing-twice" ng-if="canDownload() && isFullscreen" ng-click="download()">
+				<i18n>download</i18n>
+			</button>
+			<button ng-if="canDownload() && !isFullscreen" ng-click="download()">
+				<i18n>download</i18n>
+			</button>
+			<i class="close" ng-click="fullscreen(false)" ng-if="isFullscreen"></i>
+		</div>
+
 	</div>
 	<div class="file">
 		<div ng-if="contentType === 'html'">
