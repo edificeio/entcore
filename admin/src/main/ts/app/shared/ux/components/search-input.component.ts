@@ -13,7 +13,7 @@ import 'rxjs/add/operator/distinctUntilChanged'
         <input type="search" #searchBox (input)="search(searchBox.value)"/>
     `
 })
-export class SearchInputComponent implements OnInit, OnDestroy, DoCheck {
+export class SearchInputComponent implements OnInit, OnDestroy {
 
     constructor(private _elRef : ElementRef,
         private _cdRef: ChangeDetectorRef,
@@ -65,10 +65,6 @@ export class SearchInputComponent implements OnInit, OnDestroy, DoCheck {
             })
         }
         setTimeout(() => this.evalAttributes(), 20);
-    }
-
-    ngDoCheck() : void {
-        this.evalAttributes()
     }
 
     ngOnDestroy() : void {
