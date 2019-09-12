@@ -518,7 +518,8 @@ public class ManualFeeder extends BusModBase {
 							"WITH u, p " +
 							"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
 							"(pg:ProfileGroup)-[:HAS_PROFILE]->(p), (s)-[:BELONGS]->(struct:Structure) " +
-							"MERGE (pg)<-[:IN {source:'MANUAL'}]-(u)-[:IN {source:'MANUAL'}]->(cpg) " +
+							"MERGE pg<-[:IN {source:'MANUAL'}]-u " +
+							"MERGE cpg<-[:IN {source:'MANUAL'}]-u " +
 							"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
 							"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
 							"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
