@@ -322,6 +322,9 @@ export const directoryService = {
         });
         return Promise.all(promises);
     },
+    async generateResetCodes(users: User[]) {
+        return http.post("/auth/massGeneratePasswordRenewalCode", { users: users.map((user) => user.id) });
+    },
     async getTheme() {
         const res = await http.get("/userbook/preference/theme");
         return res.data ? (res.data.preference || "") : ""

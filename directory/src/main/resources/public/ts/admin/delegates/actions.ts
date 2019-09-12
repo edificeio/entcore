@@ -16,9 +16,14 @@ export interface ActionsDelegateScope extends EventDelegateScope {
     unlinkSelectedUsers(): void;
     unlinkTextAction(): string;
     deleteTextAction(): string;
+    generateTemporaryPasswords(): void;
+    resetPasswordUsers: User[];
     // from others
     selectedClass: ClassRoom;
     reloadClassroom(classroom: ClassRoom): void;
+    openLightbox(name: string): void
+    closeLightbox(): void;
+    printResetPasswordUsers(): void;
 }
 export function ActionsDelegate($scope: ActionsDelegateScope) {
     // === Init template
@@ -96,4 +101,16 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         } finally {
         }
     }
+    $scope.generateTemporaryPasswords = async function() {
+		let resetUsers = selection.filter((u) => !u.activationCode);
+		if (resetUsers.length != 0) {
+			let resetCodes = (await directoryService.generateResetCodes(resetUsers)).data;
+            resetUsers.forEach(u => {
+                u.resetCode = resetCodes[u.id].code;
+                u.resetCodeDate = resetCodes[u.id].date;
+            });
+        }
+        $scope.resetPasswordUsers = selection;
+		$scope.openLightbox("resetpassword");
+	}
 }

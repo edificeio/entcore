@@ -32,6 +32,7 @@ import org.entcore.auth.pojo.SendPasswordDestination;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.StatementsBuilder;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -547,6 +548,34 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void generateResetCode(String login, boolean checkFederatedLogin, Handler<Either<String, String>> handler) {
 		setResetCode(login, checkFederatedLogin, handler);
+	}
+
+	@Override
+	public void massGenerateResetCode(JsonArray userIds, boolean checkFederatedLogin , Handler<Either<String, JsonObject>> handler) {
+
+		final JsonObject resetCodes = new JsonObject();
+		final Long today = new Date().getTime();
+		final Map<String, String> map = new HashMap<>();
+
+		for (int i = 0; i < userIds.size(); i++) {
+			final String userId = userIds.getString(i);
+			final String code = StringValidation.generateRandomCode(8);
+			map.put(userId, code);
+			resetCodes.put(userId, new JsonObject().put("code", code).put("date", today));
+		}
+
+		String query = "WITH {codes} AS data, [k in keys({codes})] AS userIds " +
+				"MATCH (n:User) WHERE n.id IN userIds " +
+				"SET n.resetCode = data[n.id], n.reset = {today}";
+		JsonObject params = new JsonObject().put("codes", map).put("today", today);
+
+		neo.execute(query, params, res -> {
+			if ("ok".equals(res.body().getString("status"))) {
+				handler.handle(new Either.Right<>(resetCodes));
+			} else {
+				handler.handle(new Either.Left<>(res.body().getString("message")));
+			}
+		});
 	}
 
 	@Override
