@@ -63,7 +63,10 @@ export class ImportCSVService {
         try {
             response = await http.put('directory/wizard/import/' + importId);
         } catch(error) {
-            return error.response.data;
+            if (error.response) {
+                return error.response.data;
+            }
+            throw error;
         }
         return response.data 
     }

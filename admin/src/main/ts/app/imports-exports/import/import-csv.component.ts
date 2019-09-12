@@ -283,7 +283,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
             <div *ngIf="globalError.message else noGlobalError">
                 <h2>{{ 'import.finish.error' | translate }}</h2>            
-                <message-box [type]="'danger'" [messages]="[globalError.message]"></message-box>
+                <message-box [type]="'danger'" [messages]="[[globalError.message, {error: globalError.param}]]"></message-box>
                 <panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="false"> 
                     <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
                 </panel-section>
@@ -368,11 +368,13 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.wizardEl.canDoNext = true;
     }
 
-    globalError:{ message:string,profile:{},reset:Function } = {
-        message:undefined,
-        profile:{},
-        reset(){
+    globalError: { message:string, param:string, profile:{}, reset:Function } = {
+        message: undefined,
+        param: undefined,
+        profile: {},
+        reset() {
             this.message = undefined;
+            this.param = undefined;
             this.profile = {};
         }
     };
@@ -857,8 +859,14 @@ export class ImportCSV implements OnInit, OnDestroy {
     
     private async import() {
         this.globalError.reset();
-        let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
-        if (data.errors && data.errors.errors) {
+        let data;
+        try {
+            data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
+        } catch (err) {
+            this.globalError.message = 'import.technical.error';
+            this.globalError.param = err.message;
+        }
+        if (data && data.errors && data.errors.errors) {
             if (data.errors.errors['error.global']) {
                 this.globalError.message = data.errors.errors['error.global'];
             } else {

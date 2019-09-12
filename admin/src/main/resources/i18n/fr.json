@@ -402,6 +402,7 @@
     "import.file.warning" : "Ce fichier contient des avertissements qui ne bloquent pas le chargement du fichier",
     "import.global.warning" : "Les avertissements sont affichés en orange avec ce symbole : <i class=\"fa fa-exclamation-circle is-warning\"></i> Vous pouvez passer à l'étape suivante.",
     "import.global.error" : "Les fichiers que vous souhaitez importer contiennent les erreurs bloquantes suivantes :",
+    "import.technical.error": "Une erreur technique est survenue. ({{error}})",
     "import.warning.":"",
     "missing.student.soft" : "Elève inconnu",
     "missing.student.soft.message" : "Votre fichier contient <strong>{{errorNumber}}  parent(s) avec des élèves non reconnus</strong>. Si vous poursuivez l'import, le compte parent sera créé mais sans lien avec le compte élève.",
