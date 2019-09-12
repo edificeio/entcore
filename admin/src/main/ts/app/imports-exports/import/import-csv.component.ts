@@ -284,6 +284,9 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
             <div *ngIf="globalError.message else noGlobalError">
                 <h2>{{ 'import.finish.error' | translate }}</h2>            
                 <message-box [type]="'danger'" [messages]="[globalError.message]"></message-box>
+                <panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="false"> 
+                    <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
+                </panel-section>
                 <button 
                     (click)="cancel()"
                     [title]="'import.finish.otherImport' | translate">
@@ -856,7 +859,12 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.globalError.reset();
         let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
         if (data.errors && data.errors.errors) {
-            this.globalError.message = data.errors.errors['error.global'];
+            if (data.errors.errors['error.global']) {
+                this.globalError.message = data.errors.errors['error.global'];
+            } else {
+                this.globalError.message = 'import.global.error'
+                this.globalError.profile = data.errors.errors;
+            }
         }
         this.wizardEl.doNextStep();
         this.cdRef.markForCheck();
