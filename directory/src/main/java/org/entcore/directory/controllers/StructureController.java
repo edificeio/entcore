@@ -324,45 +324,56 @@ public class StructureController extends BaseController {
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");
 
-		final String assetsPath = this.assetsPath + "/assets/themes/" + this.skins.get(Renders.getHost(request));
-		final String templatePath = assetsPath + "/template/directory/";
-		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + this.skins.get(Renders.getHost(request)) + "/img/";
+		getSkin(request, result -> {
 
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			public void handle(final UserInfos infos) {
-
-				//PDF
-				if("pdf".equals(type)){
-					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
-
-						}
-					});
-				}
-				//Mail
-				else if("mail".equals(type)){
-					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(final Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-						}
-					});
-				} else {
-					badRequest(request);
-				}
-
+			final String skin;
+			if (result.isLeft()) {
+				skin = this.skins.get(Renders.getHost(request));
+			} else {
+				skin = result.right().getValue();
 			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/";
+			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				public void handle(final UserInfos infos) {
+
+					//PDF
+					if("pdf".equals(type)){
+						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
+
+							}
+						});
+					}
+					//Mail
+					else if("mail".equals(type)){
+						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(final Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+							}
+						});
+					} else {
+						badRequest(request);
+					}
+
+				}
+			});
+
 		});
 
 	}
@@ -401,46 +412,58 @@ public class StructureController extends BaseController {
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");
 
-		final String assetsPath = this.assetsPath + "/assets/themes/" + this.skins.get(Renders.getHost(request));
-		final String templatePath = assetsPath + "/template/directory/";
-		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + this.skins.get(Renders.getHost(request)) + "/img/";
+		getSkin(request, result -> {
 
-		final boolean isSimplePdf = "simplePdf".equals(type);
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			public void handle(final UserInfos infos) {
-
-				//PDF
-				if("pdf".equals(type) || "newPdf".equals(type) || isSimplePdf){
-					massMailService.massmailUsers(structureId, filter, true, isSimplePdf, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
-						}
-					});
-				}
-				//Mail
-				else if("mail".equals(type)){
-					massMailService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(final Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-						}
-					});
-				} else {
-					badRequest(request);
-				}
-
+			final String skin;
+			if (result.isLeft()) {
+				skin = this.skins.get(Renders.getHost(request));
+			} else {
+				skin = result.right().getValue();
 			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/";
+			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+
+			final boolean isSimplePdf = "simplePdf".equals(type);
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				public void handle(final UserInfos infos) {
+
+					//PDF
+					if("pdf".equals(type) || "newPdf".equals(type) || isSimplePdf){
+						massMailService.massmailUsers(structureId, filter, true, isSimplePdf, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
+							}
+						});
+					}
+					//Mail
+					else if("mail".equals(type)){
+						massMailService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(final Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+							}
+						});
+					} else {
+						badRequest(request);
+					}
+
+				}
+			});
+
 		});
+
 	}
 
 	@Post("/class-admin/massmail")
@@ -451,7 +474,6 @@ public class StructureController extends BaseController {
 			public void handle(JsonObject body) {
 
 				JsonArray userIds = body.getJsonArray("ids");
-				//String theme = body.getString("theme");
 				String type = body.getString("type");
 				String schoolId = body.getString("structureId");
 
@@ -460,52 +482,62 @@ public class StructureController extends BaseController {
 				}
 
 				final String host = Renders.getHost(request);
-				// We ignore the theme parameter for now and rather take the domain's default theme
 				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
-				String theme = skins.get(host);
 
-				final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
-						"/assets/themes/" + theme;
-				final String templatePath = assetsPath + "/template/directory/";
-				final String baseUrl = getScheme(request) + "://" + host + "/assets/themes/" + theme + "/img/";
+				getSkin(request, result -> {
 
-				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-					public void handle(final UserInfos infos) {
-
-						JsonObject filterObj = new JsonObject();
-						filterObj.put("userIds",userIds);
-						// We set neither true or false to get both activated and non-activated users
-						filterObj.put("activated","both");
-						filterObj.put("sort",new JsonArray().add("displayName"));
-
-						final boolean isNotPdf = !type.equals("pdf");
-						massMailService.massmailNoCheck(schoolId, filterObj, isNotPdf, infos, new Handler<Either<String, JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> result) {
-								if (result.isLeft()) {
-									forbidden(request);
-									return;
-								}
-								JsonArray users = result.right().getValue();
-								switch (type) {
-									case "pdf":
-									case "newPdf":
-									case "simplePdf":
-										massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, "massmail", type, users);
-										break;
-									case "mail":
-										massMailService.massMailTypeMail(infos, request, templatePath, users);
-										break;
-									case "csv":
-										massMailService.massMailTypeCSV(request, users);
-										break;
-									default:
-										badRequest(request);
-								}
-							}
-						});
+					final String skin;
+					if (result.isLeft()) {
+						skin = skins.get(host);
+					} else {
+						skin = result.right().getValue();
 					}
+
+					final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
+							"/assets/themes/" + skin;
+					final String templatePath = assetsPath + "/template/directory/";
+					final String baseUrl = getScheme(request) + "://" + host + "/assets/themes/" + skin + "/img/";
+
+					UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+						public void handle(final UserInfos infos) {
+
+							JsonObject filterObj = new JsonObject();
+							filterObj.put("userIds",userIds);
+							// We set neither true or false to get both activated and non-activated users
+							filterObj.put("activated","both");
+							filterObj.put("sort",new JsonArray().add("displayName"));
+
+							final boolean isNotPdf = !type.equals("pdf");
+							massMailService.massmailNoCheck(schoolId, filterObj, isNotPdf, infos, new Handler<Either<String, JsonArray>>() {
+								@Override
+								public void handle(Either<String, JsonArray> result) {
+									if (result.isLeft()) {
+										forbidden(request);
+										return;
+									}
+									JsonArray users = result.right().getValue();
+									switch (type) {
+										case "pdf":
+										case "newPdf":
+										case "simplePdf":
+											massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, "massmail", type, users);
+											break;
+										case "mail":
+											massMailService.massMailTypeMail(infos, request, templatePath, users);
+											break;
+										case "csv":
+											massMailService.massMailTypeCSV(request, users);
+											break;
+										default:
+											badRequest(request);
+									}
+								}
+							});
+						}
+					});
+
 				});
+
 			}
 		});
 	}
@@ -615,5 +647,17 @@ public class StructureController extends BaseController {
 		this.notifHelper = notifHelper;
 	}
 
+	private void getSkin(HttpServerRequest request, Handler<Either<String,String>> handler) {
+		eb.send("userbook.preferences", new JsonObject().put("action", "get.currentuser")
+				.put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
+				.put("application", "theme"), result -> {
+			if (result.succeeded()) {
+				JsonObject data = (JsonObject)(result.result().body());
+				handler.handle(new Either.Right<>(data.getJsonObject("value").getString("preference")));
+			} else {
+				handler.handle(new Either.Left<>(result.cause().getMessage()));
+			}
+		});
+	}
 }
 
