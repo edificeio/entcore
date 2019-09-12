@@ -33,6 +33,7 @@ export interface ExportDelegateScope extends EventDelegateScope {
     userExportGoBack();
     userExportCanBack(): boolean;
     usersWithMailsExist(): boolean;
+    printResetPasswordUsers(): void;
     // from others
     classrooms: ClassRoom[];
     openLightbox(name: string): void
@@ -316,4 +317,10 @@ export function ExportDelegate($scope: ExportDelegateScope) {
     }
     $scope.userExportGoBack = () => back();
     $scope.userExportCanBack = () => _stack.length > 1;
+    $scope.printResetPasswordUsers = function() {
+        $scope.userExport.type = ExportTypes.Simple;
+        _usersForMailing = _selected;
+        printForAllUsers();
+        $scope.closeLightbox();
+    }
 }

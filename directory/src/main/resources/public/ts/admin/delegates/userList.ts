@@ -205,7 +205,7 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
         } else if (user.activationCode) {
             return user.activationCode;
         } else if (user.resetCode) {
-            return lang.translate("directory.resetted.label").replace("[[resetCode]]", user.resetCode).replace("[[resetCodeDate]]", user.resetCodeDate)
+            return lang.translate("directory.resetted.label").replace("[[resetCode]]", user.resetCode)//.replace("[[resetCodeDate]]", user.resetCodeDate)
         } else {
             return lang.translate("directory.activated");
         }

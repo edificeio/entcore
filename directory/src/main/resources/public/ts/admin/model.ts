@@ -71,6 +71,7 @@ export class User extends Model {
     type: UserTypes;
     profile: UserTypes;
     resetCode: string;
+    resetCodeDate: string;
     activationCode: string;
     relativeIds: string[] = []
     relativeList: Array<{ relatedId: string, relatedName: string }> = [];
@@ -157,10 +158,6 @@ export class User extends Model {
     }
     set safeDisplayName(name: string) {
         this.displayName = name ? removeSpecialChars(name) : name;
-    }
-    get resetCodeDate() {
-        //TODO 
-        return "TODO";
     }
     get hasBirthDate() {
         return this.birthDate !== '';

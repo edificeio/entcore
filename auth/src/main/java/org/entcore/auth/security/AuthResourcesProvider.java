@@ -61,6 +61,9 @@ public class AuthResourcesProvider implements ResourcesProvider {
 				case "generatePasswordRenewalCode" :
 					isClassTeacherByUserLogin(request, user, handler);
 					break;
+				case "massGeneratePasswordRenewalCode" :
+					isClassTeacherOfMultipleUsers(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else {

@@ -45,6 +45,8 @@ public interface UserAuthAccount {
 
 	void generateResetCode(String login, boolean checkFederatedLogin , Handler<Either<String, String>> handler);
 
+	void massGenerateResetCode(JsonArray userIds, boolean checkFederatedLogin , Handler<Either<String, JsonObject>> handler);
+
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 
 	void blockUsers(JsonArray ids, boolean block, Handler<Boolean> handler);

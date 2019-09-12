@@ -2,6 +2,7 @@
     <div class="toggle block-container">
         <div class="row">
             <button workflow="directory.allowClassAdminResetPassword" translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreActivated()"></button>
+            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.temporaryPassword" ng-click="generateTemporaryPasswords()"></button>
             <button workflow="directory.allowClassAdminBlockUsers" ng-click="openLightbox('admin/actions/block')" ng-if="selectedUsersAreNotBlocked()" translate
                 content="admin.block">
             </button>

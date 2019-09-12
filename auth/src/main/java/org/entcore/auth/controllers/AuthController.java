@@ -1034,6 +1034,21 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/massGeneratePasswordRenewalCode")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void massGeneratePasswordRenewalCode(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, json -> {
+			JsonArray userIds = json.getJsonArray("users");
+			userAuthAccount.massGenerateResetCode(userIds, checkFederatedLogin, either -> {
+				if (either.isRight()) {
+					renderJson(request, either.right().getValue());
+				} else {
+					renderError(request);
+				}
+			});
+		});
+	}
+
 	@Put("/block/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void blockUser(final HttpServerRequest request) {
