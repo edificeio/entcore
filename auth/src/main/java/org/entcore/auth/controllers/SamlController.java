@@ -276,6 +276,10 @@ public class SamlController extends AbstractFederateController {
                     renderSamlResponse(user,samlResponse,serviceProviderId,destination,relayState, request);
                 } else {
                     // Else redirect to the login page
+					log.error("SAMLResponse generation failed to access to service " + serviceProviderId + " by user " + user.getUserId() );
+					log.error("SAMLResponse (required) : " + samlResponse);
+					log.error("destination (required)  : " + destination);
+					log.error("error (must be null)    : " + error);
                     redirect(request, "");
                 }
 
