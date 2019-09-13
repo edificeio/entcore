@@ -86,6 +86,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, String> personnels = new HashMap<>();
 	private final Map<String, JsonObject> subClasses = new HashMap<>();
 	private final Set<String> userImportedPronoteId = new HashSet<>();
+	private final Map<String, String> idpnIdent = new HashMap<>();
 
 	public EDTImporter(EDTUtils edtUtils, String uai, String path, String acceptLanguage, String mode) {
 		super(uai, path, acceptLanguage);
@@ -279,6 +280,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 				}
 			}
 		} else {
+			idpnIdent.put(idPronote, id);
 			findPersEducNat(currentEntity, idPronote, "Teacher");
 		}
 	}
@@ -379,6 +381,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 						notFoundPersEducNat.remove(idPronote);
 						if ("Teacher".equals(profile)) {
 							teachersMapping.put(idPronote, new String[]{id, getSource()});
+							final String ident = idpnIdent.get(idPronote);
+							if (isNotEmpty(ident)) {
+								teachers.put(ident, id);
+							}
 						} else {
 							String[] ident = idPronote.split("\\$");
 							if (ident.length == 2) {
