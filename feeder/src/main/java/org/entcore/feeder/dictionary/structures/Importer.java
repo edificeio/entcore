@@ -917,6 +917,14 @@ public class Importer {
 		User.countUsersInGroups(null, null, transactionHelper);
 	}
 
+	public void deleteOldProfileAttachments() {
+		final String query =
+				"MATCH (u:User)-[r:IN|COMMUNIQUE]-(pg:ProfileGroup) " +
+				"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND HAS(pg.filter) AND pg.filter <> head(u.profiles) " +
+				"DELETE r";
+		transactionHelper.add(query, new JsonObject());
+	}
+
 	public Report getReport() {
 		return report;
 	}
