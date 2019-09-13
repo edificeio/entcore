@@ -56,8 +56,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 			"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
-			"WITH COLLECT(DISTINCT u) as user " +
-			"WHERE LENGTH(user) = 1 " +
+			"OPTIONAL MATCH (upn:User {IDPN: {IDPN}}) " +
+			"WITH COLLECT(DISTINCT u) as user, COUNT(DISTINCT upn) as countUpn " +
+			"WHERE countUpn = 0 AND LENGTH(user) = 1 " +
 			"SET HEAD(user).IDPN = {IDPN} " +
 			"RETURN DISTINCT HEAD(user).id as id, HEAD(user).IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
