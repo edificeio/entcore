@@ -193,6 +193,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     private casTypesSubscription: Subscription;
     public admc: boolean;
     public admlOfConnectorStructure: boolean;
+    public admlOfCurrentStructure: boolean;
     public showDeleteConfirmation: boolean;
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     private structureSubscriber: Subscription;
@@ -250,6 +251,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
         this.setAdmc();
         this.setAdmlOfConnectorStructure();
+        this.setAdmlOfCurrentStructure();
     }
 
     ngOnDestroy() {
@@ -263,6 +265,13 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         const session: Session = await SessionModel.getSession();
         if (session.functions && session.functions['ADMIN_LOCAL'] && session.functions['ADMIN_LOCAL'].scope) {
             this.admlOfConnectorStructure = session.functions['ADMIN_LOCAL'].scope.includes(this.servicesStore.connector.structureId);
+        }
+    }
+
+    public async setAdmlOfCurrentStructure() {
+        const session: Session = await SessionModel.getSession();
+        if (session.functions && session.functions['ADMIN_LOCAL'] && session.functions['ADMIN_LOCAL'].scope) {
+            this.admlOfCurrentStructure = session.functions['ADMIN_LOCAL'].scope.includes(this.servicesStore.structure.id);
         }
     }
 
@@ -288,7 +297,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     }
 
     public isAssignmentDisabled(): boolean {
-        return this.isLocked() || !(this.admc || this.admlOfConnectorStructure);
+        return this.isLocked() || !(this.admc || this.admlOfCurrentStructure);
     }
 
     public isInherited(): boolean {
