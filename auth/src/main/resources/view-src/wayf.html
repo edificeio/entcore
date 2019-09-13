@@ -37,11 +37,18 @@
 					$(this).attr('href', $(this).attr('href') + encodingHash);
 				});
 			}
+		}
 
-			setTimeout(function() {
-				if ($("#message span")[0] && $("#message span")[0].innerHTML != 'wayf.message') { $("#message").attr('style','display : block'); }
-			}, 400);
-
+		var intervalId = setInterval(displayMessage, 200);
+		function displayMessage() {
+			if ($("#message span")[0] && $("#message span")[0].innerHTML) {
+				if ($("#message span")[0].innerHTML != 'wayf.message') {
+					$("#message").show();
+					clearInterval(intervalId);
+				} else {
+					clearInterval(intervalId);
+				}
+			}
 		}
 	</script>
 </head>
