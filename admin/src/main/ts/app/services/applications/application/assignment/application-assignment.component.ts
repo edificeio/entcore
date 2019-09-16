@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { RoleModel, ApplicationModel } from '../../../../core/store/models';
+import { RoleModel, ApplicationModel, GroupModel } from '../../../../core/store/models';
 import { Assignment } from '../../../shared/services-types';
 
 @Component({
@@ -29,6 +29,7 @@ import { Assignment } from '../../../shared/services-types';
 
         <services-role-attribution
                 [show]="showRoleAttributionLightbox"
+                [assignmentGroupPickerList]="assignmentGroupPickerList"
                 (close)="showRoleAttributionLightbox = false"
                 sort="name"
                 searchPlaceholder="search.group"
@@ -41,6 +42,8 @@ import { Assignment } from '../../../shared/services-types';
 export class ApplicationAssignmentComponent {
     @Input()
     application: ApplicationModel;
+    @Input()
+    assignmentGroupPickerList: GroupModel[];
 
     @Output()
     remove: EventEmitter<Assignment> = new EventEmitter();

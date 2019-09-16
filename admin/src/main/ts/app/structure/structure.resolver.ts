@@ -17,15 +17,16 @@ export class StructureResolver implements Resolve<StructureModel> {
             })
         }
 
-        return this.spinner.perform('portal', this.sync(structure))
+        return this.spinner.perform('portal-content', this.sync(structure))
     }
 
     private sync(structure: StructureModel): Promise<StructureModel> {
-        structure.syncClasses()
-        structure.syncGroups()
-        structure.syncSources()
-        structure.syncAafFunctions()
-        ProfilesService.getProfiles().then(p => structure.profiles = p)
-        return Promise.resolve(structure)
+        let classesPromise = structure.syncClasses();
+        let groupsPromise = structure.syncGroups();
+        let sourcesPromise = structure.syncSources();
+        let aafFunctionsPromise = structure.syncAafFunctions();
+        let profilesPromise = ProfilesService.getProfiles().then(p => structure.profiles = p);
+        return Promise.all<any>([classesPromise, groupsPromise, sourcesPromise, aafFunctionsPromise, profilesPromise])
+            .then(() => Promise.resolve(structure));
     }
 }
