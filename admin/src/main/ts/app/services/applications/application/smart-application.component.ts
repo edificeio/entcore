@@ -29,6 +29,7 @@ import { routing } from "../../../core/services";
         <application-assignment 
             *ngIf="currentTab  === 'assignment'"
             [application]="servicesStore.application"
+            [assignmentGroupPickerList]="assignmentGroupPickerList"
             (remove)="onRemoveAssignment($event)"
             (add)="onAddAssignment($event)">
         </application-assignment>
@@ -61,6 +62,7 @@ export class SmartApplicationComponent implements OnInit, OnDestroy {
     private routeParamsSubscription: Subscription;
     private rolesSubscription: Subscription;
     private structureSubscriber: Subscription;
+    public assignmentGroupPickerList: GroupModel[];
 
     constructor(private activatedRoute: ActivatedRoute,
         public servicesStore: ServicesStore,
@@ -86,6 +88,7 @@ export class SmartApplicationComponent implements OnInit, OnDestroy {
 
         this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
             if (data['structure']) {
+                this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 if (!this.structureHasChildren(this.servicesStore.structure) && this.currentTab === 'massAssignment') {
                     this.currentTab = 'assignment';
                 }
@@ -96,6 +99,7 @@ export class SmartApplicationComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.routeParamsSubscription.unsubscribe();
         this.rolesSubscription.unsubscribe();
+        this.structureSubscriber.unsubscribe();
     }
 
     public onAddAssignment($event: {group: GroupModel, role: RoleModel}) {
