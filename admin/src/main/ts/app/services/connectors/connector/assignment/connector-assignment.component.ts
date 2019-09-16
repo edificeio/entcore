@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { ConnectorModel, RoleModel } from '../../../../core/store/models';
+import { ConnectorModel, RoleModel, GroupModel } from '../../../../core/store/models';
 import { Assignment } from "../../../shared/services-types";
 
 @Component({
@@ -24,6 +24,7 @@ import { Assignment } from "../../../shared/services-types";
 
         <services-role-attribution
             [show]="showRoleAttributionLightbox"
+            [assignmentGroupPickerList]="assignmentGroupPickerList"
             (close)="showRoleAttributionLightbox = false"
             sort="name"
             searchPlaceholder="search.group"
@@ -36,6 +37,8 @@ import { Assignment } from "../../../shared/services-types";
 export class ConnectorAssignmentComponent {
     @Input()
     connector: ConnectorModel;
+    @Input()
+    assignmentGroupPickerList: GroupModel[];
     @Input()
     disabled: boolean;
 

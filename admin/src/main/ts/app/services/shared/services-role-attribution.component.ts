@@ -2,18 +2,15 @@ import {
     Component,
     EventEmitter,
     Input,
-    OnInit,
     Output
 } from '@angular/core';
 import { GroupModel, RoleModel } from '../../core/store/models';
-
-import { ServicesStore } from '../../services/services.store';
 
 @Component({
     selector: 'services-role-attribution',
     template: `
         <group-picker lightboxTitle="services.roles.groups.add"
-            [list]="groupList"
+            [list]="assignmentGroupPickerList"
             [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
             [show]="show"
             [sort]="sort"
@@ -24,10 +21,10 @@ import { ServicesStore } from '../../services/services.store';
             (close)="close.emit()">
         </group-picker>`
 })
-export class ServicesRoleAttributionComponent implements OnInit {
+export class ServicesRoleAttributionComponent {
 
     @Input() show: boolean;
-    @Input() groupList: GroupModel[];
+    @Input() assignmentGroupPickerList: GroupModel[];
     @Input() sort: string;
     @Input() searchPlaceholder: string;
     @Input() noResultsLabel: string;
@@ -36,13 +33,6 @@ export class ServicesRoleAttributionComponent implements OnInit {
     @Output("close") close: EventEmitter<void> = new EventEmitter<void>();
     @Output("add") add: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
     @Output("inputChange") inputChange: EventEmitter<string> = new EventEmitter<string>();
-
-    constructor(private servicesStore: ServicesStore) {
-    }
-
-    ngOnInit() {
-        this.groupList = this.servicesStore.structure.groups.data;
-    }
 
     filterGroups = (group: GroupModel) => {
         // Do not display groups if they are already linked to the selected role

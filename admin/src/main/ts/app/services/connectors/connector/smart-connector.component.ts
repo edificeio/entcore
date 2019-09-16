@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
-import { ConnectorModel, Session, SessionModel } from "../../../core/store";
+import { ConnectorModel, Session, SessionModel, GroupModel, globalStore } from "../../../core/store";
 import { ServicesService, WorkspaceDocument } from "../../services.service";
 import { ActivatedRoute, Params, Router, Data } from "@angular/router";
 import { ServicesStore } from "../../services.store";
@@ -143,6 +143,7 @@ import 'rxjs/add/operator/toPromise';
         <connector-assignment
             *ngIf="currentTab === ASSIGNMENT_TAB"
             [connector]="servicesStore.connector"
+            [assignmentGroupPickerList]="assignmentGroupPickerList"
             [disabled]="isAssignmentDisabled()"
             (remove)="onRemoveAssignment($event)"
             (add)="onAddAssignment($event)">
@@ -197,6 +198,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public showDeleteConfirmation: boolean;
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     private structureSubscriber: Subscription;
+    public assignmentGroupPickerList: GroupModel[];
     
     @ViewChild(ConnectorPropertiesComponent)
     connectorPropertiesComponent: ConnectorPropertiesComponent;
@@ -239,6 +241,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
         this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
             if (data['structure']) {
+                this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 if (!this.hasStructureChildren() && this.currentTab === this.MASS_ASSIGNMENT_TAB) {
                     this.currentTab = this.PROPERTIES_TAB;
                 }
