@@ -115,7 +115,7 @@ import 'rxjs/add/operator/toPromise';
                 {{ 'services.tab.assignment' | translate }}
             </button>
             <button class="tab"
-                    *ngIf="hasStructureChildren() && !isAssignmentDisabled() && inherits()"
+                    *ngIf="hasStructureChildren() && !isMassAssignmentDisabled() && inherits()"
                     [ngClass]="{active: currentTab === MASS_ASSIGNMENT_TAB}"
                     (click)="currentTab = MASS_ASSIGNMENT_TAB">
                 {{ 'services.tab.mass-assignment' | translate }}
@@ -149,7 +149,7 @@ import 'rxjs/add/operator/toPromise';
         </connector-assignment>
 
         <connector-mass-assignment
-            *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isAssignmentDisabled()"
+            *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isMassAssignmentDisabled()"
             [structure]="{ id: this.servicesStore.structure.id, name: this.servicesStore.structure.name }"
             [profiles]="profiles"
             (submitUnassignment)="onRemoveMassAssignment($event)"
@@ -298,6 +298,10 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
     public isAssignmentDisabled(): boolean {
         return this.isLocked() || !(this.admc || this.admlOfCurrentStructure);
+    }
+
+    public isMassAssignmentDisabled(): boolean {
+        return this.isLocked() || !(this.admc || this.admlOfConnectorStructure);
     }
 
     public isInherited(): boolean {
