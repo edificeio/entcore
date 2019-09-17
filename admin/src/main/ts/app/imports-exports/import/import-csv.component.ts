@@ -146,16 +146,16 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 <table class="report">
                     <thead>
                         <tr>
-                            <th class="report-table-th_line">{{ 'line' | translate }}</th>
-                            <th>{{ 'operation' | translate }}</th>
-                            <th>{{ 'lastName' | translate }}</th>
-                            <th>{{ 'firstName' | translate }}</th>
-                            <th>{{ 'birthDate' | translate }}</th>
-                            <th *ngIf="!showAlias()">{{ 'login' | translate }}</th>
-                            <th *ngIf="showAlias()">{{ 'import.report.column.loginAlias' | translate }}</th>
-                            <th>{{ 'profile' | translate }}</th>
-                            <th>{{ 'externalId.short'| translate }}</th>
-                            <th>{{ 'classes' | translate }}</th>
+                            <th (click)="report.setUserOrder('line')" class="report-table-th_line"><i class="fa fa-sort report-table-th_sort"></i>{{ 'line' | translate }}</th>
+                            <th (click)="report.setUserOrder('state')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'operation' | translate }}</th>
+                            <th (click)="report.setUserOrder('lastName')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'lastName' | translate }}</th>
+                            <th (click)="report.setUserOrder('firstName')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'firstName' | translate }}</th>
+                            <th (click)="report.setUserOrder('birthDate')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'birthDate' | translate }}</th>
+                            <th *ngIf="!showAlias()" (click)="report.setUserOrder('login')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'login' | translate }}</th>
+                            <th *ngIf="showAlias()" (click)="report.setUserOrder('loginAlias')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'import.report.column.loginAlias' | translate }}</th>
+                            <th (click)="report.setUserOrder('profiles')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'profile' | translate }}</th>
+                            <th (click)="report.setUserOrder('externalId')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'externalId.short'| translate }}</th>
+                            <th (click)="report.setUserOrder('classesStr')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'classes' | translate }}</th>
                         </tr>
                         <tr>
                             <th></th>
@@ -188,7 +188,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                                 <select [ngModel]="report.columnFilter.classesStr"
                                         (ngModelChange)="report.columnFilter.classesStr = $event; report.page.offset = 0;">
                                     <option [value]=""></option>
-                                    <option *ngFor="let c of report.getAvailableClasses() | orderBy: 'name'" [value]="c">
+                                    <option *ngFor="let c of report.getAvailableClasses() | orderBy: 'name'" [value]="c.name">
                                         {{ c.name }}
                                     </option>
                                 </select>
@@ -196,7 +196,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                         </tr>
                     </thead>
                     <tbody>
-                    <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
+                    <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | orderBy: report.userOrder | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
                         [ngClass]="{'state-delete':user.state == 'Supprimé', 'is-danger': user.hasErrorsNotCorrected(), 'is-warning': user.hasWarnings()}"
                     >
                             <td>{{user.line}}</td>
@@ -342,7 +342,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .step4 {padding-bottom: 0; overflow: hidden;}
         .report-td-classes {min-width: 60px;}
         .report { max-width: 1024px; overflow: scroll; padding-bottom: 20px;}
-        .report-table-th_line {min-width: 18px;}
+        .report-table-th_line {min-width: 40px;}
+        .report-table-th_sort {padding-right: 5px;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
@@ -563,6 +564,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     report = {
         importId: '',
         users : [],
+        userOrder: '',
         softErrors : {
             reasons : [],
             list :  [],
@@ -688,9 +690,9 @@ export class ImportCSV implements OnInit, OnDestroy {
             let newState = event.target.value;
             try {
                 switch (newState) {
-                    case 'Crée': await user.keep(this.importId); break;
-                    case 'Modifié': await user.keep(this.importId); break;
-                    case 'Supprimé': await user.delete(this.importId); break; 
+                    case 'Crée': await user.keep(this.importId, newState); break;
+                    case 'Modifié': await user.keep(this.importId, newState); break;
+                    case 'Supprimé': await user.delete(this.importId, newState); break; 
                 }
                 this.ns.success('import.report.line.operation.edit.notify.success.content'
                     , 'import.report.line.operation.edit.notify.success.title');
@@ -714,6 +716,9 @@ export class ImportCSV implements OnInit, OnDestroy {
                 }
             });
             return res;
+        },
+        setUserOrder(order: string): void {
+            this.userOrder = this.userOrder === order ? '-' + order : order;
         }
     }
 

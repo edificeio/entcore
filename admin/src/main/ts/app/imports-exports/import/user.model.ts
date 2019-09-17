@@ -88,8 +88,9 @@ export class User {
     * @param importId 
     * @param property 
     */
-    async delete(importId:string){
+    async delete(importId:string, newState:string){
         let res = await ImportCSVService.deleteLineReport(importId, this.profiles[0], this.line);
+        this.state = newState;
         if (res.error) {
             throw new Error(res.error);
         }
@@ -100,13 +101,14 @@ export class User {
      * @param importId 
      * @param property 
      */
-    async keep(importId:string){
+    async keep(importId:string, newState:string){
         let data = {
             externalId : this.externalId,
             firstName : this.firstName,
             lastName : this.lastName
         };
         let res = await ImportCSVService.updateReport('post', importId, this.profiles[0], data);
+        this.state = newState;
         if (res.error) {
             throw new Error(res.error);
         }
