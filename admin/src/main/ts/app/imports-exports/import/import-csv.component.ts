@@ -142,11 +142,11 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                 <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
             </panel-section>
 
-            <div *ngIf="!globalError.message">
+            <div *ngIf="!globalError.message" class="report">
                 <table class="report">
                     <thead>
                         <tr>
-                            <th>{{ 'line' | translate }}</th>
+                            <th class="report-table-th_line">{{ 'line' | translate }}</th>
                             <th>{{ 'operation' | translate }}</th>
                             <th>{{ 'lastName' | translate }}</th>
                             <th>{{ 'firstName' | translate }}</th>
@@ -341,6 +341,8 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
         .step4 message-box .message-body {max-width:200px;}
         .step4 {padding-bottom: 0; overflow: hidden;}
         .report-td-classes {min-width: 60px;}
+        .report { max-width: 1024px; overflow: scroll; padding-bottom: 20px;}
+        .report-table-th_line {min-width: 18px;}
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
