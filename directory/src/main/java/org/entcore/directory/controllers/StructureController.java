@@ -336,7 +336,7 @@ public class StructureController extends BaseController {
 		getSkin(request, result -> {
 
 			final String skin;
-			if (result.isLeft()) {
+			if (result.isLeft() || result.right().getValue() == null) {
 				skin = this.skins.get(Renders.getHost(request));
 			} else {
 				skin = result.right().getValue();
@@ -424,7 +424,7 @@ public class StructureController extends BaseController {
 		getSkin(request, result -> {
 
 			final String skin;
-			if (result.isLeft()) {
+			if (result.isLeft() || result.right().getValue() == null) {
 				skin = this.skins.get(Renders.getHost(request));
 			} else {
 				skin = result.right().getValue();
@@ -496,7 +496,7 @@ public class StructureController extends BaseController {
 				getSkin(request, result -> {
 
 					final String skin;
-					if (result.isLeft()) {
+					if (result.isLeft() || result.right().getValue() == null) {
 						skin = skins.get(host);
 					} else {
 						skin = result.right().getValue();
@@ -659,7 +659,14 @@ public class StructureController extends BaseController {
 				.put("application", "theme"), result -> {
 			if (result.succeeded()) {
 				JsonObject data = (JsonObject)(result.result().body());
-				handler.handle(new Either.Right<>(data.getJsonObject("value").getString("preference")));
+				String skin = null;
+				try {
+					skin = data.getJsonObject("value").getString("preference");
+				} catch (Exception e) {
+					skin = null;
+				} finally {
+					handler.handle(new Either.Right<>(skin));
+				}
 			} else {
 				handler.handle(new Either.Left<>(result.cause().getMessage()));
 			}
