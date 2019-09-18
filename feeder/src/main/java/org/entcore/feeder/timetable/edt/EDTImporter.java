@@ -88,8 +88,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Set<String> userImportedPronoteId = new HashSet<>();
 	private final Map<String, String> idpnIdent = new HashMap<>();
 
-	public EDTImporter(EDTUtils edtUtils, String uai, String path, String acceptLanguage, String mode) {
-		super(uai, path, acceptLanguage);
+	public EDTImporter(EDTUtils edtUtils, String uai, String path, String acceptLanguage,
+			String mode, boolean authorizeUserCreation) {
+		super(uai, path, acceptLanguage, authorizeUserCreation);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -309,7 +310,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 						.put("profile", profile)
 						.put("lastName", p.getString("lastName").toLowerCase())
 						.put("firstName", p.getString("firstName").toLowerCase()));
-			} else {
+			} else if (authorizeUserCreation) {
 				report.addErrorWithParams("empty.required.user.attribute", p.encode().replaceAll("\\$", ""));
 			}
 		} catch (Exception e) {
@@ -334,9 +335,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 								p.put("structures", new JsonArray().add(structureExternalId));
 								final JsonObject p2 = p.copy();
 								p2.remove(IDPN);
-								if ("Teacher".equals(p.getJsonArray("profiles").getString(0))){
+								if ("Teacher".equals(p.getJsonArray("profiles").getString(0)) &&
+										authorizeUserCreation) {
 									persEducNat.createOrUpdatePersonnel(p2, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
-								} else {
+								} else if (authorizeUserCreation) {
 									persEducNat.createOrUpdatePersonnel(p2, PERSONNEL_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 								}
 							}
@@ -610,11 +612,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 		return "IDPN";
 	}
 
-	public static void launchImport(EDTUtils edtUtils, final Message<JsonObject> message) {
-		launchImport(edtUtils, "prod", message, null);
+	public static void launchImport(EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
+		launchImport(edtUtils, "prod", message, null, edtUserCreation);
 	}
 
-	public static void launchImport(EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport) {
+	public static void launchImport(EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String acceptLanguage = message.body().getString("language", "fr");
 		if (edtUtils == null) {
@@ -633,16 +635,22 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 
 		try {
-			new EDTImporter(edtUtils, uai, path, acceptLanguage, mode).launch(new Handler<AsyncResult<Report>>() {
+			final long start = System.currentTimeMillis();
+			log.info("Launch EDT import : " + uai);
+
+			new EDTImporter(edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {
+						log.info("Import EDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 						message.reply(new JsonObject().put("status", "ok")
 								.put("result", event.result().getResult()));
-						if (postImport != null) {
+						if (postImport != null && edtUserCreation) {
 							postImport.execute();
 						}
 					} else {
+						log.error("Error import EDT : " + uai + " elapsed time " +
+								(System.currentTimeMillis() - start) + " ms.");
 						log.error(event.cause().getMessage(), event.cause());
 						JsonObject json = new JsonObject().put("status", "error")
 								.put("message",
@@ -658,5 +666,4 @@ public class EDTImporter extends AbstractTimetableImporter {
 			message.reply(json);
 		}
 	}
-
 }

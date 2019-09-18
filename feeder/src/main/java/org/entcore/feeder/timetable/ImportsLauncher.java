@@ -44,17 +44,18 @@ public class ImportsLauncher implements Handler<Long> {
 	private final String path;
 	private final PostImport postImport;
 	private EDTUtils edtUtils;
-	private final boolean udtUserCreation;
+	private final boolean timetableUserCreation;
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, boolean udtUserCreation) {
+	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, boolean timetableUserCreation) {
 		this.vertx = vertx;
 		this.path = path;
 		this.postImport = postImport;
-		this.udtUserCreation = udtUserCreation;
+		this.timetableUserCreation = timetableUserCreation;
 	}
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, EDTUtils edtUtils, boolean udtUserCreation) {
-		this(vertx, path, postImport, udtUserCreation);
+	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, EDTUtils edtUtils,
+			boolean timetableUserCreation) {
+		this(vertx, path, postImport, timetableUserCreation);
 		this.edtUtils = edtUtils;
 	}
 
@@ -95,9 +96,9 @@ public class ImportsLauncher implements Handler<Long> {
 											.put("UAI", matcher.group(1))
 											.put("language", "fr");
 									if (edtUtils != null) {
-										EDTImporter.launchImport(edtUtils, m);
+										EDTImporter.launchImport(edtUtils, m, timetableUserCreation);
 									} else {
-										UDTImporter.launchImport(vertx, m, udtUserCreation);
+										UDTImporter.launchImport(vertx, m, timetableUserCreation);
 									}
 								} else {
 									log.error("UAI not found in filename : " + file);
