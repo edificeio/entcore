@@ -249,7 +249,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		classes.put(id, currentEntity);
 		final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
 		final String ocn = currentEntity.getString("Nom");
-		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
+		final String className = (classesMapping != null && ocn != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
 		currentEntity.put("className", className);
 		if (pcs != null) {
 			for (Object o : pcs) {
@@ -332,10 +332,12 @@ public class EDTImporter extends AbstractTimetableImporter {
 							persEducNat.setTransactionHelper(tx);
 							for (JsonObject p : notFoundPersEducNat.values()) {
 								p.put("structures", new JsonArray().add(structureExternalId));
+								final JsonObject p2 = p.copy();
+								p2.remove(IDPN);
 								if ("Teacher".equals(p.getJsonArray("profiles").getString(0))){
-									persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
+									persEducNat.createOrUpdatePersonnel(p2, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 								} else {
-									persEducNat.createOrUpdatePersonnel(p, PERSONNEL_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
+									persEducNat.createOrUpdatePersonnel(p2, PERSONNEL_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 								}
 							}
 							tx.commit(new Handler<Message<JsonObject>>() {
@@ -350,9 +352,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 											handler.handle(new DefaultAsyncResult<>((Void) null));
 										} else {
 											for (Map.Entry<String, JsonObject> e: notFoundPersEducNat.entrySet()) {
-												log.info(e.getKey() + " : " + e.getValue().encode());
+												log.warn("Not found PersEducNat : " +
+														e.getKey() + " : " + e.getValue().encode());
 											}
-											handler.handle(new DefaultAsyncResult<Void>(new ValidationException("not.found.users.not.empty")));
+											//handler.handle(new DefaultAsyncResult<Void>(new ValidationException("not.found.users.not.empty")));
+											handler.handle(new DefaultAsyncResult<>((Void) null));
 										}
 									} else {
 										handler.handle(new DefaultAsyncResult<Void>(new TransactionException(event.body()
