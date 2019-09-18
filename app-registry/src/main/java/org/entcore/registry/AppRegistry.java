@@ -37,7 +37,7 @@ public class AppRegistry extends BaseServer {
 		addController(new AppRegistryController());
 		addController(new ExternalApplicationController());
 		addController(new WidgetController());
-		addController(new LibraryController());
+		addController(new LibraryController(vertx, config()));
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
