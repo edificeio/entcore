@@ -187,17 +187,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			if (res && res.status == 200 && res.data.otp && res.data.otp.length == 8) {
 				$scope.account.otp = res.data;
 				let content = lang.translate("directory.otp.login").replace("[[login]]", model.me.login).replace("[[otp]]", res.data.otp);
-				(<HTMLInputElement>document.getElementById("otpInput")).value = res.data.otp;
 				$scope.account.otp.login = content;
 				$scope.display.otp = true;
 				$scope.$apply();
 			}
 		});
-	};
-
-	$scope.copyToClipboard = function() {
-		(<HTMLInputElement>document.getElementById("otpInput")).select();
-		document.execCommand( 'copy' );
 	};
 
 	$scope.closePassword = function(){
