@@ -146,6 +146,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			}
 			final String userLanguage = mutableLanguage;
 
+			final String userDisplayName = getOrElse(userPref.getString("displayName"), "", true);
+			templateParameters.put("displayName", userDisplayName);
+
 			if(!processedTemplates.containsKey(userDomain))
 				processedTemplates.put(userDomain, new HashMap<String, String>());
 			JsonObject notificationPreference = userPref
@@ -195,7 +198,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					return;
 				}
 				//Get users preferences (overrides notification properties)
-				NotificationUtils.getUsersPreferences(eb, recipientIds, "language: uac.language",new Handler<JsonArray>() {
+				NotificationUtils.getUsersPreferences(eb, recipientIds, "language: uac.language, displayName: u.displayName",new Handler<JsonArray>() {
 					public void handle(final JsonArray userList) {
 						if(userList == null){
 							log.error("[sendImmediateMails] Issue while retrieving users preferences.");

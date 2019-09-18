@@ -62,7 +62,7 @@ public class NotificationHelper {
                 }
                 final JsonObject notificationProperties = properties.right().getValue();
                 //Get users preferences (overrides notification properties)
-                NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"), "language: uac.language, tokens: uac.fcmTokens ", new Handler<JsonArray>() {
+                NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"), "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens ", new Handler<JsonArray>() {
                     public void handle(final JsonArray userList) {
                         if(userList == null){
                             log.error("[NotificationHelper] Issue while retrieving users preferences.");
