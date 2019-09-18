@@ -159,11 +159,13 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private boolean txSuccess = false;
 	protected Set<String> userImportedExternalId = new HashSet<>();
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
+	protected final boolean authorizeUserCreation;
 
-	protected AbstractTimetableImporter(String uai, String path, String acceptLanguage) {
+	protected AbstractTimetableImporter(String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		UAI = uai;
 		this.basePath = path;
 		this.report = new Report(acceptLanguage);
+		this.authorizeUserCreation = authorizeUserCreation;
 	}
 
 	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException {

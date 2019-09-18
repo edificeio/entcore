@@ -87,13 +87,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, JsonObject> eleves = new HashMap<>();
 	private Map<String, String> codeGepDiv = new HashMap<>();
 	private Set<String> usedGroupInCourses = new HashSet<>();
-	private final boolean authorizeUserCreation;
 	private final boolean udcalLowerCase;
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
-		super(uai, path, acceptLanguage);
+		super(uai, path, acceptLanguage, authorizeUserCreation);
 		this.vertx = vertx;
-		this.authorizeUserCreation = authorizeUserCreation;
 		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
 		if (udcalLowerCase) {
 			filenameWeekPatter = Pattern.compile("udcal_[0-9]{2}_([0-9]{2})\\.xml$");
@@ -659,18 +657,24 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 
 		try {
+			final long start = System.currentTimeMillis();
+			log.info("Launch UDT import : " + uai);
+
 			final String parentPath = FileUtils.getParentPath(path);
 			FileUtils.unzip(path, parentPath);
 			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
+						log.info("Import EDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 						message.reply(new JsonObject().put("status", "ok")
 								.put("result", event.result().getResult()));
-						if (postImport != null) {
+						if (postImport != null && udtUserCreation) {
 							postImport.execute();
 						}
 					} else {
+						log.error("Error import UDT : " + uai + " elapsed time " +
+								(System.currentTimeMillis() - start) + " ms.");
 						log.error(event.cause().getMessage(), event.cause());
 						JsonObject json = new JsonObject().put("status", "error")
 								.put("message",
