@@ -1,11 +1,12 @@
 package org.entcore.registry.services;
 
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
-import java.util.concurrent.CompletableFuture;
 
 public interface LibraryService {
-    CompletableFuture<JsonObject> publish(MultiMap form, Buffer cover);
+    Future<JsonObject> publish(UserInfos user, MultiMap form, Buffer cover);
 }
