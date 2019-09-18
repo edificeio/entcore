@@ -303,7 +303,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for(Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>(){
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language, displayName: u.displayName", new Handler<JsonArray>(){
 						public void handle(JsonArray preferences) {
 							for(Object userObj : preferences){
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -316,6 +316,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 									log.error("UserId [" + userPrefs.getString("userId", "") + "] - Bad language preferences format");
 								}
 								final String userLanguage = mutableUserLanguage;
+								final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
 
 								getUserNotifications(userPrefs.getString("userId", ""), dayDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
@@ -353,9 +354,12 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 											}
 										}
 										if(templates.size() > 0){
+
 											JsonObject templateParams = new JsonObject()
 													.put("nestedTemplatesArray", templates)
-													.put("notificationDates", dates);
+													.put("notificationDates", dates)
+													.put("displayName", userDisplayName);
+
 											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html",
 													userDomain, userScheme, userLanguage, false, new Handler<String>() {
 														public void handle(final String processedTemplate) {
@@ -497,7 +501,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>() {
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language, displayName: u.displayName", new Handler<JsonArray>() {
 						public void handle(JsonArray preferences) {
 							for (Object userObj : preferences) {
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -510,6 +514,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 									log.error("UserId [" + userPrefs.getString("userId", "") + "] - Bad language preferences format");
 								}
 								final String userLanguage = mutableUserLanguage;
+								final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
 
 								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 									public void handle(JsonArray notifications) {
@@ -566,7 +571,10 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 										}
 
 										if (weeklyNotifications.size() > 0) {
+
 											JsonObject templateParams = new JsonObject().put("notifications", weeklyNotificationsGroupedArray);
+											templateParams.put("displayName", userDisplayName);
+
 											processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html",
 													userDomain, userScheme, userLanguage, false, new Handler<String>() {
 														public void handle(final String processedTemplate) {
