@@ -817,8 +817,11 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								"WHERE NOT(HAS(s.timetable)) OR s.timetable <> {type} " +
 								"SET s.timetable = {typeUpdate} " +
 								"WITH s " +
-								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup), s<-[:SUBJECT]-(sub:TimetableSubject) " +
-								"DETACH DELETE fg, sub ";
+								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup)" +
+								"OPTIONAL MATCH s<-[:SUBJECT]-(sub:TimetableSubject) " +
+								"OPTIONAL MATCH s<-[:SUBJECT]-(sub2:Subject) " +
+								"WHERE sub2.source <> 'AAF' " +
+								"DETACH DELETE fg, sub, sub2 ";
 						final String q3 =
 								"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
 								"DETACH DELETE cm";
