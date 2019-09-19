@@ -46,6 +46,7 @@ export interface NavigationDelegateScope {
     isSelectedFolder(folder: models.Element): boolean
     setCurrentFolder(folder: models.Element, reload?: boolean)
     onReloadContent:Subject<() => void>
+    reloadingContent: boolean;
     // from others 
     currentTree: models.Tree;
     trees: models.Tree[]
@@ -57,6 +58,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     let highlighted: models.Element[] = [];
     let viewMode: WorkspacePreferenceView = null;
     $scope.onReloadContent = new Subject;
+    $scope.reloadingContent = false;
     $scope.onInit(function () {
         //INIT 
         $scope.openedFolder = new models.FolderContext;
@@ -248,9 +250,11 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
             content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false });
         }
         $scope.openedFolder.setDocuments(content);
+        $scope.reloadingContent = false;
         $scope.safeApply();
     })
     $scope.reloadFolderContent = function () {
+        $scope.reloadingContent = true;
         reloadSubject.next();
     }
 

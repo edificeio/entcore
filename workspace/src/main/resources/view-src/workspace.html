@@ -141,7 +141,7 @@
 				<div class="twelve cell toggle-buttons-spacer">
 
 					<!-- Empty screen Owner -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.documents.length">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.documents.length && !reloadingContent">
 						<h2 class="emptyscreen-header">
 							<i18n>empty.workspace.title</i18n>
 						</h2>
@@ -149,12 +149,12 @@
 						<p class="emptyscreen-footer">
 							<i18n>empty.workspace</i18n>
 						</p>
-						<a class="button">
-							<i18n>workspace.create.workspace</i18n>
-						</a>
+						<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()" workflow="[[currentTree.buttons[0].workflow]]">
+							<i class="add" ng-if="currentTree.buttons[0].icon"></i> <i18n>workspace.create.workspace</i18n>
+						</button>
 					</div>
 					<!-- Empty screen partagé avec moi -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.documents.length">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.documents.length && !reloadingContent">
 						<h2 class="emptyscreen-header">
 							<i18n>empty.workspace.shared.title</i18n>
 						</h2>
@@ -164,7 +164,7 @@
 						</p>
 					</div>
 					<!-- Empty screen depuis les apps -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'protected' && !openedFolder.documents.length">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'protected' && !openedFolder.documents.length && !reloadingContent">
 						<h2 class="emptyscreen-header">
 							<i18n>empty.workspace.apps.title</i18n>
 						</h2>
@@ -174,7 +174,7 @@
 						</p>
 					</div>
 					<!-- Empty screen Si la corbeille est vide -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.documents.length">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.documents.length && !reloadingContent">
 						<img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/empty-trash.svg">
 						<p class="emptyscreen-footer">
 							<i18n>empty.trash2</i18n>
