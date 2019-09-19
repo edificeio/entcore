@@ -566,7 +566,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String query = "WITH {codes} AS data, [k in keys({codes})] AS userIds " +
 				"MATCH (n:User) WHERE n.id IN userIds " +
-				"SET n.resetCode = data[n.id], n.reset = {today}";
+				"SET n.resetCode = data[n.id], n.resetDate = {today}";
 		JsonObject params = new JsonObject().put("codes", map).put("today", today);
 
 		neo.execute(query, params, res -> {
