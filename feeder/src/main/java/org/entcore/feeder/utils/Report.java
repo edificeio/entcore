@@ -46,6 +46,8 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 public class Report {
 
 	public static final Logger log = LoggerFactory.getLogger(Report.class);
@@ -218,6 +220,9 @@ public class Report {
 	}
 
 	public void persist(Handler<Message<JsonObject>> handler) {
+		if (getOrElse(this.getResult().getBoolean("not-persist-report"), false)) {
+			return;
+		}
 		cleanKeys();
 		MongoDb.getInstance().save("imports", this.getResult(), handler);
 	}
