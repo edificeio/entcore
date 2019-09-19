@@ -386,6 +386,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								sendOK(message, new JsonObject().put("result", event));
 							} else {
 								message.body().mergeIn(event);
+								message.body().put("not-persist-report", true);
 								launchImport(message);
 							}
 						}
