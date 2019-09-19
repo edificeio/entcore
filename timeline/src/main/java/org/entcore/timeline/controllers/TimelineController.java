@@ -244,7 +244,7 @@ public class TimelineController extends BaseController {
 	@Get("/types")
 	@SecuredAction(value = "timeline.auth", type = ActionType.AUTHENTICATED)
 	public void listTypes(final HttpServerRequest request) {
-		if (eventTypes != null) {
+		if (eventTypes != null && !eventTypes.isEmpty()) {
 			renderJson(request, eventTypes);
 		} else {
 			store.listTypes(new Handler<JsonArray>() {
