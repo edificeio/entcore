@@ -42,6 +42,7 @@
     "cgu.title": "Terms of use",
     "email.click.to.reset": "To perform this, please click the link below.",
     "email.hi": "Hello,",
+    "email.hi.withname": "Hello {{displayName}},",
     "email.login": "Login",
     "email.regards": "Sincerely,",
     "email.reset.infos": "If you are not at the origin of this request, please ignore this email.",
