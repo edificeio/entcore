@@ -132,6 +132,11 @@ public class Neo4j {
 		database.executeTransaction(statements, transactionId, commit, resultHandler(handler));
 	}
 
+	public void executeTransaction(JsonArray statements, Integer transactionId, boolean commit,
+			boolean allowRetry, boolean forceReadOnly, Handler<Message<JsonObject>> handler) {
+		database.executeTransaction(statements, transactionId, commit, allowRetry, forceReadOnly, resultHandler(handler));
+	}
+
 	public void resetTransactionTimeout(int transactionId, Handler<Message<JsonObject>> handler) {
 		database.resetTransactionTimeout(transactionId, resultHandler(handler));
 	}
