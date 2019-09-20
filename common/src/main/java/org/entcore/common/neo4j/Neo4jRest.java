@@ -187,6 +187,13 @@ public class Neo4jRest implements GraphDatabase {
 
 	public void executeTransaction(final JsonArray statements, final Integer transactionId,
 			final boolean commit, final boolean allowRetry, final Handler<JsonObject> handler) {
+		executeTransaction(statements, transactionId, commit, allowRetry, false, handler);
+	}
+
+	@Override
+	public void executeTransaction(final JsonArray statements, final Integer transactionId,
+			final boolean commit, final boolean allowRetry, final boolean forceReadOnly,
+			final Handler<JsonObject> handler) {
 		String uri = "/transaction";
 		if (transactionId != null) {
 			uri += "/" +transactionId;
@@ -195,7 +202,8 @@ public class Neo4jRest implements GraphDatabase {
 			uri += "/commit";
 		}
 		try {
-			sendRequest(uri, new JsonObject().put("statements", statements), new Handler<HttpClientResponse>() {
+			sendRequest(uri, new JsonObject().put("statements", statements), false, forceReadOnly,
+					new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(final HttpClientResponse resp) {
 					resp.bodyHandler(new Handler<Buffer>() {
@@ -381,8 +389,15 @@ public class Neo4jRest implements GraphDatabase {
 
 	private void sendRequest(String path, Object body, boolean checkReadOnly,
 			final Handler<HttpClientResponse> handler) throws Neo4jConnectionException {
+		sendRequest(path, body, checkReadOnly, false, handler);
+	}
+
+	private void sendRequest(String path, Object body, boolean checkReadOnly, boolean forceReadOnly,
+			final Handler<HttpClientResponse> handler) throws Neo4jConnectionException {
 		HttpClient client = null;
-		if (checkReadOnly && ro) {
+		if (forceReadOnly && ro) {
+			client = nodeManager.getSlaveClient();
+		} else if (checkReadOnly && ro) {
 			String query = ((JsonObject) body).getString("query");
 			if (query != null) {
 				Matcher m = writingClausesPattern.matcher(query);
