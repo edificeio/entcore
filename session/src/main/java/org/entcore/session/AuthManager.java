@@ -667,7 +667,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				.add(new JsonObject().put("statement", query3).put("parameters", params))
 				.add(new JsonObject().put("statement", query4))
 				.add(new JsonObject().put("statement", query5).put("parameters", params));
-		neo4j.executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(statements, null, true, false, true,
+				new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {

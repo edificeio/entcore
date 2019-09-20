@@ -32,6 +32,10 @@ public interface GraphDatabase {
 	void executeTransaction(JsonArray statements, Integer transactionId,
 							boolean commit, Handler<JsonObject> handler);
 
+	void executeTransaction(JsonArray statements, Integer transactionId,
+							boolean commit, boolean allowRetry, boolean forceReadOnly,
+							Handler<JsonObject> handler);
+
 	void resetTransactionTimeout(int transactionId, Handler<JsonObject> handler);
 
 	void rollbackTransaction(int transactionId, Handler<JsonObject> handler);
