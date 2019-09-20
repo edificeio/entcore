@@ -299,7 +299,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE 1=1 " +
 				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
-				"RETURN n.email as email, n.mobile as mobile";
+				"RETURN n.email as email, n.mobile as mobile, n.displayName as displayName";
 		final String basicQuery = "MATCH (n:User {login:{login}}) " + baseQuery;
 
 		final JsonObject params = new JsonObject().put("login", login);
@@ -357,7 +357,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode,
+	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String login, String displayName,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
@@ -365,7 +365,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 		JsonObject json = new JsonObject()
 				.put("host", notification.getHost(request))
-				.put("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode);
+				.put("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode)
+				.put("displayName", displayName)
+				.put("login", login);
+
+
+
 		notification.sendEmail(
 				request,
 				email,
@@ -456,7 +461,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetPasswordSms(HttpServerRequest request, String phone, String resetCode, final Handler<Either<String, JsonObject>> handler){
+	public void sendResetPasswordSms(HttpServerRequest request, String phone, String resetCode, String login, String displayName,
+		final Handler<Either<String, JsonObject>> handler)
+	{
 		JsonObject params = new JsonObject()
 			.put("resetCode", resetCode)
 			.put("resetUri", resetCode);
@@ -504,7 +511,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		updatePassword(handler, query, password, params);
 	}
 
-	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, String>> handler) {
+	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {
 		final String code = StringValidation.generateRandomCode(8);
 
 		String query =
@@ -512,40 +519,64 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						"WHERE n.login={login} AND n.activationCode IS NULL " +
 						(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 						"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
-						"RETURN count(n) as nb";
+						"RETURN count(n) as nb, n.displayName as displayName";
 		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime());
 		neo.execute(query, params, event -> {
-			if ("ok".equals(event.body().getString("status")) &&
-					event.body().getJsonArray("result") != null && event.body().getJsonArray("result").size() == 1 &&
-					1 == ((JsonObject) event.body().getJsonArray("result").getJsonObject(0)).getInteger("nb")) {
-				handler.handle(new Either.Right<>(code));
-			} else {
-				handler.handle(new Either.Left<>("failed to set reset code"));
+			if ("ok".equals(event.body().getString("status")))
+			{
+				JsonArray result = event.body().getJsonArray("result");
+				if(result != null && result.size() == 1)
+				{
+					JsonObject result_data = result.getJsonObject(0);
+					if(result_data.getInteger("nb") == 1)
+					{
+						handler.handle(new Either.Right<>(
+							new JsonObject()
+								.put("code", code)
+								.put("displayName", result_data.getString("displayName"))
+						));
+						return;
+					}
+				}
 			}
+			handler.handle(new Either.Left<>("failed to set reset code"));
 		});
 	}
 
 	@Override
 	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,boolean checkFederatedLogin ,
 			final Handler<Boolean> handler) {
-		setResetCode(login, checkFederatedLogin, new Handler<Either<String, String>>() {
+		setResetCode(login, checkFederatedLogin, new Handler<Either<String, JsonObject>>() {
 			@Override
-			public void handle(Either<String, String> either) {
-				if (either.isRight()) {
-					final String code = either.right().getValue();
-					if ("email".equals(dest.getType())) {
-						sendResetPasswordMail(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
-							public void handle(Either<String, JsonObject> event) {
+			public void handle(Either<String, JsonObject> either) {
+				if (either.isRight())
+				{
+					final JsonObject code_data = either.right().getValue();
+					if ("email".equals(dest.getType()))
+					{
+						sendResetPasswordMail(request, dest.getValue(), code_data.getString("code"), login, code_data.getString("displayName"),
+							new Handler<Either<String, JsonObject>>()
+							{
+								public void handle(Either<String, JsonObject> event)
+								{
+									handler.handle(event.isRight());
+								}
+							}
+						);
+					}
+					else if ("mobile".equals(dest.getType()))
+					{
+						sendResetPasswordSms(request, dest.getValue(), code_data.getString("code"), login, code_data.getString("displayName"),
+							new Handler<Either<String, JsonObject>>()
+						{
+							public void handle(Either<String, JsonObject> event)
+							{
 								handler.handle(event.isRight());
 							}
 						});
-					} else if ("mobile".equals(dest.getType())) {
-						sendResetPasswordSms(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
-							public void handle(Either<String, JsonObject> event) {
-								handler.handle(event.isRight());
-							}
-						});
-					} else {
+					}
+					else
+					{
 						handler.handle(false);
 					}
 				} else {
@@ -556,7 +587,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void generateResetCode(String login, boolean checkFederatedLogin, Handler<Either<String, String>> handler) {
+	public void generateResetCode(String login, boolean checkFederatedLogin, Handler<Either<String, JsonObject>> handler) {
 		setResetCode(login, checkFederatedLogin, handler);
 	}
 

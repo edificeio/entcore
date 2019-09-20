@@ -978,13 +978,14 @@ public class AuthController extends BaseController {
 
 								final String mail = result.right().getValue().getString("email", "");
 								final String mobile = result.right().getValue().getString("mobile", "");
+								final String displayName = result.right().getValue().getString("displayName", "");
 
 								if ("mail".equals(service)) {
-									userAuthAccount.sendResetPasswordMail(request, mail, resetCode,
+									userAuthAccount.sendResetPasswordMail(request, mail, resetCode, login, displayName,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else if ("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()) {
 									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
-									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode,
+									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode, login, displayName,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else {
 									badRequest(request, "invalid.service");
@@ -1044,9 +1045,9 @@ public class AuthController extends BaseController {
 			return;
 		}
 
-		userAuthAccount.generateResetCode(login, checkFederatedLogin, (Either<String, String> either) -> {
+		userAuthAccount.generateResetCode(login, checkFederatedLogin, (Either<String, JsonObject> either) -> {
 			if (either.isRight()) {
-				renderJson(request, new JsonObject().put("renewalCode", either.right().getValue()));
+				renderJson(request, new JsonObject().put("renewalCode", either.right().getValue().getString("code")));
 			} else {
 				renderError(request);
 			}
