@@ -188,6 +188,20 @@ public class Structure {
 		}
 	}
 
+	public void updateClassName(String classExternalId, String name) {
+		if (classes.contains(classExternalId)) {
+			String query =
+					"MATCH (c:Class { externalId : {externalId}})<-[:DEPENDS]-(g:ProfileGroup) " +
+					"WHERE c.name <> {name} " +
+					"SET c.name = {name}, g.name = {name} +'-'+ g.filter, g.displayNameSearchField = {groupSearchField} ";
+			JsonObject params = new JsonObject()
+					.put("externalId", classExternalId)
+					.put("name", name)
+					.put("groupSearchField", Validator.sanitize(name));
+			getTransaction().add(query, params);
+		}
+	}
+
 	public void createFunctionalGroupIfAbsent(String groupExternalId, String name) {
 		if (groups.add(groupExternalId)) {
 			String query =
