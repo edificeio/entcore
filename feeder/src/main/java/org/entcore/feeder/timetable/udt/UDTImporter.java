@@ -88,6 +88,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, String> codeGepDiv = new HashMap<>();
 	private Set<String> usedGroupInCourses = new HashSet<>();
 	private final boolean udcalLowerCase;
+	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(uai, path, acceptLanguage, authorizeUserCreation);
@@ -343,6 +344,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 				group.put("groups", groups);
 			}
 			groups.add(name);
+			JsonArray aggClasses = aggregateRgmtCourses.get(name);
+			if (aggClasses == null) {
+				aggClasses = new JsonArray();
+				aggregateRgmtCourses.put(name, aggClasses);
+			}
+			aggClasses.add(currentEntity.getString("code_div"));
 		} else {
 			final String classId = currentEntity.getString("code_div");
 			JsonObject classe = classes.get(classId);
@@ -619,10 +626,21 @@ public class UDTImporter extends AbstractTimetableImporter {
 			String name = regroup.get(entity.getString("rgpmt"));
 			if (isNotEmpty(name)) {
 				groups.add(name);
-			}
-			String gName = entity.getString("gpe");
-			if (isNotEmpty(gName)) {
-				groups.add(entity.getString("div") + " Gr " + gName);
+				final JsonArray aggClasses = aggregateRgmtCourses.get(name);
+				if (aggClasses != null && !aggClasses.isEmpty()) {
+					final TreeSet<String> cclasses = new TreeSet<>();
+					final JsonArray cc = c.getJsonArray("classes");
+					if (cc != null) {
+						cclasses.addAll(cc.getList());
+					}
+					cclasses.addAll(aggClasses.getList());
+					c.put("classes", new JsonArray(new ArrayList<>(cclasses)));
+				}
+			} else {
+				String gName = entity.getString("gpe");
+				if (isNotEmpty(gName)) {
+					groups.add(entity.getString("div") + " Gr " + gName);
+				}
 			}
 		}
 		try {
