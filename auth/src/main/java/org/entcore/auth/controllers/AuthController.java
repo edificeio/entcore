@@ -859,7 +859,15 @@ public class AuthController extends BaseController {
 										renderJson(request, new JsonObject().put("structures", structures));
 									return;
 								}
+
 								JsonObject match = results.getJsonObject(0);
+
+								if(match.getString("activationCode") != null)
+								{
+									badRequest(request, "not.activated");
+									return;
+								}
+
 								final String id = match.getString("login", "");
 								final String mobile = match.getString("mobile", "");
 
@@ -909,6 +917,12 @@ public class AuthController extends BaseController {
 							badRequest(request, "no.match");
 							return;
 						}
+						if(result.right().getValue().getString("activationCode") != null)
+						{
+							badRequest(request, "not.activated");
+							return;
+						}
+
 
 						final String mail = result.right().getValue().getString("email", "");
 						final String mobile = result.right().getValue().getString("mobile", "");
@@ -954,6 +968,11 @@ public class AuthController extends BaseController {
 								}
 								if (result.right().getValue().size() == 0) {
 									badRequest(request, "no.match");
+									return;
+								}
+								if(result.right().getValue().getString("activationCode") != null)
+								{
+									badRequest(request, "not.activated");
 									return;
 								}
 

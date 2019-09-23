@@ -279,7 +279,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.emailSearchField = {mail} " +
 				(setFirstname ? " AND u.firstNameSearchField = {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
-				" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
+				//" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
+				" RETURN DISTINCT u.login as login, u.activationCode as activationCode, u.mobile as mobile, s.name as structureName, s.id as structureId";
 		//Feat #20790 match only lowercases values
 		JsonObject params = new JsonObject().put("mail", email.toLowerCase());
 		if(setFirstname)
@@ -294,7 +295,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		boolean setResetCode = resetCode != null && !resetCode.trim().isEmpty();
 
 		final String baseQuery =
-				"WHERE n.activationCode IS NULL " +
+				//"WHERE n.activationCode IS NULL " +
+				"WHERE 1=1 " +
 				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 				"RETURN n.email as email, n.mobile as mobile";
@@ -333,7 +335,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
 					"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
 					"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-					"WHERE NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+					//"WHERE NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+					"WHERE NOT(p.email IS NULL) AND " +
 					"(NOT(HAS(n.federated)) OR n.federated = false) " +
 					(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 					"RETURN p.email as email";
