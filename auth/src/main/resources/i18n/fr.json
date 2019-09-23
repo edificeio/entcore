@@ -61,6 +61,7 @@
     "email.reset.id.infos": "Vous avez demandé un rappel de votre identifiant de connexion.",
     "email.signature" : "Cordialement, l'équipe Ent-Core",
     "phone.hi": "Bonjour, ",
+    "phone.hi.withname": "Bonjour {{displayName}}, ",
     "phone.how.to.reset": "Vous pouvez vous connecter à l'ENT en saisissant votre identifiant et votre nouveau code d'activation",
     "phone.login": "Voici le rappel de votre identifiant de connexion à l'ENT",
     "phone.regards": "Cordialement, ",

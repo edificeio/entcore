@@ -466,7 +466,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	{
 		JsonObject params = new JsonObject()
 			.put("resetCode", resetCode)
-			.put("resetUri", resetCode);
+			.put("resetUri", resetCode)
+			.put("displayName", displayName)
+			.put("login", login);
 
 		sendSms(request, phone, "phone/forgotPassword.txt", params, handler);
 	}
