@@ -463,5 +463,21 @@
   "empty.collaborativewall.creation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un tableau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
   "empty.collaborativewall.consultation.title": "Pour les accros aux post-it",
   "empty.collaborativewall.consultation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
-  "bpr.publish": "Publier dans la bibliothèque partagée"
+  "bpr.publish": "Publier dans la bibliothèque partagée",
+  "bpr.form.header": "Publier dans la bibliothèque",
+  "bpr.form.tip": "La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants.",
+  "bpr.form.publication.title": "Titre",
+  "bpr.form.publication.title.placeholder": "Veuillez entrer le nom de votre activité",
+  "bpr.form.publication.description": "Description",
+  "bpr.form.publication.description.placeholder": "Quels sont les thèmes abordés dans votre activité ? Quels objectifs pédagogiques souhaitez-vous atteindre ?",
+  "bpr.form.publication.cover.upload": "Vignette de l'activité",
+  "bpr.form.publication.cover.preview": "Aperçu",
+  "bpr.form.publication.type": "Type d'activité",
+  "bpr.form.publication.discipline": "Discipline",
+  "bpr.form.publication.language": "Langue",
+  "bpr.form.publication.age": "Âge des élèves",
+  "bpr.form.publication.keywords": "Mots clés",
+  "bpr.form.publication.keywords.placeholder": "Entrez des mots clés (5 maximum) séparés par des virgules, exemple : physique, grammaire, mathématiques",
+  "bpr.form.publication.licence.text": "En cliquant sur \"Publier\", j'accepte que mon activité soit publiée sous licence Creative Commons",
+  "bpr.form.publication.licence.image.alt": "Logo Creative Commons BY"
 }
