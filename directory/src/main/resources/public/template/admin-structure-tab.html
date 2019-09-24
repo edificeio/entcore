@@ -33,7 +33,7 @@
         <div class="twelve cell padding-top-5" ng-if="!isCentralAdmin()"><strong class="four cell">[[lang.translate("directory.uai")]] :</strong> [[structure.UAI]]</div>
         <div class="twelve cell padding-top-5" ng-if="isCentralAdmin()">
             <strong class="four cell">[[lang.translate("directory.uai")]] :</strong>
-            <input class="eight cell" type="text" ng-model="structure.UAI"/>
+            <input class="eight cell" type="text" ng-model="structure.UAI" maxlength="8"/>
         </div>
         <div class="twelve cell padding-top-5">
             <strong class="four cell">[[lang.translate("directory.name")]]</strong>
@@ -205,7 +205,7 @@
         </div>
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("directory.uai")]]</strong>
-            <input class="eight cell" type="text" ng-model="createdStructure.UAI"/>
+            <input class="eight cell" type="text" ng-model="createdStructure.UAI" maxlength="8"/>
         </div>
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("directory.has.app")]]</strong>
