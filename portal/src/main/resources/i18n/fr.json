@@ -463,7 +463,8 @@
   "empty.collaborativewall.creation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un tableau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
   "empty.collaborativewall.consultation.title": "Pour les accros aux post-it",
   "empty.collaborativewall.consultation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
-  "bpr.publish": "Publier dans la bibliothèque partagée",
+
+  "bpr.publish": "Publier dans la bibliothèque",
   "bpr.form.header": "Publier dans la bibliothèque",
   "bpr.form.tip": "La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants.",
   "bpr.form.publication.title": "Titre",
