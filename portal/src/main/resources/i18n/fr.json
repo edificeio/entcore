@@ -466,7 +466,7 @@
 
   "bpr.publish": "Publier dans la bibliothèque",
   "bpr.form.header": "Publier dans la bibliothèque",
-  "bpr.form.tip": "La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants.",
+  "bpr.form.tip": "La Bibliothèque est un espace de partage d'activités et de ressources numériques mutualisées entre enseignants.",
   "bpr.form.publication.title": "Titre",
   "bpr.form.publication.title.placeholder": "Veuillez entrer le nom de votre activité",
   "bpr.form.publication.description": "Description",
