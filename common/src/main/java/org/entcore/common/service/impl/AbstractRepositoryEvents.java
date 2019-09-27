@@ -45,17 +45,21 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	}
 
 	protected void createExportDirectory(String exportPath, String locale, final Handler<String> handler) {
-		final String path = exportPath + File.separator	+
-				StringUtils.stripAccents(I18n.getInstance().translate(title.toLowerCase() + ".title", I18n.DEFAULT_DOMAIN, locale));
-		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					handler.handle(path);
-				} else {
-					log.error(title + " : Could not create folder " + exportPath + " - " + event.cause());
-					handler.handle(null);
-				}
+		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json -> {
+			if (json.succeeded()) {
+				final String path = exportPath + File.separator +
+						StringUtils.stripAccents(((JsonObject)json.result().body()).getString(title.toLowerCase()));
+				vertx.fileSystem().mkdir(path, event -> {
+					if (event.succeeded()) {
+						handler.handle(path);
+					} else {
+						log.error(title + " : Could not create folder " + exportPath + " - " + event.cause());
+						handler.handle(null);
+					}
+				});
+			} else {
+				log.error(title + " : Could not create folder " + exportPath + " - " + json.cause());
+				handler.handle(null);
 			}
 		});
 	}

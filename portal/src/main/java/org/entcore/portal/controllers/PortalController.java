@@ -19,6 +19,7 @@
 
 package org.entcore.portal.controllers;
 
+import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
@@ -391,6 +392,18 @@ public class PortalController extends BaseController {
 				unauthorized(request);
 			}
 		});
+	}
+
+	@BusAddress("portal")
+	public void export(Message<JsonObject> message) {
+		String action = message.body().getString("action", "");
+		switch (action) {
+			case "getI18n" :
+				String acceptLanguage = message.body().getString("acceptLanguage");
+				message.reply(I18n.getInstance().load(acceptLanguage, I18n.DEFAULT_DOMAIN));
+				break;
+			default: log.error("Archive : invalid action " + action);
+		}
 	}
 
 	/*

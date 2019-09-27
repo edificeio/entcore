@@ -34,6 +34,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.Zip;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -220,7 +221,7 @@ public class FileSystemExportService implements ExportService {
 			return;
 		}
 		if (isFinished) {
-			addManifestToExport(exportId, exportDirectory, new Handler<AsyncResult<Void>>() {
+			addManifestToExport(exportId, exportDirectory, locale, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
@@ -343,19 +344,25 @@ public class FileSystemExportService implements ExportService {
 		return v != null && v == DOWNLOAD_IN_PROGRESS;
 	}
 
-	private void addManifestToExport(String exportId, String exportDirectory, Handler<AsyncResult<Void>> handler) {
+	private void addManifestToExport(String exportId, String exportDirectory, String locale, Handler<AsyncResult<Void>> handler) {
 		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		JsonObject manifest = new JsonObject();
 		Set<String> expectedExport = this.userExport.get(getUserId(exportId)).getExpectedExport();
-		versionMap.forEach((k, v) -> {
-			String[] s = k.split("\\.");
-			// Removing of "-" for scrapbook
-			if (expectedExport.contains((s[s.length - 1]).replaceAll("-", ""))) {
-				manifest.put(k, v);
-			}
+		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json -> {
+			JsonObject i18n = (JsonObject)(json.result().body());
+			versionMap.forEach((k, v) -> {
+				String[] s = k.split("\\.");
+				// Removing of "-" for scrapbook
+				String app = (s[s.length - 1]).replaceAll("-", "");
+				if (expectedExport.contains(app)) {
+					String i = i18n.getString(app);
+					manifest.put(k, new JsonObject().put("version",v)
+							.put("folder", StringUtils.stripAccents(i == null ? app : i)));
+				}
+			});
+			String path = exportDirectory + File.separator + "Manifest.json";
+			fs.writeFile(path, Buffer.factory.buffer(manifest.encodePrettily()), handler);
 		});
-		String path = exportDirectory + File.separator + "Manifest.json";
-		fs.writeFile(path, Buffer.factory.buffer(manifest.encodePrettily()), handler);
 	}
 
 	private String getUserId(String exportId) {

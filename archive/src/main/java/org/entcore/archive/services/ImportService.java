@@ -10,6 +10,6 @@ public interface ImportService {
 
     void uploadArchive(final HttpServerRequest request, Handler<Either<String, String>> handler);
 
-    void analyzeArchive(String importId, Handler<Either<String, JsonObject>> handler);
+    void analyzeArchive(String importId, String locale, Handler<Either<String, JsonObject>> handler);
 
 }
