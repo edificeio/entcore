@@ -25,15 +25,21 @@ package org.entcore.common.pdf;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import org.entcore.common.user.UserInfos;
 
-public interface PdfGenerator {
 
+public interface PdfGenerator {
+	enum SourceKind{
+		document, presentation, spreadsheet
+	}
 	void generatePdfFromTemplate(String name, String template, Handler<AsyncResult<Pdf>> handler);
 
 	void generatePdfFromUrl(String name, String url, Handler<AsyncResult<Pdf>> handler);
 
 	void generatePdfFromTemplate(UserInfos user, String name, String template, Handler<AsyncResult<Pdf>> handler);
+
+	void convertToPdfFromBuffer(SourceKind kind, Buffer file, Handler<AsyncResult<Pdf>> handler);
 
 	void generatePdfFromUrl(UserInfos user, String name, String url, Handler<AsyncResult<Pdf>> handler);
 

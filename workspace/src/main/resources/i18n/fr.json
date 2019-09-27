@@ -244,5 +244,10 @@
     "workspace.move.title":"Déplacement des fichiers et/ou dossiers",
     "workspace.element.uri.notfound":"Les fichiers ou dossiers ont été déplacés dans un dossier auquel vous n'avez pas accès, vous pouvez les retrouver en effectuant une recherche dans tout l'espace documentaire",
     "workspace.lool.open": "Editer en ligne",
-    "workspace.create.workspace": "Importer un document"
+    "workspace.create.workspace": "Importer un document",
+    "workspace.loading": "Chargement en cours",
+    "workspace.preview.loading": "Prévisualisation en cours de chargement",
+    "document.error.missing.fileid": "Le fichier recherché n'existe pas",
+    "document.error.preview.kind.unknown": "Prévisualisation impossible. Le type du document n'a pas été reconnu.",
+    "document.preview.save.failed": "Une erreur est survenue lors de la génération de la prévisualisation."
 }

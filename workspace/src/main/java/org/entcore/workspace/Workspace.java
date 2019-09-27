@@ -25,6 +25,8 @@ import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.pdf.PdfFactory;
+import org.entcore.common.pdf.PdfGenerator;
 import org.entcore.common.share.impl.GenericShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.storage.Storage;
@@ -102,7 +104,9 @@ public class Workspace extends BaseServer {
 		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
 				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService);
 
-		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService);
+		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
+
+		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance());
 		addController(workspaceController);
 		//
 

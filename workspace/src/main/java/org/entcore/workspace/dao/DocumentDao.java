@@ -76,7 +76,7 @@ public class DocumentDao extends GenericDao {
 				.set("file", revision.getString("file"))//
 				.set("thumbnails", revision.getJsonObject("thumbnails"))//
 				.set("metadata", revision.getJsonObject("metadata"))//
-				.set("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
+				.set("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "").unset("previewDate");
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(docId)), set.build(), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {

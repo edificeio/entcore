@@ -1,7 +1,3 @@
 <div class="row">
-	<h2><i class="back" ng-click="closeViewFile()"></i>[[display.viewFile.name]]</h2>
-	<strong>[[display.viewFile.ownerName]]</strong>
-</div>
-<div class="row">
-	<file-viewer ng-model="display.viewFile"></file-viewer>
+	<file-viewer ng-model="display.viewFile" on-back="closeViewFile()"></file-viewer>
 </div>
