@@ -1,34 +1,23 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, ViewChild, Renderer2, ViewEncapsulation } from '@angular/core'
+import { Component, OnInit, ChangeDetectionStrategy, Input} from '@angular/core'
 import { MessageFlashService } from '../message-flash.service';
 
 @Component({
     selector: 'message-flash-preview',
     template: `
-
-    <link rel="stylesheet" #myTheme type="text/css" media="screen" />
-
-
-    <article class="content-box" style="flex: 1 1; margin: 10px; padding: 10px; height: 98%;">
+    <article class="content-box flashmsg__preview">
+        <h3><s5l>flashmsg.preview</s5l> :</h3>
         <div class="twelve cell">
             <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
-                <i class="close-2x right-magnet"></i>
+                <i class="close is-pulled-right"></i>
                 <div [innerHTML]="text"></div>
             </div>
             <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
-                <i class="close-2x right-magnet"></i>
+                <i class="close is-pulled-right"></i>
                 <div [innerHTML]="text"></div>
             </div>
         </div>
     </article>
-       
     `,
-    encapsulation: ViewEncapsulation.Native,
-    styles: [
-        `.flashmsg {
-            min-height: 20px;
-            margin-right: 0px !important;
-        }`
-    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MessageFlashPreviewComponent implements OnInit {
@@ -37,15 +26,9 @@ export class MessageFlashPreviewComponent implements OnInit {
     @Input() color: string;
     @Input() customColor: string;
 
-    @ViewChild('myTheme') myTheme;
+    constructor() {}
 
-    constructor(public renderer: Renderer2) {}
-
-    ngOnInit() {
-        MessageFlashService.getTheme().then(path => {
-            this.renderer.setAttribute(this.myTheme.nativeElement, "href", path);
-        });
-    }
+    ngOnInit() {}
 
     ngOnDestroy() {}
 
