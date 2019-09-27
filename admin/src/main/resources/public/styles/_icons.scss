@@ -37,3 +37,10 @@ i.school {
     content:"\e949";
   }
 }
+
+i.close {
+  @include fonticon;
+  &::before {
+    content: "\e866";
+  }
+}

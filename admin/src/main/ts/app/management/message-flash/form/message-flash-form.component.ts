@@ -64,10 +64,11 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     </form-field>
                     <form-field label="management.message.flash.color">
                         <span class="is-flex-none">
+                            <div class="legend-square grey-dark" [ngClass]="{ outlined: message.color == 'grey-dark' }" (click)="message.color = 'grey-dark'"></div>
                             <div class="legend-square red" [ngClass]="{ outlined: message.color == 'red' }" (click)="message.color = 'red'"></div>
+                            <div class="legend-square orange" [ngClass]="{ outlined: message.color == 'orange' }" (click)="message.color = 'orange'"></div>
                             <div class="legend-square green" [ngClass]="{ outlined: message.color == 'green'}" (click)="message.color = 'green'"></div>
                             <div class="legend-square blue" [ngClass]="{ outlined: message.color == 'blue' }" (click)="message.color = 'blue'"></div>
-                            <div class="legend-square orange" [ngClass]="{ outlined: message.color == 'orange' }" (click)="message.color = 'orange'"></div>
                             <input type="color" ng-model="message.customColor" [ngClass]="{ outlined: !!message.customColor }" [(ngModel)]="message.customColor">
                         </span>
                     </form-field>
@@ -87,6 +88,7 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
 
                 <div class="has-top-margin-40" style="width: 100%; display : flex">
                     <div style="flex: 1 1; margin: 10px;">
+                        <h3><s5l>flashmsg.message</s5l> :</h3>
                         <textarea id="trumbowyg-editor">{{ message.contents[selectedLanguage] }}</textarea>
                     </div>
                     <message-flash-preview

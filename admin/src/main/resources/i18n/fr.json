@@ -382,7 +382,6 @@
     "import.report.column.loginAlias": "Alias",
     "empty.lastName":"pas de nom",
     "empty.firstName":"pas de prénom",
-    "empty.birthDate":"pas de date de naissance",
     "empty.loginAlias": "pas d'alias",
 
     "import.finish":"Import effectué",
@@ -804,5 +803,7 @@
     "empty.birthDate" : "Aucune",
     "wizard.steps": "Étapes :",
     "csv.file.too.long" : "Fichier trop volumineux. La taille maximum est d'un méga-octets par fichier.",
-    "csv.file.size.error": "Erreur lors du calcul de la taille du fichier."
+    "csv.file.size.error": "Erreur lors du calcul de la taille du fichier.",
+    "flashmsg.message": "Message",
+    "flashmsg.preview": "Aperçu du message"
 }
