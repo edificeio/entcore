@@ -202,4 +202,20 @@ public class NodePdfClient implements PdfGenerator {
 		return token;
 	}
 
+	@Override
+	public void convertToPdfFromBuffer(SourceKind kind, Buffer file, Handler<AsyncResult<Pdf>> handler){
+		final String boundary = UUID.randomUUID().toString();
+		Buffer buffer = Buffer.buffer();
+		buffer.appendString("--" + boundary + "\r\n");
+		buffer.appendString("Content-Disposition: form-data; name=\"template\"; filename=\"file\"\r\n");
+		buffer.appendString("\r\n");
+		buffer.appendBuffer(file);
+		buffer.appendString("\r\n");
+		buffer.appendString("--" + boundary + "--\r\n");
+		final HttpClientRequest req = client.post("/convert/pdf?kind="+kind.name(), responseHandler(handler));
+		req.putHeader("Authorization", authHeader);
+		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
+		req.end(buffer);
+	}
+
 }

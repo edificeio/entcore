@@ -62,6 +62,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			switch (method) {
 			case "getDocumentProperties":
 			case "getDocument":
+			case "getPreview":
 				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "commentDocument":

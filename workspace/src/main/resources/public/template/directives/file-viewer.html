@@ -1,20 +1,26 @@
-<div class="embedded-viewer">
-	<div class="controls">
-		<resource-right resource="ngModel" name="contrib">
-			<button class="cancel right-magnet" ng-click="editImage()" ng-if="!isFullscreen && ngModel.isEditableImage"><i18n>editImage</i18n></button>
-		</resource-right>
-		<button class="cancel right-magnet" ng-click="fullscreen(true)" ng-if="!isFullscreen"><i18n>preview</i18n></button>
-
-		<div class="cancel right-magnet button">
-			<button class="top-spacing-twice" ng-if="canDownload() && isFullscreen" ng-click="download()">
-				<i18n>download</i18n>
-			</button>
-			<button ng-if="canDownload() && !isFullscreen" ng-click="download()">
-				<i18n>download</i18n>
-			</button>
-			<i class="close" ng-click="fullscreen(false)" ng-if="isFullscreen"></i>
+<div class="embedded-viewer" ng-class="{'height-minus200 height-minus270-1d':!isFullscreen}">
+	<div class="flex-row align-center justify-between" ng-if="!isFullscreen">
+		<div class="flex-row align-center justify-between">
+			<h2><i class="back" ng-click="closeViewFile()"></i></h2>
+			<div class="flex-row f-column left-spacing-twice">
+				<h2 class="no-margin">[[ngModel.name]]</h2>
+				<span><i18n>owner</i18n>:&nbsp;<strong>[[ngModel.ownerName]]</strong></span>
+			</div>
 		</div>
-
+		<div class="flex-row align-center justify-between">
+			<button ng-click="download()"><i18n>download</i18n></button>
+			<button class="cancel" ng-click="fullscreen(true)"><i18n>preview</i18n></button>
+			<resource-right resource="ngModel" name="contrib">
+				<button class="cancel" ng-click="editImage()" ng-if="ngModel.isEditableImage"><i18n>editImage</i18n></button>
+			</resource-right>
+			<button class="cancel" ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
+				<i18n>workspace.lool.open</i18n>
+			</button>
+		</div>
+	</div>
+	<div class="controls" ng-if="isFullscreen">
+		<i class="close" ng-click="fullscreen(false)"></i>
+		<button class="right-magnet top-spacing-twice right-spacing-twice" ng-click="download()"><i18n>download</i18n></button>
 	</div>
 	<div class="file">
 		<div ng-if="contentType === 'html'">
@@ -24,7 +30,8 @@
 		<audio ng-if="contentType === 'audio'" controls class="render" ng-src="[[ngModel.link]]"></audio>
 		<video ng-if="contentType === 'video'" controls class="render" ng-src="[[ngModel.link]]"></video>
 		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
-		<div ng-if="contentType === 'unknown' || contentType === 'doc' || contentType === 'xls' || contentType === 'ppt' || contentType === 'zip'" class="default-viewer">
+		<pdf-viewer ng-if="isOfficeType()" ng-src="[[previewUrl()]]"></pdf-viewer>
+		<div ng-if="contentType === 'unknown' || contentType === 'zip'" class="default-viewer">
 			<button ng-click="download()">
 				<i18n>file.viewer.download</i18n>
 			</button>

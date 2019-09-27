@@ -188,6 +188,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		doc.put("name", getOrElse(name, uploaded.getJsonObject("metadata").getString("filename"), false));
 		doc.put("metadata", uploaded.getJsonObject("metadata"));
 		doc.put("file", uploaded.getString("_id"));
+		doc.put("fileDate", MongoDb.formatDate(new Date()));
 		doc.put("application", getOrElse(application, WorkspaceController.MEDIALIB_APP));
 		log.debug(doc.encodePrettily());
 		addFile(Optional.ofNullable(doc.getString("eParent")), doc, ownerId, ownerName, res -> {
@@ -238,6 +239,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					doc.put("modified", now);
 					doc.put("metadata", metadata);
 					doc.put("file", uploaded.getString("_id"));
+					doc.put("fileDate", MongoDb.formatDate(new Date()));
 					doc.put("alt", uploaded.getString("alt"));
 					doc.put("legend", uploaded.getString("legend"));
 					final JsonObject thumbs = old.getJsonObject("result", new JsonObject()).getJsonObject("thumbnails");

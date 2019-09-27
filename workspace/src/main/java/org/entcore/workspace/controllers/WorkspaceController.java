@@ -8,16 +8,12 @@ import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefau
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
+import io.netty.util.internal.StringUtil;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.folders.ElementQuery;
@@ -27,12 +23,15 @@ import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.pdf.PdfGenerator;
 import org.entcore.common.share.impl.GenericShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.MimeTypeUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.Workspace;
+import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -69,13 +68,17 @@ public class WorkspaceController extends BaseController {
 	private WorkspaceService workspaceService;
 	private TimelineHelper notification;
 	private GenericShareService shareService;
+	private final PdfGenerator pdfGenerator;
+	private DocumentDao dao;
 
 	private Storage storage;
 
-	public WorkspaceController(Storage storage, WorkspaceService workspaceService, GenericShareService shareService) {
+	public WorkspaceController(Storage storage, WorkspaceService workspaceService, GenericShareService shareService, PdfGenerator aPdfGenerator, MongoDb mongo) {
 		this.storage = storage;
 		this.workspaceService = workspaceService;
 		this.shareService = shareService;
+		this.pdfGenerator = aPdfGenerator;
+		this.dao = new DocumentDao(mongo);
 	}
 
 	@Post("/document")
@@ -654,6 +657,93 @@ public class WorkspaceController extends BaseController {
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
 		getFile(request, null, false);
+	}
+
+	@Get("/document/preview/:id")
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
+	public void getPreview(HttpServerRequest request) {
+		final String documentId = request.params().get("id");
+		workspaceService.findById(documentId, null, false, resDocument->{
+			try{
+				final String status = resDocument.getString("status");
+				final JsonObject res = resDocument.getJsonObject("result");
+				if (!"ok".equals(status) || res == null) {
+					notFound(request);
+					return;
+				}
+				final String preview = res.getString("preview");
+				final String previewDate = res.getString("previewDate");
+				final String file = res.getString("file");
+				final String fileDate = res.getString("fileDate");
+				if(StringUtils.isEmpty(file)) {
+					badRequest(request, "document.error.missing.fileid");
+					return;
+				}
+				String contentType = res.getJsonObject("metadata", new JsonObject()).getString("content-type");
+				//check content type
+				PdfGenerator.SourceKind kind = null;
+				if(MimeTypeUtils.isExcelLike(contentType)){
+					kind = PdfGenerator.SourceKind.spreadsheet;
+				} else if(MimeTypeUtils.isWordLike(contentType)){
+					kind = PdfGenerator.SourceKind.document;
+				} else if(MimeTypeUtils.isPowerpointLike(contentType)){
+					kind = PdfGenerator.SourceKind.presentation;
+				} else{
+					badRequest(request, "document.error.preview.kind.unknown");
+					return;
+				}
+				//check date
+				boolean regenerate = true;
+				if (StringUtils.isEmpty(preview)) {
+					regenerate = true;
+				} else if (StringUtils.isEmpty(previewDate) || StringUtils.isEmpty(fileDate)) {
+					regenerate = true;
+				} else if (MongoDb.parseDate(previewDate).before(MongoDb.parseDate(fileDate))) {
+					regenerate = true;
+				} else {
+					regenerate = false;
+				}
+				//send
+				JsonObject meta = new JsonObject().put("content-type", MimeTypeUtils.PDF);
+				if(regenerate){
+					// if preview is not empty => remove it and dont need to wait
+					if(!StringUtils.isEmpty(preview)){
+						storage.removeFile(preview, (resDelete)->{});
+					}
+					//
+					final PdfGenerator.SourceKind finalKind = kind;
+					storage.readFile(file, buffer->{
+						if(buffer==null){
+							notFound(request);
+						} else {
+							pdfGenerator.convertToPdfFromBuffer(finalKind,buffer,pdf->{
+								if(pdf.succeeded()){
+									storage.writeBuffer(pdf.result().getContent(),MimeTypeUtils.PDF,pdf.result().getName(),resStorage->{
+										if ("ok".equals(resStorage.getString("status"))) {
+											final String previewId = resStorage.getString("_id");
+											final String now = MongoDb.formatDate(new Date());
+											final String fileDateIfNeeded = fileDate != null? fileDate : now;//set file date if needed
+											final JsonObject update = new MongoUpdateBuilder().set("preview", previewId).set("previewDate", now).set("fileDate", fileDateIfNeeded).build();
+											dao.update(documentId, update, resUpdate->{
+												storage.sendFile(previewId,"preview.pdf",request, true,meta);
+											});
+										}else{
+											renderError(request, new JsonObject().put("error", "document.preview.save.failed"));
+										}
+									});
+								}else{
+									renderError(request, new JsonObject().put("error", pdf.cause().getMessage()));
+								}
+							});
+						}
+					});
+				}else{
+					storage.sendFile(preview,"preview.pdf",request, true,meta);
+				}
+			} catch (Exception e){
+				renderError(request, new JsonObject().put("error", e.getMessage()));
+			}
+		});
 	}
 
 	private void getDocument(final Message<JsonObject> message) {
