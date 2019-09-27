@@ -2,7 +2,9 @@ package org.entcore.archive.controllers;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -36,8 +38,12 @@ public class ImportController extends BaseController {
     @Get("import/analyze/:importId")
     public void analyze(final HttpServerRequest request) {
         final String importId = request.params().get("importId");
-        importService.analyzeArchive(importId, handler -> {
-            renderJson(request, new JsonObject());
+        importService.analyzeArchive(importId, I18n.acceptLanguage(request), handler -> {
+            if (handler.isLeft()) {
+                renderError(request, new JsonObject().put("error", handler.left().getValue()));
+            } else {
+                renderJson(request, handler.right().getValue());
+            }
         });
     }
 
