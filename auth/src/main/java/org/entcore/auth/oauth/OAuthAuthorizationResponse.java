@@ -76,7 +76,9 @@ public class OAuthAuthorizationResponse {
 //			p = params;
 //		}
 		request.response().setStatusCode(302);
-		request.response().putHeader("Location", redirectUri + "?" + params);
+		final String redirectUrl = (redirectUri != null && redirectUri.contains("?")) ?
+				redirectUri + "&" + params : redirectUri + "?" + params;
+		request.response().putHeader("Location", redirectUrl);
 		request.response().end();
 	}
 
