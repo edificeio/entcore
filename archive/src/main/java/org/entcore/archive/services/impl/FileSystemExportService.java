@@ -87,25 +87,37 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void export(final UserInfos user, final String locale, JsonArray apps, final HttpServerRequest request,
-					   final Handler<Either<String, String>> handler) {
-		userExportExists(user, new Handler<Boolean>() {
+					   final Handler<Either<String, String>> handler)
+	{
+		userExportExists(user, new Handler<Boolean>()
+		{
 			@Override
-			public void handle(Boolean event) {
-				if (Boolean.FALSE.equals(event)) {
+			public void handle(Boolean event)
+			{
+				if (Boolean.FALSE.equals(event))
+				{
 					long now = System.currentTimeMillis();
 					final String exportId = now + "_" +user.getUserId();
+
 					userExportInProgress.put(user.getUserId(), now);
 					userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList()), exportId));
+
 					final String exportDirectory = exportPath + File.separator + exportId;
-					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>() {
+
+					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>()
+					{
 						@Override
-						public void handle(AsyncResult<Void> event) {
-							if (event.succeeded()) {
+						public void handle(AsyncResult<Void> event)
+						{
+							if (event.succeeded())
+							{
 								final Set<String> g = (user.getGroupsIds() != null) ? new
 									HashSet<>(user.getGroupsIds()) : new HashSet<String>();
-								User.getOldGroups(user.getUserId(), new Handler<JsonArray>() {
+								User.getOldGroups(user.getUserId(), new Handler<JsonArray>()
+								{
 									@Override
-									public void handle(JsonArray objects) {
+									public void handle(JsonArray objects)
+									{
 										g.addAll(objects.getList());
 										JsonObject j = new JsonObject()
 												.put("action", "export")
@@ -120,13 +132,17 @@ public class FileSystemExportService implements ExportService {
 										handler.handle(new Either.Right<String, String>(exportId));
 									}
 								});
-							} else {
+							}
+							else
+							{
 								log.error("Create export directory error.", event.cause());
 								handler.handle(new Either.Left<String, String>("export.directory.create.error"));
 							}
 						}
 					});
-				} else {
+				}
+				else
+				{
 					handler.handle(new Either.Left<String, String>("export.exists"));
 				}
 			}
