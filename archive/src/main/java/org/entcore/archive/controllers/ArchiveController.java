@@ -295,4 +295,40 @@ public class ArchiveController extends BaseController {
 		}
 	}
 
+	@Get("/export")
+  public void unitaryExport(final HttpServerRequest request)
+  {
+    final String application = request.params().get("application");
+    final String resourceId = request.params().get("resourceId");
+
+    if (application == null || resourceId == null)
+    {
+        badRequest(request);
+    }
+    else
+    {
+        UserUtils.getUserInfos(eb, request, user ->
+        {
+            exportService.export(user, I18n.acceptLanguage(request), new JsonArray().add(application), new JsonArray().add(resourceId), request,
+							new Handler<Either<String, String>>()
+							{
+								@Override
+								public void handle(Either<String, String> event)
+								{
+									if (event.isRight())
+									{
+										renderJson(request,
+												new JsonObject().put("message", "export.in.progress")
+														.put("exportId", event.right().getValue()));
+									}
+									else
+									{
+										badRequest(request, event.left().getValue());
+									}
+								}
+							});
+        });
+    }
+	}
+
 }
