@@ -55,10 +55,37 @@
                                 failed: uploadStatus === 'failed'}">
                             </i>
                         </div>
-                        <i class="close" ng-if="uploadStatus === 'loading'" ng-click="abortOrDelete()"></i>
+                        <i class="close" ng-click="abortOrDelete()"></i>
                     </li>
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <div ng-if="isAnalized" style="margin-top: 20px;">
+        <div class="row">
+            <b><i18n>archive.import.select</i18n></b>
+        </div>
+        <label class="checkbox top-spacing-twice aligned archive">
+            <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll()" />
+            <span></span>
+            <span><i18n>archive.all</i18n></span>
+        </label>
+        <div class="left-spacing-four">
+            <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
+                <input type="checkbox" ng-model="selectedApps[app]" />
+                <span></span>
+                <span translate content="[[app]]"></span>
+            </label>
+        </div>
+        <hr>
+        <div style="float: right;" ng-if="!loading">
+            <button ng-click="cancelImport()">
+                <i18n>archive.cancel</i18n>
+            </button>
+            <button ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
+                <i18n>archive.import</i18n>
+            </button>
         </div>
     </div>
 

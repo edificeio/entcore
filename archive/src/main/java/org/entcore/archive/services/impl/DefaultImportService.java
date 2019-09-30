@@ -1,10 +1,8 @@
 package org.entcore.archive.services.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
@@ -13,6 +11,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 
@@ -50,7 +49,13 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void analyzeArchive(String importId, String locale, Handler<Either<String, JsonObject>> handler) {
+    public void deleteArchive(String importId) {
+        deleteArchiveAndZip(importPath + File.separator + importId);
+    }
+
+    @Override
+    public void analyzeArchive(UserInfos user, String importId, String locale, JsonObject config,
+                               Handler<Either<String, JsonObject>> handler) {
         final String filePath = importPath + File.separator + importId;
         final String unzippedPath = filePath + "_unzip";
         fs.mkdirs(unzippedPath, done -> {
@@ -67,7 +72,7 @@ public class DefaultImportService implements ImportService {
                            if (files.succeeded()) {
                                if (files.result().size() > 0 &&
                                    files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
-                                   parseFolders(importId, filePath, locale, files.result(), handler);
+                                   parseFolders(user, importId, filePath, locale, config, files.result(), handler);
                                } else {
                                    deleteAndHandleError(filePath, "Archive file not recognized - Missing 'Manifest.json'", handler);
                                }
@@ -86,11 +91,11 @@ public class DefaultImportService implements ImportService {
     }
 
     private void deleteAndHandleError(String filePath, String error, Handler<Either<String, JsonObject>> handler) {
-        deleteArchive(filePath);
+        deleteArchiveAndZip(filePath);
         handler.handle(new Either.Left<>(error));
     }
 
-    private void deleteArchive(String filePath) {
+    private void deleteArchiveAndZip(String filePath) {
         fs.deleteRecursive(filePath, true, deleted -> {
             if (deleted.failed()) {
                 log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
@@ -103,7 +108,8 @@ public class DefaultImportService implements ImportService {
         });
     }
 
-    private void parseFolders(String importId, String path, String locale, List<String> folders, Handler<Either<String, JsonObject>> handler) {
+    private void parseFolders(UserInfos user, String importId, String path, String locale, JsonObject config,
+                              List<String> folders, Handler<Either<String, JsonObject>> handler) {
         String manifestPath = folders.stream().filter(f -> f.endsWith("Manifest.json")).findFirst().get();
         fs.readFile(manifestPath, res -> {
            if (res.failed()) {
@@ -120,6 +126,12 @@ public class DefaultImportService implements ImportService {
                        apps.fieldNames().forEach(key -> {
 
                            String appName = key.substring(key.lastIndexOf(".") + 1);
+
+                           String workflow = config.getJsonObject("publicConf").getJsonObject("apps").getString(appName);
+                           if (user.getAuthorizedActions().stream().noneMatch(action -> action.getName().equals(workflow))) {
+                               return;
+                           }
+
                            Object o = apps.getValue(key);
 
                            if (o instanceof JsonObject) {
@@ -129,15 +141,14 @@ public class DefaultImportService implements ImportService {
                                if (folders.stream().anyMatch(f -> f.endsWith(folderName))) {
                                    foundApps.put(appName, folderName);
                                }
-                           } else if (o instanceof String) {
+                           } else {
                                // case where Manifest doesn't contain folder name
                                String i = i18n.getString(appName);
                                String translated = StringUtils.stripAccents(i == null ? appName : i);
                                if (folders.stream().anyMatch(f -> f.endsWith(translated))) {
                                    foundApps.put(appName, translated);
                                }
-
-                           } else return;
+                           }
 
                        });
                        reply.put("apps", foundApps);

@@ -6,7 +6,7 @@
                     <i18n>archive.info</i18n>
                 </div>
                 <label class="checkbox top-spacing-twice aligned archive" ng-if="!loading">
-                    <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll($event)" />
+                    <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll()" />
                     <span></span>
                     <span><i18n>archive.all</i18n></span>
                 </label>
@@ -18,7 +18,7 @@
                     </label>
                 </div>
                 <hr>
-                <div class="row centered" ng-if="!loading">
+                <div ng-if="!loading">
                     <button ng-disabled="areNoneSelected()" ng-click="initiateExport('apps')">
                         <i18n>export</i18n>
                     </button>

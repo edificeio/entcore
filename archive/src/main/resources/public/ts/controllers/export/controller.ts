@@ -23,7 +23,7 @@ export let exportController = ng.controller('ExportController', ['$scope', ($sco
 		$scope.areNoneSelected = function() {
 			return $scope.availableApps.find(app => $scope.selectedApps[app]) === undefined
 		}
-		$scope.selectAll = function(event){
+		$scope.selectAll = function(){
 			let oneFalse = !$scope.areAllSelected()
 			$scope.availableApps.forEach(app => { $scope.selectedApps[app] = oneFalse })
 		}

@@ -12,7 +12,7 @@ export const archiveService = {
         let myApps = await http.get('/applications-list');
 
         let activatedUserApps = myApps.data.apps.map(app => app.prefix ? app.prefix.slice(1) : app.displayName ? app.displayName : "undefined")
-        .filter(app => exportApps.data.apps.includes(app))
+        .filter(app => Object.keys(exportApps.data.apps).includes(app))
         .sort(function(a, b) {
             let a2 = lang.translate(a), b2 = lang.translate(b);
             return a2 < b2 ? -1 : a2 > b2 ? 1 : 0;
@@ -37,6 +37,10 @@ export const archiveService = {
 
     async analyseArchive(importId: string) {
         return await http.get(`archive/import/analyze/${importId}`);
+    },
+
+    async cancelImport(importId: string) {
+        return await http.get(`archive/import/delete/${importId}`);
     },
 
     cancelUpload() {
