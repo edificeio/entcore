@@ -246,7 +246,17 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				findByShared.get()
 			);
 
-			final JsonObject query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
+			JsonObject query;
+
+			if(resourcesIds == null)
+				query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
+			else
+			{
+				QueryBuilder limitToResources = findByAuthorOrOwnerOrShared.and(
+					QueryBuilder.start("_id").in(resourcesIds).get()
+				);
+				query = MongoQueryBuilder.build(limitToResources);
+			}
 
 			final AtomicBoolean exported = new AtomicBoolean(false);
 			final String collection = MongoDbConf.getInstance().getCollection();

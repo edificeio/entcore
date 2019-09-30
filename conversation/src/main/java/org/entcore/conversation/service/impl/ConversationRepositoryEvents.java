@@ -143,28 +143,51 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 					usermessagesattachmentsTable = "conversation.usermessagesattachments";
 
 			JsonArray userIdParam = new JsonArray().add(userId);
+			JsonArray resourcesIdsAndUserIdParams = userIdParam;
+			String resourcesList = "";
 
-			String queryAttachments = "SELECT DISTINCT att.* " + "FROM " + attachmentTable + " att " + "LEFT JOIN "
-					+ usermessagesattachmentsTable + " userAtt ON att.id = userAtt.attachment_id "
-					+ "WHERE userAtt.user_id = ?";
-			JsonArray attachments = new SqlStatementsBuilder().prepared(queryAttachments, userIdParam).build();
+			if(resourcesIds != null)
+			{
+				resourcesIdsAndUserIdParams = new JsonArray().addAll(resourcesIds).add(userId);
+				resourcesList = Sql.listPrepared(resourcesIds);
+			}
+
+			String queryAttachments = "SELECT DISTINCT att.* " +
+																"FROM " + attachmentTable + " att " +
+																"LEFT JOIN " + usermessagesattachmentsTable + " userAtt ON att.id = userAtt.attachment_id " +
+																"WHERE " +
+																	(resourcesIds != null ? ("userAtt.message_id IN " + resourcesList + " AND ") : "") +
+																	"userAtt.user_id = ?";
+			JsonArray attachments = new SqlStatementsBuilder().prepared(queryAttachments, resourcesIdsAndUserIdParams).build();
 			queries.put(attachmentTable, attachments);
 
-			String queryFolders = "SELECT DISTINCT fol.* " + "FROM " + foldersTable + " fol " + "WHERE fol.user_id = ?";
+			String queryFolders = "SELECT DISTINCT fol.* " +
+														"FROM " + foldersTable + " fol " +
+														"WHERE fol.user_id = ?";
 			queries.put(foldersTable, new SqlStatementsBuilder().prepared(queryFolders, userIdParam).build());
 
-			String queryMessages = "SELECT DISTINCT mess.* " + "FROM " + messagesTable + " mess " + "LEFT JOIN "
-					+ usermessagesTable + " umess ON mess.id = umess.message_id " + "WHERE umess.user_id = ?";
-			queries.put(messagesTable, new SqlStatementsBuilder().prepared(queryMessages, userIdParam).build());
+			String queryMessages =  "SELECT DISTINCT mess.* " +
+															"FROM " + messagesTable + " mess " +
+															"LEFT JOIN " + usermessagesTable + " umess ON mess.id = umess.message_id " +
+															"WHERE " +
+																(resourcesIds != null ? ("mess.id IN " + resourcesList + " AND ") : "") +
+																"umess.user_id = ?";
+			queries.put(messagesTable, new SqlStatementsBuilder().prepared(queryMessages, resourcesIdsAndUserIdParams).build());
 
-			String queryUserMessages = "SELECT DISTINCT umess.* " + "FROM " + usermessagesTable + " umess "
-					+ "WHERE umess.user_id = ?";
-			queries.put(usermessagesTable, new SqlStatementsBuilder().prepared(queryUserMessages, userIdParam).build());
+			String queryUserMessages =  "SELECT DISTINCT umess.* " +
+																	"FROM " + usermessagesTable + " umess " +
+																	"WHERE " +
+																		(resourcesIds != null ? ("umess.message_id IN " + resourcesList + " AND ") : "") +
+																	  "umess.user_id = ?";
+			queries.put(usermessagesTable, new SqlStatementsBuilder().prepared(queryUserMessages, resourcesIdsAndUserIdParams).build());
 
-			String queryUserMessagesAttachments = "SELECT DISTINCT umessatt.* " + "FROM " + usermessagesattachmentsTable
-					+ " umessatt " + "WHERE umessatt.user_id = ?";
+			String queryUserMessagesAttachments = "SELECT DISTINCT umessatt.* " +
+																						"FROM " + usermessagesattachmentsTable + " umessatt " +
+																						"WHERE " +
+																							(resourcesIds != null ? ("umessatt.message_id IN " + resourcesList + " AND ") : "") +
+																							"umessatt.user_id = ?";
 			queries.put(usermessagesattachmentsTable,
-					new SqlStatementsBuilder().prepared(queryUserMessagesAttachments, userIdParam).build());
+					new SqlStatementsBuilder().prepared(queryUserMessagesAttachments, resourcesIdsAndUserIdParams).build());
 
 			AtomicBoolean exported = new AtomicBoolean(false);
 

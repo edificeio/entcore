@@ -87,6 +87,18 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		QueryBuilder findByOwnerOrShared = QueryBuilder.start().or(findByOwner.get(),
 				findByShared.get());
 
+		QueryBuilder findByOwnerOrSharedResourcesRestricted;
+
+			if(resourcesIds == null)
+				findByOwnerOrSharedResourcesRestricted = findByOwnerOrShared;
+			else
+			{
+				findByOwnerOrSharedResourcesRestricted = findByOwnerOrShared.and(
+					QueryBuilder.start("_id").in(resourcesIds).get()
+				);
+			}
+
+
 		QueryBuilder isNotShared = QueryBuilder.start().or(
 			QueryBuilder.start("isShared").exists(false).get(),
 			QueryBuilder.start("isShared").is(false).get()
@@ -109,10 +121,10 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		QueryBuilder protectedDocs = QueryBuilder.start("protected").is(true).and(isNotDeleted.get());
 		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true).and("trasher").is(userId);
 
-		final JsonObject queryMyDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),myDocs.get()));
-		final JsonObject querySharedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),sharedDocs.get()));
-		final JsonObject queryProtectedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),protectedDocs.get()));
-		final JsonObject queryTrashDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),trashDocs.get()));
+		final JsonObject queryMyDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),myDocs.get()));
+		final JsonObject querySharedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),sharedDocs.get()));
+		final JsonObject queryProtectedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),protectedDocs.get()));
+		final JsonObject queryTrashDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),trashDocs.get()));
 
 		final Map<String,JsonObject> queries = new HashMap<>();
 		queries.put("documents",queryMyDocs);
