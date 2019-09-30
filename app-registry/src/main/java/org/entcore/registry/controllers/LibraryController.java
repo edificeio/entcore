@@ -24,6 +24,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -94,15 +95,18 @@ public class LibraryController extends BaseController {
     }
 
     private Future<MultiMap> getAttributes(HttpServerRequest request, Future<UserInfos> futureUser) {
+        MultiMap form = request.formAttributes();
+        form.add("platformURL", Renders.getHost(request));
+
         Future<MultiMap> future = Future.future();
         request.endHandler(res -> {
             futureUser.setHandler(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
-                    MultiMap form = request.formAttributes();
                     form
                             .add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
-                            .add("teacherSchool", user.getStructureNames().stream().findFirst().orElse(""));
+                            .add("teacherSchool", user.getStructureNames().stream().findFirst().orElse(""))
+                            .add("teacherId", user.getUserId());
                     future.complete(form);
                 } else {
                     future.fail(resuser.cause());
