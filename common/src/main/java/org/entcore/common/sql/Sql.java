@@ -146,6 +146,10 @@ public class Sql {
 				insertQuery +" WHERE NOT EXISTS (SELECT * FROM upsert);";
 	}
 
+	public static String listPrepared(JsonArray array) {
+		return listPrepared(array.getList().toArray());
+	}
+
 	public static String listPrepared(List array) {
 		return listPrepared(array.toArray());
 	}
@@ -159,6 +163,14 @@ public class Sql {
 			sb.deleteCharAt(sb.length() - 1);
 		}
 		return sb.append(")").toString();
+	}
+
+	public static String arrayPrepared(JsonArray array) {
+		return arrayPrepared(array.getList().toArray(), false);
+	}
+
+	public static String arrayPrepared(List array) {
+		return arrayPrepared(array.toArray(), false);
 	}
 
 	public static String arrayPrepared(Object[] array) {
