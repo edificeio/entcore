@@ -43,6 +43,10 @@ export const archiveService = {
         return await http.get(`archive/import/delete/${importId}`);
     },
 
+    async launchImport(importId: string, path: string, apps: Object) {
+        return await http.post(`archive/import/${importId}/launch`, { "apps": apps, "importPath": path });
+    },
+
     cancelUpload() {
         source.cancel();
     }
