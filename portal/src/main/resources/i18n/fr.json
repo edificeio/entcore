@@ -444,7 +444,7 @@
   "empty.wiki.creation.title": "Fabriquez votre encyclopédie collaborative",
   "empty.wiki.creation": "Vous aimez partager votre savoir encyclopédique ? Cette appli est faite pour vous ! Expert ou débutant, créez des pages, ajoutez ou non des contributeurs, rédigez, le tour est joué ! On essaie ?",
   "empty.wiki.consultation.title": "Bienvenue dans l’encyclopédie collaborative",
-  "empty.wiki.consultation": "Pour qui aime partager son savoir encyclopédique, il y a l’application Wiki ! Seul ou à plusieurs, on crée des pages de contenus",
+  "empty.wiki.consultation": "Pour qui aime partager son savoir encyclopédique, il y a l’application Wiki ! Seul ou à plusieurs, on crée des pages de contenus.",
 
   "empty.rack.creation.title": "C’est complètement vide…",
   "empty.rack.creation": "Pas un seul document ! Vous n’avez encore rien déposé. On s’y met ?",
@@ -461,5 +461,5 @@
   "empty.collaborativewall.creation.title": "Pour les accros aux post-it",
   "empty.collaborativewall.creation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !",
   "empty.collaborativewall.consultation.title": "Pour les accros aux post-it",
-  "empty.collaborativewall.consultation": "déal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !"
+  "empty.collaborativewall.consultation": "Idéal pour s’organiser ou simplement épingler toutes ses idées, le Mur collaboratif est un ta bleau virtuel interactif. Et comme son nom l’indique, on peut s’y mettre à plusieurs !"
 }
