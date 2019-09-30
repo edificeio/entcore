@@ -480,5 +480,11 @@
   "bpr.form.publication.keywords": "Mots clés",
   "bpr.form.publication.keywords.placeholder": "Entrez des mots clés (5 maximum) séparés par des virgules, exemple : physique, grammaire, mathématiques",
   "bpr.form.publication.licence.text": "En cliquant sur \"Publier\", j'accepte que mon activité soit publiée sous licence Creative Commons",
-  "bpr.form.publication.licence.image.alt": "Logo Creative Commons BY"
+  "bpr.form.publication.licence.image.alt": "Logo Creative Commons BY",
+  "bpr.form.publication.response.success.title": "Votre activité a été publiée avec succès !",
+  "bpr.form.publication.response.success.content.1": "Bravo ! Votre activité va permettre d'inspirer d'autres enseignants de la communauté.",
+  "bpr.form.publication.response.success.content.2": "N'hésitez pas à explorer vous-même d'autres activités et à échanger avec d'autres enseignants !",
+  "bpr.form.publication.response.success.button": "Voir dans la bibliothèque",
+  "bpr.form.publication.response.error.title": "Oups, quelque chose s'est mal passé",
+  "bpr.form.publication.response.error.content": "Rééssayez plus tard."
 }
