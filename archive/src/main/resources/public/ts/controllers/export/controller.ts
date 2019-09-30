@@ -4,7 +4,7 @@ import http from 'axios'
 
 export let exportController = ng.controller('ExportController', ['$scope', ($scope) => {
 
-	$scope.filePath = 'about:blank'
+	$scope.filePath = 'about:blank';
 	var expected;
 
 	archiveService.getApplications().then(data => {
@@ -30,33 +30,54 @@ export let exportController = ng.controller('ExportController', ['$scope', ($sco
 		$scope.$apply();
 	});
 
-	$scope.initiateExport = function(mode: string){
-		var appList;
-		if (mode === "docsOnly") {
-			appList = ["workspace","rack"];
-		} else if (mode === "all") {
-			appList = expected;
-		} else if (mode === "apps") {
-			appList = $scope.availableApps.filter(app => $scope.selectedApps[app]);
-		}
-		http.post('/archive/export', {'apps':appList}).then(function(res){
+	function getAppList(mode: string)
+	{
+		if (mode === "docsOnly")
+			return ["workspace","rack"];
+		else if (mode === "all")
+			return expected;
+		else if (mode === "apps")
+			return $scope.availableApps.filter(app => $scope.selectedApps[app]);
+	}
+
+	function runExport(apps: any)
+	{
+		let success = function(res)
+		{
 			$scope.loadingSpinner = true;
-			setTimeout(function() {
-				http.get('/archive/export/verify/' + res.data.exportId).then(function(status){
+			setTimeout(function()
+			{
+				http.get('/archive/export/verify/' + res.data.exportId).then(function(status)
+				{
 					window.location.href = '/archive/export/' + res.data.exportId;
 					$scope.loadingSpinner = false;
 					$scope.$apply();
-				}).catch(function(){
+				})
+				.catch(function()
+				{
 					notify.error('archive.error');
-					setTimeout(function() {
+					setTimeout(function()
+					{
 						window.location.reload();
 					},3000);
 				});
 			},5000);
+
 			$scope.loading = true;
 			$scope.$apply();
-		}).catch(function(){
+		};
+
+		let failure = function()
+		{
 			notify.error('export.already');
-		})
+		};
+
+		http.post("/archive/export", { "apps": apps }).then(success).catch(failure);
+	}
+
+	$scope.initiateExport = function(mode: string)
+	{
+		runExport(getAppList(mode));
 	};
+
 }]);
