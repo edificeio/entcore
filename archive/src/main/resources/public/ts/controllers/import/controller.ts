@@ -14,6 +14,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
             });*/
 
             const types = ['bytes','kilobytes','megabytes','gigabytes'];
+            var currentImport;
 
             $scope.selectedApps = [];
 
@@ -30,6 +31,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     $scope.currentImportId = res.data.importId;
                     archiveService.analyseArchive($scope.currentImportId).then(r => {
                         $scope.availableApps = Object.keys(r.data.apps);
+                        currentImport = r.data;
                         $scope.isAnalized = true;
                         $scope.$apply();
                     })
@@ -80,6 +82,12 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
             }
 
             $scope.initiateImport = function () {
-                let apps = $scope.availableApps.filter(app => $scope.selectedApps[app]);
+                $scope.availableApps.forEach(app => {
+                    if (!$scope.selectedApps[app]) {
+                        delete currentImport.apps[app];
+                    }
+                });
+                archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps);
+
             }
 }]);

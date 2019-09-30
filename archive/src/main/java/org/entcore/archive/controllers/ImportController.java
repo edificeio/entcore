@@ -5,6 +5,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -55,6 +56,19 @@ public class ImportController extends BaseController {
         final String importId = request.params().get("importId");
         importService.deleteArchive(importId);
         request.response().setStatusCode(200).end();
+    }
+
+    @Post("import/:importId/launch")
+    public void launchImport(final HttpServerRequest request) {
+        final String importId = request.params().get("importId");
+        RequestUtils.bodyToJson(request, body -> {
+            String importPath = body.getString("importPath");
+            JsonObject apps = body.getJsonObject("apps");
+            UserUtils.getUserInfos(eb, request, user -> {
+                importService.launchImport(user.getUserId(), importId, importPath, apps);
+                request.response().setStatusCode(200).end();
+            });
+        });
     }
 
 }

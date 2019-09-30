@@ -28,6 +28,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.utils.Config;
 
+import java.io.File;
+
 
 public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
@@ -52,11 +54,11 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 		switch (action)
 		{
 			case "export" :
-				final JsonArray apps = message.body().getJsonArray("apps");
+				final JsonArray exportApps = message.body().getJsonArray("apps");
 				final JsonArray resourcesIds = message.body().getJsonArray("resourcesIds");
 				String title = Server.getPathPrefix(Config.getConf());
 
-				if (!Utils.isEmpty(title) && apps.contains(title.substring(1)))
+				if (!Utils.isEmpty(title) && exportApps.contains(title.substring(1)))
 				{
 					final String exportId = message.body().getString("exportId", "");
 					String userId = message.body().getString("userId", "");
@@ -81,6 +83,28 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					});
 				}
 				break;
+			case "import" :
+				final JsonObject importApps = message.body().getJsonObject("apps");
+				final String appTitle = Server.getPathPrefix(Config.getConf());
+
+				if (!Utils.isEmpty(appTitle) && importApps.containsKey(appTitle.substring(1)))
+				{
+					final String importId = message.body().getString("importId", "");
+					String userId = message.body().getString("userId", "");
+					String path = message.body().getString("path", "");
+					String folderPath = path + File.separator + importApps.getString(appTitle.substring(1));
+
+					repositoryEvents.importResources(importId, userId, folderPath, success -> {
+							JsonObject imported = new JsonObject()
+									.put("action", "imported")
+									.put("importId", importId)
+									.put("app", appTitle)
+									.put("resourcesNumber", success.getString("resourcesNumber"))
+									.put("errorsNumber", success.getString("errorsNumber"));
+							eb.publish("entcore.import", imported);
+					});
+				}
+
 			case "delete-groups" :
 				JsonArray groups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.deleteGroups(groups);

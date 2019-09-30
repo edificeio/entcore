@@ -25,8 +25,15 @@ import io.vertx.core.json.JsonObject;
 
 public interface RepositoryEvents {
 
-	void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray groups, String exportPath,
-			String locale, String host, Handler<Boolean> handler);
+	default void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
+						 String locale, String host, Handler<Boolean> handler) {
+		exportResources(null,exportId,userId,groups,exportPath,locale,host,handler);
+	};
+
+	default void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray groups, String exportPath,
+			String locale, String host, Handler<Boolean> handler) {}
+
+	default void importResources(String importId, String userId, String importPath, Handler<JsonObject> handler) {}
 
 	void deleteGroups(JsonArray groups);
 

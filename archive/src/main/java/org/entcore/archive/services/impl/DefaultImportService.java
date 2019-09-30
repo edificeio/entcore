@@ -115,7 +115,7 @@ public class DefaultImportService implements ImportService {
            if (res.failed()) {
                deleteAndHandleError(path, "Archive file not recognized - Missing 'Manifest.json'", handler);
            } else {
-               JsonObject reply = new JsonObject().put("importId", importId);
+               JsonObject reply = new JsonObject().put("importId", importId).put("path",FileUtils.getParentPath(manifestPath));
                JsonObject foundApps = new JsonObject();
                JsonObject apps = res.result().toJsonObject();
                eb.send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), map -> {
@@ -160,5 +160,17 @@ public class DefaultImportService implements ImportService {
            }
         });
     }
+
+    @Override
+    public void launchImport(String userId, String importId, String importPath, JsonObject apps) {
+        JsonObject j = new JsonObject()
+                .put("action", "import")
+                .put("importId", importId)
+                .put("userId", userId)
+                .put("apps", apps)
+                .put("path", importPath);
+        eb.publish("user.repository", j);
+    }
+
 
 }
