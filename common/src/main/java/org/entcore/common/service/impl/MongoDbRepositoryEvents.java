@@ -230,7 +230,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(String exportId, String userId, JsonArray g, String exportPath, String locale,
+	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray g, String exportPath, String locale,
 			String host, Handler<Boolean> handler)
 	{
 			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
