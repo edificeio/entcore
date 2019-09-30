@@ -78,7 +78,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void exportResources(final String exportId, final String userId, JsonArray groupIds, final String exportPathOrig,
+	public void exportResources(final JsonArray resourcesIds, final String exportId, final String userId, JsonArray groupIds, final String exportPathOrig,
 			final String locale, String host, final Handler<Boolean> handler) {
 
 		QueryBuilder findByOwner = QueryBuilder.start("owner").is(userId);

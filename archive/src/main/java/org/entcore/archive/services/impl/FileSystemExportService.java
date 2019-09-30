@@ -86,7 +86,7 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void export(final UserInfos user, final String locale, JsonArray apps, final HttpServerRequest request,
+	public void export(final UserInfos user, final String locale, JsonArray apps, JsonArray resourcesIds, final HttpServerRequest request,
 					   final Handler<Either<String, String>> handler)
 	{
 		userExportExists(user, new Handler<Boolean>()
@@ -127,7 +127,8 @@ public class FileSystemExportService implements ExportService {
 												.put("path", exportDirectory)
 												.put("locale", locale)
 												.put("host", Renders.getScheme(request) + "://" + request.headers().get("Host"))
-												.put("apps", apps);
+												.put("apps", apps)
+												.put("resourcesIds", resourcesIds);
 										eb.publish("user.repository", j);
 										handler.handle(new Either.Right<String, String>(exportId));
 									}
