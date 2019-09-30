@@ -1,7 +1,7 @@
 import { ng, idiom as lang, notify } from 'entcore'
 import { archiveService } from '../../service'
 
-export let importController = ng.controller('ImportController', ['$scope', ($scope) => {
+export let importController = ng.controller('ImportController', ['$scope', '$timeout', ($scope, $timeout) => {
 	/*element.on('dragenter', (e) => e.preventDefault());
 
 			element.on('dragover', (e) => {
@@ -15,6 +15,8 @@ export let importController = ng.controller('ImportController', ['$scope', ($sco
 
             const types = ['bytes','kilobytes','megabytes','gigabytes'];
 
+            $scope.selectedApps = [];
+
             $scope.importFile = function () {
                 let file: File = $scope.upload.files.item(0);
                 let formData: FormData = new FormData();
@@ -25,10 +27,12 @@ export let importController = ng.controller('ImportController', ['$scope', ($sco
                 $scope.uploadStatus = 'loading';
                 archiveService.uploadArchive(formData).then(res => {
                     $scope.uploadStatus = 'loaded';
-                    archiveService.analyseArchive(res.data.importId).then(r => {
-                        console.log(r);
+                    $scope.currentImportId = res.data.importId;
+                    archiveService.analyseArchive($scope.currentImportId).then(r => {
+                        $scope.availableApps = Object.keys(r.data.apps);
+                        $scope.isAnalized = true;
+                        $scope.$apply();
                     })
-                    $scope.$apply();
                 }).catch(err => {
                     $scope.uploadStatus = 'failed';
                     $scope.$apply();
@@ -38,10 +42,8 @@ export let importController = ng.controller('ImportController', ['$scope', ($sco
             $scope.abortOrDelete = function () {
                 if ($scope.uploadStatus == 'loading') {
                     archiveService.cancelUpload();
-                } else if ($scope.uploadStatus == 'loaded') {
-
                 }
-                $scope.isImporting = false;
+                $scope.cancelImport();
             }
 
             const getSize = function(sizeAsBytes: number): { quantity: number, unity: string } {
@@ -52,5 +54,32 @@ export let importController = ng.controller('ImportController', ['$scope', ($sco
                         return { quantity: Math.round(quantity*100)/100 , unity: `import.${types[i]}` }
                     }
                 }
+            }
+
+            $scope.cancelImport = function () {
+                if (!!$scope.currentImportId) {
+                    archiveService.cancelImport($scope.currentImportId);
+                }
+                $timeout(function() {
+                    delete $scope.currentImportId;
+                    $scope.isAnalized = false;
+                    $scope.isImporting = false;
+                    delete $scope.upload;
+                });
+            }
+
+            $scope.areAllSelected = function () {
+                return $scope.availableApps.find(app => !$scope.selectedApps[app]) === undefined
+            }
+            $scope.areNoneSelected = function () {
+                return $scope.availableApps.find(app => $scope.selectedApps[app]) === undefined
+            }
+            $scope.selectAll = function (){
+                let oneFalse = !$scope.areAllSelected()
+                $scope.availableApps.forEach(app => { $scope.selectedApps[app] = oneFalse })
+            }
+
+            $scope.initiateImport = function () {
+                let apps = $scope.availableApps.filter(app => $scope.selectedApps[app]);
             }
 }]);

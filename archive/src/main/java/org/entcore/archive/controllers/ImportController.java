@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.impl.DefaultImportService;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.user.UserUtils;
 
 import java.io.File;
 
@@ -38,13 +39,22 @@ public class ImportController extends BaseController {
     @Get("import/analyze/:importId")
     public void analyze(final HttpServerRequest request) {
         final String importId = request.params().get("importId");
-        importService.analyzeArchive(importId, I18n.acceptLanguage(request), handler -> {
-            if (handler.isLeft()) {
-                renderError(request, new JsonObject().put("error", handler.left().getValue()));
-            } else {
-                renderJson(request, handler.right().getValue());
-            }
+        UserUtils.getUserInfos(eb, request, user -> {
+            importService.analyzeArchive(user, importId, I18n.acceptLanguage(request), config, handler -> {
+                if (handler.isLeft()) {
+                    renderError(request, new JsonObject().put("error", handler.left().getValue()));
+                } else {
+                    renderJson(request, handler.right().getValue());
+                }
+            });
         });
+    }
+
+    @Get("import/delete/:importId")
+    public void delete(final HttpServerRequest request) {
+        final String importId = request.params().get("importId");
+        importService.deleteArchive(importId);
+        request.response().setStatusCode(200).end();
     }
 
 }
