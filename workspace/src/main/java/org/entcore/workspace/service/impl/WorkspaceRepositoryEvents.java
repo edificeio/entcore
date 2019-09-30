@@ -88,13 +88,21 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				findByShared.get());
 
 		QueryBuilder isNotShared = QueryBuilder.start().or(
-				QueryBuilder.start("isShared").exists(false).get(),QueryBuilder.start("isShared").is(false).get());
+			QueryBuilder.start("isShared").exists(false).get(),
+			QueryBuilder.start("isShared").is(false).get()
+		);
 		QueryBuilder isNotProtected = QueryBuilder.start().or(
-				QueryBuilder.start("protected").exists(false).get(),QueryBuilder.start("protected").is(false).get());
+			QueryBuilder.start("protected").exists(false).get(),
+			QueryBuilder.start("protected").is(false).get()
+		);
 		QueryBuilder isNotPublic = QueryBuilder.start().or(
-				QueryBuilder.start("public").exists(false).get(),QueryBuilder.start("public").is(false).get());
+			QueryBuilder.start("public").exists(false).get(),
+			QueryBuilder.start("public").is(false).get()
+		);
 		QueryBuilder isNotDeleted = QueryBuilder.start().or(
-				QueryBuilder.start("deleted").exists(false).get(),QueryBuilder.start("deleted").is(false).get());
+			QueryBuilder.start("deleted").exists(false).get(),
+			QueryBuilder.start("deleted").is(false).get()
+		);
 
 		QueryBuilder myDocs = QueryBuilder.start().and(isNotShared.get(),isNotProtected.get(),isNotPublic.get(),isNotDeleted.get());
 		QueryBuilder sharedDocs = QueryBuilder.start("isShared").is(true).and(isNotDeleted.get(),isNotProtected.get(),isNotPublic.get());
@@ -141,20 +149,30 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	}
 
-	private JsonArray removeDuplicatesAndErrors(JsonArray ja, FolderExporterContext context, String exportPath) {
+	private JsonArray removeDuplicatesAndErrors(JsonArray ja, FolderExporterContext context, String exportPath)
+	{
 		JsonArray res = new JsonArray();
-		label: for (int i = 0; i < ja.size(); i++) {
+
+		label: for (int i = 0; i < ja.size(); i++)
+		{
 			JsonObject doc = ja.getJsonObject(i);
 			String fileId = doc.getString("_id");
-			if (!context.errors.contains(fileId)) {
+
+			if (!context.errors.contains(fileId))
+			{
 				String filename = context.namesByIds.get(fileId);
 				StringBuffer folders = new StringBuffer("");
-				for (Map.Entry<String,List<JsonObject>> entry : context.docByFolders.entrySet()) {
+
+				for (Map.Entry<String,List<JsonObject>> entry : context.docByFolders.entrySet())
+				{
 					String key = entry.getKey();
 					List<JsonObject> values = entry.getValue();
-					if (values.stream().anyMatch(jo -> fileId.equals(jo.getString("_id")))) {
+
+					if (values.stream().anyMatch(jo -> fileId.equals(jo.getString("_id"))))
+					{
 						String[] s = key.split(exportPath,2);
-						if (s.length < 2) {
+						if (s.length < 2)
+						{
 							log.error("Documents : an error has occurred when mapping document " + fileId);
 							continue label;
 						}
@@ -162,21 +180,27 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						break;
 					}
 				}
+
 				String localArchivePath = exportPath + folders.toString() + File.separator + filename;
 				doc.put("localArchivePath", localArchivePath);
 				res.add(doc);
 			}
 		}
+
 		return res;
 	}
 
 	private void exportDocs(String exportPath, String locale, Map<String,JsonObject> queries,
-							JsonArray cumulativeResults, Handler<Boolean> handler) {
-		if (queries.isEmpty()) {
+							JsonArray cumulativeResults, Handler<Boolean> handler)
+	{
+		if (queries.isEmpty())
+		{
 			String filePath = exportPath + File.separator + I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
-			fs.writeFile(filePath, cumulativeResults.toBuffer(), new Handler<AsyncResult<Void>>() {
+			fs.writeFile(filePath, cumulativeResults.toBuffer(), new Handler<AsyncResult<Void>>()
+			{
 				@Override
-				public void handle(AsyncResult<Void> event) {
+				public void handle(AsyncResult<Void> event)
+				{
 					if (event.succeeded()) {
 						handler.handle(true);
 					} else {
@@ -184,31 +208,44 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					}
 				}
 			});
-		} else {
+		}
+		else
+		{
 			Map.Entry<String, JsonObject> entry = queries.entrySet().iterator().next();
 			String folder = entry.getKey();
 			JsonObject query = entry.getValue();
 			queries.remove(folder);
 			final String translatedFolder = StringUtils.stripAccents(I18n.getInstance().translate(folder, I18n.DEFAULT_DOMAIN, locale));
 			final String exportPathFolder = exportPath + File.separator + translatedFolder;
-			mongo.find(DocumentDao.DOCUMENTS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+
+			mongo.find(DocumentDao.DOCUMENTS_COLLECTION, query, new Handler<Message<JsonObject>>()
+			{
 				@Override
-				public void handle(Message<JsonObject> event) {
+				public void handle(Message<JsonObject> event)
+				{
 					JsonArray results = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && results != null) {
+
+					if ("ok".equals(event.body().getString("status")) && results != null)
+					{
 						List<JsonObject> rows = results.stream().map(obj -> (JsonObject) obj)
 								.collect(Collectors.toList());
-						exporter.export(new FolderExporterContext(exportPathFolder), rows).setHandler(res -> {
-							if (res.succeeded()) {
+						exporter.export(new FolderExporterContext(exportPathFolder), rows).setHandler(res ->
+						{
+							if (res.succeeded())
+							{
 								JsonArray newResults = removeDuplicatesAndErrors(results, res.result(), translatedFolder);
 								exportDocs(exportPath, locale, queries, cumulativeResults.addAll(newResults), handler);
-							} else {
+							}
+							else
+							{
 								log.error("Documents : Failed to export documents to " + exportPathFolder + " - " +
 										res.cause());
 								handler.handle(false);
 							}
 						});
-					} else {
+					}
+					else
+					{
 						log.error("Documents : Could not proceed query " + query.encode(),
 								event.body().getString("message"));
 						handler.handle(false);

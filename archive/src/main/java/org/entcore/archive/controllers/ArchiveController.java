@@ -72,27 +72,39 @@ public class ArchiveController extends BaseController {
 
 	@Override
 	public void init(Vertx vertx, final JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions)
+	{
 		super.init(vertx, config, rm, securedActions);
+
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		Boolean cluster = (Boolean) server.get("cluster");
 		final Map<String, Long> exportInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
+
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
+
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, notification, storage, exportInProgress, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
+
 		Long periodicUserClear = config.getLong("periodicUserClear");
-		if (periodicUserClear != null) {
-			vertx.setPeriodic(periodicUserClear, new Handler<Long>() {
+
+		if (periodicUserClear != null)
+		{
+			vertx.setPeriodic(periodicUserClear, new Handler<Long>()
+			{
 				@Override
-				public void handle(Long event) {
+				public void handle(Long event)
+				{
 					final long limit = System.currentTimeMillis() - config.getLong("userClearDelay", 3600000l);
 					Set<Map.Entry<String, Long>> entries = new HashSet<>(exportInProgress.entrySet());
-					for (Map.Entry<String, Long> e : entries) {
-						if (e.getValue() == null || e.getValue() < limit) {
+
+					for (Map.Entry<String, Long> e : entries)
+					{
+						if (e.getValue() == null || e.getValue() < limit)
+						{
 							exportInProgress.remove(e.getKey());
 						}
 					}
@@ -143,30 +155,44 @@ public class ArchiveController extends BaseController {
 
 	@Post("/export")
 	@SecuredAction("archive.export")
-	public void export(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+	public void export(final HttpServerRequest request)
+	{
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>()
+		{
 			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					request.bodyHandler(new Handler<Buffer>() {
-						public void handle(Buffer event) {
+			public void handle(final UserInfos user)
+			{
+				if (user != null)
+				{
+					request.bodyHandler(new Handler<Buffer>()
+					{
+						public void handle(Buffer event)
+						{
 							JsonArray apps = event.toJsonObject().getJsonArray("apps");
-							exportService.export(user, I18n.acceptLanguage(request), apps, request,
-									new Handler<Either<String, String>>() {
+
+							exportService.export(user, I18n.acceptLanguage(request), apps, null, request,
+									new Handler<Either<String, String>>()
+									{
 										@Override
-										public void handle(Either<String, String> event) {
-											if (event.isRight()) {
+										public void handle(Either<String, String> event)
+										{
+											if (event.isRight())
+											{
 												renderJson(request,
 														new JsonObject().put("message", "export.in.progress")
 																.put("exportId", event.right().getValue()));
-											} else {
+											}
+											else
+											{
 												badRequest(request, event.left().getValue());
 											}
 										}
 									});
 						}
 					});
-				} else {
+				}
+				else
+				{
 					unauthorized(request);
 				}
 			}
@@ -233,14 +259,20 @@ public class ArchiveController extends BaseController {
 
 	@Get("/export/:exportId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void downloadExport(final HttpServerRequest request) {
+	public void downloadExport(final HttpServerRequest request)
+	{
 		final String exportId = request.params().get("exportId");
-		storage.sendFile(exportId, exportId + ".zip", request, false, null, new Handler<AsyncResult<Void>>() {
+		storage.sendFile(exportId, exportId + ".zip", request, false, null, new Handler<AsyncResult<Void>>()
+		{
 			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded() && request.response().getStatusCode() == 200) {
+			public void handle(AsyncResult<Void> event)
+			{
+				if (event.succeeded() && request.response().getStatusCode() == 200)
+				{
 					exportService.deleteExport(exportId);
-				} else if (!request.response().ended()) {
+				}
+				else if (!request.response().ended())
+				{
 					notFound(request);
 				}
 			}
