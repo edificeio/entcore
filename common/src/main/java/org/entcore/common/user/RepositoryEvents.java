@@ -33,7 +33,7 @@ public interface RepositoryEvents {
 	default void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray groups, String exportPath,
 			String locale, String host, Handler<Boolean> handler) {}
 
-	default void importResources(String importId, String userId, String importPath, Handler<JsonObject> handler) {}
+	default void importResources(String importId, String userId, String userName, String importPath, Handler<JsonObject> handler) {}
 
 	void deleteGroups(JsonArray groups);
 
