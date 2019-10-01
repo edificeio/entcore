@@ -29,6 +29,8 @@ public interface CrudService {
 
 	void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
+	//static void setUserMetadata(JsonObject data, String userId, String userName);
+
 	void retrieve(String id, Handler<Either<String, JsonObject>> handler);
 
 	void retrieve(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);

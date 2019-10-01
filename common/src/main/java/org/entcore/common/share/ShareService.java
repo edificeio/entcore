@@ -51,6 +51,8 @@ public interface ShareService {
 	void removeUserShare(String userId, String resourceId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler);
 
+	//static void removeShareMetadata(JsonObject data);
+
 	void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler);
 
 	default void findUserIdsForShare(String resourceId, String userId,
