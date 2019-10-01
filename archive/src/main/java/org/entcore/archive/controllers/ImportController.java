@@ -59,12 +59,16 @@ public class ImportController extends BaseController {
     }
 
     @Post("import/:importId/launch")
-    public void launchImport(final HttpServerRequest request) {
+    public void launchImport(final HttpServerRequest request)
+    {
         final String importId = request.params().get("importId");
-        RequestUtils.bodyToJson(request, body -> {
+        RequestUtils.bodyToJson(request, body ->
+        {
             String importPath = body.getString("importPath");
             JsonObject apps = body.getJsonObject("apps");
-            UserUtils.getUserInfos(eb, request, user -> {
+
+            UserUtils.getUserInfos(eb, request, user ->
+            {
                 importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath, apps);
                 request.response().setStatusCode(200).end();
             });

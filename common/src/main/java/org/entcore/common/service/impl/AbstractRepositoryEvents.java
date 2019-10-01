@@ -29,17 +29,24 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractRepositoryEvents.class);
 	protected final Vertx vertx;
+	protected final FileSystem fs;
 	protected final String title;
 	protected final FolderExporter exporter;
 	protected final MongoDb mongo = MongoDb.getInstance();
 
-	protected AbstractRepositoryEvents(Vertx vertx) {
+	protected AbstractRepositoryEvents(Vertx vertx)
+	{
 		this.vertx = vertx;
+
 		String app = Server.getPathPrefix(Config.getConf()).substring(1);
 		this.title = String.valueOf(app.charAt(0)).toUpperCase() + app.substring(1);
-		if (vertx != null) {
-			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), vertx.fileSystem());
-		} else {
+
+		if (vertx != null)
+		{
+			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), this.fs);
+		}
+		else
+		{
 			this.exporter = null;
 		}
 	}
