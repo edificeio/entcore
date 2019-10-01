@@ -304,6 +304,11 @@ public class SqlShareService extends GenericShareService {
 				});
 	}
 
+	public static void removeShareMetadata(JsonObject data)
+	{
+		//Nothing to do, share metadata isn't stored in data objects but in the share table
+	}
+
 	@Override
 	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr,
 			Set<String> actions) {

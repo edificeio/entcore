@@ -67,14 +67,25 @@ public class MongoDbCrudService implements CrudService {
 	}
 
 	@Override
-	public void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+	public void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler)
+	{
 		JsonObject now = MongoDb.now();
-		data.put("owner", new JsonObject()
-				.put("userId", user.getUserId())
-				.put("displayName", user.getUsername())
-		).put("created", now).put("modified", now);
+		data.put("created", now).put("modified", now);
+
+		MongoDbCrudService.setUserMetadata(data, user.getUserId(), user.getUsername());
+
 		addPlainField(data);
 		mongo.save(collection, data, validActionResultHandler(handler));
+	}
+
+	public static void setUserMetadata(JsonObject data, String userId, String userName)
+	{
+		data.put(
+			"owner",
+			new JsonObject()
+				.put("userId", userId)
+				.put("displayName", userName)
+		);
 	}
 
 	@Override

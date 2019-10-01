@@ -93,9 +93,16 @@ public class SqlCrudService implements CrudService {
 //		s.raw(userQuery);
 		String userQuery = "SELECT " + schema + "merge_users(?,?)";
 		s.prepared(userQuery, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUsername()));
-		data.put("owner", user.getUserId());
+
+		SqlCrudService.setUserMetadata(data, user.getUserId(), user.getUsername());
+
 		s.insert(resourceTable, data, "id");
 		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
+	}
+
+	public static void setUserMetadata(JsonObject data, String userId, String userName)
+	{
+		data.put("owner", userId);
 	}
 
 	@Override

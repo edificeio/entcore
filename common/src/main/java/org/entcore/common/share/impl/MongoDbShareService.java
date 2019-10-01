@@ -469,6 +469,11 @@ public class MongoDbShareService extends GenericShareService {
 		});
 	}
 
+	public static void removeShareMetadata(JsonObject data)
+	{
+		data.remove("shared");
+	}
+
 	@Override
 	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr,
 			Set<String> actions) {
