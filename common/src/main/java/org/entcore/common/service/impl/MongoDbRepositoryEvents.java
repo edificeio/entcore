@@ -23,20 +23,28 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.mongodb.MongoDbConf;
+import org.entcore.common.share.impl.MongoDbShareService;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.buffer.Buffer;
+
 import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
@@ -308,6 +316,108 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					}
 				}
 			});
+	}
+
+	protected JsonObject sanitiseDocument(JsonObject document, String userId, String userName)
+	{
+		document.remove("_id");
+		MongoDbCrudService.setUserMetadata(document, userId, userName);
+		MongoDbShareService.removeShareMetadata(document);
+
+		return document;
+	}
+
+	protected void readAllDocumentsFromDir(String dirPath, Handler<Vector<JsonObject>> handler, String userId, String userName)
+	{
+		MongoDbRepositoryEvents self = this;
+		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
+		{
+			@Override
+			public void handle(AsyncResult<List<String>> result)
+			{
+				if(result.succeeded() == false)
+					throw new RuntimeException(result.cause());
+				else
+				{
+					List<String> filesInDir = result.result();
+					int nbFiles = filesInDir.size();
+
+					Vector<JsonObject> mongoDocs = new Vector<JsonObject>(nbFiles);
+					AtomicInteger unprocessed = new AtomicInteger(nbFiles);
+
+					for(int i = 0; i < nbFiles; ++i)
+						mongoDocs.add(null);
+
+					for(String filePath : filesInDir)
+					{
+						self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
+						{
+							@Override
+							public void handle(AsyncResult<Buffer> fileResult)
+							{
+								if(fileResult.succeeded() == false)
+									throw new RuntimeException(fileResult.cause());
+								else
+								{
+									int ix = unprocessed.decrementAndGet();
+									mongoDocs.set(ix, self.sanitiseDocument(fileResult.result().toJsonObject(), userId, userName));
+
+									if(ix == 0)
+											handler.handle(mongoDocs);
+								}
+							}
+						});
+					}
+				}
+			}
+		});
+	}
+
+	@Override
+	public void importResources(String importId, String userId, String userName, String importPath, Handler<JsonObject> handler)
+	{
+		final AtomicBoolean imported = new AtomicBoolean(false);
+		final String collection = MongoDbConf.getInstance().getCollection();
+
+		this.readAllDocumentsFromDir(importPath, new Handler<Vector<JsonObject>>()
+		{
+			@Override
+			public void handle(Vector<JsonObject> docs)
+			{
+				final String collection = MongoDbConf.getInstance().getCollection();
+
+				JsonArray savePayload = new JsonArray();
+				for(JsonObject d : docs)
+					savePayload.add(d);
+
+				mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
+				{
+					@Override
+					public void handle(Message<JsonObject> saveMsg)
+					{
+						JsonObject body = saveMsg.body();
+
+						int nbErrors = -1;
+
+						if(body.getString("status").equals("ok"))
+							nbErrors = 0;
+						else
+						{
+							JsonObject mongoError = new JsonObject(body.getString("message"));
+
+							nbErrors = docs.size() - mongoError.getInteger("n");
+						}
+
+						JsonObject rapport =
+							new JsonObject()
+								.put("resourcesNumber", Integer.toString(docs.size()))
+								.put("errorsNumber", Integer.toString(nbErrors));
+
+						handler.handle(rapport);
+					}
+				});
+			};
+		}, userId, userName);
 	}
 
 }
