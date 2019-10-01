@@ -65,7 +65,7 @@ public class ImportController extends BaseController {
             String importPath = body.getString("importPath");
             JsonObject apps = body.getJsonObject("apps");
             UserUtils.getUserInfos(eb, request, user -> {
-                importService.launchImport(user.getUserId(), importId, importPath, apps);
+                importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath, apps);
                 request.response().setStatusCode(200).end();
             });
         });
