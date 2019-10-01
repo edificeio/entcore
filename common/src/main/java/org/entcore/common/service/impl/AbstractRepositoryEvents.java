@@ -8,6 +8,7 @@ import fr.wseduc.webutils.Server;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -43,10 +44,12 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 
 		if (vertx != null)
 		{
+			this.fs = vertx.fileSystem();
 			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), this.fs);
 		}
 		else
 		{
+			this.fs = null;
 			this.exporter = null;
 		}
 	}
