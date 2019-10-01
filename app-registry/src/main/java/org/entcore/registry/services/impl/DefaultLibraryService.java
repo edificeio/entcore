@@ -52,7 +52,7 @@ public class DefaultLibraryService implements LibraryService {
     }
 
     @Override
-    public Future<JsonObject> publish(UserInfos user, MultiMap form, Buffer cover) {
+    public Future<JsonObject> publish(UserInfos user, MultiMap form, Buffer cover, Buffer teacherAvatar) {
         final boolean isLibraryEnabled = config.getBoolean(CONFIG_LIBRARY_ENABLED, false);
         final String libraryApiUrl = config.getString(CONFIG_LIBRARY_API_URL);
         final String libraryToken = config.getString(CONFIG_LIBRARY_TOKEN);
@@ -71,7 +71,7 @@ public class DefaultLibraryService implements LibraryService {
             final Buffer exportPdf = resPdf.getContent();
             final Future<JsonObject> future = Future.future();
             final String boundary = UUID.randomUUID().toString();
-            final Buffer multipartBody = createMultipartBody(form, cover, exportPdf, archive.result(), boundary);
+            final Buffer multipartBody = createMultipartBody(form, cover, teacherAvatar, exportPdf, archive.result(), boundary);
             HttpClientRequest request = http.postAbs(libraryApiUrl.concat(RESSOURCE_ENDPOINT));
             request.handler(response -> {
                 if (response.statusCode() == 200 || response.statusCode() == 201) {
@@ -122,11 +122,17 @@ public class DefaultLibraryService implements LibraryService {
         return future;
     }
 
-    private Buffer createMultipartBody(MultiMap form, Buffer cover, Buffer exportPdf, Buffer archive, String boundary) {
+    private Buffer createMultipartBody(MultiMap form, Buffer cover, Buffer teacherAvatar, Buffer exportPdf, Buffer archive, String boundary) {
         final Buffer buffer = Buffer.buffer();
+
         final Optional<String> coverName = Optional.ofNullable(form.get("coverName"));
         final Optional<String> coverType = Optional.ofNullable(form.get("coverType"));
         form.remove("coverName").remove("coverType");
+
+        final Optional<String> teacherAvatarName = Optional.ofNullable(form.get("teacherAvatarName"));
+        final Optional<String> teacherAvatarType = Optional.ofNullable(form.get("teacherAvatarType"));
+        form.remove("teacherAvatarName").remove("teacherAvatarType");
+
         form.forEach(entry -> {
             final String attribute = entry.getKey();
             final String value = entry.getValue();
@@ -135,12 +141,20 @@ public class DefaultLibraryService implements LibraryService {
             buffer.appendString("\r\n\r\n");
             buffer.appendString(value + "\r\n");
         });
-        //TODO dynamic name/filetype
+
+        // cover
         buffer.appendString("--" + boundary + "\r\n");
         buffer.appendString(String.format("Content-Disposition: form-data; name=\"cover\"; filename=\"%s\"\r\n", coverName.orElse("cover.png")));
         buffer.appendString(String.format("Content-Type: %s\r\n", coverType.orElse("image/png")));
         buffer.appendString("\r\n");
         buffer.appendBuffer(cover);
+        buffer.appendString("\r\n");
+        // teacherAvatar
+        buffer.appendString("--" + boundary + "\r\n");
+        buffer.appendString(String.format("Content-Disposition: form-data; name=\"teacherAvatar\"; filename=\"%s\"\r\n", teacherAvatarName.orElse("teacherAvatar.png")));
+        buffer.appendString(String.format("Content-Type: %s\r\n", teacherAvatarType.orElse("image/png")));
+        buffer.appendString("\r\n");
+        buffer.appendBuffer(teacherAvatar);
         buffer.appendString("\r\n");
         //TODO put real archive (archive is mandatory in BPR side) and remove documents.zip in ressources
         buffer.appendString("--" + boundary + "\r\n");

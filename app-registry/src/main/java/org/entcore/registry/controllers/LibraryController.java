@@ -19,7 +19,6 @@
 
 package org.entcore.registry.controllers;
 
-import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -32,12 +31,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.registry.services.LibraryService;
 import org.entcore.registry.services.impl.DefaultLibraryService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LibraryController extends BaseController {
     final LibraryService service;
@@ -51,11 +51,11 @@ public class LibraryController extends BaseController {
     public void publishToLibrary(final HttpServerRequest request) {
         request.setExpectMultipart(true);
         final Future<UserInfos> futureUser = getUser(request);
-        CompositeFuture.all(getCover(request), getAttributes(request, futureUser), futureUser).compose(res -> {
-            Buffer cover = res.resultAt(0);
+        CompositeFuture.all(getCoverAndTeacherAvatar(request), getAttributes(request, futureUser), futureUser).compose(res -> {
+            List<Buffer> coverAndAvatarBufferList = res.resultAt(0);
             MultiMap attributes = res.resultAt(1);
             UserInfos user = res.resultAt(2);
-            return service.publish(user, attributes, cover);
+            return service.publish(user, attributes, coverAndAvatarBufferList.get(0), coverAndAvatarBufferList.get(1));
         }).setHandler(res -> {
             if (res.succeeded()) {
                 final JsonObject json = res.result();
@@ -71,15 +71,23 @@ public class LibraryController extends BaseController {
         });
     }
 
-    private Future<Buffer> getCover(HttpServerRequest request) {
-        Future<Buffer> coverFuture = Future.future();
+    private Future<List<Buffer>> getCoverAndTeacherAvatar(HttpServerRequest request) {
+        Future<List<Buffer>> bufferListFuture = Future.future();
+        List<Buffer> bufferList = new ArrayList<Buffer>();
         request.uploadHandler(upload -> {
             final Buffer buffer = Buffer.buffer();
-            upload.handler(b -> buffer.appendBuffer(b));
-            upload.endHandler(v -> coverFuture.complete(buffer));
-            upload.exceptionHandler(v -> coverFuture.fail(v));
+            upload.handler(b -> {
+                buffer.appendBuffer(b);
+            });
+            upload.endHandler(v -> {
+                bufferList.add(buffer);
+                if (bufferList.size() == 2) {
+                    bufferListFuture.complete(bufferList);
+                }
+            });
+            upload.exceptionHandler(v -> bufferListFuture.fail(v));
         });
-        return coverFuture;
+        return bufferListFuture;
     }
 
     private Future<UserInfos> getUser(HttpServerRequest request) {
