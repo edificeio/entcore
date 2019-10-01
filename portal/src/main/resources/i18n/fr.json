@@ -485,6 +485,6 @@
   "bpr.form.publication.response.success.content.1": "Bravo ! Votre activité va permettre d'inspirer d'autres enseignants de la communauté.",
   "bpr.form.publication.response.success.content.2": "N'hésitez pas à explorer vous-même d'autres activités et à échanger avec d'autres enseignants !",
   "bpr.form.publication.response.success.button": "Voir dans la bibliothèque",
-  "bpr.form.publication.response.error.title": "Oups, quelque chose s'est mal passé",
-  "bpr.form.publication.response.error.content": "Rééssayez plus tard."
+  "bpr.form.publication.response.error.title": "Oups, quelque chose s'est mal passé !",
+  "bpr.form.publication.response.error.content": "Veuillez réessayer et contacter l'équipe Support si le problème persiste."
 }
