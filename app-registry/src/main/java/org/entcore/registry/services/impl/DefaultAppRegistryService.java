@@ -161,6 +161,37 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
+	public void listApplicationsWithRoles(String structureId, Handler<Either<String, JsonArray>> handler) {
+		String filter = "";
+		JsonObject params = null;
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "WHERE NOT(HAS(app.structureId)) OR app.structureId = {structure} ";
+			params = new JsonObject().put("structure", structureId);
+		}
+		String query = "MATCH (app:Application) " +
+                "OPTIONAL MATCH (app)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) " +
+				filter +
+				"RETURN app.id as id, app.displayName as displayName, app.name as name, app.icon as icon, " +
+				"'External' IN labels(app) as isExternal, app.levelsOfEducation as levelsOfEducation, app.appType as appType, " +
+				"CASE WHEN r IS NOT NULL THEN COLLECT(DISTINCT {id: r.id, name: r.name, distributions: r.distributions}) ELSE [] END as roles;";
+		neo.execute(query, params, result -> {
+			Either<String, JsonArray> resultAsArray = validResult(result);
+			if(resultAsArray.isRight()) {
+				JsonArray applications = resultAsArray
+						.right()
+						.getValue()
+						.stream()
+						.map(JsonObject.class::cast)
+						.map(app -> app.put("levelsOfEducation", app.getJsonArray("levelsOfEducation", defaultLevelsOfEducation))						)
+						.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+				resultAsArray = new Either.Right<>(applications);
+			}
+			handler.handle(resultAsArray);
+		});
+	}
+
+
+	@Override
 	public void listApplicationsWithActions(String structureId, String actionType,
 			Handler<Either<String, JsonArray>> handler) {
 		String filter = "";

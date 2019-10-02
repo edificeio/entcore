@@ -8,7 +8,7 @@ export class ApplicationCollection extends Collection<ApplicationModel> {
     }
 
     syncApps = (structureId:string) => {
-        return this.http.get(`/appregistry/applications?structureId=${structureId}`)
+        return this.http.get(`/appregistry/applications/roles?structureId=${structureId}`)
             .then(
                 res => {
                     this.data = Mix.castArrayAs(ApplicationModel, 
