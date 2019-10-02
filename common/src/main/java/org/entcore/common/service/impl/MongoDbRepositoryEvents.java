@@ -41,8 +41,10 @@ import org.entcore.common.utils.StringUtils;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
 import java.util.List;
 import java.util.Vector;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -320,7 +322,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected JsonObject sanitiseDocument(JsonObject document, String userId, String userName)
 	{
-		document.remove("_id");
 		MongoDbCrudService.setUserMetadata(document, userId, userName);
 		MongoDbShareService.removeShareMetadata(document);
 
@@ -376,7 +377,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	@Override
 	public void importResources(String importId, String userId, String userName, String importPath, Handler<JsonObject> handler)
 	{
-		final AtomicBoolean imported = new AtomicBoolean(false);
 		final String collection = MongoDbConf.getInstance().getCollection();
 
 		this.readAllDocumentsFromDir(importPath, new Handler<Vector<JsonObject>>()
@@ -387,33 +387,81 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				final String collection = MongoDbConf.getInstance().getCollection();
 
 				JsonArray savePayload = new JsonArray();
-				for(JsonObject d : docs)
-					savePayload.add(d);
+				JsonArray idsToImport = new JsonArray();
+				Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
 
-				mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
+				for(int i = docs.size(); i-- > 0;)
+				{
+					String docId = docs.get(i).getString("_id");
+
+					savePayload.add(docs.get(i));
+					idsToImport.add(docId);
+					idToIxMap.put(docId, i);
+				}
+
+				QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
+
+				mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>()
 				{
 					@Override
-					public void handle(Message<JsonObject> saveMsg)
+					public void handle(Message<JsonObject> searchMsg)
 					{
-						JsonObject body = saveMsg.body();
-
-						int nbErrors = -1;
+						JsonObject body = searchMsg.body();
 
 						if(body.getString("status").equals("ok"))
-							nbErrors = 0;
+						{
+							JsonArray foundDocs = body.getJsonArray("results");
+
+							for(int i = foundDocs.size(); i-- > 0;)
+							{
+								String foundId = foundDocs.getJsonObject(i).getString("_id");
+
+								// Find already-existing resources
+								Integer mapIx = idToIxMap.get(foundId);
+								if(mapIx != null)
+								{
+									// Create a duplicate
+									savePayload.getJsonObject(mapIx).remove("_id");
+								}
+							}
+
+							mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
+							{
+								@Override
+								public void handle(Message<JsonObject> saveMsg)
+								{
+									JsonObject body = saveMsg.body();
+
+									int nbErrors = -1;
+
+									if(body.getString("status").equals("ok"))
+										nbErrors = 0;
+									else
+									{
+										JsonObject mongoError = new JsonObject(body.getString("message"));
+
+										nbErrors = docs.size() - mongoError.getInteger("n");
+									}
+
+									JsonObject rapport =
+										new JsonObject()
+											.put("resourcesNumber", Integer.toString(docs.size()))
+											.put("errorsNumber", Integer.toString(nbErrors));
+
+									handler.handle(rapport);
+								}
+							});
+						}
 						else
 						{
-							JsonObject mongoError = new JsonObject(body.getString("message"));
+							// If the find fails, don't import anything
+							JsonObject rapport =
+								new JsonObject()
+									.put("resourcesNumber", Integer.toString(0))
+									.put("errorsNumber", Integer.toString(docs.size()));
 
-							nbErrors = docs.size() - mongoError.getInteger("n");
+							handler.handle(rapport);
 						}
-
-						JsonObject rapport =
-							new JsonObject()
-								.put("resourcesNumber", Integer.toString(docs.size()))
-								.put("errorsNumber", Integer.toString(nbErrors));
-
-						handler.handle(rapport);
 					}
 				});
 			};
