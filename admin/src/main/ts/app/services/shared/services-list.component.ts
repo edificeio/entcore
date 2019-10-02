@@ -100,6 +100,12 @@ export class ServicesListComponent {
                             this.collectionRef[this.serviceName].collection,
                             session.functions['SUPER_ADMIN'] != null
                         );
+
+                        if (!session.functions['SUPER_ADMIN']) {
+                            this.collectionRef[this.serviceName].collection = filterApplicationsByHasRoles(
+                                this.collectionRef[this.serviceName].collection
+                            );
+                        }
                     }
 
                     this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
@@ -174,4 +180,8 @@ export function filterApplicationsByType(apps: ApplicationModel[], isAdmc: boole
         }
         return app.appType == 'END_USER';
     });
+}
+
+export function filterApplicationsByHasRoles(apps: ApplicationModel[]) {
+    return apps.filter((app: ApplicationModel) => app.roles && app.roles.length > 0);
 }

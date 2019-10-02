@@ -43,7 +43,9 @@ public interface AppRegistryService {
 	void listGroupsWithRoles(String structureId, boolean classGroups, Handler<Either<String, JsonArray>> handler);
 
 	void listApplicationsWithActions(String structureId, String actionType, Handler<Either<String, JsonArray>> handler);
-	
+
+	void listApplicationsWithRoles(String structureId, Handler<Either<String, JsonArray>> handler);
+
 	void listApplicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler);
 
 	// if structureId is null => global role
