@@ -69,7 +69,8 @@ public class ImportController extends BaseController {
 
             UserUtils.getUserInfos(eb, request, user ->
             {
-                importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath, apps);
+                importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath,
+                    I18n.acceptLanguage(request), apps);
                 request.response().setStatusCode(200).end();
             });
         });

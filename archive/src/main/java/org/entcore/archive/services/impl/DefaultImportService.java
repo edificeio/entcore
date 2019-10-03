@@ -162,12 +162,13 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void launchImport(String userId, String userName, String importId, String importPath, JsonObject apps) {
+    public void launchImport(String userId, String userName, String importId, String importPath, String locale, JsonObject apps) {
         JsonObject j = new JsonObject()
                 .put("action", "import")
                 .put("importId", importId)
                 .put("userId", userId)
                 .put("userName", userName)
+                .put("locale", locale)
                 .put("apps", apps)
                 .put("path", importPath);
         eb.publish("user.repository", j);
