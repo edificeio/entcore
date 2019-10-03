@@ -20,10 +20,12 @@
 package org.entcore.common.service.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.folders.impl.DocumentHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -43,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -328,7 +330,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected void readAllDocumentsFromDir(String dirPath, Handler<Vector<JsonObject>> handler, String userId, String userName)
+	protected void readAllDocumentsFromDir(String dirPath, Handler<ArrayList<JsonObject>> handler, String userId, String userName)
 	{
 		MongoDbRepositoryEvents self = this;
 		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
@@ -343,7 +345,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					List<String> filesInDir = result.result();
 					int nbFiles = filesInDir.size();
 
-					Vector<JsonObject> mongoDocs = new Vector<JsonObject>(nbFiles);
+					ArrayList<JsonObject> mongoDocs = new ArrayList<JsonObject>(nbFiles);
 					AtomicInteger unprocessed = new AtomicInteger(nbFiles);
 
 					for(int i = 0; i < nbFiles; ++i)
@@ -374,97 +376,111 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		});
 	}
 
+	public static void importDocuments(String collection, List<JsonObject> documents, Handler<JsonObject> handler)
+	{
+		MongoDb mongo =  MongoDb.getInstance();
+
+		JsonArray savePayload = new JsonArray();
+		JsonArray idsToImport = new JsonArray();
+		Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
+
+		for(int i = 0, l = documents.size(); i < l; ++i)
+		{
+			String docId = DocumentHelper.getId(documents.get(i));
+
+			savePayload.add(documents.get(i));
+			idsToImport.add(docId);
+			idToIxMap.put(docId, i);
+		}
+
+		QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
+
+		mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> searchMsg)
+			{
+				JsonObject body = searchMsg.body();
+
+				if(body.getString("status").equals("ok"))
+				{
+					JsonArray foundDocs = body.getJsonArray("results");
+					int nbDuplicates = 0;
+
+					for(int i = foundDocs.size(); i-- > 0;)
+					{
+						String foundId = DocumentHelper.getId(foundDocs.getJsonObject(i));
+
+						// Find already-existing resources
+						Integer mapIx = idToIxMap.get(foundId);
+						if(mapIx != null)
+						{
+							// Create a duplicate
+							DocumentHelper.removeId(savePayload.getJsonObject(mapIx));
+							++nbDuplicates;
+						}
+					}
+
+					final int totalDuplicates = nbDuplicates;
+
+					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> saveMsg)
+						{
+							JsonObject body = saveMsg.body();
+
+							int nbErrors = -1;
+
+							if(body.getString("status").equals("ok"))
+								nbErrors = 0;
+							else
+							{
+								JsonObject mongoError = new JsonObject(body.getString("message"));
+
+								nbErrors = documents.size() - mongoError.getInteger("n");
+							}
+
+							JsonObject rapport =
+								new JsonObject()
+									.put("resourcesNumber", Integer.toString(documents.size() - nbErrors))
+									.put("duplicatesNumber", Integer.toString(totalDuplicates))
+									.put("errorsNumber", Integer.toString(nbErrors));
+
+							handler.handle(rapport);
+						}
+					});
+				}
+				else
+				{
+					// If the find fails, don't import anything
+					JsonObject rapport =
+						new JsonObject()
+							.put("resourcesNumber", Integer.toString(0))
+							.put("duplicatesNumber", Integer.toString(0))
+							.put("errorsNumber", Integer.toString(documents.size()));
+
+					handler.handle(rapport);
+				}
+			}
+		});
+	}
+
 	@Override
 	public void importResources(String importId, String userId, String userName, String importPath,
 		String locale, Handler<JsonObject> handler)
 	{
+		MongoDbRepositoryEvents self = this;
 		final String collection = MongoDbConf.getInstance().getCollection();
 
-		this.readAllDocumentsFromDir(importPath, new Handler<Vector<JsonObject>>()
+		this.readAllDocumentsFromDir(importPath, new Handler<ArrayList<JsonObject>>()
 		{
 			@Override
-			public void handle(Vector<JsonObject> docs)
+			public void handle(ArrayList<JsonObject> docs)
 			{
 				final String collection = MongoDbConf.getInstance().getCollection();
 
-				JsonArray savePayload = new JsonArray();
-				JsonArray idsToImport = new JsonArray();
-				Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
-
-				for(int i = docs.size(); i-- > 0;)
-				{
-					String docId = docs.get(i).getString("_id");
-
-					savePayload.add(docs.get(i));
-					idsToImport.add(docId);
-					idToIxMap.put(docId, i);
-				}
-
-				QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
-
-				mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>()
-				{
-					@Override
-					public void handle(Message<JsonObject> searchMsg)
-					{
-						JsonObject body = searchMsg.body();
-
-						if(body.getString("status").equals("ok"))
-						{
-							JsonArray foundDocs = body.getJsonArray("results");
-
-							for(int i = foundDocs.size(); i-- > 0;)
-							{
-								String foundId = foundDocs.getJsonObject(i).getString("_id");
-
-								// Find already-existing resources
-								Integer mapIx = idToIxMap.get(foundId);
-								if(mapIx != null)
-								{
-									// Create a duplicate
-									savePayload.getJsonObject(mapIx).remove("_id");
-								}
-							}
-
-							mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
-							{
-								@Override
-								public void handle(Message<JsonObject> saveMsg)
-								{
-									JsonObject body = saveMsg.body();
-
-									int nbErrors = -1;
-
-									if(body.getString("status").equals("ok"))
-										nbErrors = 0;
-									else
-									{
-										JsonObject mongoError = new JsonObject(body.getString("message"));
-
-										nbErrors = docs.size() - mongoError.getInteger("n");
-									}
-
-									JsonObject rapport =
-										new JsonObject()
-											.put("resourcesNumber", Integer.toString(docs.size()))
-											.put("errorsNumber", Integer.toString(nbErrors));
-
-									handler.handle(rapport);
-								}
-							});
-						}
-						else
-						{
-							// If the find fails, don't import anything
-							JsonObject rapport =
-								new JsonObject()
-									.put("resourcesNumber", Integer.toString(0))
-									.put("errorsNumber", Integer.toString(docs.size()));
-
-							handler.handle(rapport);
-						}
-					}
-				});
+				MongoDbRepositoryEvents.importDocuments(collection, docs, handler);
 			};
 		}, userId, userName);
 	}
