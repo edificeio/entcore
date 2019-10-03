@@ -64,7 +64,7 @@
 
     <div ng-if="isAnalized" style="margin-top: 20px;">
         <div class="row">
-            <b><i18n>archive.import.select</i18n></b>
+            <i18n>archive.import.select</i18n>
         </div>
         <label class="checkbox top-spacing-twice aligned archive">
             <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll()" />
@@ -79,12 +79,12 @@
             </label>
         </div>
         <hr>
-        <div style="float: right;" ng-if="!loading">
-            <button ng-click="cancelImport()">
-                <i18n>archive.cancel</i18n>
-            </button>
-            <button ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
+        <div ng-if="!loading">
+            <button class="right-magnet" ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
                 <i18n>archive.import</i18n>
+            </button>
+            <button class="right-magnet cancel" ng-click="cancelImport()">
+                <i18n>archive.cancel</i18n>
             </button>
         </div>
     </div>

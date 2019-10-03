@@ -105,7 +105,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 							eb.publish("entcore.import", imported);
 					});
 				}
-
+				break;
 			case "delete-groups" :
 				JsonArray groups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.deleteGroups(groups);
