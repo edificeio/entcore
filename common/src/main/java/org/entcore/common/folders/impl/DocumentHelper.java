@@ -32,6 +32,11 @@ public class DocumentHelper {
 		return doc.getString("_id");
 	}
 
+	public static void removeId(JsonObject doc)
+	{
+		doc.remove("_id");
+	}
+
 	public static String getOwner(JsonObject doc) {
 		return doc.getString("owner");
 	}
@@ -93,12 +98,24 @@ public class DocumentHelper {
 		return doc.getString("file", "");
 	}
 
+	public static void setFileId(JsonObject doc, String fileId) {
+		doc.put("file", fileId);
+	}
+
 	public static String getFileName(JsonObject doc, String defaut) {
 		JsonObject metadata = doc.getJsonObject("metadata");
 		if (metadata != null) {
 			return metadata.getString("filename", getName(doc, defaut));
 		}
 		return getName(doc, defaut);
+	}
+
+	public static String getContentType(JsonObject doc) {
+		JsonObject metadata = doc.getJsonObject("metadata");
+		if (metadata != null) {
+			return metadata.getString("content-type", "");
+		}
+		return "";
 	}
 
 	public static boolean isFile(JsonObject doc) {
