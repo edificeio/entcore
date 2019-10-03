@@ -81,7 +81,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler) {
         if (tables.isEmpty()) {
             sql.transaction(builder.build(), message -> {
-                int resourcesNumber = 0, errorsNumber = 0;
+                int resourcesNumber = 0, duplicatesNumber = 0, errorsNumber = 0;
                 if ("ok".equals(message.body().getString("status"))) {
                     JsonArray results = message.body().getJsonArray("results");
                     for (int i = 0; i < results.size(); i++) {
@@ -89,12 +89,17 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                         if (!"ok".equals(jo.getString("status"))) {
                             errorsNumber++;
                         } else {
-                            resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                            if (jo.getJsonArray("fields").contains("duplicates")) {
+                                duplicatesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                            }
+                            if (jo.getJsonArray("fields").contains("noduplicates")) {
+                                resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                            }
                         }
                     }
-                    JsonObject reply = new JsonObject().put("status","ok")
-                            .put("resourcesNumber",String.valueOf(resourcesNumber)).put("errorsNumber",String.valueOf(errorsNumber));
-                    log.info(title + " : Imported "+ resourcesNumber + " resources with " + errorsNumber + " errors." );
+                    JsonObject reply = new JsonObject().put("status","ok").put("resourcesNumber",String.valueOf(resourcesNumber))
+                            .put("errorsNumber",String.valueOf(errorsNumber)).put("duplicatesNumber", String.valueOf(duplicatesNumber));
+                    log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
                     handler.handle(reply);
                 } else {
                     log.error(title + " Import error: " + message.body().getString("message"));
@@ -132,8 +137,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                             params.addAll(entry);
                         }
 
-                        String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = md5(random()::text || clock_timestamp()::text)::uuid RETURNING 1 ) SELECT count(*) FROM rows";
-                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1 ) SELECT count(*) FROM rows";
+                        String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = md5(random()::text || clock_timestamp()::text)::uuid RETURNING 1 ) SELECT count(*) AS noduplicates FROM rows";
+                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1 ) SELECT count(*) AS " + (tablesWithId.contains(table) ? "duplicates" : "noduplicates") + " FROM rows";
 
                         if (tablesWithId.contains(table)) {
                             builder.prepared(query + conflictUpdate, params);

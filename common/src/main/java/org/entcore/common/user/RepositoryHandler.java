@@ -101,6 +101,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 									.put("importId", importId)
 									.put("app", appTitle)
 									.put("resourcesNumber", success.getString("resourcesNumber"))
+									.put("duplicatesNumber", success.getString("duplicatesNumber"))
 									.put("errorsNumber", success.getString("errorsNumber"));
 							eb.publish("entcore.import", imported);
 					});
