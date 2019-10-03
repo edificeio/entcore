@@ -375,7 +375,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void importResources(String importId, String userId, String userName, String importPath, Handler<JsonObject> handler)
+	public void importResources(String importId, String userId, String userName, String importPath,
+		String locale, Handler<JsonObject> handler)
 	{
 		final String collection = MongoDbConf.getInstance().getCollection();
 

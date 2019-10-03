@@ -93,9 +93,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					String userId = message.body().getString("userId", "");
 					String userName = message.body().getString("userName", "");
 					String path = message.body().getString("path", "");
+					String locale = message.body().getString("locale", "fr");
 					String folderPath = path + File.separator + importApps.getString(appTitle.substring(1));
 
-					repositoryEvents.importResources(importId, userId, userName, folderPath, success -> {
+					repositoryEvents.importResources(importId, userId, userName, folderPath, locale, success -> {
 							JsonObject imported = new JsonObject()
 									.put("action", "imported")
 									.put("importId", importId)
