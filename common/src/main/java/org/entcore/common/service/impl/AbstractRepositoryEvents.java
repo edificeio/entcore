@@ -10,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -38,7 +39,6 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	protected AbstractRepositoryEvents(Vertx vertx)
 	{
 		this.vertx = vertx;
-
 		String app = Server.getPathPrefix(Config.getConf()).substring(1);
 		this.title = String.valueOf(app.charAt(0)).toUpperCase() + app.substring(1);
 

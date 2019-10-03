@@ -209,6 +209,69 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	}
 
 	@Override
+	public void importResources(String importId, String userId, String username, String importPath, Handler<JsonObject> handler) {
+
+		fs.readFile(importPath + File.separator + "conversation.usermessages", result -> {
+			if (result.failed()) {
+				log.error(title
+						+ " : Failed to read table conversation.usermessages in archive.");
+				handler.handle(new JsonObject().put("status", "error"));
+			} else {
+
+				JsonObject results = result.result().toJsonObject();
+				JsonArray ja = results.getJsonArray("results");
+				if (!ja.isEmpty()) {
+					exportUserId = ja.getJsonArray(0).getString(results.getJsonArray("fields").getList().indexOf("user_id"));
+				}
+
+				List<String> tables = new ArrayList<>(Arrays.asList("messages", "attachments", "folders",
+						"usermessages", "usermessagesattachments"));
+				List<String> tablesWithId = Arrays.asList("messages", "attachments", "folders");
+
+				importTables(importPath, "conversation", tables, tablesWithId, userId, username, new SqlStatementsBuilder(), handler);
+			}
+		});
+	}
+
+	private String exportUserId;
+
+	@Override
+	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, String table) {
+
+		// Dirty hack..
+		if ("messages".equals(table) && exportUserId != null) {
+			results.forEach(res -> {
+				JsonArray l =(JsonArray)res;
+				for (int i = 0; i < l.size(); i++) {
+					if (l.getValue(i) instanceof String) {
+						String s = (String)l.getValue(i);
+						String field = fields.getString(i);
+						if ("from".equals(field) || "to".equals(field)
+								|| "cc".equals(field) || "cci".equals(field)) {
+							l.getList().set(i, s.replace(exportUserId, userId));
+						}
+						if ("displayNames".equals(field)) {
+						    l.getList().set(i, s.replaceAll(exportUserId+"\\$[^\\$]+?\\$",userId+"\\$"+username+"\\$"));
+                        }
+					}
+				}
+			});
+		}
+		//
+
+		List<String> list = Arrays.asList("folders", "usermessages", "usermessagesattachments");
+
+		if (list.contains(table)) {
+			int index = fields.getList().indexOf("user_id");
+			results.forEach(res -> {
+				((JsonArray)res).getList().set(index,userId);
+			});
+		}
+		return results;
+	}
+
+
+	@Override
 	public void removeShareGroups(JsonArray oldGroups) {
 	}
 
