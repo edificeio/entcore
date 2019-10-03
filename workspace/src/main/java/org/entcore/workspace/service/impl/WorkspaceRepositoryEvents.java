@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -33,12 +34,15 @@ import io.vertx.core.AsyncResult;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderExporter;
 import org.entcore.common.folders.FolderExporter.FolderExporterContext;
+import org.entcore.common.folders.FolderImporter;
+import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
+import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 import org.entcore.workspace.dao.DocumentDao;
 
 import com.mongodb.QueryBuilder;
@@ -47,9 +51,11 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
+
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
@@ -65,6 +71,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private final FolderManager folderManagerRevision;
 	private final boolean shareOldGroupsToUsers;
 	private final FolderExporter exporter;
+	private final FolderImporter importer;
 	private final FileSystem fs;
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers,
@@ -73,6 +80,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		this.folderManager = folderManager;
 		this.folderManagerRevision = folderManagerRevision;
 		this.exporter = new FolderExporter(storage, vertx.fileSystem(), false);
+		this.importer = new FolderImporter(storage, vertx.fileSystem(), false);
 		this.fs = vertx.fileSystem();
 	}
 
@@ -265,6 +273,67 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				}
 			});
 		}
+	}
+
+	protected JsonObject sanitiseDocData(JsonObject docData, String userId, String userName)
+	{
+		docData.put("owner", userId);
+		docData.put("ownerName", userName);
+		docData.remove("localArchivePath");
+
+		return docData;
+	}
+
+	@Override
+	public void importResources(String importId, String userId, String userName, String importPath,
+		String locale, Handler<JsonObject> handler)
+	{
+		WorkspaceRepositoryEvents self = this;
+
+		final String backupPath = importPath + File.separator + I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
+		FolderImporterContext context = new FolderImporterContext(importPath);
+
+		this.fs.readFile(backupPath, new Handler<AsyncResult<Buffer>>()
+		{
+			@Override
+			public void handle(AsyncResult<Buffer> res)
+			{
+				if(res.succeeded() == false)
+					throw new RuntimeException(res.cause());
+				else
+				{
+					JsonArray filesBackup = res.result().toJsonArray();
+
+					Future<FolderImporterContext> filesCopied = self.importer.importFolders(context, filesBackup);
+
+					filesCopied.setHandler(new Handler<AsyncResult<FolderImporterContext>>()
+					{
+						@Override
+						public void handle(AsyncResult<FolderImporterContext> mappedContext)
+						{
+							JsonArray updatedDocs = context.updatedDocs;
+							final int nbErrors = (mappedContext.succeeded() == false) ? context.errors.size() : 0;
+
+							List<JsonObject> importList = new ArrayList<JsonObject>(updatedDocs.size());
+
+							for(int i = updatedDocs.size(); i-- > 0;)
+									importList.add(sanitiseDocData(updatedDocs.getJsonObject(i), userId, userName));
+
+							MongoDbRepositoryEvents.importDocuments(DocumentDao.DOCUMENTS_COLLECTION, importList, new Handler<JsonObject>()
+							{
+								@Override
+								public void handle(JsonObject rapport)
+								{
+									rapport.put("errorsNumber", Integer.toString(Integer.parseInt(rapport.getString("errorsNumber")) + nbErrors));
+
+									handler.handle(rapport);
+								}
+							});
+						}
+					});
+				}
+			}
+		});
 	}
 
 	@Override
