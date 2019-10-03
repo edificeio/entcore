@@ -209,7 +209,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	}
 
 	@Override
-	public void importResources(String importId, String userId, String username, String importPath, Handler<JsonObject> handler) {
+	public void importResources(String importId, String userId, String username, String importPath, String locale, Handler<JsonObject> handler) {
 
 		fs.readFile(importPath + File.separator + "conversation.usermessages", result -> {
 			if (result.failed()) {
