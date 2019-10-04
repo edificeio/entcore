@@ -16,7 +16,7 @@ export class InputFileService {
         for (let i = 0; i < files.length; i++) {
             let filenameSplit = files[i].name.split('.');
             let ext = filenameSplit[filenameSplit.length - 1];
-            if (allowedExtensions.lastIndexOf(ext) != -1) {
+            if (allowedExtensions.lastIndexOf(ext.toLowerCase()) != -1) {
                 validFiles.push(files[i]);
             } else {
                 invalidFiles.push(files[i]);
