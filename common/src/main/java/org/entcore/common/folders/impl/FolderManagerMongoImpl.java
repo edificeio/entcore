@@ -886,20 +886,28 @@ public class FolderManagerMongoImpl implements FolderManager {
 							{
 								JsonObject mongoUpdate = new JsonObject().put("$set", new JsonObject().put("thumbnails", thumbnails));
 
-								Future update = queryHelper.update(documentId, mongoUpdate);
-								update.setHandler(new Handler<AsyncResult<Void>>()
+								if(documentId != null)
 								{
-									@Override
-									public void handle(AsyncResult<Void> result)
+									Future update = queryHelper.update(documentId, mongoUpdate);
+									update.setHandler(new Handler<AsyncResult<Void>>()
 									{
-										if (result.succeeded() == false)
-											future.fail(result.cause());
-										else
-											future.complete(DocumentHelper.setThumbnails(uploadedDoc, thumbnails));
+										@Override
+										public void handle(AsyncResult<Void> result)
+										{
+											if (result.succeeded() == false)
+												future.fail(result.cause());
+											else
+												future.complete(DocumentHelper.setThumbnails(uploadedDoc, thumbnails));
 
-										handler.handle(future);
-									}
-								});
+											handler.handle(future);
+										}
+									});
+								}
+								else
+								{
+									future.complete(DocumentHelper.setThumbnails(uploadedDoc, thumbnails));
+									handler.handle(future);
+								}
 								return;
 							}
 						}

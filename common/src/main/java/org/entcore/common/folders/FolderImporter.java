@@ -62,17 +62,19 @@ public class FolderImporter
 
 	protected final FileSystem fs;
 	protected final Storage storage;
+	protected final FolderManager folderManager;
 	protected final boolean throwErrors;
 
-	public FolderImporter(Storage storage, FileSystem fs)
+	public FolderImporter(Storage storage, FileSystem fs, FolderManager folderManager)
 	{
-		this(storage, fs, true);
+		this(storage, fs, folderManager, true);
 	}
 
-	public FolderImporter(Storage storage, FileSystem fs, boolean throwErrors)
+	public FolderImporter(Storage storage, FileSystem fs, FolderManager folderManager, boolean throwErrors)
 	{
 		this.fs = fs;
 		this.storage = storage;
+		this.folderManager = folderManager;
 		this.throwErrors = throwErrors;
 	}
 
@@ -83,23 +85,43 @@ public class FolderImporter
 		final String contentType = DocumentHelper.getContentType(document);
 		final String fileName = DocumentHelper.getFileName(document, fileId);
 
+		FolderImporter self = this;
 		Handler<JsonObject> hnd = new Handler<JsonObject>()
 		{
 			@Override
-			public void handle(JsonObject status)
+			public void handle(JsonObject writtenFile)
 			{
-				if(status.getString("status").equals("ok"))
+				if(writtenFile.getString("status").equals("ok"))
 				{
-					final String storageId = DocumentHelper.getId(status);
+					final String storageId = DocumentHelper.getId(writtenFile);
 
 					DocumentHelper.setFileId(document, storageId);
 					context.oldIdsToNewIds.put(fileId, storageId);
 
-					promise.complete();
+					JsonObject thumbnailsObj = DocumentHelper.setThumbnails(new JsonObject(), DocumentHelper.getThumbnails(document));
+
+					self.folderManager.createThumbnailIfNeeded(writtenFile, thumbnailsObj, new Handler<AsyncResult<JsonObject>>()
+					{
+						@Override
+						public void handle(AsyncResult<JsonObject> thumbnails)
+						{
+							if(thumbnails.succeeded() == true)
+							{
+								DocumentHelper.setThumbnails(document, DocumentHelper.getThumbnails(thumbnails.result()));
+								promise.complete();
+							}
+							else
+							{
+								String error = thumbnails.cause().getMessage();
+								context.addError(docId, fileId, "Failed to generate thumbnails", error);
+								promise.fail(new RuntimeException(error));
+							}
+						}
+					});
 				}
 				else
 				{
-					String error = status.getString("message");
+					String error = writtenFile.getString("message");
 					context.addError(docId, fileId, "Failed to write the archived file", error);
 					promise.fail(new RuntimeException(error));
 				}
