@@ -3,7 +3,11 @@ package org.entcore.common.folders;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
@@ -29,10 +33,11 @@ public class FolderImporter
 	{
 		public final String basePath;
 
-		public Map<String, String>	oldIdsToNewIds = new HashMap<String, String>();
-		public JsonArray						updatedDocs;
+		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
+		public Map<String, List<JsonObject>>	oldIdsToChildren = new HashMap<String, List<JsonObject>>();
+		public JsonArray											updatedDocs;
 
-		public JsonArray 						errors = new JsonArray();
+		public JsonArray 											errors = new JsonArray();
 
 		public FolderImporterContext(String basePath)
 		{
@@ -183,6 +188,32 @@ public class FolderImporter
 		});
 	}
 
+	private void removeParent(FolderImporterContext context, List<JsonObject> orphans, Set<JsonObject> processed)
+	{
+		for(JsonObject child : orphans)
+		{
+			String id = DocumentHelper.getId(child);
+
+			DocumentHelper.setParent(child, null);
+
+			List<JsonObject> orphanOwnChildren = context.oldIdsToChildren.get(id);
+			if(orphanOwnChildren != null && processed.add(child) == true)
+				this.removeParent(context, orphanOwnChildren, processed);
+		}
+	}
+
+	private void moveOrphansToRoot(FolderImporterContext context)
+	{
+		Map<String, String> allDocs = context.oldIdsToNewIds;
+		Map<String, List<JsonObject>> parents = context.oldIdsToChildren;
+
+		Set<JsonObject> processedOrphans = new HashSet<JsonObject>();
+
+		for(String parentId : parents.keySet())
+			if(allDocs.containsKey(parentId) == false)
+				this.removeParent(context, parents.get(parentId), processedOrphans);
+	}
+
 	private CompositeFuture importDocuments(FolderImporterContext context)
 	{
 		ArrayList<Future> futures = new ArrayList<Future>(context.updatedDocs.size());
@@ -191,15 +222,36 @@ public class FolderImporter
 		{
 			JsonObject fileDoc = context.updatedDocs.getJsonObject(i);
 
+			String fileDocId = DocumentHelper.getId(fileDoc);
+			context.oldIdsToNewIds.put(fileDocId, fileDocId);
+
 			Future<Void> future = Future.future();
 			futures.add(future);
-			
-			if(DocumentHelper.getType(fileDoc).equals(FolderManager.FOLDER_TYPE) == false)
+
+			if(DocumentHelper.isFolder(fileDoc) == false)
 				this.importFile(context, fileDoc, future);
 			else
 				// Folders don't exist in the vertx filesystem, only in the mongo docs, so do nothing
 				future.complete();
+
+			// Build the parent mapping
+			if(DocumentHelper.hasParent(fileDoc) == true)
+			{
+				String parentId = DocumentHelper.getParent(fileDoc);
+
+				if(context.oldIdsToChildren.containsKey(parentId) == false)
+				{
+					LinkedList<JsonObject> children =	new LinkedList<JsonObject>();
+
+					children.add(fileDoc);
+					context.oldIdsToChildren.put(parentId, children);
+				}
+				else
+					context.oldIdsToChildren.get(parentId).add(fileDoc);
+			}
 		}
+
+		this.moveOrphansToRoot(context);
 
 		return CompositeFuture.join(futures);
 	}
