@@ -42,17 +42,17 @@ public interface WorkspaceService extends FolderManager {
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
-			final List<String> thumbnail, final JsonObject doc, final JsonObject uploaded,
+			final List<String> thumbnails, final JsonObject doc, final JsonObject uploaded,
 			final Handler<AsyncResult<JsonObject>> handler);
 
-	public void updateDocument(final String id, final float quality, final String name, final List<String> thumbnail,
+	public void updateDocument(final String id, final float quality, final String name, final List<String> thumbnails,
 			final JsonObject uploaded, UserInfos user, final Handler<Message<JsonObject>> handler);
 
 	public void addAfterUpload(final JsonObject uploaded, final JsonObject doc, String name, String application,
 			final List<String> thumbs, final String ownerId, final String ownerName,
 			final Handler<AsyncResult<JsonObject>> handler);
 
-	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> t,
+	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> thumbnails,
 			final UserInfos user, final Handler<Message<JsonObject>> handler);
 
 	public void documentProperties(final String id, final Handler<JsonObject> handler);

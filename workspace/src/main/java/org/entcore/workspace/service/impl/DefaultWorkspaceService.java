@@ -102,7 +102,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
-			final List<String> thumbnail, final JsonObject doc, final JsonObject uploaded,
+			final List<String> thumbnails, final JsonObject doc, final JsonObject uploaded,
 			final Handler<AsyncResult<JsonObject>> handler) {
 		compressImage(uploaded, quality, new Handler<Integer>() {
 			@Override
@@ -111,14 +111,14 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				if (size != null && meta != null) {
 					meta.put("size", size);
 				}
-				addAfterUpload(uploaded, doc, name, application, thumbnail, user.getUserId(), user.getUsername(),
+				addAfterUpload(uploaded, doc, name, application, thumbnails, user.getUserId(), user.getUsername(),
 						handler);
 			}
 		});
 
 	}
 
-	public void updateDocument(final String id, final float quality, final String name, final List<String> thumbnail,
+	public void updateDocument(final String id, final float quality, final String name, final List<String> thumbnails,
 			final JsonObject uploaded, UserInfos user, final Handler<Message<JsonObject>> handler) {
 		compressImage(uploaded, quality, new Handler<Integer>() {
 			@Override
@@ -127,7 +127,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				if (size != null && meta != null) {
 					meta.put("size", size);
 				}
-				updateAfterUpload(id, name, uploaded, thumbnail, user, handler);
+				updateAfterUpload(id, name, uploaded, thumbnails, user, handler);
 			}
 		});
 	}
@@ -155,10 +155,11 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	private void compressImage(JsonObject srcFile, float quality, final Handler<Integer> handler) {
-		if (!isImage(srcFile)) {
+		if (DocumentHelper.isImage(srcFile) == false) {
 			handler.handle(null);
 			return;
 		}
+
 		JsonObject json = new JsonObject().put("action", "compress").put("quality", quality)
 				.put("src", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"))
 				.put("dest", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"));
@@ -171,17 +172,6 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		}));
 	}
 
-	private boolean isImage(JsonObject doc) {
-		if (doc == null) {
-			return false;
-		}
-		JsonObject metadata = doc.getJsonObject("metadata");
-		return metadata != null && ("image/jpeg".equals(metadata.getString("content-type"))
-				|| "image/gif".equals(metadata.getString("content-type"))
-				|| "image/png".equals(metadata.getString("content-type"))
-				|| "image/tiff".equals(metadata.getString("content-type")));
-	}
-
 	public void addAfterUpload(final JsonObject uploaded, final JsonObject doc, String name, String application,
 			final List<String> thumbs, final String ownerId, final String ownerName,
 			final Handler<AsyncResult<JsonObject>> handler) {
@@ -191,22 +181,41 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		doc.put("fileDate", MongoDb.formatDate(new Date()));
 		doc.put("application", getOrElse(application, WorkspaceController.MEDIALIB_APP));
 		log.debug(doc.encodePrettily());
-		addFile(Optional.ofNullable(doc.getString("eParent")), doc, ownerId, ownerName, res -> {
+
+		JsonObject thumbsObj = new JsonObject();
+		for(String th : thumbs)
+			thumbsObj.put(th, "");
+
+		DocumentHelper.setThumbnails(doc, thumbsObj);
+
+		addFile(Optional.ofNullable(doc.getString("eParent")), doc, ownerId, ownerName, res ->
+		{
 			if (res.succeeded()) {
 				incrementStorage(doc);
 
-				createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, uploaded, res.result().getString("_id"), null,
-						thumbs).map(resThumb -> {
-							if (handler != null) {
-								handler.handle(res);
-							}
-							JsonObject thumbnails = resThumb != null ? resThumb : new JsonObject();
-							revisionDao.create(res.result().getString("_id"), uploaded.getString("_id"),
-									doc.getString("name"), doc.getString("owner"), doc.getString("owner"),
-									doc.getString("ownerName"), doc.getJsonObject("metadata"), thumbnails);
-							return resThumb;
-						});
-			} else if (handler != null) {
+				createThumbnailIfNeeded(uploaded, doc, new Handler<AsyncResult<JsonObject>>()
+				{
+					@Override
+					public void handle(AsyncResult<JsonObject> resThumb)
+					{
+						if (handler != null) {
+							handler.handle(res);
+						}
+
+						JsonObject thumbnails;
+						if(resThumb.succeeded() == true)
+							thumbnails = DocumentHelper.getThumbnails(resThumb.result());
+						else
+							thumbnails = new JsonObject();
+
+						revisionDao.create(res.result().getString("_id"), uploaded.getString("_id"),
+							doc.getString("name"), doc.getString("owner"), doc.getString("owner"),
+							doc.getString("ownerName"), doc.getJsonObject("metadata"), thumbnails);
+					}
+				});
+			}
+			else if (handler != null)
+			{
 				handler.handle(res);
 			}
 		});
@@ -225,7 +234,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		return future;
 	}
 
-	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> t,
+	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> thumbnails,
 			final UserInfos user, final Handler<Message<JsonObject>> handler) {
 		findById(id, new Handler<JsonObject>() {
 			@Override
@@ -242,7 +251,12 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					doc.put("fileDate", MongoDb.formatDate(new Date()));
 					doc.put("alt", uploaded.getString("alt"));
 					doc.put("legend", uploaded.getString("legend"));
-					final JsonObject thumbs = old.getJsonObject("result", new JsonObject()).getJsonObject("thumbnails");
+
+					final JsonObject thumbs = new JsonObject();
+					for(String th : thumbnails)
+						thumbs.put(th, "");
+
+					final JsonObject compositeDoc = DocumentHelper.setThumbnails(DocumentHelper.setId(new JsonObject(), id), thumbs);
 
 					String query = "{ \"_id\": \"" + id + "\"}";
 					set.put("$set", doc).put("$unset", new JsonObject().put("thumbnails", ""));
@@ -258,17 +272,33 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 												: result.getString("ownerName");
 										doc.put("owner", result.getString("owner"));
 										incrementStorage(doc);
-										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, uploaded, id, thumbs,
-												t).map(resThumb -> {
-													JsonObject thumbs = resThumb != null ? resThumb : new JsonObject();
-													revisionDao.create(id, doc.getString("file"), doc.getString("name"),
-															result.getString("owner"), userId, userName, metadata,
-															thumbs);
-													if (handler != null) {
-														handler.handle(res);
-													}
-													return resThumb;
-												});
+
+										createThumbnailIfNeeded(uploaded, old.getJsonObject("result"), new Handler<AsyncResult<JsonObject>>()
+										{
+											@Override
+											public void handle(AsyncResult<JsonObject> resThumb)
+											{
+												JsonObject thumbnails;
+												if(resThumb.succeeded() == true)
+													thumbnails = DocumentHelper.getThumbnails(resThumb.result());
+												else
+													thumbnails = new JsonObject();
+
+												Future<JsonObject> daoPromise = revisionDao.create(id, doc.getString("file"), doc.getString("name"),
+													result.getString("owner"), userId, userName, metadata,
+													thumbnails);
+
+												if (handler != null)
+													daoPromise.setHandler(new Handler<AsyncResult<JsonObject>>()
+													{
+														@Override
+														public void handle(AsyncResult<JsonObject> daoResult)
+														{
+															handler.handle(res);
+														}
+													});
+											}
+										});
 
 									} else if (handler != null) {
 										handler.handle(res);
@@ -377,15 +407,35 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			// restore document it was last
 			if (isLastFuture.result()) {
 				JsonObject previous = lastTwoFuture.result().getJsonObject(1);
-				return documentDao.restaureFromRevision(documentId, previous).compose(doc->{
-					final JsonObject oldThumbnail = doc.getJsonObject("thumbnails");
+				return documentDao.restaureFromRevision(documentId, previous).compose(doc->
+				{
+					final JsonObject oldThumbnail = DocumentHelper.getThumbnails(doc);
 					if(oldThumbnail!=null) {
 						return Future.succeededFuture(oldThumbnail);
 					}
 					JsonObject srcFile = new JsonObject()//
 							.put("_id", doc.getString("file"))//
 							.put("metadata", doc.getJsonObject("metadata"));
-					return createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, srcFile, doc.getString("_id"), oldThumbnail, thumbs);
+
+					JsonObject thumbsObj = new JsonObject();
+					for(String th : thumbs)
+						thumbsObj.put(th, "");
+
+					JsonObject compositeDoc = DocumentHelper.setThumbnails(DocumentHelper.setId(new JsonObject(), documentId), thumbsObj);
+
+					Future<JsonObject> afterThumb = Future.future();
+					createThumbnailIfNeeded(srcFile, doc, new Handler<AsyncResult<JsonObject>>()
+					{
+						@Override
+						public void handle(AsyncResult<JsonObject> res)
+						{
+							if(res.succeeded() == true)
+								afterThumb.complete(null);
+							else
+								afterThumb.fail(res.cause());
+						}
+					});
+					return afterThumb;
 				}).map(revision);
 			} else {
 				return Future.succeededFuture(revision);
@@ -397,73 +447,6 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				handler.handle(new Either.Left<String, JsonObject>(revision.cause().getMessage()));
 			}
 		});
-	}
-
-	private Future<JsonObject> createThumbnailIfNeeded(final String collection, final JsonObject srcFile,
-			final String documentId, final JsonObject oldThumbnail, final List<String> thumbs) {
-		Future<JsonObject> future = null;
-		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() && srcFile != null
-				&& isImage(srcFile) && srcFile.getString("_id") != null) {
-			future = createThumbnails(thumbs, srcFile, collection, documentId);
-		} else {
-			future = Future.succeededFuture(null);
-		}
-		return future;
-	}
-
-	private Future<JsonObject> createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection,
-			final String documentId) {
-		Future<JsonObject> future = Future.future();
-		Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
-		JsonArray outputs = new fr.wseduc.webutils.collections.JsonArray();
-		for (String thumb : thumbs) {
-			Matcher m = size.matcher(thumb);
-			if (m.matches()) {
-				try {
-					int width = Integer.parseInt(m.group(1));
-					int height = Integer.parseInt(m.group(2));
-					if (width == 0 && height == 0)
-						continue;
-					JsonObject j = new JsonObject().put("dest", storage.getProtocol() + "://" + storage.getBucket());
-					if (width != 0) {
-						j.put("width", width);
-					}
-					if (height != 0) {
-						j.put("height", height);
-					}
-					outputs.add(j);
-				} catch (NumberFormatException e) {
-					log.error("Invalid thumbnail size.", e);
-				}
-			}
-		}
-		if (outputs.size() > 0) {
-			JsonObject json = new JsonObject().put("action", "resizeMultiple")
-					.put("src", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"))
-					.put("destinations", outputs);
-			eb.send(imageResizerAddress, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonObject thumbnails = event.body().getJsonObject("outputs");
-					if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
-						mongo.update(collection, new JsonObject().put("_id", documentId),
-								new JsonObject().put("$set", new JsonObject().put("thumbnails", thumbnails)),
-								MongoDbResult.validActionResultHandler(res -> {
-									if (res.isLeft()) {
-										future.fail(res.left().getValue());
-									} else {
-										future.complete(thumbnails);
-									}
-								}));
-					}else {
-						future.fail("workspace.thumb.create.fail");
-					}
-				}
-			}));
-		} else {
-			future.complete(null);
-		}
-		return future;
 	}
 
 	@Override
