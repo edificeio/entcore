@@ -21,14 +21,14 @@ public interface FolderManager {
 	static final String FOLDER_TYPE = "folder";
 	static final String FILE_TYPE = "file";
 
-	public static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService) {
-		return new FolderManagerMongoImpl(collection, sto, vertx.fileSystem(), shareService);
+	public static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress) {
+		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress);
 	}
 
 	public static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
-			ShareService shareService, QuotaService quota, int quotaTreshold) {
+			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold) {
 		return new FolderManagerWithQuota(collection, quotaTreshold, quota,
-				mongoManager(collection, sto, vertx, shareService), vertx.eventBus());
+				mongoManager(collection, sto, vertx, shareService, imageResizerAddress), vertx.eventBus());
 	}
 
 	/**
@@ -66,6 +66,14 @@ public interface FolderManager {
 	 * @param handler  the handler that emit the file object save or an error if any
 	 */
 	void updateFile(String id, Optional<String> parentId, JsonObject doc, Handler<AsyncResult<JsonObject>> handler);
+
+	/**
+		* Create the file's thumbnails if applicable
+		*
+		* @param doc			the document to update
+		* @param handler	the handler that emits the saved file
+		*/
+	public void createThumbnailIfNeeded(JsonObject uploadedFile, JsonObject mongoDocument, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * Create an external folder that will be displayed at the root of tree (edumedia for example)
