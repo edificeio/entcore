@@ -226,7 +226,11 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 				List<String> tables = new ArrayList<>(Arrays.asList("messages", "attachments", "folders",
 						"usermessages", "usermessagesattachments"));
-				List<String> tablesWithId = Arrays.asList("messages", "attachments", "folders");
+				String postgresRandomUuid = "md5(random()::text || clock_timestamp()::text)::uuid";
+				Map<String,String> tablesWithId = new HashMap<>();
+				tablesWithId.put("messages", postgresRandomUuid);
+				tablesWithId.put("attachments", postgresRandomUuid);
+				tablesWithId.put("folders", postgresRandomUuid);
 
 				importTables(importPath, "conversation", tables, tablesWithId, userId, username, new SqlStatementsBuilder(), handler);
 			}

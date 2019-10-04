@@ -77,7 +77,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 		}
 	}
 
-    protected void importTables(String importPath, String schema, List<String> tables, List<String> tablesWithId,
+    protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
                                 String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler) {
         if (tables.isEmpty()) {
             sql.transaction(builder.build(), message -> {
@@ -137,10 +137,10 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                             params.addAll(entry);
                         }
 
-                        String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = md5(random()::text || clock_timestamp()::text)::uuid RETURNING 1 ) SELECT count(*) AS noduplicates FROM rows";
-                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1 ) SELECT count(*) AS " + (tablesWithId.contains(table) ? "duplicates" : "noduplicates") + " FROM rows";
+                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1 ) SELECT count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
 
-                        if (tablesWithId.contains(table)) {
+                        if (tablesWithId.containsKey(table)) {
+                            String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = "+tablesWithId.get(table)+" RETURNING 1 ) SELECT count(*) AS noduplicates FROM rows";
                             builder.prepared(query + conflictUpdate, params);
                         }
                         builder.prepared(query + conflictNothing, params);
