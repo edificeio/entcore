@@ -32,9 +32,15 @@ public class DocumentHelper {
 		return doc.getString("_id");
 	}
 
-	public static void removeId(JsonObject doc)
+	public static JsonObject setId(JsonObject doc, String id) {
+		doc.put("_id", id);
+		return doc;
+	}
+
+	public static JsonObject removeId(JsonObject doc)
 	{
 		doc.remove("_id");
+		return doc;
 	}
 
 	public static String getOwner(JsonObject doc) {
@@ -69,9 +75,10 @@ public class DocumentHelper {
 		return doc.getString("name", def);
 	}
 
-	public static void setParent(JsonObject doc, String newParent) {
+	public static JsonObject setParent(JsonObject doc, String newParent) {
 		doc.put("eParent", newParent);
 		doc.remove("eParentOld");
+		return doc;
 	}
 
 	public static String getParent(JsonObject doc) {
@@ -98,8 +105,9 @@ public class DocumentHelper {
 		return doc.getString("file", "");
 	}
 
-	public static void setFileId(JsonObject doc, String fileId) {
+	public static JsonObject setFileId(JsonObject doc, String fileId) {
 		doc.put("file", fileId);
+		return doc;
 	}
 
 	public static String getFileName(JsonObject doc, String defaut) {
@@ -154,5 +162,29 @@ public class DocumentHelper {
 	public static long getFileSize(JsonArray docs) {
 		return docs.stream().map(o -> (JsonObject) o)//
 				.map(o -> DocumentHelper.getFileSize(o)).reduce(0l, (a1, a2) -> a1 + a2);
+	}
+
+	public static JsonObject getThumbnails(JsonObject doc)
+	{
+		return doc.getJsonObject("thumbnails");
+	}
+
+	public static JsonObject setThumbnails(JsonObject doc, JsonObject thumbnails)
+	{
+		doc.put("thumbnails", thumbnails);
+		return doc;
+	}
+
+	public static boolean isImage(JsonObject doc)
+	{
+		if (doc == null)
+			return false;
+		JsonObject metadata = doc.getJsonObject("metadata");
+		return metadata != null && (
+			"image/jpeg".equals(metadata.getString("content-type"))
+			|| "image/gif".equals(metadata.getString("content-type"))
+			|| "image/png".equals(metadata.getString("content-type"))
+			|| "image/tiff".equals(metadata.getString("content-type"))
+		);
 	}
 }
