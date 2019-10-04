@@ -44,6 +44,7 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 import org.entcore.workspace.dao.DocumentDao;
+import org.entcore.common.folders.impl.DocumentHelper;
 
 import com.mongodb.QueryBuilder;
 
@@ -280,6 +281,9 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		docData.put("owner", userId);
 		docData.put("ownerName", userName);
 		docData.remove("localArchivePath");
+
+		// Imported files are set to private
+		DocumentHelper.setShared(DocumentHelper.removeShares(docData), false);
 
 		return docData;
 	}
