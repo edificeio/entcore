@@ -93,6 +93,19 @@ public class DocumentHelper {
 		return doc.getBoolean("isShared", false);
 	}
 
+	public static JsonObject setShared(JsonObject doc, boolean isShared)
+	{
+		doc.put("isShared", isShared);
+		return doc;
+	}
+
+	public static JsonObject removeShares(JsonObject doc)
+	{
+		doc.put("shared", new JsonArray());
+		doc.put("inheritedShares", new JsonArray());
+		return doc;
+	}
+
 	public static boolean hasParent(JsonObject doc) {
 		return !StringUtils.isEmpty(getParent(doc));
 	}
