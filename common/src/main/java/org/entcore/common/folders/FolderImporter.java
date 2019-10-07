@@ -14,6 +14,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
 
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
@@ -67,19 +68,19 @@ public class FolderImporter
 
 	protected final FileSystem fs;
 	protected final Storage storage;
-	protected final FolderManager folderManager;
+	protected final EventBus eb;
 	protected final boolean throwErrors;
 
-	public FolderImporter(Storage storage, FileSystem fs, FolderManager folderManager)
+	public FolderImporter(Storage storage, FileSystem fs, EventBus eb)
 	{
-		this(storage, fs, folderManager, true);
+		this(storage, fs, eb, true);
 	}
 
-	public FolderImporter(Storage storage, FileSystem fs, FolderManager folderManager, boolean throwErrors)
+	public FolderImporter(Storage storage, FileSystem fs, EventBus eb, boolean throwErrors)
 	{
 		this.fs = fs;
 		this.storage = storage;
-		this.folderManager = folderManager;
+		this.eb = eb;
 		this.throwErrors = throwErrors;
 	}
 
@@ -104,22 +105,37 @@ public class FolderImporter
 					context.oldIdsToNewIds.put(fileId, storageId);
 
 					JsonObject thumbnailsObj = DocumentHelper.setThumbnails(new JsonObject(), DocumentHelper.getThumbnails(document));
+					JsonObject params = new JsonObject()
+																.put("action", "createThumbnails")
+																.put("fileDocument", writtenFile)
+																.put("thumbnails", thumbnailsObj);
 
-					self.folderManager.createThumbnailIfNeeded(writtenFile, thumbnailsObj, new Handler<AsyncResult<JsonObject>>()
+					self.eb.send("org.entcore.workspace", params, new Handler<AsyncResult<Message<JsonObject>>>()
 					{
 						@Override
-						public void handle(AsyncResult<JsonObject> thumbnails)
+						public void handle(AsyncResult<Message<JsonObject>> message)
 						{
-							if(thumbnails.succeeded() == true)
+							if(message.succeeded() == false)
 							{
-								DocumentHelper.setThumbnails(document, DocumentHelper.getThumbnails(thumbnails.result()));
-								promise.complete();
+								String error = message.cause().getMessage();
+								context.addError(docId, fileId, "Failed to generate thumbnails", error);
+								promise.fail(new RuntimeException(message.cause()));
 							}
 							else
 							{
-								String error = thumbnails.cause().getMessage();
-								context.addError(docId, fileId, "Failed to generate thumbnails", error);
-								promise.fail(new RuntimeException(error));
+								JsonObject body = message.result().body();
+					
+								if(body.getString("status").equals("ok") == true)
+								{
+									DocumentHelper.setThumbnails(document, DocumentHelper.getThumbnails(body.getJsonObject("result")));
+									promise.complete();
+								}
+								else
+								{
+									String error = body.getString("message");
+									context.addError(docId, fileId, "Failed to generate thumbnails", error);
+									promise.fail(new RuntimeException(error));
+								}
 							}
 						}
 					});

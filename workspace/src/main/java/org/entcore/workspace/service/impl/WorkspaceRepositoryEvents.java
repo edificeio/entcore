@@ -81,7 +81,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		this.folderManager = folderManager;
 		this.folderManagerRevision = folderManagerRevision;
 		this.exporter = new FolderExporter(storage, vertx.fileSystem(), false);
-		this.importer = new FolderImporter(storage, vertx.fileSystem(), folderManager, false);
+		this.importer = new FolderImporter(storage, vertx.fileSystem(), vertx.eventBus(), false);
 		this.fs = vertx.fileSystem();
 	}
 
