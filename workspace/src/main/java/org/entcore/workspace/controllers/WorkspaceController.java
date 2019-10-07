@@ -50,6 +50,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -70,15 +71,18 @@ public class WorkspaceController extends BaseController {
 	private GenericShareService shareService;
 	private final PdfGenerator pdfGenerator;
 	private DocumentDao dao;
+	private FolderManager folderManager;
 
 	private Storage storage;
 
-	public WorkspaceController(Storage storage, WorkspaceService workspaceService, GenericShareService shareService, PdfGenerator aPdfGenerator, MongoDb mongo) {
+	public WorkspaceController(Storage storage, WorkspaceService workspaceService, GenericShareService shareService,
+		PdfGenerator aPdfGenerator, MongoDb mongo, FolderManager fm) {
 		this.storage = storage;
 		this.workspaceService = workspaceService;
 		this.shareService = shareService;
 		this.pdfGenerator = aPdfGenerator;
 		this.dao = new DocumentDao(mongo);
+		this.folderManager = fm;
 	}
 
 	@Post("/document")
@@ -1495,6 +1499,32 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	private void createThumbnails(final Message<JsonObject> message)
+	{
+		JsonObject fileDocument = message.body().getJsonObject("fileDocument");
+		JsonObject requestedThumbnails = message.body().getJsonObject("thumbnails");
+
+		if(fileDocument == null || requestedThumbnails == null)
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.attribute"));
+		else
+		{
+			this.folderManager.createThumbnailIfNeeded(fileDocument, requestedThumbnails, new Handler<AsyncResult<JsonObject>>()
+			{
+				@Override
+				public void handle(AsyncResult<JsonObject> thumbnails)
+				{
+					if(thumbnails.succeeded() == true)
+					{
+						JsonObject reply = new JsonObject().put("status", "ok").put("result", thumbnails.result());
+						message.reply(reply);
+					}
+					else
+						message.reply(new JsonObject().put("status", "error").put("message", thumbnails.cause().getMessage()));
+				}
+			});
+		}
+	}
+
 	@BusAddress("org.entcore.workspace")
 	public void workspaceEventBusHandler(final Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
@@ -1510,11 +1540,14 @@ public class WorkspaceController extends BaseController {
 		case "copyDocument":
 			copyDocumentFromBus(message);
 			break;
-        case "moveDocument":
-            moveDocumentFromBus(message);
-            break;
+    case "moveDocument":
+      moveDocumentFromBus(message);
+      break;
 		case "changeVisibility":
 			changeVisibility(message);
+			break;
+		case "createThumbnails":
+			createThumbnails(message);
 			break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
