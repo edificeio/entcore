@@ -67,24 +67,22 @@ public class FolderImporter
 	}
 
 	protected final FileSystem fs;
-	protected final Storage storage;
 	protected final EventBus eb;
 	protected final boolean throwErrors;
 
-	public FolderImporter(Storage storage, FileSystem fs, EventBus eb)
+	public FolderImporter(FileSystem fs, EventBus eb)
 	{
-		this(storage, fs, eb, true);
+		this(fs, eb, true);
 	}
 
-	public FolderImporter(Storage storage, FileSystem fs, EventBus eb, boolean throwErrors)
+	public FolderImporter(FileSystem fs, EventBus eb, boolean throwErrors)
 	{
 		this.fs = fs;
-		this.storage = storage;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
 	}
 
-	private void bufferToStorage(FolderImporterContext context, JsonObject document, Buffer buff, boolean fileAlreadyExists, Future<Void> promise)
+	private void bufferToStorage(FolderImporterContext context, JsonObject document, Buffer buff, Future<Void> promise)
 	{
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
@@ -92,11 +90,27 @@ public class FolderImporter
 		final String fileName = DocumentHelper.getFileName(document, fileId);
 
 		FolderImporter self = this;
-		Handler<JsonObject> hnd = new Handler<JsonObject>()
+		JsonObject importParams = new JsonObject()
+																	.put("action", "importDocument")
+																	.put("buffer", buff.getBytes())
+																	.put("oldFileId", fileId)
+																	.put("fileName", fileName)
+																	.put("contentType", contentType);
+
+		this.eb.send("org.entcore.workspace", importParams, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
-			public void handle(JsonObject writtenFile)
+			public void handle(AsyncResult<Message<JsonObject>> message)
 			{
+				if(message.succeeded() == false)
+				{
+					String error = message.cause().getMessage();
+					context.addError(docId, fileId, "Failed to import file", error);
+					promise.fail(new RuntimeException(message.cause()));
+					return;
+				}
+
+				JsonObject writtenFile = message.result().body();
 				if(writtenFile.getString("status").equals("ok"))
 				{
 					final String storageId = DocumentHelper.getId(writtenFile);
@@ -147,13 +161,7 @@ public class FolderImporter
 					promise.fail(new RuntimeException(error));
 				}
 			}
-		};
-
-		// If the file already exists, duplicate it with a new id, else keep the old id
-		if(fileAlreadyExists == true)
-			this.storage.writeBuffer(buff, contentType, fileName, hnd);
-		else
-			this.storage.writeBuffer(fileId, buff, contentType, fileName, hnd);
+		});
 	}
 
 	private void importFile(FolderImporterContext context, JsonObject document, Future<Void> promise)
@@ -167,39 +175,20 @@ public class FolderImporter
 		// Start reading the file to import
 		Future<Buffer> readFileFuture = Future.future();
 		final String backupFilePath = context.basePath + File.separator + filePath;
+
 		this.fs.readFile(backupFilePath, new Handler<AsyncResult<Buffer>>()
 		{
 			@Override
-			public void handle(AsyncResult<Buffer> contents)
+			public void handle(AsyncResult<Buffer> buff)
 			{
-				if(contents.succeeded() == true)
-					readFileFuture.complete(contents.result());
+				if(buff.succeeded() == true)
+					self.bufferToStorage(context, document, buff.result(), promise);
 				else
 				{
-					context.addError(docId, fileId, "Failed to open the archived file", contents.cause().getMessage());
-					readFileFuture.fail(new RuntimeException(contents.cause()));
+					context.addError(docId, fileId, "Failed to open the archived file", buff.cause().getMessage());
+					readFileFuture.fail(new RuntimeException(buff.cause()));
+					promise.fail(buff.cause());
 				}
-			}
-		});
-
-		// Check whether the file already exists
-		this.storage.fileStats(fileId, new Handler<AsyncResult<FileStats>>()
-		{
-			@Override
-			public void handle(AsyncResult<FileStats> res)
-			{
-				// Wait until the file is read
-				readFileFuture.setHandler(new Handler<AsyncResult<Buffer>>()
-				{
-					@Override
-					public void handle(AsyncResult<Buffer> buff)
-					{
-						if(buff.succeeded() == true)
-							self.bufferToStorage(context, document, buff.result(), res.succeeded(), promise);
-						else
-							promise.fail(buff.cause());
-					}
-				});
 			}
 		});
 	}
