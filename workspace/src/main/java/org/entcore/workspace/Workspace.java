@@ -105,15 +105,9 @@ public class Workspace extends BaseServer {
 		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
 				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService);
 
-<<<<<<< HEAD
 		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
 
-		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance());
-||||||| parent of 01310e824... feat(archive): #25940, Call the thumbnail creation routine through the bus during imports
-		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService);
-=======
-		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService, folderManagerWithQuota);
->>>>>>> 01310e824... feat(archive): #25940, Call the thumbnail creation routine through the bus during imports
+		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance(), folderManagerWithQuota);
 		addController(workspaceController);
 		//
 
