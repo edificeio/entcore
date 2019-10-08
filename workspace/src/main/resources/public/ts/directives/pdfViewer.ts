@@ -25,18 +25,14 @@ export const pdfViewer = ng.directive('pdfViewer', function () {
 	return {
 		restrict: 'E',
 		template: `
-			<div class="flex-row align-center justify-center">
-				<div class="file-controls">
-					<i class="back" ng-click="previousPage()"></i>
-				</div>
+			<div class="pagination__area flex-row align-center justify-center">
+				<div class="file-controls left"><i class="left" ng-click="previousPage()"></i></div>
 				<div class="pagination">
 					<input type="text" ng-model="pageIndex" ng-change="openPage()" /> / [[numPages]]
 				</div>
-				<div class="file-controls right">
-					<i class="forward" ng-click="nextPage()"></i>
-				</div>
+				<div class="file-controls right"><i class="right" ng-click="nextPage()"></i></div>
 			</div>
-			<p ng-if="loading" class="flex-row align-start justify-center centered-text"><i18n>workspace.preview.loading</i18n>&nbsp;<i class="loading"></i></p>
+			<p ng-if="loading" class="top-spacing-four flex-row align-start justify-center centered-text"><i18n>workspace.preview.loading</i18n>&nbsp;<i class="loading"></i></p>
 			`,
 		link: function (scope: ScopePdfViewer, element, attributes) {
 			let pdf:any;
