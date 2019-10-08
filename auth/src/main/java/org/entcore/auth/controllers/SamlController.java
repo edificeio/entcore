@@ -87,6 +87,7 @@ public class SamlController extends AbstractFederateController {
 	private String ignoreCallBackPattern;
 	private boolean softSlo;
 	private boolean federatedAuthenticateError = false;
+	private JsonObject activationThemes;
 
 	// regex used to find namequalifier in session nameid (Mongo)
 	private String NAME_QUALIFIER_REGEXP = ".*\\sNameQualifier=\"([^\"]*)\".*";
@@ -103,6 +104,8 @@ public class SamlController extends AbstractFederateController {
 		softSlo = config.getBoolean("soft-slo", false);
 
 		federatedAuthenticateError = config.getBoolean("federated-authenticate-error", false);
+
+		activationThemes = config.getJsonObject("activation-themes", new JsonObject());
 
 		// load nameQualifierRegex (in-case mongoDb NameId format change)
 		String nameQualifierRegex = config.getString("nameQualifierRegex");
@@ -517,7 +520,7 @@ public class SamlController extends AbstractFederateController {
 			if(res.size()== 0) {
 				loginResult(request, "fed.auth.error.user.not.found");
 			} else {
-				authenticate(res, sessionIndex, nameId, request);
+				authenticate(res, sessionIndex, nameId, activationThemes, request);
 			}
 		} else if (event.right().getValue() != null && event.right().getValue() instanceof JsonArray && isNotEmpty(signKey)) {
 			try {
@@ -620,7 +623,7 @@ public class SamlController extends AbstractFederateController {
 				final String sessionIndex = j.getString("sessionIndex");
 				try {
 					if (j.getString("key", "").equals(HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey))) {
-						authenticate(j, sessionIndex, nameId, request);
+						authenticate(j, sessionIndex, nameId, activationThemes, request);
 					} else {
 						log.error("Invalid signature for federated user.");
 						redirect(request, LOGIN_PAGE);

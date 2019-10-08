@@ -134,6 +134,7 @@ public class Auth extends BaseServer {
 			openIdConnectController.setOpenIdConnectServiceProviderFactory(
 					new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getJsonObject("domains")));
 			openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
+			openIdConnectController.setActivationThemes(config.getJsonObject("activation-themes", new JsonObject()));
 
 			final JsonArray authorizedHostsLogin = openidFederate.getJsonArray("authorizedHostsLogin");
 			if (authorizedHostsLogin != null && authorizedHostsLogin.size() > 0) {

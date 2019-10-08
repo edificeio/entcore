@@ -22,6 +22,7 @@ package org.entcore.auth.controllers;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
@@ -42,12 +43,13 @@ public abstract class AbstractFederateController extends BaseController {
 	private EventStore eventStore;
 	protected String signKey;
 
-	protected void authenticate(JsonObject res, String sessionIndex, String nameId, HttpServerRequest request) {
+	protected void authenticate(JsonObject res, String sessionIndex, String nameId, JsonObject activationThemes, HttpServerRequest request) {
 		final String userId = res.getString("id");
 		final String activationCode = res.getString("activationCode");
 		final String login = res.getString("login");
 		final String email = res.getString("email");
 		final String mobile = res.getString("mobile");
+		final String theme = activationThemes.getJsonObject(Renders.getHost(request), new JsonObject()).getString(res.getString("source"));
 		if (userId != null) {
 			userAuthAccount.storeDomain(userId, getHost(request), getScheme(request), new Handler<Boolean>() {
 				@Override
@@ -59,7 +61,7 @@ public abstract class AbstractFederateController extends BaseController {
 			});
 		}
 		if (activationCode != null && login != null) {
-			activateUser(activationCode, login, email, mobile, sessionIndex, nameId, request);
+			activateUser(activationCode, login, email, mobile, theme, sessionIndex, nameId, request);
 		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
 			log.info("Connexion de l'utilisateur fédéré " + login);
 			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
@@ -92,10 +94,10 @@ public abstract class AbstractFederateController extends BaseController {
 		});
 	}
 
-	private void activateUser(final String activationCode, final String login, String email, String mobile,
+	private void activateUser(final String activationCode, final String login, String email, String mobile, String theme,
 							  final String sessionIndex, final String nameId, final HttpServerRequest request) {
 		userAuthAccount.activateAccount(login, activationCode, UUID.randomUUID().toString(),
-				email, mobile, null, request, new Handler<Either<String, String>>() {
+				email, mobile, theme, request, new Handler<Either<String, String>>() {
 			@Override
 			public void handle(Either<String, String> activated) {
 				if (activated.isRight() && activated.right().getValue() != null) {
