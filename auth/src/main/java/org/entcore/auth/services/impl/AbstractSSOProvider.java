@@ -45,7 +45,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 	static final String RETURN_QUERY = "OPTIONAL MATCH (p:Profile) " +
 			"WHERE HAS(u.profiles) AND p.name = head(u.profiles) " +
 			"RETURN DISTINCT u.id as id, u.activationCode as activationCode, " +
-			"u.login as login, u.email as email, u.mobile as mobile, u.federated, u.blocked as blockedUser, p.blocked as blockedProfile ";
+			"u.login as login, u.email as email, u.mobile as mobile, u.federated, u.blocked as blockedUser, p.blocked as blockedProfile, u.source as source ";
 
 	protected boolean validConditions(Assertion assertion, Handler<Either<String, Object>> handler) {
 		if (Utils.validationParamsNull(handler, "invalid.assertion", assertion)) return false;
