@@ -8,12 +8,12 @@
 			</div>
 		</div>
 		<div class="flex-row align-center justify-between">
-			<button ng-click="download()"><i18n>download</i18n></button>
 			<button class="cancel" ng-click="fullscreen(true)"><i18n>preview</i18n></button>
+			<button class="cancel" ng-click="download()"><i18n>download</i18n></button>
 			<resource-right resource="ngModel" name="contrib">
-				<button class="cancel" ng-click="editImage()" ng-if="ngModel.isEditableImage"><i18n>editImage</i18n></button>
+				<button ng-click="editImage()" ng-if="ngModel.isEditableImage"><i18n>editImage</i18n></button>
 			</resource-right>
-			<button class="cancel" ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
+			<button ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
 				<i18n>workspace.lool.open</i18n>
 			</button>
 		</div>
