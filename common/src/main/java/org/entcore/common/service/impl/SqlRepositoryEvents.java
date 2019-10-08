@@ -122,7 +122,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                     if (!results.isEmpty()) {
 
-                        results = transformResults(fields, results, userId, username, table);
+                        results = transformResults(fields, results, userId, username, builder, table);
 
                         String fields_str = "(" + String.join(",",
                                 ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ")";
@@ -152,6 +152,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
         }
     }
 
-	protected JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, String table){ return results; }
+	protected JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username,
+                                         SqlStatementsBuilder builder, String table){ return results; }
 
 }

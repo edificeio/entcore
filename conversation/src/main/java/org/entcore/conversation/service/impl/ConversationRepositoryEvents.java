@@ -240,7 +240,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	private String exportUserId;
 
 	@Override
-	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, String table) {
+	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, SqlStatementsBuilder builder, String table) {
 
 		// Dirty hack..
 		if ("messages".equals(table) && exportUserId != null) {
