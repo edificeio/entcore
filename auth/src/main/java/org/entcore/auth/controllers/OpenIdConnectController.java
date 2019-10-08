@@ -43,6 +43,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 	private OpenIdServiceProviderFactory openIdConnectServiceProviderFactory;
 	private JsonObject certificates = new JsonObject();
 	private boolean subMapping;
+	private JsonObject activationThemes;
 
 	@Get("/openid/certs")
 	public void certs(HttpServerRequest request) {
@@ -85,7 +86,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 						@Override
 						public void handle(Either<String, Object> res) {
 							if (res.isRight() && res.right().getValue() instanceof JsonObject) {
-								authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), request);
+								authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), activationThemes, request);
 							} else if (subMapping && res.isLeft() && OpenIdConnectServiceProvider.UNRECOGNIZED_USER_IDENTITY
 									.equals(res.left().getValue())) {
 								final String p = payload.encode();
@@ -137,7 +138,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 						@Override
 						public void handle(Either<String, Object> event) {
 							if (event.isRight()) {
-								authenticate((JsonObject) event.right().getValue(), "_", p.getString("id_token_hint"), request);
+								authenticate((JsonObject) event.right().getValue(), "_", p.getString("id_token_hint"), activationThemes, request);
 							} else {
 								forbidden(request, "invalid.sub.mapping");
 							}
@@ -177,6 +178,10 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	public void setSubMapping(boolean subMapping) {
 		this.subMapping = subMapping;
+	}
+
+	public void setActivationThemes(JsonObject activationThemes) {
+		this.activationThemes = activationThemes;
 	}
 
 }
