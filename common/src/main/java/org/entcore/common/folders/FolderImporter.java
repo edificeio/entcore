@@ -41,7 +41,7 @@ public class FolderImporter
 
 		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
 		public Map<String, List<JsonObject>>	oldIdsToChildren = new HashMap<String, List<JsonObject>>();
-		public JsonArray											updatedDocs;
+		public JsonArray											updatedDocs = new JsonArray();
 
 		public JsonArray 											errors = new JsonArray();
 
@@ -61,12 +61,15 @@ public class FolderImporter
 					.put("details", details)
 			);
 
-			for(int i = this.updatedDocs.size(); i-- > 0;)
-				if(DocumentHelper.getId(this.updatedDocs.getJsonObject(i)).equals(documentId))
-				{
-					this.updatedDocs.remove(i);
-					break;
-				}
+			if(this.updatedDocs != null)
+			{
+				for(int i = this.updatedDocs.size(); i-- > 0;)
+					if(DocumentHelper.getId(this.updatedDocs.getJsonObject(i)).equals(documentId))
+					{
+						this.updatedDocs.remove(i);
+						break;
+					}
+			}
 		}
 
 	}

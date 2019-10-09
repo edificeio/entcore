@@ -384,13 +384,21 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		JsonArray idsToImport = new JsonArray();
 		Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
 
-		for(int i = 0, l = documents.size(); i < l; ++i)
+		for(int i = 0, skipped = 0, l = documents.size(); i < l; ++i)
 		{
-			String docId = DocumentHelper.getId(documents.get(i));
+			JsonObject d = documents.get(i);
 
-			savePayload.add(documents.get(i));
+			if(d == null)
+			{
+				++skipped;
+				continue;
+			}
+
+			String docId = DocumentHelper.getId(d);
+
+			savePayload.add(d);
 			idsToImport.add(docId);
-			idToIxMap.put(docId, i);
+			idToIxMap.put(docId, i - skipped);
 		}
 
 		QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
@@ -438,12 +446,12 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							{
 								JsonObject mongoError = new JsonObject(body.getString("message"));
 
-								nbErrors = documents.size() - mongoError.getInteger("n");
+								nbErrors = savePayload.size() - mongoError.getInteger("n");
 							}
 
 							JsonObject rapport =
 								new JsonObject()
-									.put("resourcesNumber", Integer.toString(documents.size() - nbErrors))
+									.put("resourcesNumber", Integer.toString(savePayload.size() - nbErrors))
 									.put("duplicatesNumber", Integer.toString(totalDuplicates))
 									.put("errorsNumber", Integer.toString(nbErrors));
 
@@ -458,7 +466,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						new JsonObject()
 							.put("resourcesNumber", Integer.toString(0))
 							.put("duplicatesNumber", Integer.toString(0))
-							.put("errorsNumber", Integer.toString(documents.size()));
+							.put("errorsNumber", Integer.toString(savePayload.size()));
 
 					handler.handle(rapport);
 				}
