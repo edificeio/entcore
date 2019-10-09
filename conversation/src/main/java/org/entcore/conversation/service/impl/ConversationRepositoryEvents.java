@@ -358,16 +358,6 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		String unusedAttachments =
-			"WITH unusedAtts AS (" +
-				"SELECT DISTINCT attachment_id AS id FROM conversation.usermessagesattachments uma " +
-				"GROUP BY attachment_id " +
-				"HAVING every(user_id IN "+ Sql.listPrepared(userIds.getList()) +") " +
-			") SELECT " +
-			"CASE WHEN COUNT(id) = 0 THEN '[]' ELSE json_agg(distinct id) END AS attachmentIds "+
-			"FROM unusedAtts u";
-		builder.prepared(unusedAttachments, userIds);
-
 		String deleteFolder =
 			"DELETE FROM conversation.folders f " +
 			"WHERE f.user_id IN " + Sql.listPrepared(userIds.getList());
@@ -423,32 +413,12 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			builder.prepared(setCC, paramsToCc);
 			builder.prepared(setFrom, paramsFrom);
 		}
-		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
-			public void handle(Either<String, JsonArray> event) {
-				if(event.isLeft()){
-					log.error("Error deleting conversation data : " + event.left().getValue());
-					return;
-				}
-
-				JsonArray results = event.right().getValue();
-				JsonArray attachmentIds =
-					results.getJsonArray(0).size() > 0 ?
-						new fr.wseduc.webutils.collections.JsonArray(results.getJsonArray(0).getJsonObject(0).getString("attachmentIds", "[]")) :
-						new fr.wseduc.webutils.collections.JsonArray();
-
-				for(Object attachmentObj: attachmentIds){
-					final String attachmentId = (String) attachmentObj;
-					storage.removeFile(attachmentId, new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject event) {
-							if (!"ok".equals(event.getString("status"))) {
-								log.error("["+ConversationRepositoryEvents.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
-							}
-						}
-					});
-				}
+		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout),
+				SqlResult.validResultsHandler(event -> {
+			if(event.isLeft()){
+				log.error("Error deleting conversation data : " + event.left().getValue());
 			}
-		}, "attachmentIds"));
+		}));
 	}
 
 }
