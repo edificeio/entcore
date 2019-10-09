@@ -37,8 +37,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.Future;
+import io.vertx.core.CompositeFuture;
 
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.folders.FolderImporter;
+import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 
 import java.io.File;
 import java.util.HashSet;
@@ -46,6 +51,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,6 +64,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	protected final String managerRight;
 	protected final String revisionsCollection;
 	protected final String revisionIdAttribute;
+	private final FolderImporter fileImporter;
 
 	public MongoDbRepositoryEvents() {
 		this(null, null, null, null);
@@ -76,6 +84,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		this.managerRight = managerRight;
 		this.revisionsCollection = revisionsCollection;
 		this.revisionIdAttribute = revisionIdAttribute;
+		this.fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
 	}
 
 	@Override
@@ -348,26 +357,66 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 					ArrayList<JsonObject> mongoDocs = new ArrayList<JsonObject>(nbFiles);
 					AtomicInteger unprocessed = new AtomicInteger(nbFiles);
+					AtomicInteger nbErrors = new AtomicInteger(0);
 
 					for(int i = 0; i < nbFiles; ++i)
 						mongoDocs.add(null);
 
+					List<FolderImporterContext> contexts = Collections.synchronizedList(new LinkedList<FolderImporterContext>());
+
 					for(String filePath : filesInDir)
 					{
-						self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
+						self.fs.props(filePath, new Handler<AsyncResult<FileProps>>()
 						{
 							@Override
-							public void handle(AsyncResult<Buffer> fileResult)
+							public void handle(AsyncResult<FileProps> propsResult)
 							{
-								if(fileResult.succeeded() == false)
-									throw new RuntimeException(fileResult.cause());
+								if(propsResult.succeeded() == false)
+									throw new RuntimeException(propsResult.cause());
 								else
 								{
-									int ix = unprocessed.decrementAndGet();
-									mongoDocs.set(ix, self.sanitiseDocument(fileResult.result().toJsonObject(), userId, userName));
+									if(propsResult.result().isDirectory() == true)
+									{
+										FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
+										self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>()
+										{
+											@Override
+											public void handle(JsonObject rapport)
+											{
+												int ix = unprocessed.decrementAndGet();
 
-									if(ix == 0)
-											handler.handle(mongoDocs);
+												nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
+												contexts.add(ctx);
+
+												if(ix == 0)
+												{
+													handler.handle(mongoDocs);
+												}
+											}
+										});
+									}
+									else
+									{
+										self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
+										{
+											@Override
+											public void handle(AsyncResult<Buffer> fileResult)
+											{
+												if(fileResult.succeeded() == false)
+													throw new RuntimeException(fileResult.cause());
+												else
+												{
+													int ix = unprocessed.decrementAndGet();
+													mongoDocs.set(ix, self.sanitiseDocument(fileResult.result().toJsonObject(), userId, userName));
+
+													if(ix == 0)
+													{
+														handler.handle(mongoDocs);
+													}
+												}
+											}
+										});
+									}
 								}
 							}
 						});

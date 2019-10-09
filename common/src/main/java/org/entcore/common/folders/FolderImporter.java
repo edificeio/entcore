@@ -13,10 +13,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
+import org.entcore.common.utils.StringUtils;
+import org.entcore.common.utils.FileUtils;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 
 import io.vertx.core.CompositeFuture;
@@ -55,7 +59,7 @@ public class FolderImporter
 			this.userName = userName;
 		}
 
-		public void addError(String documentId, String fileId, String message, String details)
+		public synchronized void addError(String documentId, String fileId, String message, String details)
 		{
 			this.errors.add(
 				new JsonObject()
@@ -74,6 +78,11 @@ public class FolderImporter
 						break;
 					}
 			}
+		}
+
+		public synchronized void addUpdatedDoc(JsonObject doc)
+		{
+			this.updatedDocs.add(doc);
 		}
 
 	}
@@ -350,6 +359,93 @@ public class FolderImporter
 		context.updatedDocs = fileDocuments;
 		Future<JsonObject> doImport = this.commitToMongo(context, this.importDocuments(context).map(context));
 
+		doImport.setHandler(new Handler<AsyncResult<JsonObject>>()
+		{
+			@Override
+			public void handle(AsyncResult<JsonObject> res)
+			{
+				handler.handle(res.result());
+			}
+		});
+	}
+
+	private Future importFlatFiles(FolderImporterContext context)
+	{
+		Future<FolderImporterContext> importDone = Future.future().map(context);
+		FolderImporter self = this;
+
+		Pattern fileId = Pattern.compile(StringUtils.UUID_REGEX);
+
+		this.fs.readDir(context.basePath, new Handler<AsyncResult<List<String>>>()
+		{
+			@Override
+			public void handle(AsyncResult<List<String>> result)
+			{
+				if(result.succeeded() == false)
+				{
+					context.addError(null, null, "Failed to read document folder", result.cause().getMessage());
+					throw new RuntimeException(result.cause());
+				}
+				else
+				{
+					List<String> filesInDir = result.result();
+
+					LinkedList<Future> futures = new LinkedList<Future>();
+
+					for(String filePath : filesInDir)
+					{
+						Future<Void> future = Future.future();
+						futures.add(future);
+
+						String fileTrunc = FileUtils.getFilename(filePath);
+						Matcher m = fileId.matcher(fileTrunc);
+						if(m.find() == false)
+						{
+							String error = "Filename " + fileTrunc + "does not contain the file id";
+							context.addError(null, null, error, null);
+							future.fail(new RuntimeException(error));
+
+							continue;
+						}
+
+						// File name format should be <FILE NAME>_<FILE ID><EXTENSION>
+						String fileName = fileTrunc.substring(0, m.start() - 1) + fileTrunc.substring(m.end());
+						String fileId = m.group();
+
+						JsonObject fileDocument = DocumentHelper.initFile(null, context.userId, context.userName, fileName, "media-library");
+						DocumentHelper.setFileName(fileDocument, fileName);
+						DocumentHelper.setId(fileDocument, fileId);
+						DocumentHelper.setProtected(fileDocument, true);
+
+						context.addUpdatedDoc(fileDocument);
+						self.importFile(context, fileDocument, filePath, future);
+					}
+
+					CompositeFuture.join(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>()
+					{
+						@Override
+						public void handle(AsyncResult<CompositeFuture> res)
+						{
+							if(res.succeeded() == true)
+								importDone.complete();
+							else
+								importDone.fail(res.cause());
+						}
+					});
+				}
+			}
+		});
+
+		return importDone;
+	}
+
+	/**
+		* Imports files from a generic resource folder with all files directly inside it.
+		* @param context				A fresh FolderImporterContext
+		*/
+	public void importFoldersFlatFormat(FolderImporterContext context, Handler<JsonObject> handler)
+	{
+		Future<JsonObject> doImport = this.commitToMongo(context, this.importFlatFiles(context).map(context));
 		doImport.setHandler(new Handler<AsyncResult<JsonObject>>()
 		{
 			@Override
