@@ -80,6 +80,14 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
     protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
                                 String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler) {
         if (tables.isEmpty()) {
+            tablesWithId.keySet().forEach(table -> {
+                if (tablesWithId.get(table).equals("DEFAULT")) {
+                    builder.raw("UPDATE " + schema + "." + table + " AS mytable " +
+                            "SET id = DEFAULT WHERE " +
+                            "(SELECT (CASE WHEN mytable.id >= (SELECT last_value FROM " + schema + "." + table + "_id_seq) THEN TRUE " +
+                            "ELSE FALSE END))");
+                }
+            });
             sql.transaction(builder.build(), message -> {
                 int resourcesNumber = 0, duplicatesNumber = 0, errorsNumber = 0;
                 if ("ok".equals(message.body().getString("status"))) {
@@ -124,26 +132,21 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                         results = transformResults(fields, results, userId, username, builder, table);
 
-                        String fields_str = "(" + String.join(",",
-                                ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ")";
-                        String query = "WITH rows AS (INSERT INTO " + schema + "." + table + " " +
-                                fields_str + " VALUES ";
-                        JsonArray params = new JsonArray();
+                        String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
+                                ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
+                        String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
+                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
 
                         for (int i = 0; i < results.size(); i++) {
                             JsonArray entry = results.getJsonArray(i);
-                            query += Sql.listPrepared(entry);
-                            query += (i == results.size() - 1) ? " " : ", ";
-                            params.addAll(entry);
-                        }
+                            String query = insert + Sql.listPrepared(entry);
 
-                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1 ) SELECT count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
-
-                        if (tablesWithId.containsKey(table)) {
-                            String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = "+tablesWithId.get(table)+" RETURNING 1 ) SELECT count(*) AS noduplicates FROM rows";
-                            builder.prepared(query + conflictUpdate, params);
+                            if (tablesWithId.containsKey(table)) {
+                                builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
+                                        " RETURNING 1) SELECT count(*) AS noduplicates FROM rows", entry);
+                            }
+                            builder.prepared(query + conflictNothing, entry);
                         }
-                        builder.prepared(query + conflictNothing, params);
 
                     }
                     importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler);
