@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Date;
 import java.util.Optional;
 
@@ -123,6 +124,30 @@ public class DocumentHelper {
 		return doc;
 	}
 
+	public static JsonObject getMetadata(JsonObject doc)
+	{
+		JsonObject metadata = doc.getJsonObject("metadata");
+		if (metadata == null)
+		{
+			metadata = new JsonObject();
+			doc.put("metadata", metadata);
+		}
+
+		return metadata;
+	}
+
+	public static JsonObject mergeMetadata(JsonObject src, JsonObject dest)
+	{
+		JsonObject oldM = DocumentHelper.getMetadata(src);
+		JsonObject newM = DocumentHelper.getMetadata(dest);
+
+		Map<String, Object> data = oldM.getMap();
+		for(Map.Entry<String, Object> entry : data.entrySet())
+			newM.put(entry.getKey(), entry.getValue());
+
+		return dest;
+	}
+
 	public static String getFileName(JsonObject doc, String defaut) {
 		JsonObject metadata = doc.getJsonObject("metadata");
 		if (metadata != null) {
@@ -131,12 +156,28 @@ public class DocumentHelper {
 		return getName(doc, defaut);
 	}
 
+	public static JsonObject setFileName(JsonObject doc, String fileName)
+	{
+		JsonObject metadata = DocumentHelper.getMetadata(doc);
+		metadata.put("filename", fileName);
+
+		return doc;
+	}
+
 	public static String getContentType(JsonObject doc) {
 		JsonObject metadata = doc.getJsonObject("metadata");
 		if (metadata != null) {
 			return metadata.getString("content-type", "");
 		}
 		return "";
+	}
+
+	public static JsonObject setContentType(JsonObject doc, String contentType)
+	{
+		JsonObject metadata = DocumentHelper.getMetadata(doc);
+		metadata.put("content-type", contentType);
+
+		return doc;
 	}
 
 	public static boolean isFile(JsonObject doc) {
@@ -179,12 +220,24 @@ public class DocumentHelper {
 
 	public static JsonObject getThumbnails(JsonObject doc)
 	{
-		return doc.getJsonObject("thumbnails");
+		JsonObject thumbs = doc.getJsonObject("thumbnails");
+		return thumbs == null ? new JsonObject() : thumbs;
 	}
 
 	public static JsonObject setThumbnails(JsonObject doc, JsonObject thumbnails)
 	{
-		doc.put("thumbnails", thumbnails);
+		doc.put("thumbnails", thumbnails == null ? new JsonObject() : thumbnails);
+		return doc;
+	}
+
+	public static boolean getProtected(JsonObject doc)
+	{
+		return doc.getBoolean("protected");
+	}
+
+	public static JsonObject setProtected(JsonObject doc, boolean isProtected)
+	{
+		doc.put("protected", isProtected);
 		return doc;
 	}
 
