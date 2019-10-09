@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -378,11 +379,28 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	public static void importDocuments(String collection, List<JsonObject> documents, Handler<JsonObject> handler)
 	{
+		if(documents.size() == 0)
+		{
+			JsonObject rapport =
+						new JsonObject()
+							.put("rapport",
+								new JsonObject()
+								.put("resourcesNumber", Integer.toString(0))
+								.put("duplicatesNumber", Integer.toString(0))
+								.put("errorsNumber", Integer.toString(0))
+							)
+							.put("idsMap", new JsonObject());
+
+			handler.handle(rapport);
+			return;
+		}
+
 		MongoDb mongo =  MongoDb.getInstance();
 
 		JsonArray savePayload = new JsonArray();
 		JsonArray idsToImport = new JsonArray();
 		Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
+		Map<String, String> oldIdsToNewIds = new HashMap<String, String>();
 
 		for(int i = 0, skipped = 0, l = documents.size(); i < l; ++i)
 		{
@@ -399,6 +417,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			savePayload.add(d);
 			idsToImport.add(docId);
 			idToIxMap.put(docId, i - skipped);
+			oldIdsToNewIds.put(docId, docId);
 		}
 
 		QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
@@ -423,21 +442,21 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						Integer mapIx = idToIxMap.get(foundId);
 						if(mapIx != null)
 						{
+							String newId = UUID.randomUUID().toString();
+							oldIdsToNewIds.put(foundId, newId);
 							// Create a duplicate
-							DocumentHelper.removeId(savePayload.getJsonObject(mapIx));
+							DocumentHelper.setId(savePayload.getJsonObject(mapIx), newId);
 							++nbDuplicates;
 						}
 					}
 
 					final int totalDuplicates = nbDuplicates;
-
 					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
 					{
 						@Override
 						public void handle(Message<JsonObject> saveMsg)
 						{
 							JsonObject body = saveMsg.body();
-
 							int nbErrors = -1;
 
 							if(body.getString("status").equals("ok"))
@@ -449,11 +468,18 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								nbErrors = savePayload.size() - mongoError.getInteger("n");
 							}
 
+							Map<String, Object> convertedMap = new HashMap<String, Object>();
+							convertedMap.putAll(oldIdsToNewIds);
+
 							JsonObject rapport =
 								new JsonObject()
-									.put("resourcesNumber", Integer.toString(savePayload.size() - nbErrors))
-									.put("duplicatesNumber", Integer.toString(totalDuplicates))
-									.put("errorsNumber", Integer.toString(nbErrors));
+									.put("rapport",
+										new JsonObject()
+										.put("resourcesNumber", Integer.toString(savePayload.size() - nbErrors))
+										.put("duplicatesNumber", Integer.toString(totalDuplicates))
+										.put("errorsNumber", Integer.toString(nbErrors))
+									)
+									.put("idsMap", new JsonObject(convertedMap));
 
 							handler.handle(rapport);
 						}
@@ -464,9 +490,13 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					// If the find fails, don't import anything
 					JsonObject rapport =
 						new JsonObject()
-							.put("resourcesNumber", Integer.toString(0))
-							.put("duplicatesNumber", Integer.toString(0))
-							.put("errorsNumber", Integer.toString(savePayload.size()));
+							.put("rapport",
+								new JsonObject()
+								.put("resourcesNumber", Integer.toString(0))
+								.put("duplicatesNumber", Integer.toString(0))
+								.put("errorsNumber", Integer.toString(savePayload.size()))
+							)
+							.put("idsMap", new JsonObject());
 
 					handler.handle(rapport);
 				}
