@@ -338,7 +338,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	}
 
 	$scope.displayOTP = function(account, me) {
-		return account.id === me.userId && me.federated && me.hasApp && !me.hasPw;
+		return account.id === me.userId && me.federated && me.hasApp;
 	}
 
 	$scope.displayChildren = function(currentUser) {
