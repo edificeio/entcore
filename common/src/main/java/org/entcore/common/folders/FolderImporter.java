@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,6 +91,7 @@ public class FolderImporter
 	protected final FileSystem fs;
 	protected final EventBus eb;
 	protected final boolean throwErrors;
+	protected final Pattern uuidPattern = Pattern.compile(StringUtils.UUID_REGEX);
 
 	public FolderImporter(FileSystem fs, EventBus eb)
 	{
@@ -454,5 +456,87 @@ public class FolderImporter
 				handler.handle(res.result());
 			}
 		});
+	}
+
+	private void applyFileIdsChangeSingleObject(JsonObject docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return;
+
+		for(String field : docFragment.fieldNames())
+		{
+			Object val = docFragment.getValue(field);
+
+			if(val instanceof JsonObject)
+				this.applyFileIdsChangeSingleObject((JsonObject)val, oldIdsToNewIds);
+			else if(val instanceof JsonArray)
+				this.applyFileIdsChangeSingleArray((JsonArray)val, oldIdsToNewIds);
+			else if(val instanceof String)
+			{
+				docFragment.put(field, this.applyFileIdsChangeSingleString((String)val, oldIdsToNewIds));
+			}
+		}
+	}
+
+	private void applyFileIdsChangeSingleArray(JsonArray docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return;
+
+		for(int i = docFragment.size(); i-- > 0;)
+		{
+			Object val = docFragment.getValue(i);
+
+			if(val instanceof JsonObject)
+				this.applyFileIdsChangeSingleObject((JsonObject)val, oldIdsToNewIds);
+			else if(val instanceof JsonArray)
+				this.applyFileIdsChangeSingleArray((JsonArray)val, oldIdsToNewIds);
+			else if(val instanceof String)
+			{
+				fr.wseduc.webutils.collections.JsonArray.setInJsonArray(docFragment, i, this.applyFileIdsChangeSingleString((String)val, oldIdsToNewIds));
+			}
+		}
+	}
+
+	private String applyFileIdsChangeSingleString(String docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return null;
+
+		String result = "";
+		Matcher m = this.uuidPattern.matcher(docFragment);
+		int oldEnd = 0;
+
+		do
+		{
+			if(m.find() == true)
+			{
+				result += docFragment.substring(oldEnd, m.start());
+				oldEnd = m.end();
+
+				String oldId = m.group();
+				String newId = oldIdsToNewIds.get(oldId);
+				if(newId != null)
+					result += newId;
+				else
+					result += oldId;
+			}
+			else
+				result += docFragment.substring(oldEnd);
+		}
+		while(m.hitEnd() == false);
+
+		return result;
+	}
+
+	/**
+		* Change old file ids in all data documents to the new ids from the import
+		* @param context				A FolderImporterContext that has been used for an import
+		* @param dataToUpdate		The list of data objects to update
+		*/
+	public void applyFileIdsChange(FolderImporterContext context, List<JsonObject> dataToUpdate)
+	{
+		for(JsonObject data : dataToUpdate)
+			this.applyFileIdsChangeSingleObject(data, context.oldIdsToNewIds);
 	}
 }
