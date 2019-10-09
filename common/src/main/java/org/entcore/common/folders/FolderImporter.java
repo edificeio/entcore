@@ -204,20 +204,22 @@ public class FolderImporter
 					self.eb.send("org.entcore.workspace", params, new Handler<AsyncResult<Message<JsonObject>>>()
 					{
 						@Override
-						public void handle(AsyncResult<Message<JsonObject>> message)
+						public void handle(AsyncResult<Message<JsonObject>> thumbMessage)
 						{
-							if(message.succeeded() == false)
+							if(thumbMessage.succeeded() == false)
 							{
-								String error = message.cause().getMessage();
+								String error = thumbMessage.cause().getMessage();
 								context.addError(docId, fileId, "Failed to generate thumbnails", error);
-								promise.fail(new RuntimeException(message.cause()));
+								promise.fail(new RuntimeException(thumbMessage.cause()));
 							}
 							else
 							{
-								JsonObject body = message.result().body();
+								JsonObject body = thumbMessage.result().body();
 					
 								if(body.getString("status").equals("ok") == true)
 								{
+									DocumentHelper.mergeMetadata(body, document);
+
 									DocumentHelper.setThumbnails(document, DocumentHelper.getThumbnails(body.getJsonObject("result")));
 									promise.complete();
 								}
@@ -248,9 +250,6 @@ public class FolderImporter
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
 
-		// Start reading the file to import
-		Future<Buffer> readFileFuture = Future.future();
-
 		this.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
 		{
 			@Override
@@ -261,7 +260,6 @@ public class FolderImporter
 				else
 				{
 					context.addError(docId, fileId, "Failed to open the archived file", buff.cause().getMessage());
-					readFileFuture.fail(new RuntimeException(buff.cause()));
 					promise.fail(buff.cause());
 				}
 			}
