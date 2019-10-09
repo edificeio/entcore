@@ -271,6 +271,28 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				((JsonArray)res).getList().set(index,userId);
 			});
 		}
+
+		// Re-orders items to avoid breaking foreign key constraint
+		if ("folders".equals(table) || "messages".equals(table)) {
+			final int indexId = fields.getList().indexOf("id");
+			final int parentId = fields.getList().indexOf("parent_id");
+			label: for (int i = 0; i < results.size();) {
+				String parent = results.getJsonArray(i).getString(parentId);
+				if (parent != null) {
+					for (int j = i; j < results.size(); j++) {
+						String id = results.getJsonArray(j).getString(indexId);
+						if (id.equals(parent)) {
+							JsonArray tmp = results.getJsonArray(i);
+							results.getList().set(i, results.getJsonArray(j));
+							results.getList().set(j, tmp);
+							continue label;
+						}
+					}
+				}
+				i++;
+			}
+		}
+
 		return results;
 	}
 
