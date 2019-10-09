@@ -1,6 +1,11 @@
 package org.entcore.common.folders;
 
 import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -86,8 +91,27 @@ public class FolderImporter
 	{
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
-		final String contentType = DocumentHelper.getContentType(document);
+		String contentType = DocumentHelper.getContentType(document);
 		final String fileName = DocumentHelper.getFileName(document, fileId);
+
+		if(contentType == null || contentType.trim().equals(""))
+		{
+			byte fileBytes[] = buff.getBytes();
+
+			try
+			{
+				InputStream is = new BufferedInputStream(new ByteArrayInputStream(fileBytes));
+				contentType = URLConnection.guessContentTypeFromStream(is);
+			}
+			catch(IOException e)
+			{
+				context.addError(docId, fileId, "Failed to read file MIME type", e.getMessage());
+				promise.fail(e);
+				return;
+			}
+
+			DocumentHelper.setContentType(document, contentType);
+		}
 
 		FolderImporter self = this;
 		JsonObject importParams = new JsonObject()
