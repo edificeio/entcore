@@ -127,9 +127,16 @@ public class FolderImporter
 				MongoDbRepositoryEvents.importDocuments("documents", importList, new Handler<JsonObject>()
 				{
 					@Override
-					public void handle(JsonObject rapport)
+					public void handle(JsonObject result)
 					{
+						JsonObject rapport = result.getJsonObject("rapport");
 						rapport.put("errorsNumber", Integer.toString(Integer.parseInt(rapport.getString("errorsNumber")) + nbErrors));
+
+						JsonObject idsMap = result.getJsonObject("idsMap");
+						context.oldIdsToNewIds = new HashMap<String, String>();
+
+						for(String oldId : idsMap.fieldNames())
+							context.oldIdsToNewIds.put(oldId, idsMap.getString(oldId));
 
 						promise.complete(rapport);
 					}
@@ -193,7 +200,6 @@ public class FolderImporter
 					final String storageId = DocumentHelper.getId(writtenFile);
 
 					DocumentHelper.setFileId(document, storageId);
-					context.oldIdsToNewIds.put(fileId, storageId);
 
 					JsonObject thumbnailsObj = DocumentHelper.setThumbnails(new JsonObject(), DocumentHelper.getThumbnails(document));
 					JsonObject params = new JsonObject()
