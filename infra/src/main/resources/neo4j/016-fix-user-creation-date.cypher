@@ -1,0 +1,1 @@
+MATCH (u:User) WHERE u.created =~ '\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{2}\\+\\d{4}' SET u.created =  SUBSTRING(u.created,0,length(u.created)-2) + ':' + SUBSTRING(u.created,length(u.created)-2,length(u.created));
