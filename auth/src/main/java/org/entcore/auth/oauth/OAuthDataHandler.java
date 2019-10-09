@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OAuthDataHandler extends DataHandler {
@@ -135,11 +136,20 @@ public class OAuthDataHandler extends DataHandler {
 
 	private void checkPassword(JsonArray result, String password, String username, Handler<String> handler) {
 		JsonObject r = result.getJsonObject(0);
-		String dbPassword;
-		if (r != null && ((dbPassword = r.getString("password")) != null ||
-				(getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY > System.currentTimeMillis() &&
-						(dbPassword = r.getString("otp")) != null)) &&
-				!getOrElse(r.getBoolean("blockedProfile"), false)) {
+
+		if (r != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
+			String dbPassword = r.getString("otp");
+			if (isNotEmpty(dbPassword) && getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY >
+					System.currentTimeMillis() && BCrypt.checkpw(password, dbPassword)) {
+				removeOTP(username);
+				handler.handle(r.getString("userId"));
+				return;
+			}
+			dbPassword = r.getString("password");
+			if (isEmpty(dbPassword)) {
+				handler.handle(null);
+				return;
+			}
 			boolean success = false;
 			String hash = null;
 			try {
@@ -158,9 +168,6 @@ public class OAuthDataHandler extends DataHandler {
 					if (success) {
 						upgradeOldPassword(username, password);
 					}
-				}
-				if (success && r.getString("otp") != null) {
-					removeOTP(username);
 				}
 			} catch (NoSuchAlgorithmException e) {
 				log.error(e.getMessage(), e);
