@@ -42,7 +42,6 @@ import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
-import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.common.folders.impl.DocumentHelper;
 
@@ -276,18 +275,6 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		}
 	}
 
-	protected JsonObject sanitiseDocData(JsonObject docData, String userId, String userName)
-	{
-		docData.put("owner", userId);
-		docData.put("ownerName", userName);
-		docData.remove("localArchivePath");
-
-		// Imported files are set to private
-		DocumentHelper.setShared(DocumentHelper.removeShares(docData), false);
-
-		return docData;
-	}
-
 	@Override
 	public void importResources(String importId, String userId, String userName, String importPath,
 		String locale, Handler<JsonObject> handler)
@@ -295,7 +282,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		WorkspaceRepositoryEvents self = this;
 
 		final String backupPath = importPath + File.separator + I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
-		FolderImporterContext context = new FolderImporterContext(importPath);
+		FolderImporterContext context = new FolderImporterContext(importPath, userId, userName);
 
 		this.fs.readFile(backupPath, new Handler<AsyncResult<Buffer>>()
 		{
@@ -308,33 +295,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				{
 					JsonArray filesBackup = res.result().toJsonArray();
 
-					Future<FolderImporterContext> filesCopied = self.importer.importFolders(context, filesBackup);
-
-					filesCopied.setHandler(new Handler<AsyncResult<FolderImporterContext>>()
-					{
-						@Override
-						public void handle(AsyncResult<FolderImporterContext> mappedContext)
-						{
-							JsonArray updatedDocs = context.updatedDocs;
-							final int nbErrors = (mappedContext.succeeded() == false) ? context.errors.size() : 0;
-
-							List<JsonObject> importList = new ArrayList<JsonObject>(updatedDocs.size());
-
-							for(int i = updatedDocs.size(); i-- > 0;)
-									importList.add(sanitiseDocData(updatedDocs.getJsonObject(i), userId, userName));
-
-							MongoDbRepositoryEvents.importDocuments(DocumentDao.DOCUMENTS_COLLECTION, importList, new Handler<JsonObject>()
-							{
-								@Override
-								public void handle(JsonObject rapport)
-								{
-									rapport.put("errorsNumber", Integer.toString(Integer.parseInt(rapport.getString("errorsNumber")) + nbErrors));
-
-									handler.handle(rapport);
-								}
-							});
-						}
-					});
+					self.importer.importFoldersWorkspaceFormat(context, filesBackup, handler);
 				}
 			}
 		});
