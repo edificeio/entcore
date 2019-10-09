@@ -16,6 +16,84 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class DocumentHelper {
+
+	private static JsonObject initBase(JsonObject doc, String owner, String ownerName, String name, String application)
+	{
+		if(doc == null)
+		{
+			doc = new JsonObject();
+
+			// Set some attributes only on new files, otherwise keep the old ones
+			doc.putNull("alt");
+			doc.putNull("eParent");
+			doc.put("ancestors", new JsonArray());
+			doc.put("inheritedShares", new JsonArray());
+			doc.put("isShared", false);
+			doc.putNull("legend");
+			doc.put("shared", new JsonArray());
+		}
+
+		String now = MongoDb.formatDate(new Date());
+
+		// Set creation data to the current user and time
+		doc.put("created", now);
+		doc.put("modified", now);
+		doc.put("owner", owner);
+		doc.put("ownerName", ownerName);
+
+		if(name == null)
+			name = DocumentHelper.getName(doc, "");
+
+		doc.put("name", name);
+		doc.put("nameSearch", StringUtils.stripAccentsToLowerCase(name));
+
+		if(application != null)
+			doc.put("application", application);
+
+		// Create the metadata if needed
+		JsonObject metadata = DocumentHelper.getMetadata(doc);
+
+		return doc;
+	}
+
+	public static JsonObject initFile(JsonObject doc, String owner, String ownerName)
+	{
+		return DocumentHelper.initFile(doc, owner, ownerName, null, null);
+	}
+
+	public static JsonObject initFile(JsonObject doc, String owner, String ownerName, String name)
+	{
+		return DocumentHelper.initFile(doc, owner, ownerName, name, null);
+	}
+
+	public static JsonObject initFile(JsonObject doc, String owner, String ownerName, String name, String application)
+	{
+		doc = DocumentHelper.initBase(doc, owner, ownerName, name, application);
+
+		doc.put("eType", FolderManager.FILE_TYPE);
+
+		return doc;
+	}
+
+	public static JsonObject initFolder(JsonObject doc, String owner, String ownerName)
+	{
+		return DocumentHelper.initFolder(doc, owner, ownerName, null, null);
+	}
+
+	public static JsonObject initFolder(JsonObject doc, String owner, String ownerName, String name)
+	{
+		return DocumentHelper.initFolder(doc, owner, ownerName, name, null);
+	}
+
+	public static JsonObject initFolder(JsonObject doc, String owner, String ownerName, String name, String application)
+	{
+		doc = DocumentHelper.initBase(doc, owner, ownerName, name, application);
+
+		doc.put("eType", FolderManager.FOLDER_TYPE);
+
+		return doc;
+	}
+
 	public static JsonArray getOrCreateFavorties(JsonObject doc) {
 		if (!doc.containsKey("favorites")) {
 			doc.put("favorites", new JsonArray());
