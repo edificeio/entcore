@@ -787,7 +787,7 @@ public class WorkspaceController extends BaseController {
 				if ("ok".equals(status) && result != null) {
 					String file;
 					if (thumbSize != null && !thumbSize.trim().isEmpty()) {
-						file = result.getJsonObject("thumbnails", new JsonObject()).getString(thumbSize,
+						file = DocumentHelper.getThumbnails(result).getString(thumbSize,
 								result.getString("file"));
 					} else {
 						file = result.getString("file");
@@ -1517,20 +1517,25 @@ public class WorkspaceController extends BaseController {
 			}
 		};
 
-		// Check whether the file already exists
-		WorkspaceController self = this;
-		this.storage.fileStats(fileId, new Handler<AsyncResult<FileStats>>()
+		if(fileId == null || fileId.trim().isEmpty() == true)
+			this.storage.writeBuffer(buff, contentType, fileName, hnd);
+		else
 		{
-			@Override
-			public void handle(AsyncResult<FileStats> res)
+			// Check whether the file already exists
+			WorkspaceController self = this;
+			this.storage.fileStats(fileId, new Handler<AsyncResult<FileStats>>()
 			{
-				// If the file already exists, duplicate it with a new id, else keep the old id
-				if(res.succeeded() == true)
-					self.storage.writeBuffer(buff, contentType, fileName, hnd);
-				else
-					self.storage.writeBuffer(fileId, buff, contentType, fileName, hnd);
-			}
-		});
+				@Override
+				public void handle(AsyncResult<FileStats> res)
+				{
+					// If the file already exists, duplicate it with a new id, else keep the old id
+					if(res.succeeded() == true)
+						self.storage.writeBuffer(buff, contentType, fileName, hnd);
+					else
+						self.storage.writeBuffer(fileId, buff, contentType, fileName, hnd);
+				}
+			});
+		}
 	}
 
 	private void createThumbnails(final Message<JsonObject> message)
