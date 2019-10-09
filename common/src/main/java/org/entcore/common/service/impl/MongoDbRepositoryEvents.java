@@ -390,6 +390,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 												if(ix == 0)
 												{
+													for(FolderImporterContext importedCtx : contexts)
+														self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
 													handler.handle(mongoDocs);
 												}
 											}
@@ -411,6 +413,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 													if(ix == 0)
 													{
+														for(FolderImporterContext importedCtx : contexts)
+															self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
 														handler.handle(mongoDocs);
 													}
 												}
