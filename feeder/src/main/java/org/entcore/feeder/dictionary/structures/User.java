@@ -727,7 +727,8 @@ public class User {
 				"MATCH (s:User {id : {studentId}})-[:IN]->(spg:ProfileGroup)-[:DEPENDS]->(st:Structure), " +
 				"(spg)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
 				"(st)<-[:DEPENDS]-(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
-				"MERGE s-[:RELATED]->r " +
+				"MERGE s-[rrc:RELATED]->r " +
+				"ON CREATE SET rrc.source = 'MANUAL' " +
 				"WITH s, r, st, rspg " +
 				"MERGE r-[:IN]->rspg " +
 				"WITH s, r, st " +
