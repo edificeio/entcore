@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
+import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.eventbus.EventBus;
@@ -37,7 +38,9 @@ public class FolderImporter
 
 	public static class FolderImporterContext
 	{
-		public final String basePath;
+		public final String										basePath;
+		public final String										userId;
+		public final String										userName;
 
 		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
 		public Map<String, List<JsonObject>>	oldIdsToChildren = new HashMap<String, List<JsonObject>>();
@@ -45,10 +48,11 @@ public class FolderImporter
 
 		public JsonArray 											errors = new JsonArray();
 
-		public FolderImporterContext(String basePath)
+		public FolderImporterContext(String basePath, String userId, String userName)
 		{
-			super();
 			this.basePath = basePath;
+			this.userId = userId;
+			this.userName = userName;
 		}
 
 		public void addError(String documentId, String fileId, String message, String details)
@@ -88,6 +92,52 @@ public class FolderImporter
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
+	}
+
+	private JsonObject sanitiseDocData(FolderImporterContext context, JsonObject docData)
+	{
+		docData.put("owner", context.userId);
+		docData.put("ownerName", context.userName);
+		docData.remove("localArchivePath");
+
+		// Imported files are set to private
+		DocumentHelper.setShared(DocumentHelper.removeShares(docData), false);
+
+		return docData;
+	}
+
+	private Future<JsonObject> commitToMongo(FolderImporterContext context, Future beforeCommit)
+	{
+		FolderImporter self = this;
+		Future<JsonObject> promise = Future.future();
+
+		beforeCommit.setHandler(new Handler<AsyncResult<FolderImporterContext>>()
+		{
+			@Override
+			public void handle(AsyncResult<FolderImporterContext> mappedContext)
+			{
+				JsonArray updatedDocs = context.updatedDocs;
+				final int nbErrors = (mappedContext.succeeded() == false) ? context.errors.size() : 0;
+
+				List<JsonObject> importList = new ArrayList<JsonObject>(updatedDocs.size());
+
+				for(int i = updatedDocs.size(); i-- > 0;)
+					importList.add(self.sanitiseDocData(context, updatedDocs.getJsonObject(i)));
+
+				MongoDbRepositoryEvents.importDocuments("documents", importList, new Handler<JsonObject>()
+				{
+					@Override
+					public void handle(JsonObject rapport)
+					{
+						rapport.put("errorsNumber", Integer.toString(Integer.parseInt(rapport.getString("errorsNumber")) + nbErrors));
+
+						promise.complete(rapport);
+					}
+				});
+			}
+		});
+
+		return promise;
 	}
 
 	private void bufferToStorage(FolderImporterContext context, JsonObject document, Buffer buff, Future<Void> promise)
@@ -191,19 +241,17 @@ public class FolderImporter
 		});
 	}
 
-	private void importFile(FolderImporterContext context, JsonObject document, Future<Void> promise)
+	private void importFile(FolderImporterContext context, JsonObject document, String filePath, Future<Void> promise)
 	{
 		FolderImporter self = this;
 
-		final String filePath = document.getString("localArchivePath");
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
 
 		// Start reading the file to import
 		Future<Buffer> readFileFuture = Future.future();
-		final String backupFilePath = context.basePath + File.separator + filePath;
 
-		this.fs.readFile(backupFilePath, new Handler<AsyncResult<Buffer>>()
+		this.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
 		{
 			@Override
 			public void handle(AsyncResult<Buffer> buff)
@@ -261,7 +309,7 @@ public class FolderImporter
 			futures.add(future);
 
 			if(DocumentHelper.isFolder(fileDoc) == false)
-				this.importFile(context, fileDoc, future);
+				this.importFile(context, fileDoc, context.basePath + File.separator + fileDoc.getString("localArchivePath"), future);
 			else
 				// Folders don't exist in the vertx filesystem, only in the mongo docs, so do nothing
 				future.complete();
@@ -288,9 +336,23 @@ public class FolderImporter
 		return CompositeFuture.join(futures);
 	}
 
-	public Future<FolderImporterContext> importFolders(FolderImporterContext context, JsonArray fileDocuments)
+	/**
+		* Imports files from a workspace export style folder.
+		* @param context				A fresh FolderImporterContext
+		* @param fileDocuments	The contents of the main workspace export file
+		*/
+	public void importFoldersWorkspaceFormat(FolderImporterContext context, JsonArray fileDocuments, Handler<JsonObject> handler)
 	{
 		context.updatedDocs = fileDocuments;
-		return this.importDocuments(context).map(context);
+		Future<JsonObject> doImport = this.commitToMongo(context, this.importDocuments(context).map(context));
+
+		doImport.setHandler(new Handler<AsyncResult<JsonObject>>()
+		{
+			@Override
+			public void handle(AsyncResult<JsonObject> res)
+			{
+				handler.handle(res.result());
+			}
+		});
 	}
 }
