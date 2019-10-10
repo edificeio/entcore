@@ -8,12 +8,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,9 +23,11 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected static final Logger log = LoggerFactory.getLogger(SqlRepositoryEvents.class);
 	protected final Sql sql = Sql.getInstance();
+    protected final FolderImporter fileImporter;
 
 	protected SqlRepositoryEvents(Vertx vertx) {
 		super(vertx);
+		fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
 	}
 
 	protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, String exportPath,
@@ -84,36 +88,40 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                 if (tablesWithId.get(table).equals("DEFAULT")) {
                     builder.raw("UPDATE " + schema + "." + table + " AS mytable " +
                             "SET id = DEFAULT WHERE " +
-                            "(SELECT (CASE WHEN mytable.id >= (SELECT last_value FROM " + schema + "." + table + "_id_seq) THEN TRUE " +
+                            "(SELECT (CASE WHEN mytable.id > (SELECT (CASE WHEN is_called THEN last_value ELSE 0 END)" +
+                            " FROM " + schema + "." + table + "_id_seq) THEN TRUE " +
                             "ELSE FALSE END))");
                 }
             });
-            sql.transaction(builder.build(), message -> {
-                int resourcesNumber = 0, duplicatesNumber = 0, errorsNumber = 0;
-                if ("ok".equals(message.body().getString("status"))) {
-                    JsonArray results = message.body().getJsonArray("results");
-                    for (int i = 0; i < results.size(); i++) {
-                        JsonObject jo = results.getJsonObject(i);
-                        if (!"ok".equals(jo.getString("status"))) {
-                            errorsNumber++;
-                        } else {
-                            if (jo.getJsonArray("fields").contains("duplicates")) {
-                                duplicatesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
-                            }
-                            if (jo.getJsonArray("fields").contains("noduplicates")) {
-                                resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+            JsonArray statements = builder.build();
+            importDocumentsDependancies(importPath, userId, username, statements, done -> {
+                sql.transaction(done, message -> {
+                    int resourcesNumber = 0, duplicatesNumber = 0, errorsNumber = 0;
+                    if ("ok".equals(message.body().getString("status"))) {
+                        JsonArray results = message.body().getJsonArray("results");
+                        for (int i = 0; i < results.size(); i++) {
+                            JsonObject jo = results.getJsonObject(i);
+                            if (!"ok".equals(jo.getString("status"))) {
+                                errorsNumber++;
+                            } else {
+                                if (jo.getJsonArray("fields").contains("duplicates")) {
+                                    duplicatesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                                }
+                                if (jo.getJsonArray("fields").contains("noduplicates")) {
+                                    resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                                }
                             }
                         }
+                        JsonObject reply = new JsonObject().put("status","ok").put("resourcesNumber",String.valueOf(resourcesNumber))
+                                .put("errorsNumber",String.valueOf(errorsNumber)).put("duplicatesNumber", String.valueOf(duplicatesNumber));
+                        log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
+                        handler.handle(reply);
+                    } else {
+                        log.error(title + " Import error: " + message.body().getString("message"));
+                        handler.handle(new JsonObject().put("status", "error"));
                     }
-                    JsonObject reply = new JsonObject().put("status","ok").put("resourcesNumber",String.valueOf(resourcesNumber))
-                            .put("errorsNumber",String.valueOf(errorsNumber)).put("duplicatesNumber", String.valueOf(duplicatesNumber));
-                    log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
-                    handler.handle(reply);
-                } else {
-                    log.error(title + " Import error: " + message.body().getString("message"));
-                    handler.handle(new JsonObject().put("status", "error"));
-                }
 
+                });
             });
         } else {
             String table = tables.remove(0);
@@ -158,4 +166,19 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 	protected JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username,
                                          SqlStatementsBuilder builder, String table){ return results; }
 
+    protected void importDocumentsDependancies(String importPath, String userId, String userName, JsonArray statements,
+                                             Handler<JsonArray> handler) {
+	    final String filePath = importPath + File.separator + "Documents";
+        fs.exists(filePath, exist -> {
+            if (exist.succeeded() && exist.result().booleanValue()) {
+                FolderImporter.FolderImporterContext ctx = new FolderImporter.FolderImporterContext(filePath, userId, userName);
+                fileImporter.importFoldersFlatFormat(ctx, rapport -> {
+                    fileImporter.applyFileIdsChange(ctx, statements.getList());
+                    handler.handle(statements);
+                });
+            } else {
+                handler.handle(statements);
+            }
+        });
+    }
 }
