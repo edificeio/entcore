@@ -37,6 +37,9 @@ public interface UserAuthAccount {
 	void activateAccountByLoginAlias(String login, String activationCode, String password, String email,
 						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
 
+	void activateAccountWithRevalidateTerms(String login, String activationCode, String password, String email,
+						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
+
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
