@@ -9,6 +9,7 @@ public class MimeTypeUtils {
     private static final Set<String> pptExtensions = new HashSet<>();
     private static final Map<String, String> fileExtensionMap = new HashMap<>();
     public static final String PDF = "application/pdf";
+    public static final String CSV = "text/csv";
 
     static {
         //word extensions

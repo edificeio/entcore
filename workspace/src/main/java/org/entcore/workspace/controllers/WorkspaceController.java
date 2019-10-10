@@ -689,7 +689,7 @@ public class WorkspaceController extends BaseController {
 				//check content type
 				PdfGenerator.SourceKind kind = null;
 				if(MimeTypeUtils.isExcelLike(contentType)){
-					kind = PdfGenerator.SourceKind.spreadsheet;
+					kind = PdfGenerator.SourceKind.csv;
 				} else if(MimeTypeUtils.isWordLike(contentType)){
 					kind = PdfGenerator.SourceKind.document;
 				} else if(MimeTypeUtils.isPowerpointLike(contentType)){
@@ -700,6 +700,9 @@ public class WorkspaceController extends BaseController {
 				}
 				//check date
 				boolean regenerate = true;
+				final String mimeType = PdfGenerator.SourceKind.csv.equals(kind)? MimeTypeUtils.CSV : MimeTypeUtils.PDF;
+				final String extraMimeType = PdfGenerator.SourceKind.csv.equals(kind)? "; charset=utf-8" : "";
+				final String extension = PdfGenerator.SourceKind.csv.equals(kind)? ".csv" : ".pdf";
 				if (StringUtils.isEmpty(preview)) {
 					regenerate = true;
 				} else if (StringUtils.isEmpty(previewDate) || StringUtils.isEmpty(fileDate)) {
@@ -710,7 +713,7 @@ public class WorkspaceController extends BaseController {
 					regenerate = false;
 				}
 				//send
-				JsonObject meta = new JsonObject().put("content-type", MimeTypeUtils.PDF);
+				JsonObject meta = new JsonObject().put("content-type", mimeType+extraMimeType);
 				if(regenerate){
 					// if preview is not empty => remove it and dont need to wait
 					if(!StringUtils.isEmpty(preview)){
@@ -724,14 +727,14 @@ public class WorkspaceController extends BaseController {
 						} else {
 							pdfGenerator.convertToPdfFromBuffer(finalKind,buffer,pdf->{
 								if(pdf.succeeded()){
-									storage.writeBuffer(pdf.result().getContent(),MimeTypeUtils.PDF,pdf.result().getName(),resStorage->{
+									storage.writeBuffer(pdf.result().getContent(), mimeType, pdf.result().getName(),resStorage->{
 										if ("ok".equals(resStorage.getString("status"))) {
 											final String previewId = resStorage.getString("_id");
 											final String now = MongoDb.formatDate(new Date());
 											final String fileDateIfNeeded = fileDate != null? fileDate : now;//set file date if needed
 											final JsonObject update = new MongoUpdateBuilder().set("preview", previewId).set("previewDate", now).set("fileDate", fileDateIfNeeded).build();
 											dao.update(documentId, update, resUpdate->{
-												storage.sendFile(previewId,"preview.pdf",request, true,meta);
+												storage.sendFile(previewId,"preview"+extension,request, true,meta);
 											});
 										}else{
 											renderError(request, new JsonObject().put("error", "document.preview.save.failed"));
@@ -744,7 +747,7 @@ public class WorkspaceController extends BaseController {
 						}
 					});
 				}else{
-					storage.sendFile(preview,"preview.pdf",request, true,meta);
+					storage.sendFile(preview,"preview"+extension,request, true,meta);
 				}
 			} catch (Exception e){
 				renderError(request, new JsonObject().put("error", e.getMessage()));
