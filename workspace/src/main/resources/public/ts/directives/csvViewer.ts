@@ -46,17 +46,18 @@ export const csvViewer = ng.directive('csvViewer', ['$sce', ($sce) => {
             scope.colIndexes = [];
             const separator = [",", ";", "|"];
             const countOcurrences = (str: string, value: string) => {
+                if(value=="|") value = "\\|";
                 const regExp = new RegExp(value, "gi");
                 return (str.match(regExp) || []).length;
             }
             const findSeparator = (row: string) => {
                 let count = 0;
                 let sep = separator[0];
-                for (let sep in separator) {
-                    const current = countOcurrences(row, sep);
+                for (let cSep of separator) {
+                    const current = countOcurrences(row, cSep);
                     if (count < current) {
                         count = current;
-                        sep = sep;
+                        sep = cSep;
                     }
                 }
                 return sep;
