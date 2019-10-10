@@ -88,19 +88,25 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
+	public void activateAccountWithRevalidateTerms(final String login, String activationCode, final String password,
+								String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+		activateAccount("login", login, activationCode, password, email, phone, theme, true, request, handler);
+	}
+
+	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
 			String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
-		activateAccount("login", login, activationCode, password, email, phone, theme, request, handler);
+		activateAccount("login", login, activationCode, password, email, phone, theme, false, request, handler);
 	}
 
 	@Override
 	public void activateAccountByLoginAlias(final String login, String activationCode, final String password,
 		String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
-		activateAccount("loginAlias", login, activationCode, password, email, phone, theme, request, handler);
+		activateAccount("loginAlias", login, activationCode, password, email, phone, theme, false, request, handler);
 	}
 
 	private void activateAccount(final String loginFieldName, final String login, String activationCode, final String password,
-	 	String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+	 	String email, String phone, final String theme, final Boolean needRevalidateTerms, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -112,7 +118,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WITH n, LENGTH(FILTER(x IN COLLECT(distinct r.score) WHERE x > 3)) as duplicates, p.blocked as blockedProfile " +
 				"WHERE (blockedProfile IS NULL OR blockedProfile = false) " +
 				"FOREACH (duplicate IN CASE duplicates WHEN 0 THEN [1] ELSE [] END | " +
-				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone}) " +
+				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
@@ -121,6 +127,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		params.put("email", email);
 		params.put("phone", phone);
 		params.put("allowActivateDuplicate", allowActivateDuplicateProfiles);
+		params.put("needRevalidateTerms", needRevalidateTerms);
 		neo.send(query, params, new Handler<Message<JsonObject>>(){
 
 			@Override
