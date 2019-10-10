@@ -154,6 +154,26 @@ public class DocumentHelper {
 		return doc.getString("name", def);
 	}
 
+	public static JsonObject setName(JsonObject doc, String name)
+	{
+		doc.put("name", name);
+		return doc;
+	}
+
+	public static String getTitle(JsonObject doc) {
+		return doc.getString("title");
+	}
+
+	public static String getTitle(JsonObject doc, String def) {
+		return doc.getString("title", def);
+	}
+
+	public static JsonObject setTitle(JsonObject doc, String title)
+	{
+		doc.put("title", title);
+		return doc;
+	}
+
 	public static JsonObject setParent(JsonObject doc, String newParent) {
 		doc.put("eParent", newParent);
 		doc.remove("eParentOld");
