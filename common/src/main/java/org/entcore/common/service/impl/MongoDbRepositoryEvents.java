@@ -41,6 +41,7 @@ import io.vertx.core.file.FileProps;
 import io.vertx.core.Future;
 import io.vertx.core.CompositeFuture;
 
+import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.folders.FolderImporter.FolderImporterContext;
@@ -65,6 +66,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	protected final String revisionsCollection;
 	protected final String revisionIdAttribute;
 	private final FolderImporter fileImporter;
+	protected final Map<String, String> collectionNameToImportPrefixMap = new HashMap<String, String>();
 
 	public MongoDbRepositoryEvents() {
 		this(null, null, null, null);
@@ -251,6 +253,20 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 	}
 
+	protected JsonObject revertExportChanges(JsonObject document, String importPrefix)
+	{
+		String title = DocumentHelper.getTitle(document);
+		String name = DocumentHelper.getName(document);
+
+		if(title != null && title.startsWith(importPrefix) == true)
+			DocumentHelper.setTitle(document, title.substring(importPrefix.length()));
+
+		if(name != null && name.startsWith(importPrefix) == true)
+			DocumentHelper.setName(document, name.substring(importPrefix.length()));
+
+		return document;
+	}
+
 	@Override
 	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray g, String exportPath, String locale,
 			String host, Handler<Boolean> handler)
@@ -340,7 +356,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected void readAllDocumentsFromDir(String dirPath, Handler<ArrayList<JsonObject>> handler, String userId, String userName)
+	protected void readAllDocumentsFromDir(String dirPath, Handler<Map<String, JsonObject>> handler, String userId, String userName)
 	{
 		MongoDbRepositoryEvents self = this;
 		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
@@ -356,13 +372,33 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					int nbFiles = filesInDir.size();
 
 					ArrayList<JsonObject> mongoDocs = new ArrayList<JsonObject>(nbFiles);
+					ArrayList<String> mongoDocsFileNames = new ArrayList<String>(nbFiles);
 					AtomicInteger unprocessed = new AtomicInteger(nbFiles);
 					AtomicInteger nbErrors = new AtomicInteger(0);
 
 					for(int i = 0; i < nbFiles; ++i)
+					{
 						mongoDocs.add(null);
+						mongoDocsFileNames.add(null);
+					}
 
 					List<FolderImporterContext> contexts = Collections.synchronizedList(new LinkedList<FolderImporterContext>());
+
+					Handler finaliseRead = new Handler<Void>()
+					{
+						@Override
+						public void handle(Void result)
+						{
+							for(FolderImporterContext importedCtx : contexts)
+								self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
+
+							Map<String, JsonObject> fileMap = new HashMap<String, JsonObject>();
+							for(int i = mongoDocs.size(); i-- > 0;)
+								fileMap.put(mongoDocsFileNames.get(i), mongoDocs.get(i));
+
+							handler.handle(fileMap);
+						}
+					};
 
 					for(String filePath : filesInDir)
 					{
@@ -389,11 +425,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 												contexts.add(ctx);
 
 												if(ix == 0)
-												{
-													for(FolderImporterContext importedCtx : contexts)
-														self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
-													handler.handle(mongoDocs);
-												}
+													finaliseRead.handle(null);
 											}
 										});
 									}
@@ -410,13 +442,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 												{
 													int ix = unprocessed.decrementAndGet();
 													mongoDocs.set(ix, self.sanitiseDocument(fileResult.result().toJsonObject(), userId, userName));
+													mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
 
 													if(ix == 0)
-													{
-														for(FolderImporterContext importedCtx : contexts)
-															self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
-														handler.handle(mongoDocs);
-													}
+														finaliseRead.handle(null);
 												}
 											}
 										});
@@ -564,14 +593,84 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		MongoDbRepositoryEvents self = this;
 		final String collection = MongoDbConf.getInstance().getCollection();
 
-		this.readAllDocumentsFromDir(importPath, new Handler<ArrayList<JsonObject>>()
+		this.readAllDocumentsFromDir(importPath, new Handler<Map<String, JsonObject>>()
 		{
 			@Override
-			public void handle(ArrayList<JsonObject> docs)
+			public void handle(Map<String, JsonObject> docs)
 			{
-				final String collection = MongoDbConf.getInstance().getCollection();
+				Map<String, String> prefixMap = self.collectionNameToImportPrefixMap;
 
-				MongoDbRepositoryEvents.importDocuments(collection, docs, handler);
+				// Single collection case, aka the generic mongoDB apps
+				if(prefixMap.size() == 0)
+				{
+					prefixMap = new HashMap<String, String>();
+					prefixMap.put(MongoDbConf.getInstance().getCollection(), "");
+				}
+
+				List<Future> collFutures = new LinkedList<Future>();
+
+				for(Map.Entry<String, String> prefix : prefixMap.entrySet())
+				{
+					ArrayList<JsonObject> collectionDocs = new ArrayList<JsonObject>(docs.size());
+
+					for(Map.Entry<String, JsonObject> entry : docs.entrySet())
+					{
+						if(entry == null || entry.getKey() == null || entry.getValue() == null)
+								continue;
+
+						if(entry.getKey().startsWith(prefix.getValue()) == true)
+							collectionDocs.add(self.revertExportChanges(entry.getValue(), prefix.getValue()));
+					}
+
+					if(collectionDocs.size() != 0)
+					{
+						Future<JsonObject> collDone = Future.future();
+						collFutures.add(collDone);
+
+						MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, new Handler<JsonObject>()
+						{
+							@Override
+							public void handle(JsonObject result)
+							{
+								collDone.complete(result.getJsonObject("rapport"));
+							}
+						});
+					}
+				}
+
+				// Fuse reports into a final one
+				CompositeFuture.join(collFutures).setHandler(new Handler<AsyncResult<CompositeFuture>>()
+				{
+					@Override
+					public void handle(AsyncResult<CompositeFuture> result)
+					{
+						if(result.succeeded() == true)
+						{
+							List<JsonObject> rapports = result.result().list();
+
+							int nbResources = 0;
+							int nbDuplicates = 0;
+							int nbErrors = 0;
+
+							for(JsonObject rap : rapports)
+							{
+								nbResources += Integer.parseInt(rap.getString("resourcesNumber"));
+								nbDuplicates += Integer.parseInt(rap.getString("duplicatesNumber"));
+								nbErrors += Integer.parseInt(rap.getString("errorsNumber"));
+							}
+
+							JsonObject finalRapport =
+								new JsonObject()
+									.put("resourcesNumber", Integer.toString(nbResources))
+									.put("duplicatesNumber", Integer.toString(nbDuplicates))
+									.put("errorsNumber", Integer.toString(nbErrors));
+
+							handler.handle(finalRapport);
+						}
+						// Can't fail
+					}
+				});
+
 			};
 		}, userId, userName);
 	}
