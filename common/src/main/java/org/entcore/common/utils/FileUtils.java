@@ -118,6 +118,10 @@ public final class FileUtils {
 		return StringUtils.substringAfterLast(name, File.separator);
 	}
 
+	public static String getPathWithoutFilename(String name) {
+		return StringUtils.substringBeforeLast(name, File.separator);
+	}
+
 	public static String stripExtension(String name) {
 		return StringUtils.substringBeforeLast(name, ".");
 	}

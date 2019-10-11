@@ -47,6 +47,7 @@ public class FolderImporter
 		public final String										userId;
 		public final String										userName;
 		public final boolean									doCommitToDocumentsCollection;
+		public String													importIntoFolderId = null;
 
 		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
 		public Map<String, String>						fileOldIdsToNewIds = new HashMap<String, String>();
@@ -54,20 +55,36 @@ public class FolderImporter
 		public Map<String, List<JsonObject>>	oldIdsToChildren = new HashMap<String, List<JsonObject>>();
 
 		public JsonArray											updatedDocs = new JsonArray();
+		public JsonArray											customDocs = new JsonArray();
 
 		public JsonArray 											errors = new JsonArray();
 
 		public FolderImporterContext(String basePath, String userId, String userName)
 		{
-			this(basePath, userId, userName, true);
+			this(basePath, userId, userName, true, null);
 		}
 
 		public FolderImporterContext(String basePath, String userId, String userName, boolean doCommitToDocumentsCollection)
+		{
+			this(basePath, userId, userName, doCommitToDocumentsCollection, null);
+		}
+
+		public FolderImporterContext(String basePath, String userId, String userName, boolean doCommitToDocumentsCollection, String importIntoFolder)
 		{
 			this.basePath = basePath;
 			this.userId = userId;
 			this.userName = userName;
 			this.doCommitToDocumentsCollection = doCommitToDocumentsCollection;
+
+			if(importIntoFolder != null)
+			{
+				this.importIntoFolderId = UUID.randomUUID().toString();
+
+				JsonObject folder = DocumentHelper.initFolder(null, userId, userName, importIntoFolder, "media-library");
+				DocumentHelper.setId(folder, this.importIntoFolderId);
+
+				this.customDocs.add(folder);
+			}
 		}
 
 		public synchronized void addError(String documentId, String fileId, String message, String details)
@@ -94,6 +111,11 @@ public class FolderImporter
 		public synchronized void addUpdatedDoc(JsonObject doc)
 		{
 			this.updatedDocs.add(doc);
+		}
+
+		public synchronized JsonArray getFinalisedDocs()
+		{
+			return this.updatedDocs.addAll(this.customDocs);
 		}
 
 		public synchronized void addFileLink(String oldId, String newId)
@@ -162,7 +184,7 @@ public class FolderImporter
 					return;
 				}
 
-				JsonArray updatedDocs = context.updatedDocs;
+				JsonArray updatedDocs = context.getFinalisedDocs();
 				final int nbErrors = (mappedContext.succeeded() == false) ? context.errors.size() : 0;
 
 				List<JsonObject> importList = new ArrayList<JsonObject>(updatedDocs.size());
@@ -446,14 +468,25 @@ public class FolderImporter
 							continue;
 						}
 
-						// File name format should be <FILE NAME>_<FILE ID><EXTENSION>
-						String fileName = fileTrunc.substring(0, m.start() - 1) + fileTrunc.substring(m.end());
+						String fileName;
+
+						// File name format should be <FILE NAME>_<FILE ID><EXTENSION> or <FILE ID>_<FILE NAME><EXTENSION>
+						if(m.start() > 0)
+							fileName = fileTrunc.substring(0, m.start() - 1) + fileTrunc.substring(m.end());
+						else
+							fileName = fileTrunc.substring(m.end() + 1);
+
 						String fileId = m.group();
 
+						// Sanitise file data
 						JsonObject fileDocument = DocumentHelper.initFile(null, context.userId, context.userName, fileName, "media-library");
 						DocumentHelper.setFileName(fileDocument, fileName);
 						DocumentHelper.setId(fileDocument, fileId);
-						DocumentHelper.setProtected(fileDocument, true);
+
+						if(context.importIntoFolderId != null)
+							DocumentHelper.setParent(fileDocument, context.importIntoFolderId);
+						else
+							DocumentHelper.setProtected(fileDocument, true);
 
 						context.addUpdatedDoc(fileDocument);
 						self.importFile(context, fileDocument, filePath, future);
