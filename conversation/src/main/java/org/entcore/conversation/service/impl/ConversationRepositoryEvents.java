@@ -20,6 +20,7 @@
 package org.entcore.conversation.service.impl;
 
 import io.vertx.core.eventbus.DeliveryOptions;
+import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -296,6 +297,24 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		return results;
 	}
 
+	@Override
+	protected void importDocumentsDependancies(String importPath, String userId, String userName, JsonArray statements,
+											 Handler<JsonArray> handler) {
+		super.importDocumentsDependancies(importPath, userId, userName, statements, newStatements -> {
+			final String filePath = importPath + File.separator + "Attachments";
+			fs.exists(filePath, exist -> {
+				if (exist.succeeded() && exist.result().booleanValue()) {
+					FolderImporter.FolderImporterContext ctx = new FolderImporter.FolderImporterContext(filePath, userId, userName, false);
+					fileImporter.importFoldersFlatFormat(ctx, rapport -> {
+						fileImporter.applyFileIdsChange(ctx, newStatements.getList());
+						handler.handle(newStatements);
+					});
+				} else {
+					handler.handle(newStatements);
+				}
+			});
+		});
+	}
 
 	@Override
 	public void removeShareGroups(JsonArray oldGroups) {
