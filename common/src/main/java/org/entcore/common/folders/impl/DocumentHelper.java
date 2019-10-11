@@ -50,9 +50,6 @@ public class DocumentHelper {
 		if(application != null)
 			doc.put("application", application);
 
-		// Create the metadata if needed
-		JsonObject metadata = DocumentHelper.getMetadata(doc);
-
 		return doc;
 	}
 
@@ -90,6 +87,9 @@ public class DocumentHelper {
 		doc = DocumentHelper.initBase(doc, owner, ownerName, name, application);
 
 		doc.put("eType", FolderManager.FOLDER_TYPE);
+
+		// Create the metadata if needed
+		JsonObject metadata = DocumentHelper.getMetadata(doc);
 
 		return doc;
 	}
@@ -228,7 +228,9 @@ public class DocumentHelper {
 		if (metadata == null)
 		{
 			metadata = new JsonObject();
-			doc.put("metadata", metadata);
+
+			if(DocumentHelper.isFolder(doc) == false)
+				doc.put("metadata", metadata);
 		}
 
 		return metadata;
