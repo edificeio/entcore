@@ -46,18 +46,28 @@ public class FolderImporter
 		public final String										basePath;
 		public final String										userId;
 		public final String										userName;
+		public final boolean									doCommitToDocumentsCollection;
 
 		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
+		public Map<String, String>						fileOldIdsToNewIds = new HashMap<String, String>();
+
 		public Map<String, List<JsonObject>>	oldIdsToChildren = new HashMap<String, List<JsonObject>>();
+
 		public JsonArray											updatedDocs = new JsonArray();
 
 		public JsonArray 											errors = new JsonArray();
 
 		public FolderImporterContext(String basePath, String userId, String userName)
 		{
+			this(basePath, userId, userName, true);
+		}
+
+		public FolderImporterContext(String basePath, String userId, String userName, boolean doCommitToDocumentsCollection)
+		{
 			this.basePath = basePath;
 			this.userId = userId;
 			this.userName = userName;
+			this.doCommitToDocumentsCollection = doCommitToDocumentsCollection;
 		}
 
 		public synchronized void addError(String documentId, String fileId, String message, String details)
@@ -84,6 +94,11 @@ public class FolderImporter
 		public synchronized void addUpdatedDoc(JsonObject doc)
 		{
 			this.updatedDocs.add(doc);
+		}
+
+		public synchronized void addFileLink(String oldId, String newId)
+		{
+			this.fileOldIdsToNewIds.put(oldId, newId);
 		}
 
 	}
@@ -127,6 +142,26 @@ public class FolderImporter
 			@Override
 			public void handle(AsyncResult<FolderImporterContext> mappedContext)
 			{
+				if(context.doCommitToDocumentsCollection == false)
+				{
+					int nbFiles = context.fileOldIdsToNewIds.size();
+					int nbFilesDup = 0;
+
+					for(Map.Entry<String, String> entry : context.fileOldIdsToNewIds.entrySet())
+						if(entry.getValue() != entry.getKey())
+							++nbFilesDup;
+
+					JsonObject rapport =
+						new JsonObject()
+							.put("resourcesNumber", Integer.toString(nbFiles))
+							.put("duplicatesNumber", Integer.toString(nbFilesDup))
+							.put("errorsNumber", Integer.toString(context.errors.size()));
+
+					promise.complete(rapport);
+
+					return;
+				}
+
 				JsonArray updatedDocs = context.updatedDocs;
 				final int nbErrors = (mappedContext.succeeded() == false) ? context.errors.size() : 0;
 
@@ -210,6 +245,7 @@ public class FolderImporter
 				{
 					final String storageId = DocumentHelper.getId(writtenFile);
 
+					context.addFileLink(fileId, storageId);
 					DocumentHelper.setFileId(document, storageId);
 
 					JsonObject thumbnailsObj = DocumentHelper.setThumbnails(new JsonObject(), DocumentHelper.getThumbnails(document));
@@ -537,6 +573,6 @@ public class FolderImporter
 	public void applyFileIdsChange(FolderImporterContext context, List<JsonObject> dataToUpdate)
 	{
 		for(JsonObject data : dataToUpdate)
-			this.applyFileIdsChangeSingleObject(data, context.oldIdsToNewIds);
+			this.applyFileIdsChangeSingleObject(data, context.doCommitToDocumentsCollection == false ? context.fileOldIdsToNewIds : context.oldIdsToNewIds);
 	}
 }
