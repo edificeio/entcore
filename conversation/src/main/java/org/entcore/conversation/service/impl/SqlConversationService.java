@@ -936,13 +936,6 @@ public class SqlConversationService implements ConversationService{
 			"SELECT att.* FROM " + attachmentTable + " att WHERE att.id = ?";
 		builder.prepared(query1, new fr.wseduc.webutils.collections.JsonArray().add(attachmentId));
 
-		String query2 =
-			"SELECT (count(*) = 1) AS deletionCheck FROM " + attachmentTable + " att JOIN " +
-			userMessageAttachmentTable + " uma ON uma.attachment_id = att.id " +
-			"WHERE att.id = ? " +
-			"GROUP BY att.id HAVING count(distinct uma.user_id) = 1 AND count(distinct uma.message_id) = 1";
-		builder.prepared(query2, new fr.wseduc.webutils.collections.JsonArray().add(attachmentId));
-
 		String query3 =
 			"WITH attachment AS (" +
 				query1 +
@@ -965,16 +958,11 @@ public class SqlConversationService implements ConversationService{
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isLeft()){
 					result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
-					return;
-				}
-				else {
+				} else {
 					JsonArray results = event.right().getValue();
 					JsonObject attachment = results.getJsonArray(0).getJsonObject(0);
-					boolean deletionCheck = results.getJsonArray(1).size() > 0 ?
-							results.getJsonArray(1).getJsonObject(0).getBoolean("deletioncheck", false) :
-							false;
+
 					JsonObject resultJson = new JsonObject()
-						.put("deletionCheck", deletionCheck)
 						.put("fileId", attachment.getString("id"))
 						.put("fileSize", attachment.getLong("size"));
 

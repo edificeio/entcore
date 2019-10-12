@@ -1452,8 +1452,6 @@ public class ConversationController extends BaseController {
 
 						final JsonObject result = event.right().getValue();
 
-						boolean deletionCheck = result.getBoolean("deletionCheck", false);
-						final String fileId = result.getString("fileId");
 						final long fileSize = result.getLong("fileSize");
 
 						updateUserQuota(user.getUserId(), -fileSize, new Handler<Void>() {
@@ -1461,17 +1459,6 @@ public class ConversationController extends BaseController {
 								renderJson(request, result);
 							}
 						});
-
-						if(deletionCheck){
-							storage.removeFile(fileId, new Handler<JsonObject>() {
-								@Override
-								public void handle(final JsonObject result) {
-									if (!"ok".equals(result.getString("status"))) {
-										log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+fileId+"})");
-									}
-								}
-							});
-						}
 					}
 				});
 			}
