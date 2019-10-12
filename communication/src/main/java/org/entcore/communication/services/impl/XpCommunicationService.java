@@ -44,7 +44,7 @@ public class XpCommunicationService extends DefaultCommunicationService {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", structureId);
 		} else {
-			String myGroupQuery = (myGroup) ? "COLLECT(g.id)" : "[]";
+			String myGroupQuery = (myGroup) ? "COLLECT(CASE WHEN g.users = 'BOTH' THEN g.id ELSE '' END)" : "[]";
 			query.append(" MATCH (n:User {id: {userId}})-[:COMMUNIQUE]->(g:Group) ");
 			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
 					.append(myGroupQuery).append(") as comGroups ");
