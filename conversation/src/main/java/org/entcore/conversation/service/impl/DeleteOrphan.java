@@ -69,12 +69,10 @@ public class DeleteOrphan implements Handler<Long> {
 					final JsonArray attachments = res.right().getValue();
 					if (attachments != null && attachments.size() > 0) {
 						log.info("Orphan attachments : " + attachments.encode());
-						JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 						for (Object attObj : attachments) {
 							if (!(attObj instanceof JsonObject)) continue;
 							JsonObject unusedAttachment = (JsonObject) attObj;
 							final String attachmentId = unusedAttachment.getString("orphanid");
-							ids.add(attachmentId);
 							storage.removeFile(attachmentId, new Handler<JsonObject>() {
 								public void handle(JsonObject event) {
 									if (!"ok".equals(event.getString("status"))) {
@@ -82,25 +80,26 @@ public class DeleteOrphan implements Handler<Long> {
 									}
 								}
 							});
+							deleteAttachmentRow(attachmentId, sql);
 						}
-						final String deletOrphanAttachments =
-								"delete from conversation.attachments where id IN " + Sql.listPrepared(ids.getList());
-						sql.prepared(deletOrphanAttachments, ids, new DeliveryOptions().setSendTimeout(TIMEOUT), new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event) {
-								if (!"ok".equals(event.body().getString("status"))) {
-									log.error("Error deleting orphan attachments : " + event.body().getString("message", ""));
-								} else {
-									log.info("Successful delete orphan conversation attachments.");
-								}
-							}
-						});
 					}
 				} else {
 					log.error("Orphan conversation error : " + res.left().getValue());
 				}
 			}
 		}));
+	}
+
+	private void deleteAttachmentRow(String id, Sql sql) {
+		final String deletOrphanAttachments =
+				"delete from conversation.attachments where id = ?";
+		sql.prepared(deletOrphanAttachments, new JsonArray().add(id),
+				new DeliveryOptions().setSendTimeout(TIMEOUT), event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				log.error("Error deleting orphan attachment " + id + " : " +
+						event.body().getString("message", ""));
+			}
+		});
 	}
 
 }
