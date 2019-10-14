@@ -173,7 +173,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				filter +
 				"RETURN app.id as id, app.displayName as displayName, app.name as name, app.icon as icon, " +
 				"'External' IN labels(app) as isExternal, app.levelsOfEducation as levelsOfEducation, app.appType as appType, " +
-				"CASE WHEN r IS NOT NULL THEN COLLECT(DISTINCT {id: r.id, name: r.name, distributions: r.distributions}) ELSE [] END as roles;";
+				"CASE WHEN r IS NOT NULL THEN COLLECT(DISTINCT {id: r.id, name: r.name, distributions: r.distributions}) ELSE [] END as roles";
 		neo.execute(query, params, result -> {
 			Either<String, JsonArray> resultAsArray = validResult(result);
 			if(resultAsArray.isRight()) {
