@@ -1,5 +1,6 @@
 package org.entcore.archive.services.impl;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -9,6 +10,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.archive.Archive;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -17,23 +19,52 @@ import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultImportService implements ImportService {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultImportService.class);
+    private class UserImport {
 
+        private final int expectedImports;
+        private final AtomicInteger counter;
+        private final JsonObject results;
+
+        public UserImport(int expectedImports) {
+            this.expectedImports = expectedImports;
+            this.counter = new AtomicInteger(0);
+            this.results = new JsonObject();
+        }
+
+        public boolean addAppResult(String app, String resourcesNumber, String duplicatesNumber,
+                            String errorsNumber) {
+            this.results.put(app, new JsonObject().put("resourcesNumber", resourcesNumber)
+                    .put("duplicatesNumber", duplicatesNumber).put("errorsNumber", errorsNumber));
+            return this.counter.incrementAndGet() == expectedImports;
+        }
+
+        public JsonObject getResults() {
+            return results;
+        }
+    }
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultImportService.class);
 
     private final FileSystem fs;
     private final EventBus eb;
     private final Storage storage;
     private final String importPath;
 
+    private final Map<String, UserImport> userImports;
+
     public DefaultImportService(Vertx vertx, Storage storage, String importPath) {
         this.storage = storage;
-        this.importPath = importPath + File.separator + "import";
+        this.importPath = importPath;
         this.fs = vertx.fileSystem();
         this.eb = vertx.eventBus();
+        this.userImports = new HashMap<>();
     }
 
     @Override
@@ -46,11 +77,6 @@ public class DefaultImportService implements ImportService {
                 handler.handle(new Either.Left<>(written.getString("message")));
             }
         });
-    }
-
-    @Override
-    public void deleteArchive(String importId) {
-        deleteArchiveAndZip(importPath + File.separator + importId);
     }
 
     @Override
@@ -108,6 +134,13 @@ public class DefaultImportService implements ImportService {
         });
     }
 
+    @Override
+    public void deleteArchive(String importId) {
+        userImports.remove(importId);
+        MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().put("import_id", importId));
+        deleteArchiveAndZip(importPath + File.separator + importId);
+    }
+
     private void parseFolders(UserInfos user, String importId, String path, String locale, JsonObject config,
                               List<String> folders, Handler<Either<String, JsonObject>> handler) {
         String manifestPath = folders.stream().filter(f -> f.endsWith("Manifest.json")).findFirst().get();
@@ -163,6 +196,9 @@ public class DefaultImportService implements ImportService {
 
     @Override
     public void launchImport(String userId, String userName, String importId, String importPath, String locale, JsonObject apps) {
+        MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
+                        .put("date", MongoDb.now()));
+        userImports.put(importId, new UserImport(apps.size()));
         JsonObject j = new JsonObject()
                 .put("action", "import")
                 .put("importId", importId)
@@ -174,5 +210,25 @@ public class DefaultImportService implements ImportService {
         eb.publish("user.repository", j);
     }
 
+    @Override
+    public void imported(String importId, String app, String resourcesNumber,
+                         String duplicatesNumber, String errorsNumber) {
+        UserImport userImport = userImports.get(importId);
+        if (userImport == null) {
+            JsonObject jo = new JsonObject()
+                    .put("status", "error");
+            eb.send("import."+importId, jo);
+            deleteArchive(importId);
+        } else {
+            final boolean finished = userImport.addAppResult(app, resourcesNumber, duplicatesNumber, errorsNumber);
+            if (finished) {
+                JsonObject jo = new JsonObject()
+                        .put("status", "ok")
+                        .put("result", userImport.getResults());
+                eb.send("import."+importId, jo);
+                deleteArchive(importId);
+            }
+        }
+    }
 
 }

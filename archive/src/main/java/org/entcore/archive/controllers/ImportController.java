@@ -1,29 +1,38 @@
 package org.entcore.archive.controllers;
 
+import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import fr.wseduc.webutils.security.SecuredAction;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.impl.DefaultImportService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
+import java.util.Map;
 
 public class ImportController extends BaseController {
 
     private ImportService importService;
     private Storage storage;
+    private Map<String, Long> archiveInProgress;
 
-    public ImportController(Vertx vertx, Storage storage, String importPath) {
+    public ImportController(ImportService importService, Storage storage, Map<String, Long> archiveInProgress) {
+        this.importService = importService;
         this.storage = storage;
-        this.importService = new DefaultImportService(vertx, storage, importPath);
+        this.archiveInProgress = archiveInProgress;
     }
 
     @Post("/import/upload")
@@ -71,9 +80,47 @@ public class ImportController extends BaseController {
             {
                 importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath,
                     I18n.acceptLanguage(request), apps);
-                request.response().setStatusCode(200).end();
+                final String address = "import." + importId;
+                final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+
+                final Handler<Message<JsonObject>> importHandler = event -> {
+                    if ("ok".equals(event.body().getString("status"))) {
+                        event.reply(new JsonObject().put("status", "ok"));
+                        renderJson(request, event.body().getJsonObject("result"));
+                    } else {
+                        event.reply(new JsonObject().put("status", "error"));
+                        renderError(request, event.body());
+                    }
+                    consumer.unregister();
+                };
+                request.response().closeHandler(new Handler<Void>() {
+                    @Override
+                    public void handle(Void event) {
+                        consumer.unregister();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Unregister handler : " + address);
+                        }
+                    }
+                });
+                consumer.handler(importHandler);
             });
         });
+    }
+
+    @BusAddress("entcore.import")
+    public void export(Message<JsonObject> message) {
+        String action = message.body().getString("action", "");
+        switch (action) {
+            case "imported" :
+                String importId = message.body().getString("importId");
+                String app = message.body().getString("app");
+                String resourcesNumber = message.body().getString("resourcesNumber");
+                String duplicatesNumber = message.body().getString("duplicatesNumber");
+                String errorsNumber = message.body().getString("errorsNumber");
+                importService.imported(importId, app, resourcesNumber, duplicatesNumber, errorsNumber);
+                break;
+            default: log.error("Archive : invalid action " + action);
+        }
     }
 
 }
