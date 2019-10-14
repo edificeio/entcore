@@ -26,6 +26,9 @@ import org.entcore.common.utils.StringUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 
@@ -35,6 +38,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	protected final String title;
 	protected final FolderExporter exporter;
 	protected final MongoDb mongo = MongoDb.getInstance();
+	private static final Pattern uuidPattern = Pattern.compile(StringUtils.UUID_REGEX);
 
 	protected AbstractRepositoryEvents(Vertx vertx)
 	{
@@ -130,6 +134,78 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 		} else {
 			handler.handle(true);
 		}
+	}
+
+
+	public static void applyIdsChange(JsonObject docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return;
+
+		for(String field : docFragment.fieldNames())
+		{
+			Object val = docFragment.getValue(field);
+
+			if(val instanceof JsonObject)
+				applyIdsChange((JsonObject)val, oldIdsToNewIds);
+			else if(val instanceof JsonArray)
+				applyIdsChange((JsonArray)val, oldIdsToNewIds);
+			else if(val instanceof String)
+			{
+				docFragment.put(field, applyIdsChange((String)val, oldIdsToNewIds));
+			}
+		}
+	}
+
+	public static void applyIdsChange(JsonArray docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return;
+
+		for(int i = docFragment.size(); i-- > 0;)
+		{
+			Object val = docFragment.getValue(i);
+
+			if(val instanceof JsonObject)
+				applyIdsChange((JsonObject)val, oldIdsToNewIds);
+			else if(val instanceof JsonArray)
+				applyIdsChange((JsonArray)val, oldIdsToNewIds);
+			else if(val instanceof String)
+			{
+				fr.wseduc.webutils.collections.JsonArray.setInJsonArray(docFragment, i, applyIdsChange((String)val, oldIdsToNewIds));
+			}
+		}
+	}
+
+	public static String applyIdsChange(String docFragment, Map<String, String> oldIdsToNewIds)
+	{
+		if(docFragment == null)
+			return null;
+
+		String result = "";
+		Matcher m = AbstractRepositoryEvents.uuidPattern.matcher(docFragment);
+		int oldEnd = 0;
+
+		do
+		{
+			if(m.find() == true)
+			{
+				result += docFragment.substring(oldEnd, m.start());
+				oldEnd = m.end();
+
+				String oldId = m.group();
+				String newId = oldIdsToNewIds.get(oldId);
+				if(newId != null)
+					result += newId;
+				else
+					result += oldId;
+			}
+			else
+				result += docFragment.substring(oldEnd);
+		}
+		while(m.hitEnd() == false);
+
+		return result;
 	}
 
 }

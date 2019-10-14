@@ -22,6 +22,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.FileUtils;
+import org.entcore.common.service.impl.AbstractRepositoryEvents;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 
 import io.vertx.core.CompositeFuture;
@@ -527,77 +528,6 @@ public class FolderImporter
 		});
 	}
 
-	private void applyFileIdsChangeSingleObject(JsonObject docFragment, Map<String, String> oldIdsToNewIds)
-	{
-		if(docFragment == null)
-			return;
-
-		for(String field : docFragment.fieldNames())
-		{
-			Object val = docFragment.getValue(field);
-
-			if(val instanceof JsonObject)
-				this.applyFileIdsChangeSingleObject((JsonObject)val, oldIdsToNewIds);
-			else if(val instanceof JsonArray)
-				this.applyFileIdsChangeSingleArray((JsonArray)val, oldIdsToNewIds);
-			else if(val instanceof String)
-			{
-				docFragment.put(field, this.applyFileIdsChangeSingleString((String)val, oldIdsToNewIds));
-			}
-		}
-	}
-
-	private void applyFileIdsChangeSingleArray(JsonArray docFragment, Map<String, String> oldIdsToNewIds)
-	{
-		if(docFragment == null)
-			return;
-
-		for(int i = docFragment.size(); i-- > 0;)
-		{
-			Object val = docFragment.getValue(i);
-
-			if(val instanceof JsonObject)
-				this.applyFileIdsChangeSingleObject((JsonObject)val, oldIdsToNewIds);
-			else if(val instanceof JsonArray)
-				this.applyFileIdsChangeSingleArray((JsonArray)val, oldIdsToNewIds);
-			else if(val instanceof String)
-			{
-				fr.wseduc.webutils.collections.JsonArray.setInJsonArray(docFragment, i, this.applyFileIdsChangeSingleString((String)val, oldIdsToNewIds));
-			}
-		}
-	}
-
-	private String applyFileIdsChangeSingleString(String docFragment, Map<String, String> oldIdsToNewIds)
-	{
-		if(docFragment == null)
-			return null;
-
-		String result = "";
-		Matcher m = this.uuidPattern.matcher(docFragment);
-		int oldEnd = 0;
-
-		do
-		{
-			if(m.find() == true)
-			{
-				result += docFragment.substring(oldEnd, m.start());
-				oldEnd = m.end();
-
-				String oldId = m.group();
-				String newId = oldIdsToNewIds.get(oldId);
-				if(newId != null)
-					result += newId;
-				else
-					result += oldId;
-			}
-			else
-				result += docFragment.substring(oldEnd);
-		}
-		while(m.hitEnd() == false);
-
-		return result;
-	}
-
 	/**
 		* Change old file ids in all data documents to the new ids from the import
 		* @param context				A FolderImporterContext that has been used for an import
@@ -606,6 +536,6 @@ public class FolderImporter
 	public void applyFileIdsChange(FolderImporterContext context, List<JsonObject> dataToUpdate)
 	{
 		for(JsonObject data : dataToUpdate)
-			this.applyFileIdsChangeSingleObject(data, context.doCommitToDocumentsCollection == false ? context.fileOldIdsToNewIds : context.oldIdsToNewIds);
+			AbstractRepositoryEvents.applyIdsChange(data, context.doCommitToDocumentsCollection == false ? context.fileOldIdsToNewIds : context.oldIdsToNewIds);
 	}
 }
