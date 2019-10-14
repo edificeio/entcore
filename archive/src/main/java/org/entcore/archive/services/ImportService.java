@@ -18,4 +18,6 @@ public interface ImportService {
 
     void launchImport(String userId, String userName, String importId, String importPath, String locale, JsonObject apps);
 
+    void imported(String importId, String app, String resourcesNumber, String duplicatesNumber, String errorsNumber);
+
 }

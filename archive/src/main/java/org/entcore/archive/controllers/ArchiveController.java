@@ -64,10 +64,12 @@ public class ArchiveController extends BaseController {
 	private ExportService exportService;
 	private EventStore eventStore;
 	private Storage storage;
+	private Map<String, Long> archiveInProgress;
 	private enum ArchiveEvent { ACCESS }
 
-	public ArchiveController(Storage storage) {
+	public ArchiveController(Storage storage, Map<String, Long> archiveInProgress) {
 		this.storage = storage;
+		this.archiveInProgress = archiveInProgress;
 	}
 
 	@Override
@@ -78,15 +80,13 @@ public class ArchiveController extends BaseController {
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		Boolean cluster = (Boolean) server.get("cluster");
-		final Map<String, Long> exportInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
-				eb, exportPath, notification, storage, exportInProgress, new TimelineHelper(vertx, eb, config));
+				eb, exportPath, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");
@@ -99,13 +99,13 @@ public class ArchiveController extends BaseController {
 				public void handle(Long event)
 				{
 					final long limit = System.currentTimeMillis() - config.getLong("userClearDelay", 3600000l);
-					Set<Map.Entry<String, Long>> entries = new HashSet<>(exportInProgress.entrySet());
+					Set<Map.Entry<String, Long>> entries = new HashSet<>(archiveInProgress.entrySet());
 
 					for (Map.Entry<String, Long> e : entries)
 					{
 						if (e.getValue() == null || e.getValue() < limit)
 						{
-							exportInProgress.remove(e.getKey());
+							archiveInProgress.remove(e.getKey());
 						}
 					}
 				}
@@ -118,39 +118,6 @@ public class ArchiveController extends BaseController {
 	public void view(HttpServerRequest request) {
 		renderView(request);
 		eventStore.createAndStoreEvent(ArchiveEvent.ACCESS.name(), request);
-	}
-
-	@Get("/wait")
-	public void wait(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			exportService.userExportId(user, exportId -> {
-				if (exportId != null) {
-					log.debug("waiting export true");
-					final String address = "export." + exportId;
-					final MessageConsumer<JsonObject> consumer = eb.consumer(address);
-					final Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							event.reply(new JsonObject().put("status", "ok").put("sendNotifications", true));
-							renderJson(request, new JsonObject().put("status", "ok"));
-							consumer.unregister();
-						}
-					};
-					request.response().closeHandler(new Handler<Void>() {
-						@Override
-						public void handle(Void event) {
-							consumer.unregister();
-							if (log.isDebugEnabled()) {
-								log.debug("Unregister handler : " + address);
-							}
-						}
-					});
-					consumer.handler(handler);
-				} else {
-					renderJson(request, new JsonObject().put("status", "ok"));
-				}
-			});
-		});
 	}
 
 	@Post("/export")

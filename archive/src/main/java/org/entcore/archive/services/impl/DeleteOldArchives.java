@@ -22,6 +22,7 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import org.entcore.archive.Archive;
+import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -31,15 +32,17 @@ import io.vertx.core.json.JsonObject;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DeleteOldExports implements Handler<Long> {
+public class DeleteOldArchives implements Handler<Long> {
 
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final Storage storage;
 	private final int delay;
+	private ImportService importService;
 
-	public DeleteOldExports(Storage storage, int delay) {
+	public DeleteOldArchives(Storage storage, int delay, ImportService importService) {
 		this.storage = storage;
 		this.delay = delay;
+		this.importService = importService;
 	}
 
 	@Override
@@ -59,7 +62,12 @@ public class DeleteOldExports implements Handler<Long> {
 					JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object object: res) {
 						if (!(object instanceof JsonObject)) continue;
-						ids.add(((JsonObject) object).getString("file_id"));
+						JsonObject jo = (JsonObject) object;
+						if (jo.containsKey("file_id")) {
+							ids.add(jo.getString("file_id"));
+						} else if (jo.containsKey("import_id")) {
+							importService.deleteArchive(jo.getString("import_id"));
+						}
 					}
 					storage.removeFiles(ids, new Handler<JsonObject>() {
 						@Override
