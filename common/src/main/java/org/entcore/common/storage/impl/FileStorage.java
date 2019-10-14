@@ -97,7 +97,7 @@ public class FileStorage implements Storage {
 				return;
 			}
 		} else {
-			path = uploadPath + File.separator + id;
+			path = uploadPath;
 		}
 		request.setExpectMultipart(true);
 		request.uploadHandler(new Handler<HttpServerFileUpload>() {
@@ -182,7 +182,7 @@ public class FileStorage implements Storage {
 	}
 
 	private void mkdirsIfNotExists(String id, String path, final Handler<AsyncResult<Void>> h) {
-		final String dir = path.substring(0, path.length() - id.length());
+		final String dir = org.entcore.common.utils.FileUtils.getParentPath(path);
 		fs.exists(dir, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> event) {

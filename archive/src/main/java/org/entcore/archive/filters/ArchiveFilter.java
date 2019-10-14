@@ -20,6 +20,8 @@
 package org.entcore.archive.filters;
 
 import fr.wseduc.webutils.http.Binding;
+import org.entcore.archive.controllers.ArchiveController;
+import org.entcore.archive.controllers.ImportController;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
@@ -29,8 +31,20 @@ public class ArchiveFilter implements ResourcesProvider {
 
 	public void authorize(HttpServerRequest resourceRequest, Binding binding,
 						  UserInfos user, Handler<Boolean> handler) {
-		String exportId = resourceRequest.params().get("exportId");
-		handler.handle(exportId != null && exportId.endsWith(user.getUserId()));
+
+		final String serviceMethod = binding.getServiceMethod();
+
+		if (serviceMethod != null && serviceMethod.startsWith(ArchiveController.class.getName())) {
+
+			String exportId = resourceRequest.params().get("exportId");
+			handler.handle(exportId != null && exportId.endsWith(user.getUserId()));
+
+		} else if (serviceMethod != null && serviceMethod.startsWith(ImportController.class.getName())) {
+
+			String importId = resourceRequest.params().get("importId");
+			handler.handle(importId != null && importId.endsWith(user.getUserId()));
+
+		}
 	}
 
 }

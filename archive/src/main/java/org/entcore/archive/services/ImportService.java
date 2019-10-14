@@ -10,7 +10,7 @@ import org.entcore.common.user.UserInfos;
 
 public interface ImportService {
 
-    void uploadArchive(final HttpServerRequest request, Handler<Either<String, String>> handler);
+    void uploadArchive(final HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler);
 
     void deleteArchive(String importId);
 
