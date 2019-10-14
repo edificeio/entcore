@@ -31,7 +31,7 @@ import org.entcore.common.user.UserInfos;
 
 public interface PdfGenerator {
 	enum SourceKind{
-		document, presentation, spreadsheet, csv
+		document, presentation, spreadsheet, csv, csv_multisheet
 	}
 	void generatePdfFromTemplate(String name, String template, Handler<AsyncResult<Pdf>> handler);
 

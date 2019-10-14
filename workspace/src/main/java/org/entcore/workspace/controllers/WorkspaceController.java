@@ -688,8 +688,10 @@ public class WorkspaceController extends BaseController {
 				String contentType = res.getJsonObject("metadata", new JsonObject()).getString("content-type");
 				//check content type
 				PdfGenerator.SourceKind kind = null;
+				boolean csv = false;
 				if(MimeTypeUtils.isExcelLike(contentType)){
-					kind = PdfGenerator.SourceKind.csv;
+					csv = true;
+					kind = PdfGenerator.SourceKind.csv_multisheet;
 				} else if(MimeTypeUtils.isWordLike(contentType)){
 					kind = PdfGenerator.SourceKind.document;
 				} else if(MimeTypeUtils.isPowerpointLike(contentType)){
@@ -700,9 +702,9 @@ public class WorkspaceController extends BaseController {
 				}
 				//check date
 				boolean regenerate = true;
-				final String mimeType = PdfGenerator.SourceKind.csv.equals(kind)? MimeTypeUtils.CSV : MimeTypeUtils.PDF;
-				final String extraMimeType = PdfGenerator.SourceKind.csv.equals(kind)? "; charset=utf-8" : "";
-				final String extension = PdfGenerator.SourceKind.csv.equals(kind)? ".csv" : ".pdf";
+				final String mimeType = csv? MimeTypeUtils.CSV : MimeTypeUtils.PDF;
+				final String extraMimeType = csv? "; charset=utf-8" : "";
+				final String extension = csv? ".csv" : ".pdf";
 				if (StringUtils.isEmpty(preview)) {
 					regenerate = true;
 				} else if (StringUtils.isEmpty(previewDate) || StringUtils.isEmpty(fileDate)) {
