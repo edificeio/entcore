@@ -68,11 +68,11 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void uploadArchive(HttpServerRequest request, Handler<Either<String, String>> handler) {
-        storage.writeUploadToFileSystem(request, importPath, written -> {
+    public void uploadArchive(HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler) {
+        final String importId = System.currentTimeMillis() + "_" + user.getUserId();
+        storage.writeUploadToFileSystem(request, (importPath + File.separator + importId), written -> {
             if ("ok".equals(written.getString("status"))) {
-                String id = written.getString("_id");
-                handler.handle(new Either.Right<>(id));
+                handler.handle(new Either.Right<>(importId));
             } else {
                 handler.handle(new Either.Left<>(written.getString("message")));
             }

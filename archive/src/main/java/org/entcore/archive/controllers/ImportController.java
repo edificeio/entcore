@@ -3,11 +3,12 @@ package org.entcore.archive.controllers;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -37,16 +38,19 @@ public class ImportController extends BaseController {
 
     @Post("/import/upload")
     public void upload(final HttpServerRequest request) {
-        importService.uploadArchive(request, handler -> {
-            if (handler.isLeft()) {
-                badRequest(request, handler.left().getValue());
-            } else {
-                renderJson(request, new JsonObject().put("importId",handler.right().getValue()));
-            }
+        UserUtils.getUserInfos(eb, request, user -> {
+            importService.uploadArchive(request, user, handler -> {
+                if (handler.isLeft()) {
+                    badRequest(request, handler.left().getValue());
+                } else {
+                    renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
+                }
+            });
         });
     }
 
     @Get("import/analyze/:importId")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void analyze(final HttpServerRequest request) {
         final String importId = request.params().get("importId");
         UserUtils.getUserInfos(eb, request, user -> {
@@ -61,6 +65,7 @@ public class ImportController extends BaseController {
     }
 
     @Get("import/delete/:importId")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void delete(final HttpServerRequest request) {
         final String importId = request.params().get("importId");
         importService.deleteArchive(importId);
@@ -68,6 +73,7 @@ public class ImportController extends BaseController {
     }
 
     @Post("import/:importId/launch")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void launchImport(final HttpServerRequest request)
     {
         final String importId = request.params().get("importId");
