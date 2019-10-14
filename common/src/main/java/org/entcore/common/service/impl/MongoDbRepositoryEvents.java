@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,7 +67,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	protected final String revisionsCollection;
 	protected final String revisionIdAttribute;
 	private final FolderImporter fileImporter;
-	protected final Map<String, String> collectionNameToImportPrefixMap = new HashMap<String, String>();
+	protected final Map<String, String> collectionNameToImportPrefixMap = new LinkedHashMap<String, String>();
 
 	public MongoDbRepositoryEvents() {
 		this(null, null, null, null);
@@ -591,7 +592,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		String locale, Handler<JsonObject> handler)
 	{
 		MongoDbRepositoryEvents self = this;
-		final String collection = MongoDbConf.getInstance().getCollection();
 
 		this.readAllDocumentsFromDir(importPath, new Handler<Map<String, JsonObject>>()
 		{
@@ -608,6 +608,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				}
 
 				List<Future> collFutures = new LinkedList<Future>();
+				List<Future> collFuturesChain = new LinkedList<Future>();
+				Map<String, String> previousCollectionsIdsMap = new HashMap<String, String>();
 
 				for(Map.Entry<String, String> prefix : prefixMap.entrySet())
 				{
@@ -625,16 +627,43 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					if(collectionDocs.size() != 0)
 					{
 						Future<JsonObject> collDone = Future.future();
-						collFutures.add(collDone);
+						Future<JsonObject> collChain = Future.future();
 
-						MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, new Handler<JsonObject>()
+						Handler importNextCollection = new Handler<AsyncResult<JsonObject>>()
 						{
 							@Override
-							public void handle(JsonObject result)
+							public void handle(AsyncResult<JsonObject> previousResult)
 							{
-								collDone.complete(result.getJsonObject("rapport"));
+								if(previousResult != null)
+								{
+									JsonObject previousIdsMap = previousResult.result().getJsonObject("idsMap");
+
+									for(String key : previousIdsMap.getMap().keySet())
+										previousCollectionsIdsMap.put(key, previousIdsMap.getString(key));
+
+									for(int i = collectionDocs.size(); i-- > 0;)
+										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousCollectionsIdsMap);
+								}
+
+								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, new Handler<JsonObject>()
+								{
+									@Override
+									public void handle(JsonObject result)
+									{
+										collChain.complete(result);
+										collDone.complete(result);
+									}
+								});
 							}
-						});
+						};
+
+						if(collFutures.size() == 0)
+							importNextCollection.handle(null);
+						else
+							collFuturesChain.get(collFuturesChain.size() - 1).setHandler(importNextCollection);
+
+						collFuturesChain.add(collChain);
+						collFutures.add(collDone);
 					}
 				}
 
@@ -652,8 +681,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							int nbDuplicates = 0;
 							int nbErrors = 0;
 
-							for(JsonObject rap : rapports)
+							for(JsonObject rapWrapper : rapports)
 							{
+								JsonObject rap = rapWrapper.getJsonObject("rapport");
 								nbResources += Integer.parseInt(rap.getString("resourcesNumber"));
 								nbDuplicates += Integer.parseInt(rap.getString("duplicatesNumber"));
 								nbErrors += Integer.parseInt(rap.getString("errorsNumber"));
