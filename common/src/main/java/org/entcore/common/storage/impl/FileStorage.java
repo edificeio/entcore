@@ -253,7 +253,7 @@ public class FileStorage implements Storage {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.succeeded()) {
-						copyFile(filename, path, handler);
+						copyFilePath(filename, path, handler);
 					} else {
 						handler.handle(new JsonObject().put("status", "error")
 								.put("message", event.cause().getMessage()));
@@ -432,12 +432,11 @@ public class FileStorage implements Storage {
 		try {
 			final String newId = UUID.randomUUID().toString();
 			final String path = getPath(newId);
-			final String sourcePath = getPath(id);
 			mkdirsIfNotExists(newId, path, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.succeeded()) {
-						copyFile(sourcePath, path, newId, handler);
+						copyFileId(id, path, newId, handler);
 					} else {
 						handler.handle(new JsonObject().put("status", "error")
 								.put("message", event.cause().getMessage()));
@@ -451,22 +450,69 @@ public class FileStorage implements Storage {
 		}
 	}
 
-	private void copyFile(String id, final String to, final Handler<JsonObject> handler) {
-		copyFile(id, to, null, handler);
+	@Override
+	public void copyFileId(String id, final String to, final Handler<JsonObject> handler)
+	{
+		try
+		{
+			copyFilePath(getPath(id), to, null, handler);
+		}
+		catch (FileNotFoundException e)
+		{
+			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
+			log.warn(e.getMessage(), e);
+		}
 	}
 
-	private void copyFile(String id, final String to, final String newId, final Handler<JsonObject> handler) {
+	@Override
+	public void copyFilePath(String path, final String to, final Handler<JsonObject> handler) {
+		copyFilePath(path, to, null, handler);
+	}
+
+	private void copyFileId(String id, final String to, final String newId, final Handler<JsonObject> handler)
+	{
+		try
+		{
+			copyFilePath(getPath(id), to, newId, handler);
+		}
+		catch (FileNotFoundException e)
+		{
+			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+	private void copyFilePath(String path, final String to, final String newId, final Handler<JsonObject> handler)
+	{
 		final JsonObject res = new JsonObject();
-		fs.copy(id, to, new Handler<AsyncResult<Void>>() {
+
+		fs.mkdirs(org.entcore.common.utils.FileUtils.getPathWithoutFilename(to), new Handler<AsyncResult<Void>>()
+		{
 			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					res.put("status", "ok").put("_id", (isNotEmpty(newId) ? newId : to));
-				} else {
+			public void handle(AsyncResult<Void> event)
+			{
+				if(event.succeeded() == true)
+				{
+					fs.copy(path, to, new Handler<AsyncResult<Void>>()
+					{
+						@Override
+						public void handle(AsyncResult<Void> event) {
+							if (event.succeeded()) {
+								res.put("status", "ok").put("_id", (isNotEmpty(newId) ? newId : to));
+							} else {
+								res.put("status", "error").put("message", event.cause().getMessage());
+								log.error(event.cause().getMessage(), event.cause());
+							}
+							handler.handle(res);
+						}
+					});
+				}
+				else
+				{
 					res.put("status", "error").put("message", event.cause().getMessage());
 					log.error(event.cause().getMessage(), event.cause());
+					handler.handle(res);
 				}
-				handler.handle(res);
 			}
 		});
 	}
@@ -482,21 +528,16 @@ public class FileStorage implements Storage {
 				continue;
 			}
 			final String d = destinationPath + File.separator + alias.getString(id, id);
-			try {
-				copyFile(getPath(id), d, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject event) {
-						if (!"ok".equals(event.getString("status"))) {
-							errors.add(event.put("fileId",id));
-						}
-						decrementWriteToFS(count, errors, handler);
+
+			copyFileId(id, d, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject event) {
+					if (!"ok".equals(event.getString("status"))) {
+						errors.add(event.put("fileId",id));
 					}
-				});
-			} catch (FileNotFoundException e) {
-				errors.add(new JsonObject().put("status", "error").put("message", "invalid.path").put("fileId",id));
-				decrementWriteToFS(count, errors, handler);
-				log.warn(e.getMessage(), e);
-			}
+					decrementWriteToFS(count, errors, handler);
+				}
+			});
 		}
 	}
 

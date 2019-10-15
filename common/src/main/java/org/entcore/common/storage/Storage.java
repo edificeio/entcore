@@ -56,6 +56,16 @@ public interface Storage {
 
 	void copyFile(String id, final Handler<JsonObject> handler);
 
+	default void copyFileId(String id, String to, final Handler<JsonObject> handler)
+	{
+		throw new java.lang.UnsupportedOperationException("Not supported yet.");
+	};
+
+	default void copyFilePath(String path, String to, final Handler<JsonObject> handler)
+	{
+		throw new java.lang.UnsupportedOperationException("Not supported yet.");
+	};
+
 	void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias, Handler<JsonObject> handler);
 
 	String getProtocol();
