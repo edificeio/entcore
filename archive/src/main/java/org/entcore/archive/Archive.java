@@ -22,6 +22,7 @@ package org.entcore.archive;
 import fr.wseduc.cron.CronTrigger;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
+import org.entcore.archive.controllers.DuplicationController;
 import org.entcore.archive.filters.ArchiveFilter;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.impl.DefaultImportService;
@@ -50,8 +51,13 @@ public class Archive extends BaseServer {
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
 		ImportService importService = new DefaultImportService(vertx, storage, importPath);
 
-		addController(new ArchiveController(storage, archiveInProgress));
-		addController(new ImportController(importService, storage, archiveInProgress));
+		ArchiveController ac = new ArchiveController(storage, archiveInProgress);
+		ImportController ic = new ImportController(importService, storage, archiveInProgress);
+		DuplicationController dc = new DuplicationController(vertx, storage, importPath);
+
+		addController(ac);
+		addController(ic);
+		addController(dc);
 
 		String purgeArchivesCron = config.getString("purgeArchive");
 		if (purgeArchivesCron != null) {
