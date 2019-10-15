@@ -1,92 +1,114 @@
 <section class="twelve cell" ng-controller="ImportController">
-    <div class="row">
-        <div class="twelve cell reduce-block-eight">
-            <div class="twelve cell info vertical-spacing-twice">
-                <i18n>import.info</i18n>
+        <div ng-hide="!firstPhase">
+            <div class="row">
+                <div class="twelve cell reduce-block-eight">
+                    <div class="twelve cell info vertical-spacing-twice">
+                        <i18n>import.info</i18n>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row media-library archive-library">
+            <div class="drop-zone import-files file-browsing" ng-hide="isImporting">
+                <article class="drop flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
+                        <i class="two cloud-upload"></i>
+                        <div class="ten help">
+                            <em><i18n>import.drop-files</i18n></em>
+                        </div>
+                </article>
+                <article class="default flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
+                    <div class="three select-file">
+                        <div class="hidden-content">
+                            <input type="file" files-input-change="importFile()" ng-model="upload.files" accept=".zip">
+                        </div>
+                        <button class="file-button no-margin"><i18n>import.browse</i18n></button>
+                    </div>
+                    <i class="two cloud-upload"></i>
+                    <div class="seven help">
+                        <em><i18n>import.drag-drop-info</i18n></em>
+                    </div>
+                </article>
+                <!--<article class="drop flex-row align-center ng-hide" ng-show="display.dropFolderError">
+                    <i class="two close warning-color"></i>
+                    <div class="seven help">
+                        <em><i18n><span class="no-style ng-scope">Il est impossible d'importer un dossier</span></i18n><br><i18n><span class="no-style ng-scope">Veuillez importer un ou plusieurs <b>fichiers</b></span></i18n></em>
+                    </div>
+                    <div class="three select-file">
+                            <button class="file-button no-margin" ng-click="hideDropFolderError($event)"><i18n><span class="no-style ng-scope">J'ai compris</span></i18n></button>
+                        </div>
+                </article>-->
+
+            </div>
+                <div class="drop-zone import-files file-loading" ng-hide="!isImporting">
+                    <div class="loading-list drop-zone">
+                        <ul>
+                            <li class="loading">
+                                <div class="icon">
+                                    <i class="zip"></i>
+                                </div>
+                                <div class="title">[[filename]]</div>
+                                <div class="status-infos">
+                                    <span>[[filesize.quantity]]</span><span class="file-size" translate content="[[filesize.unity]]"></span>
+                                    <i ng-class="{
+                                        loading: uploadStatus === 'loading',
+                                        loaded: uploadStatus === 'loaded',
+                                        failed: uploadStatus === 'failed'}">
+                                    </i>
+                                </div>
+                                <i class="close" ng-click="abortOrDelete()"></i>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div ng-if="isAnalized" style="margin-top: 20px;">
+                <div class="row">
+                    <i18n>archive.import.select</i18n>
+                </div>
+                <label class="checkbox top-spacing-twice aligned archive">
+                    <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll()" />
+                    <span></span>
+                    <span><i18n>archive.all</i18n></span>
+                </label>
+                <div class="left-spacing-four">
+                    <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
+                        <input type="checkbox" ng-model="selectedApps[app]" />
+                        <span></span>
+                        <span translate content="[[app]]"></span>
+                    </label>
+                </div>
+                <hr>
+                <div ng-if="!loading">
+                    <button class="right-magnet" ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
+                        <i18n>archive.import</i18n>
+                    </button>
+                    <button class="right-magnet cancel" ng-click="cancelImport()">
+                        <i18n>archive.cancel</i18n>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="row media-library archive-library">
-       <div class="drop-zone import-files file-browsing" ng-hide="isImporting">
-           <article class="drop flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
-                   <i class="two cloud-upload"></i>
-                   <div class="ten help">
-                       <em><i18n>import.drop-files</i18n></em>
-                   </div>
-           </article>
-           <article class="default flex-row align-center" style="top: 36%;" ng-hide="display.dropFolderError">
-               <div class="three select-file">
-                   <div class="hidden-content">
-                       <input type="file" files-input-change="importFile()" ng-model="upload.files" accept=".zip">
-                   </div>
-                   <button class="file-button no-margin"><i18n>import.browse</i18n></button>
-               </div>
-               <i class="two cloud-upload"></i>
-               <div class="seven help">
-                   <em><i18n>import.drag-drop-info</i18n></em>
-               </div>
-           </article>
-           <!--<article class="drop flex-row align-center ng-hide" ng-show="display.dropFolderError">
-               <i class="two close warning-color"></i>
-               <div class="seven help">
-                   <em><i18n><span class="no-style ng-scope">Il est impossible d'importer un dossier</span></i18n><br><i18n><span class="no-style ng-scope">Veuillez importer un ou plusieurs <b>fichiers</b></span></i18n></em>
-               </div>
-               <div class="three select-file">
-                       <button class="file-button no-margin" ng-click="hideDropFolderError($event)"><i18n><span class="no-style ng-scope">J'ai compris</span></i18n></button>
-                   </div>	
-           </article>-->
-   
-       </div>
+        <div ng-if="!firstPhase" class="row">
+            <table>
+                <thead>
+                    <tr>
+                        <th><i18n>archive.report.application</i18n></th>
+                        <th><i18n>archive.report.imported</i18n></th>
+                        <th><i18n>archive.report.duplicates</i18n></th>
+                        <th><i18n>archive.report.errors</i18n></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="app in resultsApps">
+                        <td><span translate content="[[app]]"></span></td>
+                        <td>[[results[app].resourcesNumber]]</td>
+                        <td>[[results[app].duplicatesNumber]]</td>
+                        <td>[[results[app].errorsNumber]]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <div class="drop-zone import-files file-loading" ng-hide="!isImporting">
-            <div class="loading-list drop-zone">
-                <ul>
-                    <li class="loading">
-                        <div class="icon">
-                            <i class="zip"></i>
-                        </div>
-                        <div class="title">[[filename]]</div>
-                        <div class="status-infos">
-                            <span>[[filesize.quantity]]</span><span class="file-size" translate content="[[filesize.unity]]"></span>
-                            <i ng-class="{
-                                loading: uploadStatus === 'loading',
-                                loaded: uploadStatus === 'loaded',
-                                failed: uploadStatus === 'failed'}">
-                            </i>
-                        </div>
-                        <i class="close" ng-click="abortOrDelete()"></i>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <div ng-if="isAnalized" style="margin-top: 20px;">
-        <div class="row">
-            <i18n>archive.import.select</i18n>
-        </div>
-        <label class="checkbox top-spacing-twice aligned archive">
-            <input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll()" />
-            <span></span>
-            <span><i18n>archive.all</i18n></span>
-        </label>
-        <div class="left-spacing-four">
-            <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
-                <input type="checkbox" ng-model="selectedApps[app]" />
-                <span></span>
-                <span translate content="[[app]]"></span>
-            </label>
-        </div>
-        <hr>
-        <div ng-if="!loading">
-            <button class="right-magnet" ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
-                <i18n>archive.import</i18n>
-            </button>
-            <button class="right-magnet cancel" ng-click="cancelImport()">
-                <i18n>archive.cancel</i18n>
-            </button>
-        </div>
-    </div>
-
-</section>
+    </section>

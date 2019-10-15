@@ -32,6 +32,11 @@
     "archive.import": "Importer",
     "archive.cancel": "Annuler",
     "archive.import.select": "Sélectionnez les applications dont vous voulez importer les données:",
+    "archive.import.none.available": "Aucune donnée importable n'a été trouvée dans l'archive.",
+    "archive.report.application": "Application",
+    "archive.report.imported": "Contenus importés",
+    "archive.report.duplicates": "Contenus déjà existants",
+    "archive.report.errors": "Erreurs",
 
     "import.info": "Importer votre fichier d'export au format .zip, attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\".",
     "import.drop-files": "Déposer les fichiers",

@@ -35,7 +35,7 @@ export const archiveService = {
         cancelToken: source.token });
     },
 
-    async analyseArchive(importId: string) {
+    async analyzeArchive(importId: string) {
         return await http.get(`archive/import/analyze/${importId}`);
     },
 
