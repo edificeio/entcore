@@ -11,6 +11,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.buffer.Buffer;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 
 public class DefaultImportService implements ImportService {
 
@@ -77,6 +80,22 @@ public class DefaultImportService implements ImportService {
                 handler.handle(new Either.Left<>(written.getString("message")));
             }
         });
+    }
+
+    @Override
+    public void copyArchive(String archiveId, Handler<Either<String, String>> handler)
+    {
+      storage.copyFileId(archiveId, importPath + File.separator + archiveId, new Handler<JsonObject>()
+      {
+        @Override
+        public void handle(JsonObject obj)
+        {
+          if(obj.getString("status").equals("ok") == true)
+            handler.handle(new Either.Right<>(archiveId));
+          else
+            handler.handle(new Either.Left<>(obj.getString("message")));
+        }
+      });
     }
 
     @Override
