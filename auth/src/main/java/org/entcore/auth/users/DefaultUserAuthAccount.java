@@ -357,7 +357,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String login, String displayName,
+	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String displayName,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
@@ -366,8 +366,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject json = new JsonObject()
 				.put("host", notification.getHost(request))
 				.put("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode)
-				.put("displayName", displayName)
-				.put("login", login);
+				.put("displayName", displayName);
 
 
 
@@ -461,14 +460,13 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetPasswordSms(HttpServerRequest request, String phone, String resetCode, String login, String displayName,
+	public void sendResetPasswordSms(HttpServerRequest request, String phone, String resetCode, String displayName,
 		final Handler<Either<String, JsonObject>> handler)
 	{
 		JsonObject params = new JsonObject()
 			.put("resetCode", resetCode)
 			.put("resetUri", resetCode)
-			.put("displayName", displayName)
-			.put("login", login);
+			.put("displayName", displayName);
 
 		sendSms(request, phone, "phone/forgotPassword.txt", params, handler);
 	}
@@ -556,7 +554,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					final JsonObject code_data = either.right().getValue();
 					if ("email".equals(dest.getType()))
 					{
-						sendResetPasswordMail(request, dest.getValue(), code_data.getString("code"), login, code_data.getString("displayName"),
+						sendResetPasswordMail(request, dest.getValue(), code_data.getString("code"), code_data.getString("displayName"),
 							new Handler<Either<String, JsonObject>>()
 							{
 								public void handle(Either<String, JsonObject> event)
@@ -568,7 +566,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					}
 					else if ("mobile".equals(dest.getType()))
 					{
-						sendResetPasswordSms(request, dest.getValue(), code_data.getString("code"), login, code_data.getString("displayName"),
+						sendResetPasswordSms(request, dest.getValue(), code_data.getString("code"), code_data.getString("displayName"),
 							new Handler<Either<String, JsonObject>>()
 						{
 							public void handle(Either<String, JsonObject> event)

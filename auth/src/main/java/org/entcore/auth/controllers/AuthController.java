@@ -981,11 +981,11 @@ public class AuthController extends BaseController {
 								final String displayName = result.right().getValue().getString("displayName", "");
 
 								if ("mail".equals(service)) {
-									userAuthAccount.sendResetPasswordMail(request, mail, resetCode, login, displayName,
+									userAuthAccount.sendResetPasswordMail(request, mail, resetCode, displayName,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else if ("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()) {
 									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
-									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode, login, displayName,
+									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode, displayName,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else {
 									badRequest(request, "invalid.service");
