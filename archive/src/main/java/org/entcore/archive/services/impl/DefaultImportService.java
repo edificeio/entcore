@@ -217,7 +217,7 @@ public class DefaultImportService implements ImportService {
         if (userImport == null) {
             JsonObject jo = new JsonObject()
                     .put("status", "error");
-            eb.send("import."+importId, jo);
+            eb.send(getImportBusAddress(importId), jo);
             deleteArchive(importId);
         } else {
             final boolean finished = userImport.addAppResult(app, resourcesNumber, duplicatesNumber, errorsNumber);
@@ -225,10 +225,16 @@ public class DefaultImportService implements ImportService {
                 JsonObject jo = new JsonObject()
                         .put("status", "ok")
                         .put("result", userImport.getResults());
-                eb.send("import."+importId, jo);
+                eb.send(getImportBusAddress(importId), jo);
                 deleteArchive(importId);
             }
         }
     }
+
+  @Override
+  public String getImportBusAddress(String exportId)
+  {
+    return "import." + exportId;
+  }
 
 }

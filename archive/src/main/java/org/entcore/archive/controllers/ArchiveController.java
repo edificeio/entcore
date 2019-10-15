@@ -86,7 +86,7 @@ public class ArchiveController extends BaseController {
 				emailFactory.getSender() : null;
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
-				eb, exportPath, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config));
+				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");
@@ -175,7 +175,7 @@ public class ArchiveController extends BaseController {
 			public void handle(Boolean event) {
 				if (Boolean.TRUE.equals(event)) {
 					log.debug("waiting export true");
-					final String address = "export." + exportId;
+					final String address = exportService.getExportBusAddress(exportId);
 					final MessageConsumer<JsonObject> consumer = eb.consumer(address);
 					final Handler<Message<JsonObject>> downloadHandler = new Handler<Message<JsonObject>>() {
 						@Override
