@@ -75,13 +75,13 @@ public interface UserAuthAccount {
 	void findByLogin(String login, String resetCode,boolean checkFederatedLogin, Handler<Either<String, JsonObject>> handler);
 
 	void sendResetPasswordMail(HttpServerRequest request, String email,
-			String resetCode, String login, String displayName, Handler<Either<String, JsonObject>> handler);
+			String resetCode, String displayName, Handler<Either<String, JsonObject>> handler);
 
 	void sendForgottenIdMail(HttpServerRequest request, String login,
 			String email, Handler<Either<String, JsonObject>> handler);
 
 	void sendResetPasswordSms(HttpServerRequest request, String phone,
-			String resetCode, String login, String displayName, Handler<Either<String, JsonObject>> handler);
+			String resetCode, String displayName, Handler<Either<String, JsonObject>> handler);
 
 	void sendForgottenIdSms(HttpServerRequest request, String login,
 			String phone, Handler<Either<String, JsonObject>> handler);

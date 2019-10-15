@@ -57,7 +57,7 @@
     "email.login": "Votre identifiant ",
     "email.regards": "Cordialement,",
     "email.reset.infos": "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.",
-    "email.reset.pw.infos": "Vous avez demandé la réinitialisation du mot de passe de votre compte {{login}}.",
+    "email.reset.pw.infos": "Vous avez demandé la réinitialisation du mot de passe de votre compte.",
     "email.reset.id.infos": "Vous avez demandé un rappel de votre identifiant de connexion.",
     "email.signature" : "Cordialement, l'équipe Ent-Core",
     "phone.hi": "Bonjour, ",
