@@ -86,7 +86,7 @@ public class ImportController extends BaseController {
             {
                 importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath,
                     I18n.acceptLanguage(request), apps);
-                final String address = "import." + importId;
+                final String address = importService.getImportBusAddress(importId);
                 final MessageConsumer<JsonObject> consumer = eb.consumer(address);
 
                 final Handler<Message<JsonObject>> importHandler = event -> {

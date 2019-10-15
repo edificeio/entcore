@@ -47,4 +47,6 @@ public interface ExportService {
 
 	boolean downloadIsInProgress(String exportId);
 
+	String getExportBusAddress(String exportId);
+
 }

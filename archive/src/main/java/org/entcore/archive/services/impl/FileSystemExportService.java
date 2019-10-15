@@ -60,6 +60,7 @@ public class FileSystemExportService implements ExportService {
 	private final FileSystem fs;
 	private final EventBus eb;
 	private final String exportPath;
+	private final String handlerActionName;
 	private final EmailSender notification;
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
@@ -71,16 +72,17 @@ public class FileSystemExportService implements ExportService {
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
 	private static final long EXPORT_ERROR = -4l;
 
-	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath,
+	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 			EmailSender notification, Storage storage,
 			Map<String, Long> userExportInProgress, TimelineHelper timeline) {
 		this.vertx = vertx;
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
+		this.handlerActionName = customHandlerActionName == null ? "export" : customHandlerActionName;
 		this.notification = notification;
 		this.storage = storage;
-		this.userExportInProgress = userExportInProgress;
+		this.userExportInProgress = userExportInProgress != null ? userExportInProgress : new HashMap<String, Long>();
 		this.userExport = new HashMap<>();
 		this.timeline = timeline;
 	}
@@ -120,7 +122,7 @@ public class FileSystemExportService implements ExportService {
 									{
 										g.addAll(objects.getList());
 										JsonObject j = new JsonObject()
-												.put("action", "export")
+												.put("action", handlerActionName)
 												.put("exportId", exportId)
 												.put("userId", user.getUserId())
 												.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
@@ -200,7 +202,8 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void exported(final String exportId, String status, final String locale, final String host) {
+	public void exported(final String exportId, String status, final String locale, final String host)
+	{
 		log.debug("Exported method");
 		if (exportId == null) {
 			log.error("Export receive event without exportId ");
@@ -214,6 +217,7 @@ public class FileSystemExportService implements ExportService {
 		final UserExport export = userExport.get(userId);
 		final int counter = export.incrementAndGetCounter();
 		final boolean isFinished = counter == export.getExpectedExport().size();
+
 		if (!"ok".equals(status)) {
 			export.setProgress(EXPORT_ERROR);
 		}
@@ -222,7 +226,7 @@ public class FileSystemExportService implements ExportService {
 			JsonObject j = new JsonObject()
 					.put("status", "error")
 					.put("message", "export.error");
-			eb.publish("export." + exportId, j);
+			eb.publish(getExportBusAddress(exportId), j);
 			userExportInProgress.remove(userId);
 			fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
 				@Override
@@ -265,7 +269,8 @@ public class FileSystemExportService implements ExportService {
 									}
 								}
 
-								private void storeZip(final Message<JsonObject> event) {
+								private void storeZip(final Message<JsonObject> event)
+								{
 									storage.writeFsFile(exportId, exportDirectory + ".zip", new Handler<JsonObject>() {
 										@Override
 										public void handle(JsonObject res) {
@@ -305,7 +310,7 @@ public class FileSystemExportService implements ExportService {
 								}
 
 								private void publish(final Message<JsonObject> event) {
-									final String address = "export." + exportId;
+									final String address = getExportBusAddress(exportId);
 									eb.send(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
 											new Handler<AsyncResult<Message<JsonObject>>>() {
 												@Override
@@ -445,6 +450,12 @@ public class FileSystemExportService implements ExportService {
 				}
 			}
 		});
+	}
+
+	@Override
+	public String getExportBusAddress(String exportId)
+	{
+		return "export." + exportId;
 	}
 
 }

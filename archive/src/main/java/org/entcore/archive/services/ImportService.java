@@ -20,4 +20,5 @@ public interface ImportService {
 
     void imported(String importId, String app, String resourcesNumber, String duplicatesNumber, String errorsNumber);
 
+    String getImportBusAddress(String exportId);
 }
