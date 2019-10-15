@@ -51,8 +51,13 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 	{
 		String action = message.body().getString("action", "");
 
+		String exportedBusAddress = "entcore.export";
+
 		switch (action)
 		{
+			case "duplicate" :
+				exportedBusAddress = "entcore.duplicate";
+				// Fallthrough
 			case "export" :
 				final JsonArray exportApps = message.body().getJsonArray("apps");
 				final JsonArray resourcesIds = message.body().getJsonArray("resourcesIds");
@@ -67,6 +72,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					final String host = message.body().getString("host", "");
 					JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
 
+					String finalBusAddress = exportedBusAddress;
 					repositoryEvents.exportResources(resourcesIds, exportId, userId, groupIds, path, locale, host, new Handler<Boolean>()
 					{
 						@Override
@@ -78,7 +84,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 									.put("exportId", exportId)
 									.put("locale", locale)
 									.put("host", host);
-							eb.publish("entcore.export", exported);
+							eb.publish(finalBusAddress, exported);
 						}
 					});
 				}
