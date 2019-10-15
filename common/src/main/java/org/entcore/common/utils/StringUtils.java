@@ -21,6 +21,7 @@ package org.entcore.common.utils;
 
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -280,4 +281,13 @@ public final class StringUtils {
     public static String replaceForbiddenCharacters(String s) {
         return s.replaceAll("(\\\\|\\/|\\*|\\\"|\\<|\\>|:|\\?|\\|)","_");
     }
+
+    public final static Comparator<String> versionComparator = (v1, v2) -> {
+        try {
+            return new Double(Double.parseDouble("."+v1.split("-", 2)[0].replaceAll("\\.", "")))
+                    .compareTo(Double.parseDouble("."+v2.split("-", 2)[0].replaceAll("\\.", "")));
+        } catch (NumberFormatException nbe) {
+            return 0;
+        }
+    };
 }

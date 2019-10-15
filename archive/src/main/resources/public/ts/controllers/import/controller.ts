@@ -1,4 +1,4 @@
-import { ng, idiom as lang, notify } from 'entcore'
+import { ng, idiom as lang, notify, template } from 'entcore'
 import { archiveService } from '../../service'
 
 export let importController = ng.controller('ImportController', ['$scope', '$timeout', ($scope, $timeout) => {
@@ -17,6 +17,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
             var currentImport;
 
             $scope.selectedApps = [];
+            $scope.firstPhase = true;
 
             $scope.importFile = function () {
                 let file: File = $scope.upload.files.item(0);
@@ -29,11 +30,16 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                 archiveService.uploadArchive(formData).then(res => {
                     $scope.uploadStatus = 'loaded';
                     $scope.currentImportId = res.data.importId;
-                    archiveService.analyseArchive($scope.currentImportId).then(r => {
+                    archiveService.analyzeArchive($scope.currentImportId).then(r => {
                         $scope.availableApps = Object.keys(r.data.apps);
-                        currentImport = r.data;
-                        $scope.isAnalized = true;
-                        $scope.$apply();
+                        if ($scope.availableApps.length == 0) {
+                            notify.error('archive.import.none.available');
+                            $scope.cancelImport();
+                        } else {
+                            currentImport = r.data;
+                            $scope.isAnalized = true;
+                            $scope.$apply();
+                        }
                     })
                 }).catch(err => {
                     $scope.uploadStatus = 'failed';
@@ -66,6 +72,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     delete $scope.currentImportId;
                     $scope.isAnalized = false;
                     $scope.isImporting = false;
+                    $scope.selectedApps = [];
                     delete $scope.upload;
                 });
             }
@@ -87,7 +94,13 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                         delete currentImport.apps[app];
                     }
                 });
-                archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps);
+                archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps)
+                .then(result => {
+                    $scope.resultsApps = Object.keys(result.data);
+                    $scope.results = result.data;
+                    $scope.firstPhase = false;
+                    $scope.$apply();
+                });
 
             }
 }]);
