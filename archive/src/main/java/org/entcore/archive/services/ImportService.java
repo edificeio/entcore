@@ -12,6 +12,8 @@ public interface ImportService {
 
     void uploadArchive(final HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler);
 
+    void copyArchive(String archivePath, Handler<Either<String, String>> handler);
+
     void deleteArchive(String importId);
 
     void analyzeArchive(UserInfos user, String importId, String locale, JsonObject config, Handler<Either<String, JsonObject>> handler);
