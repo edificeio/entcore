@@ -341,6 +341,17 @@ public class DocumentHelper {
 		return doc;
 	}
 
+	public static String getAppProperty(JsonObject doc, String propName)
+	{
+		return doc.getString(propName);
+	}
+
+	public static JsonObject setAppProperty(JsonObject doc, String propName, String value)
+	{
+		doc.put(propName, value);
+		return doc;
+	}
+
 	public static boolean isImage(JsonObject doc)
 	{
 		if (doc == null)
