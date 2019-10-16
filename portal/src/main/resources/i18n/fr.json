@@ -405,6 +405,9 @@
   "edumedia.fullscreen": "Afficher en plein écran",
   "worksapce.external.folder.notfound": "Les ressources intéractives sont inactives pour ce compte",
 
+  "empty.search.title": "Rien à l'horizon",
+  "empty.search": "Aucun contenu ne correspond à votre recherche. On recommence ?",
+
   "empty.filters.title": "Qui a éteint la lumière ?",
   "empty.filters": "Oups, vous avez décochez tous les filtres… Sélectionnez une rubrique pour accéder aux contenus.",
 
