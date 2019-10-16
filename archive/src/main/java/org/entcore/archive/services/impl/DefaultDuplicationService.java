@@ -38,8 +38,8 @@ public class DefaultDuplicationService implements DuplicationService
       this.fs = vertx.fileSystem();
 
       String tmpDir = System.getProperty("java.io.tmpdir");
-      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate", null, storage, null, null);
-      this.importService = new DefaultImportService(vertx, storage, importPath);
+      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null, storage, null, null);
+      this.importService = new DefaultImportService(vertx, storage, importPath, "duplicate:import");
     }
 
     @Override
@@ -104,7 +104,8 @@ public class DefaultDuplicationService implements DuplicationService
                                 event.reply(new JsonObject().put("status", "ok"));
                                 consumer.unregister();
 
-                                importService.deleteArchive(importId);
+                                // The import service automatically deletes the archive
+                                //importService.deleteArchive(importId);
                                 handler.handle(new Either.Right<>("Duplication successful"));
                               }
                             });
@@ -129,5 +130,11 @@ public class DefaultDuplicationService implements DuplicationService
   public void exported(final String exportId, String status, final String locale, final String host)
   {
     this.exportService.exported(exportId, status, locale, host);
+  }
+
+  @Override
+  public void imported(String importId, String app, String resourcesNumber, String duplicatesNumber, String errorsNumber)
+  {
+    this.importService.imported(importId, app, resourcesNumber, duplicatesNumber, errorsNumber);
   }
 }

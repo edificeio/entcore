@@ -49,7 +49,7 @@ public class Archive extends BaseServer {
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
-		ImportService importService = new DefaultImportService(vertx, storage, importPath);
+		ImportService importService = new DefaultImportService(vertx, storage, importPath, null);
 
 		ArchiveController ac = new ArchiveController(storage, archiveInProgress);
 		ImportController ic = new ImportController(importService, storage, archiveInProgress);

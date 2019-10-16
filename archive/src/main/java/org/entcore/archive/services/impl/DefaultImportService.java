@@ -59,15 +59,17 @@ public class DefaultImportService implements ImportService {
     private final EventBus eb;
     private final Storage storage;
     private final String importPath;
+    private final String handlerActionName;
 
     private final Map<String, UserImport> userImports;
 
-    public DefaultImportService(Vertx vertx, Storage storage, String importPath) {
+    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName) {
         this.storage = storage;
         this.importPath = importPath;
         this.fs = vertx.fileSystem();
         this.eb = vertx.eventBus();
         this.userImports = new HashMap<>();
+        this.handlerActionName = customHandlerActionName == null ? "import" : customHandlerActionName;
     }
 
     @Override
@@ -235,7 +237,7 @@ public class DefaultImportService implements ImportService {
                         .put("date", MongoDb.now()));
         userImports.put(importId, new UserImport(apps.size()));
         JsonObject j = new JsonObject()
-                .put("action", "import")
+                .put("action", handlerActionName)
                 .put("importId", importId)
                 .put("userId", userId)
                 .put("userName", userName)
