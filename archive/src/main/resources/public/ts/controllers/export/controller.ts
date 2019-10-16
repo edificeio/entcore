@@ -15,8 +15,6 @@ export let exportController = ng.controller('ExportController', ['$scope', ($sco
 		expected = data.preDeletedUserApps;
 
 		$scope.availableApps.forEach(app => { $scope.selectedApps[app] = false });
-		$scope.selectedApps["workspace"] = true;
-		$scope.selectedApps["rack"] = true;
 		$scope.areAllSelected = function() {
 			return $scope.availableApps.find(app => !$scope.selectedApps[app]) === undefined
 		}
