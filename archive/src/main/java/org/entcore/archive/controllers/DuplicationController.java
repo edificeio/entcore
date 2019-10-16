@@ -100,6 +100,15 @@ public class DuplicationController extends BaseController
             message.body().getString("host", config.getString("host", ""))
         );
         break;
+        case "imported" :
+            this.dupService.imported(
+              message.body().getString("importId"),
+              message.body().getString("app"),
+              message.body().getString("resourcesNumber"),
+              message.body().getString("duplicatesNumber"),
+              message.body().getString("errorsNumber")
+            );
+            break;
       default: log.error("Duplication : invalid action " + action);
     }
   }
