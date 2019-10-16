@@ -173,8 +173,11 @@ export class UserCreate implements OnInit, OnDestroy {
 
                 this.newUser.id = res.data.id;
                 this.newUser.source = 'MANUAL';
+                this.newUser.displayName = `${this.newUser.lastName} ${this.newUser.firstName}`;
+                if (this.newUser.classes == null) {
+                    this.newUser.classes = [];
+                }
                 this.usersStore.structure.users.data.push(this.newUser);
-                this.usersStore.user = this.newUser
 
                 this.router.navigate(['/admin', this.usersStore.structure.id, 'users', res.data.id, 'details'], {
                     relativeTo: this.route,
