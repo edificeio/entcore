@@ -42,7 +42,16 @@ public class DuplicationController extends BaseController
       @Override
       public void handle(Buffer buff)
       {
-        JsonObject body = buff.toJsonObject();
+        JsonObject body = new JsonObject();
+        try
+        {
+          body = buff.toJsonObject();
+        }
+        catch(Exception e)
+        {
+          log.error(e, e.getMessage());
+          badRequest(request);
+        }
 
         final String application = body.getString("application");
         final String resourceId = body.getString("resourceId");
