@@ -258,12 +258,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	{
 		String title = DocumentHelper.getTitle(document);
 		String name = DocumentHelper.getName(document);
+		String headline = DocumentHelper.getAppProperty(document, "headline");
 
 		if(title != null && title.startsWith(importPrefix) == true)
 			DocumentHelper.setTitle(document, title.substring(importPrefix.length()));
 
 		if(name != null && name.startsWith(importPrefix) == true)
 			DocumentHelper.setName(document, name.substring(importPrefix.length()));
+
+		if(headline != null && headline.startsWith(importPrefix) == true)
+			DocumentHelper.setAppProperty(document, "headline", headline.substring(importPrefix.length()));
 
 		return document;
 	}
