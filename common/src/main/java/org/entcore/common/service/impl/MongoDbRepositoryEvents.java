@@ -87,7 +87,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		this.managerRight = managerRight;
 		this.revisionsCollection = revisionsCollection;
 		this.revisionIdAttribute = revisionIdAttribute;
-		this.fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
+		this.fileImporter = vertx == null ? null : new FolderImporter(vertx.fileSystem(), vertx.eventBus());
 	}
 
 	@Override
@@ -363,6 +363,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected void readAllDocumentsFromDir(String dirPath, Handler<Map<String, JsonObject>> handler, String userId, String userName)
 	{
+		if(this.fileImporter == null)
+				throw new RuntimeException("Cannot import documents without a file importer instance");
+
 		MongoDbRepositoryEvents self = this;
 		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
 		{
