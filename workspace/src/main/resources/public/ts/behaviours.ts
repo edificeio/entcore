@@ -65,7 +65,7 @@ Behaviours.register('workspace', {
 	loadResources: function (callback) {
 		http().get('/workspace/documents?filter=all&hierarchical=true').done(function (documents) {
 			this.resources = documents.filter(function (doc) { return !doc.deleted }).map(function (doc) {
-				if (doc.metadata['content-type'].indexOf('image') !== -1) {
+				if (doc.metadata['content-type'] && doc.metadata['content-type'].indexOf('image') !== -1) {
 					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
 				}
 				else {
