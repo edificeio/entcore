@@ -112,9 +112,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 									.put("action", "imported")
 									.put("importId", importId)
 									.put("app", appTitle.substring(1))
-									.put("resourcesNumber", success.getString("resourcesNumber"))
-									.put("duplicatesNumber", success.getString("duplicatesNumber"))
-									.put("errorsNumber", success.getString("errorsNumber"));
+									.put("rapport", success);
 							eb.publish(finalBusAddress, imported);
 					});
 				}

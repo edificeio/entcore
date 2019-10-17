@@ -616,12 +616,26 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 				List<Future> collFutures = new LinkedList<Future>();
 				List<Future> collFuturesChain = new LinkedList<Future>();
-				Map<String, String> previousCollectionsIdsMap = new HashMap<String, String>();
+
+				/**
+						Collections depending on others are expected to be bigger than the collections they depend on.
+						e.g. Forum posts depend on their thread and there are more forum posts than there are forum threads.
+
+						Thus, it is worth the extra memory avoiding to loop multiple times on the depending collections for id changes.
+					*/
+				Map<String, String> previousIdsMapCombined = new HashMap<String, String>();
+				// Should be Map<String, Map<String, String>> but casting to JsonObject fails...
+				Map<String, Map<String, Object>> previousIdsMapByCollection = new HashMap<String, Map<String, Object>>();
+
+				String mainResourceName = "";
 
 				for(Map.Entry<String, String> prefix : prefixMap.entrySet())
 				{
+					if(mainResourceName.equals("") == true)
+							mainResourceName = prefix.getKey();
 					ArrayList<JsonObject> collectionDocs = new ArrayList<JsonObject>(docs.size());
 
+					// Sort documents depending on their collection
 					for(Map.Entry<String, JsonObject> entry : docs.entrySet())
 					{
 						if(entry == null || entry.getKey() == null || entry.getValue() == null)
@@ -636,6 +650,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						Future<JsonObject> collDone = Future.future();
 						Future<JsonObject> collChain = Future.future();
 
+						// Import collections one by one because we might need to apply id changes
 						Handler importNextCollection = new Handler<AsyncResult<JsonObject>>()
 						{
 							@Override
@@ -643,13 +658,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							{
 								if(previousResult != null)
 								{
-									JsonObject previousIdsMap = previousResult.result().getJsonObject("idsMap");
-
-									for(String key : previousIdsMap.getMap().keySet())
-										previousCollectionsIdsMap.put(key, previousIdsMap.getString(key));
-
+									// Replace old ids with new ids
 									for(int i = collectionDocs.size(); i-- > 0;)
-										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousCollectionsIdsMap);
+										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousIdsMapCombined);
 								}
 
 								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, new Handler<JsonObject>()
@@ -657,6 +668,20 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 									@Override
 									public void handle(JsonObject result)
 									{
+										JsonObject previousIdsMap = result.getJsonObject("idsMap");
+
+										Map<String, Object> collectionIdsMap = new HashMap<String, Object>();
+
+										// Fill the ids maps
+										for(String key : previousIdsMap.getMap().keySet())
+										{
+											String newId = previousIdsMap.getString(key);
+											collectionIdsMap.put(key, newId);
+											previousIdsMapCombined.put(key, newId);
+										}
+
+										previousIdsMapByCollection.put(prefix.getKey(), collectionIdsMap);
+
 										collChain.complete(result);
 										collDone.complete(result);
 									}
@@ -664,6 +689,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							}
 						};
 
+						// Start importing collections
 						if(collFutures.size() == 0)
 							importNextCollection.handle(null);
 						else
@@ -673,6 +699,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						collFutures.add(collDone);
 					}
 				}
+
+				final String mainResourceNameFinal = mainResourceName;
 
 				// Fuse reports into a final one
 				CompositeFuture.join(collFutures).setHandler(new Handler<AsyncResult<CompositeFuture>>()
@@ -696,11 +724,17 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								nbErrors += Integer.parseInt(rap.getString("errorsNumber"));
 							}
 
+							JsonObject idsMapObj = new JsonObject();
+							for(Map.Entry<String, Map<String, Object>> entry : previousIdsMapByCollection.entrySet())
+								idsMapObj.put(entry.getKey(), new JsonObject(entry.getValue()));
+
 							JsonObject finalRapport =
 								new JsonObject()
 									.put("resourcesNumber", Integer.toString(nbResources))
 									.put("duplicatesNumber", Integer.toString(nbDuplicates))
-									.put("errorsNumber", Integer.toString(nbErrors));
+									.put("errorsNumber", Integer.toString(nbErrors))
+									.put("resourcesIdsMap", idsMapObj)
+									.put("mainResourceName", mainResourceNameFinal);
 
 							handler.handle(finalRapport);
 						}
