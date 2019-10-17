@@ -213,7 +213,7 @@ public class ManualFeeder extends BusModBase {
 					"WITH u " +
 					"MATCH (student:User) " +
 					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED]->u " +
+					"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
 					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
 			params.put("childrenIds", childrenIds);
 		}
@@ -458,7 +458,7 @@ public class ManualFeeder extends BusModBase {
 					"WITH u " +
 					"MATCH (student:User) " +
 					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED]->u " +
+					"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
 					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
 			params.put("childrenIds", childrenIds);
 		}
