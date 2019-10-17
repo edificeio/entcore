@@ -35,6 +35,7 @@
 		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
 		<pdf-viewer ng-if="isOfficePdf()" ng-src="[[previewUrl()]]"></pdf-viewer>
 		<csv-viewer ng-if="isOfficeExcelOrCsv()" csv-delegate="csvDelegate"></csv-viewer>
+		<txt-viewer ng-if="isTxt()" txt-delegate="txtDelegate"></txt-viewer>
 		<div ng-if="contentType === 'unknown' || contentType === 'zip'" class="default-viewer">
 			<button ng-click="download()">
 				<i18n>file.viewer.download</i18n>
