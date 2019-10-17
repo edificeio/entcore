@@ -8,6 +8,7 @@ import { dropzoneOverlay } from './directives/dropzoneOverlay';
 import { helpBox, helpBoxStep } from './directives/helpBox'; 
 import { lazyLoadImg } from './directives/lazyLoad';
 import { csvViewer } from './directives/csvViewer';
+import { txtViewer } from './directives/txtViewer';
 
 routes.define(function ($routeProvider) {
 	$routeProvider
@@ -47,3 +48,4 @@ ng.directives.push(helpBoxStep);
 ng.directives.push(helpBox); 
 ng.directives.push(lazyLoadImg)
 ng.directives.push(csvViewer)
+ng.directives.push(txtViewer)

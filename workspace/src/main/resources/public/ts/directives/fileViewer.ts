@@ -2,6 +2,7 @@ import { $, ng, Behaviours } from 'entcore';
 import http from "axios";
 import { workspaceService, models } from "../services";
 import { CsvDelegate, CsvFile, CsvController } from './csvViewer';
+import { TxtDelegate, TxtController, TxtFile } from './txtViewer';
 declare var ENABLE_LOOL: boolean;
 
 interface FileViewerScope {
@@ -9,6 +10,8 @@ interface FileViewerScope {
 	ngModel: models.Element;
 	isFullscreen: boolean;
 	csvDelegate: CsvDelegate;
+	txtDelegate: TxtDelegate
+	isTxt(): boolean
 	download(): void;
 	isOfficePdf(): boolean;
 	isOfficeExcelOrCsv(): boolean;
@@ -20,7 +23,6 @@ interface FileViewerScope {
 	closeViewFile(): void;
 	canEditInLool(): boolean;
 	openOnLool(): void;
-	$apply: any;
 	$parent: {
 		display: {
 			editedImage: any;
@@ -28,12 +30,7 @@ interface FileViewerScope {
 		}
 	}
 	onBack: any
-}
-
-interface FileViewerScope {
-	contentType: string
 	htmlContent: string;
-	isFullscreen: boolean
 	download(): void;
 	canDownload(): boolean
 	editImage(): void
@@ -89,11 +86,19 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 		templateUrl: '/workspace/public/template/directives/file-viewer.html',
 		link: function (scope: FileViewerScope, element, attributes) {
 			const _csvCache: { [key: string]: CsvFile } = {}
+			const _txtCache: { [key: string]: TxtFile } = {}
 			let _csvController: CsvController = null;
+			let _txtDelegate: TxtController = null;
 			scope.csvDelegate = {
 				onInit(ctrl) {
 					_csvController = ctrl;
 					_csvController.setContent(getCsvContent());
+				}
+			}
+			scope.txtDelegate = {
+				onInit(ctrl) {
+					_txtDelegate = ctrl;
+					_txtDelegate.setContent(getTxtContent())
 				}
 			}
 			const getCsvContent = () => {
@@ -106,6 +111,13 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 					_csvCache[scope.ngModel._id] = new CsvProviderFromExcel(scope.ngModel);
 				}
 				return _csvCache[scope.ngModel._id];
+			}
+			const getTxtContent = () => {
+				if (_txtCache[scope.ngModel._id]) {
+					return _txtCache[scope.ngModel._id];
+				}
+				_txtCache[scope.ngModel._id] = new CsvProviderFromText(scope.ngModel);
+				return _txtCache[scope.ngModel._id];
 			}
 			//
 			scope.contentType = scope.ngModel.previewRole();
@@ -139,6 +151,11 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 
 			scope.isOfficeExcelOrCsv = () => {
 				const ext = ['xls', 'csv'];
+				return ext.includes(scope.contentType);
+			}
+
+			scope.isTxt = () => {
+				const ext = ['txt'];
 				return ext.includes(scope.contentType);
 			}
 
