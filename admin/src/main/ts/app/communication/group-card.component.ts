@@ -266,9 +266,10 @@ export class GroupCardComponent {
     confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
     groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
-        .set('ManualGroup', 'manual')
-        .set('ProfileGroup', 'profile')
-        .set('FunctionalGroup', 'functional');
+        .set('ManualGroup', 'manualGroup')
+        .set('ProfileGroup', 'profileGroup')
+        .set('FunctionalGroup', 'functionalGroup')
+        .set('FunctionGroup', 'functionGroup');
 
 
     constructor(
