@@ -53,7 +53,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
         this.typeSubscriber = this.route.params.subscribe(params => {
             this.groupsStore.group = null;
             let type = params["groupType"];
-            let allowedTypes = ["manual", "profile", "functional"];
+            let allowedTypes = ["manualGroup", "profileGroup", "functionalGroup", "functionGroup"];
             if (type && allowedTypes.indexOf(type) >= 0) {
                 this.groupType = params["groupType"];
                 this.cdRef.markForCheck();

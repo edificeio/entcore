@@ -278,6 +278,7 @@
     "ManualGroup": "Groupes manuels",
     "ProfileGroup": "Groupes de profil",
     "FunctionalGroup": "Groupes scolarité",
+    "FunctionGroup": "Groupes fonction/discipline",
     "members.of.group": "Membres de",
     "members": "{{ count < 2 ? Membre : Membres }}",
     "add.relative": "Ajouter un responsable",

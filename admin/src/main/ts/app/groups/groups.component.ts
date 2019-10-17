@@ -14,7 +14,7 @@ import { CommunicationRulesService } from '../communication/communication-rules.
                 <s5l>groups</s5l>
             </h1>
 
-            <button [routerLink]="['manual', 'create']"
+            <button [routerLink]="['manualGroup', 'create']"
                     [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
                 <s5l>create.group</s5l>
                 <i class="fonticon group_add is-size-3"></i>
@@ -41,9 +41,10 @@ export class GroupsComponent implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        {label: "ManualGroup", view: "manual"},
-        {label: "ProfileGroup", view: "profile"},
-        {label: "FunctionalGroup", view: "functional"}
+        {label: "ManualGroup", view: "manualGroup"},
+        {label: "ProfileGroup", view: "profileGroup"},
+        {label: "FunctionalGroup", view: "functionalGroup"},
+        {label: "FunctionGroup", view: "functionGroup"}
     ];
 
     private routerSubscriber: Subscription;
