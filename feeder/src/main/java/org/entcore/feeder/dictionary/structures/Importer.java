@@ -639,7 +639,7 @@ public class Importer {
 				}
 				if (externalId != null && relative != null && relative.size() > 0) {
 					String query2 =
-							"MATCH (:User {externalId:{userExternalId}})-[r:RELATED]->(p:User) " +
+							"MATCH (:User {externalId:{userExternalId}})-[r:RELATED|COMMUNIQUE_DIRECT]-(p:User) " +
 							"WHERE NOT(p.externalId IN {relatives}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r ";
 					JsonObject p2 = new JsonObject()
