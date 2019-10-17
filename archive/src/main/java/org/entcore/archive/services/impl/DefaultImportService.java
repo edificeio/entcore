@@ -41,10 +41,9 @@ public class DefaultImportService implements ImportService {
             this.results = new JsonObject();
         }
 
-        public boolean addAppResult(String app, String resourcesNumber, String duplicatesNumber,
-                            String errorsNumber) {
-            this.results.put(app, new JsonObject().put("resourcesNumber", resourcesNumber)
-                    .put("duplicatesNumber", duplicatesNumber).put("errorsNumber", errorsNumber));
+        public boolean addAppResult(String app, JsonObject importRapport)
+        {
+            this.results.put(app, importRapport);
             return this.counter.incrementAndGet() == expectedImports;
         }
 
@@ -248,8 +247,7 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void imported(String importId, String app, String resourcesNumber,
-                         String duplicatesNumber, String errorsNumber) {
+    public void imported(String importId, String app, JsonObject importRapport) {
         UserImport userImport = userImports.get(importId);
         if (userImport == null) {
             JsonObject jo = new JsonObject()
@@ -257,7 +255,7 @@ public class DefaultImportService implements ImportService {
             eb.send(getImportBusAddress(importId), jo);
             deleteArchive(importId);
         } else {
-            final boolean finished = userImport.addAppResult(app, resourcesNumber, duplicatesNumber, errorsNumber);
+            final boolean finished = userImport.addAppResult(app, importRapport);
             if (finished) {
                 JsonObject jo = new JsonObject()
                         .put("status", "ok")

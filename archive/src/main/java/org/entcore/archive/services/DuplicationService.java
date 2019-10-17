@@ -15,5 +15,5 @@ public interface DuplicationService
 		JsonObject config, Handler<Either<String, String>> handler);
 
   void exported(final String exportId, String status, final String locale, final String host);
-  void imported(String importId, String app, String resourcesNumber, String duplicatesNumber, String errorsNumber);
+  void imported(String importId, String app, JsonObject importRapport);
 }

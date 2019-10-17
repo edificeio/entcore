@@ -104,9 +104,7 @@ public class DuplicationController extends BaseController
             this.dupService.imported(
               message.body().getString("importId"),
               message.body().getString("app"),
-              message.body().getString("resourcesNumber"),
-              message.body().getString("duplicatesNumber"),
-              message.body().getString("errorsNumber")
+              message.body().getJsonObject("rapport")
             );
             break;
       default: log.error("Duplication : invalid action " + action);

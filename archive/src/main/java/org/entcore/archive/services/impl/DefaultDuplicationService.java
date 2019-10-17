@@ -22,6 +22,8 @@ import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.user.UserInfos;
 
+import java.util.Map;
+
 public class DefaultDuplicationService implements DuplicationService
 {
     private static final Logger log = LoggerFactory.getLogger(DefaultImportService.class);
@@ -101,12 +103,33 @@ public class DefaultDuplicationService implements DuplicationService
                               @Override
                               public void handle(Message<JsonObject> event)
                               {
+                                JsonObject rapport = event.body().getJsonObject("result");
+                                String duplicatedId = "";
+
+                                String mainResourceName = "";
+                                JsonObject idsMap = new JsonObject();
+
+                                for(Map.Entry<String, Object> appResult : rapport.getMap().entrySet())
+                                {
+                                  mainResourceName = ((JsonObject)appResult.getValue()).getString("mainResourceName");
+                                  idsMap = ((JsonObject)appResult.getValue()).getJsonObject("resourcesIdsMap");
+                                }
+
+                                // Should be Map<String, String> but casting Object to String doesn't work...
+                                Map<String, Object> mainIdsMap = idsMap.getJsonObject(mainResourceName).getMap();
+
+                                for(Map.Entry<String, Object> entry : mainIdsMap.entrySet())
+                                {
+                                  duplicatedId = entry.getValue().toString();
+                                  break;
+                                }
+
                                 event.reply(new JsonObject().put("status", "ok"));
                                 consumer.unregister();
 
                                 // The import service automatically deletes the archive
                                 //importService.deleteArchive(importId);
-                                handler.handle(new Either.Right<>("Duplication successful"));
+                                handler.handle(new Either.Right<>(duplicatedId));
                               }
                             });
                           }
@@ -133,8 +156,8 @@ public class DefaultDuplicationService implements DuplicationService
   }
 
   @Override
-  public void imported(String importId, String app, String resourcesNumber, String duplicatesNumber, String errorsNumber)
+  public void imported(String importId, String app, JsonObject importRapport)
   {
-    this.importService.imported(importId, app, resourcesNumber, duplicatesNumber, errorsNumber);
+    this.importService.imported(importId, app, importRapport);
   }
 }

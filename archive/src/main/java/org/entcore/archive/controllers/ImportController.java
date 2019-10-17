@@ -120,10 +120,9 @@ public class ImportController extends BaseController {
             case "imported" :
                 String importId = message.body().getString("importId");
                 String app = message.body().getString("app");
-                String resourcesNumber = message.body().getString("resourcesNumber");
-                String duplicatesNumber = message.body().getString("duplicatesNumber");
-                String errorsNumber = message.body().getString("errorsNumber");
-                importService.imported(importId, app, resourcesNumber, duplicatesNumber, errorsNumber);
+                JsonObject rapport = message.body().getJsonObject("rapport");
+
+                importService.imported(importId, app, rapport);
                 break;
             default: log.error("Archive : invalid action " + action);
         }
