@@ -15,7 +15,7 @@ import { CommunicationRulesService } from '../communication/communication-rules.
             </h1>
 
             <button [routerLink]="['manualGroup', 'create']"
-                    [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
+                    [class.hidden]="createButtonHidden()">
                 <s5l>create.group</s5l>
                 <i class="fonticon group_add is-size-3"></i>
             </button>
@@ -81,5 +81,10 @@ export class GroupsComponent implements OnInit, OnDestroy {
     onError(error: Error) {
         console.error(error);
         this.error = error;
+    }
+
+    createButtonHidden() {
+        return !this.router.isActive('/admin/' + this.groupsStore.structure.id + '/groups/manualGroup', false) 
+            || this.router.isActive('/admin/' + this.groupsStore.structure.id + '/groups/manualGroup/create', true);
     }
 }
