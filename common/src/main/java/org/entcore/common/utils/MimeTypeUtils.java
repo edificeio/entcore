@@ -10,6 +10,7 @@ public class MimeTypeUtils {
     private static final Map<String, String> fileExtensionMap = new HashMap<>();
     public static final String PDF = "application/pdf";
     public static final String CSV = "text/csv";
+    public static final String OCTET_STREAM = "application/octet-stream";
 
     static {
         //word extensions
@@ -110,6 +111,17 @@ public class MimeTypeUtils {
         return Optional.empty();
     }
 
+    private static boolean isUnknownType(String contentType){
+        return OCTET_STREAM.equalsIgnoreCase(trim(contentType));
+    }
+
+    private static String trim(String extension){
+        if(extension!=null){
+            return extension.trim();
+        }
+        return "";
+    }
+
     public static boolean isWordLike(String contentType) {
         Optional<String> extension = getExtensionForContentType(contentType);
         if (extension.isPresent()) {
@@ -117,6 +129,12 @@ public class MimeTypeUtils {
             return wordExtensions.contains(ext);
         }
         return false;
+    }
+
+    public static boolean isWordLike(String contentType, String extension) {
+        final boolean isWorkLike = isWordLike(contentType);
+        if(isWorkLike) return true;
+        return isUnknownType(contentType) && wordExtensions.contains(trim(extension));
     }
 
     public static boolean isExcelLike(String contentType) {
@@ -128,6 +146,12 @@ public class MimeTypeUtils {
         return false;
     }
 
+    public static boolean isExcelLike(String contentType, String extension) {
+        final boolean isExcelLike = isExcelLike(contentType);
+        if(isExcelLike) return true;
+        return isUnknownType(contentType) && excelExtensions.contains(trim(extension));
+    }
+
     public static boolean isPowerpointLike(String contentType) {
         Optional<String> extension = getExtensionForContentType(contentType);
         if (extension.isPresent()) {
@@ -135,5 +159,11 @@ public class MimeTypeUtils {
             return pptExtensions.contains(ext);
         }
         return false;
+    }
+
+    public static boolean isPowerpointLike(String contentType, String extension) {
+        final boolean isPowerpointLike = isPowerpointLike(contentType);
+        if(isPowerpointLike) return true;
+        return isUnknownType(contentType) && pptExtensions.contains(trim(extension));
     }
 }

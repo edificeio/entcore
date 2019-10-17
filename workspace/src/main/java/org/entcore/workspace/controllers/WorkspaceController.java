@@ -685,16 +685,18 @@ public class WorkspaceController extends BaseController {
 					badRequest(request, "document.error.missing.fileid");
 					return;
 				}
-				String contentType = res.getJsonObject("metadata", new JsonObject()).getString("content-type");
+				final String contentType = res.getJsonObject("metadata", new JsonObject()).getString("content-type");
+				final String filename = res.getJsonObject("metadata", new JsonObject()).getString("filename", "");
+				final String oExtension = filename.substring(filename.lastIndexOf('.') + 1);
 				//check content type
 				PdfGenerator.SourceKind kind = null;
 				boolean csv = false;
-				if(MimeTypeUtils.isExcelLike(contentType)){
+				if(MimeTypeUtils.isExcelLike(contentType, oExtension)){
 					csv = true;
 					kind = PdfGenerator.SourceKind.csv_multisheet;
-				} else if(MimeTypeUtils.isWordLike(contentType)){
+				} else if(MimeTypeUtils.isWordLike(contentType, oExtension)){
 					kind = PdfGenerator.SourceKind.document;
-				} else if(MimeTypeUtils.isPowerpointLike(contentType)){
+				} else if(MimeTypeUtils.isPowerpointLike(contentType, oExtension)){
 					kind = PdfGenerator.SourceKind.presentation;
 				} else{
 					badRequest(request, "document.error.preview.kind.unknown");
