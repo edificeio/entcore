@@ -276,7 +276,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	}
 
 	@Override
-	public void importResources(String importId, String userId, String userName, String importPath,
+	public void importResources(String importId, String userId, String userLogin, String userName, String importPath,
 		String locale, Handler<JsonObject> handler)
 	{
 		WorkspaceRepositoryEvents self = this;

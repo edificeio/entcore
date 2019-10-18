@@ -84,7 +84,7 @@ public class ImportController extends BaseController {
 
             UserUtils.getUserInfos(eb, request, user ->
             {
-                importService.launchImport(user.getUserId(), user.getUsername(), importId, importPath,
+                importService.launchImport(user.getUserId(), user.getLogin(), user.getUsername(), importId, importPath,
                     I18n.acceptLanguage(request), apps);
                 final String address = importService.getImportBusAddress(importId);
                 final MessageConsumer<JsonObject> consumer = eb.consumer(address);
