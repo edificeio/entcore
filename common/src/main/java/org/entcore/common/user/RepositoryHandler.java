@@ -105,7 +105,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					String userName = message.body().getString("userName", "");
 					String path = message.body().getString("path", "");
 					String locale = message.body().getString("locale", "fr");
-					String folderPath = path + File.separator + importApps.getString(appTitle.substring(1));
+					String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
 
 					String finalBusAddress = importedBusAddress;
 					repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, success -> {

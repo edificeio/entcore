@@ -64,6 +64,18 @@
 
             <div ng-if="isAnalized" style="margin-top: 20px;">
                 <div class="row">
+                    <span><i18n>archive.quota.available</i18n>: [[quota.quantity]]</span><span class="file-size" translate content="[[quota.unity]]"></span>
+                </div>
+                <div class="row">
+                    <div ng-if="quotaExceeded" style="color: red">
+                        <span><i18n>archive.quota.selected</i18n>: [[sum.quantity]]</span><span class="file-size" translate content="[[sum.unity]]"></span>
+                    </div>
+                    <div ng-if="!quotaExceeded">
+                        <span><i18n>archive.quota.selected</i18n>: [[sum.quantity]]</span><span class="file-size" translate content="[[sum.unity]]"></span>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
                     <i18n>archive.import.select</i18n>
                 </div>
                 <label class="checkbox top-spacing-twice aligned archive">
@@ -73,14 +85,14 @@
                 </label>
                 <div class="left-spacing-four">
                     <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
-                        <input type="checkbox" ng-model="selectedApps[app]" />
+                        <input type="checkbox" ng-model="selectedApps[app]" ng-click="updateQuota(app)" />
                         <span></span>
-                        <span translate content="[[app]]"></span>
+                        <span translate content="[[app]]"></span> (<span>[[appsSize[app].quantity]]</span><span style="margin-left: 5px;" translate content="[[appsSize[app].unity]]"></span>)
                     </label>
                 </div>
                 <hr>
                 <div ng-if="!loading">
-                    <button class="right-magnet" ng-disabled="areNoneSelected() || importLaunched" ng-click="initiateImport()" style="margin-left: 20px;">
+                    <button class="right-magnet" ng-disabled="areNoneSelected() || importLaunched || quotaExceeded" ng-click="initiateImport()" style="margin-left: 20px;">
                         <i18n>archive.import</i18n>
                     </button>
                     <button class="right-magnet cancel" ng-click="cancelImport()">

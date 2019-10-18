@@ -2,18 +2,18 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.buffer.Buffer;
 import org.entcore.archive.services.ImportService;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
@@ -21,11 +21,9 @@ import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class DefaultImportService implements ImportService {
 
@@ -59,6 +57,8 @@ public class DefaultImportService implements ImportService {
     private final Storage storage;
     private final String importPath;
     private final String handlerActionName;
+
+    private final Neo4j neo = Neo4j.getInstance();
 
     private final Map<String, UserImport> userImports;
 
@@ -220,13 +220,58 @@ public class DefaultImportService implements ImportService {
                            }
 
                        });
-                       reply.put("apps", foundApps);
-                       handler.handle(new Either.Right<>(reply));
+
+                       final JsonObject foundAppsWithSize = new JsonObject();
+                       final List<Future> getFoldersSize = new ArrayList<>();
+
+                       foundApps.fieldNames().forEach(app -> {
+
+                           String folder = foundApps.getString(app);
+                           String folderPath;
+                           if ("workspace".equals(app) || "rack".equals(app)) {
+                               folderPath = folders.stream().filter(f -> f.endsWith(folder)).findFirst().get();
+                           } else {
+                               folderPath = folders.stream().filter(f -> f.endsWith(folder)).findFirst().get()
+                                       + File.separator + "Documents";
+                           }
+                           Future<Long> size = Future.future();
+                           fs.exists(folderPath, exist -> {
+                               if (exist.result()) {
+                                   Future<Long> promise = recursiveSize(folderPath);
+                                   promise.setHandler(result -> {
+                                       foundAppsWithSize.put(app, new JsonObject()
+                                               .put("folder", folder).put("size", result.result()));
+                                       size.complete(result.result());
+                                   });
+                               } else {
+                                   foundAppsWithSize.put(app, new JsonObject()
+                                           .put("folder", folder).put("size", 0l));
+                                   size.complete(0l);
+                               }
+                           });
+                           getFoldersSize.add(size);
+
+                       });
+                       CompositeFuture.join(getFoldersSize).setHandler(completed -> {
+                           reply.put("apps", foundAppsWithSize);
+                           getQuota(user, reply, replyWithQuota -> {
+                               handler.handle(new Either.Right<>(replyWithQuota));
+                           });
+                       });
+
                    } else {
                        deleteAndHandleError(path, "[Archive] - Could not recognize folders. ", handler);
                    }
                });
            }
+        });
+    }
+
+    private void getQuota(UserInfos user, JsonObject reply, Handler<JsonObject> handler) {
+        neo.execute("MATCH (u:User {id: {userId}})-[:USERBOOK]->(ub:UserBook) RETURN ub.quota AS quota",
+                new JsonObject().put("userId", user.getUserId()), result -> {
+            reply.put("quota", result.body().getJsonArray("result").getJsonObject(0).getLong("quota"));
+            handler.handle(reply);
         });
     }
 
@@ -271,6 +316,38 @@ public class DefaultImportService implements ImportService {
   public String getImportBusAddress(String exportId)
   {
     return "import." + exportId;
+  }
+
+  private Future<Long> recursiveSize(String path) {
+        Future<Long> size = Future.future();
+        fs.props(path, handler -> {
+            if (handler.succeeded()) {
+                FileProps props = handler.result();
+                if (props.isDirectory()) {
+                    fs.readDir(path, res -> {
+                       if (res.failed()) {
+                           size.complete(props.size());
+                       } else {
+                           List<Future> childrenSize = res.result().stream().map(this::recursiveSize).collect(Collectors.toList());
+                           CompositeFuture.join(childrenSize).setHandler(compositeFutureAsyncResult -> {
+                               if (compositeFutureAsyncResult.succeeded()) {
+                                   Long l = compositeFutureAsyncResult.result().list().stream().mapToLong(lo -> (Long)lo).sum();
+                                   size.complete(l + props.size());
+                               } else {
+                                   size.complete(props.size());
+                               }
+                           });
+                       }
+                    });
+                } else {
+                    size.complete(props.size());
+                }
+            } else {
+                size.complete(0l);
+            }
+        });
+
+        return size;
   }
 
 }
