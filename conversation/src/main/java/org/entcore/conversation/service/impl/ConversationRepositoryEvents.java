@@ -223,7 +223,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				JsonObject results = result.result().toJsonObject();
 				JsonArray ja = results.getJsonArray("results");
 				if (!ja.isEmpty()) {
-					exportUserId = ja.getJsonArray(0).getString(results.getJsonArray("fields").getList().indexOf("user_id"));
+					exportUserId.put(userId,ja.getJsonArray(0).getString(results.getJsonArray("fields").getList().indexOf("user_id")));
 				}
 
 				List<String> tables = new ArrayList<>(Arrays.asList("messages", "attachments", "folders",
@@ -239,13 +239,13 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		});
 	}
 
-	private String exportUserId;
+	private final Map<String,String> exportUserId = new HashMap<>();
 
 	@Override
 	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, SqlStatementsBuilder builder, String table) {
 
 		// Dirty hack..
-		if ("messages".equals(table) && exportUserId != null) {
+		if ("messages".equals(table) && exportUserId.get(userId) != null) {
 			results.forEach(res -> {
 				JsonArray l =(JsonArray)res;
 				for (int i = 0; i < l.size(); i++) {
@@ -254,10 +254,10 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 						String field = fields.getString(i);
 						if ("from".equals(field) || "to".equals(field)
 								|| "cc".equals(field) || "cci".equals(field)) {
-							l.getList().set(i, s.replace(exportUserId, userId));
+							l.getList().set(i, s.replace(exportUserId.get(userId), userId));
 						}
 						if ("displayNames".equals(field)) {
-						    l.getList().set(i, s.replaceAll(exportUserId+"\\$[^\\$]+?\\$",userId+"\\$"+username+"\\$"));
+						    l.getList().set(i, s.replaceAll(exportUserId.get(userId)+"\\$[^\\$]+?\\$",userId+"\\$"+username+"\\$"));
                         }
 					}
 				}
