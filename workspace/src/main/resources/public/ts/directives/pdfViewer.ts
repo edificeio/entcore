@@ -1,4 +1,5 @@
 import { ng, http, $ } from 'entcore';
+import { Subject, Observable } from "rxjs";
 
 interface ScopePdfViewer {
 	pageIndex: number | any;
@@ -50,17 +51,8 @@ export const pdfViewer = ng.directive('pdfViewer', function () {
 					scope.openPage();
 				}
 			};
-			scope.openPage = function () {
-				var pageNumber = parseInt(scope.pageIndex);
-				if (!pageNumber) {
-					return;
-				}
-				if (pageNumber < 1) {
-					pageNumber = 1;
-				}
-				if (pageNumber > scope.numPages) {
-					pageNumber = scope.numPages;
-				}
+			const reloadPdf = new Subject<number>();
+			(reloadPdf as Observable<number>).debounceTime(100).subscribe(pageNumber=>{
 				pdf.getPage(pageNumber).then(function (page) {
 					var viewport;
 					if (!$(canvas).hasClass('fullscreen')) {
@@ -82,6 +74,19 @@ export const pdfViewer = ng.directive('pdfViewer', function () {
 					};
 					page.render(renderContext);
 				});
+			})
+			scope.openPage = function () {
+				var pageNumber = parseInt(scope.pageIndex);
+				if (!pageNumber) {
+					return;
+				}
+				if (pageNumber < 1) {
+					pageNumber = 1;
+				}
+				if (pageNumber > scope.numPages) {
+					pageNumber = scope.numPages;
+				}
+				reloadPdf.next(pageNumber)
 			};
 			scope.$parent.render = scope.openPage;
 
