@@ -353,10 +353,19 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			});
 	}
 
-	protected JsonObject sanitiseDocument(JsonObject document, String userId, String userName)
+	protected void transformDocumentBeforeImport(JsonObject document, String collectionName, String userId, String userLogin, String userName)
+	{
+		// Override this method to apply custom transformations to an object
+	}
+
+	protected JsonObject sanitiseDocument(JsonObject document, String collectionName, String collectionPrefix,
+		String userId, String userLogin, String userName)
 	{
 		MongoDbCrudService.setUserMetadata(document, userId, userName);
 		MongoDbShareService.removeShareMetadata(document);
+
+		this.revertExportChanges(document, collectionPrefix);
+		this.transformDocumentBeforeImport(document, collectionName, userId, userLogin, userName);
 
 		return document;
 	}
@@ -449,7 +458,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 												else
 												{
 													int ix = unprocessed.decrementAndGet();
-													mongoDocs.set(ix, self.sanitiseDocument(fileResult.result().toJsonObject(), userId, userName));
+													mongoDocs.set(ix, fileResult.result().toJsonObject());
 													mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
 
 													if(ix == 0)
@@ -642,7 +651,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								continue;
 
 						if(entry.getKey().startsWith(prefix.getValue()) == true)
-							collectionDocs.add(self.revertExportChanges(entry.getValue(), prefix.getValue()));
+						{
+							JsonObject finalDoc = self.sanitiseDocument(entry.getValue(), prefix.getKey(), prefix.getValue(), userId, userLogin, userName);
+							collectionDocs.add(finalDoc);
+						}
 					}
 
 					if(collectionDocs.size() != 0)
