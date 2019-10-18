@@ -67,8 +67,9 @@
                     <span><i18n>archive.quota.available</i18n>: [[quota.quantity]]</span><span class="file-size" translate content="[[quota.unity]]"></span>
                 </div>
                 <div class="row">
-                    <div ng-if="quotaExceeded" style="color: red">
-                        <span><i18n>archive.quota.selected</i18n>: [[sum.quantity]]</span><span class="file-size" translate content="[[sum.unity]]"></span>
+                    <div style="color: red" ng-if="quotaExceeded">
+                        <span><i18n>archive.quota.selected</i18n>: [[sum.quantity]]</span><span style="margin-left: 5px;" translate content="[[sum.unity]]"></span>
+                        - <i18n>archive.quota.warning</i18n>
                     </div>
                     <div ng-if="!quotaExceeded">
                         <span><i18n>archive.quota.selected</i18n>: [[sum.quantity]]</span><span class="file-size" translate content="[[sum.unity]]"></span>
