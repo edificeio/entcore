@@ -595,7 +595,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void importResources(String importId, String userId, String userName, String importPath,
+	public void importResources(String importId, String userId, String userLogin, String userName, String importPath,
 		String locale, Handler<JsonObject> handler)
 	{
 		MongoDbRepositoryEvents self = this;

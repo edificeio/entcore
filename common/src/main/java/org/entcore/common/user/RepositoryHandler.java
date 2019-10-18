@@ -101,13 +101,14 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				{
 					final String importId = message.body().getString("importId", "");
 					String userId = message.body().getString("userId", "");
+					String userLogin = message.body().getString("userLogin", "");
 					String userName = message.body().getString("userName", "");
 					String path = message.body().getString("path", "");
 					String locale = message.body().getString("locale", "fr");
 					String folderPath = path + File.separator + importApps.getString(appTitle.substring(1));
 
 					String finalBusAddress = importedBusAddress;
-					repositoryEvents.importResources(importId, userId, userName, folderPath, locale, success -> {
+					repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, success -> {
 							JsonObject imported = new JsonObject()
 									.put("action", "imported")
 									.put("importId", importId)
