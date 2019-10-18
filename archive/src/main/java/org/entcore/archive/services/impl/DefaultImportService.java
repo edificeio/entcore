@@ -178,7 +178,7 @@ public class DefaultImportService implements ImportService {
 
                        apps.fieldNames().forEach(key -> {
 
-                           String appName = key.substring(key.lastIndexOf(".") + 1);
+                           String appName = key.substring(key.lastIndexOf(".") + 1).replace("-", "");
 
                            String workflow = config.getJsonObject("publicConf").getJsonObject("apps").getString(appName);
                            if (user.getAuthorizedActions().stream().noneMatch(action -> action.getName().equals(workflow))) {
