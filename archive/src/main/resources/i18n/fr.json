@@ -37,6 +37,8 @@
     "archive.report.imported": "Contenus importés",
     "archive.report.duplicates": "Contenus déjà existants",
     "archive.report.errors": "Erreurs",
+    "archive.quota.available": "Quota disponible",
+    "archive.quota.selected": "Quota sélectionné",
 
     "import.info": "Importer votre fichier d'export au format .zip <br /> <strong>Attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"</strong>.",
     "import.drop-files": "Déposer les fichiers",

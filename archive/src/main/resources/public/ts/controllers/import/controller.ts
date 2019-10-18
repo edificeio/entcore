@@ -33,6 +33,13 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     $scope.currentImportId = res.data.importId;
                     archiveService.analyzeArchive($scope.currentImportId).then(r => {
                         $scope.availableApps = Object.keys(r.data.apps);
+                        $scope.quota = getSize(r.data.quota);
+                        $scope.quotaExceeded = false;
+                        $scope.appsSize = [];
+                        $scope.availableApps.forEach(app => {
+                            $scope.appsSize[app] = getSize(r.data.apps[app].size);
+                        });
+                        $scope.sum = getSize(0);
                         if ($scope.availableApps.length == 0) {
                             notify.error('archive.import.none.available');
                             $scope.cancelImport();
@@ -55,6 +62,17 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                 $scope.cancelImport();
             }
 
+            $scope.updateQuota = function() {
+                var newSum = 0;
+                $scope.availableApps.forEach(app => {
+                    if ($scope.selectedApps[app]) {
+                        newSum += currentImport.apps[app].size
+                    }
+                });
+                $scope.sum = getSize(newSum);
+                $scope.quotaExceeded = newSum > currentImport.quota;
+            }
+
             const getSize = function(sizeAsBytes: number): { quantity: number, unity: string } {
                 for (var i = 0; i < 4; i++) {
                     var v = Math.floor(sizeAsBytes/Math.pow(1000,i));
@@ -73,6 +91,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     delete $scope.currentImportId;
                     $scope.isAnalized = false;
                     $scope.isImporting = false;
+                    $scope.importLaunched = false;
                     $scope.selectedApps = [];
                     delete $scope.upload;
                 });
@@ -87,6 +106,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
             $scope.selectAll = function (){
                 let oneFalse = !$scope.areAllSelected()
                 $scope.availableApps.forEach(app => { $scope.selectedApps[app] = oneFalse })
+                $scope.updateQuota();
             }
 
             $scope.initiateImport = function () {
