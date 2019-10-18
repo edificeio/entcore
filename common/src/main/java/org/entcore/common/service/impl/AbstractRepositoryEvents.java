@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
@@ -35,6 +36,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	protected static final Logger log = LoggerFactory.getLogger(AbstractRepositoryEvents.class);
 	protected final Vertx vertx;
 	protected final FileSystem fs;
+	protected final EventBus eb;
 	protected final String title;
 	protected final FolderExporter exporter;
 	protected final MongoDb mongo = MongoDb.getInstance();
@@ -49,11 +51,13 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 		if (vertx != null)
 		{
 			this.fs = vertx.fileSystem();
+			this.eb = vertx.eventBus();
 			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), this.fs);
 		}
 		else
 		{
 			this.fs = null;
+			this.eb = null;
 			this.exporter = null;
 		}
 	}

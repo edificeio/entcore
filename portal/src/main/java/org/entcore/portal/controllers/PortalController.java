@@ -399,8 +399,15 @@ public class PortalController extends BaseController {
 		String action = message.body().getString("action", "");
 		switch (action) {
 			case "getI18n" :
+				String label = message.body().getString("label");
 				String acceptLanguage = message.body().getString("acceptLanguage");
-				message.reply(I18n.getInstance().load(acceptLanguage, I18n.DEFAULT_DOMAIN));
+
+				JsonObject i18n = I18n.getInstance().load(acceptLanguage, I18n.DEFAULT_DOMAIN);
+
+				if(label == null)
+					message.reply(i18n);
+				else
+					message.reply(new JsonObject().put("label", i18n.getString(label)));
 				break;
 			default: log.error("Archive : invalid action " + action);
 		}

@@ -193,7 +193,7 @@ public class FolderImporter
 				for(int i = updatedDocs.size(); i-- > 0;)
 					importList.add(self.sanitiseDocData(context, updatedDocs.getJsonObject(i)));
 
-				MongoDbRepositoryEvents.importDocuments("documents", importList, new Handler<JsonObject>()
+				MongoDbRepositoryEvents.importDocuments("documents", importList, "", new Handler<JsonObject>()
 				{
 					@Override
 					public void handle(JsonObject result)
