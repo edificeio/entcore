@@ -18,6 +18,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
 
             $scope.selectedApps = [];
             $scope.firstPhase = true;
+            $scope.importLaunched = false;
 
             $scope.importFile = function () {
                 let file: File = $scope.upload.files.item(0);
@@ -93,6 +94,9 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     if (!$scope.selectedApps[app]) {
                         delete currentImport.apps[app];
                     }
+                });
+                $timeout(function() {
+                    $scope.importLaunched = true;
                 });
                 archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps)
                 .then(result => {
