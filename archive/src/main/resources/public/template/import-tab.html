@@ -80,7 +80,7 @@
                 </div>
                 <hr>
                 <div ng-if="!loading">
-                    <button class="right-magnet" ng-disabled="areNoneSelected()" ng-click="initiateImport()" style="margin-left: 20px;">
+                    <button class="right-magnet" ng-disabled="areNoneSelected() || importLaunched" ng-click="initiateImport()" style="margin-left: 20px;">
                         <i18n>archive.import</i18n>
                     </button>
                     <button class="right-magnet cancel" ng-click="cancelImport()">
