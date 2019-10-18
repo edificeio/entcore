@@ -254,24 +254,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 	}
 
-	protected JsonObject revertExportChanges(JsonObject document, String importPrefix)
-	{
-		String title = DocumentHelper.getTitle(document);
-		String name = DocumentHelper.getName(document);
-		String headline = DocumentHelper.getAppProperty(document, "headline");
-
-		if(title != null && title.startsWith(importPrefix) == true)
-			DocumentHelper.setTitle(document, title.substring(importPrefix.length()));
-
-		if(name != null && name.startsWith(importPrefix) == true)
-			DocumentHelper.setName(document, name.substring(importPrefix.length()));
-
-		if(headline != null && headline.startsWith(importPrefix) == true)
-			DocumentHelper.setAppProperty(document, "headline", headline.substring(importPrefix.length()));
-
-		return document;
-	}
-
 	@Override
 	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray g, String exportPath, String locale,
 			String host, Handler<Boolean> handler)
@@ -353,6 +335,41 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			});
 	}
 
+	protected JsonObject revertExportChanges(JsonObject document, String importPrefix)
+	{
+		String title = DocumentHelper.getTitle(document);
+		String name = DocumentHelper.getName(document);
+		String headline = DocumentHelper.getAppProperty(document, "headline");
+
+		if(title != null && title.startsWith(importPrefix) == true)
+			DocumentHelper.setTitle(document, title.substring(importPrefix.length()));
+
+		if(name != null && name.startsWith(importPrefix) == true)
+			DocumentHelper.setName(document, name.substring(importPrefix.length()));
+
+		if(headline != null && headline.startsWith(importPrefix) == true)
+			DocumentHelper.setAppProperty(document, "headline", headline.substring(importPrefix.length()));
+
+		return document;
+	}
+
+	protected static void transformDocumentDuplicate(JsonObject document, String collectionName, String duplicateSuffix)
+	{
+		// Override this method to apply custom transformations to an object
+		String title = DocumentHelper.getTitle(document);
+		String name = DocumentHelper.getName(document);
+		String headline = DocumentHelper.getAppProperty(document, "headline");
+
+		if(title != null)
+			DocumentHelper.setTitle(document, title + duplicateSuffix);
+
+		if(name != null)
+			DocumentHelper.setName(document, name + duplicateSuffix);
+
+		if(headline != null)
+			DocumentHelper.setAppProperty(document, "headline", headline + duplicateSuffix);
+	}
+
 	protected void transformDocumentBeforeImport(JsonObject document, String collectionName, String userId, String userLogin, String userName)
 	{
 		// Override this method to apply custom transformations to an object
@@ -370,10 +387,38 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected void readAllDocumentsFromDir(String dirPath, Handler<Map<String, JsonObject>> handler, String userId, String userName)
+	protected Future<String> getDuplicateSuffix(String locale)
+	{
+		// Get the latest translation from portal
+		JsonObject rq =
+			new JsonObject()
+				.put("action", "getI18n")
+				.put("acceptLanguage", locale)
+				.put("label", "duplicate.suffix");
+
+		Future<String> promise = Future.future();
+
+		this.eb.send("portal", rq, new Handler<AsyncResult<Message<JsonObject>>>()
+		{
+			@Override
+			public void handle(AsyncResult<Message<JsonObject>> msg)
+			{
+				if(msg.succeeded() == false)
+					promise.complete(" — Copie");
+				else
+					promise.complete((String)(msg.result().body().getString("label")));
+			}
+		});
+
+		return promise;
+	}
+
+	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName)
 	{
 		if(this.fileImporter == null)
 				throw new RuntimeException("Cannot import documents without a file importer instance");
+
+		Future<Map<String, JsonObject>> promise = Future.future();
 
 		MongoDbRepositoryEvents self = this;
 		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
@@ -413,7 +458,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							for(int i = mongoDocs.size(); i-- > 0;)
 								fileMap.put(mongoDocsFileNames.get(i), mongoDocs.get(i));
 
-							handler.handle(fileMap);
+							promise.complete(fileMap);
 						}
 					};
 
@@ -474,9 +519,11 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				}
 			}
 		});
+
+		return promise;
 	}
 
-	public static void importDocuments(String collection, List<JsonObject> documents, Handler<JsonObject> handler)
+	public static void importDocuments(String collection, List<JsonObject> documents, String duplicateSuffix, Handler<JsonObject> handler)
 	{
 		if(documents.size() == 0)
 		{
@@ -543,8 +590,12 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						{
 							String newId = UUID.randomUUID().toString();
 							oldIdsToNewIds.put(foundId, newId);
+
 							// Create a duplicate
-							DocumentHelper.setId(savePayload.getJsonObject(mapIx), newId);
+							JsonObject dupDoc = savePayload.getJsonObject(mapIx);
+							DocumentHelper.setId(dupDoc, newId);
+							transformDocumentDuplicate(dupDoc, collection, duplicateSuffix);
+
 							++nbDuplicates;
 						}
 					}
@@ -609,7 +660,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	{
 		MongoDbRepositoryEvents self = this;
 
-		this.readAllDocumentsFromDir(importPath, new Handler<Map<String, JsonObject>>()
+		final JsonObject duplicateSuffixWrapper = new JsonObject();
+
+		Handler readDirsHandler = new Handler<Map<String, JsonObject>>()
 		{
 			@Override
 			public void handle(Map<String, JsonObject> docs)
@@ -675,7 +728,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousIdsMapCombined);
 								}
 
-								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, new Handler<JsonObject>()
+								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, duplicateSuffixWrapper.getString("str"),
+									new Handler<JsonObject>()
 								{
 									@Override
 									public void handle(JsonObject result)
@@ -755,7 +809,20 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				});
 
 			};
-		}, userId, userName);
+		};
+
+		Future<Map<String, JsonObject>> readDirs = this.readAllDocumentsFromDir(importPath, userId, userName);
+		Future<String> dupSuffix = this.getDuplicateSuffix(locale);
+
+		CompositeFuture.join(readDirs, dupSuffix).setHandler(new Handler<AsyncResult<CompositeFuture>>()
+		{
+			@Override
+			public void handle(AsyncResult<CompositeFuture> ftr)
+			{
+				duplicateSuffixWrapper.put("str", dupSuffix.result());
+				readDirsHandler.handle(readDirs.result());
+			}
+		});
 	}
 
 }
