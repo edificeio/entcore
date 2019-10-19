@@ -107,8 +107,8 @@ public class DefaultImportService implements ImportService {
         fs.mkdirs(unzippedPath, done -> {
             try {
                 FileUtils.unzip(filePath, unzippedPath);
-            } catch (IOException ioe){
-                deleteAndHandleError(filePath, ioe.getMessage(), handler);
+            } catch (IOException | UnsupportedOperationException e) {
+                deleteAndHandleError(filePath, e.getMessage(), handler);
                 return;
             }
             fs.readDir(unzippedPath, results -> {

@@ -48,6 +48,10 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                             $scope.isAnalized = true;
                             $scope.$apply();
                         }
+                    }).catch(err => {
+                        notify.error('archive.import.corrupted');
+                        delete $scope.currentImportId;
+                        $scope.cancelImport();
                     })
                 }).catch(err => {
                     $scope.uploadStatus = 'failed';
