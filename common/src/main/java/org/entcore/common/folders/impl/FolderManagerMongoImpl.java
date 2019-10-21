@@ -23,6 +23,7 @@ import org.entcore.common.folders.impl.QueryHelper.DocumentQueryBuilder;
 import org.entcore.common.folders.impl.QueryHelper.RestoreParentDirection;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.FileStats;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.mongodb.MongoDbResult;
@@ -41,6 +42,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -792,6 +794,29 @@ public class FolderManagerMongoImpl implements FolderManager {
 			//
 			return queryHelper.update(id, doc).map(doc);
 		}).setHandler(handler);
+	}
+
+	@Override
+	public void importFile(Buffer contents, String contentType, String fileName, String oldFileId, String userId, Handler<JsonObject> handler)
+	{
+		if(oldFileId == null || oldFileId.trim().isEmpty() == true)
+			this.storage.writeBuffer(contents, contentType, fileName, handler);
+		else
+		{
+			// Check whether the file already exists
+			this.storage.fileStats(oldFileId, new Handler<AsyncResult<FileStats>>()
+			{
+				@Override
+				public void handle(AsyncResult<FileStats> res)
+				{
+					// If the file already exists, duplicate it with a new id, else keep the old id
+					if(res.succeeded() == true)
+						storage.writeBuffer(contents, contentType, fileName, handler);
+					else
+						storage.writeBuffer(oldFileId, contents, contentType, fileName, handler);
+				}
+			});
+		}
 	}
 
 	@Override

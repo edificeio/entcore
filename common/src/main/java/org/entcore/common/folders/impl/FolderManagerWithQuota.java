@@ -14,6 +14,7 @@ import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.folders.impl.QueryHelper.DocumentQueryBuilder;
+import org.entcore.common.storage.FileStats;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -24,6 +25,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -395,6 +397,27 @@ public class FolderManagerWithQuota implements FolderManager {
 	public void updateFile(String id, Optional<String> parentId, JsonObject doc,
 			Handler<AsyncResult<JsonObject>> handler) {
 		this.folderManager.updateFile(id, parentId, doc, handler);
+	}
+
+	@Override
+	public void importFile(Buffer contents, String contentType, String fileName, String oldFileId, String userId, Handler<JsonObject> handler)
+	{
+		FolderManagerWithQuota self = this;
+		this.folderManager.importFile(contents, contentType, fileName, oldFileId, userId, new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(JsonObject writtenFile)
+			{
+				quotaService.incrementStorage(userId, DocumentHelper.getFileSize(writtenFile), self.quotaThreshold, new Handler<Either<String, JsonObject>>()
+				{
+					@Override
+					public void handle(Either<String, JsonObject> incRes)
+					{
+						handler.handle(writtenFile);
+					}
+				});
+			}
+		});
 	}
 
 	@Override
