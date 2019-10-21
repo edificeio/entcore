@@ -14,6 +14,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -66,6 +67,18 @@ public interface FolderManager {
 	 * @param handler  the handler that emit the file object save or an error if any
 	 */
 	void updateFile(String id, Optional<String> parentId, JsonObject doc, Handler<AsyncResult<JsonObject>> handler);
+
+
+	/**
+	 *
+	 * @param contents of the file
+	 * @param contentType a MIME type describing the data inside the buffer
+	 * @param fileName of the file
+	 * @param oldId    the previous file id, if any
+	 * @param userId   the user's id
+	 * @param handler  the handler that emit the file object save or an error if any
+	 */
+	void importFile(Buffer fileContents, String contentType, String fileName, String oldId, String userId, Handler<JsonObject> handler);
 
 	/**
 		* Create the file's thumbnails if applicable

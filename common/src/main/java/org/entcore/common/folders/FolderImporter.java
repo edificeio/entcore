@@ -248,7 +248,8 @@ public class FolderImporter
 																	.put("buffer", buff.getBytes())
 																	.put("oldFileId", fileId)
 																	.put("fileName", fileName)
-																	.put("contentType", contentType);
+																	.put("contentType", contentType)
+																	.put("userId", context.userId);
 
 		this.eb.send("org.entcore.workspace", importParams, new Handler<AsyncResult<Message<JsonObject>>>()
 		{

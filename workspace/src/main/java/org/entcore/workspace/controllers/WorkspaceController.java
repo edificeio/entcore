@@ -1511,6 +1511,7 @@ public class WorkspaceController extends BaseController {
 	private void importDocument(final Message<JsonObject> message)
 	{
 		String fileId = message.body().getString("oldFileId");
+		String userId = message.body().getString("userId");
 		String contentType = message.body().getString("contentType");
 		String fileName = message.body().getString("fileName");
 		Buffer buff = Buffer.buffer(message.body().getBinary("buffer"));
@@ -1524,25 +1525,7 @@ public class WorkspaceController extends BaseController {
 			}
 		};
 
-		if(fileId == null || fileId.trim().isEmpty() == true)
-			this.storage.writeBuffer(buff, contentType, fileName, hnd);
-		else
-		{
-			// Check whether the file already exists
-			WorkspaceController self = this;
-			this.storage.fileStats(fileId, new Handler<AsyncResult<FileStats>>()
-			{
-				@Override
-				public void handle(AsyncResult<FileStats> res)
-				{
-					// If the file already exists, duplicate it with a new id, else keep the old id
-					if(res.succeeded() == true)
-						self.storage.writeBuffer(buff, contentType, fileName, hnd);
-					else
-						self.storage.writeBuffer(fileId, buff, contentType, fileName, hnd);
-				}
-			});
-		}
+		this.folderManager.importFile(buff, contentType, fileName, fileId, userId, hnd);
 	}
 
 	private void createThumbnails(final Message<JsonObject> message)
