@@ -217,13 +217,14 @@ public abstract class BaseServer extends Server {
 								public void handle(AsyncResult<List<String>> themes) {
 									if (themes.succeeded()) {
 										for (String theme : themes.result()) {
-											final String domain = reverseSkins.get(theme.substring(theme.lastIndexOf(File.separator) + 1));
+											final String themeName = theme.substring(theme.lastIndexOf(File.separator) + 1);
+											final String domain = reverseSkins.get(themeName);
 											if (domain == null) {
 												log.warn("Missing domain for theme : " + theme);
 												continue;
 											}
 											final String i18nDirectory = theme + File.separator + "i18n" + File.separator + className;
-											readI18n(domain, i18nDirectory, null);
+											readI18n(domain, i18nDirectory, null, themeName);
 										}
 									} else {
 										log.error("Error listing themes directory.", themes.cause());
@@ -241,6 +242,10 @@ public abstract class BaseServer extends Server {
 	}
 
 	private void readI18n(final String domain, final String i18nDirectory, final Handler<Void> handler) {
+		readI18n(domain, i18nDirectory, handler, null);
+	}
+
+	private void readI18n(final String domain, final String i18nDirectory, final Handler<Void> handler, final String themeName) {
 		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
@@ -260,6 +265,9 @@ public abstract class BaseServer extends Server {
 											if (ar.succeeded()) {
 												try {
 													i18n.add(domain, locale, new JsonObject(ar.result().toString()));
+													if (themeName != null) {
+														i18n.add(themeName, locale, new JsonObject(ar.result().toString()), true);
+													}
 													if (handler != null) {
 														handler.handle(null);
 													}
