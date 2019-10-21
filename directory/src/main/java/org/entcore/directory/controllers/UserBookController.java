@@ -30,13 +30,9 @@ import static org.entcore.common.user.SessionAttributes.BIRTHDAYS_ATTRIBUTE;
 import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -494,6 +490,15 @@ public class UserBookController extends BaseController {
 		params.put("userId", message.body().getString("userId"));
 		params.put("avatar", userBookData.getString("default-avatar"));
 		params.put("theme", userBookData.getString("default-theme", ""));
+
+		final JsonObject headers = message.body().getJsonObject("request", new JsonObject()).getJsonObject("headers", new JsonObject());
+		final String defaultLanguage = userBookData.getString("default-language", "en");
+		final JsonArray languages = I18n.getInstance().getLanguages(headers.getString("Host"));
+		final String lang = headers.getString("Accept-Language", defaultLanguage);
+		final String locale = Locale.forLanguageTag(lang.split(",")[0].split("-")[0]).toString();
+		final String localeAvailable = (languages.contains(locale)) ? locale : defaultLanguage;
+		final JsonObject uacLanguage = new JsonObject().put(I18n.DEFAULT_DOMAIN, localeAvailable);
+
 		JsonArray queries = new fr.wseduc.webutils.collections.JsonArray();
 		String query =
 				"MERGE (m:UserBook { userid : {userId}}) " +
@@ -506,16 +511,21 @@ public class UserBookController extends BaseController {
 		String query2 = "MATCH (n:User)-[:USERBOOK]->m "
 				+ "WHERE n.id = {userId} "
 				+ "CREATE m-[:PUBLIC]->(c:Hobby {category: {category}, values: {values}})";
+		String query3 =
+				"MATCH (u:User {id:{userId}}) " +
+				"MERGE (u)-[:PREFERS]->(uac:UserAppConf) " +
+				"SET uac.language = {language}";
+		JsonObject paramsQuery3 = new JsonObject()
+				.put("userId", message.body().getString("userId"))
+				.put("language", uacLanguage.encode());
+
 		if (isNotEmpty(message.body().getString("theme"))) {
-			String query3 =
-					"MATCH (u:User {id:{userId}}) " +
-					"MERGE (u)-[:PREFERS]->(uac:UserAppConf) " +
-					"SET uac.theme = {theme} ";
-			JsonObject paramsTheme = new JsonObject()
-					.put("userId", message.body().getString("userId"))
-					.put("theme", message.body().getString("theme"));
-			queries.add(Neo.toJsonObject(query3, paramsTheme));
+			query3 += ", uac.theme = {theme}";
+			paramsQuery3.put("theme", message.body().getString("theme"));
 		}
+
+		queries.add(Neo.toJsonObject(query3, paramsQuery3));
+
 		for (Object hobby : userBookData.getJsonArray("hobbies")) {
 			JsonObject j = params.copy();
 			j.put("category", (String)hobby);
