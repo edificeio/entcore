@@ -368,6 +368,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 		if(headline != null)
 			DocumentHelper.setAppProperty(document, "headline", headline + duplicateSuffix);
+
+		DocumentHelper.setModified(document, null);
 	}
 
 	protected void transformDocumentBeforeImport(JsonObject document, String collectionName, String userId, String userLogin, String userName)
