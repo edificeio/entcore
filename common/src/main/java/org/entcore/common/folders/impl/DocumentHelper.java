@@ -146,6 +146,35 @@ public class DocumentHelper {
 		}
 	}
 
+	public static JsonObject setModified(JsonObject doc, Date date)
+	{
+		try
+		{
+			// Check that the dates are in string format
+			String m = doc.getString("modified");
+			String c = doc.getString("created");
+
+			//If we get there, the dates should be strings
+			String now = MongoDb.formatDate(date != null ? date : new Date());
+
+			doc.put("modified", now);
+
+			if(c == null)
+				doc.put("created", now);
+		}
+		catch(Exception e)
+		{
+			JsonObject now = MongoDb.now();
+
+			doc.put("modified", now);
+
+			if(doc.getJsonObject("created") == null)
+					doc.put("created", now);
+		}
+
+		return doc;
+	}
+
 	public static String getName(JsonObject doc) {
 		return doc.getString("name");
 	}
@@ -157,6 +186,7 @@ public class DocumentHelper {
 	public static JsonObject setName(JsonObject doc, String name)
 	{
 		doc.put("name", name);
+		doc.put("nameSearch", StringUtils.stripAccentsToLowerCase(name));
 		return doc;
 	}
 
