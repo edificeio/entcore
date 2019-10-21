@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewChild, ElementRef, Input, OnDestroy, AfterViewInit, Renderer, EventEmitter, Output } from '@angular/core'
+import { Component, forwardRef, ViewChild, ElementRef, Input, OnDestroy, AfterViewInit, Renderer2, EventEmitter, Output } from '@angular/core'
 
 import { NgModel } from '@angular/forms';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -62,7 +62,7 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
     @Output()
     changeDate: EventEmitter<string> = new EventEmitter<string>();
 
-    constructor(private renderer: Renderer, 
+    constructor(private renderer: Renderer2, 
         private labelsService: LabelsService) {}
 
     get value(): any {
@@ -86,7 +86,7 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
 
     ngAfterViewInit(): void {
         // add attr data-input, mandatory for the picker to work in wrap mode
-        this.renderer.setElementAttribute(this.inputElement.nativeElement, 'data-input', '');
+        this.renderer.setAttribute(this.inputElement.nativeElement, 'data-input', '');
 
         // disabled case
         if (this.disabled === true) {

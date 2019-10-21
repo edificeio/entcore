@@ -12,7 +12,8 @@
     },
     "angularCompilerOptions": {
         "genDir": "./aot",
-        "skipMetadataEmit" : true
+        "skipMetadataEmit" : true,
+        "preserveWhitespaces": "off"
     },
     "exclude": [
         "test.ts",

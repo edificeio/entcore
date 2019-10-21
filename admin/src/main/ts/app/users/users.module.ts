@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
 import { NgModule } from '@angular/core';
 import { SijilModule } from 'sijil';
 
@@ -44,7 +43,6 @@ import { CommunicationModule } from '../communication/communication.module';
     imports: [
         CommonModule,
         FormsModule,
-        HttpModule,
         RouterModule.forChild(routes),
         SijilModule.forChild(),
         UxModule,

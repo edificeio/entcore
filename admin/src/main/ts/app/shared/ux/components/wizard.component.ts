@@ -1,5 +1,5 @@
 import { 
-    Component, Input, Output, Renderer, 
+    Component, Input, Output, 
     ContentChildren, AfterContentInit, QueryList, 
     ElementRef, EventEmitter,
     OnDestroy } from '@angular/core'
@@ -111,7 +111,6 @@ export class StepComponent {
 export class WizardComponent implements AfterContentInit, OnDestroy {
 
     constructor(
-            private renderer : Renderer,
             private ref : ElementRef)
     {}
     

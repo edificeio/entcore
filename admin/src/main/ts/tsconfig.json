@@ -13,7 +13,10 @@
     "exclude": [
         "test.ts",
         "**/*.spec.ts",
-        "main.aot.ts"
+        "app/main.aot.ts"
     ],
-    "compileOnSave": false
+    "compileOnSave": false,
+    "angularCompilerOptions": {
+        "preserveWhitespaces": "off"
+    }
 }

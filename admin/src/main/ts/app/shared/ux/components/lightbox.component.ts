@@ -5,7 +5,7 @@ import {
     EventEmitter,
     Input,
     Output,
-    Renderer,
+    Renderer2,
     ViewChild
 } from '@angular/core';
 
@@ -73,7 +73,7 @@ export class LightBoxComponent {
 
     constructor(
         private cdRef: ChangeDetectorRef,
-        private renderer: Renderer,
+        private renderer: Renderer2,
         private host: ElementRef) {
     }
 
@@ -85,14 +85,14 @@ export class LightBoxComponent {
         if (s) {
             this._show = true;
             this.timer = window.setTimeout(() => {
-                this.renderer.setElementClass(this.host.nativeElement, 'shown', true);
+                this.renderer.addClass(this.host.nativeElement, 'shown');
                 this.timer = null;
                 this.cdRef.markForCheck();
             }, 100);
         } else {
             let wait = parseFloat(this.section &&
                 window.getComputedStyle(this.section.nativeElement)['transition-duration']);
-            this.renderer.setElementClass(this.host.nativeElement, 'shown', false);
+            this.renderer.removeClass(this.host.nativeElement, 'shown');
             this.timer = window.setTimeout(() => {
                 this._show = false;
                 this.timer = null;

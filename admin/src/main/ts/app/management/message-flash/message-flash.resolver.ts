@@ -31,8 +31,10 @@ export class MessageFlashResolver implements Resolve<FlashMessageModel[]> {
                 this.messageStore.messages = messages;
                 return messages;
             })
-            .catch(() => {
+            .catch((e) => {
                 this.router.navigate(["/admin", structureId, "management", "message-flash", "list"]);
+                console.error(e);
+                return Promise.resolve([]);
             }));
     }
 

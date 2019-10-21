@@ -20,10 +20,12 @@ export class GroupsResolver implements Resolve<GroupModel[]> {
         } else {
             return this.spinner.perform('portal-content', currentStructure.groups.sync()
                 .then(() => {
-                    return currentStructure.groups.data;
+                    return Promise.resolve(currentStructure.groups.data);
                 }).catch(e => {
                     console.error(e);
-                }));
+                    return Promise.resolve([]);
+                })
+            );
         }
     }
 }

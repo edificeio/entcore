@@ -24,10 +24,12 @@ export class UsersResolver implements Resolve<UserModel[]> {
         } else {
             return this.spinner.perform('portal-content', currentStructure.users.sync()
                 .then(() => {
-                    return currentStructure.users.data;
+                    return Promise.resolve(currentStructure.users.data);
                 }).catch(e => {
                     console.error(e);
-                }));
+                    return Promise.resolve([]);
+                })
+            );
         }
     }
 }

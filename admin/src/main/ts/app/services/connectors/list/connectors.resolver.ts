@@ -16,9 +16,12 @@ export class ConnectorsResolver implements Resolve<ConnectorModel[]> {
         
         return this.spinner.perform('portal-content', currentStructure.connectors.syncConnectors()
             .then(data => {
-                return currentStructure.connectors.data;
+                return Promise.resolve(currentStructure.connectors.data);
             })
-            .catch(e => console.error(e))
+            .catch(e => {
+                console.error(e);
+                return Promise.resolve([]);
+            })
         );
     }
 }

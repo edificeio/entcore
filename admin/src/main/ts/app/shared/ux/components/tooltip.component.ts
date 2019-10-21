@@ -1,4 +1,4 @@
-import { Component, Input, Renderer, ElementRef, OnDestroy } from '@angular/core'
+import { Component, Input, Renderer2, ElementRef, OnDestroy } from '@angular/core'
 
 @Component({
     selector: '[tooltip]',
@@ -19,7 +19,7 @@ import { Component, Input, Renderer, ElementRef, OnDestroy } from '@angular/core
 export class TooltipComponent {
 
     constructor(private ref: ElementRef,
-        private renderer : Renderer){}
+        private renderer : Renderer2){}
 
     @Input("tooltip") tooltipContents: string
     @Input() position : "top" | "left" | "right" | "bottom" = "bottom"
@@ -28,26 +28,25 @@ export class TooltipComponent {
     private tooltipElt : HTMLElement
 
     onMouseEnter() : void {
-        let r = this.renderer
-
-        if(!this.tooltipElt){
-            let body = document.getElementsByTagName('body')[0]
-            this.tooltipElt = r.createElement(body, 'div')
-            r.setElementClass(this.tooltipElt, "tooltip", true)
-            this.tooltipElt.innerHTML = this.tooltipContents
+        if (!this.tooltipElt) {
+            this.tooltipElt = this.renderer.createElement('div');
+            let tooltipText = this.renderer.createText(this.tooltipContents);
+            this.renderer.appendChild(this.tooltipElt, tooltipText);
+            this.renderer.addClass(this.tooltipElt, "tooltip");
+            this.renderer.appendChild(document.getElementsByTagName('body')[0], this.tooltipElt);
         }
         let tip = this.tooltipElt
         let pos = this.getPosition(this.ref.nativeElement, tip, this.position)
-        for(let prop in pos){
-            r.setElementStyle(tip, prop, pos[prop] + 'px')
+        for (let prop in pos) {
+            this.renderer.setStyle(tip, prop, pos[prop] + 'px')
         }
-        r.setElementClass(tip, 'shown', true)
+        this.renderer.addClass(tip, 'shown')
     }
 
     onMouseLeave() : void {
         let wait = this.tooltipElt &&
             parseFloat(window.getComputedStyle(this.tooltipElt)['transition-duration'])
-        this.renderer.setElementClass(this.tooltipElt, 'shown', false)
+        this.renderer.removeClass(this.tooltipElt, 'shown')
         setTimeout(this.onTransitionEnd, wait*1000)
     }
 

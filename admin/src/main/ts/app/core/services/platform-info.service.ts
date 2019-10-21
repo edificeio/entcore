@@ -6,7 +6,7 @@ export class PlatformInfoService {
 
     private static infos: Map<string, string | boolean> = new Map<'', ''>();
 
-    public static isSmsModule(): Promise<boolean> {
+    public static isSmsModule(): Promise<string | boolean> {
         if (!PlatformInfoService.infos.has(SMS_MODULE_KEY)) {
             return http.get('/admin/api/platform/module/sms')
                 .then(res => {
@@ -18,6 +18,6 @@ export class PlatformInfoService {
                     return Promise.resolve(false);
                 })
         }
-        return new Promise(res => res(PlatformInfoService.infos.get(SMS_MODULE_KEY)));
+        return Promise.resolve(PlatformInfoService.infos.get(SMS_MODULE_KEY));
     }
 }
