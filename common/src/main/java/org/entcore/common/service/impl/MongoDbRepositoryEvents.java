@@ -350,6 +350,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		if(headline != null && headline.startsWith(importPrefix) == true)
 			DocumentHelper.setAppProperty(document, "headline", headline.substring(importPrefix.length()));
 
+		// Set the modified date to now
+		DocumentHelper.setModified(document, null);
+
 		return document;
 	}
 
