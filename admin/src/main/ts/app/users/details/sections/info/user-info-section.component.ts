@@ -186,7 +186,7 @@ import { Config } from '../../../../core/resolvers/Config';
 export class UserInfoSection extends AbstractSection implements OnInit {
     passwordResetMail: string;
     passwordResetMobile: string;
-    smsModule: boolean;
+    smsModule: boolean | string;
     showConfirmation = false;
     showMassMailConfirmation: boolean = false;
     downloadAnchor = null;

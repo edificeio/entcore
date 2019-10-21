@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, Renderer, ElementRef } from '@angular/core'
+import { Component, Input, OnInit, Output, EventEmitter, ElementRef } from '@angular/core'
 import { LabelsService } from '../services'
 
 /* If you need to use multi-combo in a form you should give a look to the MultiSelectComponent. */
@@ -129,7 +129,6 @@ export class MultiComboComponent {
 
     constructor(
         private _eref: ElementRef,
-        private _renderer: Renderer,
         private labelsService: LabelsService){}
     
     labels(label){

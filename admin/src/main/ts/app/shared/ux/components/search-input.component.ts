@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, Renderer, ChangeDetectorRef,
+import { Component, Input, Output, EventEmitter, Renderer2, ChangeDetectorRef,
     ElementRef, ViewChild, OnInit, OnDestroy, DoCheck } from '@angular/core'
 import { Subject }          from 'rxjs/Subject'
 import { Observable }       from 'rxjs/Observable'
@@ -17,7 +17,7 @@ export class SearchInputComponent implements OnInit, OnDestroy {
 
     constructor(private _elRef : ElementRef,
         private _cdRef: ChangeDetectorRef,
-        private _renderer : Renderer){}
+        private _renderer : Renderer2){}
 
     /* Inputs / Outputs / View */
 
@@ -50,7 +50,7 @@ export class SearchInputComponent implements OnInit, OnDestroy {
         if(element && this.searchBox) {
             for(let i = 0; i < element.attributes.length; i++){
                 let attr = element.attributes[i]
-                this._renderer.setElementAttribute(this.searchBox.nativeElement, attr.name, attr.value)
+                this._renderer.setAttribute(this.searchBox.nativeElement, attr.name, attr.value)
             }
         }
     }

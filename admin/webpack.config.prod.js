@@ -2,6 +2,7 @@ const webpack = require('webpack')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const ngtools = require('@ngtools/webpack')
+const { AngularCompilerPlugin } = require('@ngtools/webpack');
 const webpackMerge = require('webpack-merge')
 
 const commonConfig = require('./webpack.config.common.js')
@@ -13,7 +14,7 @@ module.exports = webpackMerge(commonConfig, {
     devtool: 'source-map',
 
     entry: {
-        'admin': path_prefix + '/ts/main.aot.ts',
+        'admin': path_prefix + '/ts/app/main.aot.ts',
         'vendor': path_prefix + '/ts/libs/vendor.aot.ts'
     },
 
@@ -78,7 +79,7 @@ module.exports = webpackMerge(commonConfig, {
             sourceMap: true,
             comments: false
         }),
-        new ngtools.AotPlugin({
+        new AngularCompilerPlugin({
             tsConfigPath:   __dirname + '/src/main/ts/tsconfig.aot.json',
             entryModule:    __dirname + '/src/main/ts/app/app.module#AppModule'
         }),

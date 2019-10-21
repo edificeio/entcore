@@ -20,7 +20,7 @@ import { Component, Input, Output, EventEmitter,
                     [class.disabled]="isDisabled(item)"
                     [ngClass]="ngClass(item)"
                     class="lct-list-item">
-                    <ng-template [ngTemplateOutlet]="templateRef" [ngOutletContext]="{$implicit: item}">
+                    <ng-template [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="{$implicit: item}">
                     </ng-template>
                 </li>
             </ul>

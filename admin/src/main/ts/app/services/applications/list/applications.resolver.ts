@@ -18,9 +18,12 @@ export class ApplicationsResolver implements Resolve<ApplicationModel[]> {
         } else {
             return this.spinner.perform('portal-content', currentStructure.applications.syncApps(currentStructure.id)
                 .then(data => {
-                    return currentStructure.applications.data;
+                    return Promise.resolve(currentStructure.applications.data);
                 })
-                .catch(e => console.error(e))
+                .catch(e => {
+                    console.error(e);
+                    return Promise.resolve([]);
+                })
             );
         }
     }

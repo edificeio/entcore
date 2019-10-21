@@ -10,7 +10,7 @@ module.exports = webpackMerge(commonConfig, {
     devtool: 'eval-source-map',
 
     entry: {
-        'admin': path_prefix + '/ts/main.ts',
+        'admin': path_prefix + '/ts/app/main.ts',
         'vendor': path_prefix + '/ts/libs/vendor.ts'
     },
 

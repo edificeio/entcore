@@ -8,7 +8,7 @@ import {
     ViewContainerRef,
     TemplateRef,
     Type,
-    ReflectiveInjector,
+    Injector,
     Compiler } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
@@ -61,7 +61,10 @@ export class DynamicTemplateDirective {
             this._html = html
             const cmpType = this._createDynamicComponent()
             const moduleType = this._createDynamicModule(cmpType)
-            const injector = ReflectiveInjector.fromResolvedProviders([], this.viewContainer.parentInjector)
+            const injector: Injector = Injector.create({
+                providers: [],
+                parent: this.viewContainer.parentInjector,
+            });
 
             this.compiler.compileModuleAndAllComponentsAsync<any>(moduleType)
                 .then(factory => {

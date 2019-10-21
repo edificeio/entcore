@@ -233,7 +233,7 @@ export class User extends Model {
             await this.loadChildren();
         }
         //
-        this.updateData({ ...data, hobbies, relatives, attachedStructures, classIds });
+        this.updateData({ ...data, hobbies, relatives, attachedStructures, classIds } as Partial<User>);
         return this;
     }
     async open({ withChildren = false }) {
