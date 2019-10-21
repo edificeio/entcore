@@ -268,7 +268,7 @@ public class DefaultImportService implements ImportService {
     }
 
     private void getQuota(UserInfos user, JsonObject reply, Handler<JsonObject> handler) {
-        neo.execute("MATCH (u:User {id: {userId}})-[:USERBOOK]->(ub:UserBook) RETURN ub.quota AS quota",
+        neo.execute("MATCH (u:User {id: {userId}})-[:USERBOOK]->(ub:UserBook) RETURN (ub.quota - ub.storage) AS quota",
                 new JsonObject().put("userId", user.getUserId()), result -> {
             reply.put("quota", result.body().getJsonArray("result").getJsonObject(0).getLong("quota"));
             handler.handle(reply);
