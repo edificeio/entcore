@@ -89,6 +89,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Set<String> usedGroupInCourses = new HashSet<>();
 	private final boolean udcalLowerCase;
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
+	private Set<String> coursesIds = new HashSet<>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(uai, path, acceptLanguage, authorizeUserCreation);
@@ -513,8 +514,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 						start = j.getString("fic");
 						current = val;
 					} else if ((++current) != val || count == c.size()) {
-						persistCourse(generateCourse(start, previous.getString("fic"),
-								previous, startPeriodWeek, endPeriodWeek, theoretical));
+						if (count == c.size()) {
+							persistCourse(generateCourse(start, j.getString("fic"),
+									previous, startPeriodWeek, endPeriodWeek, theoretical));
+						} else {
+							persistCourse(generateCourse(start, previous.getString("fic"),
+									previous, startPeriodWeek, endPeriodWeek, theoretical));
+						}
+
 						start = j.getString("fic");
 						current = val;
 					}
@@ -644,11 +651,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 		}
 		try {
-			c.put("_id", JsonUtil.checksum(c));
+			final String check = JsonUtil.checksum(c);
+			if (coursesIds.add(check)) {
+				c.put("_id", check);
+				return c;
+			}
 		} catch (NoSuchAlgorithmException e) {
 			log.error("Error generating course checksum", e);
 		}
-		return c;
+		return null;
 	}
 
 	private class LftComparator implements Comparator<JsonObject> {
