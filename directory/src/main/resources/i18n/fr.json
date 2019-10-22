@@ -53,7 +53,7 @@
     "classAdmin.userFind.confirmText": "Plusieurs utilisateurs que vous voulez ajouter à votre classe sont associés à une ou plusieurs autres classes, voulez vous qu'ils conservent ces rattachements ou qu'ils changent de classe pour la vôtre ?&nbsp;<br/><br/>Notez que les parents des élèves concernés seront également ajoutés à votre classe.",
     "classAdmin.delete": "Supprimer",
     "classAdmin.delete.title": "Supprimer les utilisateurs",
-    "classAdmin.delete.text": "Attention, vous allez supprimer [[selectionCount]] utilisateurs de la classe [[currentClass]], si vous confirmer cette action, les utilisateurs pourront exporter leurs données, puis perdront leur accès.&nbsp;<b>Ils ne pourront donc pas changer de classe.&nbsp;</b><br/><br/>Voulez-vous vraiment supprimer les comptes ou simplement les retirer de votre classe ?",
+    "classAdmin.delete.text": "Attention, vous allez supprimer [[selectionCount]] utilisateurs de la classe [[currentClass]], si vous confirmer cette action, les utilisateurs pourront exporter leurs données, puis perdront leur accès. Les utilisateurs non activés seront eux définitivement supprimés.&nbsp;<b>Ils ne pourront donc pas changer de classe.&nbsp;</b><br/><br/>Voulez-vous vraiment supprimer les comptes ou simplement les retirer de votre classe ?",
     "classAdmin.delete.success": "Les utilisateurs ont été supprimés.",
     "classAdmin.delete.error": "Les utilisateurs n'ont pas pu être supprimés.",
     "classAdmin.exportFile": "Exporter les codes d'activation",
