@@ -275,6 +275,7 @@
     "users": "Utilisateurs",
     "groups": "Groupes",
     "applications": "Applications",
+	"connectors": "Connecteurs",
     "logout": "Déconnexion",
     "ManualGroup": "Groupes manuels",
     "ProfileGroup": "Groupes de profil",

@@ -34,8 +34,8 @@ export class ServicesComponent implements OnInit, OnDestroy {
     private structureSubscriber: Subscription;
 
     tabs: Array<{ label: string, view: string, disabled: boolean }> = [
-        {label: 'Applications', view: 'applications', disabled: false},
-        {label: 'Connecteurs', view: 'connectors', disabled: false}
+        {label: 'applications', view: 'applications', disabled: false},
+        {label: 'connectors', view: 'connectors', disabled: false}
     ];
 
     constructor(
