@@ -164,10 +164,17 @@ import { Config } from '../../../../core/resolvers/Config';
                                 <span><s5l>individual.massmail.pdf</s5l></span>
                                 <i class="fa fa-file-pdf-o"></i>
                             </button>
-                            <button type="button" (click)="sendIndividualMassMail('mail')" [disabled]="!details.email">
+                            <button type="button" (click)="showMassMailConfirmation = true" [disabled]="!details.email">
                                 <span><s5l>individual.massmail.mail</s5l></span>
                                 <i class="fa fa-envelope"></i>
                             </button>
+                            <lightbox-confirm
+                                [show]="showMassMailConfirmation"
+                                [lightboxTitle]="'warning'"
+                                (onConfirm)="sendIndividualMassMail('mail')"
+                                (onCancel)="showMassMailConfirmation = false">
+                                <s5l>massmail.confirm</s5l>
+                            </lightbox-confirm>
                         </div>
                     </form-field>
                 </fieldset>
@@ -181,6 +188,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     passwordResetMobile: string;
     smsModule: boolean;
     showConfirmation = false;
+    showMassMailConfirmation: boolean = false;
     downloadAnchor = null;
     downloadObjectUrl = null;
     renewalCode: string | undefined = undefined;
@@ -311,6 +319,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     sendIndividualMassMail(type: string) {
+        this.showMassMailConfirmation = false;
         this.spinner.perform('portal-content', this.details.sendIndividualMassMail(type))
             .then(res => {
                 var infoKey;
@@ -438,5 +447,9 @@ export class UserInfoSection extends AbstractSection implements OnInit {
 
     displayDate(date: string): string {
         return new Date(date).toLocaleDateString(this.bundles.currentLanguage);
+    }
+
+    showLightbox() {
+        this.showMassMailConfirmation = true;
     }
 }
