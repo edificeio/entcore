@@ -20,10 +20,10 @@
 	</div>
 	<div class="controls" ng-if="isFullscreen">
 		<i class="close" ng-click="fullscreen(false)"></i>
-		<button class="right-magnet cancel top-spacing-twice right-spacing-twice" ng-click="download()"><i18n>download</i18n></button>
-		<button ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
+		<button class="right-magnet top-spacing-twice right-spacing-twice" ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
 			<i18n>workspace.lool.open</i18n>
 		</button>
+		<button class="right-magnet cancel top-spacing-twice right-spacing-twice" ng-click="download()"><i18n>download</i18n></button>
 	</div>
 	<div class="file">
 		<div ng-if="contentType === 'html'">
