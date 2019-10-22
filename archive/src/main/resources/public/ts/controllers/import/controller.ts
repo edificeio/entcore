@@ -125,10 +125,17 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                 archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps)
                 .then(result => {
                     $scope.resultsApps = Object.keys(result.data);
+                    $scope.resultsApps.forEach(app => {
+                        if (app == "actualites" || app == "schoolbook" || app == "exercizer") {
+                            result.data[app].duplicatesNumber = lang.translate("archive.import.na");
+                        }
+                    });
                     $scope.results = result.data;
-                    $scope.firstPhase = false;
+                    $scope.loadingSpinner = false;
                     $scope.$apply();
                 });
+                $scope.loadingSpinner = true;
+                $scope.firstPhase = false;
 
             }
 }]);
