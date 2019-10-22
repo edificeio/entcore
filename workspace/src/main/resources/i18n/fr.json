@@ -250,5 +250,4 @@
     "document.error.missing.fileid": "Le fichier recherché n'existe pas",
     "document.error.preview.kind.unknown": "Prévisualisation impossible. Le type du document n'a pas été reconnu.",
     "document.preview.save.failed": "Une erreur est survenue lors de la génération de la prévisualisation.",
-    "workspace.share.document": "Partager des documents"
 }
