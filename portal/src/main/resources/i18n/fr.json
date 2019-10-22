@@ -435,7 +435,8 @@
   "empty.workspace.title": "Vous n’avez pas encore de documents. Changeons ça !",
   "empty.workspace": "Bienvenue dans votre espace documentaire, le cloud qui vous permet de stocker en ligne toutes vos ressources. Chargez ou téléchargez vos documents, commentez-les et partagez-les facilement aux membres de votre réseau !",
   "empty.workspace.shared.title": "Oups, il n’y a rien sur l’étagère…",
-  "empty.workspace.shared": "Dans cet espace, retrouvez l’ensemble des documents que votre réseau vous aura partagé.",
+  "empty.workspace.shared": "Dans cet espace, retrouvez tous les documents que vous avez partagés aux autres, mais aussi les documents auxquels on vous a donné accès. Eh oui ! C'est beau d'échanger.",
+  "empty.workspace.shared.and.import": "Importer et partager",
   "empty.workspace.apps.title": "Oups, il n’y a rien sur l’étagère…",
   "empty.workspace.apps": "Vous avez ajouté une dizaine de photos directement dans votre Blog et voulez les réutiliser ? Pas de soucis ! Retrouverez les, bien rangées, juste ici.",
 
