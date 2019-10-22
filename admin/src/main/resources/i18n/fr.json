@@ -257,6 +257,7 @@
     "massmail.classname": "Classe",
     "massmail.link.user": "Accéder à la fiche utilisateur",
     "massmail.notice": "Par défaut, le publipostage est trié par ordre alphabétique",
+    "massmail.confirm": "Voulez-vous vraiment lancer un publipostage par mail ?",
     "process.massmail": "Lancer le publipostage :",
     "individual.massmail.pdf": "Fiche de connexion individuelle PDF",
     "individual.massmail.mail": "Fiche de connexion individuelle mail",

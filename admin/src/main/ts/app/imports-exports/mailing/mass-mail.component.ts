@@ -101,9 +101,16 @@ import { SelectOption } from '../../shared/ux/components/multi-select.component'
                         <button class="cell" (click)="processMassMail('pdf')" [disabled]="countUsers == 0">
                             <s5l>massmail.pdf</s5l>
                         </button>
-                        <button class="cell" (click)="processMassMail('mail')" [disabled]="countUsers == 0">
+                        <button class="cell" (click)="showConfirmation = true" [disabled]="countUsers == 0">
                             <s5l>massmail.mail</s5l>
                         </button>
+                        <lightbox-confirm
+                            [show]="showConfirmation"
+                            [lightboxTitle]="'warning'"
+                            (onConfirm)="processMassMail('mail')"
+                            (onCancel)="showConfirmation = false">
+                            <s5l>massmail.confirm</s5l>
+                        </lightbox-confirm>
                     </div>
                 </div>
             </div>
@@ -217,6 +224,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     private deselectItem: boolean = false;
     dateFilter: string;
     dateFormat: Intl.DateTimeFormat
+    showConfirmation: boolean = false;
 
     dataSubscriber: Subscription
     routerSubscriber: Subscription
@@ -294,6 +302,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     }
 
     async processMassMail(type: String): Promise<void> {
+        this.showConfirmation = false;
         let outputModels = this.userlistFiltersService.getFormattedOutputModels();
         let sorts = null;
         if (this.firstSort !== 'none') {
