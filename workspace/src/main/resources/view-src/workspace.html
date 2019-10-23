@@ -94,7 +94,7 @@
 					<div class="row">
 						<!--IMPORT MOBILE-->
 						<div ng-if="openedFolder.documents.length || reloadingContent" class="zero-desktop six-mobile" ng-repeat="button in currentTree.buttons">
-							<button ng-click="button.action(button.url)" workflow="[[button.workflow]]">
+							<button ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]">
 								<i class="add" ng-if="button.icon"></i> [[translate(button.text)]]
 							</button>
 						</div>

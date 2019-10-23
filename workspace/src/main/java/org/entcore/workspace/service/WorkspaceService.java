@@ -19,6 +19,7 @@
 
 package org.entcore.workspace.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,6 +60,10 @@ public interface WorkspaceService extends FolderManager {
 
 	public void addComment(final String id, final String comment, final UserInfos user,
 			final Handler<JsonObject> handler);
+
+	public void hasRightsOn(final Collection<String> elementIds, Boolean onEmpty, UserInfos user, final Handler<AsyncResult<Boolean>> handler);
+
+	public void canWriteOn(final Optional<String> elementId, Boolean onAbsent, UserInfos user, final Handler<AsyncResult<Boolean>> handler);
 
 	public void deleteComment(final String id, final String comment, final Handler<JsonObject> handler);
 

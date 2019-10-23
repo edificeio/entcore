@@ -89,6 +89,10 @@ class QueryHelper {
 				if (query.getActionNotExists() != null) {
 					builder.withActionNotExistingInShared(user.get(), query.getActionNotExists());
 				}
+				//
+				if (query.getActionExists() != null) {
+					builder.withActionExistingInShared(user.get(), query.getActionExists());
+				}
 			}
 			//
 			if (query.getVisibilitiesIn() != null) {
@@ -395,6 +399,13 @@ class QueryHelper {
 		public DocumentQueryBuilder withActionNotExistingInShared(UserInfos user, String action) {
 			builder.and(QueryBuilder.start("inheritedShares")
 					.elemMatch(QueryBuilder.start("userId").notEquals(user.getUserId()).and(action).is(true).get())
+					.get());
+			return this;
+		}
+
+		public DocumentQueryBuilder withActionExistingInShared(UserInfos user, String action) {
+			builder.and(QueryBuilder.start("inheritedShares")
+					.elemMatch(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get())
 					.get());
 			return this;
 		}

@@ -95,6 +95,9 @@ export const importFiles = ng.directive('importFiles', () => {
 					workspaceService.createDocument(file, doc, scope.openedFolder.folder).then(() => {
 						quota.refresh();
 						//refresh content automatically
+					}).catch(e=>{
+						doc.uploadStatus = "failed"
+						scope.safeApply();
 					});
 					scope.upload.documents.push(doc);
 				}

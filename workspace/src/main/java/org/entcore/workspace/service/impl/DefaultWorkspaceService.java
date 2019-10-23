@@ -3,6 +3,7 @@ package org.entcore.workspace.service.impl;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -68,6 +69,33 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.eb = eb;
 		this.revisionDao = new RevisionDao(mongo);
 		this.documentDao = new DocumentDao(mongo);
+	}
+
+	@Override
+	public void hasRightsOn(final Collection<String> elementIds, Boolean onEmpty, UserInfos user, final Handler<AsyncResult<Boolean>> handler){
+		if(elementIds.size()>0){
+			final ElementQuery query = new ElementQuery(true);
+			query.setIds(elementIds);
+			this.countByQuery(query, user, res -> {
+				handler.handle(new DefaultAsyncResult<>(res.succeeded() && res.result()==elementIds.size()));
+			});
+		}else{
+			handler.handle(new DefaultAsyncResult<>(onEmpty));
+		}
+	}
+
+	@Override
+	public void canWriteOn(final Optional<String> elementId, Boolean onAbsent, UserInfos user, final Handler<AsyncResult<Boolean>> handler){
+		if(elementId.isPresent()){
+			final ElementQuery query = new ElementQuery(true);
+			query.setId(elementId.get());
+			query.setActionExists(WorkspaceController.WRITE_ACTION);
+			this.countByQuery(query, user, res -> {
+				handler.handle(new DefaultAsyncResult<>(res.succeeded() && res.result()==1));
+			});
+		}else{
+			handler.handle(new DefaultAsyncResult<>(onAbsent));
+		}
 	}
 
 	@Override
