@@ -289,14 +289,42 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			@Override
 			public void handle(AsyncResult<Buffer> res)
 			{
-				if(res.succeeded() == false)
-					throw new RuntimeException(res.cause());
-				else
+				Handler todo = new Handler<AsyncResult<Buffer>>()
 				{
-					JsonArray filesBackup = res.result().toJsonArray();
+					@Override
+					public void handle(AsyncResult<Buffer> res)
+					{
+						if(res.succeeded() == false)
+							handler.handle(new JsonObject().put("status", "error").put("message", "Can't find main workspace file"));
+						else
+						{
+							JsonArray filesBackup = res.result().toJsonArray();
 
-					self.importer.importFoldersWorkspaceFormat(context, filesBackup, handler);
-				}
+							self.importer.importFoldersWorkspaceFormat(context, filesBackup, new Handler<JsonObject>()
+							{
+								@Override
+								public void handle(JsonObject res)
+								{
+									JsonObject idsMap = new JsonObject();
+
+									for(Map.Entry<String, String> entry : context.oldIdsToNewIds.entrySet())
+										idsMap.put(entry.getKey(), entry.getValue());
+
+									res
+										.put("idsMap", new JsonObject()
+											.put(DocumentDao.DOCUMENTS_COLLECTION, idsMap))
+										.put("mainResourceName", DocumentDao.DOCUMENTS_COLLECTION);
+									handler.handle(res);
+								}
+							});
+						}
+					}
+				};
+
+				if(res.succeeded() == false)
+					self.fs.readFile(importPath + File.separator + "Documents", todo);
+				else
+					todo.handle(res);
 			}
 		});
 	}
