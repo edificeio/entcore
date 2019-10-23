@@ -53,6 +53,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		super(vertx);
 		this.storage = storage;
 		this.timeout = timeout;
+		this.mainResourceName = "messages";
 	}
 
 	private void exportAttachments(String exportPath, JsonArray query, Handler<Boolean> handler) {

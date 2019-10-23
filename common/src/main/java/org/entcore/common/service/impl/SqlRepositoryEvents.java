@@ -25,6 +25,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 	protected final Sql sql = Sql.getInstance();
     protected final FolderImporter fileImporter;
 
+    protected String mainResourceName = null;
+
 	protected SqlRepositoryEvents(Vertx vertx) {
 		super(vertx);
 		fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
@@ -83,6 +85,13 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
     protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
                                 String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler) {
+        importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler, new HashMap<String, JsonObject>());
+    }
+
+    protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
+                                String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler,
+                                Map<String, JsonObject> idsMapByTable)
+    {
         if (tables.isEmpty()) {
             tablesWithId.keySet().forEach(table -> {
                 if (tablesWithId.get(table).equals("DEFAULT")) {
@@ -112,8 +121,20 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 }
                             }
                         }
-                        JsonObject reply = new JsonObject().put("status","ok").put("resourcesNumber",String.valueOf(resourcesNumber))
-                                .put("errorsNumber",String.valueOf(errorsNumber)).put("duplicatesNumber", String.valueOf(duplicatesNumber));
+
+                        JsonObject finalMap = new JsonObject();
+                        for(Map.Entry<String, JsonObject> entry : idsMapByTable.entrySet())
+                            finalMap.put(entry.getKey(), entry.getValue());
+
+                        JsonObject reply =
+                            new JsonObject()
+                                .put("status","ok")
+                                .put("resourcesNumber", String.valueOf(resourcesNumber))
+                                .put("errorsNumber", String.valueOf(errorsNumber))
+                                .put("duplicatesNumber", String.valueOf(duplicatesNumber))
+                                .put("idsMap", finalMap)
+                                .put("mainResourceName", mainResourceName);
+
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
                         handler.handle(reply);
                     } else {
@@ -136,6 +157,25 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                     JsonArray fields = tableContent.getJsonArray("fields");
                     JsonArray results = tableContent.getJsonArray("results");
 
+                    int idIx = 0;
+                    for(int i = 0; i < fields.size(); ++i)
+                    {
+                        if(fields.getString(i).equals("id"))
+                        {
+                            idIx = i;
+                            break;
+                        }
+                    }
+
+                    Map<String, Object> oldIdsToNewIdsMap = new HashMap<String, Object>();
+                    for(int i = results.size(); i-- > 0;)
+                    {
+                        String id = results.getJsonArray(i).getString(idIx);
+                        oldIdsToNewIdsMap.put(id, id);
+                    }
+
+                    idsMapByTable.put(table, new JsonObject(oldIdsToNewIdsMap));
+
                     if (!results.isEmpty()) {
 
                         results = transformResults(fields, results, userId, username, builder, table);
@@ -157,7 +197,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                         }
 
                     }
-                    importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler);
+                    importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler, idsMapByTable);
                 }
             });
         }
