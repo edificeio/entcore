@@ -44,6 +44,8 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			await init();
 			lang.addBundle('/auth/i18n', function () {
 				$scope.cguUrl = lang.translate("auth.charter");
+				$scope.miUrl = lang.translate("auth.data.protection");
+				$scope.hasMI = $scope.miUrl != "auth.data.protection";
 			});
 			if(model.me.type !== 'ELEVE'){
 				directory.account.edit.infos = true;
