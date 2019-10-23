@@ -41,8 +41,16 @@ public class ArchiveFilter implements ResourcesProvider {
 
 		} else if (serviceMethod != null && serviceMethod.startsWith(ImportController.class.getName())) {
 
-			String importId = resourceRequest.params().get("importId");
-			handler.handle(importId != null && importId.endsWith(user.getUserId()));
+			String method = serviceMethod
+					.substring(ImportController.class.getName().length() + 1);
+			switch (method) {
+				case "upload":
+					handler.handle(true);
+					break;
+				default:
+					String importId = resourceRequest.params().get("importId");
+					handler.handle(importId != null && importId.endsWith(user.getUserId()));
+			}
 
 		}
 	}

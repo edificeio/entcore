@@ -37,6 +37,7 @@ public class ImportController extends BaseController {
     }
 
     @Post("/import/upload")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void upload(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
             importService.uploadArchive(request, user, handler -> {
