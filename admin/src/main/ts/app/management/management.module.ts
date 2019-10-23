@@ -7,6 +7,7 @@ import { UxModule } from '../shared/ux/ux.module'
 import { routes } from './management-routing.module'
 import { ManagementRoot } from './management-root.component'
 import { MessageFlashComponent } from './message-flash/message-flash.component'
+import { MessageFlashListComponent } from './message-flash/message-flash-list.component'
 import { EditMessageFlashComponent } from './message-flash/form/edit-message-flash.component'
 import { DuplicateMessageFlashComponent } from './message-flash/form/duplicate-message-flash.component'
 import { CreateMessageFlashComponent } from './message-flash/form/create-message-flash.component'
@@ -27,6 +28,7 @@ import { MessageFlashResolver } from './message-flash/message-flash.resolver'
     declarations: [
         ManagementRoot,
         MessageFlashComponent,
+        MessageFlashListComponent,
         EditMessageFlashComponent,
         DuplicateMessageFlashComponent,
         CreateMessageFlashComponent,

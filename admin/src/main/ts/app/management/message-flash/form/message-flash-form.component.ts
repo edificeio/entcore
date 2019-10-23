@@ -99,14 +99,10 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     </message-flash-preview>
                 </div>
 
-                <div class="has-top-margin-40">
+                <div class="is-pulled-right">
                     <button (click)="goBack(false)"><s5l>management.message.flash.cancel</s5l></button>
-                    <button [disabled]="!isUploadable()" (click)="upload()"><s5l>management.message.flash.upload</s5l></button>
+                    <button class="action" [disabled]="!isUploadable()" (click)="upload()"><s5l>management.message.flash.upload</s5l></button>
                 </div>
-
-           
-
-           
 
             <lightbox *ngIf="structure"
                 [show]="showLightbox" (onClose)="closeLightbox()">
@@ -126,8 +122,7 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                 <div><button class="is-pulled-right" (click)="saveAndClose()"><s5l>management.message.flash.lightbox.save</s5l></button></div>
             </lightbox>
         </div>
-        
-        
+
     </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -136,7 +131,6 @@ export class MessageFlashFormComponent implements OnInit {
 
     structure: StructureModel;
     dataSubscriber: Subscription;
-    routeSubscriber: Subscription;
     routerSubscriber: Subscription;
     originalMessage: FlashMessageModel;
     message: FlashMessageModel = new FlashMessageModel();
@@ -173,7 +167,7 @@ export class MessageFlashFormComponent implements OnInit {
                 this.messages = data['messages'];
                 this.originalMessage = this.messages.find(mess => mess.id == this.messageId);
                 if (!this.originalMessage || this.originalMessage.structureId !== this.structure.id) {
-                    this.router.navigate(["/admin", this.structure.id, "management", "message-flash"]);
+                    this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "list"]);
                     return;
                 }
                 this.message.id = this.originalMessage.id;
@@ -249,9 +243,6 @@ export class MessageFlashFormComponent implements OnInit {
     ngOnDestroy() {
         if (!!this.dataSubscriber) {
             this.dataSubscriber.unsubscribe();
-        }
-        if (!!this.routeSubscriber) {
-            this.routeSubscriber.unsubscribe();
         }
         if (!!this.routerSubscriber) {
             this.routerSubscriber.unsubscribe();
@@ -409,9 +400,9 @@ export class MessageFlashFormComponent implements OnInit {
 
     goBack(forceReload: boolean): void {
         if (forceReload) {
-            this.router.navigate(["/admin", this.structure.id, "management", "message-flash"], { queryParams: { forceReload: 'true' } });
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "list"], { queryParams: { forceReload: 'true' } });
         } else {
-            this.router.navigate(["/admin", this.structure.id, "management", "message-flash"]);
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash", "list"]);
         }
         return;
     }
