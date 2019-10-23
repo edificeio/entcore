@@ -32,7 +32,7 @@ export class MessageFlashResolver implements Resolve<FlashMessageModel[]> {
                 return messages;
             })
             .catch(() => {
-                this.router.navigate(["/admin", structureId, "management", "message-flash"]);
+                this.router.navigate(["/admin", structureId, "management", "message-flash", "list"]);
             }));
     }
 

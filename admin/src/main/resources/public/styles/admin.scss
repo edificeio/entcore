@@ -2375,3 +2375,28 @@ div.flashmsg {
     box-shadow: 1px 1px 5px $shadow-light;
     color: #fff;
 }
+
+message-flash, message-flash-form {
+  button.action {
+    background-color: $accent;
+    border-color: $accent;
+    padding: 10px 20px;
+    color: white ! important;
+    text-decoration: none;
+    &:hover {
+      background-color: $accent-dark;
+      border-color: $accent-dark;
+    }
+  }
+
+  .container {
+    background-color: white;
+    padding: 10px 30px 60px 30px;
+    margin-bottom: 40px;
+  }
+
+  .has-display-table {
+    display: table;
+    margin-bottom: 10px;
+  }
+}

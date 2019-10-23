@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { routing } from '../core/services/routing.service'
+import { StructureModel } from '../core/store';
 
 @Component({
     selector: 'management-root',
@@ -14,7 +15,7 @@ import { routing } from '../core/services/routing.service'
             <button class="tab" *ngFor="let tab of tabs"
                 [disabled]="tab.disabled"
                 [routerLink]="tab.view"
-                routerLinkActive="active">
+                [ngClass]="{'active' : isActive(tab.active)}">
                 {{ tab.label | translate }}
             </button>
         </div>
@@ -25,16 +26,17 @@ import { routing } from '../core/services/routing.service'
 })
 export class ManagementRoot implements OnInit, OnDestroy {
 
-     // Subscriberts
+     // Subscribers
     private structureSubscriber: Subscription
 
     // Tabs
     tabs = [
-        { label: "management.message.flash", view: "message-flash"}
+        { label: "management.message.flash", view: "message-flash/list", active: "message-flash"}
     ]
 
     private routerSubscriber : Subscription
     private error: Error
+    private structure: StructureModel
 
     constructor(
         private route: ActivatedRoute,
@@ -45,6 +47,7 @@ export class ManagementRoot implements OnInit, OnDestroy {
         // Watch selected structure
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure']) {
+                this.structure = data['structure'];
                 this.cdRef.markForCheck()
             }
         })
@@ -63,6 +66,10 @@ export class ManagementRoot implements OnInit, OnDestroy {
     onError(error: Error){
         console.error(error)
         this.error = error
+    }
+
+    isActive(path: string): boolean {
+        return this.router.isActive('/admin/' + this.structure.id + '/management/' + path, false);
     }
 
 }

@@ -57,6 +57,7 @@
     "management.message.flash.author": "Auteur",
     "management.message.flash.lastModified": "Dernière modification",
     "management.message.flash.create.message": "Créer un message",
+    "management.message.flash.button.edit": "Éditer",
     "management.message.flash.copy": "Dupliquer",
     "management.message.flash.delete": "Supprimer",
     "management.message.flash.confirm.delete": "Voulez-vous vraiment supprimer les messages sélectionnés ?",
