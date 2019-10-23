@@ -34,7 +34,11 @@ function writeUTFBytes(view, offset, string){
 	}
 }
 
-var encoder = {};
+var encoder = {
+	options: {
+		sampleRate: 44100
+	}
+};
 
 encoder.wav = function(leftChannel, rightChannel, recordingLength, callback){
 	var leftBuffer = mergeBuffers(leftChannel, recordingLength);
@@ -56,8 +60,8 @@ encoder.wav = function(leftChannel, rightChannel, recordingLength, callback){
 	view.setUint16(20, 1, true);
 	// stereo (2 channels)
 	view.setUint16(22, 2, true);
-	view.setUint32(24, 44100, true);
-	view.setUint32(28, 44100 * 4, true);
+	view.setUint32(24, encoder.options.sampleRate, true);
+	view.setUint32(28, encoder.options.sampleRate * 4, true);
 	view.setUint16(32, 4, true);
 	view.setUint16(34, 16, true);
 	// data sub-chunk
@@ -85,8 +89,8 @@ encoder.mp3 = function(leftChannel, rightChannel, recordingLength, callback){
 		Lame.set_mode(mp3codec, Lame.JOINT_STEREO);
 		Lame.set_num_channels(mp3codec, 2);
 		Lame.set_num_samples(mp3codec, -1);
-		Lame.set_in_samplerate(mp3codec, 44100);
-		Lame.set_out_samplerate(mp3codec, 44100);
+		Lame.set_in_samplerate(mp3codec, encoder.options.sampleRate);
+		Lame.set_out_samplerate(mp3codec, encoder.options.sampleRate);
 		Lame.set_bitrate(mp3codec, 128);
 
 		Lame.init_params(mp3codec);
@@ -119,6 +123,11 @@ encoder.chunk =function(leftChannel, rightChannel, recordingLength, callback){
 
 	callback(new Uint8Array(buffer));
 
+};
+
+encoder.init = function(sampleRate){
+	encoder.options.sampleRate = sampleRate;
+	console.log("init worker: ", sampleRate)
 };
 
 onmessage = function(e){

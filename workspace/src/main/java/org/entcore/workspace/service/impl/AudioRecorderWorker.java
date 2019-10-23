@@ -61,6 +61,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 
 	private Storage storage;
 	private WorkspaceHelper workspaceHelper;
+	private final Map<String, Integer> sampleRates = new HashMap<>();
 	private final Map<String, PersistantBuffer> buffers = new HashMap<>();
 	private final Map<String, MessageConsumer<byte[]>> consumers = new HashMap<>();
 	private final Set<String> disabledCompression = new HashSet<>();
@@ -79,6 +80,8 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 		final String id = message.body().getString("id");
 		switch (action) {
 			case "open" :
+				final String sampleRate = message.body().getString("sampleRate", "44100");
+				sampleRates.put(id, Integer.valueOf(sampleRate));
 				open(id, message);
 				break;
 			case "cancel":
@@ -107,7 +110,8 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 				@Override
 				public void handle(AsyncResult<Buffer> buf) {
 					try {
-						storage.writeBuffer(id, toMp3(toWav(buf.result())), "audio/mp3", name, new Handler<JsonObject>() {
+						final Integer sampleRate = sampleRates.getOrDefault(id,44100);
+						storage.writeBuffer(id, toMp3(toWav(buf.result(),sampleRate)), "audio/mp3", name, new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject f) {
 								if ("ok".equals(f.getString("status"))) {
@@ -143,6 +147,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 
 	private void cancel(String id, Message<JsonObject> message) {
 		disabledCompression.remove(id);
+		sampleRates.remove(id);
 		PersistantBuffer buffer = buffers.remove(id);
 		if (buffer != null) {
 			buffer.clear();
@@ -194,7 +199,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	}
 
 
-	private static Buffer toWav(Buffer data) {
+	private static Buffer toWav(Buffer data, Integer sampleRate) {
 		Buffer wav = Buffer.buffer();
 		wav.appendString("RIFF");
 		wav.appendBytes(intToByteArray(44 + data.length()));
@@ -203,8 +208,8 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 		wav.appendBytes(intToByteArray(16));
 		wav.appendBytes(shortToByteArray((short) 1));
 		wav.appendBytes(shortToByteArray((short) 2));
-		wav.appendBytes(intToByteArray(44100));
-		wav.appendBytes(intToByteArray(44100 * 4));
+		wav.appendBytes(intToByteArray(sampleRate));
+		wav.appendBytes(intToByteArray(sampleRate * 4));
 		wav.appendBytes(shortToByteArray((short) 4));
 		wav.appendBytes(shortToByteArray((short) 16));
 		wav.appendString("data");

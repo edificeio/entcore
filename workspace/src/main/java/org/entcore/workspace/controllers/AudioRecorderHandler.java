@@ -23,6 +23,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.filter.UserAuthFilter.SESSION_ID;
 
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.service.impl.AudioRecorderWorker;
 
 import fr.wseduc.webutils.Server;
@@ -39,6 +40,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 
 	private static final Logger log = LoggerFactory.getLogger(AudioRecorderHandler.class);
@@ -51,6 +60,28 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 		this.eb = Server.getEventBus(vertx);
 	}
 
+
+	private Map<String, String> parseQueries(final String query) {
+		final Map<String,String> queries = new HashMap<>();
+		if(StringUtils.isEmpty(query)){
+			return queries;
+		}
+		final String[] parts = query.split("&");
+		for(final String p : parts){
+			final String[] s = p.split("=");
+			queries.put(decode(s[0]), decode(s[1]));
+		}
+		return queries;
+	}
+
+	private static String decode(final String encoded) {
+		try {
+			return encoded == null ? null : URLDecoder.decode(encoded, "UTF-8");
+		} catch(final UnsupportedEncodingException e) {
+			throw new RuntimeException("Impossible: UTF-8 is a required encoding", e);
+		}
+	}
+
 	@Override
 	public void handle(final ServerWebSocket ws) {
 		ws.pause();
@@ -61,9 +92,11 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 					ws.reject();
 					return;
 				}
-				final String id = ws.path().replaceFirst("/audio/", "");
+				final Map<String, String> queries = parseQueries(ws.query());
+				final String path = ws.path();
+				final String id = path.replaceFirst("/audio/", "");
 				eb.send(AudioRecorderWorker.class.getSimpleName(),
-						new JsonObject().put("action", "open").put("id", id), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						new JsonObject().put("action", "open").put("id", id).put("sampleRate", queries.getOrDefault("sampleRate", "44100")), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
 						if ("ok".equals(m.body().getString("status"))) {
