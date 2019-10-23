@@ -37,6 +37,7 @@ public class ElementQuery {
 	private List<String> fullTextSearch;
 	private Set<String> ownerIds;
 	private String actionNotExists;
+	private String actionExists;
 	private Boolean hasBeenShared;
 	private String notApplication;
 	private String trasherId;
@@ -112,6 +113,14 @@ public class ElementQuery {
 
 	public void setActionNotExists(String actionNotExists) {
 		this.actionNotExists = actionNotExists;
+	}
+
+	public void setActionExists(String actionExists) {
+		this.actionExists = actionExists;
+	}
+
+	public String getActionExists() {
+		return actionExists;
 	}
 
 	public Set<String> getOwnerIds() {

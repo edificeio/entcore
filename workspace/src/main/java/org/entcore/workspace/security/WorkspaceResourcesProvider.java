@@ -60,6 +60,8 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		if (serviceMethod != null && serviceMethod.startsWith(WorkspaceController.class.getName())) {
 			String method = serviceMethod.substring(WorkspaceController.class.getName().length() + 1);
 			switch (method) {
+			case "notifyContrib":
+				break;
 			case "getDocumentProperties":
 			case "getDocument":
 			case "getPreview":

@@ -65,6 +65,7 @@ public class WorkspaceController extends BaseController {
 
 	public static final String GET_ACTION = "org-entcore-workspace-controllers-WorkspaceController|getDocument";
 	public static final String COPY_ACTION = "org-entcore-workspace-controllers-WorkspaceController|copyDocuments";
+	public static final String WRITE_ACTION = "org-entcore-workspace-controllers-WorkspaceController|updateDocument";
 	public static final String SHARED_ACTION = "org-entcore-workspace-controllers-WorkspaceController|shareResource";
 	public static final String MEDIALIB_APP = "media-library";
 	private EventStore eventStore;
@@ -93,7 +94,6 @@ public class WorkspaceController extends BaseController {
 
 		UserUtils.getUserInfos(eb, request, userInfos -> {
 			if (userInfos != null) {
-
 				final JsonObject doc = new JsonObject();
 				float quality = checkQuality(request.params().get("quality"));
 				String name = request.params().get("name");
@@ -109,15 +109,21 @@ public class WorkspaceController extends BaseController {
 				}
 				doc.put("eParent", parentId);
 				request.pause();
-				workspaceService.emptySize(userInfos, emptySize -> {
-					request.resume();
-					storage.writeUploadFile(request, emptySize, uploaded -> {
-						if ("ok".equals(uploaded.getString("status"))) {
-							workspaceService.addDocument(userInfos, quality, name, application, thumbnail, doc,
-									uploaded, asyncDefaultResponseHandler(request, 201));
-						} else {
-							badRequest(request, uploaded.getString("message"));
-						}
+				workspaceService.canWriteOn(Optional.ofNullable(parentId),true, userInfos, resRights->{
+					if (resRights.failed() || !resRights.result()) {
+						badRequest(request, "workspace.upload.forbidden");
+						return;
+					}
+					workspaceService.emptySize(userInfos, emptySize -> {
+						request.resume();
+						storage.writeUploadFile(request, emptySize, uploaded -> {
+							if ("ok".equals(uploaded.getString("status"))) {
+								workspaceService.addDocument(userInfos, quality, name, application, thumbnail, doc,
+										uploaded, asyncDefaultResponseHandler(request, 201));
+							} else {
+								badRequest(request, uploaded.getString("message"));
+							}
+						});
 					});
 				});
 			} else {
@@ -267,81 +273,87 @@ public class WorkspaceController extends BaseController {
 				bodyToJson(request, body -> {
 					Set<String> ids = body.getJsonArray("ids").stream().map(a -> (String) a)
 							.collect(Collectors.toSet());
-					Boolean addVersion = body.getBoolean("addVersion", false);
-					// find receivers
-					Future<Set<String>> futureRecipientIds = workspaceService.getNotifyContributorDest(idOpt, user, ids);
-					futureRecipientIds.compose(recipientIds -> {
-						// find element to put in message
-						if (recipientIds.isEmpty()) {
-							return Future.succeededFuture(new JsonObject());
+					workspaceService.hasRightsOn(ids,false, user, resRights->{
+						if(resRights.failed() || !resRights.result()){
+							badRequest(request, "workspace.notify.forbidden");
+							return;
 						}
-						Future<JsonObject> futureFindResource = Future.future();
-						String elementId = null;
-						if (addVersion) {
-							// notification about a changed file
-							elementId = ids.iterator().next();
-						} else if (idOpt.isPresent()) {
-							// notification about a changed folder
-							elementId = idOpt.get();
-						} else {
-							// neither a folderid of a fileid => bad request
-							futureFindResource.fail("the id of the concerned folder was not specified");
-							return futureFindResource;
-						}
-						final String elementIdFinal = elementId;
-						workspaceService.findById(elementId,
-								new JsonObject().put("_id", 1).put("name", 1).put("eType", 1), event -> {
-									if ("ok".equals(event.getString("status"))
-											&& event.getJsonObject("result") != null) {
-										futureFindResource.complete(event.getJsonObject("result"));
-									} else {
-										log.error("Unable to send timeline notification : missing name on resource "
-												+ elementIdFinal);
-										futureFindResource.fail("missing name or resource" + elementIdFinal);
-									}
-								});
-						return futureFindResource;
-					}).setHandler(ev -> {
-						if (ev.succeeded()) {
-							Set<String> recipientId = futureRecipientIds.result();
-							JsonObject result = ev.result();
-							// if no receivers return
-							if (recipientId.isEmpty()) {
-								created(request);
+						Boolean addVersion = body.getBoolean("addVersion", false);
+						// find receivers
+						Future<Set<String>> futureRecipientIds = workspaceService.getNotifyContributorDest(idOpt, user, ids);
+						futureRecipientIds.compose(recipientIds -> {
+							// find element to put in message
+							if (recipientIds.isEmpty()) {
+								return Future.succeededFuture(new JsonObject());
+							}
+							Future<JsonObject> futureFindResource = Future.future();
+							String elementId = null;
+							if (addVersion) {
+								// notification about a changed file
+								elementId = ids.iterator().next();
+							} else if (idOpt.isPresent()) {
+								// notification about a changed folder
+								elementId = idOpt.get();
 							} else {
-								// if some receivers send and return
-								String resourceName = result.getString("name", "");
-								String resourceId = result.getString("_id");
-								boolean isFolder = DocumentHelper.isFolder(result);
-								final JsonObject params = new JsonObject()
-										.put("userUri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-										.put("userName", user.getUsername())
-										.put("appPrefix", pathPrefix + "/workspace");
-								if(idOpt.isPresent()) {
-									params.put("resourceUri", pathPrefix + "/workspace#/folder/" + idOpt.get());
-								}else {
-									params.put("resourceUri", pathPrefix + "/workspace#/shared");
-								}
-								params.put("resourceName", resourceName);
-								if (addVersion) {
-									final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
-											+ ".contrib-version";
-									notification.notifyTimeline(request, notificationName, user,
-											new ArrayList<>(recipientId), resourceId, params);
-									created(request);
-								} else if (isFolder) {
-									final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
-											+ ".contrib-folder";
-									notification.notifyTimeline(request, notificationName, user,
-											new ArrayList<>(recipientId), resourceId, params);
+								// neither a folderid of a fileid => bad request
+								futureFindResource.fail("the id of the concerned folder was not specified");
+								return futureFindResource;
+							}
+							final String elementIdFinal = elementId;
+							workspaceService.findById(elementId,
+									new JsonObject().put("_id", 1).put("name", 1).put("eType", 1), event -> {
+										if ("ok".equals(event.getString("status"))
+												&& event.getJsonObject("result") != null) {
+											futureFindResource.complete(event.getJsonObject("result"));
+										} else {
+											log.error("Unable to send timeline notification : missing name on resource "
+													+ elementIdFinal);
+											futureFindResource.fail("missing name or resource" + elementIdFinal);
+										}
+									});
+							return futureFindResource;
+						}).setHandler(ev -> {
+							if (ev.succeeded()) {
+								Set<String> recipientId = futureRecipientIds.result();
+								JsonObject result = ev.result();
+								// if no receivers return
+								if (recipientId.isEmpty()) {
 									created(request);
 								} else {
-									badRequest(request, "id is not a folder" + idOpt.orElse("root"));
+									// if some receivers send and return
+									String resourceName = result.getString("name", "");
+									String resourceId = result.getString("_id");
+									boolean isFolder = DocumentHelper.isFolder(result);
+									final JsonObject params = new JsonObject()
+											.put("userUri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+											.put("userName", user.getUsername())
+											.put("appPrefix", pathPrefix + "/workspace");
+									if(idOpt.isPresent()) {
+										params.put("resourceUri", pathPrefix + "/workspace#/folder/" + idOpt.get());
+									}else {
+										params.put("resourceUri", pathPrefix + "/workspace#/shared");
+									}
+									params.put("resourceName", resourceName);
+									if (addVersion) {
+										final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
+												+ ".contrib-version";
+										notification.notifyTimeline(request, notificationName, user,
+												new ArrayList<>(recipientId), resourceId, params);
+										created(request);
+									} else if (isFolder) {
+										final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
+												+ ".contrib-folder";
+										notification.notifyTimeline(request, notificationName, user,
+												new ArrayList<>(recipientId), resourceId, params);
+										created(request);
+									} else {
+										badRequest(request, "id is not a folder" + idOpt.orElse("root"));
+									}
 								}
+							} else {
+								badRequest(request, ev.cause().getMessage());
 							}
-						} else {
-							badRequest(request, ev.cause().getMessage());
-						}
+						});
 					});
 				});
 			} else {
