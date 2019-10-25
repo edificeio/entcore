@@ -870,8 +870,9 @@ class QueryHelper {
 					} else {
 						idsToRemoveParent.add(id);
 					}
+				} else{//old parent is not in my tree or is not in the list so remove
+					idsToRemoveParent.add(id);
 				}
-				// should we check parent? not needed?
 			}
 			Future<Void> futureRename = updateAll(idsToRename,
 					new MongoUpdateBuilder().rename("eParentOld", "eParent"));
@@ -889,8 +890,13 @@ class QueryHelper {
 	}
 
 	public Future<Void> restoreParentLink(RestoreParentDirection dir, Collection<JsonObject> all) {
-		Set<String> eParentOlds = all.stream().map(o -> DocumentHelper.getParentOld(o))
-				.filter(pa -> !StringUtils.isEmpty(pa)).collect(Collectors.toSet());
+		Set<String> eParentOlds = all.stream().map(o -> {
+			if(StringUtils.isEmpty(DocumentHelper.getParentOld(o))){
+				return DocumentHelper.getParent(o);
+			} else{
+				return DocumentHelper.getParentOld(o);
+			}
+		}).filter(pa -> !StringUtils.isEmpty(pa)).collect(Collectors.toSet());
 		if (eParentOlds.isEmpty()) {
 			return Future.succeededFuture();
 		}
