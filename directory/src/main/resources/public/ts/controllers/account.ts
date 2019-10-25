@@ -154,20 +154,15 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	};
 
 	$scope.setThemePreferences = (themeName: string) => {
-		const addedThemes = [];
-
+		let selected = $scope.account.themes[themeName];
+		// reset
 		for(let name in $scope.account.themes){
-			if($scope.account.themes[name]){
-				addedThemes.push(name);
-			}
+			$scope.account.themes[name] = false;
 		}
 
-		if(addedThemes.length > 1){
-			const keptTheme = $scope.themes.find(t => t.parent === 'theme-open-ent').child;
-			http().put('/userbook/preference/theme', keptTheme);
-		}
-		else{
-			http().put('/userbook/preference/theme', addedThemes[0]);
+		if (selected) {
+			$scope.account.themes[themeName] = true;
+			http().put('/userbook/preference/theme', themeName);
 		}
 	};
 
