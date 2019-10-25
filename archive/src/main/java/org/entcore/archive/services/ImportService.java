@@ -22,5 +22,7 @@ public interface ImportService {
 
     void imported(String importId, String app, JsonObject importRapport);
 
+    boolean isUserAlreadyImporting(String userId);
+
     String getImportBusAddress(String exportId);
 }

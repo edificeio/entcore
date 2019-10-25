@@ -44,6 +44,8 @@
     "archive.import.corrupted": "Votre archive semble corrompue. Veuillez contacter votre administrateur.",
     "archive.import.na": "Non disponible",
     "archive.import.loading": "Import de vos données en cours",
+    "archive.import.already": "Un import de vos données est déjà en cours.",
+
 
     "import.info": "Importer votre fichier d'export au format .zip <br /> <strong>Attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"</strong>.",
     "import.drop-files": "Déposer les fichiers",

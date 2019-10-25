@@ -40,13 +40,17 @@ public class ImportController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void upload(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
-            importService.uploadArchive(request, user, handler -> {
-                if (handler.isLeft()) {
-                    badRequest(request, handler.left().getValue());
-                } else {
-                    renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
-                }
-            });
+            if (importService.isUserAlreadyImporting(user.getUserId())) {
+                renderError(request);
+            } else {
+                importService.uploadArchive(request, user, handler -> {
+                    if (handler.isLeft()) {
+                        badRequest(request, handler.left().getValue());
+                    } else {
+                        renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
+                    }
+                });
+            }
         });
     }
 
