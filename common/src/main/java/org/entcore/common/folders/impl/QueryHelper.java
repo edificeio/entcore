@@ -24,6 +24,8 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import javax.management.Query;
+
 class QueryHelper {
 	final static int MAX_BATCH = 10;
 	final static long MAX_DEPTH = 10;
@@ -404,9 +406,14 @@ class QueryHelper {
 		}
 
 		public DocumentQueryBuilder withActionExistingInShared(UserInfos user, String action) {
-			builder.and(QueryBuilder.start("inheritedShares")
-					.elemMatch(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get())
-					.get());
+			List<DBObject> groups = new ArrayList<>();
+			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+			}
+			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
+			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
+					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
 			return this;
 		}
 
