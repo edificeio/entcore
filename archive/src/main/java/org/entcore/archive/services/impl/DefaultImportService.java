@@ -72,6 +72,11 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
+    public boolean isUserAlreadyImporting(String userId) {
+        return userImports.keySet().stream().anyMatch(id -> id.endsWith(userId));
+    }
+
+    @Override
     public void uploadArchive(HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler) {
         final String importId = System.currentTimeMillis() + "_" + user.getUserId();
         storage.writeUploadToFileSystem(request, (importPath + File.separator + importId), written -> {

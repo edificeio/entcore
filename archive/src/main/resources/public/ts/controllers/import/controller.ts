@@ -135,6 +135,10 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     $scope.results = result.data;
                     $scope.loadingSpinner = false;
                     $scope.$apply();
+                })
+                .catch(error => {
+                    notify.error('archive.import.already');
+                    $scope.cancelImport();
                 });
                 $scope.loadingSpinner = true;
                 $scope.firstPhase = false;
