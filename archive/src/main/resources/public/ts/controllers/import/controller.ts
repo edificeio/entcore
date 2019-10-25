@@ -37,7 +37,9 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                         $scope.quotaExceeded = false;
                         $scope.appsSize = [];
                         $scope.availableApps.forEach(app => {
-                            $scope.appsSize[app] = getSize(r.data.apps[app].size);
+                            if(r.data.apps[app].size != 0) {
+                                $scope.appsSize[app] =  getSize(r.data.apps[app].size);
+                            }
                         });
                         $scope.sum = getSize(0);
                         if ($scope.availableApps.length == 0) {

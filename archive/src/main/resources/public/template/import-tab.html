@@ -62,7 +62,11 @@
                 </div>
             </div>
 
-            <div ng-if="isAnalized" style="margin-top: 20px;">
+            <div ng-if="isAnalized" style="margin-top: 40px;">
+                <div class="row">
+                    <i18n>archive.quota.explanation</i18n>
+                </div>
+                <br>
                 <div class="row">
                     <span><i18n>archive.quota.available</i18n>: [[quota.quantity]]</span><span class="file-size" translate content="[[quota.unity]]"></span>
                 </div>
@@ -88,7 +92,7 @@
                     <label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
                         <input type="checkbox" ng-model="selectedApps[app]" ng-click="updateQuota(app)" />
                         <span></span>
-                        <span translate content="[[app]]"></span> (<span>[[appsSize[app].quantity]]</span><span style="margin-left: 5px;" translate content="[[appsSize[app].unity]]"></span>)
+                        <span translate content="[[app]]"></span> <span ng-if="appsSize[app]">(<span>[[appsSize[app].quantity]]</span><span style="margin-left: 5px;" translate content="[[appsSize[app].unity]]"></span>)</span>
                     </label>
                 </div>
                 <hr>
