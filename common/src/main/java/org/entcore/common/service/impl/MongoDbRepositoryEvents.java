@@ -392,32 +392,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected Future<String> getDuplicateSuffix(String locale)
-	{
-		// Get the latest translation from portal
-		JsonObject rq =
-			new JsonObject()
-				.put("action", "getI18n")
-				.put("acceptLanguage", locale)
-				.put("label", "duplicate.suffix");
-
-		Future<String> promise = Future.future();
-
-		this.eb.send("portal", rq, new Handler<AsyncResult<Message<JsonObject>>>()
-		{
-			@Override
-			public void handle(AsyncResult<Message<JsonObject>> msg)
-			{
-				if(msg.succeeded() == false)
-					promise.complete(" — Copie");
-				else
-					promise.complete((String)(msg.result().body().getString("label")));
-			}
-		});
-
-		return promise;
-	}
-
 	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName)
 	{
 		if(this.fileImporter == null)
@@ -661,7 +635,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void importResources(String importId, String userId, String userLogin, String userName, String importPath,
-		String locale, Handler<JsonObject> handler)
+		String locale, boolean forceImportAsDuplication, Handler<JsonObject> handler)
 	{
 		MongoDbRepositoryEvents self = this;
 

@@ -53,6 +53,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
 		String exportedBusAddress = "entcore.export";
 		String importedBusAddress = "entcore.import";
+		boolean forceImportAsDuplication = false;
 
 		switch (action)
 		{
@@ -92,6 +93,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				break;
 			case "duplicate:import" :
 				importedBusAddress = "entcore.duplicate";
+				forceImportAsDuplication = true;
 				// Fallthrough
 			case "import" :
 				final JsonObject importApps = message.body().getJsonObject("apps");
@@ -108,7 +110,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
 
 					String finalBusAddress = importedBusAddress;
-					repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, success -> {
+					repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, forceImportAsDuplication, success -> {
 							JsonObject imported = new JsonObject()
 									.put("action", "imported")
 									.put("importId", importId)
