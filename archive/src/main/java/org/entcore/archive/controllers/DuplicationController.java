@@ -43,26 +43,32 @@ public class DuplicationController extends BaseController
       public void handle(Buffer buff)
       {
         JsonObject body = new JsonObject();
+
+        String application = null;
+        String resourceId = null;
+
         try
         {
           body = buff.toJsonObject();
+          application = body.getString("application");
+          resourceId = body.getString("resourceId");
         }
         catch(Exception e)
         {
           log.error(e, e.getMessage());
           badRequest(request);
+          return;
         }
-
-        final String application = body.getString("application");
-        final String resourceId = body.getString("resourceId");
 
         if (application == null || resourceId == null)
           badRequest(request);
         else
         {
+          final String fapplication = application;
+          final String fresourceId = resourceId;
           UserUtils.getUserInfos(eb, request, user ->
           {
-            dupService.duplicateSingleResource(user, request, new JsonArray().add(application), new JsonArray().add(resourceId), config,
+            dupService.duplicateSingleResource(user, request, new JsonArray().add(fapplication), new JsonArray().add(fresourceId), config,
               new Handler<Either<String, String>>()
               {
                 @Override

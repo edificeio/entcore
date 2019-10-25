@@ -84,13 +84,23 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
     protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
-                                String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler) {
-        importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler, new HashMap<String, JsonObject>());
+                                String userId, String username, String locale, SqlStatementsBuilder builder,
+                                boolean forceImportAsDuplication, Handler<JsonObject> handler)
+    {
+        getDuplicateSuffix(locale).setHandler(new Handler<AsyncResult<String>>()
+        {
+            @Override
+            public void handle(AsyncResult<String> suffix)
+            {
+                importTables(importPath, schema, tables, tablesWithId, userId, username, locale, builder,
+                    forceImportAsDuplication, handler, new HashMap<String, JsonObject>(), suffix.result());
+            }
+        });
     }
 
     protected void importTables(String importPath, String schema, List<String> tables, Map<String,String> tablesWithId,
-                                String userId, String username, SqlStatementsBuilder builder, Handler<JsonObject> handler,
-                                Map<String, JsonObject> idsMapByTable)
+                                String userId, String username, String locale, SqlStatementsBuilder builder, boolean forceImportAsDuplication,
+                                Handler<JsonObject> handler, Map<String, JsonObject> idsMapByTable, String duplicateSuffix)
     {
         if (tables.isEmpty()) {
             tablesWithId.keySet().forEach(table -> {
@@ -132,7 +142,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 .put("resourcesNumber", String.valueOf(resourcesNumber))
                                 .put("errorsNumber", String.valueOf(errorsNumber))
                                 .put("duplicatesNumber", String.valueOf(duplicatesNumber))
-                                .put("idsMap", finalMap)
+                                .put("resourcesIdsMap", finalMap)
                                 .put("mainResourceName", mainResourceName);
 
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
@@ -170,7 +180,15 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                     Map<String, Object> oldIdsToNewIdsMap = new HashMap<String, Object>();
                     for(int i = results.size(); i-- > 0;)
                     {
-                        String id = results.getJsonArray(i).getString(idIx);
+                        String id = "";
+                        try
+                        {
+                            id = results.getJsonArray(i).getString(idIx);
+                        }
+                        catch(ClassCastException e)
+                        {
+                            id = results.getJsonArray(i).getInteger(idIx).toString();
+                        }
                         oldIdsToNewIdsMap.put(id, id);
                     }
 
@@ -178,7 +196,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                     if (!results.isEmpty()) {
 
-                        results = transformResults(fields, results, userId, username, builder, table);
+                        results = transformResults(fields, results, userId, username, builder, table, forceImportAsDuplication, duplicateSuffix);
 
                         String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
                                 ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
@@ -197,14 +215,16 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                         }
 
                     }
-                    importTables(importPath, schema, tables, tablesWithId, userId, username, builder, handler, idsMapByTable);
+                    importTables(importPath, schema, tables, tablesWithId, userId, username, locale, builder,
+                        forceImportAsDuplication, handler, idsMapByTable, duplicateSuffix);
                 }
             });
         }
     }
 
 	protected JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username,
-                                         SqlStatementsBuilder builder, String table){ return results; }
+                                         SqlStatementsBuilder builder, String table, boolean forceImportAsDuplication,
+                                         String duplicationSuffix){ return results; }
 
     protected void importDocumentsDependancies(String importPath, String userId, String userName, JsonArray statements,
                                              Handler<JsonArray> handler) {

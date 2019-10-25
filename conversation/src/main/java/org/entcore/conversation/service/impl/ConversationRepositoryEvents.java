@@ -212,7 +212,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	@Override
 	public void importResources(String importId, String userId, String userLogin, String username, String importPath, String locale,
-		Handler<JsonObject> handler)
+		boolean forceImportAsDuplication, Handler<JsonObject> handler)
 	{
 		fs.readFile(importPath + File.separator + "conversation.usermessages", result -> {
 			if (result.failed()) {
@@ -235,7 +235,8 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				tablesWithId.put("attachments", postgresRandomUuid);
 				tablesWithId.put("folders", postgresRandomUuid);
 
-				importTables(importPath, "conversation", tables, tablesWithId, userId, username, new SqlStatementsBuilder(), handler);
+				importTables(importPath, "conversation", tables, tablesWithId, userId, username, locale,
+					new SqlStatementsBuilder(), forceImportAsDuplication, handler);
 			}
 		});
 	}
@@ -243,7 +244,8 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	private final Map<String,String> exportUserId = new HashMap<>();
 
 	@Override
-	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, SqlStatementsBuilder builder, String table) {
+	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, SqlStatementsBuilder builder,
+		String table, boolean forceImportAsDuplication, String duplicationSuffix) {
 
 		// Dirty hack..
 		if ("messages".equals(table) && exportUserId.get(userId) != null) {

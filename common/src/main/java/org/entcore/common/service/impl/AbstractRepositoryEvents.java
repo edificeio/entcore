@@ -8,6 +8,7 @@ import fr.wseduc.webutils.Server;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.Future;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -210,6 +211,37 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 		while(m.hitEnd() == false);
 
 		return result;
+	}
+	
+	protected Future<String> getDuplicateSuffix(String locale)
+	{
+		// Get the latest translation from portal
+		JsonObject rq =
+			new JsonObject()
+				.put("action", "getI18n")
+				.put("acceptLanguage", locale)
+				.put("label", "duplicate.suffix");
+
+		Future<String> promise = Future.future();
+
+		this.eb.send("portal", rq, new Handler<AsyncResult<Message<JsonObject>>>()
+		{
+			@Override
+			public void handle(AsyncResult<Message<JsonObject>> msg)
+			{
+				String defaultLabel = " — Copie";
+
+				if(msg.succeeded() == false)
+					promise.complete(defaultLabel);
+				else
+				{
+					String lbl = msg.result().body().getString("label");
+					promise.complete(lbl == null ? defaultLabel : lbl);
+				}
+			}
+		});
+
+		return promise;
 	}
 
 }
