@@ -468,6 +468,16 @@ public class UserUtils {
 		});
 	}
 
+	public static void getUserInfos(EventBus eb, String userId,
+									final Handler<UserInfos> handler) {
+		getSessionByUserId(eb, userId, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject session) {
+				handler.handle(sessionToUserInfos(session));
+			}
+		});
+	}
+
 	public static void createSession(EventBus eb, String userId, boolean secureLocation, Handler<String> handler) {
 		createSession(eb, userId, null, null, secureLocation, handler);
 	}

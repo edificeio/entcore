@@ -124,45 +124,43 @@ public class ArchiveController extends BaseController {
 	@SecuredAction("archive.export")
 	public void export(final HttpServerRequest request)
 	{
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>()
+		UserUtils.getUserInfos(eb, request, user ->
 		{
-			@Override
-			public void handle(final UserInfos user)
+			if(user != null)
 			{
-				if (user != null)
+				request.bodyHandler(new Handler<Buffer>()
 				{
-					request.bodyHandler(new Handler<Buffer>()
+					@Override
+					public void handle(Buffer event)
 					{
-						public void handle(Buffer event)
+						eb.send("entcore.export",
+							new JsonObject()
+								.put("action", "start")
+								.put("userId", user.getUserId())
+								.put("locale", I18n.acceptLanguage(request))
+								.put("apps", event.toJsonObject().getJsonArray("apps")),
+							new Handler<AsyncResult<Message<JsonObject>>>()
 						{
-							JsonArray apps = event.toJsonObject().getJsonArray("apps");
-
-							exportService.export(user, I18n.acceptLanguage(request), apps, null, request,
-									new Handler<Either<String, String>>()
-									{
-										@Override
-										public void handle(Either<String, String> event)
-										{
-											if (event.isRight())
-											{
-												renderJson(request,
-														new JsonObject().put("message", "export.in.progress")
-																.put("exportId", event.right().getValue()));
-											}
-											else
-											{
-												badRequest(request, event.left().getValue());
-											}
-										}
-									});
-						}
-					});
-				}
-				else
-				{
-					unauthorized(request);
-				}
+							@Override
+							public void handle(AsyncResult<Message<JsonObject>> res)
+							{
+								if(res.succeeded() == true)
+								{
+									JsonObject msg = res.result().body();
+									if(msg.getString("status").equals("ok"))
+										renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
+									else
+										badRequest(request, msg.getString("message"));
+								}
+								else
+									badRequest(request, res.cause().getMessage());
+							}
+						});
+					}
+				});
 			}
+			else
+				unauthorized(request);
 		});
 	}
 
@@ -247,9 +245,62 @@ public class ArchiveController extends BaseController {
 	}
 
 	@BusAddress("entcore.export")
-	public void export(Message<JsonObject> message) {
+	public void export(Message<JsonObject> message)
+	{
 		String action = message.body().getString("action", "");
-		switch (action) {
+		switch (action)
+		{
+			case "start":
+				JsonObject body = message.body();
+
+				String userId = body.getString("userId");
+				String locale = body.getString("locale");
+				JsonArray apps = body.getJsonArray("apps");
+				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
+
+				if(userId == null || apps == null || locale == null)
+				{
+					message.reply(new JsonObject().put("status", "error").put("message", "Missing arguments userId or apps or locale"));
+					break;
+				}
+
+				UserUtils.getUserInfos(eb, userId, user ->
+				{
+					exportService.export(user, locale, apps, resourcesIds, null,
+						new Handler<Either<String, String>>()
+					{
+						@Override
+						public void handle(Either<String, String> event)
+						{
+							if (event.isRight() == true)
+							{
+								String exportId = event.right().getValue();
+								message.reply(
+									new JsonObject()
+										.put("status", "ok")
+										.put("exportId", exportId)
+										.put("exportPath", exportId + ".zip")
+								);
+							}
+							else
+							{
+								message.reply(new JsonObject().put("status", "error").put("message", event.left().getValue()));
+							}
+						}
+					});
+				});
+				break;
+			case "delete":
+				String exportId = message.body().getString("exportId");
+
+				if(exportId == null)
+					message.reply(new JsonObject().put("status", "error").put("message", "Missing argument userId"));
+				else
+				{
+					exportService.deleteExport(exportId);
+					message.reply(new JsonObject().put("status", "ok"));
+				}
+				break;
 			case "exported" :
 				exportService.exported(
 						message.body().getString("exportId"),
@@ -263,39 +314,48 @@ public class ArchiveController extends BaseController {
 	}
 
 	@Get("/export")
-  public void unitaryExport(final HttpServerRequest request)
-  {
-    final String application = request.params().get("application");
-    final String resourceId = request.params().get("resourceId");
+	public void unitaryExport(final HttpServerRequest request)
+	{
+		final String application = request.params().get("application");
+		final String resourceId = request.params().get("resourceId");
 
-    if (application == null || resourceId == null)
-    {
-        badRequest(request);
-    }
-    else
-    {
-        UserUtils.getUserInfos(eb, request, user ->
-        {
-            exportService.export(user, I18n.acceptLanguage(request), new JsonArray().add(application), new JsonArray().add(resourceId), request,
-							new Handler<Either<String, String>>()
+		if (application == null || resourceId == null)
+				badRequest(request);
+		else
+		{
+			UserUtils.getUserInfos(eb, request, user ->
+			{
+				if(user != null)
+				{
+					eb.send("entcore.export",
+						new JsonObject()
+							.put("action", "start")
+							.put("userId", user.getUserId())
+							.put("locale", I18n.acceptLanguage(request))
+							.put("apps", new JsonArray().add(application))
+							.put("resourcesIds", new JsonArray().add(resourceId)),
+						new Handler<AsyncResult<Message<JsonObject>>>()
+					{
+						@Override
+						public void handle(AsyncResult<Message<JsonObject>> res)
+						{
+							if(res.succeeded() == true)
 							{
-								@Override
-								public void handle(Either<String, String> event)
-								{
-									if (event.isRight())
-									{
-										renderJson(request,
-												new JsonObject().put("message", "export.in.progress")
-														.put("exportId", event.right().getValue()));
-									}
-									else
-									{
-										badRequest(request, event.left().getValue());
-									}
-								}
-							});
-        });
-    }
+								JsonObject msg = res.result().body();
+								if(msg.getString("status").equals("ok"))
+									renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
+								else
+									badRequest(request, msg.getString("message"));
+							}
+							else
+								badRequest(request, res.cause().getMessage());
+						}
+					});
+				}
+				else
+					unauthorized(request);
+			});
+		}
 	}
 
 }
