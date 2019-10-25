@@ -93,6 +93,14 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	};
 
 	$scope.noThemePicked = () => !Object.keys($scope.user.themes).length;
+	
+	$scope.refreshSelectionTheme = (theme) => {
+		var selected = $scope.user.themes[theme];
+		$scope.user.themes = {};
+		if (selected) {
+			$scope.user.themes[theme] = true;
+		}
+	};
 
 	$scope.activate = function(forceCurrentTheme: boolean){
 		if($scope.themes.length > 1 && $scope.noThemePicked() && !forceCurrentTheme){
