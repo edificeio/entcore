@@ -8,5 +8,5 @@ import org.entcore.common.user.UserInfos;
 
 
 public interface LibraryService {
-    Future<JsonObject> publish(UserInfos user, MultiMap form, Buffer cover, Buffer teacherAvatar);
+    Future<JsonObject> publish(UserInfos user,String locale, MultiMap form, Buffer cover, Buffer teacherAvatar);
 }

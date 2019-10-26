@@ -1,19 +1,23 @@
 package org.entcore.registry.services.impl;
 
-import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.pdf.Pdf;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.pdf.PdfGenerator;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.services.LibraryService;
@@ -36,23 +40,69 @@ public class DefaultLibraryService implements LibraryService {
     private final JsonObject config;
     private final PdfGenerator pdfGenerator;
     private final FileSystem fileSystem;
+    private final EventBus eb;
+    private final Storage storage;
 
     public DefaultLibraryService(Vertx vertx, JsonObject config) throws Exception {
         this.config = config;
         this.fileSystem = vertx.fileSystem();
         this.http = vertx.createHttpClient();
         this.pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
+        this.eb = vertx.eventBus();
+        this.storage = new StorageFactory(vertx, config).getStorage();
     }
 
-    private Future<Buffer> getArchive() {
-        //TODO call real bus method to generate archive
-        Future<Buffer> archive = Future.future();
-        this.fileSystem.readFile(FileResolver.absolutePath("document.zip"), archive.completer());
-        return archive;
+    private Future<Buffer> getArchive(UserInfos user, String locale, String app, String resourceId){
+        Future<JsonObject> archiveInfo = Future.future();
+        JsonObject message = new JsonObject()
+                .put("action", "start")
+                .put("userId", user.getUserId())
+                .put("locale", locale)
+                .put("apps", new JsonArray().add(app.toLowerCase()))
+                .put("resourcesIds",new JsonArray().add(resourceId));
+        eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(5000l), response -> {
+            if (response.succeeded()) {
+                JsonObject body = (JsonObject) response.result().body();
+                if ("ok".equals(body.getString("status"))){
+                    log.debug("archive.export.start " + body.getString("exportPath"));
+                    archiveInfo.complete(new JsonObject()
+                            .put("exportId",body.getString("exportId"))
+                            .put("exportPath",body.getString("exportPath")));
+                } else {
+                    archiveInfo.fail("archive.export.start failed");
+                }
+            } else {
+                archiveInfo.fail(response.cause());
+            }
+        });
+        return archiveInfo.compose(jo -> {
+            log.debug("archive.export storage.readFile " + jo.getString("exportPath"));
+            Future<Buffer> archive = Future.future();
+            this.storage.readFile(jo.getString("exportPath"), buffer -> archive.complete(buffer));
+            return archive;
+        }).compose(buffer -> {
+            Future<Buffer> bufferFuture = Future.future();
+            eb.send("entcore.export", new JsonObject()
+                    .put("action", "delete")
+                    .put("exportId", archiveInfo.result().getString("exportId")), new DeliveryOptions().setSendTimeout(5000l), response -> {
+                if (response.succeeded()) {
+                    JsonObject body = (JsonObject) response.result().body();
+                    if ("ok".equals(body.getString("status"))){
+                        log.debug("archive.export.delete " + archiveInfo.result().getString("exportPath"));
+                        bufferFuture.complete(buffer);
+                    } else {
+                        bufferFuture.fail("archive.export.delete failed");
+                    }
+                } else {
+                    bufferFuture.fail(response.cause());
+                }
+            });
+            return  bufferFuture;
+        });
     }
 
     @Override
-    public Future<JsonObject> publish(UserInfos user, MultiMap form, Buffer cover, Buffer teacherAvatar) {
+    public Future<JsonObject> publish(UserInfos user, String locale, MultiMap form, Buffer cover, Buffer teacherAvatar) {
         final boolean isLibraryEnabled = config.getBoolean(CONFIG_LIBRARY_ENABLED, false);
         final String libraryApiUrl = config.getString(CONFIG_LIBRARY_API_URL);
         final String libraryToken = config.getString(CONFIG_LIBRARY_TOKEN);
@@ -66,7 +116,7 @@ public class DefaultLibraryService implements LibraryService {
         if (!(libraryToken != null && libraryToken.length() > 0)) {
             return Future.succeededFuture(generateJsonResponse(false, REASON.BAD_CONFIGURATION, MESSAGE.WRONG_TOKEN));
         }
-        Future<Buffer> archive = getArchive();
+        Future<Buffer> archive = getArchive(user, locale, form.get("application"), form.get("resourceId"));
         return archive.compose(resArchive -> generatePdf(user, form)).compose(resPdf -> {
             final Buffer exportPdf = resPdf.getContent();
             final Future<JsonObject> future = Future.future();
