@@ -22,6 +22,7 @@ package org.entcore.registry.controllers;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
@@ -55,7 +56,7 @@ public class LibraryController extends BaseController {
             List<Buffer> coverAndAvatarBufferList = res.resultAt(0);
             MultiMap attributes = res.resultAt(1);
             UserInfos user = res.resultAt(2);
-            return service.publish(user, attributes, coverAndAvatarBufferList.get(0), coverAndAvatarBufferList.get(1));
+            return service.publish(user, I18n.acceptLanguage(request), attributes, coverAndAvatarBufferList.get(0), coverAndAvatarBufferList.get(1));
         }).setHandler(res -> {
             if (res.succeeded()) {
                 final JsonObject json = res.result();
