@@ -861,8 +861,8 @@ class QueryHelper {
 			Set<String> idsToRemoveParent = new HashSet<>();
 			for (JsonObject doc : docs) {
 				String id = DocumentHelper.getId(doc);
+				String parent = DocumentHelper.getParent(doc);
 				String oldParent = DocumentHelper.getParentOld(doc);
-				// String parent = DocumentHelper.getParent(doc);
 				// if oldparent is not in my virtual tree=> remove parent
 				if (oldParent != null) {
 					if (parentIdsOk.contains(oldParent) || treeIds.contains(oldParent)) {
@@ -870,9 +870,13 @@ class QueryHelper {
 					} else {
 						idsToRemoveParent.add(id);
 					}
-				} else{//old parent is not in my tree or is not in the list so remove
-					idsToRemoveParent.add(id);
-				}
+				} else if(parent != null){
+					if (parentIdsOk.contains(parent) || treeIds.contains(parent)) {
+						//do nothing
+					} else {
+						idsToRemoveParent.add(id);
+					}
+				}//else do nothing
 			}
 			Future<Void> futureRename = updateAll(idsToRename,
 					new MongoUpdateBuilder().rename("eParentOld", "eParent"));
