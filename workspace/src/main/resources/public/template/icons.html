@@ -2,13 +2,13 @@
 
  -->
 
-<infotip name="workspace-explorer-tutorial" on-change="onInfotipChange($visible)" class="info" ng-if="openedFolder.documents.length">
+<infotip name="workspace-explorer-tutorial" on-change="onInfotipChange($visible)" class="info" ng-if="openedFolder.all.length">
 	<strong><i18n>tuto.title</i18n></strong>
 	<br /><strong><i18n>tuto.action.select</i18n></strong> <i18n>tuto.text.select</i18n>
 	<br /><strong><i18n>tuto.action.open</i18n></strong> <i18n>tuto.text.open</i18n>
 </infotip>
 
-<article class="icons-view no-overflow no-margin-bottom" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}" ng-if="openedFolder.documents.length">
+<article class="icons-view no-overflow no-margin-bottom" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}" ng-if="openedFolder.all.length">
 	<dropzone-overlay on-import="onImportFiles($event)" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<div>
 		<div ng-repeat="folder in openedFolder.folders" class="element mini-block-container" ng-class="{ selected: folder.selected}" dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
