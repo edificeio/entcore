@@ -59,7 +59,8 @@ public class DefaultLibraryService implements LibraryService {
                 .put("userId", user.getUserId())
                 .put("locale", locale)
                 .put("apps", new JsonArray().add(app.toLowerCase()))
-                .put("resourcesIds",new JsonArray().add(resourceId));
+                .put("resourcesIds",new JsonArray().add(resourceId))
+                .put("synchroniseReply",true);
         eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(5000l), response -> {
             if (response.succeeded()) {
                 JsonObject body = (JsonObject) response.result().body();
