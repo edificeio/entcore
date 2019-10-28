@@ -116,18 +116,29 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
             importDocumentsDependancies(importPath, userId, username, statements, done -> {
                 sql.transaction(done, message -> {
                     int resourcesNumber = 0, duplicatesNumber = 0, errorsNumber = 0;
-                    if ("ok".equals(message.body().getString("status"))) {
+                    if ("ok".equals(message.body().getString("status")))
+                    {
                         JsonArray results = message.body().getJsonArray("results");
-                        for (int i = 0; i < results.size(); i++) {
+                        Map<String, Integer> dupsMap = new HashMap<String, Integer>();
+
+                        for (int i = 0; i < results.size(); i++)
+                        {
                             JsonObject jo = results.getJsonObject(i);
+
                             if (!"ok".equals(jo.getString("status"))) {
                                 errorsNumber++;
                             } else {
-                                if (jo.getJsonArray("fields").contains("duplicates")) {
-                                    duplicatesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                                if (jo.getJsonArray("fields").contains("duplicates"))
+                                {
+                                    String collec = jo.getJsonArray("results").getJsonArray(0).getString(0);
+                                    Integer dups = jo.getJsonArray("results").getJsonArray(0).getInteger(1);
+                                    Integer oldDups = dupsMap.getOrDefault(collec, 0);
+
+                                    dupsMap.put(collec, oldDups + dups);
+                                    duplicatesNumber += dups;
                                 }
                                 if (jo.getJsonArray("fields").contains("noduplicates")) {
-                                    resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(0);
+                                    resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(1);
                                 }
                             }
                         }
@@ -143,6 +154,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 .put("errorsNumber", String.valueOf(errorsNumber))
                                 .put("duplicatesNumber", String.valueOf(duplicatesNumber))
                                 .put("resourcesIdsMap", finalMap)
+                                .put("duplicatesNumberMap", dupsMap)
                                 .put("mainResourceName", mainResourceName);
 
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
@@ -201,7 +213,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                         String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
                                 ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
                         String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
-                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
+                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT '" + table + "' AS table, "
+                                                + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
 
                         for (int i = 0; i < results.size(); i++) {
                             JsonArray entry = results.getJsonArray(i);
@@ -209,7 +222,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                             if (tablesWithId.containsKey(table)) {
                                 builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
-                                        " RETURNING 1) SELECT count(*) AS noduplicates FROM rows", entry);
+                                        " RETURNING 1) SELECT '" + table + "' AS table, count(*) AS noduplicates FROM rows", entry);
                             }
                             builder.prepared(query + conflictNothing, entry);
                         }

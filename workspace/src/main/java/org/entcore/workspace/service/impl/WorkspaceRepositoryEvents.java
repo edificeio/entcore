@@ -310,8 +310,12 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 										idsMap.put(entry.getKey(), entry.getValue());
 
 									res
-										.put("idsMap", new JsonObject()
-											.put(DocumentDao.DOCUMENTS_COLLECTION, idsMap))
+										.put("resourcesIdsMap", new JsonObject()
+											.put(DocumentDao.DOCUMENTS_COLLECTION, idsMap)
+										)
+										.put("duplicatesNumberMap", new JsonObject()
+											.put(DocumentDao.DOCUMENTS_COLLECTION, res.getString("duplicatesNumber"))
+										)
 										.put("mainResourceName", DocumentDao.DOCUMENTS_COLLECTION);
 									handler.handle(res);
 								}
