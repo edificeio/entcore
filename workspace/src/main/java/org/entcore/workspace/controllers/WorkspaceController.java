@@ -805,7 +805,7 @@ public class WorkspaceController extends BaseController {
 				String thumbSize = request.params().get("thumbnail");
 				if ("ok".equals(status) && jo != null) {
 					boolean createThumbnails = thumbSize != null && (jo.getJsonObject("thumbnails") == null ||
-							!jo.getJsonObject("thumbnails").containsKey(thumbSize));
+							StringUtils.isEmpty(jo.getJsonObject("thumbnails").getString(thumbSize)));
 					JsonObject thumbnails = createThumbnails ? new JsonObject().put("thumbnails",
 							new JsonObject().put(thumbSize, ""))
 							.put("_id", jo.getString("_id")): new JsonObject();
