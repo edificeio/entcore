@@ -1,0 +1,3 @@
+Id externo;Nome*;Sobrenome*;telefone;telefone trabalho;email;endereço;código postal;cidade;país;Id externo filho*;Id externo filho;Id externo filho;Id externo filho;Id externo filho
+id_externo_pais_001;Felipe;ALMEIDA;;;;;;;;id_externo_filho_001;id_externo_filho_002;;;
+id_externo_pais_002;Juan;RAISON;;;;;;;;id_externo_filho_003;;;;

@@ -1,0 +1,3 @@
+Id externo;Nombre*;Apellido*;teléfono;correo electrónico ;Dirección;código postal;ciudad;país;correo electrónico ;Id externo hijo*;Id externo hijo;Id externo hijo;Id externo hijo;Id externo hijo
+Padre-ColegioX-001;Bibiana;AGUILAR;;;;;;;;Alumno-ColegioX-001;;;;
+Padre-ColegioX-002;Miguel;RODRIGUEZ;;;;;;;;Alumno-ColegioX-003;Alumno-ColegioX-002;;;
