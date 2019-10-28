@@ -1,0 +1,4 @@
+externalid;Prénom*;Nom*;date de naissance;fonction;telephone;telephonetravail;email;adresse;cp;ville;pays;classe;classe
+CSV_Numero-RNE_E00003;Félicité;SIMANI;13/08/1980;Mathématiques;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV1;CSV2
+CSV_Numero-RNE_E00002;Raoul;ARCHAMBAULT;13/08/1980;Français;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;1COM1;
+CSV_Numero-RNE_E00001;Benoit;TATIN;13/08/1980;Education Physique et Sportive;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV2;

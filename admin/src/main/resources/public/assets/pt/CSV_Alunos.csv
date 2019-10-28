@@ -1,0 +1,4 @@
+id externo;Nome*;Sobrenome*;Turma*;Data de nascimento*;telefone;telefone trabalho;email;endereço;código postal;cidade;país
+id_externo_filho_003;Pablo;RAISON;3o ano;13/08/2008;;;;;;;
+id_externo_filho_002;Esteban;ALMEIDA;4o ano;24/05/2009;;;;;;;
+id_externo_filho_001;Marcela;ALMEIDA;6o ano;30/07/2011;;;;;;;
