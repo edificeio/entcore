@@ -257,6 +257,7 @@ public class ArchiveController extends BaseController {
 				String locale = body.getString("locale");
 				JsonArray apps = body.getJsonArray("apps");
 				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
+				Boolean synchroniseReply = body.getBoolean("synchroniseReply");
 
 				if(userId == null || apps == null || locale == null)
 				{
@@ -275,12 +276,38 @@ public class ArchiveController extends BaseController {
 							if (event.isRight() == true)
 							{
 								String exportId = event.right().getValue();
-								message.reply(
-									new JsonObject()
-										.put("status", "ok")
-										.put("exportId", exportId)
-										.put("exportPath", exportId + ".zip")
-								);
+
+								if(synchroniseReply != true)
+								{
+									message.reply(
+										new JsonObject()
+											.put("status", "ok")
+											.put("exportId", exportId)
+											.put("exportPath", exportId + ".zip")
+									);
+								}
+								else
+								{
+									final String address = exportService.getExportBusAddress(exportId);
+
+									final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+									consumer.handler(new Handler<Message<JsonObject>>()
+									{
+										@Override
+										public void handle(Message<JsonObject> event)
+										{
+											event.reply(new JsonObject().put("status", "ok").put("sendNotifications", false));
+											consumer.unregister();
+
+											message.reply(
+												new JsonObject()
+													.put("status", "ok")
+													.put("exportId", exportId)
+													.put("exportPath", exportId + ".zip")
+											);
+										}
+									});
+								}
 							}
 							else
 							{
