@@ -37,7 +37,7 @@
     "archive.report.imported": "Contenus importés",
     "archive.report.duplicates": "Contenus déjà existants",
     "archive.report.errors": "Erreurs",
-    "archive.quota.explanation": "La taille indiquée sur les applications signifie qu'il y a des documents associés aux ressources de l'application.",
+    "archive.quota.explanation": "La taille indiquée au niveau de chaque application correspond aux documents associés aux ressources de l'application (images, pièces jointes, ...).",
     "archive.quota.available": "Quota disponible",
     "archive.quota.selected": "Volume de données importées",
     "archive.quota.warning": "Votre quota est insuffisant pour importer les données des applications sélectionnées.",
