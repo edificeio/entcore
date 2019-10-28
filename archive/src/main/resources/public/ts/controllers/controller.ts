@@ -31,5 +31,20 @@ export let archiveController = ng.controller('ArchiveController', ['$scope', ($s
 
         return rapport["resourcesNumber"];
     }
+
+    $scope.countDuplicateResources = function(rapport)
+    {
+        let mainResourceName = rapport["mainResourceName"];
+        let dupsMap = rapport["duplicatesNumberMap"];
+
+        if(mainResourceName != null && dupsMap != null)
+        {
+            let dups = dupsMap[mainResourceName];
+            if(dups != null)
+                return dups;
+        }
+
+        return rapport["duplicatesNumber"];
+    }
 	
 }]);

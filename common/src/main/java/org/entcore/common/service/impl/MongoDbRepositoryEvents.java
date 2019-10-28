@@ -514,6 +514,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								.put("duplicatesNumber", Integer.toString(0))
 								.put("errorsNumber", Integer.toString(0))
 							)
+							.put("collection", collection)
 							.put("idsMap", new JsonObject());
 
 			handler.handle(rapport);
@@ -608,6 +609,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 										.put("duplicatesNumber", Integer.toString(totalDuplicates))
 										.put("errorsNumber", Integer.toString(nbErrors))
 									)
+									.put("collection", collection)
 									.put("idsMap", new JsonObject(convertedMap));
 
 							handler.handle(rapport);
@@ -625,6 +627,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								.put("duplicatesNumber", Integer.toString(0))
 								.put("errorsNumber", Integer.toString(savePayload.size()))
 							)
+							.put("collection", collection)
 							.put("idsMap", new JsonObject());
 
 					handler.handle(rapport);
@@ -651,7 +654,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				// Single collection case, aka the generic mongoDB apps
 				if(prefixMap.size() == 0)
 				{
-					prefixMap = new HashMap<String, String>();
+					//prefixMap = new HashMap<String, String>();
 					prefixMap.put(MongoDbConf.getInstance().getCollection(), "");
 				}
 
@@ -761,12 +764,18 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							int nbDuplicates = 0;
 							int nbErrors = 0;
 
+							Map<String, Integer> dupsPerCollection = new HashMap<String, Integer>();
+
 							for(JsonObject rapWrapper : rapports)
 							{
 								JsonObject rap = rapWrapper.getJsonObject("rapport");
+								Integer dups = Integer.parseInt(rap.getString("duplicatesNumber"));
+
 								nbResources += Integer.parseInt(rap.getString("resourcesNumber"));
-								nbDuplicates += Integer.parseInt(rap.getString("duplicatesNumber"));
+								nbDuplicates += dups;
 								nbErrors += Integer.parseInt(rap.getString("errorsNumber"));
+
+								dupsPerCollection.put(rapWrapper.getString("collection"), dups);
 							}
 
 							JsonObject idsMapObj = new JsonObject();
@@ -779,6 +788,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 									.put("duplicatesNumber", Integer.toString(nbDuplicates))
 									.put("errorsNumber", Integer.toString(nbErrors))
 									.put("resourcesIdsMap", idsMapObj)
+									.put("duplicatesNumberMap", dupsPerCollection)
 									.put("mainResourceName", mainResourceNameFinal);
 
 							handler.handle(finalRapport);
