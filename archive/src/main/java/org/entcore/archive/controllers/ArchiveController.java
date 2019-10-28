@@ -277,7 +277,7 @@ public class ArchiveController extends BaseController {
 							{
 								String exportId = event.right().getValue();
 
-								if(synchroniseReply != true)
+								if(Boolean.TRUE.equals(synchroniseReply) == false)
 								{
 									message.reply(
 										new JsonObject()
