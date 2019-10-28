@@ -356,21 +356,26 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected static void transformDocumentDuplicate(JsonObject document, String collectionName, String duplicateSuffix)
+	protected static void transformDocumentDuplicate(JsonObject document, String collectionName, String duplicateSuffix, boolean hintUpdateDuplicateName)
 	{
 		// Override this method to apply custom transformations to an object
-		String title = DocumentHelper.getTitle(document);
-		String name = DocumentHelper.getName(document);
-		String headline = DocumentHelper.getAppProperty(document, "headline");
 
-		if(title != null)
-			DocumentHelper.setTitle(document, title + duplicateSuffix);
 
-		if(name != null)
-			DocumentHelper.setName(document, name + duplicateSuffix);
+		if(hintUpdateDuplicateName == true)
+		{
+			String title = DocumentHelper.getTitle(document);
+			String name = DocumentHelper.getName(document);
+			String headline = DocumentHelper.getAppProperty(document, "headline");
 
-		if(headline != null)
-			DocumentHelper.setAppProperty(document, "headline", headline + duplicateSuffix);
+			if(title != null)
+				DocumentHelper.setTitle(document, title + duplicateSuffix);
+
+			if(name != null)
+				DocumentHelper.setName(document, name + duplicateSuffix);
+
+			if(headline != null)
+				DocumentHelper.setAppProperty(document, "headline", headline + duplicateSuffix);
+		}
 
 		DocumentHelper.setModified(document, null);
 	}
@@ -502,7 +507,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return promise;
 	}
 
-	public static void importDocuments(String collection, List<JsonObject> documents, String duplicateSuffix, Handler<JsonObject> handler)
+	public static void importDocuments(String collection, List<JsonObject> documents, String duplicateSuffix, boolean hintUpdateDuplicateName,
+		Handler<JsonObject> handler)
 	{
 		if(documents.size() == 0)
 		{
@@ -574,7 +580,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							// Create a duplicate
 							JsonObject dupDoc = savePayload.getJsonObject(mapIx);
 							DocumentHelper.setId(dupDoc, newId);
-							transformDocumentDuplicate(dupDoc, collection, duplicateSuffix);
+							transformDocumentDuplicate(dupDoc, collection, duplicateSuffix, hintUpdateDuplicateName);
 
 							++nbDuplicates;
 						}
@@ -709,8 +715,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 									for(int i = collectionDocs.size(); i-- > 0;)
 										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousIdsMapCombined);
 								}
+								// The heuristic is to rename only the master element and not its dependants, since they should be confined to it
+								boolean hint = previousResult == null;
 
-								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, duplicateSuffixWrapper.getString("str"),
+								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, duplicateSuffixWrapper.getString("str"), hint,
 									new Handler<JsonObject>()
 								{
 									@Override
