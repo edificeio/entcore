@@ -66,7 +66,7 @@
 		<div class="row rigid-grid">
 			<section class="four twelve-mobile cell">
 				<!--IMPORT DESKTOP-->
-				<div class="row zero-mobile" ng-if="openedFolder.documents.length || reloadingContent">
+				<div class="row zero-mobile" ng-if="openedFolder.all.length || reloadingContent">
                     <div ng-repeat="button in currentTree.buttons">
                         <button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]">
                             <i class="add" ng-if="button.icon"></i> [[button.text]]
@@ -96,20 +96,20 @@
 				<nav class="twelve cell">
 					<div class="row">
 						<!--IMPORT MOBILE-->
-						<div ng-if="openedFolder.documents.length || reloadingContent" class="zero-desktop six-mobile" ng-repeat="button in currentTree.buttons">
+						<div ng-if="openedFolder.all.length || reloadingContent" class="zero-desktop six-mobile" ng-repeat="button in currentTree.buttons">
 							<button ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]">
 								<i class="add" ng-if="button.icon"></i> [[translate(button.text)]]
 							</button>
 						</div>
 						<!--SEARCH DESKTOP-->
-						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.documents.length">
+						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.all.length">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()" class="cell"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
 							<i class="search" ng-click="searchSubmit()"></i>
 						</div>
 						<!--VIEW MODE-->
-						<div class="cell right-magnet" ng-if="openedFolder.documents.length">
+						<div class="cell right-magnet" ng-if="openedFolder.all.length">
 							<div class="choice-view">
 								<i class="show-icons" ng-class="{ selected: isViewMode('icons') }" ng-click="changeViewMode('icons')"></i>
 								<i class="show-list" ng-class="{ selected: isViewMode('list') }" ng-click="changeViewMode('list')"></i>
@@ -117,7 +117,7 @@
 							</div>
 						</div>
 						<!--SEARCH MOBILE-->
-						<div class="zero-desktop cell four search-pagination twelve-mobile vertical-spacing-twice" ng-if="openedFolder.documents.length">
+						<div class="zero-desktop cell four search-pagination twelve-mobile vertical-spacing-twice" ng-if="openedFolder.all.length">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven twelve-1d':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
@@ -144,11 +144,12 @@
 				<div class="twelve cell toggle-buttons-spacer">
 
 					<!-- Empty screen Owner -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.documents.length && !reloadingContent">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.all.length && !reloadingContent">
 						<dropzone-overlay on-import="onImportFiles($event)" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()"
 							on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 						<h2 class="emptyscreen-header">
-							<i18n>empty.workspace.title</i18n>
+							<i18n ng-if="openedFolder.folder === currentTree">empty.workspace.title</i18n>
+							<i18n ng-if="openedFolder.folder !== currentTree">empty.workspace.subfolder.title</i18n>
 						</h2>
 						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<p class="emptyscreen-footer">
@@ -159,11 +160,12 @@
 						</button>
 					</div>
 					<!-- Empty screen partagé avec moi -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.documents.length && !reloadingContent">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.all.length && !reloadingContent">
 						<dropzone-overlay on-import="onImportFiles($event)" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()"
 							on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 						<h2 class="emptyscreen-header">
-							<i18n>empty.workspace.shared.title</i18n>
+							<i18n ng-if="openedFolder.folder === currentTree">empty.workspace.shared.title</i18n>
+							<i18n ng-if="openedFolder.folder !== currentTree">empty.workspace.subfolder.title</i18n>
 						</h2>
 						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<p class="emptyscreen-footer">
@@ -176,9 +178,10 @@
 						</button>
 					</div>
 					<!-- Empty screen depuis les apps -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'protected' && !openedFolder.documents.length && !reloadingContent">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'protected' && !openedFolder.all.length && !reloadingContent">
 						<h2 class="emptyscreen-header">
-							<i18n>empty.workspace.apps.title</i18n>
+							<i18n ng-if="openedFolder.folder === currentTree">empty.workspace.apps.title</i18n>
+							<i18n ng-if="openedFolder.folder !== currentTree">empty.workspace.subfolder.title</i18n>
 						</h2>
 						<img class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<p class="emptyscreen-footer">
@@ -186,10 +189,11 @@
 						</p>
 					</div>
 					<!-- Empty screen Si la corbeille est vide -->
-					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.documents.length && !reloadingContent">
+					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.all.length && !reloadingContent">
 						<img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/empty-trash.svg">
 						<p class="emptyscreen-footer">
-							<i18n>empty.trash2</i18n>
+							<i18n ng-if="openedFolder.folder === currentTree">empty.trash2</i18n>
+							<i18n ng-if="openedFolder.folder !== currentTree">empty.trash.subfolder</i18n>
 						</p>
 					</div>
 
