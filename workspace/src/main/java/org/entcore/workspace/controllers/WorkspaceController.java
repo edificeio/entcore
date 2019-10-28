@@ -801,29 +801,44 @@ public class WorkspaceController extends BaseController {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
-				JsonObject result = res.getJsonObject("result");
+				JsonObject jo = res.getJsonObject("result");
 				String thumbSize = request.params().get("thumbnail");
-				if ("ok".equals(status) && result != null) {
-					String file;
-					if (thumbSize != null && !thumbSize.trim().isEmpty()) {
-						file = DocumentHelper.getThumbnails(result).getString(thumbSize,
-								result.getString("file"));
-					} else {
-						file = result.getString("file");
-					}
-					if (file != null && !file.trim().isEmpty()) {
-						boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-						if (inline && ETag.check(request, file)) {
-							notModified(request, file);
+				if ("ok".equals(status) && jo != null) {
+					boolean createThumbnails = thumbSize != null && (jo.getJsonObject("thumbnails") == null ||
+							!jo.getJsonObject("thumbnails").containsKey(thumbSize));
+					JsonObject thumbnails = createThumbnails ? new JsonObject().put("thumbnails",
+							new JsonObject().put(thumbSize, ""))
+							.put("_id", jo.getString("_id")): new JsonObject();
+					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler -> {
+						if (asyncDefaultResponseHandler.failed()) {
+							log.error(asyncDefaultResponseHandler.cause());
+							request.response().setStatusCode(404).end();
 						} else {
-							storage.sendFile(file, result.getString("name"), request, inline,
-									result.getJsonObject("metadata"));
+							JsonObject result = asyncDefaultResponseHandler.result();
+							String file;
+							if (thumbSize != null && !thumbSize.trim().isEmpty()) {
+								file = DocumentHelper.getThumbnails(result).getString(thumbSize,
+										result.getString("file"));
+							} else {
+								file = result.getString("file");
+							}
+							if (file != null && !file.trim().isEmpty()) {
+								boolean inline = inlineDocumentResponse(result, request.params().get("application"));
+								if (inline && ETag.check(request, file)) {
+									notModified(request, file);
+								} else {
+									storage.sendFile(file, result.getString("name"), request, inline,
+											result.getJsonObject("metadata"));
+								}
+								eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+										new JsonObject().put("resource", request.params().get("id")));
+							} else {
+								request.response().setStatusCode(404).end();
+							}
 						}
-						eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-								new JsonObject().put("resource", request.params().get("id")));
-					} else {
-						request.response().setStatusCode(404).end();
-					}
+					});
+
+
 				} else {
 					request.response().setStatusCode(404).end();
 				}

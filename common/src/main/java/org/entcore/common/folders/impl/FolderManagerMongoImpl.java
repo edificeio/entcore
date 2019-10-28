@@ -832,7 +832,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			return;
 		}
 
-		String fileId = DocumentHelper.getId(uploadedDoc);
+		String fileId = DocumentHelper.getFileId(uploadedDoc);
 		String documentId = DocumentHelper.getId(mongoDocument);
 		JsonObject thumbs = DocumentHelper.getThumbnails(mongoDocument);
 
@@ -889,7 +889,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 							if ("ok".equals(event.body().getString("status")) && thumbnails != null)
 							{
-								JsonObject mongoUpdate = new JsonObject().put("$set", new JsonObject().put("thumbnails", thumbnails));
+								JsonObject oldThumbnails = uploadedDoc.getJsonObject("thumbnails");
+								JsonObject mongoUpdate = new JsonObject().put("$set",
+										new JsonObject().put("thumbnails", oldThumbnails == null ? thumbnails : oldThumbnails.mergeIn(thumbnails, true)));
 
 								if(documentId != null)
 								{
