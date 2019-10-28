@@ -37,6 +37,7 @@ import org.entcore.archive.services.impl.UserExport;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -138,7 +139,8 @@ public class ArchiveController extends BaseController {
 								.put("action", "start")
 								.put("userId", user.getUserId())
 								.put("locale", I18n.acceptLanguage(request))
-								.put("apps", event.toJsonObject().getJsonArray("apps")),
+								.put("apps", event.toJsonObject().getJsonArray("apps"))
+								.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
 							new Handler<AsyncResult<Message<JsonObject>>>()
 						{
 							@Override
@@ -257,7 +259,8 @@ public class ArchiveController extends BaseController {
 				String locale = body.getString("locale");
 				JsonArray apps = body.getJsonArray("apps");
 				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
-				Boolean synchroniseReply = body.getBoolean("synchroniseReply");
+				Boolean synchroniseReply = body.getBoolean("synchroniseReply", false);
+				HttpServerRequest request = new JsonHttpServerRequest(body.getJsonObject("request"));
 
 				if(userId == null || apps == null || locale == null)
 				{
@@ -267,7 +270,7 @@ public class ArchiveController extends BaseController {
 
 				UserUtils.getUserInfos(eb, userId, user ->
 				{
-					exportService.export(user, locale, apps, resourcesIds, null,
+					exportService.export(user, locale, apps, resourcesIds, request,
 						new Handler<Either<String, String>>()
 					{
 						@Override
