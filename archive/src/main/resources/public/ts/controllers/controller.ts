@@ -17,5 +17,19 @@ export let archiveController = ng.controller('ArchiveController', ['$scope', ($s
         }
     }
     
+    $scope.countMainResources = function(rapport)
+    {
+        let mainResourceName = rapport["mainResourceName"];
+        let idsMap = rapport["resourcesIdsMap"];
+
+        if(mainResourceName != null && idsMap != null)
+        {
+            let mainResources = idsMap[mainResourceName];
+            if(mainResources != null)
+                return Object.keys(mainResources).length;
+        }
+
+        return rapport["resourcesNumber"];
+    }
 	
 }]);

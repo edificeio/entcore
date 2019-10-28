@@ -123,7 +123,7 @@
                 <tbody>
                     <tr ng-repeat="app in resultsApps">
                         <td><span translate content="[[app]]"></span></td>
-                        <td>[[results[app].resourcesNumber]]</td>
+                        <td>[[countMainResources(results[app])]]</td>
                         <td>[[results[app].duplicatesNumber]]</td>
                         <td>[[results[app].errorsNumber]]</td>
                     </tr>
