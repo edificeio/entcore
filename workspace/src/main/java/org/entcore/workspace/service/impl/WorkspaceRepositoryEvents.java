@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderExporter;
 import org.entcore.common.folders.FolderExporter.FolderExporterContext;
@@ -39,11 +39,9 @@ import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
-import org.entcore.common.folders.impl.DocumentHelper;
 
 import com.mongodb.QueryBuilder;
 
@@ -52,7 +50,6 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
 
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -73,6 +70,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private final FolderExporter exporter;
 	private final FolderImporter importer;
 	private final FileSystem fs;
+	private final long timeout;
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers,
 			FolderManager folderManager, FolderManager folderManagerRevision) {
@@ -82,6 +80,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		this.exporter = new FolderExporter(storage, vertx.fileSystem(), false);
 		this.importer = new FolderImporter(vertx.fileSystem(), vertx.eventBus(), false);
 		this.fs = vertx.fileSystem();
+		this.timeout = vertx.getOrCreateContext().config().getLong("delete-users-timeout", 300000L);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -407,13 +406,12 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				.put("$pull", new JsonObject().put("inheritedShares",
 						MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))));
 
-		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error(event.body().getString("message"));
-				}
+		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, null,
+				new DeliveryOptions().setSendTimeout(timeout), event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				log.error(event.body().getString("message"));
 			}
 		});
 	}
+
 }
