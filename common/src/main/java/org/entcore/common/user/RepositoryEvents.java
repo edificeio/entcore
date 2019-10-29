@@ -34,7 +34,7 @@ public interface RepositoryEvents {
 			String locale, String host, Handler<Boolean> handler) {}
 
 	default void importResources(String importId, String userId, String userLogin, String userName, String importPath,
-		String locale, boolean forceImportAsDuplication, Handler<JsonObject> handler) {}
+		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler) {}
 
 	void deleteGroups(JsonArray groups);
 

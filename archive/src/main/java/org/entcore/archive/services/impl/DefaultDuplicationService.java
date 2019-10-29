@@ -93,7 +93,8 @@ public class DefaultDuplicationService implements DuplicationService
                             String importPath = importData.getString("path");
                             JsonObject importApps = importData.getJsonObject("apps");
 
-                            importService.launchImport(user.getUserId(), user.getLogin(), user.getUsername(), importId, importPath, locale, importApps);
+                            importService.launchImport(user.getUserId(), user.getLogin(), user.getUsername(), importId, importPath,
+                              locale, request.headers().get("Host"), importApps);
 
                             final String address = importService.getImportBusAddress(exportId);
 

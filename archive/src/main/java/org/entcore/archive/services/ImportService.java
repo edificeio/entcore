@@ -18,7 +18,7 @@ public interface ImportService {
 
     void analyzeArchive(UserInfos user, String importId, String locale, JsonObject config, Handler<Either<String, JsonObject>> handler);
 
-    void launchImport(String userId, String userLogin, String userName, String importId, String importPath, String locale, JsonObject apps);
+    void launchImport(String userId, String userLogin, String userName, String importId, String importPath, String locale, String host, JsonObject apps);
 
     void imported(String importId, String app, JsonObject importRapport);
 
