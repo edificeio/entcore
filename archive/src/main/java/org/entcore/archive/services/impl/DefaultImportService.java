@@ -281,7 +281,9 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void launchImport(String userId, String userLogin, String userName, String importId, String importPath, String locale, JsonObject apps) {
+    public void launchImport(String userId, String userLogin, String userName, String importId, String importPath,
+      String locale, String host, JsonObject apps)
+    {
         MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
                         .put("date", MongoDb.now()));
         userImports.put(importId, new UserImport(apps.size()));
@@ -292,6 +294,7 @@ public class DefaultImportService implements ImportService {
                 .put("userLogin", userLogin)
                 .put("userName", userName)
                 .put("locale", locale)
+                .put("host", host)
                 .put("apps", apps)
                 .put("path", importPath);
         eb.publish("user.repository", j);
