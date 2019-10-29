@@ -380,19 +380,21 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		DocumentHelper.setModified(document, null);
 	}
 
-	protected void transformDocumentBeforeImport(JsonObject document, String collectionName, String userId, String userLogin, String userName)
+	protected JsonObject transformDocumentBeforeImport(JsonObject document, String collectionName,
+		String importId, String userId, String userLogin, String userName)
 	{
 		// Override this method to apply custom transformations to an object
+		return document;
 	}
 
 	protected JsonObject sanitiseDocument(JsonObject document, String collectionName, String collectionPrefix,
-		String userId, String userLogin, String userName)
+		String importId, String userId, String userLogin, String userName)
 	{
 		MongoDbCrudService.setUserMetadata(document, userId, userName);
 		MongoDbShareService.removeShareMetadata(document);
 
 		this.revertExportChanges(document, collectionPrefix);
-		this.transformDocumentBeforeImport(document, collectionName, userId, userLogin, userName);
+		document = this.transformDocumentBeforeImport(document, collectionName, importId, userId, userLogin, userName);
 
 		return document;
 	}
@@ -702,8 +704,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 						if(entry.getKey().startsWith(prefix.getValue()) == true)
 						{
-							JsonObject finalDoc = self.sanitiseDocument(entry.getValue(), prefix.getKey(), prefix.getValue(), userId, userLogin, userName);
-							collectionDocs.add(finalDoc);
+							JsonObject finalDoc = self.sanitiseDocument(entry.getValue(), prefix.getKey(), prefix.getValue(), importId, userId, userLogin, userName);
+							if(finalDoc != null)
+								collectionDocs.add(finalDoc);
 						}
 					}
 
