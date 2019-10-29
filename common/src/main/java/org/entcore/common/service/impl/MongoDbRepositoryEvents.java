@@ -397,6 +397,11 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
+	protected boolean filterMongoDocumentFile(String filePath, Buffer fileContents)
+	{
+		return true;
+	}
+
 	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName)
 	{
 		if(this.fileImporter == null)
@@ -487,8 +492,12 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 												else
 												{
 													int ix = unprocessed.decrementAndGet();
-													mongoDocs.set(ix, fileResult.result().toJsonObject());
-													mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
+
+													if(filterMongoDocumentFile(filePath, fileResult.result()) == true)
+													{
+														mongoDocs.set(ix, fileResult.result().toJsonObject());
+														mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
+													}
 
 													if(ix == 0)
 														finaliseRead.handle(null);
