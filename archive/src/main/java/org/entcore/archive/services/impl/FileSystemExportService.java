@@ -128,7 +128,7 @@ public class FileSystemExportService implements ExportService {
 												.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
 												.put("path", exportDirectory)
 												.put("locale", locale)
-												.put("host", request == null ? "" : Renders.getScheme(request) + "://" + request.headers().get("Host"))
+												.put("host", request == null || request.headers() == null ? "" : Renders.getScheme(request) + "://" + request.headers().get("Host"))
 												.put("apps", apps)
 												.put("resourcesIds", resourcesIds);
 										eb.publish("user.repository", j);
