@@ -260,6 +260,7 @@ public class ArchiveController extends BaseController {
 				JsonArray apps = body.getJsonArray("apps");
 				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
 				Boolean synchroniseReply = body.getBoolean("synchroniseReply", false);
+				Boolean force = body.getBoolean("force", false);
 				HttpServerRequest request = new JsonHttpServerRequest(body.getJsonObject("request"));
 
 				if(userId == null || apps == null || locale == null)
@@ -270,6 +271,9 @@ public class ArchiveController extends BaseController {
 
 				UserUtils.getUserInfos(eb, userId, user ->
 				{
+					if(Boolean.TRUE.equals(force)){
+						archiveInProgress.remove(userId);
+					}
 					exportService.export(user, locale, apps, resourcesIds, request,
 						new Handler<Either<String, String>>()
 					{
