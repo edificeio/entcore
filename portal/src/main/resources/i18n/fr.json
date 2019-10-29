@@ -539,6 +539,7 @@
   "bpr.activityType.exercize":"Exercice",
   "bpr.activityType.learningPath":"Parcours pédagogique",
   "bpr.activityType.courseElement":"Élément de cours",
+  "bpr.cover.notfound": "Un document lié à la ressource n'est plus disponible, la publication dans la bibliothèque n'est pas possible.",
   "de_DE": "Allemand",
   "en_EN": "Anglais",
   "ar_DZ": "Arabe",
