@@ -79,10 +79,14 @@ public class DefaultImportService implements ImportService {
     @Override
     public void uploadArchive(HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler) {
         final String importId = System.currentTimeMillis() + "_" + user.getUserId();
-        storage.writeUploadToFileSystem(request, (importPath + File.separator + importId), written -> {
+        final String filePath = importPath + File.separator + importId;
+        storage.writeUploadToFileSystem(request, filePath, written -> {
             if ("ok".equals(written.getString("status"))) {
+                MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
+                        .put("date", MongoDb.now()));
                 handler.handle(new Either.Right<>(importId));
             } else {
+                deleteArchive(importId);
                 handler.handle(new Either.Left<>(written.getString("message")));
             }
         });
@@ -98,8 +102,10 @@ public class DefaultImportService implements ImportService {
         {
           if(obj.getString("status").equals("ok") == true)
             handler.handle(new Either.Right<>(archiveId));
-          else
-            handler.handle(new Either.Left<>(obj.getString("message")));
+          else {
+              deleteArchive(archiveId);
+              handler.handle(new Either.Left<>(obj.getString("message")));
+          }
         }
       });
     }
@@ -142,19 +148,19 @@ public class DefaultImportService implements ImportService {
     }
 
     private void deleteAndHandleError(String filePath, String error, Handler<Either<String, JsonObject>> handler) {
-        deleteArchiveAndZip(filePath);
+        deleteArchive(filePath.split(File.separator)[0]);
         handler.handle(new Either.Left<>(error));
     }
 
     private void deleteArchiveAndZip(String filePath) {
         fs.deleteRecursive(filePath, true, deleted -> {
             if (deleted.failed()) {
-                log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                log.debug("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
             }
         });
         fs.deleteRecursive(filePath + "_unzip", true, deleted -> {
             if (deleted.failed()) {
-                log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                log.debug("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
             }
         });
     }
