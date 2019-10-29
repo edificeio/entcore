@@ -491,6 +491,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.restore = async () => {
             await Conversation.instance.folders.trash.restore();
+            await $scope.refreshFolders();
             await Conversation.instance.folders.draft.mails.refresh();
             await Conversation.instance.folders.inbox.countUnread();
             await $scope.userFolders.countUnread();
@@ -669,7 +670,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
         $scope.restoreFolder = function (folder) {
             folder.restore().done(function () {
-                $scope.refreshFolders()
+                $scope.refreshFolders();
             })
         }
         $scope.deleteFolder = function (folder) {
