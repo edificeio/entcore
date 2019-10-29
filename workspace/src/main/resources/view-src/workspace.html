@@ -190,11 +190,11 @@
 					</div>
 					<!-- Empty screen Si la corbeille est vide -->
 					<div class="emptyscreen" ng-if="currentTree.filter === 'trash' && !openedFolder.all.length && !reloadingContent">
-						<img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/empty-trash.svg">
-						<p class="emptyscreen-footer">
+						<h2 class="emptyscreen-header">
 							<i18n ng-if="openedFolder.folder === currentTree">empty.trash2</i18n>
 							<i18n ng-if="openedFolder.folder !== currentTree">empty.trash.subfolder</i18n>
-						</p>
+						</h2>
+						<img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/empty-trash.svg">
 					</div>
 
 					<container template="documents" ng-hide="isSearching()"></container>
