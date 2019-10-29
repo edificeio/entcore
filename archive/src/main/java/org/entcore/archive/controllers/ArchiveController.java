@@ -261,7 +261,7 @@ public class ArchiveController extends BaseController {
 				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
 				Boolean synchroniseReply = body.getBoolean("synchroniseReply", false);
 				Boolean force = body.getBoolean("force", false);
-				HttpServerRequest request = new JsonHttpServerRequest(body.getJsonObject("request"));
+				HttpServerRequest request = new JsonHttpServerRequest(body.getJsonObject("request", new JsonObject()));
 
 				if(userId == null || apps == null || locale == null)
 				{
