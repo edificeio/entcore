@@ -427,11 +427,13 @@
   "empty.blog.creation": "Vous partez en voyage linguistique et souhaitez partager toutes vos aventures ? Devenez apprenti reporter ! Seul ou à plusieurs, publiez et partagez facilement textes, photos et vidéos.",
   "empty.blog.consultation.title": "C'est un peu calme ici...",
   "empty.blog.consultation": "Il n’y a pas encore de blog. Patience ! Des sujets passionnants s’apprêtent à déferler sur cette page.",
+  "empty.blog.subfolder.title": "Ce dossier est vide...",
 
   "empty.scrapbook.creation.title": "C’est trop vide… Créez votre premier cahier multimédia",
   "empty.scrapbook.creation": "Avec le Cahier multimédia, donnez vie à vos cours et à vos exposés. Textes, sons, images ou vidéos, enfin un cahier intelligent !",
   "empty.scrapbook.consultation.title": "Une petite minute… Il n’y a pas encore de contenu.",
   "empty.scrapbook.consultation": "Découvrez bientôt le cahier multimédia, un diaporama interactif avec des textes, des sons, des illustrations et des vidéos.",
+  "empty.scrapbook.subfolder.title": "Ce dossier est vide...",
 
   "empty.workspace.title": "Vous n’avez pas encore de documents. Changeons ça !",
   "empty.workspace": "Bienvenue dans votre espace documentaire, le cloud qui vous permet de stocker en ligne toutes vos ressources. Chargez ou téléchargez vos documents, commentez-les et partagez-les facilement aux membres de votre réseau !",
@@ -440,6 +442,7 @@
   "empty.workspace.shared.and.import": "Importer et partager",
   "empty.workspace.apps.title": "Oups, il n’y a rien sur l’étagère…",
   "empty.workspace.apps": "Vous avez ajouté une dizaine de photos directement dans votre Blog et voulez les réutiliser ? Pas de soucis ! Retrouvez-les, bien rangées, juste ici.",
+  "empty.workspace.subfolder.title": "Ce dossier est vide...",
 
   "empty.mindmap.creation.title": "Faites germer les bonnes idées !",
   "empty.mindmap.creation": "Fatigué de laisser filer vos idées de génie ? L’appli Carte mentale permet non seulement de les noter, mais aussi d’y relier toutes les réflexions qui en découlent ! À tester absolument.",
@@ -450,6 +453,7 @@
   "empty.timeline.creation": "L’appli Frise chronologique a plus d’un tour dans son sac. Réalisez des fresques interactives, concevez des biographies ou créez un journal de bord de vos projets. Vous avez l’embarras du choix !",
   "empty.timeline.consultation.title": "Ne perdez plus le fil des événements",
   "empty.timeline.consultation": "Mérovingiens, carolingiens, capétiens, les dynasties se sont succédées sur le trône de France… Oui, mais dans quel ordre ? Avec la Frise chronologique, mémorisez plus facilement les événements !",
+  "empty.timeline.subfolder.title": "Ce dossier est vide...",
 
   "empty.wiki.creation.title": "Fabriquez votre encyclopédie collaborative",
   "empty.wiki.creation": "Vous aimez partager votre savoir encyclopédique ? Cette appli est faite pour vous ! Expert ou débutant, créez des pages, ajoutez ou non des contributeurs, rédigez, le tour est joué ! On essaie ?",
