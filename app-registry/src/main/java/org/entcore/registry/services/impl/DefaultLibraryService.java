@@ -62,7 +62,7 @@ public class DefaultLibraryService implements LibraryService {
                 .put("resourcesIds",new JsonArray().add(resourceId))
                 .put("force", true)
                 .put("synchroniseReply",true);
-        eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(5000l), response -> {
+        eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(30000l), response -> {
             if (response.succeeded()) {
                 JsonObject body = (JsonObject) response.result().body();
                 if ("ok".equals(body.getString("status"))){
