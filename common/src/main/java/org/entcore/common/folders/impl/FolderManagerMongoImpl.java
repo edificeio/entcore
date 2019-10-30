@@ -797,10 +797,10 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
-	public void importFile(Buffer contents, String contentType, String fileName, String oldFileId, String userId, Handler<JsonObject> handler)
+	public void importFile(String filePath, String oldFileId, String userId, Handler<JsonObject> handler)
 	{
 		if(oldFileId == null || oldFileId.trim().isEmpty() == true)
-			this.storage.writeBuffer(contents, contentType, fileName, handler);
+			this.storage.writeFsFile(filePath, handler);
 		else
 		{
 			// Check whether the file already exists
@@ -811,9 +811,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 				{
 					// If the file already exists, duplicate it with a new id, else keep the old id
 					if(res.succeeded() == true)
-						storage.writeBuffer(contents, contentType, fileName, handler);
+						storage.writeFsFile(filePath, handler);
 					else
-						storage.writeBuffer(oldFileId, contents, contentType, fileName, handler);
+						storage.writeFsFile(oldFileId, filePath, handler);
 				}
 			});
 		}

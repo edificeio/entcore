@@ -186,6 +186,12 @@ public class GridfsStorage implements Storage {
 	}
 
 	@Override
+	public void writeFsFile(String filename, Handler<JsonObject> handler)
+	{
+		writeFsFile(null, filename, handler);
+	}
+
+	@Override
 	public void writeFsFile(final String id, final String filePath, final Handler<JsonObject> handler) {
 		if (id == null || id.trim().isEmpty() || filePath == null ||
 				filePath.trim().isEmpty() || filePath.endsWith(File.separator)) {

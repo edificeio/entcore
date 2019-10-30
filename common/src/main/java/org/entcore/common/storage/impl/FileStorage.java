@@ -246,6 +246,12 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
+	public void writeFsFile(final String filename, final Handler<JsonObject> handler)
+	{
+		writeFsFile(UUID.randomUUID().toString(), filename, handler);
+	}
+
+	@Override
 	public void writeFsFile(final String id, final String filename, final Handler<JsonObject> handler) {
 		try {
 			final String path = getPath(id);
