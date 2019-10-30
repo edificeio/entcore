@@ -52,6 +52,7 @@ public class DefaultImportService implements ImportService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultImportService.class);
 
+    private final Vertx vertx;
     private final FileSystem fs;
     private final EventBus eb;
     private final Storage storage;
@@ -63,6 +64,7 @@ public class DefaultImportService implements ImportService {
     private final Map<String, UserImport> userImports;
 
     public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName) {
+        this.vertx = vertx;
         this.storage = storage;
         this.importPath = importPath;
         this.fs = vertx.fileSystem();
@@ -116,33 +118,40 @@ public class DefaultImportService implements ImportService {
         final String filePath = importPath + File.separator + importId;
         final String unzippedPath = filePath + "_unzip";
         fs.mkdirs(unzippedPath, done -> {
-            try {
-                FileUtils.unzip(filePath, unzippedPath);
-            } catch (IOException | UnsupportedOperationException e) {
-                deleteAndHandleError(filePath, e.getMessage(), handler);
-                return;
-            }
-            fs.readDir(unzippedPath, results -> {
-               if (results.succeeded()) {
-                   if (results.result().size() == 1) {
-                       fs.readDir(results.result().get(0), files -> {
-                           if (files.succeeded()) {
-                               if (files.result().size() > 0 &&
-                                   files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
-                                   parseFolders(user, importId, filePath, locale, config, files.result(), handler);
-                               } else {
-                                   deleteAndHandleError(filePath, "Archive file not recognized - Missing 'Manifest.json'", handler);
-                               }
-                           } else {
-                               deleteAndHandleError(filePath, files.cause().getMessage(), handler);
-                           }
-                       });
-                   } else {
-                       deleteAndHandleError(filePath,"Archive file not recognized", handler);
-                   }
-               } else {
-                   deleteAndHandleError(filePath, results.cause().getMessage(), handler);
-               }
+            vertx.executeBlocking(future -> {
+                try {
+                    FileUtils.unzip(filePath, unzippedPath);
+                    future.complete();
+                } catch (IOException | UnsupportedOperationException e) {
+                    future.fail(e);
+                }
+            }, false, finished -> {
+                if (finished.succeeded()) {
+                    fs.readDir(unzippedPath, results -> {
+                        if (results.succeeded()) {
+                            if (results.result().size() == 1) {
+                                fs.readDir(results.result().get(0), files -> {
+                                    if (files.succeeded()) {
+                                        if (files.result().size() > 0 &&
+                                                files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
+                                            parseFolders(user, importId, filePath, locale, config, files.result(), handler);
+                                        } else {
+                                            deleteAndHandleError(filePath, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                        }
+                                    } else {
+                                        deleteAndHandleError(filePath, files.cause().getMessage(), handler);
+                                    }
+                                });
+                            } else {
+                                deleteAndHandleError(filePath,"Archive file not recognized", handler);
+                            }
+                        } else {
+                            deleteAndHandleError(filePath, results.cause().getMessage(), handler);
+                        }
+                    });
+                } else {
+                    deleteAndHandleError(filePath, finished.cause().getMessage(), handler);
+                }
             });
         });
     }
