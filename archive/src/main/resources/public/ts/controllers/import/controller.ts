@@ -56,8 +56,8 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                         $scope.cancelImport();
                     })
                 }).catch(err => {
-                    $scope.uploadStatus = 'failed';
-                    $scope.$apply();
+                    notify.error('archive.import.already');
+                    $scope.cancelImport();
                 });
             }
 
@@ -137,7 +137,9 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                     $scope.$apply();
                 })
                 .catch(error => {
-                    notify.error('archive.import.already');
+                    $scope.loadingSpinner = false;
+                    $scope.firstPhase = true;
+                    notify.error('archive.import.failure');
                     $scope.cancelImport();
                 });
                 $scope.loadingSpinner = true;

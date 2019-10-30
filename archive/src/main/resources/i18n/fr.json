@@ -42,6 +42,7 @@
     "archive.quota.selected": "Volume de données importées",
     "archive.quota.warning": "Votre quota est insuffisant pour importer les données des applications sélectionnées.",
     "archive.import.corrupted": "Votre archive semble corrompue. Veuillez contacter votre administrateur.",
+    "archive.import.failure": "L'import n'a pas pu être réalisé. Veuillez contacter votre administrateur.",
     "archive.import.na": "Non disponible",
     "archive.import.loading": "Import de vos données en cours",
     "archive.import.already": "Un import de vos données est déjà en cours.",

@@ -299,8 +299,6 @@ public class DefaultImportService implements ImportService {
     public void launchImport(String userId, String userLogin, String userName, String importId, String importPath,
       String locale, String host, JsonObject apps)
     {
-        MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
-                        .put("date", MongoDb.now()));
         userImports.put(importId, new UserImport(apps.size()));
         JsonObject j = new JsonObject()
                 .put("action", handlerActionName)
