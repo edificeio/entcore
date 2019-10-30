@@ -51,6 +51,7 @@
     "import.info": "Importer votre fichier d'export au format .zip <br /> <strong>Attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"</strong>.",
     "import.drop-files": "Déposer les fichiers",
     "import.browse": "Parcourir",
+    "import.browse-files": "Cliquez sur parcourir pour sélectionner une archive",
     "import.drag-drop-info": "Glissez-déposez des fichiers depuis votre appareil ou cliquez sur parcourir",
     "import.bytes": "Octets",
     "import.kilobytes": "Ko",
