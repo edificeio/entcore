@@ -292,6 +292,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				public void handle(Message<JsonObject> event)
 				{
 					JsonArray results = event.body().getJsonArray("results");
+
+					for(int i = results.size(); i-->0;)
+						DocumentHelper.clearComments(results.getJsonObject(i), true);
+
 					if ("ok".equals(event.body().getString("status")) && results != null)
 					{
 						createExportDirectory(exportPath, locale, new Handler<String>()

@@ -384,8 +384,33 @@ public class DocumentHelper {
 
 	public static JsonObject clearComments(JsonObject doc)
 	{
+		return DocumentHelper.clearComments(doc, false);
+	}
+
+	public static JsonObject clearComments(JsonObject doc, boolean deep)
+	{
 		if(doc.getValue("comments") != null)
 			doc.put("comments", new JsonArray());
+
+		if(deep == true)
+		{
+			for(Map.Entry<String, Object> entry : doc.getMap().entrySet())
+			{
+				Object v = entry.getValue();
+				if(v instanceof JsonObject)
+					DocumentHelper.clearComments((JsonObject)v, deep);
+				else if(v instanceof JsonArray)
+				{
+					JsonArray a = (JsonArray) v;
+					for(int i = a.size(); i-->0;)
+					{
+						Object vv = a.getValue(i);
+						if(vv instanceof JsonObject)
+							DocumentHelper.clearComments((JsonObject)vv, deep);
+					}
+				}
+			}
+		}
 		return doc;
 	}
 
