@@ -392,6 +392,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	{
 		MongoDbCrudService.setUserMetadata(document, userId, userName);
 		MongoDbShareService.removeShareMetadata(document);
+		DocumentHelper.clearComments(document);
 
 		this.revertExportChanges(document, collectionPrefix);
 		document = this.transformDocumentBeforeImport(document, collectionName, importId, userId, userLogin, userName);

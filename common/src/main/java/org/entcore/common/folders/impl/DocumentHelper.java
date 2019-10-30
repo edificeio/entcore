@@ -382,6 +382,13 @@ public class DocumentHelper {
 		return doc;
 	}
 
+	public static JsonObject clearComments(JsonObject doc)
+	{
+		if(doc.getValue("comments") != null)
+			doc.put("comments", new JsonArray());
+		return doc;
+	}
+
 	public static boolean isImage(JsonObject doc)
 	{
 		if (doc == null)
