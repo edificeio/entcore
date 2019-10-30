@@ -1539,9 +1539,7 @@ public class WorkspaceController extends BaseController {
 	{
 		String fileId = message.body().getString("oldFileId");
 		String userId = message.body().getString("userId");
-		String contentType = message.body().getString("contentType");
-		String fileName = message.body().getString("fileName");
-		Buffer buff = Buffer.buffer(message.body().getBinary("buffer"));
+		String filePath = message.body().getString("filePath");
 
 		Handler<JsonObject> hnd = new Handler<JsonObject>()
 		{
@@ -1552,7 +1550,7 @@ public class WorkspaceController extends BaseController {
 			}
 		};
 
-		this.folderManager.importFile(buff, contentType, fileName, fileId, userId, hnd);
+		this.folderManager.importFile(filePath, fileId, userId, hnd);
 	}
 
 	private void createThumbnails(final Message<JsonObject> message)

@@ -400,10 +400,10 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
-	public void importFile(Buffer contents, String contentType, String fileName, String oldFileId, String userId, Handler<JsonObject> handler)
+	public void importFile(String filePath, String oldFileId, String userId, Handler<JsonObject> handler)
 	{
 		FolderManagerWithQuota self = this;
-		this.folderManager.importFile(contents, contentType, fileName, oldFileId, userId, new Handler<JsonObject>()
+		this.folderManager.importFile(filePath, oldFileId, userId, new Handler<JsonObject>()
 		{
 			@Override
 			public void handle(JsonObject writtenFile)

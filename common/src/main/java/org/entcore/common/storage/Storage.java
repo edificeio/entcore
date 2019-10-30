@@ -41,6 +41,8 @@ public interface Storage {
 
 	void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
+	void writeFsFile(String filename, Handler<JsonObject> handler);
+
 	void writeFsFile(String id, String filename, Handler<JsonObject> handler);
 
 	void readFile(String id, Handler<Buffer> handler);

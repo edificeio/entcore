@@ -216,39 +216,16 @@ public class FolderImporter
 		return promise;
 	}
 
-	private void bufferToStorage(FolderImporterContext context, JsonObject document, Buffer buff, Future<Void> promise)
+	private void bufferToStorage(FolderImporterContext context, JsonObject document, String filePath, Future<Void> promise)
 	{
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
-		String contentType = DocumentHelper.getContentType(document);
-		final String fileName = DocumentHelper.getFileName(document, fileId);
-
-		if(contentType == null || contentType.trim().equals(""))
-		{
-			byte fileBytes[] = buff.getBytes();
-
-			try
-			{
-				InputStream is = new BufferedInputStream(new ByteArrayInputStream(fileBytes));
-				contentType = URLConnection.guessContentTypeFromStream(is);
-			}
-			catch(IOException e)
-			{
-				context.addError(docId, fileId, "Failed to read file MIME type", e.getMessage());
-				promise.fail(e);
-				return;
-			}
-
-			DocumentHelper.setContentType(document, contentType);
-		}
 
 		FolderImporter self = this;
 		JsonObject importParams = new JsonObject()
 																	.put("action", "importDocument")
-																	.put("buffer", buff.getBytes())
 																	.put("oldFileId", fileId)
-																	.put("fileName", fileName)
-																	.put("contentType", contentType)
+																	.put("filePath", filePath)
 																	.put("userId", context.userId);
 
 		this.eb.send("org.entcore.workspace", importParams, new Handler<AsyncResult<Message<JsonObject>>>()
@@ -320,29 +297,6 @@ public class FolderImporter
 		});
 	}
 
-	private void importFile(FolderImporterContext context, JsonObject document, String filePath, Future<Void> promise)
-	{
-		FolderImporter self = this;
-
-		final String docId = DocumentHelper.getId(document);
-		final String fileId = DocumentHelper.getFileId(document);
-
-		this.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
-		{
-			@Override
-			public void handle(AsyncResult<Buffer> buff)
-			{
-				if(buff.succeeded() == true)
-					self.bufferToStorage(context, document, buff.result(), promise);
-				else
-				{
-					context.addError(docId, fileId, "Failed to open the archived file", buff.cause().getMessage());
-					promise.fail(buff.cause());
-				}
-			}
-		});
-	}
-
 	private void removeParent(FolderImporterContext context, List<JsonObject> orphans, Set<JsonObject> processed)
 	{
 		for(JsonObject child : orphans)
@@ -384,7 +338,7 @@ public class FolderImporter
 			futures.add(future);
 
 			if(DocumentHelper.isFolder(fileDoc) == false)
-				this.importFile(context, fileDoc, context.basePath + File.separator + fileDoc.getString("localArchivePath"), future);
+				this.bufferToStorage(context, fileDoc, context.basePath + File.separator + fileDoc.getString("localArchivePath"), future);
 			else
 				// Folders don't exist in the vertx filesystem, only in the mongo docs, so do nothing
 				future.complete();
@@ -491,7 +445,7 @@ public class FolderImporter
 							DocumentHelper.setProtected(fileDocument, true);
 
 						context.addUpdatedDoc(fileDocument);
-						self.importFile(context, fileDocument, filePath, future);
+						self.bufferToStorage(context, fileDocument, filePath, future);
 					}
 
 					CompositeFuture.join(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>()

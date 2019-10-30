@@ -71,14 +71,12 @@ public interface FolderManager {
 
 	/**
 	 *
-	 * @param contents of the file
-	 * @param contentType a MIME type describing the data inside the buffer
-	 * @param fileName of the file
+	 * @param filePath of the file
 	 * @param oldId    the previous file id, if any
 	 * @param userId   the user's id
 	 * @param handler  the handler that emit the file object save or an error if any
 	 */
-	void importFile(Buffer fileContents, String contentType, String fileName, String oldId, String userId, Handler<JsonObject> handler);
+	void importFile(String filePath, String oldId, String userId, Handler<JsonObject> handler);
 
 	/**
 		* Create the file's thumbnails if applicable
