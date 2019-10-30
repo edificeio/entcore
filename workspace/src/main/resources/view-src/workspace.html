@@ -154,7 +154,7 @@
 						<img ng-if="openedFolder.folder === currentTree" class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<img ng-if="openedFolder.folder !== currentTree" class="emptyscreen-image__mini"
 							src="/assets/themes/entcore-css-lib/images/empty-search.svg">
-						<p class="emptyscreen-footer">
+						<p ng-if="openedFolder.folder === currentTree" class="emptyscreen-footer">
 							<i18n>empty.workspace</i18n>
 						</p>
 						<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()" workflow="[[currentTree.buttons[0].workflow]]">
@@ -172,7 +172,7 @@
 						<img ng-if="openedFolder.folder === currentTree" class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<img ng-if="openedFolder.folder !== currentTree" class="emptyscreen-image__mini"
 							src="/assets/themes/entcore-css-lib/images/empty-search.svg">
-						<p class="emptyscreen-footer">
+						<p ng-if="openedFolder.folder === currentTree" class="emptyscreen-footer">
 							<i18n>empty.workspace.shared</i18n>
 						</p>
 						<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()"
@@ -190,7 +190,7 @@
 						<img ng-if="openedFolder.folder === currentTree" class="emptyscreen-image__mini" src="/workspace/public/img/empty-workspace.svg">
 						<img ng-if="openedFolder.folder !== currentTree" class="emptyscreen-image__mini"
 							src="/assets/themes/entcore-css-lib/images/empty-search.svg">
-						<p class="emptyscreen-footer">
+						<p ng-if="openedFolder.folder === currentTree" class="emptyscreen-footer">
 							<i18n>empty.workspace.apps</i18n>
 						</p>
 					</div>
