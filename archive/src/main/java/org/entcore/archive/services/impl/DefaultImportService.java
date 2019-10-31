@@ -217,6 +217,13 @@ public class DefaultImportService implements ImportService {
                                }
                                //
 
+                               // TO DO: Allow pad import later by deleting this bloc
+                               if ("collaborativeeditor".equals(appName) &&
+                                       StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.7") <= 0) {
+                                   return;
+                               }
+                               //
+
                                JsonObject jo = (JsonObject)o;
                                String folderName = jo.getString("folder");
                                if (folders.stream().anyMatch(f -> f.endsWith(folderName))) {
@@ -228,6 +235,13 @@ public class DefaultImportService implements ImportService {
                                // TO DO: Allow timelinegenerator import later by deleting this bloc
                                if ("timelinegenerator".equals(appName) &&
                                        StringUtils.versionComparator.compare((String)o, "1.7") < 0) {
+                                   return;
+                               }
+                               //
+
+                               // TO DO: Allow pad import later by deleting this bloc
+                               if ("collaborativeeditor".equals(appName) &&
+                                       StringUtils.versionComparator.compare((String)o, "1.7") <= 0) {
                                    return;
                                }
                                //
