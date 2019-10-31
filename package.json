@@ -23,7 +23,7 @@
   "dependencies": {
     "entcore": "3.7.0",
     "entcore-toolkit": "^1.0.1",
-    "angular": "1.3.20",
+    "angular": "1.7.8",
     "angular-route": "1.3.20",
     "angular-sanitize": "1.3.20",
     "humane-js": "^3.2.2",
