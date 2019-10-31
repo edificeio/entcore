@@ -49,6 +49,7 @@
 
 
     "import.info": "Importer votre fichier d'export au format .zip <br /> <strong>Attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"</strong>.",
+    "import.info.warnpad": "Note : L'import de l'application Pad est actuellement indisponible.",
     "import.drop-files": "Déposer les fichiers",
     "import.browse": "Parcourir",
     "import.browse-files": "Cliquez sur parcourir pour sélectionner une archive",
