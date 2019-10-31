@@ -799,8 +799,18 @@ public class FolderManagerMongoImpl implements FolderManager {
 	@Override
 	public void importFile(String filePath, String oldFileId, String userId, Handler<JsonObject> handler)
 	{
+
+		Handler<JsonObject> addFileSize = json -> {
+			fileSystem.props(filePath, props -> {
+				if (props.succeeded()) {
+					json.put("metadata", new JsonObject().put("size", props.result().size()));
+				}
+				handler.handle(json);
+			});
+		};
+
 		if(oldFileId == null || oldFileId.trim().isEmpty() == true)
-			this.storage.writeFsFile(filePath, handler);
+			this.storage.writeFsFile(filePath, addFileSize);
 		else
 		{
 			// Check whether the file already exists
@@ -811,9 +821,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 				{
 					// If the file already exists, duplicate it with a new id, else keep the old id
 					if(res.succeeded() == true)
-						storage.writeFsFile(filePath, handler);
+						storage.writeFsFile(filePath, addFileSize);
 					else
-						storage.writeFsFile(oldFileId, filePath, handler);
+						storage.writeFsFile(oldFileId, filePath, addFileSize);
 				}
 			});
 		}

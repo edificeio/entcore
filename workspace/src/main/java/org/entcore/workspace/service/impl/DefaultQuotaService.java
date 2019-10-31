@@ -64,9 +64,9 @@ public class DefaultQuotaService implements org.entcore.common.folders.QuotaServ
 			final Handler<Either<String, JsonObject>> handler) {
 		JsonObject params = new JsonObject().put("size", size).put("threshold", threshold);
 		if (!neo4jPlugin) {
-			String query = "MATCH (u:UserBook { userid : {userId}}) " + "SET u.storage = u.storage + {size} "
+			String query = "MATCH (u:UserBook { userid : {userId}}) " + "SET u.__lock__ = 1, u.storage = u.storage + {size} "
 					+ "WITH u, u.alertSize as oldAlert "
-					+ "SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}) "
+					+ "SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}), u.__lock__ = 0 "
 					+ "RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
 			params.put("userId", userId);
 			neo4j.execute(query, params, validUniqueResultHandler(handler));

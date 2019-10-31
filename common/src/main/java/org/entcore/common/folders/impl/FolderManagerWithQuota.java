@@ -408,14 +408,8 @@ public class FolderManagerWithQuota implements FolderManager {
 			@Override
 			public void handle(JsonObject writtenFile)
 			{
-				quotaService.incrementStorage(userId, DocumentHelper.getFileSize(writtenFile), self.quotaThreshold, new Handler<Either<String, JsonObject>>()
-				{
-					@Override
-					public void handle(Either<String, JsonObject> incRes)
-					{
-						handler.handle(writtenFile);
-					}
-				});
+				quotaService.incrementStorage(userId, DocumentHelper.getFileSize(writtenFile), self.quotaThreshold, h -> {});
+				handler.handle(writtenFile);
 			}
 		});
 	}
