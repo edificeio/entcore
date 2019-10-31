@@ -112,7 +112,7 @@ public class Validator {
 		final StringBuilder calcChecksum = new StringBuilder();
 		final Set<String> attributes = new HashSet<>(object.fieldNames());
 		for (String attr : attributes) {
-			if (conserveChildAttributes && attr != null && attr.startsWith("child")) {
+			if (conserveChildAttributes && attr != null && (attr.startsWith("child") || attr.startsWith("r_"))) {
 				continue;
 			}
 			JsonObject v = validate.getJsonObject(attr);
