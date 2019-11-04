@@ -58,6 +58,7 @@ public class CsvFeeder implements Feed {
 	private ProfileColumnsMapper columnsMapper;
 	private final Vertx vertx;
 	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
+	private Map<String, String> reverseRelativeExternalIds = new HashMap<>();
 
 	public CsvFeeder(Vertx vertx) {
 		this.vertx = vertx;
@@ -74,6 +75,7 @@ public class CsvFeeder implements Feed {
 			final Handler<Message<JsonObject>> handler) throws Exception {
 		columnsMapper = new ProfileColumnsMapper(mappings);
 		studentExternalIdMapping.clear();
+		reverseRelativeExternalIds.clear();
 		defaultStudentSeed = new Random().nextLong();
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
@@ -422,6 +424,12 @@ public class CsvFeeder implements Feed {
 					}
 					if ("Relative".equals(profile)) {
 						generateRelativeUserExternalId(user, structure);
+						if (importer.getReport() != null && importer.getReport().isNotReverseFilesOrder()) { // pronote case
+							String hash = getRelativeHashMapping(user, structure);
+							if (hash != null) {
+								reverseRelativeExternalIds.put(hash, user.getString("externalId"));
+							}
+						}
 					} else {
 						generateUserExternalId(user, ca, structure, seed);
 					}
@@ -452,13 +460,23 @@ public class CsvFeeder implements Feed {
 										final JsonObject rUser = new JsonObject()
 												.put("lastName", rNames.getString(k))
 												.put("firstName", rFirstnames.getString(k));
-										relative.add(getRelativeHashMapping(rUser, structure));
+										String relativeHash = getRelativeHashMapping(rUser, structure);
+										relative.add(relativeHash);
+										String relativeHashOld = reverseRelativeExternalIds.get(relativeHash);
+										if (relativeHashOld != null) {
+											relative.add(relativeHashOld);
+										}
 									}
 								} else if (user.getValue("r_nom") instanceof String) {
 									final JsonObject rUser = new JsonObject()
 											.put("lastName", user.getString("r_nom"))
 											.put("firstName", user.getString("r_prenom"));
-									relative.add(getRelativeHashMapping(rUser, structure));
+									String relativeHash = getRelativeHashMapping(rUser, structure);
+									relative.add(relativeHash);
+									String relativeHashOld = reverseRelativeExternalIds.get(relativeHash);
+									if (relativeHashOld != null) {
+										relative.add(relativeHashOld);
+									}
 								}
 							}
 							importer.createOrUpdateStudent(user, STUDENT_PROFILE_EXTERNAL_ID, null, null,
