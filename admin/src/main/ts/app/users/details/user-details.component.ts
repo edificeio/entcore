@@ -358,7 +358,7 @@ export class UserDetails implements OnInit, OnDestroy {
 
     isRemovable() {
         return ((this.user.disappearanceDate
-            || (this.user.source !== 'AAF' && this.user.source !== "AAF1D"))
+            || (this.user.source !== 'AAF' && this.user.source !== "AAF1D"  && this.user.source !== "EDT"))
             && !this.user.deleteDate);
     }
 
