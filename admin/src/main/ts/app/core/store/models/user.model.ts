@@ -143,7 +143,11 @@ export class UserModel extends Model<UserModel> {
             await this.userDetails.sync();
             return {id: this.id};
         } catch (e) {
-            return {id: duplicate.id, structure: duplicate.structures[0]};
+            if (e.response && e.response.status === 404) {
+                return {id: duplicate.id, structure: duplicate.structures[0]};
+            }
+            console.error(e);
+            throw e;
         }
     }
 
