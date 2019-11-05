@@ -553,5 +553,6 @@
   "ja_JP": "Japonais",
   "zh_CN": "Mandarin (Chinois)",
   "pt_PT": "Portuguais",
-  "ru_RU": "Russe"
+  "ru_RU": "Russe",
+  "navigation.guard.text": "Les modifications que vous avez apportées ne seront peut-être pas enregistrées. Souhaitez vous quitter cette page?"
 }
