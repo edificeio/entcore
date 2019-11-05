@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 
 import { AbstractSection } from '../abstract.section';
 import { NotifyService, SpinnerService, UserListService } from '../../../../core/services';
-import { globalStore, Session, SessionModel } from '../../../../core/store';
+import { globalStore, Session, SessionModel, StructureModel, UserModel } from '../../../../core/store';
 import { UsersStore } from '../../../users.store';
+import { StructuresResolver } from '../../../../core/resolvers/structures.resolver';
 
 @Component({
     selector: 'user-duplicates-section',
@@ -134,25 +135,44 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
     }
 
     private merge = (dupId) => {
-        return this.spinner.perform(dupId, this.user.mergeDuplicate(dupId)).then(res => {
-            if (res.id !== this.user.id && res.structure) {
-                this.usersStore.structure.users.data.splice(
-                    this.usersStore.structure.users.data.findIndex(u => u.id === this.user.id), 1
-                );
-                const resUser = this.usersStore.structure.users.data.find(u => u.id === res.id);
-                resUser.duplicates = resUser.duplicates.filter(d => d.id !== this.user.id);
-                this.router.navigate(['/admin', res.structure.id, 'users', res.id, 'details']);
-                this.userListService.updateSubject.next();
+        return this.spinner.perform(dupId, 
+            this.user.mergeDuplicate(dupId)).then((mergedUser: {id: string, structure?: {id: string, name: string}}) => {
+                // if merged result is user2
+                if (mergedUser.id !== this.user.id && mergedUser.structure) {
+                    // remove user1 from current structure users
+                    this.usersStore.structure.users.data.splice(
+                        this.usersStore.structure.users.data.findIndex(u => u.id === this.user.id), 1
+                    );
+                    // if user2 structure is current structure
+                    if (mergedUser.structure.id === this.usersStore.structure.id) {
+                        const mergedUserModel: UserModel = this.usersStore.structure.users.data.find(u => u.id === mergedUser.id);
+                        if (mergedUserModel) {
+                            // remove user1 from user2 duplicates
+                            mergedUserModel.duplicates = mergedUserModel.duplicates.filter(d => d.id !== this.user.id);
+                            // navigate to user2 details in current structure
+                            this.router.navigate(['/admin', mergedUser.structure.id, 'users', mergedUser.id, 'details']);
+                        }
+                    } else {
+                        // find user2 structure in globalStore
+                        const structure: StructureModel = globalStore.structures.data.find(s => s.id === mergedUser.structure.id);
+                        if (structure) {
+                            if (structure.users && structure.users.data && structure.users.data.length > 0) {
+                                const mergedUserModel: UserModel = structure.users.data.find(u => u.id === mergedUser.id);
+                                if (mergedUserModel) {
+                                    // remove user1 from user2 duplicates
+                                    mergedUserModel.duplicates = mergedUserModel.duplicates.filter(d => d.id !== this.user.id);
+                                }
+                            }
+                            this.router.navigate(['/admin', structure.id, 'users', mergedUser.id, 'details']);
+                        }
+                    }
+                }
+
                 this.ns.success({
                     key: 'notify.user.merge.success.content',
                     parameters: {}
                 }, 'notify.user.merge.success.title');
-            } else {
-                this.usersStore.structure.users.data.splice(
-                    this.usersStore.structure.users.data.findIndex(u => u.id === res.id), 1
-                );
-            }
-            this.userListService.updateSubject.next();
+                this.userListService.updateSubject.next();
         }).catch((err) => {
             this.ns.error({
                 key: 'notify.user.merge.error.content',
