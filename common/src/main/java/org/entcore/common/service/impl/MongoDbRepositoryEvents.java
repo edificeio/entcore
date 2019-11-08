@@ -411,10 +411,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName)
 	{
-		if(this.fileImporter == null)
-				throw new RuntimeException("Cannot import documents without a file importer instance");
-
 		Future<Map<String, JsonObject>> promise = Future.future();
+
+		if(this.fileImporter == null)
+				promise.fail("Cannot import documents without a file importer instance");
 
 		MongoDbRepositoryEvents self = this;
 		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
@@ -423,7 +423,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			public void handle(AsyncResult<List<String>> result)
 			{
 				if(result.succeeded() == false)
-					throw new RuntimeException(result.cause());
+					promise.fail(result.cause());
 				else
 				{
 					List<String> filesInDir = result.result();
@@ -466,7 +466,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							public void handle(AsyncResult<FileProps> propsResult)
 							{
 								if(propsResult.succeeded() == false)
-									throw new RuntimeException(propsResult.cause());
+									promise.fail(propsResult.cause());
 								else
 								{
 									if(propsResult.result().isDirectory() == true)
@@ -495,7 +495,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 											public void handle(AsyncResult<Buffer> fileResult)
 											{
 												if(fileResult.succeeded() == false)
-													throw new RuntimeException(fileResult.cause());
+													promise.fail(fileResult.cause());
 												else
 												{
 													int ix = unprocessed.decrementAndGet();
@@ -834,7 +834,21 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			public void handle(AsyncResult<CompositeFuture> ftr)
 			{
 				duplicateSuffixWrapper.put("str", dupSuffix.result());
-				readDirsHandler.handle(readDirs.result());
+
+				if(readDirs.succeeded() == true)
+					readDirsHandler.handle(readDirs.result());
+				else
+				{
+					// Error in readDirs
+					handler.handle(new JsonObject()
+						.put("resourcesNumber", Integer.toString(0))
+						.put("duplicatesNumber", Integer.toString(0))
+						.put("errorsNumber", Integer.toString(1))
+						.put("resourcesIdsMap", new JsonObject())
+						.put("duplicatesNumberMap", new JsonObject())
+						.put("mainResourceName", "")
+					);
+				}
 			}
 		});
 	}
