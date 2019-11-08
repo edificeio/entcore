@@ -226,7 +226,7 @@ User.prototype.unlinkChild = function (child, hook){
 
 User.prototype.isRemovable = function (){
     var user = this
-    return (user.disappearanceDate || (user.source !== 'AAF' && user.source !== "AAF1D" && user.source !== "EDT"));
+    return (user.disappearanceDate || (user.source !== 'AAF' && user.source !== "AAF1D" && user.source !== "EDT" && user.source !== "UDT"));
 }
 
 User.prototype.generateMergeKey = function(hook){
