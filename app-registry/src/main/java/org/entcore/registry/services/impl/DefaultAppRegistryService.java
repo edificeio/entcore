@@ -22,6 +22,8 @@ package org.entcore.registry.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
 
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -734,98 +736,75 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	@Override
 	public void massAuthorization(JsonArray data, Handler<Either<String, JsonObject>> handler) {
 
-		String matchRole =
-				"MATCH (r:Role {id: {roleId}}), ";
+		Map<String,Map<String,List<String>>> map = new HashMap<>();
 
-		String matchWidget =
-				"MATCH (r:Widget {id: {widgetId}}), ";
+		final String[] profiles = {"Teacher","Student","Relative","Personnel","Guest","AdminLocal"};
 
-		String matchProfilesGroup =
-				"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-						"WHERE p.name IN {profiles} ";
+		for (int i = 0; i < data.size(); i++) {
 
-		String matchAdminGroup =
-				"(s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group) " +
-						"WHERE g.externalId =~ '.*ADMIN_LOCAL'";
+			JsonObject entry = data.getJsonObject(i);
+			String structureId = entry.getString("ent_structure_id");
+			String roleId = entry.getString("ent_role_id");
+			String widgetId = entry.getString("ent_widget_id");
 
-		String authorize =
-						"AND NOT(g-[:AUTHORIZED]->r) " +
-						"CREATE UNIQUE g-[:AUTHORIZED]->r";
-
-		String unauthorize =
-						"MATCH r<-[a:AUTHORIZED]-g " +
-						"DELETE a";
-
-
-		StatementsBuilder s = new StatementsBuilder();
-
-		data.forEach(entry -> {
-
-			JsonObject jo  = (JsonObject)entry;
-
-			JsonArray profilesAuthorized = new JsonArray();
-			JsonArray profilesUnauthorized = new JsonArray();
-
-			if (jo.getBoolean("Teacher")) profilesAuthorized.add("Teacher");
-			else profilesUnauthorized.add("Teacher");
-			if (jo.getBoolean("Student")) profilesAuthorized.add("Student");
-			else profilesUnauthorized.add("Student");
-			if (jo.getBoolean("Relative")) profilesAuthorized.add("Relative");
-			else profilesUnauthorized.add("Relative");
-			if (jo.getBoolean("Personnel")) profilesAuthorized.add("Personnel");
-			else profilesUnauthorized.add("Personnel");
-			if (jo.getBoolean("Guest")) profilesAuthorized.add("Guest");
-			else profilesUnauthorized.add("Guest");
-
-			String structureId = jo.getString("ent_structure_id");
-			String roleId = jo.getString("ent_role_id");
-			String widgetId = jo.getString("ent_widget_id");
-
-			JsonObject paramsAuthorized = new JsonObject().put("roleId", roleId)
-					.put("structureId", structureId).put("profiles", profilesAuthorized);
-			JsonObject paramsUnauthorized = new JsonObject().put("roleId", roleId)
-					.put("structureId", structureId).put("profiles", profilesUnauthorized);
-
-			String authorizeQuery = "";
-			String unauthorizeQuery = "";
-
-			JsonObject paramsAdmin = new JsonObject().put("structureId", structureId);
-
-			if (roleId != null) {
-				authorizeQuery += matchRole + matchProfilesGroup + authorize;
-				unauthorizeQuery += matchRole + matchProfilesGroup + unauthorize;
-				paramsAuthorized.put("roleId", roleId);
-				paramsUnauthorized.put("roleId", roleId);
-			} else if (widgetId != null) {
-				authorizeQuery += matchWidget + matchProfilesGroup + authorize;
-				unauthorizeQuery += matchWidget + matchProfilesGroup + unauthorize;
-				paramsAuthorized.put("widgetId", widgetId);
-				paramsUnauthorized.put("widgetId", widgetId);
+			if ((roleId == null) == (widgetId == null)) {
+				//roleId and widgetId shouldn't be both null or not null
+				continue;
 			}
 
-			s.add(authorizeQuery, paramsAuthorized);
-			s.add(unauthorizeQuery, paramsUnauthorized);
-
-			if (jo.getBoolean("AdminLocal")) {
-				if (roleId != null) {
-					paramsAdmin.put("roleId", roleId);
-					s.add(matchRole + matchAdminGroup + authorize, paramsAdmin);
-				}
-				if (widgetId != null) {
-					paramsAdmin.put("widgetId", widgetId);
-					s.add(matchWidget + matchAdminGroup + authorize, paramsAdmin);
-				}
-			} else {
-				if (roleId != null) {
-					paramsAdmin.put("roleId", roleId);
-					s.add(matchRole + matchAdminGroup + unauthorize, paramsAdmin);
-				}
-				if (widgetId != null) {
-					paramsAdmin.put("widgetId", widgetId);
-					s.add(matchWidget + matchAdminGroup + unauthorize, paramsAdmin);
-				}
+			if (!map.containsKey(structureId)) {
+				map.put(structureId, new HashMap<>());
 			}
+			Map<String,List<String>> structureMap = map.get(structureId);
+
+			List<String> list = Arrays.stream(profiles).filter(entry::getBoolean).collect(Collectors.toList());
+			structureMap.put(roleId != null ? ("R"+roleId) : ("W"+widgetId), list);
+
+		}
+
+		String query = "MATCH ()<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure) "+
+				"WHERE s.id IN {structuresIds} DELETE a";
+
+		JsonObject params = new JsonObject().put("structuresIds", new JsonArray(map.keySet().stream().collect(Collectors.toList())));
+		neo.execute(query, params, done -> {
+			List<Future> list = new ArrayList<>();
+
+			map.entrySet().forEach(structure -> {
+				StatementsBuilder s = new StatementsBuilder();
+				Future promise = Future.future();
+				list.add(promise);
+
+				structure.getValue().entrySet().forEach(roleOrWidget -> {
+					String query2 =
+							"MATCH (s:Structure {id: {structureId}}), " +
+							"(r:" + (roleOrWidget.getKey().charAt(0) == 'R' ? "Role" : "Widget") + " {id: {roleOrWidgetId}}) " +
+							"WITH s, r MATCH (s)<-[:DEPENDS]-(g:Group) " +
+							"WHERE CASE WHEN g.externalId ENDS WITH 'ADMIN_LOCAL' THEN 'AdminLocal' IN {profiles} "+
+							"ELSE g.filter IN {profiles} END " +
+							"CREATE UNIQUE g-[:AUTHORIZED]->r ";
+					JsonObject params2 = new JsonObject().put("structureId", structure.getKey())
+							.put("roleOrWidgetId", roleOrWidget.getKey().substring(1))
+							.put("profiles", roleOrWidget.getValue());
+					s.add(query2, params2);
+				});
+				neo.executeTransaction(s.build(), null, true, event -> {
+					if (!"ok".equals(event.body().getString("status"))) {
+						String message = event.body().getString("message");
+						log.error("[AppRegistry] - Transaction failed: " + message);
+						promise.fail(message);
+					} else {
+						promise.complete();
+					}
+				});
+			});
+			CompositeFuture.join(list).setHandler(compositeFutureAsyncResult -> {
+				if (compositeFutureAsyncResult.succeeded()) {
+					handler.handle(new Either.Right<>(new JsonObject()));
+				} else {
+					handler.handle(new Either.Left<>(compositeFutureAsyncResult.cause().toString()));
+				}
+			});
 		});
-		neo.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
 	}
+
 }
