@@ -118,7 +118,7 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                                 name="casTypeId"
                                 [disabled]="!connector.hasCas || disabled"
                                 class="is-flex-none has-min-width">
-                            <option *ngFor="let casType of casTypes" [value]="casType.id">
+                            <option *ngFor="let casType of casTypes | orderBy: 'name'" [value]="casType.id">
                                 {{ casType.name }}
                             </option>
                         </select>
