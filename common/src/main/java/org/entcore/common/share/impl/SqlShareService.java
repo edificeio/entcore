@@ -19,11 +19,9 @@
 
 package org.entcore.common.share.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import io.vertx.core.Future;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -57,6 +55,58 @@ public class SqlShareService extends GenericShareService {
 		this.shareTable = this.schema + ((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");
 	}
 
+	private Future<Set<String>[]> findUserIdsAndGroups(final String resourceId, final String currentUserId,
+													   final Optional<Set<String>> actions) {
+		Future<Set<String>[]> future = Future.future();
+		final String query = "SELECT s.member_id, s.action, m.user_id, m.group_id FROM " + shareTable + " AS s " + "JOIN " + schema
+				+ "members AS m ON s.member_id = m.id WHERE resource_id = ?";
+		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)), sqlEvent -> {
+			if ("ok".equals(sqlEvent.body().getString("status"))) {
+				JsonArray shared = sqlEvent.body().getJsonArray("results", new JsonArray());
+				Set<String> userIds = new HashSet<>();
+				Set<String> groupIds = new HashSet<>();
+				final int actionCount = actions.map(s->s.size()).orElse(0);
+				final Map<String, Set<String>>  countActions = new HashMap<>();
+				for (Object jsonO : shared) {
+					if (!(jsonO instanceof JsonArray))
+						continue;
+					//
+					JsonArray json = (JsonArray) jsonO;
+					//final String memberId = json.getString(0);
+					final String action = json.getString(1);
+					final String userId = json.getString(2);
+					final String groupId = json.getString(3);
+					final boolean isUser = userId != null;
+					final String id = isUser ? userId : groupId;
+					// filter by actions
+					boolean accept = true;
+					if (actions.isPresent() && actions.get().size() > 0) {
+						// if one action is absent...ignore
+						countActions.putIfAbsent(id,new HashSet<>());
+						countActions.compute(id, (k,v) -> {
+							if(actions.get().contains(action)) v.add(action);
+							return v;
+						});
+						accept = countActions.get(id).size() >= actionCount;
+					}
+					//
+					if (accept) {
+						if (isUser) {
+							userIds.add(userId);
+						} else if (groupId != null) {
+							groupIds.add(groupId);
+						}
+					}
+				}
+				//
+				future.complete(new Set[] { userIds, groupIds });
+			} else {
+				future.fail("Error finding shared resource.");
+			}
+		});
+		return future;
+	}
+
 	@Override
 	public void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler) {
@@ -74,8 +124,18 @@ public class SqlShareService extends GenericShareService {
 	@Override
 	public void findUserIdsForShare(String resourceId, String userId, Optional<Set<String>> actions,
 			Handler<AsyncResult<Set<String>>> h) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Postgres not implemented yet");
+		findUserIdsAndGroups(resourceId, userId, actions).compose(ids -> {
+			Set<String> userIds = ids[0];
+			Set<String> groupIds = ids[1];
+			return userIdsForGroupIds(groupIds, userId).map(uids -> {
+				Set<String> all = new HashSet<>();
+				all.addAll(userIds);
+				all.addAll(uids);
+				// ignore current user
+				all.remove(userId);
+				return all;
+			});
+		}).setHandler(h);
 	}
 
 	@Override
