@@ -163,20 +163,20 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             <th>
                                 <input type="text" 
                                     [ngModel]="report.columnFilter.lastName" 
-                                    (ngModelChange)="report.columnFilter.lastName = $event; report.page.offset = 0;" 
+                                    (ngModelChange)="report.search('lastName', $event);" 
                                     [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th>
                                 <input type="text" 
                                     [ngModel]="report.columnFilter.firstName" 
-                                    (ngModelChange)="report.columnFilter.firstName = $event; report.page.offset = 0;"
+                                    (ngModelChange)="report.search('firstName', $event);"
                                     [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th></th>
                             <th></th>
                             <th>
                                 <select [ngModel]="report.columnFilter.profiles" 
-                                        (ngModelChange)="report.columnFilter.profiles = $event; report.page.offset = 0;">
+                                        (ngModelChange)="report.search('profiles', $event);">
                                     <option [value]=""></option>
                                     <option *ngFor="let p of columns.profiles" [value]="p">
                                         {{ p | translate }}
@@ -186,7 +186,7 @@ import { ObjectURLDirective } from '../../shared/ux/directives/object-url.direct
                             <th></th>
                             <th>
                                 <select [ngModel]="report.columnFilter.classesStr"
-                                        (ngModelChange)="report.columnFilter.classesStr = $event; report.page.offset = 0;">
+                                        (ngModelChange)="report.search('classesStr', $event);">
                                     <option [value]=""></option>
                                     <option *ngFor="let c of report.getAvailableClasses() | orderBy: 'name'" [value]="c.name">
                                         {{ c.name }}
@@ -570,7 +570,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             list :  [],
             hardError: false
         },
-        page : {offset: 0, limit: 10, total: 0},
+        page : {offset: 0, limit: 10, total: 0, saveOffset: 0},
         filter : User.filter,
         columnFilter : { lastName: '', firstName: '', profiles : '', classesStr : '' },
         setFilter : User.setFilter,
@@ -719,6 +719,19 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         setUserOrder(order: string): void {
             this.userOrder = this.userOrder === order ? '-' + order : order;
+        },
+        search(searchField, newValue): void {
+            this.handlePageOffset(this.columnFilter[searchField], newValue);
+            this.columnFilter[searchField] = newValue;
+        },
+        handlePageOffset(oldValue, newValue): void {
+            if (oldValue === '') {
+                this.page.saveOffset = this.page.offset;
+                this.page.offset = 0;
+            }
+            if (newValue === '') {
+                this.page.offset = this.page.saveOffset;
+            }
         }
     }
 
