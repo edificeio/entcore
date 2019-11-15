@@ -255,7 +255,8 @@ public class SamlController extends AbstractFederateController {
                 .put("SP", serviceProviderId)
                 .put("userId", user.getUserId())
                 .put("nameid", sessionId)
-                .put("host", getScheme(request) + "://" + getHost(request));
+                .put("host", getHost(request))
+				.put("scheme", getScheme(request));
 		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {

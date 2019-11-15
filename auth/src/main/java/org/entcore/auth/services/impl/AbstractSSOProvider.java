@@ -59,7 +59,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 		return true;
 	}
 
-	public void generate(EventBus eb, String userId, Handler<Either<String, io.vertx.core.json.JsonArray>> handler) {
+	public void generate(EventBus eb, String userId, String host, Handler<Either<String, io.vertx.core.json.JsonArray>> handler) {
 		handler.handle(new Either.Left<String, io.vertx.core.json.JsonArray>("Override is required on generate function in AbstractSSOProvider"));
 	}
 

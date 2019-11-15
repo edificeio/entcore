@@ -182,8 +182,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					String userId = message.body().getString("userId");
 					String nameid = message.body().getString("nameid");
 					String host = message.body().getString("host");
+					String url = message.body().getString("scheme") + "://" + host;
 					spSSODescriptor = getSSODescriptor(serviceProvider);
-					generateSAMLResponse(serviceProvider, userId, nameid,host, message);
+					generateSAMLResponse(serviceProvider, userId, nameid, host, url, message);
 					break;
 				case "validate-signature":
 					sendOK(message, new JsonObject().put("valid", validateSignature(response)));
@@ -229,7 +230,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws UnsupportedEncodingException
 	 * @throws MarshallingException
 	 */
-	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId, final String host, final Message<JsonObject> message)
+	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId, final String host, final String url, final Message<JsonObject> message)
 			throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
 		logger.info("start generating SAMLResponse");
 		logger.info("SP : " + serviceProvider);
@@ -237,7 +238,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		final JsonObject idp = config.getJsonObject("saml-entng-idp-nq");
     	String entngIdpNameQualifierTMP = null;
 		if(idp.containsKey(serviceProvider)){
-			entngIdpNameQualifierTMP = idp.getString(serviceProvider);
+			if (idp.getValue(serviceProvider) instanceof String) {
+				entngIdpNameQualifierTMP = idp.getString(serviceProvider);
+			} else {
+				entngIdpNameQualifierTMP = idp.getJsonObject(serviceProvider, new JsonObject()).getString(host);
+			}
 		}
 		else if(idp.containsKey("default")){
 			entngIdpNameQualifierTMP = idp.getString(serviceProvider);
@@ -273,7 +278,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		}
 
 		// --- TAG AttributeStatement ---
-		createVectors(userId,host, new Handler<Either<String, JsonArray>>() {
+		createVectors(userId, host, url, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isRight()) {
@@ -527,7 +532,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @param userId userId neo4j
 	 * @param handler handler containing results
 	 */
-	private void createVectors(String userId,final String host, final Handler<Either<String, JsonArray>> handler) {
+	private void createVectors(String userId, final String host, final String url, final Handler<Either<String, JsonArray>> handler) {
 		debug("create user Vector(s)");
 		// browse supported type vector required by the service provider
 		logger.info("createVectors init ");
@@ -554,7 +559,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 									for (RequestedAttribute requestedAttribute : attributeConsumingService.getRequestAttributes()) {
 										String vectorName = requestedAttribute.getName();
 										if (vectorName.equals("FrEduUrlRetour")) {
-											JsonObject vectorRetour = new JsonObject().put("FrEduUrlRetour", host);
+											JsonObject vectorRetour = new JsonObject().put("FrEduUrlRetour", url);
 											jsonArrayResult.add(vectorRetour);
 										}
 									}
@@ -592,7 +597,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 			}
 			else {
 				SamlServiceProvider sp = spFactory.serviceProvider(SPid);
-				sp.generate(eb, userId, handler);
+				sp.generate(eb, userId, host, handler);
 			}
 		}
 	}

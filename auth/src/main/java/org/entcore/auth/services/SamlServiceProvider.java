@@ -29,6 +29,6 @@ public interface SamlServiceProvider {
 
 	void execute(Assertion assertion, Handler<Either<String, Object>> handler);
 
-	void generate(EventBus eb, String userId, Handler<Either<String, io.vertx.core.json.JsonArray>> handler);
+	void generate(EventBus eb, String userId, String host, Handler<Either<String, io.vertx.core.json.JsonArray>> handler);
 
 }
