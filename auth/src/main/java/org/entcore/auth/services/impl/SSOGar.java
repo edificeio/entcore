@@ -18,7 +18,7 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class SSOGar extends AbstractSSOProvider {
 
     @Override
-    public void generate(EventBus eb, String userId, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, Handler<Either<String, JsonArray>> handler) {
 
         JsonObject sendTOMediacentre = new JsonObject().put("action", "getConfig");
 
@@ -31,8 +31,17 @@ public class SSOGar extends AbstractSSOProvider {
                 } else {
                     JsonObject configMediacentre = message.body().getJsonObject("message");
                     JsonArray jsonArrayResult = new JsonArray();
+
+                    if (configMediacentre.getValue("id-ent") instanceof String) {
+                        jsonArrayResult
+                                .add(new JsonObject().put("idEnt", configMediacentre.getString("id-ent")));
+                    } else {
+                        jsonArrayResult
+                                .add(new JsonObject().put("idEnt",
+                                        configMediacentre.getJsonObject("id-ent", new JsonObject()).getString(host)));
+                    }
+
                     jsonArrayResult
-                            .add(new JsonObject().put("idEnt", configMediacentre.getString("id-ent")))
                             .add(new JsonObject().put("GARPersonIdentifiant", userId));
                     handler.handle(new Either.Right<String, JsonArray>(jsonArrayResult));
                 }
