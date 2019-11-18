@@ -438,3 +438,9 @@ i.dashboard {
   @include fonticon;
   &::before {content: "\e94b"}
 }
+
+i.library,
+i.library-large {
+  @include fonticon;
+  &::before {content: "\e94c";}
+}
