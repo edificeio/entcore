@@ -236,7 +236,10 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     //
     /**aply a debounce time to avoid reloading content every time (sync bugs + optimize perf)**/
     let reloadSubject = new Subject();
+    let contentRevision = 0;
     (reloadSubject as Observable<any>).debounceTime(350).subscribe(async e => {
+        contentRevision++;//set a new revision of content
+        const currentRevision = contentRevision;
         //on refresh folder content => reset search
         $scope.onReloadContent.next();
         //fetch only documents in contents
@@ -249,9 +252,12 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         } else {
             content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false });
         }
-        $scope.openedFolder.setDocuments(content);
-        $scope.reloadingContent = false;
-        $scope.safeApply();
+        //if revision has changed => a most recent content is loading
+        if(currentRevision == contentRevision){
+            $scope.openedFolder.setDocuments(content);
+            $scope.reloadingContent = false;
+            $scope.safeApply();
+        }
     })
     $scope.reloadFolderContent = function () {
         $scope.reloadingContent = true;
