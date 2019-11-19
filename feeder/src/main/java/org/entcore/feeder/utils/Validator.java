@@ -22,6 +22,7 @@ package org.entcore.feeder.utils;
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.utils.MapFactory;
+import org.entcore.common.utils.StringUtils;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -239,7 +240,7 @@ public class Validator {
 						if (generatedAttributes == null) {
 							generatedAttributes = new JsonObject();
 						}
-						generatedAttributes.put(attr + SEARCH_FIELD, removeAccents(value.toString()).toLowerCase());
+						generatedAttributes.put(attr + SEARCH_FIELD, generateDisplayNamePermutations(value.toString()));
 					}
 				}
 				if (value != null && generate.containsKey(attr + SEARCH_FIELD)) {
@@ -385,9 +386,24 @@ public class Validator {
 			if (firstName != null && lastName != null) {
 				String displayName = lastName + " " + firstName;
 				object.put(attr, displayName);
-				object.put(attr + SEARCH_FIELD, sanitize(displayName));
+				object.put(attr + SEARCH_FIELD, generateDisplayNamePermutations(displayName));
 			}
 		}
+	}
+
+	private String generateDisplayNamePermutations(String displayName)
+	{
+		List<String> parts = StringUtils.split(removeAccents(displayName).toLowerCase().replaceAll("\\s+", " "), " ");
+		StringBuilder permutations = new StringBuilder();
+
+		if(parts.size() > 5) // Only compute the permutations for the first five terms, otherwise the string is too big
+		{
+			permutations.append(StringUtils.join(parts, ""));
+			parts = parts.subList(0, 5);
+		}
+		permutations.append(StringUtils.createAllPermutations(parts));
+
+		return permutations.toString();
 	}
 
 	private void loginGenerator(String attr, JsonObject object, String... in) {
