@@ -23,6 +23,7 @@ import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.shareddata.AsyncMap;
@@ -60,6 +61,9 @@ public class Starter extends BaseServer {
 			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+			//JWT need signKey
+			SecurityHandler.setVertx(vertx);
+			//
 			CookieHelper.getInstance().init((String) vertx
 					.sharedData().getLocalMap("server").get("signKey"), log);
 
