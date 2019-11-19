@@ -23,6 +23,14 @@ import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.IllegalArgumentException;
 
 /**
  * Created by dbreyton on 30/03/2016.
@@ -142,6 +150,136 @@ public final class StringUtils {
             }
         }
         return builder.toString();
+    }
+
+    /**
+     * Generates a string containing all permutations of the given string list (maximum 16 strings)
+     * Example: <code>createAllPermutations ([ "A", "B", "C"]) -> "ABCACBACAB"</code>
+     *
+     * @param list the list of strings to permute.
+     *
+     * @return the string containing all permutations.
+     */
+    public static String createAllPermutations(List<String> list)
+    {
+        int size = list.size();
+        if(size > 16) // The limit is 16 because 16*4 == 64 == number of bits in a long. 20! > MAX_LONG so that would be the hard limit anyway
+            throw new IllegalArgumentException("The number of string to permute exceeds 16");
+        else if(size == 0)
+            return "";
+
+        int nbPermuts = size; // the number of permutations is size!
+        for(int i = size; i-- > 1;)
+            nbPermuts *= i;
+
+        StringBuilder str = new StringBuilder();
+        List<Long> permuts = new ArrayList<Long>(nbPermuts);
+        Map<Long, List<Integer>> prefixIndex = new HashMap<Long, List<Integer>>();
+        Set<Integer> usedPermuts = new HashSet<Integer>();
+
+        // Recursively generate all permutations
+        StringUtils.generateAllPermutations(permuts, prefixIndex, size, 0, 0);
+
+        Long current = permuts.get(0);
+        usedPermuts.add(new Integer(0));
+
+        int elementsToRead = size;
+        for(int i = nbPermuts; i-- > 0;)
+        {
+            long ptr = 0xF << ((elementsToRead - 1) * 4);
+            long val = current.longValue();
+
+            // Only append the necessary strings
+            for(int e = elementsToRead; e-- > 0;)
+            {
+                int strToAppend = (int)((val & ptr) >>> (e * 4));
+                ptr >>>= 4;
+                str.append(list.get(strToAppend));
+            }
+            elementsToRead = 0;
+
+            Long next = current;
+            do
+            {
+                ++elementsToRead;
+                // Find the best next permutation (aka current suffix matches the biggest next prefix possible) (e.g. aBCD should match BCDa)
+                long prefixToClear = ((long)(size - elementsToRead));
+                long prefixLengthToLookFor = prefixToClear << (15 * 4);
+                val &= (~((long)0) ^ (0xF << (prefixToClear * 4)));
+
+                List<Integer> nextCandidates = prefixIndex.get(new Long(prefixLengthToLookFor | val));
+
+                if(nextCandidates == null)
+                {
+                    System.err.println("\n\nImpossible error in createAllPermutations: No candidates\n\n");
+                    continue;
+                }
+                else
+                {
+                    // Find a permutation that hasn't already been used
+                    for(int candidateIx = nextCandidates.size(); candidateIx-- > 0;)
+                    {
+                        Integer candidate = nextCandidates.get(candidateIx);
+                        if(usedPermuts.contains(candidate) == false)
+                        {
+                            usedPermuts.add(candidate);
+                            next = permuts.get(candidate.intValue());
+                            break;
+                        }
+                    }
+                }
+            }
+            // If we can't find a n-sized prefix, try a (n-1)-sized prefix on the next iteration
+            while(next == current && val != 0 && usedPermuts.size() != nbPermuts);
+
+            current = next;
+        }
+
+        if(usedPermuts.size() != nbPermuts)
+          System.err.println("\n\nImpossible error in createAllPermutations: Used " + usedPermuts.size() + " out of " + nbPermuts + "\n\n");
+
+        return str.toString();
+    }
+
+    // nbElements must be at most 16. Call with permut = 0, taken = 0
+    private static void generateAllPermutations(List<Long> allPermuts, Map<Long, List<Integer>> prefixIndex, int nbElements,
+        long permut, long taken)
+    {
+        boolean isFinished = true;
+        for(int i = nbElements; i-- > 0;)
+        {
+            if((taken & (1 << i)) != 0)
+                continue;
+            else
+            {
+                isFinished = false;
+                generateAllPermutations(allPermuts, prefixIndex, nbElements, (permut << 4) | i, taken | (1 << i));
+            }
+        }
+
+        if(isFinished == true)
+        {
+            Long finalPermut = new Long(permut);
+            Integer permutIx = new Integer(allPermuts.size());
+            allPermuts.add(finalPermut);
+
+            for(long i = nbElements; i-- > 1;)
+            {
+                permut >>>= 4;
+
+                // The prefixed length makes it possible to distinguish 0x01 and 0x1
+                long prefixLength = (i << (15 * 4));
+                Long prefix = new Long(prefixLength | permut);
+
+                List<Integer> prefixes = prefixIndex.get(prefix);
+                if(prefixes == null)
+                {
+                    prefixes = new ArrayList<Integer>(nbElements); // Real capacity should be (nbElements - 1)! but this is good enough
+                    prefixIndex.put(prefix, prefixes);
+                }
+                prefixes.add(permutIx);
+            }
+        }
     }
 
     /**
