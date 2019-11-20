@@ -25,11 +25,10 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
-import io.vertx.core.buffer.Buffer;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.FederationService;
 import org.entcore.auth.services.SamlServiceProvider;
@@ -53,15 +52,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import javax.xml.bind.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -76,7 +72,6 @@ import java.util.regex.Pattern;
 import java.util.zip.Inflater;
 
 import static fr.wseduc.webutils.Utils.*;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class SamlController extends AbstractFederateController {
 
@@ -422,7 +417,14 @@ public class SamlController extends AbstractFederateController {
 	}
 
 
-	private void loginResult(final HttpServerRequest request, String error) {
+	private void loginResult(final HttpServerRequest request, String error, Assertion assertion) {
+		if (Utils.getOrElse(config.getBoolean("log-failed-assertion"), false)) {
+			try {
+				log.warn(SamlUtils.marshallAssertion(assertion));
+			} catch (MarshallingException e) {
+				log.error("Error marshalling failed assertion", e);
+			}
+		}
 		if(federatedAuthenticateError) {
 			final JsonObject context = new JsonObject();
 			if (error != null && !error.trim().isEmpty()) {
@@ -446,7 +448,7 @@ public class SamlController extends AbstractFederateController {
 					@Override
 					public void handle(final Either<String, Object> event) {
 						if (event.isLeft()) {
-							loginResult(request, "fed.auth.error.user.not.found");
+							loginResult(request, "fed.auth.error.user.not.found", assertion);
 						} else {
 							final String nameIdFromAssertion = getNameId(assertion);
 							final String sessionIndex = getSessionId(assertion);
@@ -491,10 +493,10 @@ public class SamlController extends AbstractFederateController {
 												&& userIdAssertion != null && userIdAssertion.equals(userId)) {
 											redirect(request, "/");
 										} else {
-											endAcs(request, event, sessionIndex, nameIdFromAssertion);
+											endAcs(request, event, sessionIndex, nameIdFromAssertion, assertion);
 										}
 									} else {
-										endAcs(request, event, sessionIndex, nameIdFromAssertion);
+										endAcs(request, event, sessionIndex, nameIdFromAssertion, assertion);
 									}
 								}
 							});
@@ -508,17 +510,18 @@ public class SamlController extends AbstractFederateController {
 	/**
 	 * End of acs method : authenticate user if not already connectd through IDP ENT
 	 *
-	 * @param request request from "/acs" method
-	 * @param event event from SamlServiceProvider.execute(...)
+	 * @param request      request from "/acs" method
+	 * @param event        event from SamlServiceProvider.execute(...)
 	 * @param sessionIndex sessionIndex get from acs assertion
-	 * @param nameId nameID get from acs assertion
+	 * @param nameId       nameID get from acs assertion
+	 * @param assertion    saml assertion
 	 */
-	private void endAcs(final HttpServerRequest request, Either<String, Object> event,
-						final String sessionIndex, final String nameId) {
+	private void endAcs(final HttpServerRequest request, Either<String, Object> event, final String sessionIndex,
+			final String nameId, Assertion assertion) {
 		if (event.right().getValue() != null && event.right().getValue() instanceof JsonObject) {
 			final JsonObject res = (JsonObject) event.right().getValue();
 			if(res.size()== 0) {
-				loginResult(request, "fed.auth.error.user.not.found");
+				loginResult(request, "fed.auth.error.user.not.found", assertion);
 			} else {
 				authenticate(res, sessionIndex, nameId, activationThemes, request);
 			}
