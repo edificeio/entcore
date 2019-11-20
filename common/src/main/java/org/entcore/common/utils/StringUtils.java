@@ -167,6 +167,8 @@ public final class StringUtils {
             throw new IllegalArgumentException("The number of string to permute exceeds 16");
         else if(size == 0)
             return "";
+        else if(size == 1)
+            return list.get(0);
 
         int nbPermuts = size; // the number of permutations is size!
         for(int i = size; i-- > 1;)
