@@ -65,7 +65,6 @@ subprojects {
     testCompile "io.vertx:vertx-unit:$vertxVersion"
     testCompile "io.vertx:vertx-codegen:$vertxVersion"
     testCompile "junit:junit:$junitVersion"
-    testCompile "org.mockito:mockito-core:2.+"
   }
 
   test {
