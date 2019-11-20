@@ -78,6 +78,7 @@ import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher
 import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
 import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
+import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
 
 import io.vertx.core.Vertx;
@@ -112,6 +113,7 @@ public class AuthController extends BaseController {
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
+	private ClientCredentialFetcher clientCredentialFetcher;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -135,7 +137,7 @@ public class AuthController extends BaseController {
 		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,
 				checkFederatedLogin);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
-		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
+		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
 		token.setDataHandlerFactory(oauthDataFactory);
 		token.setGrantHandlerProvider(grantHandlerProvider);
@@ -220,11 +222,15 @@ public class AuthController extends BaseController {
 
 			@Override
 			public void handle(Void v) {
-				Request req = new HttpServerRequestAdapter(request);
+				final Request req = new HttpServerRequestAdapter(request);
 				token.handleRequest(req, new Handler<Response>() {
 
 					@Override
 					public void handle(Response response) {
+						if (response.getCode() == 200 && "password".equals(req.getParameter("grant_type"))) {
+							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
+							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId());
+						}
 						renderJson(request, new JsonObject(response.getBody()), response.getCode());
 					}
 				});
