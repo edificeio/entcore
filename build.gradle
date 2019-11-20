@@ -321,36 +321,6 @@ project(':tests') {
     compile 'net.minidev:json-smart:1.1.1'
   }
 
-  task gatling(dependsOn: 'compileTestScala') << {
-    def classesDir = sourceSets.test.output.classesDir.getPath().replace("java", "scala")
-    def simulations =  new java.io.File(classesDir + File.separator + 'org' + File.separator + 'entcore' + File.separator + 'test' + File.separator + 'simulations')
-
-    logger.lifecycle(" ---- Executing all Gatling scenarios from: ${simulations} ----")
-    simulations.eachFileRecurse { file ->
-      if (file.isFile()) {
-        //Remove the full path, .class and replace / with a .
-        logger.debug("Tranformed file ${file} into")
-          def gatlingScenarioClass = (file.getPath() - (classesDir + File.separator) - '.class')
-          .replace(File.separator, '.')
-
-          logger.debug("Tranformed file ${file} into scenario class ${gatlingScenarioClass}")
-          System.setProperty("gatling.http.connectionTimeout", "300000")
-          javaexec {
-            main = 'io.gatling.app.Gatling'
-              classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
-            args  '-bf',
-            classesDir,
-            '-s',
-            gatlingScenarioClass,
-            '-rf',
-            'build/reports/gatling'
-          }
-      }
-    }
-
-    logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
-  }
-
 }
 
 /*
