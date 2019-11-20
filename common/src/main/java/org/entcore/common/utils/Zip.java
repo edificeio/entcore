@@ -22,6 +22,7 @@ package org.entcore.common.utils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -61,7 +62,7 @@ public class Zip {
 				.put("zipFile", zipPath)
 				.put("deletePath", deletePath)
 				.put("level", level);
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.send(address, j, new DeliveryOptions().setSendTimeout(900000l), handlerToAsyncHandler(handler));
 	}
 
 }

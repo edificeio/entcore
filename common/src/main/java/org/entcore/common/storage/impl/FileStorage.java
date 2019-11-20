@@ -303,7 +303,7 @@ public class FileStorage implements Storage {
 							new FileStats(props.creationTime(), props.lastModifiedTime(), props.size())));
 				} else {
 					handler.handle(new DefaultAsyncResult<>(res.cause()));
-					log.error(res.cause().getMessage(), res.cause());
+					//log.error(res.cause().getMessage(), res.cause());
 				}
 			});
 		} catch (FileNotFoundException e) {
