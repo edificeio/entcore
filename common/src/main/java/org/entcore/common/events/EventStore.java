@@ -35,4 +35,6 @@ public interface EventStore {
 
 	void createAndStoreEvent(String eventType, String login);
 
+	void createAndStoreEvent(String eventType, String login, String clientId);
+
 }

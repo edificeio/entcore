@@ -73,6 +73,11 @@ public abstract class GenericEventStore implements EventStore {
 
 	@Override
 	public void createAndStoreEvent(final String eventType, final String login) {
+		createAndStoreEvent(eventType, login, null);
+	}
+
+	@Override
+	public void createAndStoreEvent(final String eventType, final String login, final String clientId) {
 		String query =
 				"MATCH (n:User {login : {login}}) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
@@ -87,8 +92,13 @@ public abstract class GenericEventStore implements EventStore {
 			public void handle(Message<JsonObject> event) {
 				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res.size() == 1) {
+					JsonObject customAttributes = null;
+					if (clientId != null) {
+						customAttributes = new JsonObject();
+						customAttributes.put("override-module", clientId);
+					}
 					execute(UserUtils.sessionToUserInfos(
-							res.getJsonObject(0)), eventType, null, null);
+							res.getJsonObject(0)), eventType, null, customAttributes);
 				} else {
 					logger.error("Error : user " + login + " not found.");
 				}
