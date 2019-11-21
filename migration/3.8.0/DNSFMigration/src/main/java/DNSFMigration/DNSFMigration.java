@@ -1,6 +1,7 @@
 package DNSFMigration;
 
-import org.neo4j.driver.v1.*;
+import javax.ws.rs.core.MediaType;
+import com.sun.jersey.api.client.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.text.Normalizer;
+import java.net.URL;
 import java.lang.Integer;
 
 public class DNSFMigration
@@ -22,42 +24,94 @@ public class DNSFMigration
       System.exit(-1);
     }
 
-    Driver driver = GraphDatabase.driver("http://" + args[0] + "/db/data/:7474");
-
-    try (Session session = driver.session())
+    String cypherUri = "";
+    try
     {
-      StatementResult result = session.run("MATCH (u:User) RETURN u.id AS id, u.displayName AS dn;");
-
-      List<Record> records = result.list();
-      int rsize = records.size();
-
-      Transaction tx = session.beginTransaction();
-      Map<String, Object> params = new HashMap<String, Object>();
-      for(int i = rsize; i-- > 0;)
-      {
-        Map<String, Object> user = records.get(i).asMap();
-
-        Object id = user.get("id");
-        Object dn = user.get("dn");
-
-        if(id != null && dn != null)
-        {
-          params.put("uid", id);
-          params.put("dnsf", DNSFMigration.generateDisplayNamePermutations(dn.toString()));
-
-          tx.run("MATCH (u:User {id: {uid} }) SET u.displayNameSearchField = {dnsf}", params);
-        }
-
-        if(i % 1000 == 0) // Neo4j cannot buffer transactions correctly and may get OOM errors, so split the transaction in chunks...
-        {
-          tx.success();
-          tx.close();
-          tx = session.beginTransaction();
-        }
-      }
+      cypherUri = new URL(new URL("http://" + args[0] + ":7474"), "/db/data/cypher").toString();
+    }
+    catch(java.net.MalformedURLException e)
+    {
+      System.err.println("Malformed endpoint URL");
+      System.exit(-2);
     }
 
-    driver.close();
+    String match = DNSFMigration.cypherQuery(cypherUri, "MATCH (u:User) WHERE EXISTS(u.displayName) RETURN u.id AS id, u.displayName AS dn;");
+
+    List<List<String>> records = parseMatchData(match);
+    int rsize = records.size();
+    Map<String, Object> params = new HashMap<String, Object>();
+    for(int i = rsize; i-- > 0;)
+    {
+      List<String> user = records.get(i);
+
+      Object id = user.get(0);
+      Object dn = user.get(1);
+
+      params.put("uid", id);
+      params.put("dnsf", DNSFMigration.generateDisplayNamePermutations(dn.toString()));
+
+      String r = DNSFMigration.cypherQuery(cypherUri, "MATCH (u:User {id: {uid} }) SET u.displayNameSearchField = {dnsf}", params);
+    }
+  }
+
+  private static String cypherQuery(String cypherUri, String query)
+  {
+    return DNSFMigration.cypherQuery(cypherUri, query, new HashMap<String, Object>());
+  }
+
+  private static String cypherQuery(String cypherUri, String query, Map<String, Object> params)
+  {
+    StringBuilder pars = new StringBuilder();
+
+    for(Map.Entry<String, Object> entry : params.entrySet())
+      pars.append("\"" + entry.getKey() + "\":\"" + entry.getValue() + "\",");
+
+    String paramsJson = "";
+    if(params.isEmpty() == false)
+    {
+      paramsJson = pars.toString();
+      paramsJson = paramsJson.substring(0, paramsJson.length() - 1);
+    }
+
+    String postData = "{\"query\":\"" + query + "\",\"params\":{" + paramsJson + "}}";
+
+    ClientResponse response = Client.create()
+      .resource(cypherUri)
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .type(MediaType.APPLICATION_JSON_TYPE)
+      .header("X-Stream", "true")
+      .post(ClientResponse.class, postData);
+
+    String res = response.getEntity(String.class);
+    response.close();
+
+    return res;
+  }
+
+  private static List<List<String>> parseMatchData(String requestResult)
+  {
+    String dataList = requestResult.substring(requestResult.indexOf("[[") + 1, requestResult.indexOf("]]") + 1);
+
+    List<String> subarrays = DNSFMigration.split(dataList, "\\],\\[");
+
+    List<List<String>> result = new ArrayList<List<String>>(subarrays.size());
+
+    for(int i = subarrays.size(); i-- > 0;)
+    {
+      List<String> userData = DNSFMigration.split(subarrays.get(i), "\",\"");
+      if(i == 0)
+        userData.set(0, userData.get(0).substring(2));
+      else
+        userData.set(0, userData.get(0).substring(1));
+      if(i == subarrays.size() - 1)
+        userData.set(1, userData.get(1).substring(0, userData.get(1).length() - 2));
+      else
+        userData.set(1, userData.get(1).substring(0, userData.get(1).length() - 1));
+
+      result.add(userData);
+    }
+
+    return result;
   }
 
 	private static String generateDisplayNamePermutations(String displayName)
