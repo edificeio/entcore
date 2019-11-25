@@ -78,15 +78,24 @@ public abstract class GenericEventStore implements EventStore {
 
 	@Override
 	public void createAndStoreEvent(final String eventType, final String login, final String clientId) {
+		createAndStoreEvent(eventType, "login", login, clientId);
+	}
+
+	@Override
+	public void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId) {
+		createAndStoreEvent(eventType, "id", userId, clientId);
+	}
+
+	private void createAndStoreEvent(final String eventType, final String attr, final String value, final String clientId) {
 		String query =
-				"MATCH (n:User {login : {login}}) " +
+				"MATCH (n:User {" + attr + ": {login}}) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct n.id as userId,  p.name as type, COLLECT(distinct gp.id) as profilGroupsIds, " +
 				"COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
-		Neo4j.getInstance().execute(query, new JsonObject().put("login", login),
+		Neo4j.getInstance().execute(query, new JsonObject().put("login", value),
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -100,7 +109,7 @@ public abstract class GenericEventStore implements EventStore {
 					execute(UserUtils.sessionToUserInfos(
 							res.getJsonObject(0)), eventType, null, customAttributes);
 				} else {
-					logger.error("Error : user " + login + " not found.");
+					logger.error("Error : user " + value + " not found.");
 				}
 
 			}
