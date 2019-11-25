@@ -80,12 +80,12 @@ public class ManualFeeder extends BusModBase {
 		} else {
 			String query =
 					"CREATE (s:Structure {props}) " +
-					"WITH s " +
-					"MATCH (p:Profile) " +
-					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
-					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
-					"SET g.id = id(g)+'-'+timestamp() " +
-					"RETURN DISTINCT s.id as id ";
+							"WITH s " +
+							"MATCH (p:Profile) " +
+							"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
+							"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
+							"SET g.id = id(g)+'-'+timestamp() " +
+							"RETURN DISTINCT s.id as id ";
 			JsonObject params = new JsonObject()
 					.put("groupSearchField", Validator.sanitize(struct.getString("name")))
 					.put("props", struct);
@@ -113,14 +113,14 @@ public class ManualFeeder extends BusModBase {
 		} else {
 			String query =
 					"MATCH (s:Structure { id : {structureId}}) " +
-					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
-					"SET c.externalId = s.externalId + '$' + c.name " +
-					"WITH s, c " +
-					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, " +
-					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
-					"SET pg.id = id(pg)+'-'+timestamp() " +
-					"RETURN DISTINCT c.id as id ";
+							"CREATE s<-[:BELONGS]-(c:Class {props}) " +
+							"SET c.externalId = s.externalId + '$' + c.name " +
+							"WITH s, c " +
+							"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+							"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, " +
+							"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
+							"SET pg.id = id(pg)+'-'+timestamp() " +
+							"RETURN DISTINCT c.id as id ";
 			JsonObject params = new JsonObject()
 					.put("structureId", structureId)
 					.put("groupSearchField", Validator.sanitize(c.getString("name")))
@@ -147,15 +147,15 @@ public class ManualFeeder extends BusModBase {
 			String rename = "";
 			if (c.getString("name") != null) {
 				rename = "WITH c " +
-						 "MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-						 "(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-						 "SET cpg.name = c.name+'-'+p.name ";
+						"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+						"(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"SET cpg.name = c.name+'-'+p.name ";
 			}
 			String query =
 					"MATCH (c:`Class` { id : {classId}}) " +
-					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("c", c) +
-					rename +
-					"RETURN DISTINCT c.id as id ";
+							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("c", c) +
+							rename +
+							"RETURN DISTINCT c.id as id ";
 			JsonObject params = c.put("classId", classId);
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
@@ -202,7 +202,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds) {
+									   final JsonObject user, String profile, String structureId, JsonArray childrenIds) {
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
@@ -211,19 +211,19 @@ public class ManualFeeder extends BusModBase {
 		if (childrenIds != null && childrenIds.size() > 0) {
 			related =
 					"WITH u " +
-					"MATCH (student:User) " +
-					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
-					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
+							"MATCH (student:User) " +
+							"WHERE student.id IN {childrenIds} " +
+							"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
+							"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
 			params.put("childrenIds", childrenIds);
 		}
 		String query =
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-" +
-				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
-				"CREATE UNIQUE pg<-[:IN]-(u:User {props}) " +
-				"SET u.structures = [s.externalId] " +
-				related +
-				"RETURN DISTINCT u.id as id";
+						"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
+						"CREATE UNIQUE pg<-[:IN]-(u:User {props}) " +
+						"SET u.structures = [s.externalId] " +
+						related +
+						"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -272,18 +272,18 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void addUserInStructure(final Message<JsonObject> message,
-			String userId, String structureId) {
+									String userId, String structureId) {
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
 				.put("userId", userId);
 		String query =
 				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WITH u, p " +
-				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
-				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u " +
-				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-				"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
-				"RETURN DISTINCT u.id as id";
+						"WITH u, p " +
+						"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
+						"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u " +
+						"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
+						"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
+						"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -293,7 +293,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void addUsersInStructure(final Message<JsonObject> message,
-									JsonArray userIds, String structureId) {
+									 JsonArray userIds, String structureId) {
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		for(Object userId : userIds.getList()){
 			JsonObject params = new JsonObject()
@@ -310,7 +310,7 @@ public class ManualFeeder extends BusModBase {
 			statementsBuilder.add(query,params);
 		}
 		neo4j.executeTransaction(statementsBuilder.build(), null, true, res-> {
-				message.reply(res.body());
+			message.reply(res.body());
 		});
 	}
 
@@ -353,7 +353,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void removeUserFromStructure(final Message<JsonObject> message,
-			String userId, String structureId) {
+										 String userId, String structureId) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 			JsonObject params = new JsonObject()
@@ -399,7 +399,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void removeUsersFromStructure(final Message<JsonObject> message,
-										 JsonArray userIds, String structureId) {
+										  JsonArray userIds, String structureId) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 			for(Object userIdObj: userIds) {
@@ -447,7 +447,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInClass(final Message<JsonObject> message,
-			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
+								   final JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
@@ -456,19 +456,19 @@ public class ManualFeeder extends BusModBase {
 		if (childrenIds != null && childrenIds.size() > 0) {
 			related =
 					"WITH u " +
-					"MATCH (student:User) " +
-					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
-					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
+							"MATCH (student:User) " +
+							"WHERE student.id IN {childrenIds} " +
+							"CREATE student-[:RELATED {source: 'MANUAL'}]->u " +
+							"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$10$1$1$0$0') ";
 			params.put("childrenIds", childrenIds);
 		}
 		String query =
 				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}), s-[:BELONGS]->(struct:Structure) " +
-				"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
-				"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
-				related +
-				"RETURN DISTINCT u.id as id";
+						"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}), s-[:BELONGS]->(struct:Structure) " +
+						"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
+						"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
+						related +
+						"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -507,7 +507,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void addUsersInClass(final Message<JsonObject> message,
-								JsonArray userIds, String classId) {
+								 JsonArray userIds, String classId) {
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		for(Object userId : userIds.getList()) {
 			JsonObject params = new JsonObject()
@@ -528,7 +528,7 @@ public class ManualFeeder extends BusModBase {
 			statementsBuilder.add(query, params);
 		}
 		neo4j.executeTransaction(statementsBuilder.build(), null,true, res-> {
-				message.reply(res.body());
+			message.reply(res.body());
 		});
 	}
 
@@ -583,7 +583,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void removeUsersFromClass(final Message<JsonObject> message,
-									 JsonArray userIds, JsonArray classIds) {
+									  JsonArray userIds, JsonArray classIds) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 			for(int i=0; i < userIds.size(); i++) {
@@ -644,7 +644,7 @@ public class ManualFeeder extends BusModBase {
 		if (userId == null) return;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN DISTINCT p.name as profile ";
+						"RETURN DISTINCT p.name as profile ";
 		neo4j.execute(q, new JsonObject().put("userId", userId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
@@ -668,15 +668,15 @@ public class ManualFeeder extends BusModBase {
 					user.put("checksum", "manual");
 					String query =
 							"MATCH (u:User { id : {userId}}) " +
-							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
-							"RETURN DISTINCT u.id as id ";
+									"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
+									"RETURN DISTINCT u.id as id ";
 					JsonObject params = user.put("userId", userId);
 					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> m) {
-									message.reply(m.body());
-								}
-							});
+						@Override
+						public void handle(Message<JsonObject> m) {
+							message.reply(m.body());
+						}
+					});
 				} else {
 					sendError(message, "Invalid profile.");
 				}
@@ -692,8 +692,8 @@ public class ManualFeeder extends BusModBase {
 		}
 		String query =
 				"MATCH (u:User)" +
-				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
-				"return u.id as id, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
+						"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
+						"return u.id as id, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
 		neo4j.execute(query, new JsonObject().put("users", users), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -703,37 +703,37 @@ public class ManualFeeder extends BusModBase {
 						final Set<String> oldLogins = new HashSet<>();
 						final JsonArray deleteUsers = new JsonArray();
 						executeTransaction(message, tx -> {
-							for (Object o : res) {
-								if (!(o instanceof JsonObject)) continue;
-								final JsonObject j = (JsonObject) o;
-								final String id = j.getString("id");
-								if (isNotEmpty(id)) {
-									User.backupRelationship(id, tx);
-									User.preDelete(id, tx);
-									if (j.getBoolean("inactive", false)) {
-										oldLogins.add(j.getString("login"));
-										if (isNotEmpty(j.getString("loginAlias"))) {
-											oldLogins.add(j.getString("loginAlias"));
+									for (Object o : res) {
+										if (!(o instanceof JsonObject)) continue;
+										final JsonObject j = (JsonObject) o;
+										final String id = j.getString("id");
+										if (isNotEmpty(id)) {
+											User.backupRelationship(id, tx);
+											User.preDelete(id, tx);
+											if (j.getBoolean("inactive", false)) {
+												oldLogins.add(j.getString("login"));
+												if (isNotEmpty(j.getString("loginAlias"))) {
+													oldLogins.add(j.getString("loginAlias"));
+												}
+												deleteUsers.add(id);
+											}
 										}
-										deleteUsers.add(id);
 									}
-								}
-							}
-							if (deleteUsers.size() > 0) {
-								User.getDelete(deleteUsers, tx);
-								User.delete(deleteUsers, tx);
-							}
-						},
-						m -> {
-							final JsonArray results = m.body().getJsonArray("results");
-							if ("ok".equals(m.body().getString("status")) && deleteUsers.size() > 0 && results != null &&
-									(results.size() - 2) > 0) {
-								final JsonArray r = results.getJsonArray(results.size() - 2);
-								User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
-								Validator.removeLogins(oldLogins);
-							}
-							message.reply(m.body());
-						});
+									if (deleteUsers.size() > 0) {
+										User.getDelete(deleteUsers, tx);
+										User.delete(deleteUsers, tx);
+									}
+								},
+								m -> {
+									final JsonArray results = m.body().getJsonArray("results");
+									if ("ok".equals(m.body().getString("status")) && deleteUsers.size() > 0 && results != null &&
+											(results.size() - 2) > 0) {
+										final JsonArray r = results.getJsonArray(results.size() - 2);
+										User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
+										Validator.removeLogins(oldLogins);
+									}
+									message.reply(m.body());
+								});
 					} else {
 						sendError(message, "unauthorized.user");
 					}
@@ -885,11 +885,16 @@ public class ManualFeeder extends BusModBase {
 		final String userId = getMandatoryString("userId", message);
 		final String classExternalId = message.body().getString("classExternalId");
 		final String structureExternalId = message.body().getString("structureExternalId");
+		final String structureName = message.body().getString("structureName");
 		if (userId == null || classExternalId == null || structureExternalId == null) return;
+		final String structureGroupHTExternalId = structureExternalId + "-ht";
+		final String classGroupHTExternalId = classExternalId + "-ht";
+		final String classGroupHTName = classExternalId.substring(structureExternalId.length()+1) + "-ht";
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) {
-				User.addHeadTeacherManual(userId,structureExternalId,classExternalId, tx);
+				User.addHeadTeacherManual(userId,structureExternalId,classExternalId,structureGroupHTExternalId,
+						classGroupHTExternalId,	classGroupHTName,structureName,tx);
 			}
 		});
 	}
@@ -980,13 +985,13 @@ public class ManualFeeder extends BusModBase {
 			}
 		});
 	}
-	
+
 	public void addGroupUsers(Message<JsonObject> message) {
 		final String groupId = getMandatoryString("groupId", message);
 		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
+
 		if (userIds == null || groupId == null) return;
-		
+
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) {
@@ -994,13 +999,13 @@ public class ManualFeeder extends BusModBase {
 			}
 		});
 	}
-	
+
 	public void removeGroupUsers(Message<JsonObject> message) {
 		final String groupId = getMandatoryString("groupId", message);
 		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
+
 		if (userIds == null || groupId == null) return;
-		
+
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) {
@@ -1016,7 +1021,7 @@ public class ManualFeeder extends BusModBase {
 		if (email == null || groupId == null) return;
 
 		executeTransaction(message, tx -> {
-				Group.updateEmail(groupId, email, tx);
+			Group.updateEmail(groupId, email, tx);
 		});
 	}
 
