@@ -96,11 +96,12 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.put(`/directory/userbook/${this.id}`, {"picture":""});
     }
 
-    addHeadTeacherManual(structureId: string, structureExternalId: string, classe: any) {
+    addHeadTeacherManual(structureId: string, structureExternalId: string, structureName: string, classe: any) {
         let relationToAdd = classe.externalId;
         return this.http.post(`/directory/${structureId}/user/${this.id}/headteacher`, {
             classExternalId: relationToAdd,
-            structureExternalId : structureExternalId
+            structureExternalId : structureExternalId,
+            structureName : structureName
         }).then(async (res) => {
             if(this.headTeacherManual === undefined){
                 this.headTeacherManual = [];

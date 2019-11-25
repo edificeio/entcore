@@ -8,10 +8,14 @@
     },
     "structureExternalId" : {
       "type": "string"
+    },
+    "structureName": {
+      "type": "string"
     }
   },
   "required": [
     "classExternalId",
-    "structureExternalId"
+    "structureExternalId",
+    "structureName"
   ]
 }
