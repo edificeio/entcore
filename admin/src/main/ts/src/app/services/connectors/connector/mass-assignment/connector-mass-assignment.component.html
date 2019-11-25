@@ -1,0 +1,44 @@
+<form [formGroup]="massAssignmentForm">
+  <div class="form__row">
+    <span>{{ 'services.connector.mass-assignment.description' | translate }}</span>
+  </div>
+  <div class="form__row">
+    <ode-multi-select
+      class="lct-profiles-select"
+      [label]="'services.mass-assignment.profiles-select-label'"
+      formControlName="profiles"
+      [options]="profileOptions"
+      [trackByFn]="profileTrackByFn"
+      [preview]="true"></ode-multi-select>
+  </div>
+  <div class="form__row form__row--last">
+    <button type="button" class="lct-unassign-button submit"
+            [disabled]="!massAssignmentForm.valid"
+            (click)="displayedLightbox = 'unassignment'">
+      {{ 'services.mass-assignment.unassign-button' | translate }}
+    </button>
+    <button type="button" class="lct-assign-button submit"
+            [disabled]="!massAssignmentForm.valid"
+            (click)="displayedLightbox = 'assignment'">
+      {{ 'services.mass-assignment.assign-button' | translate }}
+    </button>
+  </div>
+</form>
+<ode-lightbox-confirm lightboxTitle="services.mass-assignment.confirm.title"
+                  [show]="displayedLightbox === 'assignment'"
+                  (onCancel)="displayedLightbox = 'none'"
+                  (onConfirm)="displayedLightbox = 'none'; assignFromForm(massAssignmentForm);">
+            <span [innerHTML]="'services.connector.mass-assignment.confirm.assignment' | translate: {
+                structure: structure.name,
+                profiles: translatedSelectedProfiles
+            }"></span>
+</ode-lightbox-confirm>
+<ode-lightbox-confirm lightboxTitle="services.mass-assignment.confirm.title"
+                  [show]="displayedLightbox === 'unassignment'"
+                  (onCancel)="displayedLightbox = 'none'"
+                  (onConfirm)="displayedLightbox = 'none'; unassignFromForm(massAssignmentForm);">
+            <span [innerHTML]="'services.connector.mass-assignment.confirm.unassignment' | translate: {
+                structure: structure.name,
+                profiles: translatedSelectedProfiles
+            }"></span>
+</ode-lightbox-confirm>

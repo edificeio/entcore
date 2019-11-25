@@ -1,0 +1,57 @@
+<ode-panel-section section-title="users.details.section.administrative">
+
+  <form #administrativeForm="ngForm">
+    <fieldset disabled="{{ user.deleteDate != null ? 'disabled' : '' }}">
+      <ode-form-field label="firstName">
+        <input type="text" [(ngModel)]="details.firstName"
+               name="firstName" required #firstNameInput="ngModel">
+        <ode-form-errors [control]="firstNameInput"></ode-form-errors>
+      </ode-form-field>
+      <ode-form-field label="lastName">
+        <input type="text" [(ngModel)]="details.lastName"
+               name="lastName" required #lastNameInput="ngModel" >
+        <ode-form-errors [control]="lastNameInput"></ode-form-errors>
+      </ode-form-field>
+      <ode-form-field label="displayName">
+        <input type="text" [(ngModel)]="details.displayName"
+               name="displayName" required #displayNameInput="ngModel" >
+        <ode-form-errors [control]="displayNameInput"></ode-form-errors>
+      </ode-form-field>
+      <ode-form-field label="birthDate">
+        <ode-date-picker [(ngModel)]="details.birthDate" name="birthDate"
+                     #birthDateInput="ngModel" minDate="1900-01-01" maxDate="today"
+                     [disabled]="user.deleteDate != null">
+        </ode-date-picker>
+        <ode-form-errors [control]="birthDateInput"></ode-form-errors>
+      </ode-form-field>
+      <ode-form-field label="address">
+        <input type="text" [(ngModel)]="details.address" name="address" >
+      </ode-form-field>
+      <ode-form-field label="zipCode">
+        <input type="text" [(ngModel)]="details.zipCode" name="zipCode" >
+      </ode-form-field>
+      <ode-form-field label="city">
+        <input type="text" [(ngModel)]="details.city" name="city">
+      </ode-form-field>
+      <ode-form-field label="email">
+        <input type="email" [(ngModel)]="details.email" name="email"
+               #emailInput="ngModel" [pattern]="emailPattern" >
+        <ode-form-errors [control]="emailInput"></ode-form-errors>
+      </ode-form-field>
+      <ode-form-field label="homePhone">
+        <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" >
+      </ode-form-field>
+      <ode-form-field label="mobilePhone">
+        <input type="tel" [(ngModel)]="details.mobile" name="mobile" >
+      </ode-form-field>
+    </fieldset>
+  </form>
+
+  <button (click)="updateDetails()"
+          class="is-pulled-right"
+          [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('portal-content')"
+          *ngIf="user.deleteDate == null">
+    <s5l>save.modifications</s5l>
+    <i class="fa fa-floppy-o"></i>
+  </button>
+</ode-panel-section>

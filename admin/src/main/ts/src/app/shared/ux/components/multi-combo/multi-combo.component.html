@@ -1,0 +1,24 @@
+<button (click)="toggleVisibility()"
+        [ngClass]="{ opened: show }"
+        [disabled]="disabled">
+  {{ title }}
+</button>
+<div [ngClass]="{ hidden: !show }">
+  <div class="options">
+    <button class="select-all" (click)="selectAll()" *ngIf="!maxSelected"
+            [title]="labels('select.all')">{{ labels('select.all') }}</button>
+    <button class="deselect-all" (click)="deselectAll()"
+            [title]="labels('deselect.all')">{{ labels('deselect.all') }}</button>
+  </div>
+  <div *ngIf="filter" class="filter">
+    <ode-search-input (onChange)="search.input = $event" [attr.placeholder]="labels('search')"></ode-search-input>
+  </div>
+  <ul>
+    <li *ngFor="let item of _comboModel | filter: getFilter() | orderBy: orderBy | store: self:'filteredComboModel'"
+        (click)="toggleItem(item)"
+        [ngClass]="{ selected: isSelected(item) }"
+        [attr.disabled]="isDisabled()">
+      {{ displayItem(item) | translate }}
+    </li>
+  </ul>
+</div>

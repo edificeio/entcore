@@ -1,0 +1,35 @@
+<ode-panel-section section-title="users.details.section.relatives" [folded]="true" *ngIf="isStudent(user)">
+  <button (click)="showRelativesLightbox = true">
+    <s5l>add.relative</s5l><i class="fa fa-plus-circle"></i>
+  </button>
+  <ode-lightbox class="inner-list"
+            [show]="showRelativesLightbox" (onClose)="showRelativesLightbox = false">
+    <div class="padded">
+      <h3><s5l>add.relative</s5l></h3>
+      <ode-list class="inner-list"
+            [model]="lightboxRelatives"
+            [inputFilter]="userListService.filterByInput"
+            searchPlaceholder="search.user"
+            [sort]="userListService.sorts"
+            (inputChange)="userListService.inputFilter = $event"
+            [isDisabled]="disableRelative"
+            (onSelect)="addRelative($event)">
+        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
+                            </span>
+        </ng-template>
+      </ode-list>
+    </div>
+  </ode-lightbox>
+  <ul class="actions-list">
+    <li *ngFor="let parent of details.parents">
+      <div *ngIf="parent.id">
+        <a class="action" [routerLink]="['/admin', structure.id ,'users', parent.id, 'details']">{{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}</a>
+        <i class="fa fa-times action" (click)="removeRelative(parent)"
+           [title]="'delete.this.relative' | translate"
+           [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
+      </div>
+    </li>
+  </ul>
+</ode-panel-section>

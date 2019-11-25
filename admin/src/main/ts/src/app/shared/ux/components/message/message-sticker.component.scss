@@ -1,0 +1,9 @@
+:host {
+  display: inline;
+  padding-left : .2em;
+}
+span[message-box-anchor] {
+  position: absolute;
+  z-index: 8;
+}
+i { cursor : pointer; }

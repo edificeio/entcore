@@ -1,0 +1,27 @@
+<div class="connector-export">
+  <h4>
+    <s5l>services.connector.export.choose.type</s5l>
+  </h4>
+  <ode-mono-select [(ngModel)]="format" name="format" [options]="formatOptions">
+  </ode-mono-select>
+
+  <h4>
+    <s5l>services.connector.export.choose.profile</s5l>
+  </h4>
+
+  <div class="connector-export-profile">
+    <button *ngFor="let profile of format.profiles"
+            class="connector-export-profile__button"
+            (click)="submit.emit({exportFormat: format, profile: profile})">
+      <s5l>services.connector.export.profile.export</s5l>
+      <s5l>{{ profile }}</s5l>
+      <i class="fa fa-upload is-size-5"></i>
+    </button>
+    <button class="connector-export-profile__button"
+            *ngIf="isAllProfiles(format.profiles)"
+            (click)="submit.emit({exportFormat: format, profile: 'all'})">
+      <s5l>services.connector.export.profile.all</s5l>
+      <i class="fa fa-upload is-size-5"></i>
+    </button>
+  </div>
+</div>

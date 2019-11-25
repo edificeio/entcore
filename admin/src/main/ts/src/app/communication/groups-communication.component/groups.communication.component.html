@@ -1,0 +1,49 @@
+<div class="panel-header">
+  <button type="button" class="${css.backButton} button button--back" (click)="groupClose.emit();">
+    <i class="fa fa-arrow-left"></i>
+    <span>{{ backButtonLabel }}</span>
+  </button>
+  <div>
+    <i class="fa fa-podcast"></i>
+    <span class="${css.title}">{{ title }}</span>
+    <ode-message-sticker class="is-pulled-right" [type]="'info'" [messages]="['user.communication.help']"></ode-message-sticker>
+  </div>
+</div>
+
+<ode-panel-section [section-title]="sendingSectionTitle" [folded]="false">
+  <div panel-section-header-icons>
+    <i class='fa fa-user'></i> <i class='fa fa-arrow-right'></i> <strong>?</strong>
+  </div>
+
+  <div class="groups-communication__content">
+    <ode-communication-rules
+      [activeStructure]="activeStructure"
+      [sendingHeaderLabel]="sendingSectionSendingColumnLabel"
+      [receivingHeaderLabel]="sendingSectionReceivingColumnLabel"
+      [communicationRules]="sendingCommunicationRules"
+      [activeColumn]="'sending'"
+      [manageableStructuresId]="manageableStructuresId"
+      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+      [structures]="structures"
+      (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></ode-communication-rules>
+  </div>
+</ode-panel-section>
+
+<ode-panel-section [section-title]="receivingSectionTitle" [folded]="false">
+  <div panel-section-header-icons>
+    <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
+  </div>
+
+  <div class="groups-communication__content">
+    <ode-communication-rules
+      [activeStructure]="activeStructure"
+      [sendingHeaderLabel]="receivingSectionSendingColumnLabel"
+      [receivingHeaderLabel]="receivingSectionReceivingColumnLabel"
+      [communicationRules]="receivingCommunicationRules"
+      [activeColumn]="'receiving'"
+      [manageableStructuresId]="manageableStructuresId"
+      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+      [structures]="structures"
+      (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></ode-communication-rules>
+  </div>
+</ode-panel-section>

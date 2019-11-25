@@ -1,0 +1,18 @@
+<ode-spinner-cube class="component-spinner" waitingFor="group-manage-users">
+</ode-spinner-cube>
+
+<div class="padded">
+  <h2>
+    <span><s5l>group.manage.users</s5l></span>
+  </h2>
+
+
+  <div class="container">
+    <ode-group-input-users [model]="inputUsers">
+    </ode-group-input-users>
+
+    <ode-group-output-users [model]="groupsStore.group.users"
+                        (onDelete)="populateInputUsers()">
+    </ode-group-output-users>
+  </div>
+</div>

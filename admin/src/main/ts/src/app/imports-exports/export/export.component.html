@@ -1,0 +1,35 @@
+<div class="container has-shadow">
+  <h2>
+    <s5l>export.configuration</s5l>
+  </h2>
+
+  <form class="has-vertical-padding-10">
+
+    <ode-form-field label="export.type">
+      <ode-mono-select class="is-block" [(ngModel)]="type" name="type"
+                   [options]="[{value: '', label: 'export.type.default'}, {value: 'Transition', label: 'export.type.transition'}]">
+      </ode-mono-select>
+    </ode-form-field>
+
+    <ode-form-field label="export.classe">
+      <ode-mono-select class="is-block" [(ngModel)]="classe" name="classe" [options]="classeOptions">
+      </ode-mono-select>
+    </ode-form-field>
+
+    <ode-form-field label="profile">
+      <ode-mono-select class="is-block" [(ngModel)]="profile" name="profile"
+                   [options]="getProfileOptions()">
+      </ode-mono-select>
+    </ode-form-field>
+
+    <ode-form-field label="filter">
+      <ode-mono-select class="is-block" [(ngModel)]="filter" name="filter"
+                   [options]="[{value: '', label: 'ignore.activation'}, {value: 'active', label: 'users.activated'}, {value: 'inactive', label: 'users.not.activated'}]">
+      </ode-mono-select>
+    </ode-form-field>
+
+    <button class="is-pulled-right action" [disabled]="false" (click)="launchExport()">
+      <s5l>export</s5l>
+    </button>
+  </form>
+</div>

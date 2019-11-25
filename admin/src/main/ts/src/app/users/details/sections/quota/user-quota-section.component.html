@@ -1,0 +1,45 @@
+<ode-panel-section section-title="users.details.section.quota">
+  <div class="quota-container">
+    <div *ngIf="isDataInitialized()">
+      <div class="quota-numbers">
+        {{ details.storage | bytes: unit.value:2 }} / {{ details.quota | bytes: unit.value }} {{ unit?.label | translate }} {{ "quota.usedSpace" | translate }}
+      </div>
+
+      <div class="quota-bar">
+        <div class="quota-bar__used-space"
+             [ngStyle]="{ 'flex-basis': storageRatio + '%' }">
+        </div>
+        <div class="quota-bar__unused-space">
+        </div>
+      </div>
+    </div>
+
+    <div class="quota-form">
+      <div class="quota-form-title">
+        <s5l>quota.form.title</s5l>
+      </div>
+      <div class="quota-form-body">
+        <form #quotaForm="ngForm">
+          <ode-mono-select name="newQuotaUnitValue" [ngModel]="newQuotaUnitValue"
+                       (ngModelChange)="refreshNewQuotaValue($event)"
+                       [options]="units">
+          </ode-mono-select>
+
+          <input type="text"
+                 name="newQuotaValue"
+                 [(ngModel)]="newQuotaValue"
+                 class="quota-form-body__input" />
+
+          <button (click)="saveQuota()"
+                  [disabled]="quotaForm.pristine || quotaForm.invalid || isQuotaInferiorToStorage() || isQuotaSuperiorToMaxQuota()">
+            <s5l>save.modifications</s5l>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+        </form>
+      </div>
+      <div class="quota-form-footer" *ngIf="maxQuota">
+        <em><s5l>quota.maxQuota</s5l> {{ maxQuota | bytes: unit.value }} {{ unit?.label | translate }}</em>
+      </div>
+    </div>
+  </div>
+</ode-panel-section>

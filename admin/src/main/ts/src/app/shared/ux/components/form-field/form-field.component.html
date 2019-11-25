@@ -1,0 +1,10 @@
+<div class="form-field">
+  <label>
+    {{ label | translate }}
+    <ode-message-sticker *ngIf="help"
+                     [type]="'info'"
+                     [messages]="[help]">
+    </ode-message-sticker>
+  </label>
+  <ng-content></ng-content>
+</div>

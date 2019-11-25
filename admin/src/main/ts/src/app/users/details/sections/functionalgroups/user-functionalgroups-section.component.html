@@ -1,0 +1,39 @@
+<ode-panel-section section-title="users.details.section.functional.groups" [folded]="true">
+  <button (click)="showGroupLightbox = true">
+    <s5l>add.group</s5l>
+    <i class="fa fa-plus-circle"></i>
+  </button>
+  <ode-lightbox class="inner-list" [show]="showGroupLightbox" (onClose)="showGroupLightbox = false">
+    <div class="padded">
+      <h3>
+        <s5l>add.group</s5l>
+      </h3>
+      <ode-list class="inner-list"
+            [model]="lightboxFunctionalGroups"
+            [inputFilter]="filterByInput"
+            searchPlaceholder="search.group"
+            sort="name"
+            (inputChange)="inputFilter = $event"
+            [isDisabled]="disableGroup"
+            (onSelect)="addGroup($event)">
+        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+        </ng-template>
+      </ode-list>
+    </div>
+  </ode-lightbox>
+
+  <ul class="actions-list">
+    <li *ngFor="let group of filteredGroups">
+      <div *ngIf="group.id">
+        <span>{{ group.name }}</span>
+        <i class="fa fa-times action" (click)="removeGroup(group)"
+           [title]="'delete.this.group' | translate"
+           [ngClass]="{ disabled: spinner.isLoading(group.id)}">
+        </i>
+      </div>
+    </li>
+  </ul>
+</ode-panel-section>

@@ -1,0 +1,59 @@
+<div class="group-card"
+     [ngClass]="{'group-card--active': active,'group-card--selected': selected,
+                    'group-card--highlighted': highlighted, 'group-card--selectable': selectable,
+                    'group-card--manageable': manageable, 'group-card--communication-rule-manageable': communicationRuleManageable}">
+  <div class="group-card__title ${css.title}">
+    <span class="group-card__title-label ${css.label}">{{groupNameService.getGroupName(group)}}</span>
+    <i *ngIf="groupTypeRouteMapping.has(group.type)" (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-users" [title]="'group.card.view-members-button' | translate"></i>
+  </div>
+  <div class="group-card__subtitle ${css.subtitle}">
+    <span class="group-card__title-structure ${css.structure}">{{getStructureNameOfGroup(group)}}</span>
+  </div>
+  <div class="group-card__actions">
+    <button
+      class="group-card__action-add-communication ${css.addCommunicationButton}"
+      (click)="clickAddCommunication.emit(group);">
+      {{ 'group.card.add-communication-button' | translate }} <i class="fa fa-plus"></i>
+    </button>
+    <button
+      class="group-card__action-remove-communication ${css.removeCommunicationButton}"
+      (click)="clickOnRemoveCommunication.emit(); $event.stopPropagation();">
+      {{ 'group.card.remove-communication-button' | translate }} <i class="fa fa-minus"></i>
+    </button>
+  </div>
+  <hr class="group-card__separator"/>
+  <span class="group-card__actions-on-self group-card__actions-on-self--can-communicate"
+        *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
+                <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l>
+                <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-on"
+                   *ngIf="active && manageable"
+                   (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
+                   *ngIf="!active && manageable"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+                   *ngIf="!manageable"></i>
+            </span>
+  <ng-template #cannotCommunicateTogether>
+                <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
+                    <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l>
+                    <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-off"
+                       *ngIf="active && manageable"
+                       (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                    <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
+                       *ngIf="!active && manageable"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+                   *ngIf="!manageable"></i>
+                </span>
+  </ng-template>
+</div>
+<ode-lightbox-confirm lightboxTitle="group.internal-communication-rule.change.confirm.title"
+                  [show]="confirmationDisplayed"
+                  (onCancel)="$confirmationClicked.next('cancel')"
+                  (onConfirm)="$confirmationClicked.next('confirm')">
+  <i class='fa fa-exclamation-triangle is-danger'></i>
+  <span *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage"
+        [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+  <ng-template #cannotCommunicateTogetherConfirmMessage>
+    <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+  </ng-template>
+</ode-lightbox-confirm>

@@ -1,22 +1,28 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "es2015",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "removeComments": false,
-        "noImplicitAny": false,
-        "skipLibCheck": true
-    },
-    "exclude": [
-        "test.ts",
-        "**/*.spec.ts",
-        "app/main.aot.ts"
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": true,
+
+    "target": "es5",
+    "typeRoots": [
+      "node_modules/@types"
     ],
-    "compileOnSave": false,
-    "angularCompilerOptions": {
-        "preserveWhitespaces": "off"
-    }
+    "lib": [
+      "es2018",
+      "dom"
+    ]
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "preserveWhitespaces": true
+  }
 }

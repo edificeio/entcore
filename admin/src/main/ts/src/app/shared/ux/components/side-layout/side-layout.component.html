@@ -1,0 +1,8 @@
+<div class="side-layout">
+  <div class="side-card">
+    <ng-content select="[side-card]"></ng-content>
+  </div>
+  <div class="side-companion" *ngIf="showCompanion">
+    <ng-content select="[side-companion]"></ng-content>
+  </div>
+</div>

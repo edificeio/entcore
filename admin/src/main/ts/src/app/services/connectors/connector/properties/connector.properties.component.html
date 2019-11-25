@@ -1,0 +1,175 @@
+<form #propertiesForm="ngForm">
+  <ode-panel-section section-title="services.connector.icon.title">
+    <ode-upload-files [fileSrc]="connector.icon"
+                  [allowedExtensions]="['jpeg', 'jpg', 'bmp', 'png']"
+                  [maxFilesNumber]="1"
+                  [disabled]="disabled"
+                  (upload)="onUpload($event)"
+                  (invalidUpload)="onInvalidUpload($event)">
+    </ode-upload-files>
+
+    <fieldset>
+      <ode-form-field label="services.connector.icon.url"
+                  help="services.connector.icon.url.help">
+        <input type="text"
+               [(ngModel)]="connector.icon"
+               name="icon"
+               (change)="connector.iconFile = null"
+               [disabled]="disabled">
+      </ode-form-field>
+    </fieldset>
+  </ode-panel-section>
+
+  <ode-panel-section section-title="services.connector.properties.title">
+    <fieldset [disabled]="disabled">
+      <div *ngIf="structureChildren"
+           class="has-vertical-padding-5">
+        <input type="checkbox"
+               [(ngModel)]="connector.inherits"
+               name="inherits"
+               class="has-no-margin">
+        <s5l>services.connector.properties.inherits</s5l>
+      </div>
+
+      <ode-form-field label="services.connector.properties.id">
+        <input type="text"
+               [(ngModel)]="connector.name"
+               name="name"
+               required
+               #nameInput="ngModel">
+        <ode-form-errors [control]="nameInput"></ode-form-errors>
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.properties.displayName">
+        <input type="text"
+               [(ngModel)]="connector.displayName"
+               name="displayName"
+               required
+               #displayNameInput="ngModel">
+        <ode-form-errors [control]="displayNameInput"></ode-form-errors>
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.properties.url">
+        <input type="text"
+               [(ngModel)]="connector.url"
+               name="url"
+               required
+               #urlInput="ngModel">
+        <ode-form-errors [control]="urlInput"></ode-form-errors>
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.properties.target">
+        <ode-mono-select [(ngModel)]="connector.target"
+                     name="target"
+                     class="is-flex-none"
+                     [options]="targetOptions"
+                     [disabled]="disabled">
+          <option [value]="LINKPARAMS_TARGET_PORTAL">
+            {{ 'services.connector.properties.target.portal' | translate }}
+          </option>
+          <option [value]="LINKPARAMS_TARGET_NEWPAGE">
+            {{ 'services.connector.properties.target.newPage' | translate }}
+          </option>
+          <option [value]="LINKPARAMS_TARGET_ADAPTOR">
+            {{ 'services.connector.properties.target.adaptor' | translate }}
+          </option>
+        </ode-mono-select>
+      </ode-form-field>
+    </fieldset>
+  </ode-panel-section>
+
+  <hr>
+  <div class="connector-properties-warning">
+    <div class="connector-properties-warning__header">
+      <s5l>services.connector.properties.warning.header</s5l>
+    </div>
+    <div class="connector-properties-warning__content">
+      <s5l>services.connector.properties.warning.content</s5l>
+    </div>
+  </div>
+
+  <ode-panel-section section-title="services.connector.cas.title" [folded]="true">
+    <fieldset [disabled]="disabled">
+      <div>
+        <input type="checkbox"
+               [(ngModel)]="connector.hasCas"
+               name="hasCas"
+               class="has-no-margin"
+               (change)="toggleCasType()">
+        <s5l>services.connector.cas.hasCas</s5l>
+      </div>
+
+      <div *ngIf="connector.hasCas && connector.casTypeId"
+           class="connector-properties-cas-casType__description"
+           [innerHtml]="getCasTypeDescription()">
+      </div>
+
+      <ode-form-field label="services.connector.cas.type">
+        <select [(ngModel)]="connector.casTypeId"
+                name="casTypeId"
+                [disabled]="!connector.hasCas || disabled"
+                class="is-flex-none has-min-width">
+          <option *ngFor="let casType of casTypes" [value]="casType.id">
+            {{ casType.name }}
+          </option>
+        </select>
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.cas.pattern" *ngIf="admc">
+        <input type="text"
+               [(ngModel)]="connector.casPattern"
+               name="casPattern"
+               [placeholder]="'form.optional' | translate">
+      </ode-form-field>
+    </fieldset>
+  </ode-panel-section>
+
+  <ode-panel-section section-title="services.connector.oauth.title" [folded]="true">
+    <fieldset [disabled]="disabled">
+      <div>
+        <input type="checkbox"
+               [(ngModel)]="connector.oauthTransferSession"
+               name="transferSession"
+               (change)="setUserinfoInOAuthScope()"
+               class="has-no-margin">
+        <s5l>services.connector.oauth.transferSession</s5l>
+      </div>
+
+      <ode-form-field label="services.connector.oauth.clientId">
+        <span>{{ connector.name }}</span>
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.oauth.scope">
+        <input type="text" [(ngModel)]="connector.oauthScope" name="scope">
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.oauth.secret">
+        <input type="text" [(ngModel)]="connector.oauthSecret" name="secret">
+      </ode-form-field>
+
+      <ode-form-field label="services.connector.oauth.grantType">
+        <ode-mono-select [(ngModel)]="connector.oauthGrantType"
+                     name="grantType"
+                     class="is-flex-none"
+                     [options]="grantTypeOptions"
+                     [disabled]="disabled">
+        </ode-mono-select>
+      </ode-form-field>
+    </fieldset>
+  </ode-panel-section>
+
+  <div *ngIf="creationMode"
+       class="connector-properties__action">
+    <button type="button"
+            class="connector-properties__action--cancel"
+            (click)="create.emit('cancel')">
+      <s5l>services.connector.create.button.cancel</s5l>
+    </button>
+    <button type="button"
+            class="connector-properties__action--submit confirm"
+            (click)="create.emit('submit')"
+            [disabled]="propertiesForm.pristine || propertiesForm.invalid">
+      <s5l>services.connector.create.button.submit</s5l>
+    </button>
+  </div>
+</form>

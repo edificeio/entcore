@@ -1,0 +1,69 @@
+:host {
+  position: relative;
+}
+
+:host > button {
+  min-width: 150px;
+}
+
+:host > div {
+  position: absolute;
+  z-index: 2;
+  left: 0px;
+  overflow: hidden;
+  background:white;
+  border: 2px solid black;
+}
+
+:host > div.hidden {
+  max-height: 0px;
+  border-width: 0px;
+}
+
+:host > div>div.options {
+}
+
+:host > div>div.options>* {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+:host > div>div.options>button {
+}
+:host > div>div.options>button:hover {
+}
+
+:host > div>div.filter {
+  margin: 10px 0px;
+  width: 100%;
+  position: relative;
+}
+
+:host > div>div.filter input {
+  width: 100%;
+}
+
+:host > div>div.filter input:focus {
+}
+
+:host > div>ul {
+  list-style: none;
+  padding: 0px;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+:host > div>ul>li {
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+:host > div>ul>li.selected {
+}
+
+:host > div>ul>li:not(.selected):not([disabled]):hover {
+}
+
+:host > div>ul>li:not(.selected)[disabled="true"] {
+  pointer-events: none;
+}

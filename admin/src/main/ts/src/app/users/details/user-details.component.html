@@ -1,0 +1,165 @@
+<div class="panel-header">
+  <div>
+            <span class="user-displayname">
+                {{ details.lastName | uppercase }} {{ details.firstName }}
+            </span>
+    <span *ngIf="user.type === 'Student' && user.classes[0]" class="user-class">
+                - {{ user.classes[0].name }}
+            </span>
+  </div>
+  <div class="login-date" *ngIf="details.lastLogin">
+    <s5l>lastLogin.date</s5l> {{ details.lastLogin | localizedDate:'short' }}
+  </div>
+
+  <div class="panel-header-sub">
+            <span *ngIf="isContextAdml()" class="user-admin">
+                <s5l>ADMIN_LOCAL</s5l> <i class="fa fa-cog"></i>
+            </span>
+    <span class="user-inactive"
+          *ngIf="details?.activationCode && details?.activationCode?.length > 0">
+                <s5l>user.inactive</s5l> <i class='fa fa-lock'></i>
+            </span>
+  </div>
+
+  <div class="panel-message" *ngIf="details?.blocked">
+    <i class="fa fa-ban"></i>
+    <s5l>user.blocked</s5l>
+
+    <button class="action" (click)="toggleUserBlock()"
+            [disabled]="spinner.isLoading('portal-content')">
+      <s5l>unblock</s5l>
+      <i class="fa fa-check"></i>
+    </button>
+  </div>
+
+  <div class="panel-message" *ngIf="hasDuplicates()">
+    <i class="fonticon duplicates"></i>
+    <s5l>user.has.duplicates</s5l>
+
+    <button class="action" anchor="user-duplicates-section"
+            (click)="openDuplicates()">
+      <s5l>manage.duplicates</s5l>
+      <i class="fa fa-compress"></i>
+    </button>
+  </div>
+
+  <div class="panel-message" *ngIf="user?.deleteDate">
+    <i class="fa fa-times-circle"></i>
+    <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilEffectiveDeletion(user.deleteDate))}">
+      user.predeleted
+    </s5l>
+
+    <button class="action" (click)="restoreUser()"
+            [disabled]="spinner.isLoading('portal-content')">
+      <s5l>restore</s5l>
+      <i class="fa fa-upload"></i>
+    </button>
+  </div>
+
+  <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
+    <i class="fonticon waiting-predelete"></i>
+    <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilPreDeletion(user.disappearanceDate, user.type))}">user.predeleted.waiting</s5l>
+    <ode-message-sticker [type]="'info'" [messages]="['user.predeleted.waiting.help']"></ode-message-sticker>
+  </div>
+
+  <div class="panel-header-content">
+    <div class="left">
+      <div>
+        <img [src]="imgSrc" (load)="imgLoad()">
+      </div>
+    </div>
+
+    <div class="right" *ngIf="!user.deleteDate">
+      <div>
+        <button (click)="deleteImg()"
+                [disabled]="spinner.isLoading('portal-content') || !imgSrc || !imgLoaded"
+                class="relative">
+          <s5l>delete.image</s5l>
+          <i class="fa fa-times-circle"></i>
+        </button>
+      </div>
+      <div *ngIf="isUnblocked()">
+        <button (click)="toggleUserBlock()"
+                [disabled]="spinner.isLoading('portal-content')"
+                class="relative">
+          <s5l [s5l-params]="[details.blocked]">
+            toggle.account
+          </s5l>
+          <i class="fa fa-ban"></i>
+        </button>
+      </div>
+      <div *ngIf="isRemovable() && isActive()">
+        <button (click)="removeUser()"
+                [disabled]="spinner.isLoading('portal-content')">
+          <s5l>predelete.account</s5l>
+          <i class="fa fa-times-circle"></i>
+        </button>
+      </div>
+      <div *ngIf="isRemovable() && !isActive()">
+        <button (click)="showRemoveUserConfirmation = true"
+                [disabled]="spinner.isLoading('portal-content')">
+          <s5l>delete.account</s5l>
+          <i class="fa fa-times-circle"></i>
+        </button>
+        <ode-lightbox-confirm lightboxTitle="warning"
+                          [show]="showRemoveUserConfirmation"
+                          [title]="'warning'"
+                          (onConfirm)="removeUser()"
+                          (onCancel)="showRemoveUserConfirmation = false">
+          <p><s5l [s5l-params]="{ username: user.displayName }">user.remove.disclaimer.info</s5l></p>
+          <strong>{{ 'user.remove.disclaimer.confirm' | translate }}</strong>
+        </ode-lightbox-confirm>
+      </div>
+      <div>
+        <button (click)="openUserCommunication()">
+          <s5l>users.details.button.comm.rules</s5l>
+          <i class="fa fa-podcast"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <ode-user-info-section [user]="user" [structure]="structure" [config]="config">
+  </ode-user-info-section>
+
+  <ode-user-administrative-section [user]="user" [structure]="structure">
+  </ode-user-administrative-section>
+
+  <ode-user-quota-section [user]="user"
+                      *ngIf="!details.activationCode && !user.deleteDate">
+  </ode-user-quota-section>
+
+  <ode-user-duplicates-section [user]="user" [structure]="structure"
+                           [open]="forceDuplicates">
+  </ode-user-duplicates-section>
+
+  <ode-user-relatives-section [user]="user" [structure]="structure"
+                          *ngIf="!user.deleteDate">
+  </ode-user-relatives-section>
+
+  <ode-user-children-section [user]="user" [structure]="structure"
+                         *ngIf="!user.deleteDate">
+  </ode-user-children-section>
+
+  <user-aaf-functions-section [user]="user" [structure]="structure"
+                              *ngIf="user.type == 'Personnel' || user.type == 'Teacher'">
+  </user-aaf-functions-section>
+
+  <ode-user-structures-section [user]="user" [structure]="structure"
+                           *ngIf="!user.deleteDate">
+  </ode-user-structures-section>
+
+  <ode-user-classes-section [user]="user" [structure]="structure"
+                        *ngIf="!user.deleteDate">
+  </ode-user-classes-section>
+
+  <ode-user-functionalgroups-section [user]="user" [structure]="structure"
+                                 *ngIf="!user.deleteDate">
+  </ode-user-functionalgroups-section>
+
+  <ode-user-manualgroups-section [user]="user" [structure]="structure"
+                             *ngIf="!user.deleteDate">
+  </ode-user-manualgroups-section>
+</div>

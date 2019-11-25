@@ -1,0 +1,98 @@
+<ode-portal>
+  <div header-left>
+   <i class="fa" aria-hidden="true"
+       [ngClass]="{'fa-times': openside, 'fa-bars': !openside, 'is-hidden': structures.length == 1 && !structures[0].children}"
+       (click)="openside = !openside"
+       #sidePanelOpener></i>
+   <span class="link" [routerLink]="'/admin/' + currentStructure?.id">
+      {{ currentStructure?.name }}
+   </span>
+  </div>
+  <div header-right>
+    <i class="dashboard" aria-hidden="true"
+       *ngIf="currentStructure"
+       [title]="'nav.structure' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id, true)">
+    </i>
+    <i class="school" aria-hidden="true"
+       *ngIf="currentStructure"
+       [title]="'management.structure' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id + '/management/message-flash'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)">
+    </i>
+    <i class="fa fa-user" aria-hidden="true"
+       *ngIf="currentStructure"
+       [title]="'users' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)">
+    </i>
+    <i class="fa fa-users"
+       *ngIf="currentStructure"
+       [title]="'groups' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id + '/groups/manualGroup'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)">
+    </i>
+    <i class="fa fa-th"
+       *ngIf="currentStructure"
+       [title]="'services' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)">
+    </i>
+    <i class="fa fa-exchange"
+       *ngIf="currentStructure"
+       [title]="'imports.exports' | translate"
+       [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/import-csv'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)">
+    </i>
+    <i class="fa fa-exclamation-triangle"
+       *ngIf="currentStructure"
+       [title]="'reports' | translate"
+       (click)="openReports()">
+    </i>
+    <a href="/auth/logout"
+       [title]="'logout' | translate">
+      <i class="fa fa-power-off" aria-hidden="true"></i>
+    </a>
+    <a *ngIf="!config['hide-adminv1-link']"
+       class="old-console" href="/directory/admin-console"
+       [title]="'switch.old.admin.console.tooltip' | translate">
+      <i class="fa fa-step-backward"></i>
+    </a>
+  </div>
+  <div section>
+    <ode-side-panel
+      [toggle]="openside"
+      (onClose)="openside = false"
+      [opener]="sidePanelOpener">
+      <div class="side-search">
+        <ode-search-input (onChange)="structureFilter = $event"
+                      [attr.placeholder]="'search.structure' | translate">
+        </ode-search-input>
+      </div>
+      <ode-item-tree
+        [items]="structures"
+        order="name"
+        display="name"
+        [flatten]="structureFilter && structureFilter.trim() ? ['children'] : []"
+        [filter]="{ name : structureFilter?.trim() }"
+        (onSelect)="currentStructure = $event; !currentStructure.children && openside = false;"
+        [lastSelected]="currentStructure"></ode-item-tree>
+    </ode-side-panel>
+
+    <ode-spinner-cube waitingFor="portal-content" class="portal-spinner">
+    </ode-spinner-cube>
+
+    <div class="welcome-message" *ngIf="router.url === '/admin' && !config['hide-adminv1-link']">
+      <s5l>message.new.console</s5l>
+      <a class="old-console" href="/directory/admin-console"
+         [title]="'switch.old.admin.console.tooltip' | translate">
+        <i class="fa fa-step-backward"></i>
+      </a>
+    </div>
+
+    <div class="portal-body">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</ode-portal>

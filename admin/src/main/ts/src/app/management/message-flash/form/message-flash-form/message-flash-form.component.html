@@ -1,0 +1,99 @@
+<div >
+  <div class="container has-shadow">
+    <h2><s5l>management.message.flash.{{action}}</s5l></h2>
+
+    <fieldset>
+      <ode-form-field label="management.message.flash.title">
+        <input type="text" [(ngModel)]="message.title" class="is-flex-none">
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.startDate">
+        <ode-date-picker [(ngModel)]="message.startDate"></ode-date-picker>
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.endDate">
+        <ode-date-picker [(ngModel)]="message.endDate"></ode-date-picker>
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.profiles">
+        <ode-multi-combo
+          [comboModel]="comboModel"
+          [(outputModel)]="message.profiles"
+          [title]="'management.message.flash.chose.profiles' | translate">
+        </ode-multi-combo>
+      </ode-form-field>
+      <div class="multi-combo-companion">
+        <div *ngFor="let item of message.profiles"
+             (click)="deselect(item)">
+          <s5l>{{item}}</s5l>
+          <i class="fa fa-trash is-size-5"></i>
+        </div>
+      </div>
+      <ode-form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
+                  label="management.message.flash.selected.etab">
+        <span class="is-flex-none has-right-margin-40">{{message.subStructures.length}}</span>
+        <button class="is-flex-none" (click)="openLightbox()"><s5l>management.message.flash.manage</s5l></button>
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.language">
+        <ode-mono-select [(ngModel)]="selectedLanguage" (ngModelChange)="updateEditor($event)" [options]="languageOptions()">
+        </ode-mono-select>
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.color">
+                        <span class="is-flex-none">
+                            <div class="legend-square grey-dark" [ngClass]="{ outlined: message.color == 'grey-dark' }" (click)="message.color = 'grey-dark'"></div>
+                            <div class="legend-square red" [ngClass]="{ outlined: message.color == 'red' }" (click)="message.color = 'red'"></div>
+                            <div class="legend-square orange" [ngClass]="{ outlined: message.color == 'orange' }" (click)="message.color = 'orange'"></div>
+                            <div class="legend-square green" [ngClass]="{ outlined: message.color == 'green'}" (click)="message.color = 'green'"></div>
+                            <div class="legend-square blue" [ngClass]="{ outlined: message.color == 'blue' }" (click)="message.color = 'blue'"></div>
+                            <input type="color" ng-model="message.customColor" [ngClass]="{ outlined: !!message.customColor }" [(ngModel)]="message.customColor">
+                        </span>
+      </ode-form-field>
+      <ode-form-field label="management.message.flash.notification">
+                        <span class="is-flex-none">
+                            <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren() || !isToday()">
+                            <s5l>management.message.flash.notification.email</s5l>
+                            <input class="has-left-margin-40" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren() || !isToday()">
+                            <s5l>management.message.flash.notification.mobile</s5l>
+                        </span>
+      </ode-form-field>
+      <div *ngIf="areSelectedChildren() || !isToday()">
+        <i class="fa fa-exclamation-circle"></i>
+        <s5l>management.message.flash.lightbox.warning.notification</s5l>
+      </div>
+    </fieldset>
+
+    <div class="has-top-margin-40" style="width: 100%; display : flex">
+      <div style="flex: 1 1; margin: 10px;">
+        <h3><s5l>flashmsg.message</s5l> :</h3>
+        <textarea id="trumbowyg-editor">{{ message.contents[selectedLanguage] }}</textarea>
+      </div>
+      <ode-message-flash-preview
+        [text]="sanitized.bypassSecurityTrustHtml(message.contents[selectedLanguage])"
+        [color]="message.color"
+        [customColor]="message.customColor"
+        style="width:50%;">
+      </ode-message-flash-preview>
+    </div>
+
+    <div class="is-pulled-right">
+      <button (click)="goBack(false)"><s5l>management.message.flash.cancel</s5l></button>
+      <button class="action" [disabled]="!isUploadable()" (click)="upload()"><s5l>management.message.flash.upload</s5l></button>
+    </div>
+
+    <ode-lightbox *ngIf="structure"
+              [show]="showLightbox" (onClose)="closeLightbox()">
+      <h2><s5l>management.message.flash.lightbox.title</s5l></h2>
+      <p><s5l>management.message.flash.lightbox.explanation</s5l></p>
+      <div style="overflow: auto; max-height: 50%" class="has-bottom-margin-40">
+        <ode-item-tree
+          [items]="getItems()"
+          order="name"
+          display="name"
+          [checkboxMode]="true"
+          (onCheck)="addOrRemoveChild($event)">
+        </ode-item-tree>
+      </div>
+      <span><i class="fa fa-exclamation-circle"></i></span>
+      <s5l>management.message.flash.lightbox.warning</s5l>
+      <div><button class="is-pulled-right" (click)="saveAndClose()"><s5l>management.message.flash.lightbox.save</s5l></button></div>
+    </ode-lightbox>
+  </div>
+
+</div>

@@ -1,0 +1,43 @@
+<div class="upload-files-dropzone"
+     dragAndDropFiles
+     [allowedExtensions]="allowedExtensions"
+     [maxFilesNumber]="maxFilesNumber"
+     [disabled]="disabled"
+     (dragAndDrop)="onDragAndDrop($event)"
+     (invalidDragAndDrop)="onInvalidDragAndDrop($event)">
+  <div *ngIf="fileSrc" class="upload-files-dropzone-image">
+    <img src="{{ fileSrc }}"
+         *ngIf="inputFileService.isSrcExternalUrl(fileSrc)"
+         class="upload-files-dropzone-image__image"/>
+    <img src="{{ fileSrc }}"
+         *ngIf="inputFileService.isSrcWorkspace(fileSrc)"
+         class="upload-files-dropzone-image__image"/>
+    <i class="upload-files-dropzone-image__icon {{ fileSrc }}"
+       *ngIf="!inputFileService.isSrcExternalUrl(fileSrc)
+                        && !inputFileService.isSrcWorkspace(fileSrc)"></i>
+  </div>
+
+  <div class="upload-files-dropzone-input" *ngIf="!disabled">
+    <button class="confirm upload-files-dropzone-input__button"
+            (click)="onClickDropzoneInput($event)">
+      <s5l>ux.upload-files.button.label</s5l>
+    </button>
+    <i class="upload-files-dropzone-input__icon fa fa-cloud-upload fa-2x">
+    </i>
+    <span class="upload-files-dropzone-input__help">
+                    <s5l>ux.upload-files.button.help</s5l>
+                </span>
+    <input *ngIf="multiple === true else singleFileInput"
+           class="upload-files-dropzone-input__input"
+           type="file"
+           (change)="onChange($event)"
+           multiple
+           #inputFileRef>
+    <ng-template #singleFileInput>
+      <input class="upload-files-dropzone-input__input"
+             type="file"
+             (change)="onChange($event)"
+             #inputFileRef>
+    </ng-template>
+  </div>
+</div>

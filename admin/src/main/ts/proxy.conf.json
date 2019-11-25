@@ -1,0 +1,62 @@
+{
+  "/admin/api/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/admin/conf/public": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/appregistry/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/auth/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/communication/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/directory/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/languages": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/timeline/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/workspace/*": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/**/i18n": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}

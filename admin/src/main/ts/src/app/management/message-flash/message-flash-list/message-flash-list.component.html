@@ -1,0 +1,64 @@
+<div class="container has-shadow">
+  <div class="has-vertical-padding">
+    <div class="has-left-margin-auto has-display-table">
+      <button class="action" (click)="createMessage()"><s5l>management.message.flash.create.message</s5l></button>
+    </div>
+
+    <div class="has-vertical-padding is-display-flex">
+      <div class="checkbox__item">
+        <input id="all" type="checkbox" [checked]="filter.current && filter.future && filter.obsolete" (change)="checkAllCategories()">
+        <label for="all"><s5l>management.message.flash.all</s5l></label>
+      </div>
+      <div class="checkbox__item">
+        <input id="in-progress" type="checkbox" name="filter" value="current" [(ngModel)]="filter.current" (change)="updateData()">
+        <label for="in-progress"><s5l>management.message.flash.current</s5l></label>
+      </div>
+      <div class="checkbox__item">
+        <input id="incoming" type="checkbox" name="filter" value="future" [(ngModel)]="filter.future" (change)="updateData()">
+        <label for="incoming"><s5l>management.message.flash.future</s5l></label>
+      </div>
+      <div class="checkbox__item">
+        <input id="obsolete" type="checkbox" name="filter" value="obsolete" [(ngModel)]="filter.obsolete" (change)="updateData()">
+        <label for="obsolete"><s5l>management.message.flash.obsolete</s5l></label>
+      </div>
+      <div class="has-left-margin-auto">
+        <button *ngIf="isSelectionRemovable()" (click)="showConfirmation = true"><s5l>management.message.flash.delete</s5l></button>
+        <ode-lightbox-confirm
+          [show]="showConfirmation"
+          [lightboxTitle]="'warning'"
+          (onConfirm)="removeSelection()"
+          (onCancel)="showConfirmation = false">
+          <s5l>management.message.flash.confirm.delete</s5l>
+        </ode-lightbox-confirm>
+        <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()"><s5l>management.message.flash.copy</s5l></button>
+        <button class="action" *ngIf="isSelectionCopyable()" (click)="editMessage()"><s5l>management.message.flash.button.edit</s5l></button>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+      <tr>
+        <th class="table__checkbox checkbox__item" (click)="checkAll()"><input type="checkbox" [checked]="areAllChecked()"  [disabled]="displayedMessages.length == 0"><label></label></th>
+        <th><s5l>management.message.flash.title</s5l></th>
+        <th><s5l>management.message.flash.message</s5l></th>
+        <th><s5l>management.message.flash.startDate</s5l></th>
+        <th><s5l>management.message.flash.endDate</s5l></th>
+        <th><s5l>management.message.flash.viewCount</s5l></th>
+        <th><s5l>management.message.flash.author</s5l></th>
+        <th><s5l>management.message.flash.lastModified</s5l></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let message of displayedMessages" [ngClass]="{'disabled': isMessageFromParentStructure(message)}" (click)="editMessage(message.id)">
+        <td class="checkbox__item" (click)="checkboxes[message.id] = !checkboxes[message.id]; $event.stopPropagation()"><input type="checkbox" [(ngModel)]="checkboxes[message.id]"><label></label></td>
+        <td>{{message.title}}</td>
+        <td [innerHTML]="getContent(message.contents)"></td>
+        <td>{{displayDate(message.startDate)}}</td>
+        <td>{{displayDate(message.endDate)}}</td>
+        <td>{{message.readCount}}</td>
+        <td>{{message.author}}</td>
+        <td>{{message.lastModifier}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

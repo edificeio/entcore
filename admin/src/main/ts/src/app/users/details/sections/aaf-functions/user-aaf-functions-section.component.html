@@ -1,0 +1,9 @@
+<ode-panel-section
+  [section-title]="sectionTitle"
+  [folded]="true" *ngIf="!user.deleteDate">
+  <ul>
+    <li *ngFor="let f of user?.aafFunctions">
+      <span *ngIf="f[0] == structure.externalId">{{ f[2] }} / {{ f[4] }}</span>
+    </li>
+  </ul>
+</ode-panel-section>

@@ -1,0 +1,11 @@
+<ode-group-picker lightboxTitle="services.roles.groups.add"
+              [list]="assignmentGroupPickerList"
+              [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
+              [show]="show"
+              [sort]="sort"
+              [filters]="filterGroups"
+              [searchPlaceholder]="searchPlaceholder"
+              [noResultsLabel]="noResultsLabel"
+              (pick)="add.emit($event)"
+              (close)="close.emit()">
+</ode-group-picker>

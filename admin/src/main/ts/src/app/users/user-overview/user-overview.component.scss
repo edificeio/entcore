@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-overview__row {
+  display: flex;
+  align-items: center;
+}
+
+.user-overview__column {
+  text-align: right;
+}
+
+.user-overview__label, .user-overview__display-name {
+  flex-grow: 1;
+}
+
+.user-overview__label, .user-overview__activation-code {
+  margin: 0 15px;
+}
+
+.user-overview__display-name {
+  font-size: 1.6em;
+}
+
+.user-overview__type {
+  font-style: italic;
+}

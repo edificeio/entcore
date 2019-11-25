@@ -1,0 +1,32 @@
+<div *ngIf="['1D','2D'].includes(appsTarget[application.icon])" class="message is-warning has-margin-10">
+  <div class="message-body">
+    {{ 'services.application.message.targetWarning' | translate:{target: appsTarget[application.icon]} }}
+  </div>
+</div>
+
+<div class="panel-section">
+  <div *ngIf="application.roles.length == 0" class="message is-warning has-margin-10">
+    <div class="message-body">
+      {{ 'services.application.roles.list.empty' | translate }}
+    </div>
+  </div>
+
+  <div *ngFor="let role of application.roles">
+    <services-role
+      [role]="role"
+      (openLightbox)="openRoleAttributionLightbox($event)"
+      (onRemove)="remove.emit({group: $event, role: role})">
+    </services-role>
+  </div>
+</div>
+
+<services-role-attribution
+  [show]="showRoleAttributionLightbox"
+  [assignmentGroupPickerList]="assignmentGroupPickerList"
+  (close)="showRoleAttributionLightbox = false"
+  sort="name"
+  searchPlaceholder="search.group"
+  noResultsLabel="list.results.no.groups"
+  (add)="add.emit({group: $event, role: selectedRole})"
+  [selectedRole]="selectedRole">
+</services-role-attribution>

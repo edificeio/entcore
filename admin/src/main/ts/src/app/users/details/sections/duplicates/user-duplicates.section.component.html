@@ -1,0 +1,54 @@
+<ode-panel-section
+  section-title="users.details.section.duplicates"
+  id="user-duplicates-section"
+  [folded]="!open" *ngIf="user?.duplicates?.length > 0">
+  <ul class="actions-list">
+    <li *ngFor="let duplicate of user?.duplicates">
+                    <span *ngIf="findVisibleStruct(duplicate.structures)">
+                        <a class="action" target="_blank"
+                           [routerLink]="['/admin', findVisibleStruct(duplicate.structures).id, 'users', duplicate.id, 'details']">
+                            {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ formatStructures(duplicate.structures) }}
+                        </a>
+                    </span>
+      <span *ngIf="!findVisibleStruct(duplicate.structures)">
+                        {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ (formatStructures(duplicate.structures)) }}
+                    </span>
+      <span class="badge alert" *ngIf="duplicate.score > 3"
+            [title]="'blocking.duplicate.tooltip' | translate">
+                        <s5l>blocking.duplicate</s5l>
+                    </span>
+      <span class="badge info" *ngIf="duplicate.score < 4"
+            [title]="'minor.duplicate.tooltip' | translate">
+                        <s5l>minor.duplicate</s5l>
+                    </span>
+      <button class="actions-list__button" (click)="separate(duplicate.id)"
+              [disabled]="spinner.isLoading(duplicate.id)">
+        <ode-spinner-cube class="button-spinner" waitingFor="duplicate.id">
+        </ode-spinner-cube>
+        <s5l>separate</s5l>
+        <i class="fa fa-arrow-left"></i>
+        <i class="fa fa-arrow-right"></i>
+      </button>
+      <button class="actions-list__button" (click)="merge(duplicate.id)"
+              *ngIf="canMerge(duplicate)" [disabled]="spinner.isLoading(duplicate.id)">
+        <ode-spinner-cube class="button-spinner"
+                      waitingFor="duplicate.id"></ode-spinner-cube>
+        <s5l>merge</s5l>
+        <i class="fa fa-arrow-right"></i>
+        <i class="fa fa-arrow-left"></i>
+      </button>
+      <button class="actions-list__button"
+              *ngIf="findVisibleStruct(duplicate.structures)"
+              (click)="compare(duplicate.id)"
+              [disabled]="spinner.isLoading(duplicate.id)">
+        <ode-spinner-cube class="button-spinner"
+                      waitingFor="duplicate.id"></ode-spinner-cube>
+        <s5l>compare</s5l>
+      </button>
+    </li>
+  </ul>
+  <ode-lightbox *ngIf="!!comparedUserId" [show]="true" (onClose)="comparedUserId = null;">
+    <ode-smart-users-comparison [user1]="user.id"
+                            [user2]="comparedUserId"></ode-smart-users-comparison>
+  </ode-lightbox>
+</ode-panel-section>

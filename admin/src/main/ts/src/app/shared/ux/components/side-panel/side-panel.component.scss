@@ -1,0 +1,14 @@
+div {
+  position: fixed;
+  z-index: 10;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  transition: transform 0.25s;
+}
+
+div.opened {
+  transform: translateX(100%);
+}

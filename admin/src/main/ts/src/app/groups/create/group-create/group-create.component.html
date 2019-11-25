@@ -1,0 +1,24 @@
+<div class="panel-header">
+  <span><s5l>new.group.creation</s5l></span>
+</div>
+
+<ode-panel-section class="thin">
+  <form #createForm="ngForm" (ngSubmit)="createNewGroup()">
+    <ode-form-field label="create.group.name">
+      <input type="text" [(ngModel)]="newGroup.name" name="name"
+             required pattern=".*\S+.*" #nameInput="ngModel"
+             (blur)="onGroupNameBlur(newGroup.name)">
+      <ode-form-errors [control]="nameInput"></ode-form-errors>
+    </ode-form-field>
+
+    <div class="action">
+      <button type="button" class="cancel" (click)="cancel()">
+        <s5l>create.group.cancel</s5l>
+      </button>
+      <button class="create confirm"
+              [disabled]="createForm.pristine || createForm.invalid">
+        <s5l>create.group.submit</s5l>
+      </button>
+    </div>
+  </form>
+</ode-panel-section>

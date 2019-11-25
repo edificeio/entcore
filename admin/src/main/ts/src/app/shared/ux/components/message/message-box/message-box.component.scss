@@ -1,0 +1,15 @@
+:host {
+  font-size : initial;
+  position: inherit;
+  top: -5px;
+  right: -5px;
+}
+:host .message {
+  border: 1px solid;
+}
+i.fa-times-circle {
+  display:inline-flex;
+  float: right;
+  cursor: pointer;
+  font-weight: bold;
+}
