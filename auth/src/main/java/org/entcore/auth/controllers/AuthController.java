@@ -227,9 +227,20 @@ public class AuthController extends BaseController {
 
 					@Override
 					public void handle(Response response) {
-						if (response.getCode() == 200 && "password".equals(req.getParameter("grant_type"))) {
+						if (response.getCode() == 200 && ("password".equals(req.getParameter("grant_type")) ||
+								"refresh_token".equals(req.getParameter("grant_type")))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
-							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId());
+							if ("password".equals(req.getParameter("grant_type"))) {
+								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId());
+							} else if ("refresh_token".equals(req.getParameter("grant_type"))) {
+								final DataHandler data = oauthDataFactory.create(req);
+								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
+									if (authInfo != null) {
+										eventStore.createAndStoreEventByUserId(
+											AuthEvent.LOGIN.name(), authInfo.getUserId(), clientCredential.getClientId());
+									}
+								});
+							}
 						}
 						renderJson(request, new JsonObject(response.getBody()), response.getCode());
 					}

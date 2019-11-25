@@ -37,4 +37,6 @@ public interface EventStore {
 
 	void createAndStoreEvent(String eventType, String login, String clientId);
 
+	void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId);
+
 }
