@@ -1,0 +1,35 @@
+<div class="panel-header">
+  <i class="fa fa-filter is-size-4"></i>
+  <span><s5l>filters</s5l></span>
+</div>
+<div class="padded">
+  <div *ngFor="let filter of listFilters.filters">
+    <div *ngIf="filter.comboModel.length > 0">
+      <ode-multi-combo
+        [comboModel]="filter.comboModel"
+        [(outputModel)]="filter.outputModel"
+        [title]="filter.label | translate"
+        [display]="filter.display || translate"
+        [max]="filter.datepicker ? 1 : filter.comboModel.length"
+        [orderBy]="filter.order || orderer"
+        [filter]="filter.filterProp"
+        (outputModelChange)="resetDate(filter)"
+      ></ode-multi-combo>
+      <div class="multi-combo-companion">
+        <div *ngFor="let item of filter.outputModel"
+             (click)="deselect(filter, item)">
+                            <span *ngIf="filter.display">
+                                {{ item[filter.display] | translate }}
+                            </span>
+          <span *ngIf="!filter.display">
+                                {{ item | translate }}
+                            </span>
+          <i class="fa fa-trash is-size-5"></i>
+        </div>
+        <div *ngIf="filter.datepicker&&filter.outputModel.length>0">
+          <ode-date-picker [ngModel]="dateFilter" (ngModelChange)="updateDate($event,filter)"></ode-date-picker>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<ode-lightbox [show]="show" (onClose)="onClose()" class="inner-list">
+  <div class="padded">
+    <h3>{{ lightboxTitle | translate }}</h3>
+
+    <div *ngIf="structureOptions && structureOptions.length > 1" class="structures has-vertical-margin-10">
+      <ode-mono-select name="structure"
+                   [ngModel]="selectedStructure"
+                   [options]="structureOptions"
+                   (ngModelChange)="onStructureChange($event)">
+      </ode-mono-select>
+    </div>
+
+    <div class="filters">
+      <button *ngFor="let type of types; let last = last"
+              (click)="filterByType(type)"
+              class="${css.filterButton}"
+              [class.selected]="visibleGroupType.includes(type)"
+              [class.has-right-margin-5]="!last">
+        {{ type | translate }} <i class="fa fa-filter is-size-5"></i>
+      </button>
+    </div>
+
+    <form>
+      <ode-list
+        [model]="list"
+        [sort]="sort"
+        [filters]="filters"
+        [inputFilter]="filterByInput"
+        [searchPlaceholder]="searchPlaceholder"
+        [noResultsLabel]="noResultsLabel"
+        (inputChange)="groupInputFilter = $event"
+        (onSelect)="pick.emit($event)">
+        <ng-template let-item>
+          <div>{{ item.name }}</div>
+        </ng-template>
+      </ode-list>
+    </form>
+  </div>
+</ode-lightbox>

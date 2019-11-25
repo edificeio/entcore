@@ -1,0 +1,23 @@
+.communication-rules__header {
+  font-size: 20px;
+}
+.communication-rules__headers, .communication-rules__columns {
+  display: flex;
+}
+.communication-rules__header, .communication-rules__column {
+  flex-grow: 1;
+  flex-basis: 0;
+}
+group-card {
+  display: inline-block;
+}
+.communication-rules__column.communication-rules__column--sending,
+.communication-rules__header.communication-rules__header--sending {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+.communication-rules__column.communication-rules__column--receiving,
+.communication-rules__header.communication-rules__header--receiving {
+  margin-left: 10px;
+  margin-bottom: 10px;
+}

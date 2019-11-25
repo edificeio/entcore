@@ -1,0 +1,9 @@
+<select [ngModel]="model[selected]" (ngModelChange)="model[selected] = $event; selectChange.emit($event)">
+
+<option *ngIf="ignoreOption.length > 0 " [ngValue]="ignoreOption[0].value">
+                                                                          {{ignoreOption[0].label}}
+</option>
+<option *ngFor="let option of options | orderBy: 'label'" [ngValue]="option.value">
+                                                                                  {{option.label}}
+</option>
+</select>

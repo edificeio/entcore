@@ -1,0 +1,6 @@
+body > div.tooltip {
+  position: absolute;
+  z-index: 100;
+}
+body > div.tooltip.shown {
+}

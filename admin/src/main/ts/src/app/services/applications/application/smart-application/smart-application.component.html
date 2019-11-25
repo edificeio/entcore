@@ -1,0 +1,28 @@
+<div class="panel-header">
+  <span>{{ servicesStore.application.displayName | translate }}</span>
+</div>
+
+<div class="tabs" *ngIf="structureHasChildren(servicesStore.structure)">
+  <button class="tab"
+          [ngClass]="{active: currentTab === 'assignment'}"
+          (click)="currentTab = 'assignment'">
+    {{ 'services.tab.assignment' | translate }}
+  </button>
+  <button class="tab"
+          [ngClass]="{active: currentTab === 'massAssignment'}"
+          (click)="currentTab = 'massAssignment'">
+    {{ 'services.tab.mass-assignment' | translate }}
+  </button>
+</div>
+
+<ode-application-assignment
+  *ngIf="currentTab  === 'assignment'"
+  [application]="servicesStore.application"
+  [assignmentGroupPickerList]="assignmentGroupPickerList"
+  (remove)="onRemoveAssignment($event)"
+  (add)="onAddAssignment($event)">
+</ode-application-assignment>
+
+<ode-smart-mass-role-assignment *ngIf="currentTab  === 'massAssignment'"
+                            (massAssignment)="onMassAssignment()">
+</ode-smart-mass-role-assignment>

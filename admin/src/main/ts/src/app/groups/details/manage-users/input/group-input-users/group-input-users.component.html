@@ -1,0 +1,63 @@
+<div class="filters">
+  <ode-mono-select [ngModel]="structure" (ngModelChange)="structureChange($event)" name="structure"
+               [options]="structureOptions">
+  </ode-mono-select>
+  <ode-group-input-filters-users [structure]="structure">
+  </ode-group-input-filters-users>
+</div>
+
+<div class="flex-row-wrap">
+  <ode-list
+    [model]="model"
+    [filters]="listFilters.getFormattedFilters()"
+    [inputFilter]="userLS.filterByInput"
+    [sort]="userLS.sorts"
+    [isSelected]="isSelected"
+    (inputChange)="userLS.inputFilter = $event"
+    (onSelect)="selectUser($event)"
+    (listChange)="storedElements = $event"
+    noResultsLabel="list.results.no.users">
+    <div toolbar class="user-toolbar">
+      <i class="fa" aria-hidden="true"
+         [ngClass]="{
+                            'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
+                            'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
+                            'selected': userLS.sortsMap.alphabetical.selected
+                        }"
+         [title]="'sort.alphabetical' | translate" position="top"
+         (click)="userLS.changeSorts('alphabetical')"></i>
+
+      <i class="fa" aria-hidden="true"
+         [ngClass]="{
+                            'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
+                            'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
+                            'selected': userLS.sortsMap.profile.selected
+                        }"
+         [title]="'sort.profile' | translate" position="top"
+         (click)="userLS.changeSorts('profile')"></i>
+
+      <button class="select-all" (click)="selectAll()"
+              [title]="'select.all' | translate">
+        <s5l>select.all</s5l>
+      </button>
+
+      <button class="deselect-all" (click)="deselectAll()"
+              [title]="'deselect.all' | translate">
+        <s5l>deselect.all</s5l>
+      </button>
+    </div>
+
+    <ng-template let-item>
+                    <span class="display-name">
+                        {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+                    </span>
+      <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+    </ng-template>
+  </ode-list>
+
+  <button (click)="addUsers()"
+          [disabled]="selectedUsers.length === 0"
+          class="add"
+          [title]="'group.manage.users.button.add' | translate">+
+  </button>
+</div>

@@ -1,0 +1,149 @@
+<div class="panel-header is-display-flex has-align-items-center has-space-between">
+            <span *ngIf="isCreationMode() else isEditionMode">
+                <s5l>services.connector.create.title</s5l>
+            </span>
+  <ng-template #isEditionMode>
+    <div>
+      <span>{{ servicesStore.connector.displayName }}</span>
+      <i *ngIf="isInherited()"
+         class="fa fa-link has-left-margin-5"
+         [title]="'services.connector.inherited' | translate">
+      </i>
+      <i *ngIf="isLocked()"
+         class="fa fa-lock has-left-margin-5"
+         [title]="'services.connector.locked' | translate">
+      </i>
+    </div>
+
+    <div>
+      <button type="button"
+              *ngIf="!isInherited() && !isLocked()"
+              (click)="showDeleteConfirmation = true;"
+              [disabled]="arePropertiesDisabled()">
+        <s5l>services.connector.delete.button</s5l>
+        <i class="fa fa-trash is-size-5"></i>
+      </button>
+
+      <button type="button"
+              *ngIf="admc && !isInherited()"
+              (click)="lockToggle()">
+                        <span *ngIf="isLocked() else isUnlocked">
+                            <s5l>services.connector.unlock.button</s5l>
+                            <i class="fa fa-unlock is-size-5"></i>
+                        </span>
+        <ng-template #isUnlocked>
+                            <span>
+                                <s5l>services.connector.lock.button</s5l>
+                                <i class="fa fa-lock is-size-5"></i>
+                            </span>
+        </ng-template>
+      </button>
+
+      <button type="button"
+              class="confirm"
+              (click)="save()"
+              *ngIf="currentTab === PROPERTIES_TAB && !isInherited() && !isLocked()"
+              [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
+        <s5l>services.connector.save.button</s5l>
+        <i class="fa fa-floppy-o is-size-5"></i>
+      </button>
+    </div>
+  </ng-template>
+</div>
+
+<div class="message is-warning"
+     *ngIf="isLocked()
+                && !isInherited()
+                && !isCreationMode()
+                && currentTab === PROPERTIES_TAB">
+  <div class="message-body">
+    <s5l>services.connector.locked.warning.properties</s5l>
+  </div>
+</div>
+
+<div class="message is-warning"
+     *ngIf="isInherited()
+                && !isCreationMode()
+                && currentTab === PROPERTIES_TAB">
+  <div class="message-body">
+    <s5l>services.connector.inherited.warning.properties</s5l>
+  </div>
+</div>
+
+<div class="message is-warning"
+     *ngIf="isLocked()
+                && !isCreationMode()
+                && currentTab === ASSIGNMENT_TAB">
+  <div class="message-body">
+    <s5l *ngIf="currentTab === ASSIGNMENT_TAB">
+      services.connector.locked.warning.assignment
+    </s5l>
+  </div>
+</div>
+
+
+<div class="tabs" *ngIf="!isCreationMode()">
+  <button class="tab"
+          [ngClass]="{active: currentTab === PROPERTIES_TAB}"
+          (click)="currentTab = PROPERTIES_TAB">
+    {{ 'services.tab.properties' | translate }}
+  </button>
+  <button class="tab"
+          [ngClass]="{active: currentTab === ASSIGNMENT_TAB}"
+          (click)="currentTab = ASSIGNMENT_TAB">
+    {{ 'services.tab.assignment' | translate }}
+  </button>
+  <button class="tab"
+          *ngIf="hasStructureChildren() && !isMassAssignmentDisabled() && inherits()"
+          [ngClass]="{active: currentTab === MASS_ASSIGNMENT_TAB}"
+          (click)="currentTab = MASS_ASSIGNMENT_TAB">
+    {{ 'services.tab.mass-assignment' | translate }}
+  </button>
+  <button class="tab"
+          [ngClass]="{active: currentTab === EXPORT_TAB}"
+          (click)="currentTab = EXPORT_TAB">
+    {{ 'services.tab.export' | translate }}
+  </button>
+</div>
+
+<connector-properties
+  *ngIf="currentTab === PROPERTIES_TAB"
+  [connector]="servicesStore.connector"
+  [casTypes]="casTypes"
+  [structureChildren]="hasStructureChildren()"
+  [creationMode]="isCreationMode()"
+  [disabled]="arePropertiesDisabled()"
+  [admc]="admc"
+  (create)="onCreate($event)"
+  (iconFileChanged)="onIconFileChanged($event)"
+  (iconFileInvalid)="onIconFileInvalid($event)">
+</connector-properties>
+
+<connector-assignment
+  *ngIf="currentTab === ASSIGNMENT_TAB"
+  [connector]="servicesStore.connector"
+  [assignmentGroupPickerList]="assignmentGroupPickerList"
+  [disabled]="isAssignmentDisabled()"
+  (remove)="onRemoveAssignment($event)"
+  (add)="onAddAssignment($event)">
+</connector-assignment>
+
+<connector-mass-assignment
+  *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isMassAssignmentDisabled()"
+  [structure]="{ id: this.servicesStore.structure.id, name: this.servicesStore.structure.name }"
+  [profiles]="profiles"
+  (submitUnassignment)="onRemoveMassAssignment($event)"
+  (submitAssignment)="onAddMassAssignment($event)">
+</connector-mass-assignment>
+
+<connector-export
+  *ngIf="currentTab === EXPORT_TAB"
+  (submit)="onExportSubmit($event)">
+</connector-export>
+
+<ode-lightbox-confirm lightboxTitle="services.connector.delete.confirm.title"
+                  [show]="showDeleteConfirmation"
+                  (onCancel)="showDeleteConfirmation = false;"
+                  (onConfirm)="onConfirmDeletion()">
+  <span [innerHTML]="'services.connector.delete.confirm.content' | translate: {connector: servicesStore.connector.displayName}"></span>
+</ode-lightbox-confirm>

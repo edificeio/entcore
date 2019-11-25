@@ -1,0 +1,34 @@
+<table>
+  <colgroup>
+    <col />
+    <col />
+    <col />
+  </colgroup>
+  <thead>
+  <th>{{ headers[0] | translate }}</th>
+  <th>{{ headers[1] | translate }}</th>
+  <th></th>
+  </thead>
+  <tbody>
+  <tr *ngFor="let value of mappingsKeys(),index as i;">
+    <td>{{value}}</td>
+    <td (click)="loadAvailables(value, i)">
+                    <span *ngIf="!isEmpty(mappings[value]); else elseBlock" [hidden]="selectIsLoaded(i)">
+                        {{mappings[value] | translate}}
+                    </span>
+      <ng-template #elseBlock>
+                        <span [hidden]="selectIsLoaded(i)">
+                            {{ emptyLabel | translate:{value:value} }}
+                        </span>
+      </ng-template>
+      <ng-template [dynamic-component]="newSimpleSelect()"></ng-template>
+    </td>
+    <td>
+      <ode-message-sticker *ngIf="isEmpty(mappings[value])"
+                       [type]="'warning'"
+                       [messages]="[[emptyWarning, {value:value}]]">
+      </ode-message-sticker>
+    </td >
+  </tr>
+  </tbody>
+</table>

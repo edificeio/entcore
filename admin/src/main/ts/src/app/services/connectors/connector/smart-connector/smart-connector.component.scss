@@ -1,0 +1,14 @@
+button.tab {
+  border-left: 0;
+  box-shadow: none;
+  border-right: 0;
+  border-top: 0;
+  margin: 0 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+button.tab:hover {
+  color: #ff8352;
+  background-color: #fff;
+  border-bottom-color: #ff8352;
+}

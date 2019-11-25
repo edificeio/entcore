@@ -1,0 +1,173 @@
+<div class="container has-shadow">
+  <h2>{{ 'massmail.accounts' | translate }}</h2>
+
+  <div class="has-vertical-padding-10 is-pulled-left">
+    <button (click)="toggleVisibility()"
+            class="button is-primary"
+            [ngClass]="setFiltersOnStyle()"
+            #filtersToggle>
+      <s5l>massmail.filters</s5l>
+      <i class="fa fa-chevron-down"></i>
+    </button>
+
+    <div [hidden]="!show" class="filters" #filtersDiv>
+      <i class="fa fa-close close" (click)="show=false"></i>
+
+      <div *ngFor="let filter of userlistFiltersService.filters">
+        <div *ngIf="filter.comboModel.length > 0">
+          <div>
+            <ode-multi-combo
+              [comboModel]="filter.comboModel"
+              [(outputModel)]="filter.outputModel"
+              [title]="filter.label | translate"
+              [display]="filter.display || translate"
+              [max]="filter.datepicker ? 1 : filter.comboModel.length"
+              [orderBy]="filter.order"
+              (outputModelChange)="resetDate(filter)">
+            </ode-multi-combo>
+
+            <div class="multi-combo-companion">
+              <div *ngFor="let item of filter.outputModel" (click)="deselect(filter, item)">
+                <span *ngIf="filter.display">{{ item[filter.display] | translate }}</span>
+                <span *ngIf="!filter.display">{{ item | translate }}</span>
+                <i class="fa fa-trash is-size-5"></i>
+              </div>
+              <div *ngIf="filter.datepicker&&filter.outputModel.length>0">
+                <ode-date-picker [ngModel]="dateFilter"
+                             (ngModelChange)="updateDate($event,filter)"></ode-date-picker>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="has-vertical-padding-10 flex has-flex-end">
+    <div class="mailing__sort">
+      <p>
+        <s5l>massmail.sorttitle</s5l>
+      </p>
+      <div>
+        <span><s5l>massmail.firstsort</s5l></span>
+        <ode-mono-select [(ngModel)]="firstSort" (ngModelChange)="updateSecondSort()"
+                     [options]="[{value: 'none', label: 'massmail.none'}, {value: 'profile', label: 'massmail.profile'}, {value: 'classname', label: 'massmail.classname'}]">
+        </ode-mono-select>
+        <span [hidden]="firstSort === 'none'"><s5l>massmail.secondsort</s5l></span>
+        <ode-mono-select [(ngModel)]="secondSort" [hidden]="firstSort === 'none'"
+                     [options]="secondSortOptions">
+        </ode-mono-select>
+      </div>
+      <div class="mailing__notice">
+        <s5l>massmail.notice</s5l>
+      </div>
+    </div>
+    <div class="mailing__sort">
+      <p>
+        <s5l>massmail.modeltitle</s5l>
+      </p>
+      <ode-mono-select [(ngModel)]="templateModel"
+                   [options]="[{value: 'pdf', label: 'massmail.pdf.one'}, {value: 'newPdf', label: 'massmail.pdf.two'}, {value: 'simplePdf', label: 'massmail.pdf.eight'}]">
+      </ode-mono-select>
+    </div>
+    <div class="mailing__publish">
+      <p>
+        <s5l>process.massmail</s5l>
+      </p>
+      <div>
+        <button class="cell" (click)="processMassMail('pdf')" [disabled]="countUsers == 0">
+          <s5l>massmail.pdf</s5l>
+        </button>
+        <button class="cell" (click)="showConfirmation = true" [disabled]="countUsers == 0">
+          <s5l>massmail.mail</s5l>
+        </button>
+        <ode-lightbox-confirm
+          [show]="showConfirmation"
+          [lightboxTitle]="'warning'"
+          (onConfirm)="processMassMail('mail')"
+          (onCancel)="showConfirmation = false">
+          <s5l>massmail.confirm</s5l>
+        </ode-lightbox-confirm>
+      </div>
+    </div>
+  </div>
+
+  <div class="has-vertical-padding-10 is-clearfix">
+    <div class="message is-info">
+      <div class="message-body has-text-centered">{{countUsers}}
+        <s5l>massmail.users.total</s5l>
+      </div>
+    </div>
+    <div class="message is-warning">
+      <div class="message-body has-text-centered">{{countUsersWithoutMail}}
+        <s5l>massmail.users.nomail</s5l>
+      </div>
+    </div>
+  </div>
+
+  <div class="has-vertical-padding-10">
+    <table>
+      <thead>
+      <tr>
+        <th (click)="setUserOrder('lastName')"><i class="fa fa-sort"></i>
+          <s5l>lastName</s5l>
+        </th>
+        <th (click)="setUserOrder('firstName')"><i class="fa fa-sort"></i>
+          <s5l>firstName</s5l>
+        </th>
+        <th (click)="setUserOrder('type')"><i class="fa fa-sort"></i>
+          <s5l>profile</s5l>
+        </th>
+        <th (click)="setUserOrder('login')"><i class="fa fa-sort"></i>
+          <s5l>login</s5l>
+        </th>
+        <th (click)="setUserOrder('code')"><i class="fa fa-sort"></i>
+          <s5l>activation.code</s5l>
+        </th>
+        <th (click)="setUserOrder('email')"><i class="fa fa-sort"></i>
+          <s5l>email</s5l>
+        </th>
+        <th (click)="setUserOrder('classesStr')"><i class="fa fa-sort"></i>
+          <s5l>create.user.classe</s5l>
+        </th>
+        <th (click)="setUserOrder('creationDate')"><i class="fa fa-sort"></i>
+          <s5l>creation.date</s5l>
+        </th>
+      </tr>
+      <tr>
+        <th>
+          <input class="twelve" type="text" [(ngModel)]="inputFilters.lastName"
+                 [attr.placeholder]="'search' | translate"/>
+        </th>
+        <th>
+          <input type="text" [(ngModel)]="inputFilters.firstName"
+                 [attr.placeholder]="'search' | translate"/>
+        </th>
+        <th colspan="4"></th>
+        <th>
+          <input type="text" [(ngModel)]="inputFilters.classesStr"
+                 [attr.placeholder]="'search' | translate"/>
+        </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let user of (getFilteredUsers() | filter: inputFilters) | orderBy: userOrder "
+          [routerLink]="'/admin/'+structureId+'/users/'+user.id + '/details'"
+          routerLinkActive="active"
+          title="{{ 'massmail.link.user' | translate}}">
+        <td>
+          <i class="fa fa-lock"
+             *ngIf="user?.code && user?.code?.length > 0"
+             title="{{ 'user.icons.tooltip.inactive' | translate }}"></i> {{user.lastName}}
+        </td>
+        <td>{{user.firstName}}</td>
+        <td [ngClass]="user.type">{{user.type | translate}}</td>
+        <td>{{user.login}}</td>
+        <td>{{user.code}}</td>
+        <td title="{{user.email}}">{{user.email}}</td>
+        <td>{{user.classesStr}}</td>
+        <td>{{displayDate(user.creationDate)}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

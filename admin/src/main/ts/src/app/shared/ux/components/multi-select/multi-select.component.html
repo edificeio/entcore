@@ -1,0 +1,29 @@
+<button type="button"
+        (click)="toggleOptionsVisibility()" [disabled]="isDisabled"
+        class="${css.toggle} lct-${css.toggle}"
+        [ngClass]="{'${css.toggleActive}': isOptionsVisible}">{{label | translate}}</button>
+<div class="${css.container} lct-${css.container}"
+     [ngClass]="{'${css.containerActive}': isOptionsVisible}">
+  <div class="${css.actions}">
+    <button type="button"
+            class="${css.actionsItem}"
+            (click)="deselectAll()">{{'ux.multiselect.deselect-all' | translate}}</button>
+  </div>
+  <ul class="${css.options} lct-${css.options}">
+    <li class="${css.optionsItem} lct-${css.optionsItem}"
+        *ngFor="let option of options"
+        (click)="optionClicked(option)"
+        [ngClass]="{'${css.optionsItemSelected}': isSelected(option)}">{{option.label | translate}}</li>
+  </ul>
+</div>
+<div class="${css.preview} lct-${css.preview}" *ngIf="preview">
+  <ng-container *ngFor="let option of options">
+    <button *ngIf="isSelected(option)"
+            type="button"
+            class="${css.previewItem} lct-${css.previewItem}"
+            (click)="optionClicked(option)">
+      <span>{{option.label | translate}}</span>
+      <i class="${css.previewItemDeleteIcon} fa fa-trash is-size-5"></i>
+    </button>
+  </ng-container>
+</div>

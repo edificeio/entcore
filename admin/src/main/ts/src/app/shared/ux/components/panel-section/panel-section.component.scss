@@ -1,0 +1,11 @@
+.panel-section {}
+.panel-section-header {
+  font-size: 1.1em;
+  padding: 10px 10px;
+}
+.panel-section-header.foldable {
+  cursor: pointer;
+}
+.panel-section-content {
+  padding: 15px;
+}

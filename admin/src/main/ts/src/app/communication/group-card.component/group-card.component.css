@@ -1,0 +1,123 @@
+.group-card {
+  color: #5b6472;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background-color: #eaedf2;
+  border-radius: 5px;
+  font-size: 14px;
+  padding: 10px;
+  margin: 5px 0;
+  width: 340px;
+  box-sizing: border-box;
+  transition: box-shadow 125ms ease;
+}
+
+.group-card.group-card--selectable {
+  cursor: pointer;
+}
+
+.group-card.group-card--active {
+  background-color: white;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+  border-color: #ff8352;
+}
+
+.group-card.group-card--active,
+.group-card.group-card--selected {
+  cursor: default;
+}
+
+.group-card.group-card--highlighted {
+  background-color: #fff2ed;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+  border-color: #ff8352;
+  color: #ff8352;
+}
+
+.group-card.group-card--active.group-card--highlighted {
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+}
+.group-card__title {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+.group-card--active .group-card__subtitle {
+  margin-bottom: 15px;
+}
+.group-card__title-label {
+  flex-grow: 1;
+}
+.group-card__title-structure {
+  font-size: 12px;
+  font-style: italic;
+}
+.group-card__title-icon {
+  display: none;
+  cursor: pointer;
+  transition: color 125ms ease;
+}
+
+.group-card--active.group-card--manageable .group-card__title-icon {
+  display: initial;
+}
+
+.group-card__title-icon:hover {
+  color: #ff8352;
+}
+.group-card__actions {
+  display: none;
+}
+
+.group-card--active.group-card--communication-rule-manageable .group-card__actions,
+.group-card--selected.group-card--manageable .group-card__actions {
+  display: initial;
+}
+.group-card__action-remove-communication,
+.group-card__action-add-communication {
+  background: #ff8352;
+  height: 34px;
+  line-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  color: white;
+}
+
+.group-card__action-remove-communication:hover,
+.group-card__action-add-communication:hover {
+  background: #ff6624;
+}
+
+.group-card__action-add-communication,
+.group-card--selected .group-card__action-remove-communication {
+  display: none;
+}
+
+.group-card--selected .group-card__action-add-communication {
+  display: initial;
+}
+.group-card__action-remove-communication i,
+.group-card__action-add-communication i {
+  float: none;
+}
+.group-card__separator {
+  margin: 15px 0;
+}
+.group-card__switch {
+  font-size: 22px;
+  padding-right: 15px;
+}
+
+.group-card__switch.group-card__switch--clickable {
+  cursor: pointer;
+}
+.group-card__actions-on-self {
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+}
+.group-card__actions-on-self.group-card__actions-on-self--can-communicate .group-card__switch.group-card__switch--clickable {
+  color: mediumseagreen;
+}
+.group-card__actions-on-self.group-card__actions-on-self--cannot-communicate .group-card__switch.group-card__switch--clickable {
+  color: indianred;
+}

@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  width: 8em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+}
+:host.expand {
+  cursor : pointer;
+}

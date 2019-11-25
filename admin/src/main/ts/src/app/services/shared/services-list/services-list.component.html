@@ -1,0 +1,37 @@
+<ode-side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
+  <div side-card>
+    <ode-list
+      [model]="collectionRef[serviceName].collection"
+      [sort]="sortOnDisplayName? 'displayName' : null"
+      [inputFilter]="filterByInput"
+      [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
+      [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
+      [isSelected]="isSelected"
+      (inputChange)="itemInputFilter = $event"
+      (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})">
+      <ng-template let-item>
+        <div class="service-badges" *ngIf="serviceName === 'connectors'">
+          <i *ngIf="isInherited(item)"
+             class="fa fa-link service-badges__inherits"
+             [title]="'services.connector.inherited' | translate"></i>
+          <i *ngIf="item.locked"
+             class="fa fa-lock service-badges__locked"
+             [title]="'services.connector.locked' | translate"></i>
+        </div>
+        <div class="service-icon">
+          <img [src]="item.icon" *ngIf="inputFileService.isSrcExternalUrl(item.icon)"/>
+          <img src="{{ item.icon }}" *ngIf="inputFileService.isSrcWorkspace(item.icon)"/>
+          <i [ngClass]="item.icon"
+             *ngIf="!inputFileService.isSrcExternalUrl(item.icon)
+                                    && !inputFileService.isSrcWorkspace(item.icon)"></i>
+        </div>
+        <div class="service-name">
+          <span>{{ item.displayName | translate }}</span>
+        </div>
+      </ng-template>
+    </ode-list>
+  </div>
+  <div side-companion>
+    <router-outlet></router-outlet>
+  </div>
+</ode-side-layout>

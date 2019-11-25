@@ -1,0 +1,6 @@
+<div [ngClass]="{ opened: _opened }" #inside>
+  <ng-content select="[inside]"></ng-content>
+</div>
+<div>
+  <ng-content select="[companion]"></ng-content>
+</div>

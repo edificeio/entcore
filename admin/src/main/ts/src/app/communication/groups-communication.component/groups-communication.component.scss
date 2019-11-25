@@ -1,0 +1,16 @@
+.button.button--back {
+  background: none;
+  border: 0;
+  padding: 5px;
+  font-size: 1.2rem;
+}
+.button.button--back:hover, .button.button--back:hover i {
+  color: #ff5e1f !important;
+}
+.button.button--back i {
+  float: none;
+  padding-left: 0;
+}
+.groups-communication__content {
+  padding: 10px 15px;
+}

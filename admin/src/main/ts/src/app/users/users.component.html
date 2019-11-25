@@ -1,0 +1,22 @@
+<div class="flex-header">
+  <h1><i class="fa fa-user"></i>
+    <s5l>users.title</s5l>
+  </h1>
+  <button [routerLink]="['create']"
+          [class.hidden]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)">
+    <s5l>create.user</s5l>
+    <i class="fa fa-user-plus is-size-5"></i>
+  </button>
+</div>
+<ode-side-layout (closeCompanion)="closeCompanion()"
+             [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users', true)">
+  <div side-card>
+    <ode-user-list [userlist]="usersStore.structure.users.data"
+               (listCompanionChange)="openCompanionView($event)"
+               [selectedUser]="usersStore.user"
+               (selectedUserChange)="openUserDetail($event)"></ode-user-list>
+  </div>
+  <div side-companion>
+    <router-outlet></router-outlet>
+  </div>
+</ode-side-layout>

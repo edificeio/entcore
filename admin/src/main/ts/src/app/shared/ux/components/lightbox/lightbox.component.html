@@ -1,0 +1,7 @@
+<section *ngIf="_show" #section>
+  <div overlay #overlay></div>
+  <div content>
+    <i (click)="close()" *ngIf="showCloseButton == true"></i>
+    <ng-content></ng-content>
+  </div>
+</section>

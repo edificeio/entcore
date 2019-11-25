@@ -1,0 +1,15 @@
+ul {
+  margin: 0;
+  padding: 0px;
+  font-size: 0.9em;
+}
+
+ul li {
+  cursor: pointer;
+  border-top: 1px solid #ddd;
+  padding: 10px 10px;
+}
+
+ul li.disabled {
+  pointer-events: none;
+}

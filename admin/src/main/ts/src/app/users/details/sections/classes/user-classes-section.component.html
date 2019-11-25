@@ -1,0 +1,58 @@
+<ode-panel-section section-title="users.details.section.classes" [folded]="true">
+  <button (click)="showClassesLightbox = true">
+    <s5l>add.class</s5l>
+    <i class="fa fa-plus-circle"></i>
+  </button>
+  <ode-lightbox class="inner-list" [show]="showClassesLightbox"
+            (onClose)="showClassesLightbox = false">
+    <div class="padded">
+      <h3>
+        <s5l>add.class</s5l>
+      </h3>
+      <ode-list class="inner-list"
+            [model]="lightboxClasses"
+            [inputFilter]="filterByInput"
+            searchPlaceholder="search.class"
+            sort="name"
+            (inputChange)="inputFilter = $event"
+            [isDisabled]="disableClass"
+            (onSelect)="addClass($event)">
+        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+        </ng-template>
+      </ode-list>
+    </div>
+  </ode-lightbox>
+
+  <ul class="actions-list">
+    <li *ngFor="let classe of filteredClasses">
+      <span>{{ classe.name }}</span>
+      <i class="fa fa-times action"
+         (click)="removeClass(classe)"
+         [title]="'delete.this.class' | translate"
+         [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
+      </i>
+      <span class="headteacher-buttons"
+            *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
+                        <button class="noflex"
+                                *ngIf="!details.isHeadTeacherManual(this.structure.externalId, classe)"
+                                (click)="addHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
+                            <s5l>headTeacherManual.add</s5l>
+                        </button>
+                        <button *ngIf="details.isHeadTeacherManual(this.structure.externalId, classe)"
+                                (click)="updateHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
+                            <s5l>headTeacherManual.remove</s5l>
+                        </button>
+                    </span>
+      <span class="headteacher-buttons"
+            *ngIf="details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, classe)"
+            [tooltip]="'headTeacher.aaf.detail' | translate">
+                         <button disabled>
+                            <s5l>headTeacherManual.remove</s5l>
+                        </button>
+                    </span>
+    </li>
+  </ul>
+</ode-panel-section>

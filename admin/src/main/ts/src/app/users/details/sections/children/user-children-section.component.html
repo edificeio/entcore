@@ -1,0 +1,37 @@
+<ode-panel-section section-title="users.details.section.children" [folded]="true" *ngIf="isRelative(user)">
+  <button (click)="showChildrenLightbox = true">
+    <s5l>add.child</s5l><i class="fa fa-plus-circle"></i>
+  </button>
+  <ode-lightbox class="inner-list"
+            [show]="showChildrenLightbox" (onClose)="showChildrenLightbox = false">
+    <div class="padded">
+      <h3><s5l>add.child</s5l></h3>
+      <ode-list class="inner-list"
+            [model]="lightboxChildren"
+            [inputFilter]="userListService.filterByInput"
+            searchPlaceholder="search.user"
+            [sort]="userListService.sorts"
+            (inputChange)="userListService.inputFilter = $event"
+            [isDisabled]="disableChild"
+            (onSelect)="addChild($event)">
+        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
+                            </span>
+        </ng-template>
+      </ode-list>
+    </div>
+  </ode-lightbox>
+  <ul class="actions-list">
+    <li *ngFor="let child of details?.children">
+      <div *ngIf="child.id">
+        <a class="action" [routerLink]="['/admin', structure.id ,'users', child.id, 'details']">
+          {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
+        </a>
+        <i  class="fa fa-times action" (click)="removeChild(child)"
+            [title]="'delete.this.child' | translate"
+            [ngClass]="{ disabled: spinner.isLoading(child.id)}"></i>
+      </div>
+    </li>
+  </ul>
+</ode-panel-section>

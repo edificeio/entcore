@@ -1,0 +1,4 @@
+<i (click)="loadMessageBox()" class="fa {{icons[type]}} is-{{type}}"></i>
+<span message-box-anchor>
+            <ng-container [dynamic-component]="newMessageBox()"></ng-container>
+        </span>

@@ -1,0 +1,18 @@
+<ode-groups-communication *ngIf="!!group && !!groupsSendingCommunicationRules"
+                      [title]="'group.communication.title' | translate:{name: group.name}"
+                      [backButtonLabel]="'group.communication.back-to-group-details' | translate"
+                      [sendingSectionTitle]="'group.communication.section.title.sending-rules'"
+                      [receivingSectionTitle]="'group.communication.section.title.receiving-rules'"
+                      [sendingSectionSendingColumnLabel]="'group.communication.current-group' | translate"
+                      [sendingSectionReceivingColumnLabel]="'group.communication.groups-that-group-can-communicate-with' | translate"
+                      [receivingSectionSendingColumnLabel]="'group.communication.groups-that-can-communicate-with-group' | translate"
+                      [receivingSectionReceivingColumnLabel]="'group.communication.current-group' | translate"
+                      [activeStructure]="activeStructure"
+                      [manageableStructuresId]="manageableStructuresId"
+                      [sendingCommunicationRules]="groupsSendingCommunicationRules"
+                      [receivingCommunicationRules]="groupsReceivingCommunicationRules"
+                      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+                      [structures]="globalStore.structures.data"
+                      (groupClose)="openGroupDetails()"
+                      (groupPickerStructureChange)="onGroupPickerStructureChange($event)">
+</ode-groups-communication>

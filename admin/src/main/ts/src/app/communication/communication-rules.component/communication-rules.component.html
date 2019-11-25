@@ -1,0 +1,80 @@
+<div class="communication-rules__headers">
+    <span class="communication-rules__header communication-rules__header--sending">{{ sendingHeaderLabel }}</span>
+    <span class="communication-rules__header communication-rules__header--receiving">{{ receivingHeaderLabel }}</span>
+</div>
+<div class="communication-rules__columns">
+    <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
+        <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
+            <ode-group-card
+                (click)="activeColumn === 'sending' ? select('sending', group) : $event.stopPropagation()"
+                (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
+                (mouseenter)="highlight('sending', group, selected)"
+                (mouseleave)="resetHighlight()"
+                [group]="group"
+                [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
+                [selectable]="activeColumn === 'sending'"
+                [selected]="isSelected('sending', group, selected)"
+                [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
+                [active]="isRelatedWithCell('sending', group, selected, communicationRules)"
+                (clickAddCommunication)="openGroupPicker()"></ode-group-card>
+        </div>
+    </div>
+    <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
+        <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
+            <ode-group-card
+                (click)="activeColumn === 'receiving' ? select('receiving', group) : $event.stopPropagation()"
+                (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
+                (mouseenter)="highlight('receiving', group, selected)"
+                (mouseleave)="resetHighlight()"
+                [group]="group"
+                [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
+                [selectable]="activeColumn === 'receiving'"
+                [selected]="isSelected('receiving', group, selected)"
+                [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
+                [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"
+                (clickAddCommunication)="openGroupPicker()"></ode-group-card>
+        </div>
+    </div>
+</div>
+<ode-lightbox-confirm *ngIf="!!selected" lightboxTitle="user.communication.action.confirm.title"
+                  [show]="removeConfirmationDisplayed"
+                  (onCancel)="$removeConfirmationClicked.next('cancel')"
+                  (onConfirm)="$removeConfirmationClicked.next('confirm')">
+    <i class='fa fa-exclamation-triangle is-danger'></i>
+    <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
+</ode-lightbox-confirm>
+
+<ode-group-picker lightboxTitle="services.roles.groups.add"
+    [list]="addCommunicationPickableGroups"
+    [filters]="filterGroupPicker"
+    [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup', 'FunctionGroup']"
+    [show]="showGroupPicker"
+    [structures]="structures"
+    [activeStructure]="activeStructure"
+    sort="name"
+    searchPlaceholder="search.group"
+    noResultsLabel="list.results.no.groups"
+    (pick)="onGroupPick($event)"
+    (close)="showGroupPicker = false;"
+    (structureChange)="groupPickerStructureChange.emit($event)">
+</ode-group-picker>
+
+<ode-lightbox-confirm *ngIf="!!selected" lightboxTitle="user.communication.action.confirm.title"
+                  [show]="addConfirmationDisplayed"
+                  (onCancel)="$addConfirmationClicked.next('cancel')"
+                  (onConfirm)="$addConfirmationClicked.next('confirm')">
+    <div>
+        <i class='fa fa-exclamation-triangle is-danger'></i>
+        <span [innerHTML]="'user.communication.add-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
+    </div>
+    <div *ngIf="warningGroupSender" class="has-top-margin-10">
+        <i class='fa fa-exclamation-triangle is-danger'></i>
+        <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
+    </div>
+    <div *ngIf="warningGroupReceiver" class="has-top-margin-10">
+        <i class='fa fa-exclamation-triangle is-danger'></i>
+        <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(pickedGroup)}"></span>
+    </div>
+</ode-lightbox-confirm>

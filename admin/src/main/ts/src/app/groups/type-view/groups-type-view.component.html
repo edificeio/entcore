@@ -1,0 +1,21 @@
+<ode-side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion()">
+  <div side-card>
+    <ode-list
+      [model]="groupsStore.structure?.groups.data"
+      [filters]="{type: groupType}"
+      [inputFilter]="filterByInput"
+      sort="name"
+      searchPlaceholder="search.group"
+      noResultsLabel="list.results.no.groups"
+      [isSelected]="isSelected"
+      (inputChange)="groupInputFilter = $event"
+      (onSelect)="selectedGroup = $event; routeToGroup($event)">
+      <ng-template let-item>
+        {{ item.name }}
+      </ng-template>
+    </ode-list>
+  </div>
+  <div side-companion>
+    <router-outlet></router-outlet>
+  </div>
+</ode-side-layout>

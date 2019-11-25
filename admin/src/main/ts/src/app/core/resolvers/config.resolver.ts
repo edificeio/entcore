@@ -1,0 +1,16 @@
+import {Injectable} from '@angular/core';
+import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+
+import {Config} from './Config';
+
+@Injectable()
+export class ConfigResolver implements Resolve<Config> {
+    constructor(private http: HttpClient) {
+    }
+
+    resolve(route: ActivatedRouteSnapshot): Observable<Config> {
+        return this.http.get<Config>('/admin/api/platform/config');
+    }
+}

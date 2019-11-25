@@ -1,0 +1,26 @@
+header > div {
+  flex-basis: 33.3%;
+  display: flex;
+  align-items: center;
+}
+
+div[header-left] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div[header-middle] {
+  justify-content: center;
+}
+
+div[header-right] {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+header > div > * {
+  display: inline-block;
+  vertical-align: middle;
+}

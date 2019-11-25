@@ -1,0 +1,12 @@
+<div class="form-select lct-form-select" [ngClass]="{'form-select--opened': opened, 'form-select--disabled': isDisabled}">
+  <ul>
+    <li class="form-select__options--selected lct-form-select__options--selected">
+      <strong>{{(selectedOption? selectedOption.label : placeholder) | translate}}</strong>
+      <ul class="form-select__list lct-form-select__list">
+        <li class="form-select__options lct-form-select__options"
+            *ngFor="let option of options"
+            (click)="$event.stopPropagation(); optionClicked(option)">{{option.label | translate}}</li>
+      </ul>
+    </li>
+  </ul>
+</div>

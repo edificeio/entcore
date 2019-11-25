@@ -1,0 +1,38 @@
+import {Injectable} from '@angular/core';
+import {GroupModel} from '../core/store';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
+import {GroupsStore} from './groups.store';
+
+@Injectable()
+export class GroupsService {
+
+    constructor(private httpClient: HttpClient,
+                public groupsStore: GroupsStore) {
+    }
+
+    public delete(group: GroupModel): Observable<void> {
+        return this.httpClient.delete<void>(`/directory/group/${group.id}`)
+        .pipe(
+            tap(() => {
+                this.groupsStore.structure.groups.data.splice(
+                    this.groupsStore.structure.groups.data.findIndex(g => g.id === group.id)
+                    , 1);
+            })
+        );
+    }
+
+    public update(group: {id: string, name: string}): Observable<void> {
+        return this.httpClient.put<void>(`/directory/group/${group.id}`, {name: group.name})
+        .pipe(
+            tap(() => {
+                const sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === group.id);
+                if (sGroup) {
+                    sGroup.name = group.name;
+                }
+                this.groupsStore.group.name = group.name;
+            })
+        );
+    }
+}

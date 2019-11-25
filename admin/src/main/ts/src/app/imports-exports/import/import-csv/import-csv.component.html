@@ -1,0 +1,307 @@
+<ode-lightbox-confirm
+  [show]="confirmCancel"
+  [lightboxTitle]="'warning'"
+  (onConfirm)="cancel(); confirmCancel = false;"
+  (onCancel)="confirmCancel = false">
+  <p>{{ 'import.cancel.message' | translate }}</p>
+</ode-lightbox-confirm>
+<ode-wizard
+  (cancel)="confirmCancel=true"
+  (nextStep)="nextStep($event)"
+  (previousStep)="previousStep($event)"
+>
+  <ode-step #step1 name="{{ 'import.filesDeposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
+    <h2>{{ 'import.filesDeposit' | translate }}
+      <ode-message-sticker [type]="'info'" [header]="'import.info.file.0'"
+                       [messages]="messages.get('import.info.file')">
+      </ode-message-sticker>
+    </h2>
+    <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <h3>{{ 'import.header.selectFile' | translate }}</h3>
+    <p *ngFor="let p of profiles.asArray(true)">
+      <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]" />
+      <label class="step1-file__label">{{'import.file.'+p | translate}}</label>
+      <input type="file" name="{{p}}" (change)="loadFile($event)" [hidden]="!isLoaded(p)" />
+      <message-box *ngIf="globalError.profile['error.'+p]" [type]="'danger'"
+                   [messages]="globalError.profile['error.'+p]"></message-box>
+    </p>
+    <h3>{{ 'import.header.parameters' | translate }}</h3>
+    <p>
+      <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" />
+      <label>{{'import.deleteAccountOption' | translate}}</label>
+      <ode-message-sticker [type]="'info'" [messages]="messages.get('import.info.deleteAccount')"></ode-message-sticker>
+    </p>
+    <p>
+      <input type="checkbox" name="transitionOption" [(ngModel)]="importInfos.transition" />
+      <label>{{'import.transitionOption' | translate}}</label>
+      <ode-message-sticker [type]="'info'" [messages]="messages.get('import.info.transition')"></ode-message-sticker>
+    </p>
+  </ode-step>
+  <ode-step #step2 name="{{ 'import.fieldsChecking' | translate }}" [class.active]="step2.isActived">
+    <h2>{{ 'import.fieldsChecking' | translate }}</h2>
+    <message-box *ngIf="!globalError.message && !columns.hasWarning()" [type]="'success'"
+                 [messages]="['import.fieldsChecking.success']"></message-box>
+    <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <message-box *ngIf="columns.hasWarning()" [type]="'warning'" [messages]="['import.global.warning']"></message-box>
+    <ode-panel-section *ngFor="let p of columns.profiles" section-title="{{'import.file.'+ p}}" [folded]="true">
+                <span panel-section-header-icons>
+                    <ode-message-sticker [type]="'info'" [messages]="['import.info.columns.'+p]"></ode-message-sticker>
+                    <ode-message-sticker *ngIf="globalError.profile[p]" [type]="'danger'"
+                                     [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></ode-message-sticker>
+                    <ode-message-sticker *ngIf="columns.hasWarning(p)" [type]="'warning'"
+                                     [messages]="['import.file.warning']"></ode-message-sticker>
+                </span>
+      <message-box *ngIf="globalError.profile[p]" [type]="'danger'"
+                   [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-box>
+      <ode-mappings-table
+        [type]="'user'"
+        [headers]="['import.fieldFromFile','import.fieldToMap']"
+        [mappings]="columns.mappings[p]"
+        [availables]="columns.availableFields[p]"
+        [emptyLabel]="'import.fieldsChecking.warning.ignore'"
+        [emptyWarning]="'import.fieldsChecking.warning.ignore.1'"
+        (selectChange)="columns.selectChange(globalError, p, $event)"
+      >
+      </ode-mappings-table>
+    </ode-panel-section>
+  </ode-step>
+  <ode-step #step3 name="{{'import.classesChecking' | translate }}" [class.active]="step3.isActived">
+    <h2>{{ 'import.classesChecking' | translate }}
+      <ode-message-sticker [type]="'info'" [header]="'import.classesChecking.info.0'"
+                       [messages]="messages.get('import.classesChecking.info')">
+      </ode-message-sticker>
+    </h2>
+    <message-box *ngIf="classes.noClassesMapping()" [type]="'success'" [messages]="['import.classesChecking.success.noClasses']"></message-box>
+    <message-box *ngIf="!classes.hasWarning() && !classes.noClassesMapping()" [type]="'success'" [messages]="['import.classesChecking.success']"></message-box>
+    <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <message-box *ngIf="classes.hasWarning()" [type]="'warning'" [messages]="['import.file.warning']"></message-box>
+    <ode-panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true">
+                <span panel-section-header-icons>
+                    <ode-message-sticker *ngIf="classes.hasWarning(profile)" [type]="'warning'"
+                                     [messages]="['importClassesChecking.'+ (profile == 'Student' ? 'student' : 'generic') + '.warning']"></ode-message-sticker>
+                </span>
+
+      <ode-mappings-table
+        [type]="'class'"
+        [headers]="['import.classFromFile','import.classToMap']"
+        [mappings]="classes.mappings[profile]"
+        [availables]="classes.availableClasses[profile]"
+        [emptyLabel]="'import.classesChecking.warning.create'"
+        [emptyWarning]="'import.classesChecking.warning.create.1'"
+        [mappingsKeySort]="true"
+      >
+      </ode-mappings-table>
+    </ode-panel-section>
+  </ode-step>
+  <ode-step #step4 class="step4" name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
+    <h2>{{ 'import.report' | translate }}</h2>
+    <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <message-box *ngIf="!report.hasSoftErrors() && !report.hasToDelete() && !globalError.message" [type]="'success'" [messages]="['import.report.success']">
+    </message-box>
+    <message-box *ngIf="report.hasToDelete()" [type]="'warning'" [messages]="['import.report.warning.hasToDelete']">
+      <strong><a (click)="report.setFilter('state','Supprimé'); report.page.offset=0">
+        {{'import.report.displayUsersToDelete' | translate}}
+      </a></strong>
+    </message-box>
+    <message-box *ngIf="report.hasSoftErrorsWithHardError()" [type]="'danger'" [messages]="['import.report.softError.hardError']">
+    </message-box>
+    <message-box *ngIf="report.hasSoftErrors() && !report.hasSoftErrorsWithHardError()" [type]="'warning'" [messages]="['import.report.warning.hasSoftErrors']">
+    </message-box>
+    <div *ngIf="report.hasSoftErrors()" class="report-filter">
+      <a *ngFor="let r of report.softErrors.reasons"
+         class="button"
+         [ngClass]="{'is-danger': report.hasErrorType(r,'danger'),
+                                'is-warning': report.hasErrorType(r,'warning'),
+                                'is-outlined': !report.hasFilter('reasons',r),
+                                'is-hidden': !report.hasError(r)}"
+         (click)="toggleReportFilter(r); report.page.offset=0">
+        {{ r | translate }}
+      </a>
+    </div>
+    <message-box *ngIf="!!report.filter().reasons"
+                 [type]="report.errorType[report.filter().reasons]"
+                 [messages]="report.errorReasonMessage(report.filter().reasons)">
+    </message-box>
+
+    <ode-panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="true">
+      <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
+    </ode-panel-section>
+
+    <div *ngIf="!globalError.message" class="report">
+      <table class="report">
+        <thead>
+        <tr>
+          <th (click)="report.setUserOrder('line')" class="report-table-th_line"><i class="fa fa-sort report-table-th_sort"></i>{{ 'line' | translate }}</th>
+          <th (click)="report.setUserOrder('state')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'operation' | translate }}</th>
+          <th (click)="report.setUserOrder('lastName')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'lastName' | translate }}</th>
+          <th (click)="report.setUserOrder('firstName')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'firstName' | translate }}</th>
+          <th (click)="report.setUserOrder('birthDate')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'birthDate' | translate }}</th>
+          <th *ngIf="!showAlias()" (click)="report.setUserOrder('login')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'login' | translate }}</th>
+          <th *ngIf="showAlias()" (click)="report.setUserOrder('loginAlias')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'import.report.column.loginAlias' | translate }}</th>
+          <th (click)="report.setUserOrder('profiles')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'profile' | translate }}</th>
+          <th (click)="report.setUserOrder('externalId')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'externalId.short'| translate }}</th>
+          <th (click)="report.setUserOrder('classesStr')"><i class="fa fa-sort report-table-th_sort"></i>{{ 'classes' | translate }}</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th></th>
+          <th>
+            <input type="text"
+                   [ngModel]="report.columnFilter.lastName"
+                   (ngModelChange)="report.columnFilter.lastName = $event; report.page.offset = 0;"
+                   [attr.placeholder]="'search' | translate"/>
+          </th>
+          <th>
+            <input type="text"
+                   [ngModel]="report.columnFilter.firstName"
+                   (ngModelChange)="report.columnFilter.firstName = $event; report.page.offset = 0;"
+                   [attr.placeholder]="'search' | translate"/>
+          </th>
+          <th></th>
+          <th></th>
+          <th>
+            <select [ngModel]="report.columnFilter.profiles"
+                    (ngModelChange)="report.columnFilter.profiles = $event; report.page.offset = 0;">
+              <option [value]=""></option>
+              <option *ngFor="let p of columns.profiles" [value]="p">
+                {{ p | translate }}
+              </option>
+            </select>
+          </th>
+          <th></th>
+          <th>
+            <select [ngModel]="report.columnFilter.classesStr"
+                    (ngModelChange)="report.columnFilter.classesStr = $event; report.page.offset = 0;">
+              <option [value]=""></option>
+              <option *ngFor="let c of report.getAvailableClasses() | orderBy: 'name'" [value]="c.name">
+                {{ c.name }}
+              </option>
+            </select>
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | orderBy: report.userOrder | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
+            [ngClass]="{'state-delete':user.state == 'Supprimé', 'is-danger': user.hasErrorsNotCorrected(), 'is-warning': user.hasWarnings()}"
+        >
+          <td>{{user.line}}</td>
+          <td>
+            <select (change)="report.changeState($event, user)">
+              <option *ngFor="let state of report.possibleState(user.state)" [value]="state" [selected]="state === user.state">
+                {{state}}
+              </option>
+            </select>
+          </td>
+          <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
+            <input [(ngModel)]="user.lastName"
+                   placeholder="{{'empty.lastName' | translate}}"
+                   type="text"
+                   (keyup.enter)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; lastNameInput.disabled = true; lastNameEditIcon.show = true;"
+                   disabled="true"
+                   #lastNameInput />
+            <i #lastNameEditIcon
+               class="fa fa-pencil"
+               [ngStyle]="{'display': lastNameValidateIcon.show == true ? 'none' : 'inline'}"
+               (click)="lastNameInput.disabled = undefined; lastNameEditIcon.show = false; lastNameValidateIcon.show = true"></i>
+            <i #lastNameValidateIcon
+               class="fa fa-check"
+               [ngStyle]="{'display': lastNameValidateIcon.show == undefined || lastNameValidateIcon.show == false ? 'none' : 'inline'}"
+               (click)="report.update(user, 'lastName'); lastNameValidateIcon.show = false; lastNameInput.disabled = true; lastNameEditIcon.show = true;"></i>
+          </td>
+          <td [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
+            <input [(ngModel)]="user.firstName"
+                   placeholder="{{'empty.firstName' | translate}}"
+                   type="text"
+                   (keyup.enter)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; firstNameInput.disabled = true; firstNameEditIcon.show = true;"
+                   disabled="true"
+                   #firstNameInput />
+            <i #firstNameEditIcon
+               class="fa fa-pencil"
+               [ngStyle]="{'display': firstNameValidateIcon.show == true ? 'none': 'inline'}"
+               (click)="firstNameInput.disabled = undefined; firstNameEditIcon.show = false; firstNameValidateIcon.show = true;"></i>
+            <i #firstNameValidateIcon
+               class="fa fa-check"
+               [ngStyle]="{'display': firstNameValidateIcon.show ? 'inline': 'none'}"
+               (click)="report.update(user, 'firstName'); firstNameValidateIcon.show = false; firstNameInput.disabled = true; firstNameEditIcon.show = true;"></i>
+          </td>
+          <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
+            <ode-date-picker [(ngModel)]="user.birthDate"
+                         (changeDate)="report.update(user, 'birthDate')"
+                         name="birthDate"
+                         minDate="1900-01-01"
+                         maxDate="today">
+            </ode-date-picker>
+          </td>
+          <td *ngIf="!showAlias()"><span>{{user.login}}</span></td>
+          <td *ngIf="showAlias()"
+              [ngClass]="{'is-success':user.isCorrected('loginAlias'), 'is-danger': user.isWrong('loginAlias'), 'clickable':true}">
+            <input [(ngModel)]="user.loginAlias"
+                   placeholder="{{'empty.loginAlias' | translate}}"
+                   type="text"
+                   (keyup.enter)="report.update(user, 'loginAlias'); loginAliasValidateIcon.show = false; loginAliasInput.disabled = true; loginAliasEditIcon.show = true;"
+                   disabled="true"
+                   #loginAliasInput />
+            <i #loginAliasEditIcon
+               class="fa fa-pencil"
+               [ngStyle]="{'display': loginAliasValidateIcon.show ? 'none' : 'inline'}"
+               (click)="loginAliasInput.disabled = undefined; loginAliasEditIcon.show = false; loginAliasValidateIcon.show = true"></i>
+            <i #loginAliasValidateIcon
+               class="fa fa-check"
+               [ngStyle]="{'display': loginAliasValidateIcon.show == undefined || loginAliasValidateIcon.show == false ? 'none' : 'inline'}"
+               (click)="report.update(user, 'loginAlias'); loginAliasValidateIcon.show = false; loginAliasInput.disabled = true; loginAliasEditIcon.show = true;"></i>
+          </td>
+          <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
+          <td><span>{{user.externalId}}</span></td>
+          <td class="report-td-classes"><span>{{user.classesStr}}</span></td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="pager">
+        <ode-pager
+          [(offset)]="report.page.offset"
+          [limit]="report.page.limit"
+          [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
+        </ode-pager>
+      </div>
+    </div>
+  </ode-step>
+  <ode-step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
+    <div *ngIf="globalError.message else noGlobalError">
+      <h2>{{ 'import.finish.error' | translate }}</h2>
+      <message-box [type]="'danger'" [messages]="[[globalError.message, {error: globalError.param}]]"></message-box>
+      <ode-panel-section *ngFor="let key of globalError.profile | keys" section-title="{{'import.file.'+ key}}" [folded]="false">
+        <message-box [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
+      </ode-panel-section>
+      <button
+        (click)="cancel()"
+        [title]="'import.finish.otherImport' | translate">
+        {{ 'import.finish.otherImport' | translate }}
+      </button>
+    </div>
+    <ng-template #noGlobalError>
+      <h2>{{ 'import.finish' | translate }}</h2>
+      <message-box [type]="'success'" [messages]="['import.finish.success']">
+      </message-box>
+      <div>
+        <button
+          (click)="cancel()"
+          [title]="'import.finish.otherImport' | translate">
+          {{ 'import.finish.otherImport' | translate }}
+        </button>
+        <button
+          [routerLink]="'/admin/' + importInfos.structureId + '/users'"
+          [queryParams]="{sync: true}"
+          [title]="'import.finish.usersList' | translate">
+          {{ 'import.finish.usersList' | translate }}
+        </button>
+        <button
+          (click)="downloadReport()">
+          {{ 'import.finish.report' | translate }}
+        </button>
+      </div>
+      <div class="step5-notebene">
+        <s5l>import.finish.notabene.sync</s5l>
+      </div>
+    </ng-template>
+  </ode-step>
+</ode-wizard>
