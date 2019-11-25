@@ -69,16 +69,18 @@
                         <label><i18n>auth.password</i18n></label>
                         <input-password type="password" ng-model="user.password" name="password" id="password" tabindex=2></input-password>
                     </p>
-                    <p>
 						<label>
 							<input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
 						</label>
                     </p>
                     <input type="hidden" name="callBack" ng-value="callBack" />
                     <input type="hidden" name="details" ng-value="details" />
-                    <div class="row">
-                        <a class="cell" href="/auth/forgot#/password"><small><i18n>need.help</i18n></small></a>
-                        <button tabindex="3" class="right-magnet"><i18n>auth.login</i18n></button>
+                    <div class="flex-magnet-container">
+                        <div class="cell">
+													<a class="forgot-link" href="/auth/forgot#/id"><small><i18n>missing.id</i18n></small></a>
+													<a class="forgot-link" href="/auth/forgot#/password"><small><i18n>missing.password</i18n></small></a>
+												</div>
+                        <button tabindex="3" class="flex-magnet-bottom-right"><i18n>auth.login</i18n></button>
                     </div>
                 </form>
             </div>

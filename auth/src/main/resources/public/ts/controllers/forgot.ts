@@ -86,10 +86,12 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 	//===Routes
 	route({
 		actionId: function(params){
-			$scope.user.mode = "id"
+			$scope.user.mode = "id";
+			$scope.showWhat = "forgotId";
 		},
 		actionPassword: function(params){
-			$scope.user.mode = "password"
+			$scope.user.mode = "password";
+			$scope.showWhat = "forgotPassword";
 		}
 	})
 	//===Public methods
