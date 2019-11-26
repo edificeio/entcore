@@ -6,6 +6,7 @@ import {GroupsStore} from '../../../../groups.store';
 import {globalStore, StructureModel, UserModel} from '../../../../../core/store';
 import {SelectOption} from '../../../../../shared/ux/components/multi-select/multi-select.component';
 import {OrderPipe} from '../../../../../shared/ux/pipes';
+import {DeleteFilter} from '../../../../../core/services/userlist.filters.service';
 
 @Component({
     selector: 'ode-group-input-users',
@@ -17,6 +18,7 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
     @Input() model: UserModel[] = [];
 
     private filtersUpdatesSubscriber: Subscription;
+    public excludeDeletedUsers: DeleteFilter;
 
     // list elements stored by store pipe in list component
     // (takes filters in consideration)
@@ -37,6 +39,8 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
                 private cdRef: ChangeDetectorRef,
                 private orderPipe: OrderPipe,
                 public listFilters: UserlistFiltersService) {
+        this.excludeDeletedUsers = new DeleteFilter(listFilters.$updateSubject);
+        this.excludeDeletedUsers.outputModel = ["users.not.deleted"];
     }
 
     ngOnInit(): void {

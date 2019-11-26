@@ -207,6 +207,22 @@ class AdmlFilter extends UserFilter<string> {
     }
 }
 
+export class DeleteFilter extends UserFilter<string>
+{
+    type = "deleteDate";
+    label = "delete.multi.combo.title";
+    comboModel = ["users.deleted", "users.not.deleted"];
+    order = "+";
+    filterProp = "this";
+
+    filter = (deleteDate: string) => {
+        let outputModel = this.outputModel;
+        return outputModel.length == 0
+            || outputModel.indexOf("users.deleted") != -1 && deleteDate != null
+            || outputModel.indexOf("users.not.deleted") != -1 && deleteDate == null;
+    };
+};
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -225,6 +241,7 @@ export class UserlistFiltersService {
     private mailFilter = new MailFilter(this.$updateSubject);
     private admlFilter = new AdmlFilter(this.$updateSubject);
     private dateFilter = new DateFilter(this.$updateSubject);
+    private deleteFilter = new DeleteFilter(this.$updateSubject);
 
     filters: UserFilterList<any> = [
         this.profileFilter,
@@ -237,7 +254,8 @@ export class UserlistFiltersService {
         this.duplicatesFilter,
         this.mailFilter,
         this.admlFilter,
-        this.dateFilter
+        this.dateFilter,
+        this.deleteFilter,
     ];
 
     resetFilters() {
@@ -286,20 +304,42 @@ export class UserlistFiltersService {
         this.dateFilter.comboModel = combos;
     }
 
-    getFormattedFilters(): any {
+    getFormattedFilters(customFilters?: UserFilter<any> | UserFilterList<any>): any {
         const formattedFilters = {};
         for (let i = 0; i < this.filters.length; i++) {
             const filter = this.filters[i];
             formattedFilters[filter.type] = filter.filter;
         }
+        if(customFilters != null)
+        {
+            if(Array.isArray(customFilters) == false)
+                customFilters = [ customFilters as UserFilter<any> ];
+
+            customFilters = customFilters as UserFilterList<any>;
+            for(let i = 0; i < customFilters.length; i++) {
+                let filter = customFilters[i];
+                formattedFilters[filter.type] = filter.filter;
+            }
+        }
         return formattedFilters;
     }
 
-    getFormattedOutputModels(): any {
+    getFormattedOutputModels(customFilters?: UserFilter<any> | UserFilterList<any>): any {
         const outputModels = {};
         for (let i = 0; i < this.filters.length; i++) {
             const filter = this.filters[i];
             outputModels[filter.type] = filter.outputModel;
+        }
+        if(customFilters != null)
+        {
+            if(Array.isArray(customFilters) == false)
+                customFilters = [ customFilters as UserFilter<any> ];
+
+            customFilters = customFilters as UserFilterList<any>;
+            for(let i = 0; i < customFilters.length; i++) {
+                let filter = customFilters[i];
+                outputModels[filter.type] = filter.outputModel;
+            }
         }
         return outputModels;
     }
