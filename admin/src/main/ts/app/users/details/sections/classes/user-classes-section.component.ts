@@ -85,15 +85,17 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
     }
 
     ngOnInit() {
-        this.showClassesLightbox = true;
         this.updateLightboxClasses();
         this.filterManageableGroups();
+        this.showClassesLightbox = true;
         this.showClassesLightbox = false;
     }
 
     ngOnChanges() {
         this.updateLightboxClasses();
         this.filterManageableGroups();
+        this.showClassesLightbox = true;
+        this.showClassesLightbox = false;
     }
 
     private filterManageableGroups() {
