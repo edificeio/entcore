@@ -48,7 +48,8 @@ import { Classe } from '../../../../core/store/models';
                           *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
                         <button class="noflex"
                                 *ngIf="!details.isHeadTeacherManual(this.structure.externalId, classe)"
-                                (click)="addHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
+                                (click)="addHeadTeacherManual(this.structure.id, this.structure.externalId, this.structure.name,
+                                 classe)">
                             <s5l>headTeacherManual.add</s5l>
                         </button>
                         <button *ngIf="details.isHeadTeacherManual(this.structure.externalId, classe)"
@@ -122,8 +123,8 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
     /**
      * Ajout du droit de professeur principal
      */
-    addHeadTeacherManual(structureId: string, externalId: string, classe: any) {
-        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(structureId, externalId, classe))
+    addHeadTeacherManual(structureId: string, externalId: string, structureName :string, classe: any) {
+        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(structureId, externalId, structureName, classe))
             .then(() => {
                 this.ns.success({
                     key: 'notify.user.add.head.teacher.content',

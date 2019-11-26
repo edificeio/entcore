@@ -50,24 +50,25 @@ public interface UserService {
 	void list(String profileGroupId, boolean itSelf, String userId, Handler<Either<String, JsonArray>> handler);
 
 	void list(JsonArray groupIds, JsonArray userIds, boolean itSelf, String userId,
-			Handler<Either<String, JsonArray>> handler);
+			  Handler<Either<String, JsonArray>> handler);
 
 	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
 
 	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
-			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+				   UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
-			String filterActivated, String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+				   String filterActivated, String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void delete(List<String> users, Handler<Either<String, JsonObject>> result);
 
 	void restore(List<String> users, Handler<Either<String, JsonObject>> result);
 
 	void addFunction(String id, String functionCode, JsonArray scope, String inherit,
-			Handler<Either<String, JsonObject>> result);
+					 Handler<Either<String, JsonObject>> result);
 
-	void addHeadTeacherManual(String id, String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result);
+	void addHeadTeacherManual(String id, String structureExternalId, String classExternalId, String structureName,
+							  Handler<Either<String, JsonObject>> result);
 
 	void updateHeadTeacherManual(String id, String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result);
 

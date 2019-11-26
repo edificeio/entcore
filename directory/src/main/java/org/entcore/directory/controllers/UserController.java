@@ -81,7 +81,7 @@ public class UserController extends BaseController {
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 	}
 
@@ -97,8 +97,8 @@ public class UserController extends BaseController {
 
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
-						   !user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
-						   !user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
+								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
+								!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
 							body.remove("lastName");
 							body.remove("firstName");
 						}
@@ -239,7 +239,7 @@ public class UserController extends BaseController {
 						.put("moodImg", mood);
 				if (mood != null && !mood.trim().isEmpty() && !mood.equals("default")) {
 					notification.notifyTimeline(request, "userbook.userbook_mood", user, userIds,
-						user.getUserId() + System.currentTimeMillis() + "mood", params);
+							user.getUserId() + System.currentTimeMillis() + "mood", params);
 				}
 				if (motto != null && !motto.trim().isEmpty()) {
 					notification.notifyTimeline(request, "userbook.userbook_motto", user, userIds,
@@ -312,24 +312,24 @@ public class UserController extends BaseController {
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
 									processTemplate(request, new JsonObject().put("list", r.right().getValue()).put(profile,true),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
-											@Override
-											public void handle(final String export) {
-												if (export != null) {
-													String filename = request.params().get("filename") != null ?
-															request.params().get("filename") : "export"+exportType+"."+format;
-													if ("xml".equals(format)) {
-														request.response().putHeader("Content-Type", "text/xml");
-													} else {
-														request.response().putHeader("Content-Type", "application/csv");
-													}
-													request.response().putHeader("Content-Disposition",
-															"attachment; filename="+filename);
-													request.response().end('\ufeff' + export);
+										@Override
+										public void handle(final String export) {
+											if (export != null) {
+												String filename = request.params().get("filename") != null ?
+														request.params().get("filename") : "export"+exportType+"."+format;
+												if ("xml".equals(format)) {
+													request.response().putHeader("Content-Type", "text/xml");
 												} else {
-													renderError(request);
+													request.response().putHeader("Content-Type", "application/csv");
 												}
+												request.response().putHeader("Content-Disposition",
+														"attachment; filename="+filename);
+												request.response().end('\ufeff' + export);
+											} else {
+												renderError(request);
 											}
-										});
+										}
+									});
 								} else {
 									renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 								}
@@ -355,19 +355,19 @@ public class UserController extends BaseController {
 			public void handle(JsonObject event) {
 				userService.addFunction(userId, event.getString("functionCode"),
 						event.getJsonArray("scope"), event.getString("inherit", ""), r -> {
-					if (r.isRight()) {
-						final String groupId = (String) r.right().getValue().remove("groupId");
-						if (isNotEmpty(groupId)) {
-							JsonObject j = new JsonObject()
-									.put("action", "setCommunicationRules")
-									.put("groupId", groupId);
-							eb.send("wse.communication", j);
-						}
-						renderJson(request, r.right().getValue());
-					} else {
-						badRequest(request, r.left().getValue());
-					}
-				});
+							if (r.isRight()) {
+								final String groupId = (String) r.right().getValue().remove("groupId");
+								if (isNotEmpty(groupId)) {
+									JsonObject j = new JsonObject()
+											.put("action", "setCommunicationRules")
+											.put("groupId", groupId);
+									eb.send("wse.communication", j);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								badRequest(request, r.left().getValue());
+							}
+						});
 			}
 		});
 	}
@@ -381,7 +381,8 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "addHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				userService.addHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId") ,defaultResponseHandler(request));
+				userService.addHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"),
+						event.getString("structureName"), defaultResponseHandler(request));
 			}
 		});
 	}
@@ -394,7 +395,7 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"), defaultResponseHandler(request));
+				userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"), defaultResponseHandler(request));
 			}
 		});
 	}
