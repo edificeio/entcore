@@ -1,17 +1,22 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {CasType} from '../CasType';
-import {ConnectorModel, GroupModel, Session, SessionModel} from '../../../../core/store';
 import {ServicesService, WorkspaceDocument} from '../../../services.service';
 import {ActivatedRoute, Data, Params, Router} from '@angular/router';
 import {ServicesStore} from '../../../services.store';
-import {NotifyService, routing, SpinnerService} from '../../../../core/services';
 import {Location} from '@angular/common';
 import {BundlesService} from 'sijil';
 import {ConnectorPropertiesComponent} from '../properties/connector-properties.component';
 import {Assignment, Profile} from '../../../shared/services-types';
 import {ExportFormat} from '../export/connector-export.component';
 import {catchError, tap} from 'rxjs/operators';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { ConnectorModel } from 'src/app/core/store/models/connector.model';
+import { routing } from 'src/app/core/services/routing.service';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 
 
 

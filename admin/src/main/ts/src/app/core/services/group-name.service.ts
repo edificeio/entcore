@@ -1,4 +1,4 @@
-import {GroupModel} from '../store/models';
+import {GroupModel} from '../store/models/group.model';
 import {BundlesService} from 'sijil';
 import {Injectable} from '@angular/core';
 

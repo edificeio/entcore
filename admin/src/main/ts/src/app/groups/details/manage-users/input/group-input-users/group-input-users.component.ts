@@ -1,12 +1,16 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';
 
-import {NotifyService, SpinnerService, UserlistFiltersService, UserListService} from '../../../../../core/services';
 import {GroupsStore} from '../../../../groups.store';
-import {globalStore, StructureModel, UserModel} from '../../../../../core/store';
 import {SelectOption} from '../../../../../shared/ux/components/multi-select/multi-select.component';
 import {OrderPipe} from '../../../../../shared/ux/pipes';
-import {DeleteFilter} from '../../../../../core/services/userlist.filters.service';
+import {DeleteFilter, UserlistFiltersService} from '../../../../../core/services/userlist.filters.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { globalStore } from 'src/app/core/store/global.store';
 
 @Component({
     selector: 'ode-group-input-users',

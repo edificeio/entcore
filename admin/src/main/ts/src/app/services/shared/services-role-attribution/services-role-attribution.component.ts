@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {GroupModel, RoleModel} from '../../../core/store/models';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { RoleModel } from 'src/app/core/store/models/role.model';
 
 @Component({
     selector: 'services-role-attribution',

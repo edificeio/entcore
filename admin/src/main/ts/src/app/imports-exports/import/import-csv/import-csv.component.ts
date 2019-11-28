@@ -1,7 +1,6 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
-import {routing, SpinnerService} from '../../../core/services';
 import {BundlesService} from 'sijil';
 import {ImportCSVService} from '../import-csv.service';
 import {Error, Profile, User, UserEditableProps} from '../user.model';
@@ -9,6 +8,8 @@ import {WizardComponent} from '../../../shared/ux/components';
 import {NotifyService} from '../../../core/services/notify.service';
 import {Messages} from '../messages.model';
 import {ObjectURLDirective} from '../../../shared/ux/directives/object-url.directive';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Component({
     selector: 'ode-import-csv',

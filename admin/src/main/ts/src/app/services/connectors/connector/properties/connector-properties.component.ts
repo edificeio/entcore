@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild} from '@angular/core';
-import {ConnectorModel} from '../../../../core/store';
+import {ConnectorModel} from '../../../../core/store/models/connector.model';
 import {CasType} from '../CasType';
 import {NgForm} from '@angular/forms';
 import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';

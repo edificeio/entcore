@@ -1,5 +1,6 @@
 import http from 'axios';
-import {FlashMessageModel, StructureModel} from '../../core/store';
+import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 export class MessageFlashService {
 

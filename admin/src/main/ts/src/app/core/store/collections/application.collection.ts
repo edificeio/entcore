@@ -1,5 +1,5 @@
-import {ApplicationModel} from '..';
 import {Collection, Mix} from 'entcore-toolkit';
+import { ApplicationModel } from '../models/application.model';
 
 export class ApplicationCollection extends Collection<ApplicationModel> {
 

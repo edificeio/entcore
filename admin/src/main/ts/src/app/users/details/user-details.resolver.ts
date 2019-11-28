@@ -1,7 +1,9 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve, Router} from '@angular/router';
-import {routing, SpinnerService} from '../../core/services';
-import {globalStore, UserModel} from '../../core/store';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { globalStore } from 'src/app/core/store/global.store';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Injectable()
 export class UserDetailsResolver implements Resolve<UserModel | Error> {

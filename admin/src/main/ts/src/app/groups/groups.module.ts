@@ -10,7 +10,8 @@ import {GroupsResolver} from './groups.resolver';
 import {GroupDetailsResolver} from './details/group-details.resolver';
 import {GroupInternalCommunicationRuleResolver} from './details/group-internal-communication-rule.resolver';
 import {GroupsStore} from './groups.store';
-import {GroupNameService, UserlistFiltersService} from '../core/services';
+import {GroupNameService} from '../core/services/group-name.service';
+import {UserlistFiltersService} from '../core/services/userlist.filters.service';
 
 import {GroupsComponent} from './groups/groups.component';
 import {GroupCreateComponent} from './create/group-create/group-create.component';
@@ -24,7 +25,7 @@ import {GroupsTypeViewComponent} from './type-view/groups-type-view.component';
 import {GroupsService} from './groups.service';
 import {CommunicationModule} from '../communication/communication.module';
 import {SmartGroupCommunicationComponent} from './communication/smart-group-communication/smart-group-communication.component';
-import {globalStoreProvider} from '../core/store';
+import {globalStoreProvider} from '../core/store/global.store';
 
 @NgModule({
     imports: [

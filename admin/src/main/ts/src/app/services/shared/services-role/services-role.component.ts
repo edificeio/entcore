@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {GroupModel, RoleModel} from '../../../core/store/models';
+import { RoleModel } from 'src/app/core/store/models/role.model';
+import { GroupModel } from 'src/app/core/store/models/group.model';
 
 @Component({
     selector: 'services-role',
@@ -9,6 +10,6 @@ export class ServicesRoleComponent {
     @Input() role: RoleModel;
     @Input() disabled: boolean;
 
-    @Output('openLightbox') openLightbox: EventEmitter<{}> = new EventEmitter();
-    @Output('onRemove') onRemove: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
+    @Output() openLightbox: EventEmitter<{}> = new EventEmitter();
+    @Output() onRemove: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
 }

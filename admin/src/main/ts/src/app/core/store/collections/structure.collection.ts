@@ -1,4 +1,4 @@
-import {StructureModel} from '..';
+import {StructureModel} from '../models/structure.model';
 import {Collection} from 'entcore-toolkit';
 
 export class StructureCollection extends Collection<StructureModel> {

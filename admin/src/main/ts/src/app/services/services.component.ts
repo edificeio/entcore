@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Data, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {ServicesStore} from './services.store';
-import {routing} from '../core/services';
+import {routing} from '../core/services/routing.service';
 import {ServicesService} from './services.service';
 
 @Component({

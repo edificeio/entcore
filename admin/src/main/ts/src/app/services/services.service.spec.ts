@@ -1,6 +1,6 @@
 import {ServicesService} from './services.service';
 import {TestBed} from '@angular/core/testing';
-import {ConnectorModel} from '../core/store';
+import {ConnectorModel} from '../core/store/models/connector.model';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {Profile} from './shared/services-types';
 

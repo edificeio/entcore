@@ -1,4 +1,7 @@
-import {AbstractStore, ApplicationModel, ConnectorModel, StructureModel} from '../core/store';
+import { AbstractStore } from '../core/store/abstract.store';
+import { StructureModel } from '../core/store/models/structure.model';
+import { ApplicationModel } from '../core/store/models/application.model';
+import { ConnectorModel } from '../core/store/models/connector.model';
 
 export class ServicesStore extends AbstractStore {
 

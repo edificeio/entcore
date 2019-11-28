@@ -1,4 +1,4 @@
-import {UserModel} from '../store';
+import {UserModel} from '../store/models/user.model';
 import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 

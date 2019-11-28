@@ -5,11 +5,12 @@ import {routing} from '../../../core/services/routing.service';
 import {UserlistFiltersService} from '../../../core/services/userlist.filters.service';
 import {NotifyService} from '../../../core/services/notify.service';
 import {SpinnerService} from '../../../core/services/spinner.service';
-import {StructureModel, UserModel} from '../../../core/store';
 import {MassMailService} from '../mass-mail.service';
 import {BundlesService} from 'sijil';
 import {FilterPipe} from '../../../shared/ux/pipes';
 import {SelectOption} from '../../../shared/ux/components/multi-select/multi-select.component';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 @Component({
     selector: 'ode-mass-mail',

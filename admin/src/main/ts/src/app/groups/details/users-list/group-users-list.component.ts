@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 
-import {UserModel} from '../../../core/store';
-import {UserListService} from '../../../core/services';
+import {UserModel} from '../../../core/store/models/user.model';
+import {UserListService} from '../../../core/services/userlist.service';
 
 @Component({
     selector: 'ode-group-users-list',

@@ -3,11 +3,13 @@ import {AbstractControl, NgForm} from '@angular/forms';
 
 import {AbstractSection} from '../abstract.section';
 
-import {NotifyService, SpinnerService, UserListService} from '../../../../core/services';
 import {UserInfoService} from '../info/user-info.service';
 
-import {globalStore} from '../../../../core/store';
+import {globalStore} from '../../../../core/store/global.store';
 import {UsersStore} from '../../../users.store';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
 
 @Component({
     selector: 'ode-user-administrative-section',

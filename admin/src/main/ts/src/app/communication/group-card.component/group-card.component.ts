@@ -1,12 +1,14 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
-import {GroupModel} from '../../core/store/models';
+import {GroupModel} from '../../core/store/models/group.model';
 import {CommunicationRulesService} from '../communication-rules.service';
-import {GroupNameService, NotifyService, SpinnerService} from '../../core/services';
 import {getStructureIdOfGroup, getStructureOfGroup} from '../communication-rules.component/communication-rules.component';
 import {Subject} from 'rxjs';
 import {filter, first, mergeMap, tap} from 'rxjs/operators';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { GroupNameService } from 'src/app/core/services/group-name.service';
 
 const css = {
     title: 'lct-group-card-title',

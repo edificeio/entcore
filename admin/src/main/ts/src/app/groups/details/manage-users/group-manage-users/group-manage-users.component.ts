@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnI
 import {ActivatedRoute} from '@angular/router';
 import {Subscription} from 'rxjs';
 
-import {UserModel} from '../../../../core/store/models';
+import {UserModel} from '../../../../core/store/models/user.model';
 import {GroupsStore} from '../../../groups.store';
 
 @Component({

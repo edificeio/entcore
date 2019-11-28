@@ -2,9 +2,11 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data} from '@angular/router';
 import {ServicesStore} from '../../../services.store';
-import {GroupModel, RoleModel, StructureModel} from '../../../../core/store';
 import {ServicesService} from '../../../services.service';
-import {routing} from '../../../../core/services';
+import {routing} from '../../../../core/services/routing.service';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { RoleModel } from 'src/app/core/store/models/role.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 @Component({
     selector: 'smart-application',

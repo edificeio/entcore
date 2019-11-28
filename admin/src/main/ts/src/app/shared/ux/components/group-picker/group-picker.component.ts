@@ -1,7 +1,8 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output} from '@angular/core';
-import {GroupModel, GroupType, StructureModel} from '../../../../core/store';
 import {SelectOption} from '../multi-select/multi-select.component';
 import {OrderPipe} from '../../pipes';
+import { GroupModel, GroupType } from 'src/app/core/store/models/group.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 const css = {
     filterButton: 'lct-filters'

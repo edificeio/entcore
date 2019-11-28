@@ -1,6 +1,5 @@
-import {Session} from '..';
-
 import http from 'axios';
+import { Session } from '../mappings/session';
 
 export class SessionModel {
 

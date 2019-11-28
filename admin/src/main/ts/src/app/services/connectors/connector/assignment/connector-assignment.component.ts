@@ -1,6 +1,8 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ConnectorModel, GroupModel, RoleModel} from '../../../../core/store/models';
 import {Assignment} from '../../../shared/services-types';
+import { ConnectorModel } from 'src/app/core/store/models/connector.model';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { RoleModel } from 'src/app/core/store/models/role.model';
 
 @Component({
     selector: 'connector-assignment',

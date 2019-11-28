@@ -1,6 +1,6 @@
 import http from 'axios';
 import qs from 'qs';
-import {UserModel} from '../../core/store';
+import {UserModel} from '../../core/store/models/user.model';
 
 export class MassMailService {
 

@@ -2,9 +2,13 @@ import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {AbstractSection} from '../abstract.section';
-import {NotifyService, SpinnerService, UserListService} from '../../../../core/services';
-import {globalStore, Session, SessionModel} from '../../../../core/store';
 import {UsersStore} from '../../../users.store';
+import { UserListService } from 'src/app/core/services/userlist.service';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
+import { globalStore } from 'src/app/core/store/global.store';
 
 @Component({
     selector: 'ode-user-duplicates-section',

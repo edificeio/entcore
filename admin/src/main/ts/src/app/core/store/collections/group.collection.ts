@@ -1,5 +1,5 @@
 import {Collection} from 'entcore-toolkit';
-import {GroupModel} from '..';
+import {GroupModel} from '../models/group.model';
 
 export class GroupCollection extends Collection<GroupModel> {
 

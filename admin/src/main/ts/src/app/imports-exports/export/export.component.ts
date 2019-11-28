@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@an
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../core/services/routing.service';
-import {StructureModel} from '../../core/store';
+import {StructureModel} from '../../core/store/models/structure.model';
 import {SelectOption} from '../../shared/ux/components/multi-select/multi-select.component';
 import {OrderPipe} from '../../shared/ux/pipes';
 

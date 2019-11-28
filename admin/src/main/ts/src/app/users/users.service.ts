@@ -33,7 +33,7 @@ export interface BackendDirectoryUserResponse {
 }
 
 @Injectable()
-export class UserService {
+export class UsersService {
 
     constructor(private http: HttpClient) {
     }

@@ -2,10 +2,10 @@ import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 import {AbstractSection} from '../abstract.section';
 import {HttpClient} from '@angular/common/http';
 import {UsedSpace} from './UsedSpace';
-import {UserModel} from '../../../../core/store';
+import {UserModel} from '../../../../core/store/models/user.model';
 import {MaxQuotas} from './MaxQuotas';
 import {getUnit, Unit, UNITS} from '../../../../shared/utils/math';
-import {NotifyService} from '../../../../core/services';
+import {NotifyService} from '../../../../core/services/notify.service';
 
 @Component({
     selector: 'ode-user-quota-section',

@@ -1,8 +1,10 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 
-import {globalStore, StructureModel} from '../core/store';
-import {ProfilesService, SpinnerService} from '../core/services';
+import { StructureModel } from '../core/store/models/structure.model';
+import { globalStore } from '../core/store/global.store';
+import { SpinnerService } from '../core/services/spinner.service';
+import { ProfilesService } from '../core/services/profiles.service';
 
 @Injectable()
 export class StructureResolver implements Resolve<StructureModel> {

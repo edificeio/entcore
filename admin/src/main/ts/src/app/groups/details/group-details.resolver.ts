@@ -1,8 +1,11 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot} from '@angular/router';
 
-import {NotifyService, routing, SpinnerService} from '../../core/services';
-import {GlobalStore, GroupModel} from '../../core/store';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { GlobalStore } from 'src/app/core/store/global.store';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Injectable()
 export class GroupDetailsResolver implements Resolve<GroupModel> {

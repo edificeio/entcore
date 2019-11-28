@@ -3,9 +3,9 @@ import {ActivatedRoute, Data} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {BundlesService} from 'sijil';
 
-import {routing, UserlistFiltersService} from '../../core/services';
 import {UsersStore} from '../users.store';
-import {UserFilter} from '../../core/services/userlist.filters.service';
+import {UserFilter, UserlistFiltersService} from '../../core/services/userlist.filters.service';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Component({
     selector: 'ode-user-filters',

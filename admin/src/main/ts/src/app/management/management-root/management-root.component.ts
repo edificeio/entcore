@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {routing} from '../../core/services/routing.service';
-import {StructureModel} from '../../core/store';
+import {StructureModel} from '../../core/store/models/structure.model';
 
 @Component({
     selector: 'ode-management-root',

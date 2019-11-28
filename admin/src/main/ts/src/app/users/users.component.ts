@@ -2,10 +2,12 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
-import { StructureModel } from '../core/store';
-import { routing } from '../core/services/routing.service';
-import { SpinnerService, UserlistFiltersService, UserListService } from '../core/services';
-import { UsersStore } from './users.store';
+import {StructureModel} from '../core/store/models/structure.model';
+import {routing} from '../core/services/routing.service';
+import {UsersStore} from './users.store';
+import { UserListService } from '../core/services/userlist.service';
+import { UserlistFiltersService } from '../core/services/userlist.filters.service';
+import { SpinnerService } from '../core/services/spinner.service';
 
 @Component({
     selector: 'ode-users-root',

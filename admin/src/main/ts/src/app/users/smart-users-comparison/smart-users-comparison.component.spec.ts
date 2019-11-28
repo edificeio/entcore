@@ -1,6 +1,6 @@
 import {SmartUsersComparisonComponent} from './smart-users-comparison.component';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {UserService} from '../user.service';
+import {UsersService} from '../users.service';
 import {Component, Input} from '@angular/core';
 import {UserOverview} from '../user-overview/user-overview.component';
 import {of} from 'rxjs';
@@ -9,7 +9,7 @@ describe('SmartUsersComparisonComponent', () => {
     let fixture: ComponentFixture<SmartUsersComparisonComponent>;
     let component: SmartUsersComparisonComponent;
     let markForCheck: jasmine.Spy;
-    let userService: UserService;
+    let userService: UsersService;
 
     beforeEach(() => {
         userService = jasmine.createSpyObj('UserService', ['fetch']);
@@ -19,7 +19,7 @@ describe('SmartUsersComparisonComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [SmartUsersComparisonComponent, MockUsersComparisonComponent],
-            providers: [{useValue: userService, provide: UserService}]
+            providers: [{useValue: userService, provide: UsersService}]
 
         }).compileComponents();
         fixture = TestBed.createComponent(SmartUsersComparisonComponent);

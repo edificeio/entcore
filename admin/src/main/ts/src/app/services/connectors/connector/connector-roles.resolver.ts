@@ -1,9 +1,11 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve, Router} from '@angular/router';
 
-import {globalStore} from '../../../core/store';
-import {RoleModel} from '../../../core/store/models';
-import {NotifyService, routing, SpinnerService} from '../../../core/services';
+import {globalStore} from '../../../core/store/global.store';
+import {RoleModel} from '../../../core/store/models/role.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Injectable()
 export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
