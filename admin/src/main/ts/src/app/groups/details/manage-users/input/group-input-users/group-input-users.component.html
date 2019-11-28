@@ -9,7 +9,7 @@
 <div class="flex-row-wrap">
   <ode-list
     [model]="model"
-    [filters]="listFilters.getFormattedFilters()"
+    [filters]="listFilters.getFormattedFilters(excludeDeletedUsers)"
     [inputFilter]="userLS.filterByInput"
     [sort]="userLS.sorts"
     [isSelected]="isSelected"
