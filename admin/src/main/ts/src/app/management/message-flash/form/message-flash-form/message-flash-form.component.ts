@@ -3,8 +3,7 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../../../core/services/routing.service';
-import {FlashMessageModel, StructureModel} from '../../../../core/store';
-import {NotifyService} from '../../../../core/services';
+import {NotifyService} from '../../../../core/services/notify.service';
 import {MessageFlashService} from '../../message-flash.service';
 import {MessageFlashStore} from '../../message-flash.store';
 import {BundlesService} from 'sijil';
@@ -21,6 +20,8 @@ import 'trumbowyg/plugins/colors/trumbowyg.colors.js';
 import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js';
 import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js';
 import 'trumbowyg/plugins/history/trumbowyg.history.js';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
 
 
 @Component({

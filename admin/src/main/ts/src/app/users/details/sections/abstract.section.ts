@@ -1,4 +1,7 @@
-import {globalStore, StructureModel, UserDetailsModel, UserModel} from '../../../core/store';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { UserDetailsModel } from 'src/app/core/store/models/userdetails.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { globalStore } from 'src/app/core/store/global.store';
 
 export abstract class AbstractSection {
     constructor() {

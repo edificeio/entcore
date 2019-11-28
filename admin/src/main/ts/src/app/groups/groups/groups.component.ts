@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
-import {routing} from '../../core/services';
+import {routing} from '../../core/services/routing.service';
 import {GroupsStore} from '../groups.store';
 import {CommunicationRulesService} from '../../communication/communication-rules.service';
 

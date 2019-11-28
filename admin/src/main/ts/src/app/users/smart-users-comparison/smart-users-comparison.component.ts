@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {UserOverview} from '../user-overview/user-overview.component';
-import {UserService} from '../user.service';
+import {UsersService} from '../users.service';
 import {forkJoin, Observable, Subject} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
 
@@ -27,7 +27,7 @@ export class SmartUsersComparisonComponent implements OnInit, OnChanges {
     private usersChanged: Subject<Users<string>> = new Subject();
 
     constructor(
-        private userService: UserService,
+        private userService: UsersService,
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.usersChanged.asObservable()

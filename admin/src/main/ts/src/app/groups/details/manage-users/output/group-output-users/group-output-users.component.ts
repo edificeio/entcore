@@ -1,8 +1,10 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 
 import {GroupsStore} from '../../../../groups.store';
-import {NotifyService, SpinnerService, UserListService} from '../../../../../core/services';
-import {UserModel} from '../../../../../core/store/models';
+import {UserModel} from '../../../../../core/store/models/user.model';
+import { UserListService } from 'src/app/core/services/userlist.service';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
 
 @Component({
     selector: 'ode-group-output-users',

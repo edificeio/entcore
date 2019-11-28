@@ -1,5 +1,8 @@
-import {ApplicationCollection, ConnectorCollection, GroupCollection, UserCollection} from '..';
 import {Model} from 'entcore-toolkit';
+import { UserCollection } from '../collections/user.collection';
+import { GroupCollection } from '../collections/group.collection';
+import { ApplicationCollection } from '../collections/application.collection';
+import { ConnectorCollection } from '../collections/connector.collection';
 
 export class StructureModel extends Model<StructureModel> {
 

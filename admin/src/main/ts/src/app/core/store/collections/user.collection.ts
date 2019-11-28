@@ -1,4 +1,4 @@
-import {UserModel} from '..';
+import {UserModel} from '../models/user.model';
 import {Collection} from 'entcore-toolkit';
 
 export class UserCollection extends Collection<UserModel> {

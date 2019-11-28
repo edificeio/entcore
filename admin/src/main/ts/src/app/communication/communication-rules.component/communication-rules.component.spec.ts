@@ -11,10 +11,11 @@ import {
   uniqueGroups
 } from './communication-rules.component';
 import {generateGroup} from '../../shared/utils';
-import {GroupModel, StructureModel} from '../../core/store/models';
 import {CommunicationRulesService} from '../communication-rules.service';
 import {GroupNameService, NotifyService} from '../../core/services';
 import {UsersStore} from '../../users/users.store';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;

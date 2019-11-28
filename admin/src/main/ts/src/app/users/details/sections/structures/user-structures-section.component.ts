@@ -1,8 +1,10 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
-import {NotifyService, SpinnerService} from '../../../../core/services';
-import {globalStore, StructureModel} from '../../../../core/store';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { globalStore } from 'src/app/core/store/global.store';
 
 @Component({
     selector: 'ode-user-structures-section',

@@ -1,8 +1,11 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
-import {GroupModel, StructureModel, UserModel} from '../../../../core/store/models';
-import {NotifyService, SpinnerService} from '../../../../core/services';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
 
 @Component({
     selector: 'ode-user-functionalgroups-section',

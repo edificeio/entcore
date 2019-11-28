@@ -1,9 +1,11 @@
 import {GroupsService} from './groups.service';
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {GroupCollection, GroupModel, StructureModel} from '../core/store';
 import {GroupsStore} from './groups.store';
 import {generateMockGroupModel} from '../shared/utils';
+import { StructureModel } from '../core/store/models/structure.model';
+import { GroupCollection } from '../core/store/collections/group.collection';
+import { GroupModel } from '../core/store/models/group.model';
 
 describe('GroupsService', () => {
     let groupsService: GroupsService;

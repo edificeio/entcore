@@ -10,7 +10,7 @@ import {ImportCSVComponent} from './import/import-csv/import-csv.component';
 import {MappingsTableComponent} from './import/mappings-table/mappings-table.component';
 import {ExportComponent} from './export/export.component';
 import {MassMailComponent} from './mailing/mass-mail/mass-mail.component';
-import {UserlistFiltersService} from '../core/services';
+import {UserlistFiltersService} from '../core/services/userlist.filters.service';
 
 @NgModule({
     imports: [

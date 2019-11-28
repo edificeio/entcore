@@ -1,5 +1,5 @@
 import {Model} from 'entcore-toolkit';
-import {GroupModel} from '../../store/models';
+import {GroupModel} from '../../store/models/group.model';
 
 export class UserDetailsModel extends Model<UserDetailsModel> {
 

@@ -1,4 +1,4 @@
-import {StructureModel} from '../../core/store';
+import {StructureModel} from '../../core/store/models/structure.model';
 import {ActivatedRoute} from '@angular/router';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';

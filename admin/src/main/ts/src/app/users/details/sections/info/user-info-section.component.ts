@@ -5,10 +5,13 @@ import {Observable, Subscription} from 'rxjs';
 import {BundlesService} from 'sijil';
 
 import {AbstractSection} from '../abstract.section';
-import {NotifyService, PlatformInfoService, SpinnerService} from '../../../../core/services';
 import {UserInfoService} from './user-info.service';
-import {StructureModel, UserModel} from '../../../../core/store/models';
 import {Config} from '../../../../core/resolvers/Config';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { PlatformInfoService } from 'src/app/core/services/platform-info.service';
 
 @Component({
     selector: 'ode-user-info-section',

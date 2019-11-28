@@ -1,9 +1,10 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Data, Router} from '@angular/router';
 
-import {globalStore, StructureModel} from '../store';
 import {Subscription} from 'rxjs';
 import {Config} from '../resolvers/Config';
+import { StructureModel } from '../store/models/structure.model';
+import { globalStore } from '../store/global.store';
 
 @Component({
     selector: 'ode-app-nav',

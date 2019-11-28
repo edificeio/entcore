@@ -1,13 +1,15 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {BundlesService} from 'sijil';
-import {GroupModel, StructureModel} from '../../core/store/models';
 import {CommunicationRulesService} from '../communication-rules.service';
-import {GroupNameService, NotifyService} from '../../core/services';
 import {Observable, Subject} from 'rxjs';
 import { standardise } from "../../shared/ux/helpers";
 
 import {catchError, filter, first, mergeMap, tap} from 'rxjs/operators';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { GroupNameService } from 'src/app/core/services/group-name.service';
 
 const css = {
     group: 'lct-user-communication-group',

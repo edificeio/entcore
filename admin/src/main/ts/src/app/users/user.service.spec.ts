@@ -1,19 +1,19 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {UserService} from './user.service';
+import {UsersService} from './users.service';
 
 describe('UserService', () => {
-    let userService: UserService;
+    let userService: UsersService;
     let httpTestingController: HttpTestingController;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [
-                UserService,
+                UsersService,
             ],
             imports: [HttpClientTestingModule]
         });
-        userService = TestBed.get(UserService);
+        userService = TestBed.get(UsersService);
         httpTestingController = TestBed.get(HttpTestingController);
     });
 

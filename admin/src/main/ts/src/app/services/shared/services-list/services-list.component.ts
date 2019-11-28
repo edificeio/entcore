@@ -1,13 +1,15 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
 import {ActivatedRoute, Data, Router} from '@angular/router';
-import {routing} from '../../../core/services';
+import {routing} from '../../../core/services/routing.service';
 import {Subscription} from 'rxjs/';
 
 import {ServicesStore} from '../../services.store';
-import {ApplicationModel, ConnectorModel, SessionModel} from '../../../core/store';
 import {InputFileService} from '../../../shared/ux/services';
 import {BundlesService} from 'sijil';
+import { ApplicationModel } from 'src/app/core/store/models/application.model';
+import { ConnectorModel } from 'src/app/core/store/models/connector.model';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 
 interface ServiceInfo {
     collection: any[];

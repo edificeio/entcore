@@ -12,31 +12,29 @@ import {UserCreateComponent} from './create/user-create.component';
 import {UserDetailsComponent} from './details/user-details.component';
 import {UserFiltersComponent} from './filters/user-filters.component';
 import {UserListComponent} from './list/user-list.component';
-import {
-  UserAafFunctionsComponent,
-  UserAdministrativeSectionComponent,
-  UserChildrenSectionComponent,
-  UserClassesSectionComponent,
-  UserDuplicatesSectionComponent,
-  UserFunctionalgroupsSectionComponent,
-  UserInfoSectionComponent,
-  UserManualgroupsSectionComponent,
-  UserQuotaSectionComponent,
-  UserRelativesSectionComponent,
-  UserStructuresSectionComponent
-} from './details/sections';
-import {UserlistFiltersService} from '../core/services';
 import {UserInfoService} from './details/sections/info/user-info.service';
 import {HttpClientModule} from '@angular/common/http';
-import {globalStoreProvider} from '../core/store';
+import {globalStoreProvider} from '../core/store/global.store';
 import {SmartUserCommunicationComponent} from './communication/smart-user-communication.component';
 import {UserGroupsResolver} from './communication/user-groups.resolver';
 import {GroupNameService} from '../core/services/group-name.service';
 import {UsersComparisonComponent} from './users-comparison/users-comparison.component';
 import {UserOverviewComponent} from './user-overview/user-overview.component';
 import {SmartUsersComparisonComponent} from './smart-users-comparison/smart-users-comparison.component';
-import {UserService} from './user.service';
+import {UsersService} from './users.service';
 import {CommunicationModule} from '../communication/communication.module';
+import { UserChildrenSectionComponent } from './details/sections/children/user-children-section.component';
+import { UserAafFunctionsComponent } from './details/sections/aaf-functions/user-aaf-functions-section.component';
+import { UserAdministrativeSectionComponent } from './details/sections/administrative/user-administrative-section.component';
+import { UserInfoSectionComponent } from './details/sections/info/user-info-section.component';
+import { UserRelativesSectionComponent } from './details/sections/relatives/user-relatives-section.component';
+import { UserStructuresSectionComponent } from './details/sections/structures/user-structures-section.component';
+import { UserDuplicatesSectionComponent } from './details/sections/duplicates/user-duplicates.section.component';
+import { UserClassesSectionComponent } from './details/sections/classes/user-classes-section.component';
+import { UserManualgroupsSectionComponent } from './details/sections/manualgroups/user-manualgroups-section.component';
+import { UserFunctionalgroupsSectionComponent } from './details/sections/functionalgroups/user-functionalgroups-section.component';
+import { UserQuotaSectionComponent } from './details/sections/quota/user-quota-section.component';
+import { UserlistFiltersService } from '../core/services/userlist.filters.service';
 
 @NgModule({
     imports: [
@@ -78,7 +76,7 @@ import {CommunicationModule} from '../communication/communication.module';
         UserInfoService,
         globalStoreProvider,
         GroupNameService,
-        UserService
+        UsersService
     ],
     exports: [
         RouterModule

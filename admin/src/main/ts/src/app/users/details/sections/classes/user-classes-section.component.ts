@@ -1,8 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
-import {NotifyService, SpinnerService} from '../../../../core/services';
-import {Classe} from '../../../../core/store/models';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { Classe } from 'src/app/core/store/models/user.model';
 
 @Component({
     selector: 'ode-user-classes-section',

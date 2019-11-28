@@ -1,7 +1,8 @@
 import {Component, Input, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
-import {StructureModel, UserModel} from '../../../../core/store';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 // aafFunctions exemple: [[1051,ENS,ENSEIGNEMENT,L0201,LETTRES CLASSIQUES]]
 @Component({

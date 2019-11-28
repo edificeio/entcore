@@ -4,13 +4,14 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {merge, Observable, Subject, Subscription} from 'rxjs';
 import {GroupsStore} from '../../groups.store';
 import {GroupIdAndInternalCommunicationRule} from '../group-internal-communication-rule.resolver';
-import {GroupModel, InternalCommunicationRule} from '../../../core/store/models';
 import {CommunicationRulesService} from '../../../communication/communication-rules.service';
-import {GroupNameService, NotifyService} from '../../../core/services';
 import {filter, first, map, mergeMap, switchMap, tap} from 'rxjs/operators';
 
 import {GroupsService} from '../../groups.service';
 import {trim} from '../../../shared/utils/string';
+import { InternalCommunicationRule, GroupModel } from 'src/app/core/store/models/group.model';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { GroupNameService } from 'src/app/core/services/group-name.service';
 
 @Component({
     selector: 'ode-group-detail',

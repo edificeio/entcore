@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {GroupModel, StructureModel} from '../../core/store/models';
 import {CommunicationRule} from '../communication-rules.component/communication-rules.component';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { GroupModel } from 'src/app/core/store/models/group.model';
 
 const css = {
     title: 'lct-groups-communication-title',

@@ -1,4 +1,4 @@
-import {ConnectorModel} from '..';
+import {ConnectorModel} from '../models/connector.model';
 import {Collection, Mix} from 'entcore-toolkit';
 
 export class ConnectorCollection extends Collection<ConnectorModel> {

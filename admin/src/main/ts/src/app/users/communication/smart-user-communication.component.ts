@@ -1,12 +1,15 @@
 import {ActivatedRoute, Data, Router} from '@angular/router';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {GroupModel, StructureModel, UserModel} from '../../core/store/models';
-import {routing, SpinnerService} from '../../core/services';
 import {CommunicationRulesService} from '../../communication/communication-rules.service';
 import {CommunicationRule} from '../../communication/communication-rules.component/communication-rules.component';
 import {UsersStore} from '../users.store';
-import {GlobalStore} from '../../core/store';
 import {Subscription} from 'rxjs';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { GlobalStore } from 'src/app/core/store/global.store';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { routing } from 'src/app/core/services/routing.service';
 
 @Component({
     selector: 'ode-smart-user-communication',

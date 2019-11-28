@@ -2,11 +2,12 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@an
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
-import {FlashMessageModel, StructureModel} from '../../../core/store';
-import {NotifyService} from '../../../core/services';
+import {NotifyService} from '../../../core/services/notify.service';
 import {MessageFlashService} from '../message-flash.service';
 import {MessageFlashStore} from '../message-flash.store';
 import {BundlesService} from 'sijil';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
 
 
 @Component({

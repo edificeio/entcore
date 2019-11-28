@@ -1,4 +1,5 @@
-import {GroupModel, RoleModel} from '../../core/store';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { RoleModel } from 'src/app/core/store/models/role.model';
 
 export interface Role {
     id: string;

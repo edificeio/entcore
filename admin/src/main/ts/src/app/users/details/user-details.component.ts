@@ -3,11 +3,15 @@ import {AbstractControl, NgForm} from '@angular/forms';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
-import {NotifyService, SpinnerService, UserListService} from '../../core/services';
-import {globalStore} from '../../core/store';
-import {StructureModel, UserDetailsModel, UserModel} from '../../core/store/models';
+import {globalStore} from '../../core/store/global.store';
 import {UsersStore} from '../users.store';
 import {Config} from '../../core/resolvers/Config';
+import { UserDetailsModel } from 'src/app/core/store/models/userdetails.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
 
 @Component({
     selector: 'ode-user-detail',

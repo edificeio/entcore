@@ -2,9 +2,11 @@ import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 import {routing} from '../core/services/routing.service';
 
-import {globalStore, StructureModel, UserModel} from '../core/store';
-import {SpinnerService} from '../core/services';
+import {SpinnerService} from '../core/services/spinner.service';
 import {sync} from '../structure/structure.resolver';
+import { UserModel } from '../core/store/models/user.model';
+import { StructureModel } from '../core/store/models/structure.model';
+import { globalStore } from '../core/store/global.store';
 
 @Injectable()
 export class UsersResolver implements Resolve<UserModel[]> {

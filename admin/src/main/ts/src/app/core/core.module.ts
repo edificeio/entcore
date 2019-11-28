@@ -8,12 +8,14 @@ import {UxModule} from '../shared/ux/ux.module';
 import {LabelsService} from '../shared/ux/services';
 
 import {NavComponent} from './nav/nav.component';
-import {NotifyService, SijilLabelsService, SpinnerService} from './services';
 import {I18nResolver} from './resolvers/i18n.resolver';
 import {SessionResolver} from './resolvers/session.resolver';
 import {StructuresResolver} from './resolvers/structures.resolver';
 import {throwIfAlreadyLoaded} from './module-import.guard';
 import {ConfigResolver} from './resolvers/config.resolver';
+import { SijilLabelsService } from './services/sijil.labels.service';
+import { NotifyService } from './services/notify.service';
+import { SpinnerService } from './services/spinner.service';
 
 @NgModule({
     imports: [

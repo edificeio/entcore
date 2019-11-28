@@ -2,7 +2,8 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Event
 import {BundlesService} from 'sijil';
 
 import {StructureModel} from '../../../../../core/store/models/structure.model';
-import {ProfilesService, UserlistFiltersService} from '../../../../../core/services';
+import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
+import { ProfilesService } from 'src/app/core/services/profiles.service';
 
 @Component({
     selector: 'ode-group-input-filters-users',

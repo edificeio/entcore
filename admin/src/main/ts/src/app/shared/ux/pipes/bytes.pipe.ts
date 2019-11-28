@@ -1,5 +1,5 @@
 import {Pipe, PipeTransform} from '@angular/core';
-import {toDecimal} from '../../utils';
+import { toDecimal } from '../../utils/math';
 
 @Pipe({
     name: 'bytes'

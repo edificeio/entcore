@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {Column, CommunicationRule} from './communication-rules.component/communication-rules.component';
-import {GroupModel, InternalCommunicationRule} from '../core/store/models';
 import {HttpClient} from '@angular/common/http';
 import {forkJoin, Observable, Subject} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
+import { GroupModel, InternalCommunicationRule } from '../core/store/models/group.model';
 
 interface CreateCommunicationResponseWithChange {
     [groupId: number]: string;

@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';
 
-import {SpinnerService} from '../../../../core/services';
+import {SpinnerService} from '../../../../core/services/spinner.service';
 
 @Component({
     selector: 'ode-spinner-cube',

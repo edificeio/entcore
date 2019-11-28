@@ -3,7 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
 import {GroupsStore} from '../groups.store';
-import {GroupModel} from '../../core/store/models';
+import {GroupModel} from '../../core/store/models/group.model';
 
 @Component({
     selector: 'ode-groups-type-view',

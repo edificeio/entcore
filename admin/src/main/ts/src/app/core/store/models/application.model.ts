@@ -1,6 +1,5 @@
-import {RoleModel} from '.';
-
 import {Mix, Model} from 'entcore-toolkit';
+import { RoleModel } from './role.model';
 
 export type AppType = 'END_USER' | 'SYSTEM' | 'WIDGET';
 

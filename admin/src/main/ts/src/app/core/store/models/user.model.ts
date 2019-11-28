@@ -1,6 +1,6 @@
 import {Model} from 'entcore-toolkit';
 import {UserDetailsModel} from './userdetails.model';
-import {globalStore} from '..';
+import {globalStore} from '../global.store';
 import {GroupModel} from './group.model';
 
 export interface Classe {
