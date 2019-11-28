@@ -272,8 +272,8 @@ public class SqlShareService extends GenericShareService {
 			if (res.isRight()) {
 				final SqlStatementsBuilder s = new SqlStatementsBuilder();
 				s.prepared("SELECT member_id FROM " + shareTable + " WHERE resource_id = ?",
-						new JsonArray().add(resourceId));
-				s.prepared("DELETE FROM " + shareTable + " WHERE resource_id = ?", new JsonArray().add(resourceId));
+						new JsonArray().add(Sql.parseId(resourceId)));
+				s.prepared("DELETE FROM " + shareTable + " WHERE resource_id = ?", new JsonArray().add(Sql.parseId(resourceId)));
 				final JsonArray users = res.right().getValue().getJsonArray("users");
 				if (users != null && users.size() > 0) {
 					s.raw("LOCK TABLE " + schema + "users IN SHARE ROW EXCLUSIVE MODE");
