@@ -2,6 +2,14 @@
     <span class="communication-rules__header communication-rules__header--sending">{{ sendingHeaderLabel }}</span>
     <span class="communication-rules__header communication-rules__header--receiving">{{ receivingHeaderLabel }}</span>
 </div>
+<div class="communication-rules__headers">
+    <ode-search-input class="communication-rules__header communication-rules__header--sending"
+        [attr.placeholder]="'search.comm' | translate" (onChange)="filterSenders = toFilterWords($event)">
+    </ode-search-input>
+    <ode-search-input class="communication-rules__header communication-rules__header--receiving"
+        [attr.placeholder]="'search.comm' | translate" (onChange)="filterReceivers = toFilterWords($event)">
+    </ode-search-input>
+</div>
 <div class="communication-rules__columns">
     <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
         <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
