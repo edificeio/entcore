@@ -26,7 +26,7 @@ import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -46,12 +46,13 @@ public class DeleteOrphan implements Handler<Long> {
 			"(select m.id from conversation.messages m " +
 			"left join conversation.usermessages um on um.message_id = m.id " +
 			"where um.user_id is NULL);";
-	private static final long TIMEOUT = 300000l;
+	private final long timeout;
 
 	private final Storage storage;
 
 	public DeleteOrphan(Storage storage) {
 		this.storage = storage;
+		timeout = Vertx.currentContext().config().getLong("orphan-timeout",  600000L);
 	}
 
 	@Override
@@ -60,7 +61,7 @@ public class DeleteOrphan implements Handler<Long> {
 		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		builder.raw(DELETE_ORPHAN_MESSAGE);
 		builder.raw(SELECT_ORPHAN_ATTACHMENT);
-		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(TIMEOUT),
+		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout),
 				SqlResult.validResultHandler(1, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> res) {
@@ -94,7 +95,7 @@ public class DeleteOrphan implements Handler<Long> {
 		final String deletOrphanAttachments =
 				"delete from conversation.attachments where id = ?";
 		sql.prepared(deletOrphanAttachments, new JsonArray().add(id),
-				new DeliveryOptions().setSendTimeout(TIMEOUT), event -> {
+				new DeliveryOptions().setSendTimeout(timeout), event -> {
 			if (!"ok".equals(event.body().getString("status"))) {
 				log.error("Error deleting orphan attachment " + id + " : " +
 						event.body().getString("message", ""));
