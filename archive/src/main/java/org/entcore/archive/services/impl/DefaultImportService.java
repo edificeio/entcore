@@ -118,39 +118,40 @@ public class DefaultImportService implements ImportService {
         final String filePath = importPath + File.separator + importId;
         final String unzippedPath = filePath + "_unzip";
         fs.mkdirs(unzippedPath, done -> {
-            vertx.executeBlocking(future -> {
-                try {
-                    FileUtils.unzip(filePath, unzippedPath);
-                    future.complete();
-                } catch (IOException | UnsupportedOperationException e) {
-                    future.fail(e);
-                }
-            }, false, finished -> {
-                if (finished.succeeded()) {
-                    fs.readDir(unzippedPath, results -> {
-                        if (results.succeeded()) {
-                            if (results.result().size() == 1) {
-                                fs.readDir(results.result().get(0), files -> {
-                                    if (files.succeeded()) {
-                                        if (files.result().size() > 0 &&
-                                                files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
-                                            parseFolders(user, importId, filePath, locale, config, files.result(), handler);
+            FileUtils.unzip(filePath, unzippedPath, new Handler<Either<String, Void>>()
+            {
+                @Override
+                public void handle(Either<String, Void> res)
+                {
+                    if(res.isRight() == true)
+                    {
+                        fs.readDir(unzippedPath, results -> {
+                            if (results.succeeded()) {
+                                if (results.result().size() == 1) {
+                                    fs.readDir(results.result().get(0), files -> {
+                                        if (files.succeeded()) {
+                                            if (files.result().size() > 0 &&
+                                                    files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
+                                                parseFolders(user, importId, filePath, locale, config, files.result(), handler);
+                                            } else {
+                                                deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                            }
                                         } else {
-                                            deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                            deleteAndHandleError(importId, files.cause().getMessage(), handler);
                                         }
-                                    } else {
-                                        deleteAndHandleError(importId, files.cause().getMessage(), handler);
-                                    }
-                                });
+                                    });
+                                } else {
+                                    deleteAndHandleError(importId,"Archive file not recognized", handler);
+                                }
                             } else {
-                                deleteAndHandleError(importId,"Archive file not recognized", handler);
+                                deleteAndHandleError(importId, results.cause().getMessage(), handler);
                             }
-                        } else {
-                            deleteAndHandleError(importId, results.cause().getMessage(), handler);
-                        }
-                    });
-                } else {
-                    deleteAndHandleError(importId, finished.cause().getMessage(), handler);
+                        });
+                    }
+                    else
+                    {
+                        deleteAndHandleError(importId, res.left().getValue(), handler);
+                    }
                 }
             });
         });

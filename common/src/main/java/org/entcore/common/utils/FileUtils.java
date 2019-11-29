@@ -20,6 +20,7 @@
 package org.entcore.common.utils;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -108,6 +109,37 @@ public final class FileUtils {
 				}
 			});
 		}
+	}
+
+	public static void unzip(final String zipFilename, final String destDirname, final Handler<Either<String, Void>> handler)
+	{
+		Thread t = new Thread(new Runnable()
+		{
+			private final String zip  = zipFilename;
+			private final String dest = destDirname;
+			private final Handler hnd = handler;
+
+			@Override
+			public void run()
+			{
+				System.out.println();
+				System.out.println();
+				System.out.println("THREAD");
+				System.out.println();
+				System.out.println();
+				try
+				{
+					FileUtils.unzip(zip, dest);
+					hnd.handle(new Either.Right<String, Void>(null));
+				}
+				catch(IOException e)
+				{
+					hnd.handle(new Either.Left<String, Void>(e.getMessage()));
+				}
+			}
+		});
+
+		t.start();
 	}
 
 	public static String getParentPath(String path) {
