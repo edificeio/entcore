@@ -1,4 +1,5 @@
-import {Component, ElementRef, forwardRef, Input} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, forwardRef, Input, Injector } from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import ClickEvent = JQuery.ClickEvent;
 
@@ -147,7 +148,7 @@ export const multiSelectLocators = {
         '(document:click)': 'closeIfOpened($event)'
     }
 })
-export class MultiSelectComponent<K> implements ControlValueAccessor {
+export class MultiSelectComponent<K> extends OdeComponent implements ControlValueAccessor {
     @Input()
     public label = '';
 
@@ -166,7 +167,8 @@ export class MultiSelectComponent<K> implements ControlValueAccessor {
 
     public isOptionsVisible = false;
 
-    constructor(private elementRef: ElementRef) {
+    constructor(injector: Injector, private elementRef: ElementRef) {
+        super(injector);
     }
 
     public optionClicked(option: SelectOption<K>) {

@@ -1,5 +1,6 @@
+import { OdeComponent } from './../../core/ode/OdeComponent';
 import {ActivatedRoute, Data, Router} from '@angular/router';
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {CommunicationRulesService} from '../../communication/communication-rules.service';
 import {CommunicationRule} from '../../communication/communication-rules.component/communication-rules.component';
 import {UsersStore} from '../users.store';
@@ -16,7 +17,7 @@ import { routing } from 'src/app/core/services/routing.service';
     providers: [CommunicationRulesService],
     templateUrl: './smart-users-comparison.component.html'
 })
-export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
+export class SmartUserCommunicationComponent extends OdeComponent implements OnInit, OnDestroy {
 
     public user: UserModel;
     public activeStructure: StructureModel;
@@ -25,32 +26,30 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
     public userReceivingCommunicationRules: CommunicationRule[];
     public addCommunicationPickableGroups: GroupModel[];
 
-    private communicationRulesChangesSubscription: Subscription;
-    private routeSubscription: Subscription;
 
     constructor(
+        injector: Injector,
         public spinner: SpinnerService,
         public communicationRulesService: CommunicationRulesService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private changeDetector: ChangeDetectorRef,
         private usersStore: UsersStore,
         public globalStore: GlobalStore
     ) {
+        super(injector);
     }
 
     ngOnInit() {
-        this.communicationRulesChangesSubscription = this.communicationRulesService.changes()
+        super.ngOnInit();
+        this.subscriptions.add(this.communicationRulesService.changes()
             .subscribe(rules => {
                 this.userSendingCommunicationRules = rules.sending;
                 this.userReceivingCommunicationRules = rules.receiving;
                 this.changeDetector.markForCheck();
-            });
-        this.routeSubscription = this.route.data.subscribe((data: Data) => {
+            }));
+        this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             this.user = data.user;
             this.manageableStructuresId = this.globalStore.structures.data.map(s => s.id);
             this.communicationRulesService.setGroups(data.groups);
-        });
+        }));
         this.addCommunicationPickableGroups = this.usersStore.structure.groups.data;
         const activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
         this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
@@ -63,11 +62,6 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
                     relativeTo: this.route.parent
                 })
         );
-    }
-
-    ngOnDestroy(): void {
-        this.communicationRulesChangesSubscription.unsubscribe();
-        this.routeSubscription.unsubscribe();
     }
 
     public onGroupPickerStructureChange(structure: StructureModel) {

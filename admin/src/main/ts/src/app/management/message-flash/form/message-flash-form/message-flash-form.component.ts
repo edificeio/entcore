@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, AfterViewInit, OnDestroy} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, AfterViewInit, OnDestroy, Injector } from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
@@ -29,20 +30,18 @@ import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model'
     templateUrl: './message-flash-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MessageFlashFormComponent extends OdeComponent implements OnInit, OnDestroy, AfterViewInit {
 
     constructor(
-        public route: ActivatedRoute,
-        public router: Router,
-        public cdRef: ChangeDetectorRef,
+        injector: Injector,
         public bundles: BundlesService,
         public ns: NotifyService,
         public messageStore: MessageFlashStore,
-        public sanitized: DomSanitizer) { }
+        public sanitized: DomSanitizer) { 
+            super(injector);
+        }
 
     structure: StructureModel;
-    dataSubscriber: Subscription;
-    routerSubscriber: Subscription;
     originalMessage: FlashMessageModel;
     message: FlashMessageModel = new FlashMessageModel();
     messages: FlashMessageModel[] = [];
@@ -65,15 +64,15 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
     private lightboxSubStructures: string[];
 
     ngOnInit(): void {
-
-        this.dataSubscriber = routing.observe(this.route, 'data').subscribe(async (data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
                 this.message.structureId = this.structure.id;
             }
             if (this.action !== 'create' && data.messages) {
                 this.messages = data.messages;
-                this.originalMessage = this.messages.find(mess => mess.id == this.messageId);
+                this.originalMessage = this.messages.find(mess => mess.id === this.messageId);
                 if (!this.originalMessage || this.originalMessage.structureId !== this.structure.id) {
                     this.router.navigate(['/admin', this.structure.id, 'management', 'message-flash', 'list']);
                     return;
@@ -95,34 +94,35 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
                 MessageFlashService.getSubStructuresByMessageId(this.originalMessage.id)
                     .then(sdata => {
                         this.message.subStructures = sdata.map((item: any) => item.structure_id);
-                        this.cdRef.detectChanges();
+                        this.changeDetector.detectChanges();
                     });
             }
             if (this.action === 'create') {
                 this.message.color = 'red';
             }
-            this.cdRef.detectChanges();
-        });
+            this.changeDetector.detectChanges();
+        }));
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
+        this.subscriptions.add(this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
 
         MessageFlashService.getLanguages()
             .then(lang => {
                 this.loadedLanguages = lang;
                 this.selectedLanguage = this.getSelectedLanguage();
-                this.cdRef.detectChanges();
+                this.changeDetector.detectChanges();
             })
             .catch(() => {
                 this.loadedLanguages = [this.selectedLanguage];
-                this.cdRef.detectChanges();
+                this.changeDetector.detectChanges();
             });
     }
 
     ngAfterViewInit() {
+        super.ngAfterViewInit();
         const jq = $ as any;
         jq.trumbowyg.svgPath = '/admin/public/assets/icons.svg';
         const trumbowygEditor = jq('#trumbowyg-editor');
@@ -138,7 +138,7 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
             const transform = trumbowygEditor.trumbowyg('html')
                 .replace(/<i>/g, '<em>').replace(/<\/i[^>]*>/g, '</em>');
             this.message.contents[this.selectedLanguage] = transform;
-            this.cdRef.detectChanges();
+            this.changeDetector.detectChanges();
         });
         this.updateEditor = function(lang: string) {
             trumbowygEditor.trumbowyg('html', this.message.contents[lang] ? this.message.contents[lang] : '');
@@ -146,14 +146,6 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
         };
     }
 
-    ngOnDestroy() {
-        if (!!this.dataSubscriber) {
-            this.dataSubscriber.unsubscribe();
-        }
-        if (!!this.routerSubscriber) {
-            this.routerSubscriber.unsubscribe();
-        }
-    }
 
     deselect(item) {
         this.message.profiles.splice(this.message.profiles.indexOf(item), 1);
@@ -170,9 +162,9 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
         if (this.message.contents[defaultLanguage]) {
             return defaultLanguage;
         }
-        for (let i = 0; i < this.loadedLanguages.length; i++) {
-            if (this.message.contents[this.loadedLanguages[i]]) {
-                return this.loadedLanguages[i];
+        for (const loadedLanguage of this.loadedLanguages) {
+            if (this.message.contents[loadedLanguage]) {
+                return loadedLanguage;
             }
         }
         return defaultLanguage;
@@ -185,9 +177,9 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
     isToday(): boolean {
         const now: Date = new Date();
         const startDate: Date = new Date(this.message.startDate);
-        const res = now.getDate() == startDate.getDate()
-            && now.getMonth() == startDate.getMonth()
-            && now.getFullYear() == startDate.getFullYear();
+        const res = now.getDate() === startDate.getDate()
+            && now.getMonth() === startDate.getMonth()
+            && now.getFullYear() === startDate.getFullYear();
         if (!res) {
             this.mailNotification = false;
             this.pushNotification = false;
@@ -211,12 +203,12 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
 
     closeLightbox(): void {
         this.showLightbox = false;
-        this.cdRef.detectChanges();
+        this.changeDetector.detectChanges();
     }
 
     addOrRemoveChild(child: { name: string, id: string, children: any[], check: boolean }): void {
         const index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
-        if (index == -1) {
+        if (index === -1) {
             this.lightboxSubStructures.push(child.id);
             this.checkAllChildren(child.children);
         } else {
@@ -228,7 +220,7 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
     private checkAllChildren(children: { name: string, id: string, children: any[], check: boolean }[]) {
         children.forEach(child => {
             child.check = true;
-            if (this.lightboxSubStructures.findIndex(subId => subId === child.id) == -1) {
+            if (this.lightboxSubStructures.findIndex(subId => subId === child.id) === -1) {
                 this.lightboxSubStructures.push(child.id);
             }
             this.checkAllChildren(child.children);
@@ -239,16 +231,16 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
         children.forEach(child => {
             child.check = false;
             const index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
-            if (index != -1) {
+            if (index !== -1) {
                 this.lightboxSubStructures = this.lightboxSubStructures.slice(0, index).concat(this.lightboxSubStructures.slice(index + 1, this.lightboxSubStructures.length));
             }
             this.uncheckAllChildren(child.children);
         });
     }
 
-     getItems(): { name: string, id: string, children: any[], check: boolean }[] {
+    getItems(): { name: string, id: string, children: any[], check: boolean }[] {
         const that = this;
-        const myMap = function(child: StructureModel) {
+        const myMap = (child: StructureModel) => {
             return {
                 name: child.name,
                 id: child.id,
@@ -269,7 +261,7 @@ export class MessageFlashFormComponent implements OnInit, OnDestroy, AfterViewIn
         return !!this.message && !!this.message.title && !!this.message.startDate && !!this.message.endDate
             && !!this.message.profiles && this.message.profiles.length > 0 && (!!this.message.color || !!this.message.customColor)
             && !!this.message.contents && Object.keys(this.message.contents).length > 0
-            && Object.values(this.message.contents).findIndex(val => !!val) != -1;
+            && Object.values(this.message.contents).findIndex(val => !!val) !== -1;
     }
 
     upload() {

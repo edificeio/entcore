@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute, Router} from '@angular/router';
 import {merge, Observable, Subject, Subscription} from 'rxjs';
@@ -19,39 +20,34 @@ import { GroupNameService } from 'src/app/core/services/group-name.service';
     styleUrls: ['./group-details.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupDetailsComponent implements OnInit, OnDestroy {
+export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
     public internalCommunicationRule: InternalCommunicationRule | undefined;
     public showAddUsersLightBox = false;
     public $toggleCommunicationRuleClicked: Subject<GroupModel> = new Subject();
     public confirmationDisplayed = false;
     public $confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
-    public deleteSubscription: Subscription;
     public $deleteButtonClicked: Subject<GroupModel> = new Subject();
     public deleteConfirmationDisplayed = false;
     public $deleteConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
-    public renameSubscription: Subscription;
     public $renameButtonClicked: Subject<{}> = new Subject();
     public renameLightboxDisplayed = false;
     public renameConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
-    private changesSubscription: Subscription;
-
     public groupNewName: string;
 
     constructor(public groupsStore: GroupsStore,
-                private route: ActivatedRoute,
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
-                private cdRef: ChangeDetectorRef,
                 public groupNameService: GroupNameService,
                 private groupsService: GroupsService,
-                private router: Router,
-                private activatedRoute: ActivatedRoute) {
+                injector: Injector) {
+                super(injector);
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         const rulesChangesObserver = merge(
             this.route.data
                 .pipe(map((data: { rule: GroupIdAndInternalCommunicationRule }) => data.rule)),
@@ -76,28 +72,22 @@ export class GroupDetailsComponent implements OnInit, OnDestroy {
                 )
             );
 
-        this.changesSubscription = merge(rulesChangesObserver, groupChangesObserver)
-            .subscribe(() => this.cdRef.markForCheck());
+        this.subscriptions.add(merge(rulesChangesObserver, groupChangesObserver)
+            .subscribe(() => this.changeDetector.markForCheck()));
 
-        this.deleteSubscription = this.$deleteButtonClicked
+        this.subscriptions.add(this.$deleteButtonClicked
         .pipe(
             mergeMap((group: GroupModel) => this.deleteGroup(group))
         )
-            .subscribe();
+            .subscribe());
 
-        this.renameSubscription = this.$renameButtonClicked
-            .pipe(
-                mergeMap(() => this.renameGroup())
-            )
-            .subscribe();
+        this.subscriptions.add(this.$renameButtonClicked
+        .pipe(
+            mergeMap(() => this.renameGroup())
+        )
+        .subscribe());
 
         this.groupNewName = this.groupsStore.group.name;
-    }
-
-    ngOnDestroy(): void {
-        this.changesSubscription.unsubscribe();
-        this.deleteSubscription.unsubscribe();
-        this.renameSubscription.unsubscribe();
     }
 
     showLightBox() {
@@ -156,8 +146,8 @@ export class GroupDetailsComponent implements OnInit, OnDestroy {
                     key: 'group.delete.notify.success.content',
                     parameters: {groupName: group.name}
                 }, 'group.delete.notify.success.title');
-                this.router.navigate(['../..'], {relativeTo: this.activatedRoute, replaceUrl: false});
-                this.cdRef.markForCheck();
+                this.router.navigate(['../..'], {relativeTo: this.route, replaceUrl: false});
+                this.changeDetector.markForCheck();
             }, (error: HttpErrorResponse) => {
                 this.notifyService.error({
                     key: 'group.delete.notify.error.content',
@@ -168,7 +158,7 @@ export class GroupDetailsComponent implements OnInit, OnDestroy {
     }
 
     public openGroupCommunication(group: GroupModel) {
-        this.router.navigate([group.id, 'communication'], {relativeTo: this.activatedRoute.parent});
+        this.router.navigate([group.id, 'communication'], {relativeTo: this.route.parent});
     }
 
     public renameGroup(): Observable<void> {

@@ -1,4 +1,5 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, Renderer2, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { AfterViewInit, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, Renderer2, ViewChild, Injector } from '@angular/core';
 
 import {ControlValueAccessor, NG_VALUE_ACCESSOR, NgModel} from '@angular/forms';
 
@@ -20,10 +21,13 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     templateUrl: './datepicker.component.html',
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ]
 })
-export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlValueAccessor {
+export class DatepickerComponent extends OdeComponent implements OnDestroy, AfterViewInit, ControlValueAccessor {
 
     constructor(private renderer: Renderer2,
-                private labelsService: LabelsService) {}
+                private labelsService: LabelsService,
+                injector: Injector) {
+                    super(injector);
+                }
 
     get value(): any {
         return this.innerValue;
@@ -80,6 +84,7 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
     private onTouchedCallback: () => void = NOOP;
 
     ngAfterViewInit(): void {
+        super.ngAfterViewInit();
         // add attr data-input, mandatory for the picker to work in wrap mode
         this.renderer.setAttribute(this.inputElement.nativeElement, 'data-input', '');
 
@@ -112,6 +117,7 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
     }
 
     ngOnDestroy(): void {
+        super.ngOnDestroy();
         this.datePickerInst.destroy();
     }
 

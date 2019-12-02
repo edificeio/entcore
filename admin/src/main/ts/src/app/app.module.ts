@@ -14,6 +14,7 @@ import localeEs from '@angular/common/locales/es';
 import localeFr from '@angular/common/locales/fr';
 import localeIt from '@angular/common/locales/it';
 import localePt from '@angular/common/locales/pt';
+import { COMPONENT_LIVECYCLE_DEBUG_MODE } from './core/ode/OdeComponent';
 registerLocaleData(localeDe);
 registerLocaleData(localeEs);
 registerLocaleData(localeFr);
@@ -32,7 +33,10 @@ registerLocaleData(localePt);
         AppComponent,
         AppHomeComponent
     ],
-    bootstrap: [AppComponent]
+    bootstrap: [AppComponent],
+    providers: [
+        { provide: COMPONENT_LIVECYCLE_DEBUG_MODE, useValue: 1 }
+    ]
 })
 export class AppModule {
 }

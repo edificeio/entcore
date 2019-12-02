@@ -1,6 +1,7 @@
+import { OdeComponent } from './../../core/ode/OdeComponent';
 import {StructureModel} from '../../core/store/models/structure.model';
 import {ActivatedRoute} from '@angular/router';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -8,24 +9,20 @@ import {Subscription} from 'rxjs';
     templateUrl: './structure-home.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StructureHomeComponent implements OnInit, OnDestroy {
+export class StructureHomeComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    private routeSubscriber: Subscription;
     structure: StructureModel;
 
-    constructor(
-        private route: ActivatedRoute,
-        private cdRef: ChangeDetectorRef) {}
-
-    ngOnInit() {
-        this.routeSubscriber = this.route.data.subscribe(data => {
-            this.structure = data.structure;
-            this.cdRef.markForCheck();
-        });
+    constructor(injector: Injector) {
+        super(injector);
     }
 
-    ngOnDestroy() {
-        this.routeSubscriber.unsubscribe();
+    ngOnInit() {
+        super.ngOnInit();
+        this.subscriptions.add(this.route.data.subscribe(data => {
+            this.structure = data.structure;
+            this.changeDetector.markForCheck();
+        }));
     }
 
 }

@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
@@ -10,52 +11,42 @@ import {GroupModel} from '../../core/store/models/group.model';
     templateUrl: './groups-type-view.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupsTypeViewComponent implements OnInit, OnDestroy {
+export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnDestroy {
 
     groupType: string;
     groupInputFilter: string;
     selectedGroup: GroupModel;
 
-    private typeSubscriber: Subscription;
-    private dataSubscriber: Subscription;
-    private urlSubscriber: Subscription;
-
     constructor(
         public groupsStore: GroupsStore,
-        private route: ActivatedRoute,
-        private router: Router,
-        private cdRef: ChangeDetectorRef) {
+        injector: Injector) {
+            super(injector);
     }
 
     ngOnInit() {
-        this.typeSubscriber = this.route.params.subscribe(params => {
+        super.ngOnInit();
+        this.subscriptions.add(this.route.params.subscribe(params => {
             this.groupsStore.group = null;
             const type = params.groupType;
             const allowedTypes = ['manualGroup', 'profileGroup', 'functionalGroup', 'functionGroup'];
             if (type && allowedTypes.indexOf(type) >= 0) {
                 this.groupType = params.groupType;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             } else {
                 this.router.navigate(['..'], {relativeTo: this.route});
             }
-        });
-        this.dataSubscriber = this.groupsStore.$onchange.subscribe(field => {
+        }));
+        this.subscriptions.add(this.groupsStore.$onchange.subscribe(field => {
             if (field === 'structure') {
-                this.cdRef.markForCheck();
-                this.cdRef.detectChanges();
+                this.changeDetector.markForCheck();
+                this.changeDetector.detectChanges();
             }
-        });
+        }));
 
         // handle change detection from create button click of group-root.component
-        this.urlSubscriber = this.route.url.subscribe(path => {
-            this.cdRef.markForCheck();
-        });
-    }
-
-    ngOnDestroy() {
-        this.dataSubscriber.unsubscribe();
-        this.typeSubscriber.unsubscribe();
-        this.urlSubscriber.unsubscribe();
+        this.subscriptions.add(this.route.url.subscribe(path => {
+            this.changeDetector.markForCheck();
+        }));
     }
 
     isSelected = (group: GroupModel) => {

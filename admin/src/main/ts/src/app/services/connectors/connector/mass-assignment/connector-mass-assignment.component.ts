@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, OnInit, Output, Injector } from '@angular/core';
 import {Profile, Structure} from '../../../shared/services-types';
 import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
@@ -41,9 +42,10 @@ import {BundlesService} from 'sijil';
         }`
     ]
 })
-export class ConnectorMassAssignmentComponent implements OnInit {
+export class ConnectorMassAssignmentComponent extends OdeComponent implements OnInit {
 
-    constructor(private bundlesService: BundlesService, formBuilder: FormBuilder) {
+    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: FormBuilder) {
+        super(injector);
         this.massAssignmentForm = formBuilder.group({
             profiles: [[], [Validators.required]]
         });
@@ -67,6 +69,7 @@ export class ConnectorMassAssignmentComponent implements OnInit {
     public profileTrackByFn = (p: Profile) => p;
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.computeProfileOptions();
 
         this.massAssignmentForm.get('profiles').valueChanges.subscribe((profiles: Array<Profile>) => {

@@ -1,4 +1,5 @@
-import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-push-panel',
@@ -8,9 +9,11 @@ import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@an
         '(document:click)': 'onClick($event)',
     }
 })
-export class PushPanelComponent {
+export class PushPanelComponent extends OdeComponent {
 
-    constructor(private _eref: ElementRef) {}
+    constructor(injector: Injector, private _eref: ElementRef) {
+        super(injector);
+    }
 
     @Input() private set toggle(toggle: boolean) {
         this._opened = toggle;

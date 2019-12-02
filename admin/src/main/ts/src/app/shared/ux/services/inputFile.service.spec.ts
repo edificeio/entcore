@@ -17,9 +17,9 @@ describe('InputFileService', () => {
             blob.name = 'file1.jpg';
             const file = blob as File;
             const fileList = {
-              0: file,
-              length: 1,
-              item: (index: number) => file
+                0: file,
+                length: 1,
+                item: (index: number) => file
             };
 
             let resFiles: File[];
@@ -43,11 +43,11 @@ describe('InputFileService', () => {
             const file3 = blob3 as File;
 
             const fileList = {
-              0: file1,
-              1: file2,
-              2: file3,
-              length: 3,
-              item: (index: number) => file1
+                0: file1,
+                1: file2,
+                2: file3,
+                length: 3,
+                item: (index: number) => file1
             };
 
             let resFiles: File[];
@@ -67,10 +67,10 @@ describe('InputFileService', () => {
             const file2 = blob2 as File;
 
             const fileList = {
-              0: file1,
-              1: file2,
-              length: 2,
-              item: (index: number) => file1
+                0: file1,
+                1: file2,
+                length: 2,
+                item: (index: number) => file1
             };
 
             const maxFilesNumber = 1;
@@ -88,9 +88,9 @@ describe('InputFileService', () => {
             const file1 = blob1 as File;
 
             const fileList = {
-              0: file1,
-              length: 1,
-              item: (index: number) => file1
+                0: file1,
+                length: 1,
+                item: (index: number) => file1
             };
 
             const allowedExtensions = ['jpg'];

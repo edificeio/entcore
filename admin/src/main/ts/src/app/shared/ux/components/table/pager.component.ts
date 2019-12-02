@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, Injector } from '@angular/core';
 import {BundlesService} from 'sijil';
 
 
@@ -10,10 +11,13 @@ import {BundlesService} from 'sijil';
     `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PagerComponent implements OnInit {
+export class PagerComponent extends OdeComponent implements OnInit {
     constructor(
-        private bundles: BundlesService,
-        private cdRef: ChangeDetectorRef)  {}
+        injector: Injector,
+        private bundles: BundlesService
+        )  {
+            super(injector);
+        }
 
     @Input() limit: number;
 

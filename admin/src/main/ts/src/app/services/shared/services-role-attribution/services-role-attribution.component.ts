@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, Output, Injector } from '@angular/core';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
 
@@ -6,7 +7,7 @@ import { RoleModel } from 'src/app/core/store/models/role.model';
     selector: 'services-role-attribution',
     templateUrl: './services-role-attribution.component.html'
 })
-export class ServicesRoleAttributionComponent {
+export class ServicesRoleAttributionComponent extends OdeComponent {
 
     @Input() show: boolean;
     @Input() assignmentGroupPickerList: GroupModel[];
@@ -18,6 +19,10 @@ export class ServicesRoleAttributionComponent {
     @Output('close') close: EventEmitter<void> = new EventEmitter<void>();
     @Output('add') add: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
     @Output('inputChange') inputChange: EventEmitter<string> = new EventEmitter<string>();
+
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
     filterGroups = (group: GroupModel) => {
         // Do not display groups if they are already linked to the selected role

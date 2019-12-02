@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import { OdeComponent } from './../../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, Injector } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {BundlesService} from 'sijil';
 import {MassAssignment, Profile, Role, Structure} from '../../../../shared/services-types';
@@ -41,9 +42,10 @@ import {SelectOption} from '../../../../../shared/ux/components/multi-select/mul
         }`
     ]
 })
-export class MassRoleAssignment implements OnInit, OnChanges {
+export class MassRoleAssignment extends OdeComponent implements OnInit, OnChanges {
 
-    constructor(private bundlesService: BundlesService, formBuilder: FormBuilder) {
+    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: FormBuilder) {
+        super(injector);
         this.assignmentForm = formBuilder.group({
             roles: [[], [Validators.required]],
             profiles: [[], [Validators.required]]
@@ -72,6 +74,7 @@ export class MassRoleAssignment implements OnInit, OnChanges {
     public profileTrackByFn = (p: Profile) => p;
 
     public ngOnInit(): void {
+        super.ngOnInit();
         this.computeRoleOptions();
         this.computeProfileOptions();
 
@@ -91,6 +94,7 @@ export class MassRoleAssignment implements OnInit, OnChanges {
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
+        super.ngOnChanges(changes);
         this.computeRoleOptions();
         this.computeProfileOptions();
     }

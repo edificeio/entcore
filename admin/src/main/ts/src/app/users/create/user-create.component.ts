@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Data, Router} from '@angular/router';
 import {Location} from '@angular/common';
 import {Subscription} from 'rxjs';
@@ -17,11 +18,10 @@ import { SpinnerService } from 'src/app/core/services/spinner.service';
     ,
     providers: [UserChildrenListService]
 })
-export class UserCreateComponent implements OnInit, OnDestroy {
+export class UserCreateComponent extends OdeComponent implements OnInit, OnDestroy {
 
     newUser: UserModel = new UserModel();
     noClasses: Array<any> = [];
-    private structureSubscriber: Subscription;
 
     public typeOptions: SelectOption<string>[] = ['Teacher', 'Personnel', 'Relative', 'Student', 'Guest'].map(t => ({
         value: t,
@@ -30,17 +30,18 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     public classeOptions: SelectOption<{ id: string, name: string }[]>[] = [];
 
     constructor(
+        injector: Injector,
         public usersStore: UsersStore,
         private ns: NotifyService,
         private spinner: SpinnerService,
-        private router: Router,
-        private route: ActivatedRoute,
         private location: Location,
         private userListService: UserListService,
         public userChildrenListService: UserChildrenListService) {
+            super(injector);
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.usersStore.user = null;
         this.newUser.classes = null;
         this.newUser.type = 'Personnel';
@@ -48,19 +49,15 @@ export class UserCreateComponent implements OnInit, OnDestroy {
         this.newUser.structures = [{id, name}];
         this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
 
-        this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
 
                 this.newUser.structures = [data.structure];
                 this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
                 this.classeOptions.push(...this.usersStore.structure.classes.map(c => ({value: [c], label: c.name})));
             }
-        });
+        }));
         this.newUser.userDetails.children = [];
-    }
-
-    ngOnDestroy(): void {
-        this.structureSubscriber.unsubscribe();
     }
 
     createNewUser() {

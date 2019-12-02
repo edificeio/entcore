@@ -115,7 +115,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             classExternalId: relationToRemove,
             structureExternalId
         }).then(() => {
-            this.headTeacherManual.splice(this.headTeacherManual.findIndex((f) => f == relationToRemove), 1);
+            this.headTeacherManual.splice(this.headTeacherManual.findIndex((f) => f === relationToRemove), 1);
         });
     }
 
@@ -123,10 +123,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.post(`/directory/user/function/${this.id}`, {
             functionCode: 'ADMIN_LOCAL',
             inherit: 's',
-            scope:  this.functions.find((f) => f[0] == 'ADMIN_LOCAL') == null ? [structureId] : this.functions.find((f) => f[0] == 'ADMIN_LOCAL')[1].concat(structureId)
+            scope:  this.functions.find((f) => f[0] === 'ADMIN_LOCAL') == null ? [structureId] : this.functions.find((f) => f[0] === 'ADMIN_LOCAL')[1].concat(structureId)
         }).then(async (res) => {
-            await this.http.get(`/directory/user/${this.id}/functions`).then((res) => {
-                this.functions = res.data[0].functions;
+            await this.http.get(`/directory/user/${this.id}/functions`).then((rRes) => {
+                this.functions = rRes.data[0].functions;
             });
         });
     }
@@ -134,13 +134,13 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     removeAdml() {
         return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
-            this.functions.splice(this.functions.findIndex((f) => f[0] == 'ADMIN_LOCAL'), 1);
+            this.functions.splice(this.functions.findIndex((f) => f[0] === 'ADMIN_LOCAL'), 1);
         });
     }
 
     isAdml(structureId?: string) {
         if (this.functions && this.functions.length > 0) {
-            const admlIndex = this.functions.findIndex((f) => f[0] == 'ADMIN_LOCAL');
+            const admlIndex = this.functions.findIndex((f) => f[0] === 'ADMIN_LOCAL');
             if (admlIndex >= 0) {
                 return this.functions[admlIndex][1].includes(structureId);
             }
@@ -148,7 +148,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     }
 
     isAdmc() {
-        return this.functions && this.functions.find((f) => f[0] == 'SUPER_ADMIN');
+        return this.functions && this.functions.find((f) => f[0] === 'SUPER_ADMIN');
     }
 
     /**
@@ -163,7 +163,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         }
 
         if (this.headTeacher && this.headTeacher.length > 0) {
-            const headTeacherIndex = this.headTeacher.findIndex((f) => f == classe.externalId);
+            const headTeacherIndex = this.headTeacher.findIndex((f) => f === classe.externalId);
             return (headTeacherIndex >= 0);
         } else {
             return false;
@@ -182,7 +182,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         }
 
         if (this.headTeacher && this.headTeacher.length > 0) {
-            const headTeacherIndex = this.headTeacher.findIndex((f) => f == classe.externalId);
+            const headTeacherIndex = this.headTeacher.findIndex((f) => f === classe.externalId);
             return (headTeacherIndex >= 0);
         } else {
             return false;
@@ -191,7 +191,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     isHeadTeacherManual(structureExternalId: string,  classe: any) {
         if (this.headTeacherManual && this.headTeacherManual.length > 0) {
-            const headTeacherManuelIndex = this.headTeacherManual.findIndex((f) => f == classe.externalId);
+            const headTeacherManuelIndex = this.headTeacherManual.findIndex((f) => f === classe.externalId);
             return (headTeacherManuelIndex >= 0);
         } else {
             return false;

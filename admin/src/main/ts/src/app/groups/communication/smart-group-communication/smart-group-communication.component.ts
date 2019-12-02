@@ -1,5 +1,6 @@
+import { OdeComponent } from './../../../core/ode/OdeComponent';
 import {ActivatedRoute, Data, Router} from '@angular/router';
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Injector, Type } from '@angular/core';
 import {CommunicationRulesService} from '../../../communication/communication-rules.service';
 import {CommunicationRule} from '../../../communication/communication-rules.component/communication-rules.component';
 import {Subscription} from 'rxjs';
@@ -16,7 +17,7 @@ import { routing } from 'src/app/core/services/routing.service';
     providers: [CommunicationRulesService],
     templateUrl: './smart-group-communication.component.html'
 })
-export class SmartGroupCommunicationComponent implements OnInit, OnDestroy {
+export class SmartGroupCommunicationComponent extends OdeComponent implements OnInit, OnDestroy {
 
     public group: GroupModel;
     public activeStructure: StructureModel;
@@ -25,39 +26,37 @@ export class SmartGroupCommunicationComponent implements OnInit, OnDestroy {
     public groupsReceivingCommunicationRules: CommunicationRule[];
     public addCommunicationPickableGroups: GroupModel[];
 
-    private communicationRulesChangesSubscription: Subscription;
-    private routeSubscription: Subscription;
-    private paramsSubscription: Subscription;
+    public spinner: SpinnerService;
+    public communicationRulesService: CommunicationRulesService;
+    private groupsStore: GroupsStore;
+    public globalStore: GlobalStore;
 
-    constructor(
-        public spinner: SpinnerService,
-        public communicationRulesService: CommunicationRulesService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private changeDetector: ChangeDetectorRef,
-        private groupsStore: GroupsStore,
-        public globalStore: GlobalStore
-    ) {
+    constructor(injector: Injector) {
+        super(injector);
+        this.spinner = injector.get<SpinnerService>(SpinnerService as Type<SpinnerService>);
+        this.communicationRulesService = injector.get<CommunicationRulesService>(CommunicationRulesService as Type<CommunicationRulesService>);
+        this.groupsStore = injector.get<GroupsStore>(GroupsStore as Type<GroupsStore>);
+        this.globalStore = injector.get<GlobalStore>(GlobalStore as Type<GlobalStore>);
     }
 
     ngOnInit() {
-        this.communicationRulesChangesSubscription = this.communicationRulesService.changes()
+        this.subscriptions.add(this.communicationRulesService.changes()
             .subscribe(rules => {
                 this.groupsSendingCommunicationRules = rules.sending;
                 this.groupsReceivingCommunicationRules = rules.receiving;
                 this.changeDetector.markForCheck();
-            });
-        this.routeSubscription = this.route.data.subscribe((data: Data) => {
+            }));
+        this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             this.group = data.group;
             this.manageableStructuresId = this.globalStore.structures.data.map(s => s.id);
             this.communicationRulesService.setGroups([this.group]);
-        });
-        this.paramsSubscription = this.route.params
+        }));
+        this.subscriptions.add(this.route.params
             .pipe(filter(params => params.groupId))
             .subscribe(params =>
                 this.groupsStore.group = this.groupsStore.structure.groups.data
                     .find(g => g.id === params.groupId)
-            );
+            ));
 
         const activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
         this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
@@ -71,12 +70,6 @@ export class SmartGroupCommunicationComponent implements OnInit, OnDestroy {
                     relativeTo: this.route.parent
                 })
         );
-    }
-
-    ngOnDestroy(): void {
-        this.communicationRulesChangesSubscription.unsubscribe();
-        this.routeSubscription.unsubscribe();
-        this.paramsSubscription.unsubscribe();
     }
 
     public onGroupPickerStructureChange(structure: StructureModel) {

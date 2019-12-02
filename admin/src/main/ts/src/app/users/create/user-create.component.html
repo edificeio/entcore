@@ -6,41 +6,41 @@
   <form #createForm="ngForm" (ngSubmit)="createNewUser()">
     <ode-form-field label="firstName">
       <input type="text"
-             [(ngModel)]="newUser.firstName"
-             name="firstName"
-             required
-             pattern=".*\S+.*"
-             #firstNameInput="ngModel"
-             (blur)="newUser.firstName = trim(newUser.firstName)">
+            [(ngModel)]="newUser.firstName"
+            name="firstName"
+            required
+            pattern=".*\S+.*"
+            #firstNameInput="ngModel"
+            (blur)="newUser.firstName = trim(newUser.firstName)">
       <ode-form-errors [control]="firstNameInput"></ode-form-errors>
     </ode-form-field>
 
     <ode-form-field label="lastName">
       <input type="text"
-             [(ngModel)]="newUser.lastName"
-             name="lastName"
-             required
-             pattern=".*\S+.*"
-             (blur)="newUser.lastName = trim(newUser.lastName)"
-             #lastNameInput="ngModel">
+            [(ngModel)]="newUser.lastName"
+            name="lastName"
+            required
+            pattern=".*\S+.*"
+            (blur)="newUser.lastName = trim(newUser.lastName)"
+            #lastNameInput="ngModel">
       <ode-form-errors [control]="lastNameInput"></ode-form-errors>
     </ode-form-field>
 
     <ode-form-field label="birthDate">
       <ode-date-picker [(ngModel)]="newUser.userDetails.birthDate"
-                   name="birthDate"
-                   minDate="1900-01-01"
-                   maxDate="today"
-                   [required]="newUser.type == 'Student' ? true : false"
-                   #birthDateInput="ngModel">
+                  name="birthDate"
+                  minDate="1900-01-01"
+                  maxDate="today"
+                  [required]="newUser.type == 'Student' ? true : false"
+                  #birthDateInput="ngModel">
       </ode-date-picker>
       <ode-form-errors [control]="birthDateInput"></ode-form-errors>
     </ode-form-field>
 
     <ode-form-field label="profile">
       <ode-mono-select [(ngModel)]="newUser.type"
-                   name="type"
-                   [options]="typeOptions">
+                  name="type"
+                  [options]="typeOptions">
       </ode-mono-select>
     </ode-form-field>
 
@@ -73,8 +73,8 @@
                                     {{ child.lastName | uppercase }} {{ child.firstName }}
                                 </span>
             <i class="fa fa-times action"
-               (click)="removeChild(child)"
-               [title]="'create.user.deselect.child' | translate">
+              (click)="removeChild(child)"
+              [title]="'create.user.deselect.child' | translate">
             </i>
           </li>
         </ul>

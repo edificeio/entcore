@@ -1,3 +1,5 @@
+import { Logger } from './ode/Logger';
+import { OdeComponent } from './ode/OdeComponent';
 import {NgModule, Optional, SkipSelf} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
@@ -27,8 +29,8 @@ import { SpinnerService } from './services/spinner.service';
         }),
         RouterModule
     ],
-    exports: [NavComponent],
-    declarations: [NavComponent],
+    exports: [NavComponent, OdeComponent],
+    declarations: [NavComponent, OdeComponent],
     providers: [
         SessionResolver,
         StructuresResolver,
@@ -36,7 +38,8 @@ import { SpinnerService } from './services/spinner.service';
         SijilLabelsService,
         NotifyService,
         SpinnerService,
-        ConfigResolver
+        ConfigResolver,
+        Logger
     ],
 })
 export class CoreModule {

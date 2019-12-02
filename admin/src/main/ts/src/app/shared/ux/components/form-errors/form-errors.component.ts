@@ -1,4 +1,5 @@
-import {Component, Input} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, Input, Injector } from '@angular/core';
 import {AbstractControl} from '@angular/forms';
 
 import {LabelsService} from '../../services/labels.service';
@@ -8,14 +9,17 @@ import {LabelsService} from '../../services/labels.service';
     templateUrl: './form-errors.component.html',
     styleUrls: ['./form-errors.component.scss']
 })
-export class FormErrorsComponent {
-    constructor(private labelsService: LabelsService) {}
+export class FormErrorsComponent extends OdeComponent {
+    constructor(private labelsService: LabelsService, injector: Injector) {
+        super(injector);
+    }
 
     @Input('control')
     ref: AbstractControl;
 
     @Input('expectedPatternMsg')
     expectedPatternMsg: string;
+
 
     getErrorsArray() {
         const errorsArray = [];

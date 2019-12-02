@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
 import {BundlesService} from 'sijil';
 
 export interface UserOverview {
@@ -20,11 +21,13 @@ export interface UserOverview {
     styleUrls: ['./user-overview.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserOverviewComponent {
+export class UserOverviewComponent extends OdeComponent {
     @Input()
     user: UserOverview;
 
-    constructor(private bundlesService: BundlesService) {
+    constructor(injector: Injector,
+                private bundlesService: BundlesService) {
+                    super(injector);
     }
 
     displayDate(date: string): string {

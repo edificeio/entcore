@@ -1,4 +1,5 @@
-import {Component, ElementRef, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, EventEmitter, Input, Output, Injector } from '@angular/core';
 import {LabelsService} from '../../services';
 
 /* If you need to use multi-combo in a form you should give a look to the MultiSelectComponent. */
@@ -11,11 +12,14 @@ import {LabelsService} from '../../services';
         '(document:click)': 'onClick($event)',
     }
 })
-export class MultiComboComponent {
+export class MultiComboComponent extends OdeComponent {
 
     constructor(
+        injector: Injector,
         private _eref: ElementRef,
-        private labelsService: LabelsService) {}
+        private labelsService: LabelsService) {
+            super(injector);
+        }
 
     @Input()
     set comboModel(model) {

@@ -17,7 +17,7 @@
       ></ode-multi-combo>
       <div class="multi-combo-companion">
         <div *ngFor="let item of filter.outputModel"
-             (click)="deselect(filter, item)">
+            (click)="deselect(filter, item)">
                             <span *ngIf="filter.display">
                                 {{ item[filter.display] | translate }}
                             </span>

@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, Injector } from '@angular/core';
 import {ConnectorModel} from '../../../../core/store/models/connector.model';
 import {CasType} from '../CasType';
 import {NgForm} from '@angular/forms';
@@ -45,7 +46,7 @@ import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-
         }
     `]
 })
-export class ConnectorPropertiesComponent implements OnChanges {
+export class ConnectorPropertiesComponent extends OdeComponent implements OnChanges {
     @Input()
     connector: ConnectorModel;
     @Input()
@@ -126,6 +127,7 @@ export class ConnectorPropertiesComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        super.ngOnChanges(changes);
         this.casTypesOptions = this.casTypes ? this.casTypes.map(c => ({value: c.id, label: c.name})) : [];
     }
 
@@ -135,5 +137,8 @@ export class ConnectorPropertiesComponent implements OnChanges {
 
     public onInvalidUpload($event: string): void {
         this.iconFileInvalid.emit($event);
+    }
+    constructor(injector: Injector) {
+        super(injector);
     }
 }

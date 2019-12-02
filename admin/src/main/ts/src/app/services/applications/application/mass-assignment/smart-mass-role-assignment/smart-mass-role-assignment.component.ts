@@ -1,4 +1,5 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
+import { OdeComponent } from './../../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, Injector } from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {MassAssignment, Profile, Role, Structure} from '../../../../shared/services-types';
 import {ActivatedRoute} from '@angular/router';
@@ -11,30 +12,31 @@ import {NotifyService} from '../../../../../core/services/notify.service';
     selector: 'ode-smart-mass-role-assignment',
     templateUrl: './smart-mass-role-assignment.component.html'
 })
-export class SmartMassRoleAssignmentComponent implements OnInit, OnDestroy {
+export class SmartMassRoleAssignmentComponent extends OdeComponent implements OnInit, OnDestroy {
     public structure: Structure;
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     public roles: Array<Role> = [];
-    private routeDataSubscription: Subscription;
 
     @Output()
     public massAssignment: EventEmitter<void> = new EventEmitter<void>();
 
-    constructor(private http: HttpClient,
-                private route: ActivatedRoute,
+    constructor(injector: Injector,
+                private http: HttpClient,
                 private servicesStore: ServicesStore,
                 private notifyService: NotifyService) {
+                    super(injector);
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
-        this.routeDataSubscription = this.route.data.subscribe(data => {
+        this.subscriptions.add(this.route.data.subscribe(data => {
             if (data.roles) {
                 this.roles = data.roles
                     .filter((r: RoleModel) => r.transverse === false)
                     .map((r: RoleModel) => ({id: r.id, name: r.name}));
             }
-        });
+        }));
     }
 
     public assign(assignment: MassAssignment): void {
@@ -77,13 +79,9 @@ export class SmartMassRoleAssignmentComponent implements OnInit, OnDestroy {
                 this.massAssignment.emit();
             },
             () => {
-                 this.notifyService.error(
+                this.notifyService.error(
                     'services.mass-assignment.unassign-error.title',
                     'services.mass-assignment.unassign-error.title');
             });
-    }
-
-    ngOnDestroy(): void {
-        this.routeDataSubscription.unsubscribe();
     }
 }

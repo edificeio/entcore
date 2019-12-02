@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, Injector } from '@angular/core';
 
 
 export interface Option {
@@ -12,11 +13,14 @@ export interface Option {
     templateUrl: './simple-select.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SimpleSelectComponent {
+export class SimpleSelectComponent extends OdeComponent {
     @Input() selected: string;
     @Input() model: {[key: string]: string};
     @Input() options: Option[];
     @Input() ignoreOption: Option[];
     @Output() selectChange: EventEmitter<string> = new EventEmitter<string>();
+    constructor(injector: Injector) {
+      super(injector);
+    }
 }
 

@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 import {CasType} from '../CasType';
 import {ServicesService, WorkspaceDocument} from '../../../services.service';
@@ -25,17 +26,14 @@ import { SessionModel } from 'src/app/core/store/models/session.model';
     templateUrl: './smart-connector.component.html',
     styleUrls: ['./smart-connector.component.scss']
 })
-export class SmartConnectorComponent implements OnInit, OnDestroy {
+export class SmartConnectorComponent extends OdeComponent implements OnInit, OnDestroy {
     public casTypes: CasType[];
-    private routeSubscription: Subscription;
-    private rolesSubscription: Subscription;
-    private casTypesSubscription: Subscription;
+    
     public admc: boolean;
     public admlOfConnectorStructure: boolean;
     public admlOfCurrentStructure: boolean;
     public showDeleteConfirmation: boolean;
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
-    private structureSubscriber: Subscription;
     public assignmentGroupPickerList: GroupModel[];
 
     @ViewChild(ConnectorPropertiesComponent, { static: false })
@@ -48,26 +46,27 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public currentTab: string = this.PROPERTIES_TAB;
 
     constructor(private servicesService: ServicesService,
-                private activatedRoute: ActivatedRoute,
+                injector: Injector,
                 public servicesStore: ServicesStore,
                 private spinnerService: SpinnerService,
                 private notifyService: NotifyService,
-                private router: Router,
                 private location: Location,
                 private bundles: BundlesService) {
+                  super(injector);
     }
 
     ngOnInit() {
-        this.routeSubscription = this.activatedRoute.params.subscribe((params: Params) => {
+        super.ngOnInit();
+        this.subscriptions.add(this.route.params.subscribe((params: Params) => {
             if (params.connectorId) {
                 this.servicesStore.connector = this.servicesStore.structure
                     .connectors.data.find(a => a.id === params.connectorId);
             } else {
                 this.servicesStore.connector = new ConnectorModel();
             }
-        });
+        }));
 
-        this.rolesSubscription = this.activatedRoute.data.subscribe(data => {
+        this.subscriptions.add(this.route.data.subscribe(data => {
             if (data.roles) {
                 this.servicesStore.connector.roles = data.roles;
                 // Hack to gracful translate connector's role's name
@@ -75,33 +74,27 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                     r.name = `${this.servicesStore.connector.name} - ${this.bundles.translate('services.connector.access')}`;
                 });
             }
-        });
+        }));
 
-        this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 if (!this.hasStructureChildren() && this.currentTab === this.MASS_ASSIGNMENT_TAB) {
                     this.currentTab = this.PROPERTIES_TAB;
                 }
             }
-        });
+        }));
 
-        this.casTypesSubscription = this.servicesService
+        this.subscriptions.add(this.servicesService
             .getCasTypes()
-            .subscribe((res: CasType[]) => this.casTypes = res);
+            .subscribe((res: CasType[]) => this.casTypes = res));
 
         this.setAdmc();
         this.setAdmlOfConnectorStructure();
         this.setAdmlOfCurrentStructure();
     }
 
-    ngOnDestroy() {
-        this.routeSubscription.unsubscribe();
-        this.rolesSubscription.unsubscribe();
-        this.casTypesSubscription.unsubscribe();
-        this.structureSubscriber.unsubscribe();
-    }
-
+  
     public async setAdmlOfConnectorStructure() {
         const session: Session = await SessionModel.getSession();
         if (session.functions && session.functions.ADMIN_LOCAL && session.functions.ADMIN_LOCAL.scope) {
@@ -180,7 +173,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                     }, 'services.connector.create.success.title');
 
                     this.router.navigate(['..', res.id]
-                      , {relativeTo: this.activatedRoute, replaceUrl: false});
+                      , {relativeTo: this.route, replaceUrl: false});
                   }),
                   catchError(
                     error => {
@@ -248,7 +241,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                   parameters: {connector: this.servicesStore.connector.displayName}
                 }, 'services.connector.delete.success.title');
 
-                this.router.navigate(['..'], {relativeTo: this.activatedRoute, replaceUrl: false});
+                this.router.navigate(['..'], {relativeTo: this.route, replaceUrl: false});
               }),
               catchError(
                 error => {

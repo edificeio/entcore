@@ -39,7 +39,7 @@ export class DynamicTemplateDirective {
                     return cmpFactory;
                 })
                 .then(cmpFactory => {
-                    if (cmpFactory) {
+                    if (cmpFactory && this.viewContainer) {
                         this.viewContainer.clear();
                         this.viewContainer.createComponent(cmpFactory, 0, injector);
                     }

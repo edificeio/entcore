@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {BundlesService} from 'sijil';
@@ -16,15 +17,15 @@ import { routing } from 'src/app/core/services/routing.service';
     templateUrl: './import-csv.component.html',
     styleUrls: ['./import-csv.component.scss']
 })
-export class ImportCSVComponent implements OnInit, OnDestroy {
+export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestroy {
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
+        injector: Injector,
         private spinner: SpinnerService,
         private bundles: BundlesService,
-        private ns: NotifyService,
-        private cdRef: ChangeDetectorRef) {}
+        private ns: NotifyService) {
+            super(injector);
+        }
 
 
 
@@ -221,7 +222,7 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
         hasFilter : User.hasFilter,
         possibleState : User.possibleState,
         ns : this.ns,
-        cdRef: this.cdRef,
+        cdRef: this.changeDetector,
         // @ts-ignore: this.prop is really assigned before being used
         enableButtonNextStep: this.enableButtonNextStep,
         init(data: {importId: string, softErrors: any}, profiles): void {
@@ -392,12 +393,13 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
     loadFile(event) {
         const files: FileList = event.target.files;
         this.profiles.inputFiles[event.target.name] = event.target;
-        if (files.length == 1) {
+        if (files.length === 1) {
             this.importInfos[event.target.name] = event.target.files[0];
         }
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.cancel();
@@ -405,19 +407,17 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
                 this.importInfos.structureExternalId = data.structure.externalId;
                 this.importInfos.structureName = data.structure.name;
                 this.importInfos.UAI = data.structure.UAI;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
         });
 
         this.routerSubscriber = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
         });
     }
 
-    ngOnDestroy(): void {
-    }
 
     /*
     * Reset component's state.
@@ -489,7 +489,7 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
                 this.wizardEl.doNextStep();
             }
         }
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
 
     }
 
@@ -507,7 +507,7 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
             this.classes.init(data.classesMapping);
             this.wizardEl.doNextStep();
         }
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
     public toggleReportFilter(r) {
@@ -535,7 +535,7 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
         } else {
             this.wizardEl.doNextStep();
         }
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
     private async import() {
@@ -556,15 +556,15 @@ export class ImportCSVComponent implements OnInit, OnDestroy {
             }
         }
         this.wizardEl.doNextStep();
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
     public downloadReport(): void {
 		const bom = '\ufeff';
-  const headers: string = ['lastName', 'firstName', 'profile', 'import.report.export.newclasses', 'operation']
+        const headers: string = ['lastName', 'firstName', 'profile', 'import.report.export.newclasses', 'operation']
             .map(h => this.translate(h))
             .join(';');
-  const content: string = this.report.users
+        const content: string = this.report.users
             .map(u => `\r\n${u.lastName};${u.firstName};${u.profiles.map(p => this.translate(p)).join('-')};${u.classesStr};${u.state}`)
             .join('');
 		this.ajaxDownload(

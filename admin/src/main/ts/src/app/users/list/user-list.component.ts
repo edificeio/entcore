@@ -1,3 +1,4 @@
+import { OdeComponent } from './../../core/ode/OdeComponent';
 import {
   AfterViewChecked,
   ChangeDetectionStrategy,
@@ -7,7 +8,8 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  Injector
 } from '@angular/core';
 import {Subscription} from 'rxjs';
 
@@ -24,52 +26,45 @@ import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.s
     styleUrls: ['./user-list.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserListComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class UserListComponent extends OdeComponent implements OnInit, OnDestroy, AfterViewChecked {
 
-    private filtersUpdatesSubscriber: Subscription;
-    private userUpdatesSubscriber: Subscription;
-    private storeSubscriber: Subscription;
     nbUser: number;
 
     @Input() userlist: UserModel[] = [];
 
     @Input() listCompanion: string;
-    @Output('listCompanionChange') companionChange: EventEmitter<string> = new EventEmitter<string>();
+    @Output() companionChange: EventEmitter<string> = new EventEmitter<string>();
 
     // Selection
     @Input() selectedUser: UserModel;
-    @Output('selectedUserChange') onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>();
+    @Output() onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>();
 
     constructor(
-        private cdRef: ChangeDetectorRef,
         private usersStore: UsersStore,
         public userListService: UserListService,
         public listFiltersService: UserlistFiltersService,
-        private router: Router) {}
+        injector: Injector) {
+            super(injector);
+        }
 
     ngOnInit() {
-        this.filtersUpdatesSubscriber = this.listFiltersService.$updateSubject.subscribe(() => this.cdRef.markForCheck());
-        this.userUpdatesSubscriber = this.userListService.$updateSubject.subscribe(() => this.cdRef.markForCheck());
-        this.storeSubscriber = this.usersStore.$onchange.subscribe((field) => {
+        super.ngOnInit();
+        this.subscriptions.add(this.listFiltersService.$updateSubject.subscribe(() => this.changeDetector.markForCheck()));
+        this.subscriptions.add(this.userListService.$updateSubject.subscribe(() => this.changeDetector.markForCheck()));
+        this.subscriptions.add(this.usersStore.$onchange.subscribe((field) => {
             if (field === 'user') {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
         this.nbUser = this.userlist.length;
-    }
-
-    ngOnDestroy() {
-        this.filtersUpdatesSubscriber.unsubscribe();
-        this.userUpdatesSubscriber.unsubscribe();
-        this.storeSubscriber.unsubscribe();
     }
 
     ngAfterViewChecked() {
         // called to update list nbUser after filters update
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
-    isSelected = (user: UserModel) => {
+    isSelected = (user: UserModel): boolean => {
         return this.selectedUser && user && this.selectedUser.id === user.id;
     }
 
