@@ -335,7 +335,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			},
 			onStructureClick: function(structure){
 				$scope.viewStructure(structure)
-				structure.manualGroups.sync($scope.refreshScope)
+				var i = 1;
+				structure.manualGroups.sync(function() { if(i-- == 0) $scope.refreshScope(); })
+				structure.childrenAutoGroups.sync(function() { if(i-- == 0) $scope.refreshScope(); })
 			},
 			requestName : "groups-request"
 		},

@@ -273,17 +273,96 @@ Classe.prototype.toString = function(){
     return this.name
 }
 
+//Groups
+function ChildrenAutoGroup(){};
+ChildrenAutoGroup.prototype = {
+};
+
 //Manual groups
 function ManualGroup(){}
 ManualGroup.prototype = {
-    save: function(structure, hook){
-        var that = this
+    loadAutoLink()
+    {
+        this.targetAllStructs = this.autolinkTargetAllStructs;
+        this.targetStructs = this.autolinkTargetStructs;
 
-        var postData = {
-            name: that.name
+        this.linkProfiles = [];
+        this.linkDisciplines = [];
+        this.linkFunctions = [];
+
+        var alufg = this.autolinkUsersFromGroups;
+        if(alufg != null)
+        {
+            for(var i = alufg.length; i-- > 0;)
+            {
+                if(alufg[i] == "AdminLocal")
+                    this.linkAdmls = true;
+                else if(alufg[i] == "HeadTeacher")
+                    this.linkHeadTeachers = true;
+                else
+                {
+                    this.linkProfiles.push(alufg[i]);
+                    this.linkDisciplines.push(alufg[i]);
+                    this.linkFunctions.push(alufg[i]);
+                }
+            }
         }
-        if(that.classId)
-            postData.classId = that.classId.id
+
+        this.activateAutolink =
+            (this.autolinkTargetAllStructs == true || (this.autolinkTargetStructs != null && this.autolinkTargetStructs.length > 0))
+            &&
+            (this.autolinkUsersFromGroups != null && this.autolinkUsersFromGroups.length > 0);
+    },
+    getTargetAllStructs()
+    {
+        var defaut = false;
+        return this.activateAutolink != true ? defaut : this.targetAllStructs == null ? defaut : this.targetAllStructs;
+    },
+    getTargetStructs()
+    {
+        var defaut = [];
+        return this.activateAutolink != true ? defaut : this.targetStructs == null ? defaut : this.targetStructs;
+    },
+    generateLinkRules()
+    {
+        if(this.activateAutolink != true)
+            return [];
+
+        var specials = [];
+        if(this.linkAdmls == true)
+            specials.push("AdminLocal");
+        if(this.linkHeadTeachers == true)
+            specials.push("HeadTeacher");
+
+        var fuse = function(o)
+        {
+            if(o == null) return;
+            for(var i = o.length; i-- > 0;)
+            {
+                for(var j = specials.length; j-- > 0;)
+                    if(specials[j] == o[i])
+                        break;
+                if(j < 0)
+                    specials.push(o[i]);
+            }
+        }
+
+        fuse(this.linkProfiles);
+        fuse(this.linkDisciplines);
+        fuse(this.linkFunctions);
+
+        return specials;
+    },
+    save: function(structure, hook)
+    {
+        var postData = {
+            name: this.name,
+            autolinkTargetAllStructs: this.getTargetAllStructs(),
+            autolinkTargetStructs: this.getTargetStructs(),
+            autolinkUsersFromGroups: this.generateLinkRules(),
+        };
+        if(this.classId)
+            postData.classId = this.classId.id
         else
             postData.structureId = structure.id
 
@@ -296,6 +375,9 @@ ManualGroup.prototype = {
         var that = this
         http().putJson("group/"+that.id, {
             name: that.name,
+            autolinkTargetAllStructs: this.getTargetAllStructs(),
+            autolinkTargetStructs: this.getTargetStructs(),
+            autolinkUsersFromGroups: this.generateLinkRules(),
         }).done(function(){
             notify.info(lang.translate("directory.notify.groupUpdate"))
             hookCheck(hook)
@@ -384,12 +466,60 @@ function Structure(){
 
     this.collection(User, {})
 
+    this.collection(ChildrenAutoGroup, {
+        sync: function(hook)
+        {
+            let that = this;
+            return http()
+                .get(
+                    "group/admin/list",
+                    { structureId: that.model.id, onlyAutomaticGroups: true, recursive: true },
+                    { requestName: "children-groups-request" }
+                )
+                .done(function(groups)
+                {
+                    that.load(groups);
+                    hookCheck(hook);
+                });
+        },
+        unique: function(field, labelRestrict, excludeADMLs, excludeHTs)
+        {
+            var res = [];
+            var i, r, l;
+            for(i = this.all.length; i-- > 0;)
+            {
+                if(labelRestrict != null)
+                {
+                    var lbls = this.all[i].labels;
+                    for(l = lbls.length; l-- > 0;)
+                        if(lbls[l] == labelRestrict)
+                            break;
+                    if(l < 0)
+                        continue;
+                }
+                if(excludeADMLs == true)
+                    if(this.all[i].filter == "AdminLocal")
+                        continue;
+                if(excludeHTs == true)
+                    if(this.all[i].filter == "HeadTeacher")
+                        continue;
+
+                for(r = res.length; r-- > 0;)
+                    if(res[r][field] == this.all[i][field])
+                        break;
+                if(r < 0)
+                    res.push(this.all[i]);
+            }
+            return res;
+        }
+    });
+
     this.collection(ManualGroup, {
         sync: function(hook){
             var that = this
             return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-request' }).done(function(groups){
                 that.load(groups)
-                that.forEach(function(group){ group.getUsers() })
+                that.forEach(function(group){ group.getUsers(); group.loadAutoLink(); })
                 hookCheck(hook)
             })
         }
@@ -570,6 +700,24 @@ Structure.prototype.blockUsers = function(profile, block, cb){
     })
 }
 
+Structure.prototype._getDescendants = function(descendants)
+{
+    if(this.children != null)
+    {
+        for(let i = this.children.length; i-- > 0;)
+        {
+            descendants.push(this.children[i]);
+            this.children[i]._getDescendants(descendants);
+        }
+    }
+    return descendants;
+}
+
+Structure.prototype.getDescendants = function()
+{
+    return this._getDescendants([]);
+}
+
 Structure.prototype.toString = function(){
     return this.name;
 }
@@ -666,7 +814,7 @@ Profiles.prototype.save = function(block, callback) {
 
 model.build = function(){
     this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures,
-        Classe, ManualGroup, FunctionalGroup, Duplicate, Level, Profile, Profiles])
+        Classe, ChildrenAutoGroup, ManualGroup, FunctionalGroup, Duplicate, Level, Profile, Profiles])
 
     this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()

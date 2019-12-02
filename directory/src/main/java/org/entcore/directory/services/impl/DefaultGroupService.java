@@ -49,18 +49,26 @@ public class DefaultGroupService implements GroupService {
 	}
 
 	@Override
-	public void listAdmin(String structureId, UserInfos userInfos, JsonArray expectedTypes,
+	public void listAdmin(String structureId, Boolean onlyAutomaticGroups, Boolean recursive, UserInfos userInfos, JsonArray expectedTypes,
 			Handler<Either<String, JsonArray>> results) {
 		if (userInfos == null) {
 			results.handle(new Either.Left<String, JsonArray>("invalid.user"));
 			return;
 		}
+		String recursion = "";
+		if(recursive.booleanValue() == true)
+		{
+			recursion = "<-[:HAS_ATTACHMENT*0..]-(:Structure)";
+		}
+
 		String condition;
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			condition = "WHERE (g:" + Joiner.on(" OR g:").join(expectedTypes) + ") ";
 		} else {
 			condition = "WHERE g:Group ";
 		}
+		if(onlyAutomaticGroups.booleanValue() == true)
+			condition += " AND EXISTS(g.filter) ";
 
 		JsonObject params = new JsonObject();
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
@@ -81,11 +89,13 @@ public class DefaultGroupService implements GroupService {
 			params.put("structure", structureId);
 		}
 		String query =
-				"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
-				"OPTIONAL MATCH (s)<-[:BELONGS]-(c: Class)<-[:DEPENDS]-(g) " +
+				"MATCH (s:Structure)" + recursion + "<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
+				"OPTIONAL MATCH (s)" + recursion + "<-[:BELONGS]-(c: Class)<-[:DEPENDS]-(g) " +
 				"WITH g, collect({name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
-				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, type, g.users as internalCommunicationRule, "+
+				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
+				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
+				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
 				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";

@@ -23,9 +23,15 @@ import java.util.UUID;
 
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -128,6 +134,52 @@ public class Group {
 					.put("email", emailInternal);
 
 			transactionHelper.add(query, params);
+		}
+	}
+
+	public static void runLinkRules()
+	{
+		TransactionHelper tx;
+		Logger log = LoggerFactory.getLogger(Group.class);
+		try
+		{
+			tx = TransactionManager.getInstance().begin();
+
+			String removeQuery =
+				"MATCH " +
+				"	(g:ManualGroup)<-[old:IN]-(:User) " +
+				"WHERE " +
+				"	NOT EXISTS(old.source) OR old.source <> 'MANUAL' " +
+				"DELETE old " +
+				"RETURN *; ";
+			String linkQuery =
+				"MATCH " +
+				"	(g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+				"WHERE " +
+				"	EXISTS(g.autolinkUsersFromGroups) " +
+				"WITH g, struct " +
+				"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+				"WHERE " +
+				"	(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
+				"	AND target.filter IN g.autolinkUsersFromGroups " +
+				"WITH g, u " +
+				"MERGE (u)-[new:IN]->(g) " +
+				"RETURN *; ";
+
+			JsonObject params = new JsonObject();
+
+			tx.add(removeQuery, params);
+			tx.add(linkQuery, params);
+
+			tx.commit(null);
+		}
+		catch(TransactionException e)
+		{
+			log.error("Error opening or running transaction in group link rules", e);
+		}
+		catch(Exception e)
+		{
+			log.error("Unknown error in group link rules", e);
 		}
 	}
 }

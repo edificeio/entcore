@@ -64,6 +64,15 @@ public class GroupController extends BaseController {
 					final Boolean translate= request.params().contains("translate") ?
 							new Boolean(request.params().get("translate")) :
 							Boolean.FALSE;
+
+					final Boolean recursive = request.params().contains("recursive") ?
+							new Boolean(request.params().get("recursive")) :
+							Boolean.FALSE;
+
+					final Boolean onlyAutomaticGroups = request.params().contains("onlyAutomaticGroups") ?
+							new Boolean(request.params().get("onlyAutomaticGroups")) :
+							Boolean.FALSE;
+
 					final Handler<Either<String, JsonArray>> handler;
 					if(translate){
 						handler = new Handler<Either<String, JsonArray>>() {
@@ -81,7 +90,7 @@ public class GroupController extends BaseController {
 					}else{
 						handler = arrayResponseHandler(request);
 					}
-					groupService.listAdmin(structureId, user, types, handler);
+					groupService.listAdmin(structureId, onlyAutomaticGroups, recursive, user, types, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -99,21 +108,48 @@ public class GroupController extends BaseController {
 				final String classId = body.getString("classId");
 				body.remove("structureId");
 				body.remove("classId");
-				groupService.createOrUpdateManual(body, structureId, classId, notEmptyResponseHandler(request, 201));
+
+				UserUtils.getUserInfos(eb, request, user -> {
+					if(user != null) {
+						if(UserUtils.isSuperAdmin(user) == false) {
+							body.remove("autolinkTargetAllStructs");
+							body.remove("autolinkTargetStructs");
+							body.remove("autolinkUsersFromGroups");
+						}
+
+						groupService.createOrUpdateManual(body, structureId, classId, notEmptyResponseHandler(request, 201));	
+					}
+					else
+						unauthorized(request, "invalid.user");
+				});
 			}
 		});
 	}
 
 	@Put("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void update(final HttpServerRequest request) {
+	public void update(final HttpServerRequest request)
+	{
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			bodyToJson(request, pathPrefix + "updateManualGroup", new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject body) {
 					body.put("id", groupId);
-					groupService.createOrUpdateManual(body, null, null, notEmptyResponseHandler(request));
+
+					UserUtils.getUserInfos(eb, request, user -> {
+						if(user != null) {
+							if(UserUtils.isSuperAdmin(user) == false) {
+								body.remove("autolinkTargetAllStructs");
+								body.remove("autolinkTargetStructs");
+								body.remove("autolinkUsersFromGroups");
+							}
+
+							groupService.createOrUpdateManual(body, null, null, notEmptyResponseHandler(request));
+						}
+						else
+							unauthorized(request, "invalid.user");
+					});
 				}
 			});
 		} else {
