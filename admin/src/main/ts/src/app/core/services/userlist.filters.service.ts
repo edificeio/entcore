@@ -8,7 +8,7 @@ export abstract class UserFilter<T> {
     abstract type: string;
     abstract label: string;
     abstract comboModel: Array<T>;
-    abstract filter: Array<T> | ((item: any) => boolean);
+    abstract filter: Array<T> | ((...items: any[]) => boolean);
 
     protected _outputModel: Array<T> = [];
     set outputModel(model: Array<T>) {
@@ -208,19 +208,20 @@ class AdmlFilter extends UserFilter<string> {
 }
 
 export class DeleteFilter extends UserFilter<string> {
-    type = 'deleteDate';
-    label = 'delete.multi.combo.title';
-    comboModel = ['users.deleted', 'users.not.deleted'];
-    order = '+';
-    filterProp = 'this';
+    type = "deleteDate, disappearanceDate";
+    label = "delete.multi.combo.title";
+    comboModel = ["users.deleted", "users.waiting.deleted", "users.not.deleted"];
+    order = "+";
+    filterProp = "this";
 
-    filter = (deleteDate: string) => {
+    filter = (deleteDate: string, disappearanceDate: string) => {
         const outputModel = this.outputModel;
-        return outputModel.length === 0
-            || outputModel.indexOf('users.deleted') !== -1 && deleteDate != null
-            || outputModel.indexOf('users.not.deleted') !== -1 && deleteDate == null;
-    }
-}
+        return outputModel.length == 0
+            || outputModel.indexOf("users.deleted") != -1 && deleteDate != null
+            || outputModel.indexOf("users.waiting.deleted") != -1 && disappearanceDate != null && deleteDate == null
+            || outputModel.indexOf("users.not.deleted") != -1 && deleteDate == null && disappearanceDate == null;
+    };
+};
 
 @Injectable()
 export class UserlistFiltersService {

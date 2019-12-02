@@ -27,23 +27,41 @@ export class FilterPipe implements PipeTransform {
                 }
 
                 const filterValue = filter[property];
-                const objectValue = object[property];
+                const propsToCheck = property.split(",");
 
-                if (typeof objectValue === 'undefined' && typeof filterValue === 'string' && filterValue.length > 0 ) {
-                    check = false;
-                } else if (objectValue instanceof Array && typeof filterValue === 'string') {
-                    check = this.stringFullCompare(objectValue.join(), filterValue);
-                } else if (typeof filterValue === 'string' && typeof objectValue === 'string') {
-                    check = this.stringFullCompare(objectValue, filterValue);
-                } else if (filterValue instanceof Array && typeof objectValue === 'string') {
-                    for (let i = 0; i < filterValue.length; i++) {
-                        check = this.stringFullCompare(objectValue, filterValue[i]);
-                        if (check) { break; }
-                    }
-                } else if (filterValue instanceof Function) {
-                    check = filterValue(objectValue);
+                const objectValues = new Array(propsToCheck.length);
+                for(let i = propsToCheck.length; i-- > 0;)
+                    objectValues[i] = object[propsToCheck[i].trim()];
+
+                if (filterValue instanceof Function) {
+                    check = filterValue.apply(null, objectValues);
                 } else if (filterValue instanceof Object) {
-                    return this._filterObject(objectValue, filterValue, objectRef, arrayRef);
+                    if(propsToCheck.length > 1)
+                        throw "Multi-argument object filtering is not yet supported";
+                    return this._filterObject(objectValues[0], filterValue, objectRef, arrayRef);
+                }
+                else
+                {
+                    for(let i = objectValues.length; i-- > 0;)
+                    {
+                        if(!check)
+                            break;
+
+                        const objectValue = objectValues[i];
+
+                        if (typeof objectValue === 'undefined' && typeof filterValue === 'string' && filterValue.length > 0 ) {
+                            check = false;
+                        } else if (objectValue instanceof Array && typeof filterValue === 'string') {
+                            check = this.stringFullCompare(objectValue.join(), filterValue);
+                        } else if (typeof filterValue === 'string' && typeof objectValue === 'string') {
+                            check = this.stringFullCompare(objectValue, filterValue);
+                        } else if (filterValue instanceof Array && typeof objectValue === 'string') {
+                            for (let i = 0; i < filterValue.length; i++) {
+                                check = this.stringFullCompare(objectValue, filterValue[i]);
+                                if (check) { break; }
+                            }
+                        }
+                    }
                 }
             }
             if (check) {
