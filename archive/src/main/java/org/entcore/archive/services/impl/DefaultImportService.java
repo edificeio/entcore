@@ -136,49 +136,57 @@ public class DefaultImportService implements ImportService {
                                                 files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
                                             parseFolders(user, importId, filePath, locale, config, files.result(), handler);
                                         } else {
-                                            deleteAndHandleError(filePath, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                            deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
                                         }
                                     } else {
-                                        deleteAndHandleError(filePath, files.cause().getMessage(), handler);
+                                        deleteAndHandleError(importId, files.cause().getMessage(), handler);
                                     }
                                 });
                             } else {
-                                deleteAndHandleError(filePath,"Archive file not recognized", handler);
+                                deleteAndHandleError(importId,"Archive file not recognized", handler);
                             }
                         } else {
-                            deleteAndHandleError(filePath, results.cause().getMessage(), handler);
+                            deleteAndHandleError(importId, results.cause().getMessage(), handler);
                         }
                     });
                 } else {
-                    deleteAndHandleError(filePath, finished.cause().getMessage(), handler);
+                    deleteAndHandleError(importId, finished.cause().getMessage(), handler);
                 }
             });
         });
     }
 
-    private void deleteAndHandleError(String filePath, String error, Handler<Either<String, JsonObject>> handler) {
-        deleteArchive(filePath.split(File.separator)[0]);
+    private void deleteAndHandleError(String importId, String error, Handler<Either<String, JsonObject>> handler) {
+        deleteArchive(importId);
         handler.handle(new Either.Left<>(error));
-    }
-
-    private void deleteArchiveAndZip(String filePath) {
-        fs.deleteRecursive(filePath, true, deleted -> {
-            if (deleted.failed()) {
-                log.debug("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
-            }
-        });
-        fs.deleteRecursive(filePath + "_unzip", true, deleted -> {
-            if (deleted.failed()) {
-                log.debug("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
-            }
-        });
     }
 
     @Override
     public void deleteArchive(String importId) {
+        if (StringUtils.isEmpty(importId) ||
+                !importId.matches("[0-9]+_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+            log.error("[Archive] - Import could not be deleted, wrong importId: " + importId);
+            return;
+        }
         userImports.remove(importId);
         MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().put("import_id", importId));
-        deleteArchiveAndZip(importPath + File.separator + importId);
+
+        if (!StringUtils.isEmpty(importPath)) {
+
+            String filePath = importPath + File.separator + importId;
+            log.debug("[Archive] - Deleting import located at " + filePath);
+
+            fs.deleteRecursive(filePath, true, deleted -> {
+                if (deleted.failed()) {
+                    log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                }
+            });
+            fs.deleteRecursive(filePath + "_unzip", true, deleted -> {
+                if (deleted.failed()) {
+                    log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                }
+            });
+        }
     }
 
     private void parseFolders(UserInfos user, String importId, String path, String locale, JsonObject config,
@@ -186,7 +194,7 @@ public class DefaultImportService implements ImportService {
         String manifestPath = folders.stream().filter(f -> f.endsWith("Manifest.json")).findFirst().get();
         fs.readFile(manifestPath, res -> {
            if (res.failed()) {
-               deleteAndHandleError(path, "Archive file not recognized - Missing 'Manifest.json'", handler);
+               deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
            } else {
                JsonObject reply = new JsonObject().put("importId", importId).put("path",FileUtils.getParentPath(manifestPath));
                JsonObject foundApps = new JsonObject();
@@ -294,7 +302,7 @@ public class DefaultImportService implements ImportService {
                        });
 
                    } else {
-                       deleteAndHandleError(path, "[Archive] - Could not recognize folders. ", handler);
+                       deleteAndHandleError(importId, "[Archive] - Could not recognize folders. ", handler);
                    }
                });
            }
