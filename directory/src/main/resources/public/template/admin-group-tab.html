@@ -4,6 +4,83 @@
     |||||||||||||||||||||
 -->
 
+<!-- Manual group automatic link -->
+<script type="text/ng-template" id="manual-group-autolink">
+    <div class="twelve cell" ng-init="autolinkGroup = createdGroup != null ? createdGroup : groupSelected;" ng-if="isCentralAdmin()">
+        <h3 class="twelve cell" style="text-align: center;"><i18n>directory.manualgroup.autolink.title</i18n></h3>
+        <label class="twelve cell">
+            <input type="checkbox" ng-model="autolinkGroup.activateAutolink"/>
+            <span><i18n>directory.manualgroup.autolink.activate</i18n></span>
+        </label>
+        <div class="twelve cell" style="padding: 8px; border: 2px solid #CCC;" ng-disabled="autolinkGroup.activateAutolink != true">
+            <h6 style="margin-top:0;"><i18n>directory.manualgroup.autolink.structs.title</i18n></h6>
+            <label class="twelve cell">
+                <input type="checkbox" ng-model="autolinkGroup.targetAllStructs" />
+                <span><i18n>directory.manualgroup.autolink.structs.all</i18n></span>
+            </label>
+            <div class="twelve cell">
+                <label class="twelve cell" for="autolinkGroup.structSelect">
+                    <span class="twelve cell"><i18n>directory.manualgroup.autolink.structs.choose</i18n></span>
+                </label>
+                <select multiple id="autolinkGroup.structSelect"
+                    ng-model="autolinkGroup.targetStructs" ng-disabled="autolinkGroup.targetAllStructs"
+                    class="twelve cell" size=8 style="height: auto;"
+                >
+                    <option ng-repeat="struct in structure.getDescendants() | orderBy: 'name'" value="[[struct.id]]">
+                        [[struct.name]]
+                    </option>
+                </select>
+            </div>
+            <h6 style="float: left;"><i18n>directory.manualgroup.autolink.groups.title</i18n></h6>
+            <label class="twelve cell" for="autolinkGroup.profileSelect">
+                <span class="twelve cell"><i18n>directory.manualgroup.autolink.groups.profiles</i18n></span>
+            </label>
+            <div class="six cell">
+                <select multiple id="autolinkGroup.profileSelect"
+                    ng-model="autolinkGroup.linkProfiles"
+                    ng-options="profile.label as profile.label for profile in profileList | orderBy: 'translatedLabel'"
+                    class="twelve cell" size=6 style="height: auto;"
+                >
+                </select>
+            </div>
+            <div class="six cell">
+                <label class="twelve cell">
+                    <input type="checkbox" ng-model="autolinkGroup.linkAdmls" />
+                    <span><i18n>directory.manualgroup.autolink.groups.adml</i18n></span>
+                </label>
+                <label class="twelve cell">
+                    <input type="checkbox" ng-model="autolinkGroup.linkHeadTeachers" />
+                    <span><i18n>directory.manualgroup.autolink.groups.headteachers</i18n></span>
+                </label>
+            </div>
+            <div class="twelve cell">
+                <label class="twelve cell" for="autolinkGroup.disciplineSelect">
+                    <span class="twelve cell"><i18n>directory.manualgroup.autolink.groups.disciplines</i18n></span>
+                </label>
+                <select multiple id="autolinkGroup.disciplineSelect"
+                    ng-model="autolinkGroup.linkDisciplines"
+                    ng-options="group.filter as group.filter for group in structure.childrenAutoGroups.unique('filter', 'DisciplineGroup', true, true) | orderBy: 'filter'"
+                    ng-disabled="autolinkGroup.linkProfiles != null && autolinkGroup.linkProfiles.indexOf('Teacher') != -1"
+                    class="twelve cell" size=16 style="height: auto;"
+                >
+                </select>
+            </div>
+            <div class="twelve cell">
+                <label class="twelve cell" for="autolinkGroup.functionSelect">
+                    <span class="twelve cell"><i18n>directory.manualgroup.autolink.groups.functions</i18n></span>
+                </label>
+                <select multiple id="autolinkGroup.functionSelect"
+                    ng-model="autolinkGroup.linkFunctions"
+                    ng-options="group.filter as group.filter for group in structure.childrenAutoGroups.unique('filter', 'FuncGroup', true, true) | orderBy: 'filter'"
+                    ng-disabled="autolinkGroup.linkFunctions != null && autolinkGroup.linkProfiles.indexOf('Personnel') != -1"
+                    class="twelve cell" size=16 style="height: auto;"
+                >
+                </select>
+            </div>
+        </div>
+    </div>
+</script>
+
 <!-- Structure selection menu -->
 <div ng-include="'structure-tree'"></div>
 
@@ -27,7 +104,7 @@
     </nav>
 
     <!-- New group -->
-    <div ng-if="showWhat === 'showGroupCreation'" ng-init="createdGroup = initGroup()" class="search-container-view">
+    <div ng-if="showWhat === 'showGroupCreation'" ng-init="createdGroup = initGroup();" class="search-container-view">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdGroup.name ? createdGroup.name : lang.translate('directory.lastName')]]</h1></div>
         <hr class="separator">
         <div class="button-horizontal-bar">
@@ -43,6 +120,7 @@
             <select ng-model="createdGroup.classId" class="five cell" ng-options="class as class.name for class in structure.classes.all | orderBy: 'name'">
             </select>
         </div>
+        <div ng-include="'manual-group-autolink'"></div>
     </div>
 
     <!-- Group details -->
@@ -96,5 +174,6 @@
 				</li>
             </ul>
         </div>
+        <div ng-include="'manual-group-autolink'"></div>
     </div>
 </article>

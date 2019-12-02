@@ -99,6 +99,10 @@ public class PostImport {
 				if (config.getBoolean("tenant-link-structure", true)) {
 					Tenant.linkStructures(eb);
 				}
+				if(config.getBoolean("manual-group-link-users-auto", true) == true)
+				{
+					Group.runLinkRules();
+				}
 			}
 		};
 	}

@@ -5,6 +5,22 @@
   "properties": {
     "name": {
       "type": "string"
+    },
+    "autolinkTargetAllStructs": {
+      "type": "boolean"
+    },
+    "autolinkTargetStructs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "autolinkUsersFromGroups":
+    {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

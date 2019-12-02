@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonObject;
 
 public interface GroupService {
 
-	void listAdmin(String structureId, UserInfos userInfos, JsonArray expectedTypes,
+	void listAdmin(String structureId, Boolean onlyAutomaticGroups, Boolean recursive, UserInfos userInfos, JsonArray expectedTypes,
 			Handler<Either<String, JsonArray>> results);
 
 	void createOrUpdateManual(JsonObject group, String structureId, String classId,

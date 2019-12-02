@@ -1,0 +1,6 @@
+div[disabled], div[disabled] select
+{
+  background: #BBB;
+  color: #888;
+  pointer-events: none;
+}
