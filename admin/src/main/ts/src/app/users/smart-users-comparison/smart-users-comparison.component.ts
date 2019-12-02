@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, Injector } from '@angular/core';
 import {UserOverview} from '../user-overview/user-overview.component';
 import {UsersService} from '../users.service';
 import {forkJoin, Observable, Subject} from 'rxjs';
@@ -14,7 +15,7 @@ interface Users<K> {
     selector: 'ode-smart-users-comparison',
     templateUrl: './smart-users-comparison.component.html'
 })
-export class SmartUsersComparisonComponent implements OnInit, OnChanges {
+export class SmartUsersComparisonComponent extends OdeComponent implements OnInit, OnChanges {
     @Input()
     public user1: string;
 
@@ -28,8 +29,9 @@ export class SmartUsersComparisonComponent implements OnInit, OnChanges {
 
     constructor(
         private userService: UsersService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {
+        injector: Injector
+        ) {
+            super(injector);
         this.usersChanged.asObservable()
             .pipe(
                 tap(() => {
@@ -41,11 +43,12 @@ export class SmartUsersComparisonComponent implements OnInit, OnChanges {
             .subscribe(users => {
                 this.user1overview = users.user1;
                 this.user2overview = users.user2;
-                this.changeDetectorRef.markForCheck();
+                this.changeDetector.markForCheck();
             });
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.usersChanged.next({user1: this.user1, user2: this.user2});
     }
 

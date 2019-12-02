@@ -16,7 +16,7 @@ export let routing = {
         return this.get(item, 'params', route);
     },
     observe(route: ActivatedRoute, to: 'params' | 'data'): Observable<Params> | Observable<Data> {
-        const observables: (Observable<Params> | Observable<Data>)[] = route.pathFromRoot.map(route => route[to]);
+        const observables: (Observable<Params> | Observable<Data>)[] = route.pathFromRoot.map(rRoute => rRoute[to]);
 
         return merge(...observables);
     }

@@ -1,11 +1,12 @@
-import {Component, ContentChild, EventEmitter, Input, Output, TemplateRef} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ContentChild, EventEmitter, Input, Output, TemplateRef, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-list',
     templateUrl: './list.component.html',
     styleUrls: ['./list.component.scss']
 })
-export class ListComponent {
+export class ListComponent extends OdeComponent {
 
     set storedElements(list) {
         this._storedElements = list;
@@ -37,4 +38,8 @@ export class ListComponent {
     @Input() isSelected = (arg?: any) => false;
     @Input() isDisabled = (arg?: any) => false;
     @Input() ngClass = (arg?: any) => ({});
+
+    constructor(injector: Injector) {
+        super(injector);
+    }
 }

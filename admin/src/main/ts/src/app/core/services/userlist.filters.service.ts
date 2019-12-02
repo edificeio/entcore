@@ -207,21 +207,20 @@ class AdmlFilter extends UserFilter<string> {
     }
 }
 
-export class DeleteFilter extends UserFilter<string>
-{
-    type = "deleteDate";
-    label = "delete.multi.combo.title";
-    comboModel = ["users.deleted", "users.not.deleted"];
-    order = "+";
-    filterProp = "this";
+export class DeleteFilter extends UserFilter<string> {
+    type = 'deleteDate';
+    label = 'delete.multi.combo.title';
+    comboModel = ['users.deleted', 'users.not.deleted'];
+    order = '+';
+    filterProp = 'this';
 
     filter = (deleteDate: string) => {
-        let outputModel = this.outputModel;
-        return outputModel.length == 0
-            || outputModel.indexOf("users.deleted") != -1 && deleteDate != null
-            || outputModel.indexOf("users.not.deleted") != -1 && deleteDate == null;
-    };
-};
+        const outputModel = this.outputModel;
+        return outputModel.length === 0
+            || outputModel.indexOf('users.deleted') !== -1 && deleteDate != null
+            || outputModel.indexOf('users.not.deleted') !== -1 && deleteDate == null;
+    }
+}
 
 @Injectable()
 export class UserlistFiltersService {
@@ -259,8 +258,8 @@ export class UserlistFiltersService {
     ];
 
     resetFilters() {
-        for (let i = 0; i < this.filters.length; i++) {
-            this.filters[i].outputModel = [];
+        for (const filter of this.filters) {
+            filter.outputModel = [];
         }
     }
 
@@ -306,18 +305,16 @@ export class UserlistFiltersService {
 
     getFormattedFilters(customFilters?: UserFilter<any> | UserFilterList<any>): any {
         const formattedFilters = {};
-        for (let i = 0; i < this.filters.length; i++) {
-            const filter = this.filters[i];
+        for (const filter of this.filters) {
             formattedFilters[filter.type] = filter.filter;
         }
-        if(customFilters != null)
-        {
-            if(Array.isArray(customFilters) == false)
+        if (customFilters != null) {
+            if (Array.isArray(customFilters) === false) {
                 customFilters = [ customFilters as UserFilter<any> ];
+            }
 
             customFilters = customFilters as UserFilterList<any>;
-            for(let i = 0; i < customFilters.length; i++) {
-                let filter = customFilters[i];
+            for (const filter of customFilters) {
                 formattedFilters[filter.type] = filter.filter;
             }
         }
@@ -326,18 +323,16 @@ export class UserlistFiltersService {
 
     getFormattedOutputModels(customFilters?: UserFilter<any> | UserFilterList<any>): any {
         const outputModels = {};
-        for (let i = 0; i < this.filters.length; i++) {
-            const filter = this.filters[i];
+        for (const filter of this.filters) {
             outputModels[filter.type] = filter.outputModel;
         }
-        if(customFilters != null)
-        {
-            if(Array.isArray(customFilters) == false)
+        if (customFilters != null) {
+            if (Array.isArray(customFilters) === false) {
                 customFilters = [ customFilters as UserFilter<any> ];
+            }
 
             customFilters = customFilters as UserFilterList<any>;
-            for(let i = 0; i < customFilters.length; i++) {
-                let filter = customFilters[i];
+            for (const filter of customFilters) {
                 outputModels[filter.type] = filter.outputModel;
             }
         }

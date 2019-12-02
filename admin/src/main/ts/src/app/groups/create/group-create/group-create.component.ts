@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
 import {Location} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
@@ -18,7 +19,7 @@ import { SpinnerService } from 'src/app/core/services/spinner.service';
     templateUrl: './group-create.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupCreateComponent {
+export class GroupCreateComponent extends OdeComponent{
 
     newGroup: GroupModel = new GroupModel();
 
@@ -26,9 +27,9 @@ export class GroupCreateComponent {
                 private groupsStore: GroupsStore,
                 private ns: NotifyService,
                 private spinner: SpinnerService,
-                private router: Router,
-                private route: ActivatedRoute,
+                injector: Injector,
                 private location: Location) {
+                  super(injector);
     }
 
     createNewGroup() {

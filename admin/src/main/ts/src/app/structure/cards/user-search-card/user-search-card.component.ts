@@ -1,4 +1,5 @@
-import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, Injector } from '@angular/core';
 import {StructureModel} from '../../../core/store/models/structure.model';
 
 @Component({
@@ -6,12 +7,14 @@ import {StructureModel} from '../../../core/store/models/structure.model';
     templateUrl: './user-search-card.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserSearchCardComponent implements AfterViewInit {
+export class UserSearchCardComponent extends OdeComponent implements AfterViewInit {
 
     loading = false;
     foundUsers: Array<{id: string, firstName: string, lastName: string}> = [];
 
-    constructor(private cdRef: ChangeDetectorRef) {}
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
     @Input() structure: StructureModel;
     private _inputValue: string;
@@ -26,16 +29,16 @@ export class UserSearchCardComponent implements AfterViewInit {
                 console.error(err);
             }).then(() => {
                 this.loading = false;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             });
         } else {
             this.foundUsers = [];
         }
-        this.cdRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
     ngAfterViewInit() {
-        this.cdRef.markForCheck();
-        this.cdRef.detectChanges();
+        this.changeDetector.markForCheck();
+        this.changeDetector.detectChanges();
     }
 }

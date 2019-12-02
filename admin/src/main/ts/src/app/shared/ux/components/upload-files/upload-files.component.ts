@@ -1,4 +1,5 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, Injector } from '@angular/core';
 import {InputFileService} from '../../services/inputFile.service';
 
 @Component({
@@ -6,7 +7,7 @@ import {InputFileService} from '../../services/inputFile.service';
     templateUrl: './upload-files.component.html',
     styleUrls: ['./upload-files.component.scss']
 })
-export class UploadFilesComponent implements OnInit {
+export class UploadFilesComponent extends OdeComponent implements OnInit {
     @Input()
     fileSrc: string;
     @Input()
@@ -26,10 +27,13 @@ export class UploadFilesComponent implements OnInit {
 
     public multiple: boolean;
 
-    constructor(public inputFileService: InputFileService) {
+    constructor(injector: Injector,
+                public inputFileService: InputFileService) {
+            super(injector);
     }
 
     public ngOnInit(): void {
+        super.ngOnInit();
         this.multiple = this.maxFilesNumber > 1;
     }
 

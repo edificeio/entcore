@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../core/services/routing.service';
@@ -11,14 +12,13 @@ import {OrderPipe} from '../../shared/ux/pipes';
     templateUrl: './export.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExportComponent implements OnInit {
+export class ExportComponent extends OdeComponent implements OnInit {
 
 
     constructor(
-        public route: ActivatedRoute,
-        private orderPipe: OrderPipe,
-        public router: Router,
-        public cdRef: ChangeDetectorRef) {
+        injector: Injector,
+        private orderPipe: OrderPipe) {
+            super(injector);
     }
 
     structure: StructureModel;
@@ -49,6 +49,7 @@ export class ExportComponent implements OnInit {
         return this.profileOptions;
     }
     ngOnInit(): void {
+        super.ngOnInit();
         this.dataSubscriber = routing.observe(this.route, 'data').subscribe(async (data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
@@ -57,13 +58,13 @@ export class ExportComponent implements OnInit {
                         .map(classe => ({value: classe.id, label: classe.name})
                         )
                 );
-                this.cdRef.detectChanges();
+                this.changeDetector.detectChanges();
             }
         });
 
         this.routerSubscriber = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
         });
     }

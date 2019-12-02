@@ -1,20 +1,25 @@
-import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-message-flash-preview',
     templateUrl: './message-flash-preview.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageFlashPreviewComponent implements OnInit, OnDestroy {
+export class MessageFlashPreviewComponent extends OdeComponent implements OnInit, OnDestroy {
 
     @Input() text: string;
     @Input() color: string;
     @Input() customColor: string;
 
-    constructor() {}
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
-    ngOnInit() {}
+    ngOnInit() {
+        super.ngOnInit();
+    }
 
-    ngOnDestroy() {}
+    
 
 }

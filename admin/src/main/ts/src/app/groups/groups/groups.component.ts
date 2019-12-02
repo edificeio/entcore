@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
@@ -12,7 +13,7 @@ import {CommunicationRulesService} from '../../communication/communication-rules
     providers: [CommunicationRulesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupsComponent implements OnInit, OnDestroy {
+export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
 
     // Subscribers
     private structureSubscriber: Subscription;
@@ -25,40 +26,34 @@ export class GroupsComponent implements OnInit, OnDestroy {
         {label: 'FunctionGroup', view: 'functionGroup'}
     ];
 
-    private routerSubscriber: Subscription;
-    private error: Error;
-
+    groupsError: any;
+    
     constructor(
-        private route: ActivatedRoute,
-        public router: Router,
-        private cdRef: ChangeDetectorRef,
+        injector: Injector,
         public groupsStore: GroupsStore) {
+            super(injector);
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         // Watch selected structure
-        this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.groupsStore.structure = data.structure;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
+        this.subscriptions.add(this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
-    }
-
-    ngOnDestroy(): void {
-        this.structureSubscriber.unsubscribe();
-        this.routerSubscriber.unsubscribe();
+        }));
     }
 
     onError(error: Error) {
         console.error(error);
-        this.error = error;
+        this.groupsError = error;
     }
 
     createButtonHidden() {

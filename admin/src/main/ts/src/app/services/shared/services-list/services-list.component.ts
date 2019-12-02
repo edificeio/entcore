@@ -1,4 +1,5 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
 
 import {ActivatedRoute, Data, Router} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
@@ -23,14 +24,14 @@ interface ServiceInfo {
     selector: 'ode-services-list',
     templateUrl: './services-list.component.html'
 })
-export class ServicesListComponent implements OnInit, OnDestroy{
+export class ServicesListComponent extends OdeComponent implements OnInit, OnDestroy {
 
     constructor(
-        public router: Router,
-        public route: ActivatedRoute,
+        injector: Injector,
         private servicesStore: ServicesStore,
         public inputFileService: InputFileService,
         private bundlesService: BundlesService) {
+            super(injector);
     }
     // TODO extract from router
     @Input()
@@ -40,22 +41,21 @@ export class ServicesListComponent implements OnInit, OnDestroy{
 
     public sortOnDisplayName = true;
 
-    private routeSubscriber: Subscription;
     public collectionRef: { [serviceName: string]: ServiceInfo };
 
     itemInputFilter: string;
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.sortOnDisplayName = this.serviceName !== 'applications';
 
         SessionModel.getSession().then(session => {
             if (!this.serviceName) {
                 throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors"');
             }
-            this.routeSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+            this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
                 if (data[this.collectionRef[this.serviceName].routeData]) {
                     this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData];
-
                     if (this.serviceName === 'applications') {
                         this.collectionRef[this.serviceName].collection = filterApplicationsByLevelsOfEducation(
                             this.collectionRef[this.serviceName].collection,
@@ -76,10 +76,16 @@ export class ServicesListComponent implements OnInit, OnDestroy{
                     }
 
                     this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
-                        .sort((a, b) => this.bundlesService.translate(a.displayName)
-                            .localeCompare(this.bundlesService.translate(b.displayName)));
+                        .sort((a, b) => {
+                            if (a && a.displayName && b && b.displayName) {
+                                this.bundlesService.translate(a.displayName).localeCompare(this.bundlesService.translate(b.displayName));
+                            } else {
+                                return -1;
+                            }
+                        }
+                            );
                 }
-            });
+            }));
         });
 
         this.collectionRef = {
@@ -101,10 +107,6 @@ export class ServicesListComponent implements OnInit, OnDestroy{
                 noResultsLabel: 'services.connector.list.empty'
             }
         };
-    }
-
-    ngOnDestroy(): void {
-        this.routeSubscriber.unsubscribe();
     }
 
     closePanel(): void {

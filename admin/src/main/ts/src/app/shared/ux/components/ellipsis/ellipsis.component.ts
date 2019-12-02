@@ -1,4 +1,5 @@
-import {Component, ElementRef, Input} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, Input, Injector } from '@angular/core';
 
 type EllipsisBehavior = 'expand' | 'hide';
 
@@ -15,8 +16,10 @@ type EllipsisBehavior = 'expand' | 'hide';
         '(click)': 'onClick()',
     }
 })
-export class EllipsisComponent {
-    constructor(private eltRef: ElementRef ) {}
+export class EllipsisComponent extends OdeComponent {
+    constructor(private eltRef: ElementRef, injector: Injector ) {
+        super(injector);
+    }
 
     private _ellipsis: EllipsisBehavior  = 'hide';
     @Input()
@@ -50,6 +53,4 @@ export class EllipsisComponent {
 
     }
 
-    ngOnDestroy(): void {
-    }
 }

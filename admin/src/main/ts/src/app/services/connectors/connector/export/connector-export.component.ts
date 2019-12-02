@@ -1,6 +1,8 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Output, Injector, INJECTOR } from '@angular/core';
 import {Profile} from '../../../shared/services-types';
 import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';
+import { SUPER_EXPR } from '@angular/compiler/src/output/output_ast';
 
 @Component({
     selector: 'connector-export',
@@ -20,7 +22,7 @@ import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-
         }
     `]
 })
-export class ConnectorExportComponent {
+export class ConnectorExportComponent extends OdeComponent {
     @Output()
     submit: EventEmitter<{ exportFormat: ExportFormat, profile: string }> = new EventEmitter<{ exportFormat: ExportFormat, profile: string }>();
 
@@ -85,8 +87,8 @@ export class ConnectorExportComponent {
 
     formatOptions: SelectOption<ExportFormat>[] = this.formats.map(f => ({value: f, label: f.label}));
 
-    constructor() {
-
+    constructor(injector: Injector) {
+        super(injector);
         this.format = this.formats[0];
     }
 

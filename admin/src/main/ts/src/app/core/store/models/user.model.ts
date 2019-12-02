@@ -97,7 +97,7 @@ export class UserModel extends Model<UserModel> {
                 this.classes = this.classes.filter(c => c.id !== classId);
                 if (this.userDetails.headTeacherManual) {
                     this.userDetails.headTeacherManual
-                        .splice(this.userDetails.headTeacherManual.findIndex((f) => f == externalId), 1);
+                        .splice(this.userDetails.headTeacherManual.findIndex((f) => f === externalId), 1);
                 }
             });
     }
@@ -154,7 +154,7 @@ export class UserModel extends Model<UserModel> {
             duplicate.structures.forEach(duplicatedStructure => {
                 const structure = globalStore.structures.data.find(struct => struct.id === duplicatedStructure.id);
                 if (structure && structure.users.data.length > 0) {
-                    const user = structure.users.data.find(user => user.id === duplicateId);
+                    const user = structure.users.data.find(rUser => rUser.id === duplicateId);
                     if (user) { user.duplicates = user.duplicates.filter(d => d.id !== this.id); }
                 }
             });

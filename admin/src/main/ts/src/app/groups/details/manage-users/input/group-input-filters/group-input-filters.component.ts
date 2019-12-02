@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, Output} from '@angular/core';
+import { OdeComponent } from './../../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, Output, Injector } from '@angular/core';
 import {BundlesService} from 'sijil';
 
 import {StructureModel} from '../../../../../core/store/models/structure.model';
@@ -13,7 +14,7 @@ import { ProfilesService } from 'src/app/core/services/profiles.service';
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupInputFiltersComponent implements OnChanges {
+export class GroupInputFiltersComponent extends OdeComponent implements OnChanges {
 
     @Input()
     private structure: StructureModel;
@@ -32,7 +33,9 @@ export class GroupInputFiltersComponent implements OnChanges {
         private _eref: ElementRef,
         private bundles: BundlesService,
         public listFilters: UserlistFiltersService,
-        private cdRef: ChangeDetectorRef) {}
+        injector: Injector) {
+            super(injector);
+        }
 
     ngOnChanges(): void {
         this.initFilters();
@@ -45,7 +48,7 @@ export class GroupInputFiltersComponent implements OnChanges {
 
         this.structure.syncClasses().then(() => {
             this.listFilters.setClassesComboModel(this.structure.classes);
-            this.cdRef.markForCheck();
+            this.changeDetector.markForCheck();
         });
         this.structure.syncAafFunctions().then(() => {
             const aafFunctions: Array<Array<string>> = [];
@@ -53,19 +56,19 @@ export class GroupInputFiltersComponent implements OnChanges {
                 f.forEach(f2 => aafFunctions.push([f2[2], f2[4]]));
             });
             this.listFilters.setFunctionsComboModel(aafFunctions);
-            this.cdRef.markForCheck();
+            this.changeDetector.markForCheck();
         });
         ProfilesService.getProfiles().then(p => {
             this.structure.profiles = p;
             this.listFilters.setProfilesComboModel(this.structure.profiles.map(p => p.name));
-            this.cdRef.markForCheck();
+            this.changeDetector.markForCheck();
         });
         this.structure.groups.sync().then(() => {
             this.listFilters.setFunctionalGroupsComboModel(
                 this.structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name));
             this.listFilters.setManualGroupsComboModel(
                 this.structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name));
-            this.cdRef.markForCheck();
+            this.changeDetector.markForCheck();
         });
         this.listFilters.setMailsComboModel([]);
     }

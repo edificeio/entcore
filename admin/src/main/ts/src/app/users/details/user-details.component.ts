@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {AbstractControl, NgForm} from '@angular/forms';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
@@ -18,7 +19,7 @@ import { UserListService } from 'src/app/core/services/userlist.service';
     templateUrl: './user-details.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserDetailsComponent implements OnInit, OnDestroy {
+export class UserDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
 
     @ViewChild('codeInput', { static: false })
     codeInput: AbstractControl;
@@ -29,9 +30,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
     private SECONDS_IN_DAYS = 24 * 3600;
     private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
-
-    private userSubscriber: Subscription;
-    private dataSubscriber: Subscription;
 
     public showRemoveUserConfirmation = false;
     forceDuplicates: boolean;
@@ -58,18 +56,18 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     }
 
     constructor(
+        injector: Injector,
         public spinner: SpinnerService,
         private ns: NotifyService,
         private usersStore: UsersStore,
-        private cdRef: ChangeDetectorRef,
-        private route: ActivatedRoute,
-        private router: Router,
         private userListService: UserListService
     ) {
+        super(injector);
     }
 
     ngOnInit() {
-        this.dataSubscriber = this.usersStore.$onchange.subscribe(field => {
+        super.ngOnInit();
+        this.subscriptions.add(this.usersStore.$onchange.subscribe(field => {
             if (field === 'user') {
                 if (this.usersStore.user &&
                     !this.usersStore.user.structures.find(
@@ -84,14 +82,14 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
                 }
             } else if (field === 'structure') {
                 this.structure = this.usersStore.structure;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
-        this.userSubscriber = this.route.data.subscribe((data: Data) => {
+        }));
+        this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             this.usersStore.user = data.user;
             this.config = data.config;
-            this.cdRef.markForCheck();
-        });
+            this.changeDetector.markForCheck();
+        }));
         // Scroll top in case of details switching, see comments on CAV2 #280
         this.router.events.subscribe(evt => {
             if (!(evt instanceof NavigationEnd)) {
@@ -123,11 +121,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         return (timestamp + this.config[profile.toLowerCase() + '-pre-delete-delay']) - (new Date()).getTime();
     }
 
-    ngOnDestroy() {
-        this.userSubscriber.unsubscribe();
-        this.dataSubscriber.unsubscribe();
-    }
-
+   
     isContextAdml() {
         if (this.details && this.details.functions && this.details.functions.length > 0) {
             const admlIndex = this.details.functions.findIndex((f) => f[0] === 'ADMIN_LOCAL');
@@ -145,8 +139,8 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         this.forceDuplicates = null;
         setTimeout(() => {
             this.forceDuplicates = true;
-            this.cdRef.markForCheck();
-            this.cdRef.detectChanges();
+            this.changeDetector.markForCheck();
+            this.changeDetector.detectChanges();
         }, 0);
     }
 
@@ -156,7 +150,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
                 this.user.blocked = !this.user.blocked;
                 this.updateBlockedInStructures();
                 this.userListService.$updateSubject.next();
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
 
                 this.ns.success(
                     {
@@ -217,7 +211,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
                 this.user.duplicates = [];
                 this.updateDeletedInStructures();
                 this.userListService.$updateSubject.next();
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
 
                 if (this.isActive()) {
                     this.ns.success(
@@ -256,7 +250,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
                 this.user.deleteDate = null;
                 this.updateDeletedInStructures();
                 this.userListService.$updateSubject.next();
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
 
                 this.ns.success(
                     {

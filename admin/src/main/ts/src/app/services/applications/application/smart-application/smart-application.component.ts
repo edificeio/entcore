@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data} from '@angular/router';
 import {ServicesStore} from '../../../services.store';
@@ -29,50 +30,44 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
         }
     `]
 })
-export class SmartApplicationComponent implements OnInit, OnDestroy {
+export class SmartApplicationComponent extends OdeComponent implements OnInit, OnDestroy {
     public currentTab: 'assignment' | 'massAssignment' = 'assignment';
 
-    private routeParamsSubscription: Subscription;
-    private rolesSubscription: Subscription;
-    private structureSubscriber: Subscription;
+    
     public assignmentGroupPickerList: GroupModel[];
 
-    constructor(private activatedRoute: ActivatedRoute,
+    constructor(injector: Injector,
                 public servicesStore: ServicesStore,
                 private servicesService: ServicesService) {
+                    super(injector);
     }
 
     ngOnInit(): void {
-        this.routeParamsSubscription = this.activatedRoute.params.subscribe(params => {
+        super.ngOnInit();
+        this.subscriptions.add(this.route.params.subscribe(params => {
             if (params.appId) {
                 this.servicesStore.application = this.servicesStore.structure
                     .applications.data.find(a => a.id === params.appId);
             }
-        });
+        }));
 
-        this.rolesSubscription = this.activatedRoute.data.subscribe(data => {
+        this.subscriptions.add(this.route.data.subscribe(data => {
             if (data.roles) {
                 this.servicesStore.application.roles = data.roles;
                 this.servicesStore.application.roles = filterRolesByDistributions(
                     this.servicesStore.application.roles.filter(r => r.transverse == false),
                     this.servicesStore.structure.distributions);
             }
-        });
+        }));
 
-        this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 if (!this.structureHasChildren(this.servicesStore.structure) && this.currentTab === 'massAssignment') {
                     this.currentTab = 'assignment';
                 }
             }
-        });
-    }
-
-    ngOnDestroy(): void {
-        this.routeParamsSubscription.unsubscribe();
-        this.rolesSubscription.unsubscribe();
-        this.structureSubscriber.unsubscribe();
+        }));
     }
 
     public onAddAssignment($event: {group: GroupModel, role: RoleModel}) {

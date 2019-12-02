@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
@@ -15,11 +16,9 @@ import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model'
     templateUrl: './message-flash-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageFlashListComponent implements OnInit {
+export class MessageFlashListComponent extends OdeComponent implements OnInit {
 
     structure: StructureModel;
-    dataSubscriber: Subscription;
-    routerSubscriber: Subscription;
     messages: FlashMessageModel[];
     messagesFromParentStructure: FlashMessageModel[];
     displayedMessages: FlashMessageModel[] = [];
@@ -37,15 +36,16 @@ export class MessageFlashListComponent implements OnInit {
     };
 
     constructor(
-        public route: ActivatedRoute,
-        public router: Router,
-        public cdRef: ChangeDetectorRef,
+        injector: Injector,
         public bundles: BundlesService,
         private ns: NotifyService,
-        public messageStore: MessageFlashStore) {}
+        public messageStore: MessageFlashStore) {
+            super(injector);
+        }
 
     ngOnInit(): void {
-        this.dataSubscriber = routing.observe(this.route, 'data').subscribe(async (data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
             }
@@ -62,24 +62,15 @@ export class MessageFlashListComponent implements OnInit {
             this.filter.current = true;
             this.filter.future = true;
             this.filter.obsolete = true;
-            this.cdRef.detectChanges();
-        });
+            this.changeDetector.detectChanges();
+        }));
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
+        this.subscriptions.add(this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
 
-    }
-
-    ngOnDestroy() {
-        if (!!this.dataSubscriber) {
-            this.dataSubscriber.unsubscribe();
-        }
-        if (!!this.routerSubscriber) {
-            this.routerSubscriber.unsubscribe();
-        }
     }
 
     updateData(): void {
@@ -159,7 +150,7 @@ export class MessageFlashListComponent implements OnInit {
             this.messageStore.messages = this.messageStore.messages.filter(mess => !ids.includes(mess.id));
             this.showConfirmation = false;
             this.updateData();
-            this.cdRef.detectChanges();
+            this.changeDetector.detectChanges();
             this.ns.success(
                 { key: 'notify.management.remove.success.content', parameters: {} },
                 { key: 'notify.management.remove.success.title', parameters: {} }

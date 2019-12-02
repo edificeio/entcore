@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, QueryList, ViewChildren} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, QueryList, ViewChildren, Injector } from '@angular/core';
 import {BundlesService} from 'sijil';
 import {ComponentDescriptor, DynamicComponentDirective} from '../../../shared/ux/directives';
 import {SimpleSelectComponent} from '../../../shared/ux/components';
@@ -11,9 +12,12 @@ import {Option} from '../../../shared/ux/components/value-editable/simple-select
     styleUrls: ['./mappings-table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MappingsTableComponent {
+export class MappingsTableComponent extends OdeComponent {
     constructor(
-        private bundles: BundlesService)  {}
+        injector: Injector,
+        private bundles: BundlesService)  {
+            super(injector);
+        }
 
     @ViewChildren(DynamicComponentDirective) dComponents: QueryList<DynamicComponentDirective>;
     @Input() headers: string[];

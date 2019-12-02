@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../core/ode/OdeComponent';
+import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Data, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {ServicesStore} from './services.store';
@@ -10,9 +11,8 @@ import {ServicesService} from './services.service';
     templateUrl: './services.component.html',
     providers: [ServicesService]
 })
-export class ServicesComponent implements OnInit, OnDestroy {
+export class ServicesComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    private structureSubscriber: Subscription;
 
     tabs: Array<{ label: string, view: string, disabled: boolean }> = [
         {label: 'applications', view: 'applications', disabled: false},
@@ -20,22 +20,20 @@ export class ServicesComponent implements OnInit, OnDestroy {
     ];
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
+        injector: Injector,
         private servicesStore: ServicesStore) {
+            super(injector);
     }
 
     ngOnInit(): void {
-        this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.servicesStore.structure = data.structure;
             }
-        });
+        }));
     }
 
-    ngOnDestroy(): void {
-        this.structureSubscriber.unsubscribe();
-    }
 
     public showCreateConnectorButton(): boolean {
         if (this.router.isActive(`/admin/${this.servicesStore.structure.id}/services/connectors/create`, true)) {

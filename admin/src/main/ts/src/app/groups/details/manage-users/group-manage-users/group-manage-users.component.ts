@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnInit, Output, Injector } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Subscription} from 'rxjs';
 
@@ -10,7 +11,7 @@ import {GroupsStore} from '../../../groups.store';
     templateUrl: './group-manage-users.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupManageUsersComponent implements OnInit {
+export class GroupManageUsersComponent extends OdeComponent implements OnInit {
     @Output()
     closeEmitter: EventEmitter<void> = new EventEmitter<void>();
 
@@ -18,11 +19,13 @@ export class GroupManageUsersComponent implements OnInit {
 
     private groupSubscriber: Subscription;
 
-    constructor(private cdRef: ChangeDetectorRef,
-                public groupsStore: GroupsStore,
-                private route: ActivatedRoute) {}
+    constructor(public groupsStore: GroupsStore,
+                injector: Injector) {
+        super(injector);
+    }
 
     ngOnInit(): void {
+        super.ngOnInit();
         if (this.groupsStore.structure.users.data
             && this.groupsStore.structure.users.data.length < 1) {
             this.groupsStore.structure.users.sync().then(() => {

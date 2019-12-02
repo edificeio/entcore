@@ -1,12 +1,15 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-item-tree',
     templateUrl: './item-tree.component.html'
 })
-export class ItemTreeComponent<T> implements OnInit {
+export class ItemTreeComponent<T> extends OdeComponent implements OnInit {
 
-    constructor(private _changeRef: ChangeDetectorRef) {}
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
     /**** Inputs ****/
 
@@ -62,6 +65,7 @@ export class ItemTreeComponent<T> implements OnInit {
     private unfolded: T[] = [];
 
     ngOnInit() {
+        super.ngOnInit();
         this.flagIfParent();
     }
 
@@ -131,8 +135,8 @@ export class ItemTreeComponent<T> implements OnInit {
             }
             if (this.hasChildren(item)) {
                 return this.getChildren(item).find(subItem => {
-                     return findSubItem(subItem, target);
-                 });
+                    return findSubItem(subItem, target);
+                });
             }
             return false;
         };
@@ -148,7 +152,7 @@ export class ItemTreeComponent<T> implements OnInit {
             }
         }
 
-        this._changeRef.markForCheck();
+        this.changeDetector.markForCheck();
     }
 
 }

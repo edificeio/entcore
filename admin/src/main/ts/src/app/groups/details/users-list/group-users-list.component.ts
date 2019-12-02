@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
 import {Router} from '@angular/router';
 
 import {UserModel} from '../../../core/store/models/user.model';
@@ -11,8 +12,9 @@ import {UserListService} from '../../../core/services/userlist.service';
     providers: [UserListService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupUsersListComponent {
-    constructor(private router: Router, public userLS: UserListService) {
+export class GroupUsersListComponent extends OdeComponent {
+    constructor(injector: Injector, public userLS: UserListService) {
+        super(injector);
     }
 
     @Input()

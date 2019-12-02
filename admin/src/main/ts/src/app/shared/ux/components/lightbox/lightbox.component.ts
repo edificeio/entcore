@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, Renderer2, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, Renderer2, ViewChild, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-lightbox',
@@ -9,12 +10,13 @@ import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, R
     }
 
 })
-export class LightBoxComponent {
+export class LightBoxComponent extends OdeComponent {
 
     constructor(
-        private cdRef: ChangeDetectorRef,
+        injector: Injector,
         private renderer: Renderer2,
         private host: ElementRef) {
+            super(injector);
     }
 
     @Input()
@@ -27,7 +29,7 @@ export class LightBoxComponent {
             this.timer = window.setTimeout(() => {
                 this.renderer.addClass(this.host.nativeElement, 'shown');
                 this.timer = null;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }, 100);
         } else {
             const wait = parseFloat(this.section &&
@@ -36,7 +38,7 @@ export class LightBoxComponent {
             this.timer = window.setTimeout(() => {
                 this._show = false;
                 this.timer = null;
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }, wait * 1000);
         }
     }

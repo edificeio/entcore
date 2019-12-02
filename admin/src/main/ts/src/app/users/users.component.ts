@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
@@ -15,40 +16,32 @@ import { SpinnerService } from '../core/services/spinner.service';
     providers: [UsersStore, UserListService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UsersComponent implements OnInit, OnDestroy {
+export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
 
     constructor(
-        private route: ActivatedRoute,
-        public router: Router,
-        private cdRef: ChangeDetectorRef,
+        injector: Injector,
         public usersStore: UsersStore,
         private listFilters: UserlistFiltersService,
         private spinner: SpinnerService) {
+            super(injector);
     }
 
-    private dataSubscriber: Subscription;
-    private routerSubscriber: Subscription;
-
     ngOnInit(): void {
-        this.dataSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 const structure: StructureModel = data.structure;
                 this.usersStore.structure = structure;
                 this.initFilters(structure);
-                this.cdRef.detectChanges();
+                this.changeDetector.detectChanges();
             }
-        });
+        }));
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
+        this.subscriptions.add(this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
-    }
-
-    ngOnDestroy(): void {
-        this.dataSubscriber.unsubscribe();
-        this.routerSubscriber.unsubscribe();
+        }));
     }
 
     closeCompanion() {

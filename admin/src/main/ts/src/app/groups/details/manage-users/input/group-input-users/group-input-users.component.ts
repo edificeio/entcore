@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 
 import {GroupsStore} from '../../../../groups.store';
@@ -18,10 +19,9 @@ import { globalStore } from 'src/app/core/store/global.store';
     providers: [UserListService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupInputUsersComponent implements OnInit, OnDestroy {
+export class GroupInputUsersComponent extends OdeComponent implements OnInit, OnDestroy {
     @Input() model: UserModel[] = [];
 
-    private filtersUpdatesSubscriber: Subscription;
     public excludeDeletedUsers: DeleteFilter;
 
     // list elements stored by store pipe in list component
@@ -40,28 +40,27 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
                 public userLS: UserListService,
                 private spinner: SpinnerService,
                 private ns: NotifyService,
-                private cdRef: ChangeDetectorRef,
+                injector: Injector,
                 private orderPipe: OrderPipe,
                 public listFilters: UserlistFiltersService) {
+                    super(injector);
         this.excludeDeletedUsers = new DeleteFilter(listFilters.$updateSubject);
         this.excludeDeletedUsers.outputModel = ["users.not.deleted"];
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.structure = this.groupsStore.structure;
         this.structures = globalStore.structures.data;
         this.structureOptions = this.orderPipe.transform(this.structures, '+name')
             .map(structure => ({value: structure, label: structure.name}));
 
-        this.filtersUpdatesSubscriber = this.listFilters.$updateSubject.subscribe(() => {
-            this.cdRef.markForCheck();
-        });
+        this.subscriptions.add(this.listFilters.$updateSubject.subscribe(() => {
+            this.changeDetector.markForCheck();
+        }));
     }
 
-    ngOnDestroy(): void {
-        this.filtersUpdatesSubscriber.unsubscribe();
-    }
-
+   
     selectUser(u: UserModel): void {
         if (this.selectedUsers.indexOf(u) === -1) {
             this.selectedUsers.push(u);
@@ -95,7 +94,7 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
                         this.model = selectedStructure.users.data
                             .filter(u =>
                                 this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1);
-                        this.cdRef.markForCheck();
+                        this.changeDetector.markForCheck();
                     })
                     .catch((err) => {
                         this.ns.error(
@@ -110,7 +109,7 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
         } else {
             this.model = selectedStructure.users.data
                 .filter(u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1);
-            this.cdRef.markForCheck();
+            this.changeDetector.markForCheck();
         }
     }
 
@@ -122,7 +121,7 @@ export class GroupInputUsersComponent implements OnInit, OnDestroy {
                     this.model = this.model.filter(u => this.selectedUsers.indexOf(u) === -1);
                     this.selectedUsers = [];
                     this.ns.success('notify.group.manage.users.added.content');
-                    this.cdRef.markForCheck();
+                    this.changeDetector.markForCheck();
                 })
                 .catch((err) => {
                     this.ns.error('notify.group.manage.users.added.error.content'

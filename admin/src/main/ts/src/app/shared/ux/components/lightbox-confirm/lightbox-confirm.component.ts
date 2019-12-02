@@ -1,15 +1,20 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, Output, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-lightbox-confirm',
     templateUrl: './lightbox-confirm.component.html',
     styleUrls: ['./lightbox-confirm.component.scss']
 })
-export class LightboxConfirmComponent {
+export class LightboxConfirmComponent extends OdeComponent {
 
-    @Input('lightboxTitle') lightboxTitle: string;
-    @Input('show') show: boolean;
+    @Input() lightboxTitle: string;
+    @Input() show: boolean;
 
-    @Output('onConfirm') onConfirm: EventEmitter<void> =  new EventEmitter<void>();
-    @Output('onCancel') onCancel: EventEmitter<void> =  new EventEmitter<void>();
+    @Output() onConfirm: EventEmitter<void> =  new EventEmitter<void>();
+    @Output() onCancel: EventEmitter<void> =  new EventEmitter<void>();
+
+    constructor(injector: Injector) {
+        super(injector);
+    }
 }

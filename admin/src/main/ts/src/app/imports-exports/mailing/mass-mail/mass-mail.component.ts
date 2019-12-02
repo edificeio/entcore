@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
@@ -23,7 +24,7 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 
 })
-export class MassMailComponent implements OnInit, OnDestroy {
+export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy {
 
     @ViewChild('filtersDiv', {static: false}) filtersDivRef: ElementRef;
     @ViewChild('filtersToggle', {static: false}) filtersToggleRef;
@@ -40,9 +41,6 @@ export class MassMailComponent implements OnInit, OnDestroy {
     dateFormat: Intl.DateTimeFormat;
     showConfirmation = false;
 
-    dataSubscriber: Subscription;
-    routerSubscriber: Subscription;
-
     downloadAnchor = null;
     downloadObjectUrl = null;
 
@@ -56,18 +54,18 @@ export class MassMailComponent implements OnInit, OnDestroy {
     }
 
     constructor(
-        public route: ActivatedRoute,
-        public router: Router,
+        injector: Injector,
         public userlistFiltersService: UserlistFiltersService,
-        public cdRef: ChangeDetectorRef,
         public bundles: BundlesService,
         private ns: NotifyService,
         private spinner: SpinnerService
     ) {
+        super(injector);
     }
 
     ngOnInit(): void {
-        this.dataSubscriber = routing.observe(this.route, 'data').subscribe(async (data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
             if (data.structure) {
                 const structure: StructureModel = data.structure;
                 this.spinner.perform('portal-content', MassMailService.getUsers(structure._id)
@@ -77,25 +75,22 @@ export class MassMailComponent implements OnInit, OnDestroy {
                         this.dateFormat = Intl.DateTimeFormat(this.bundles.currentLanguage);
                         this.initFilters(structure);
                         this.filters = this.userlistFiltersService.getFormattedFilters();
-                        this.cdRef.detectChanges();
+                        this.changeDetector.detectChanges();
                     }).catch(err => {
                         this.ns.error('massmail.error', 'error', err);
                     })
                 );
             }
-        });
+        }));
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
+        this.subscriptions.add(this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
     }
 
-    ngOnDestroy(): void {
-        this.dataSubscriber.unsubscribe();
-        this.routerSubscriber.unsubscribe();
-    }
+
 
     private initFilters(structure: StructureModel): void {
         this.userlistFiltersService.resetFilters();

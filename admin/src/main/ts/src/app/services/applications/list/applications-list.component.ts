@@ -1,11 +1,14 @@
-import {Component} from '@angular/core';
+import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { Component, Injector } from '@angular/core';
 
 @Component({
     selector: 'apps-list',
     templateUrl: './application-list.component.html'
 })
-export class ApplicationsListComponent {
+export class ApplicationsListComponent extends OdeComponent {
 
-    constructor() {}
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
 }

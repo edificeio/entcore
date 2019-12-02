@@ -1,3 +1,4 @@
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
 import {
   AfterContentInit,
   Component,
@@ -6,7 +7,8 @@ import {
   Input,
   OnDestroy,
   Output,
-  QueryList
+  QueryList,
+  Injector
 } from '@angular/core';
 
 @Component({
@@ -113,7 +115,7 @@ export class StepComponent {
         }
     `]
 })
-export class WizardComponent implements AfterContentInit, OnDestroy {
+export class WizardComponent extends OdeComponent implements AfterContentInit, OnDestroy {
     @Output() cancel: EventEmitter<{}> = new EventEmitter();
     @Output() previousStep: EventEmitter<number> = new EventEmitter();
     @Output() nextStep: EventEmitter<number> = new EventEmitter();
@@ -123,6 +125,9 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
     @ContentChildren(StepComponent) steps: QueryList<StepComponent>;
     activeStep = 0;
 
+    constructor(injector: Injector) {
+        super(injector);
+    }
     doCancel() {
         this.activeStep = 0;
         this.steps.forEach((step, index) => {
@@ -157,11 +162,10 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
     }
 
     ngAfterContentInit() {
+        super.ngAfterContentInit();
         if (this.steps.length === 0) {
             throw new Error('<wizard> component musts nest at least 1 <step> compoent');
         }
     }
 
-    ngOnDestroy(): void {
-    }
 }

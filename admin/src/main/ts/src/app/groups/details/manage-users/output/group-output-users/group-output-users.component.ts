@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output, Injector } from '@angular/core';
 
 import {GroupsStore} from '../../../../groups.store';
 import {UserModel} from '../../../../../core/store/models/user.model';
@@ -12,7 +13,7 @@ import { NotifyService } from 'src/app/core/services/notify.service';
     providers: [ UserListService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupOutputUsersComponent {
+export class GroupOutputUsersComponent extends OdeComponent{
     @Input() model: UserModel[] = [];
     @Output() onDelete: EventEmitter<any> = new EventEmitter();
 
@@ -24,10 +25,12 @@ export class GroupOutputUsersComponent {
     selectedUsers: UserModel[] = [];
 
     constructor(private groupsStore: GroupsStore,
-                private cdRef: ChangeDetectorRef,
+                injector: Injector,
                 public userLS: UserListService,
                 private spinner: SpinnerService,
-                private ns: NotifyService) {}
+                private ns: NotifyService) {
+        super(injector);
+    }
 
     selectUser(u): void {
         if (this.selectedUsers.indexOf(u) === -1) {
@@ -58,7 +61,7 @@ export class GroupOutputUsersComponent {
                     this.onDelete.emit();
                     this.selectedUsers = [];
                     this.ns.success('notify.group.manage.users.removed.content');
-                    this.cdRef.markForCheck();
+                    this.changeDetector.markForCheck();
                 })
                 .catch((err) => {
                     this.ns.error('notify.group.manage.users.removed.error.content'

@@ -3,10 +3,10 @@
   <ng-content select="[toolbar]"></ng-content>
 </div>
 <div class="list-wrapper"
-     infiniteScroll
-     [scrollWindow]="false"
-     (scrolled)="scrolledDown.emit()"
-     [infiniteScrollThrottle]="50">
+    infiniteScroll
+    [scrollWindow]="false"
+    (scrolled)="scrolledDown.emit()"
+    [infiniteScrollThrottle]="50">
   <ul>
     <li *ngFor="let item of model | filter: filters | filter: inputFilter | store:self:'storedElements' | orderBy: sort | slice: 0:limit"
         (click)="onSelect.emit(item)"

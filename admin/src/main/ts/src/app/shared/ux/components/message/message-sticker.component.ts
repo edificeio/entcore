@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, OnInit, ViewChild, Injector } from '@angular/core';
 import {ComponentDescriptor, DynamicComponentDirective} from '../../directives';
 import {icons, MessageBoxComponent, MessageType} from './message-box/message-box.component';
 
@@ -7,7 +8,7 @@ import {icons, MessageBoxComponent, MessageType} from './message-box/message-box
     templateUrl: './message-sticker.component.html',
     styleUrls: ['./message-box/message-box.component.scss']
 })
-export class MessageStickerComponent implements OnInit {
+export class MessageStickerComponent extends OdeComponent implements OnInit {
     @Input() type: MessageType;
     @Input() header: string;
     @Input() messages: (string | [string, {}])[];
@@ -15,7 +16,12 @@ export class MessageStickerComponent implements OnInit {
 
     readonly icons = icons;
 
+    constructor(injector: Injector) {
+        super(injector);
+    }
+
     ngOnInit(): void {
+        super.ngOnInit();
         if (this.type === undefined) {
             throw new Error('MessageSticker : type\' property must be set');
         }

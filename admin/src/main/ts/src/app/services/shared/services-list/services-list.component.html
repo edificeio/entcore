@@ -12,11 +12,11 @@
       <ng-template let-item>
         <div class="service-badges" *ngIf="serviceName === 'connectors'">
           <i *ngIf="isInherited(item)"
-             class="fa fa-link service-badges__inherits"
-             [title]="'services.connector.inherited' | translate"></i>
+            class="fa fa-link service-badges__inherits"
+            [title]="'services.connector.inherited' | translate"></i>
           <i *ngIf="item.locked"
-             class="fa fa-lock service-badges__locked"
-             [title]="'services.connector.locked' | translate"></i>
+            class="fa fa-lock service-badges__locked"
+            [title]="'services.connector.locked' | translate"></i>
         </div>
         <div class="service-icon">
           <img [src]="item.icon" *ngIf="inputFileService.isSrcExternalUrl(item.icon)"/>

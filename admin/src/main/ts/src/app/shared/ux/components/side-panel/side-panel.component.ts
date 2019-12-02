@@ -1,4 +1,5 @@
-import {Component, ElementRef, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, EventEmitter, Input, Output, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-side-panel',
@@ -8,10 +9,11 @@ import {Component, ElementRef, EventEmitter, Input, Output} from '@angular/core'
         '(document:click)': 'onClick($event)',
     }
 })
-export class SidePanelComponent {
+export class SidePanelComponent extends OdeComponent {
     opened: boolean;
 
-    constructor(private elementRef: ElementRef) {
+    constructor(injector: Injector, private elementRef: ElementRef) {
+        super(injector);
     }
 
     @Input() set toggle(toggle: boolean) {

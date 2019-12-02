@@ -19,7 +19,7 @@ export class FilterPipe implements PipeTransform {
     }
 
     private _filterObject(object, filter, objectRef, arrayRef: Array<Object>) {
-         if (typeof object == 'object' && typeof filter === 'object') {
+        if (typeof object == 'object' && typeof filter === 'object') {
             let check = true;
             for (const property in filter) {
                 if (!check) {

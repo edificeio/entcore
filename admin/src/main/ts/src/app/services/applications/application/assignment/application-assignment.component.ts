@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, EventEmitter, Input, Output, Injector } from '@angular/core';
 import {Assignment} from '../../../shared/services-types';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { GroupModel } from 'src/app/core/store/models/group.model';
@@ -8,7 +9,7 @@ import { RoleModel } from 'src/app/core/store/models/role.model';
     selector: 'ode-application-assignment',
     templateUrl: './application-assignment.component.html'
 })
-export class ApplicationAssignmentComponent {
+export class ApplicationAssignmentComponent extends OdeComponent {
     @Input()
     application: ApplicationModel;
     @Input()
@@ -28,6 +29,10 @@ export class ApplicationAssignmentComponent {
     public openRoleAttributionLightbox(role: RoleModel) {
         this.selectedRole = role;
         this.showRoleAttributionLightbox = true;
+    }
+
+    constructor(injector: Injector) {
+        super(injector);
     }
 }
 

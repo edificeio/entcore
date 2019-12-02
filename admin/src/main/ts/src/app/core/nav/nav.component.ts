@@ -1,4 +1,5 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { OdeComponent } from './../ode/OdeComponent';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {ActivatedRoute, Data, Router} from '@angular/router';
 
 import {Subscription} from 'rxjs';
@@ -11,7 +12,7 @@ import { globalStore } from '../store/global.store';
     templateUrl: './nav.component.html',
     styleUrls: ['./nav.component.scss']
 })
-export class NavComponent implements OnInit, OnDestroy {
+export class NavComponent extends OdeComponent implements OnInit, OnDestroy {
     // tslint:disable-next-line:variable-name
     private _currentStructure: StructureModel;
     set currentStructure(struct: StructureModel) {
@@ -29,42 +30,31 @@ export class NavComponent implements OnInit, OnDestroy {
 
     @ViewChild('sidePanelOpener', { static: false }) sidePanelOpener: ElementRef;
 
-    private structureSubscriber: Subscription;
-    private routeSubscription: Subscription;
-
     public config: Config;
 
-    constructor(
-        public router: Router,
-        private route: ActivatedRoute) {}
+    constructor(injector: Injector) {
+        super(injector);
+    }
 
     ngOnInit() {
+        super.ngOnInit();
         this.structures = globalStore.structures.asTree();
 
         if (this.structures.length === 1 && !this.structures[0].children) {
             this.currentStructure = this.structures[0];
         }
 
-        this.structureSubscriber = this.route.children[0].params.subscribe(params => {
+        this.subscriptions.add(this.route.children[0].params.subscribe(params => {
             const structureId = params.structureId;
             if (structureId) {
                 this.currentStructure = globalStore.structures.data.find(
                     s => s.id === structureId);
             }
-        });
+        }));
 
-        this.routeSubscription = this.route.data.subscribe((data: Data) => {
+        this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             this.config = data.config;
-        });
-    }
-
-    ngOnDestroy() {
-        if (this.structureSubscriber) {
-            this.structureSubscriber.unsubscribe();
-        }
-        if (this.routeSubscription) {
-            this.routeSubscription.unsubscribe();
-        }
+        }));
     }
 
     public openReports(): void {

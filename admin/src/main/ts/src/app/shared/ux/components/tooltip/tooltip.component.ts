@@ -1,4 +1,5 @@
-import {Component, ElementRef, Input, Renderer2} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, Input, Renderer2, Injector } from '@angular/core';
 
 @Component({
     selector: '[tooltip]',
@@ -9,10 +10,13 @@ import {Component, ElementRef, Input, Renderer2} from '@angular/core';
         '(mouseleave)': 'onMouseLeave()'
     }
 })
-export class TooltipComponent {
+export class TooltipComponent extends OdeComponent {
 
-    constructor(private ref: ElementRef,
-                private renderer: Renderer2) {}
+    constructor(injector: Injector,
+                private ref: ElementRef,
+                private renderer: Renderer2) {
+                    super(injector);
+                }
 
     @Input('tooltip') tooltipContents: string;
     @Input() position: 'top' | 'left' | 'right' | 'bottom' = 'bottom';

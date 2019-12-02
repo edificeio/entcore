@@ -45,7 +45,7 @@ export class SpinnerService {
         };
 
         if (timer === 0) {
-             addToQueue();
+            addToQueue();
         } else {
             this.timers.set(something, window.setTimeout(addToQueue, timer || this.timer));
         }

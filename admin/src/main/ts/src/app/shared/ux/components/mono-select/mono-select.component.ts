@@ -1,4 +1,5 @@
-import {Component, ElementRef, forwardRef, Input} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, forwardRef, Input, Injector } from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {SelectOption} from '../multi-select/multi-select.component';
 
@@ -32,7 +33,7 @@ export const monoSelectLocators = {
         '(click)': 'onClickOnHost()'
     }
 })
-export class MonoSelectComponent<K> implements ControlValueAccessor {
+export class MonoSelectComponent<K> extends OdeComponent implements ControlValueAccessor {
     @Input()
     public placeholder = 'monoselect.placeholder.default';
 
@@ -54,7 +55,9 @@ export class MonoSelectComponent<K> implements ControlValueAccessor {
         this.onChange(this.selectedOption.value);
     }
 
-    constructor(private elementRef: ElementRef) {
+    constructor(injector: Injector,
+        private elementRef: ElementRef) {
+            super(injector);
     }
 
     public onClickOnDocument(event: MouseEvent) {

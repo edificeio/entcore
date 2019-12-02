@@ -1,4 +1,5 @@
-import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, Injector } from '@angular/core';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
@@ -7,10 +8,12 @@ import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
     selector: 'ode-search-input',
     templateUrl: './search-input.component.html'
 })
-export class SearchInputComponent implements OnInit, OnDestroy {
+export class SearchInputComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    constructor(private _elRef: ElementRef,
-                private _renderer: Renderer2) {}
+    constructor(injector: Injector, private _elRef: ElementRef,
+                private _renderer: Renderer2) {
+                    super(injector);
+                }
 
     /* Inputs / Outputs / View */
 
@@ -50,6 +53,7 @@ export class SearchInputComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        super.ngOnInit();
         if (!this.observable) {
             this.observable = this.$searchTerms
                 .pipe(
@@ -64,6 +68,7 @@ export class SearchInputComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        super.ngOnDestroy();
         this.observer.unsubscribe();
     }
 

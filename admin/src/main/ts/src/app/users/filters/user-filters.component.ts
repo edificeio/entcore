@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {ActivatedRoute, Data} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {BundlesService} from 'sijil';
@@ -12,37 +13,37 @@ import { routing } from 'src/app/core/services/routing.service';
     templateUrl: './user-filters.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserFiltersComponent implements OnInit, OnDestroy {
+export class UserFiltersComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    private structureSubscriber: Subscription;
-    private routeSubscriber: Subscription;
     dateFilter: string;
 
     constructor(
         private bundles: BundlesService,
-        private cdRef: ChangeDetectorRef,
-        private route: ActivatedRoute,
+        injector: Injector,
         private usersStore: UsersStore,
-        public listFilters: UserlistFiltersService) {}
+        public listFilters: UserlistFiltersService) {
+            super(injector);
+        }
 
     translate = (...args) => (this.bundles.translate as any)(...args);
 
     ngOnInit() {
-        this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+        super.ngOnInit();
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
-                this.cdRef.markForCheck();
+                this.changeDetector.markForCheck();
             }
-        });
+        }));
         this.usersStore.user = null;
 
-        this.routeSubscriber = this.route.queryParams.subscribe(params => {
+        this.subscriptions.add(this.route.queryParams.subscribe(params => {
             if (params.duplicates) {
                 const filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'duplicates');
                 if (filter) {
                     filter.outputModel = ['users.duplicated'];
                 }
             }
-        });
+        }));
 
         for (const filter of this.listFilters.filters) {
             if (filter.datepicker) {
@@ -56,18 +57,15 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
         }
     }
 
-    ngOnDestroy() {
-        this.structureSubscriber.unsubscribe();
-        this.routeSubscriber.unsubscribe();
-    }
-
     orderer(a) {
         return a;
     }
 
     deselect(filter, item) {
-        filter.outputModel.splice(filter.outputModel.indexOf(item), 1);
-        filter.observable.next();
+        if (filter) {
+            filter.outputModel.splice(filter.outputModel.indexOf(item), 1);
+            filter.observable.next();
+        }
     }
 
     updateDate(newDate, filter): void {
@@ -82,7 +80,7 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
     }
 
     resetDate(filter) {
-        if (filter.datepicker) {
+        if ( filter && filter.datepicker) {
             this.dateFilter = '';
             if (filter.outputModel.length > 0) {
                 filter.outputModel[0].date = undefined;

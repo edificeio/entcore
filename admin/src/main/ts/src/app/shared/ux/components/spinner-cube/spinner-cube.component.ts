@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { OdeComponent } from './../../../../core/ode/OdeComponent';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 
 import {SpinnerService} from '../../../../core/services/spinner.service';
@@ -9,7 +10,7 @@ import {SpinnerService} from '../../../../core/services/spinner.service';
     templateUrl: './spinner-cube.component.html',
     styleUrls: ['./spinner-cube.component.scss']
 })
-export class SpinnerCubeComponent implements OnInit, OnDestroy {
+export class SpinnerCubeComponent extends OdeComponent implements OnInit, OnDestroy {
 
     @Input('waitingFor')
     set loadingProp(prop: string) {
@@ -18,22 +19,18 @@ export class SpinnerCubeComponent implements OnInit, OnDestroy {
     get loadingProp() { return this._loadingProp; }
     private _loadingProp: string;
 
-    private subscription: Subscription;
 
     constructor(
-        public spinner: SpinnerService,
-        private cdRef: ChangeDetectorRef) {}
+        injector: Injector,
+        public spinner: SpinnerService) {
+            super(injector);
+        }
 
     ngOnInit() {
-        this.subscription = this.spinner.trigger.subscribe(() => {
-            this.cdRef.markForCheck();
-        });
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
+        super.ngOnInit();
+        this.subscriptions.add(this.spinner.trigger.subscribe(() => {
+            this.changeDetector.markForCheck();
+        }));
     }
 
 }
