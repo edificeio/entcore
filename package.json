@@ -21,7 +21,7 @@
   "private": true,
   "homepage": "https://github.com/entcore/entcore#readme",
   "dependencies": {
-    "entcore": "3.7.2",
+    "entcore": "~3.7.3-dev",
     "entcore-toolkit": "^1.0.1",
     "angular": "1.3.20",
     "angular-route": "1.3.20",
