@@ -6,7 +6,7 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 // aafFunctions exemple: [[1051,ENS,ENSEIGNEMENT,L0201,LETTRES CLASSIQUES]]
 @Component({
-    selector: 'user-aaf-functions-section',
+    selector: 'ode-user-aaf-functions-section',
     templateUrl: './user-aaf-functions-section.component.html'
 })
 export class UserAafFunctionsComponent extends AbstractSection implements OnInit {

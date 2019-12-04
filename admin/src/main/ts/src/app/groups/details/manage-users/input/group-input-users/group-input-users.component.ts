@@ -1,15 +1,14 @@
 import { OdeComponent } from './../../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
 
 import {GroupsStore} from '../../../../groups.store';
-import {SelectOption} from '../../../../../shared/ux/components/multi-select/multi-select.component';
-import {OrderPipe} from '../../../../../shared/ux/pipes';
+import {SelectOption} from 'ngx-ode-ui';
+import {OrderPipe} from 'ngx-ode-ui';
 import {DeleteFilter, UserlistFiltersService} from '../../../../../core/services/userlist.filters.service';
 import { UserListService } from 'src/app/core/services/userlist.service';
 import { UserModel } from 'src/app/core/store/models/user.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { globalStore } from 'src/app/core/store/global.store';
 

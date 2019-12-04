@@ -2,7 +2,7 @@ import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { Component, Injector } from '@angular/core';
 
 @Component({
-    selector: 'connectors-list',
+    selector: 'ode-connectors-list',
     templateUrl: './connectors-list.component.html'
 })
 export class ConnectorsListComponent extends OdeComponent {

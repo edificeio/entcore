@@ -1,16 +1,14 @@
 import { OdeComponent } from './../../../../core/ode/OdeComponent';
 import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
-import {ActivatedRoute, Data} from '@angular/router';
+import {Data} from '@angular/router';
 import {ServicesStore} from '../../../services.store';
-import {ServicesService} from '../../../services.service';
 import {routing} from '../../../../core/services/routing.service';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 @Component({
-    selector: 'smart-application',
+    selector: 'ode-smart-application',
     templateUrl: './smart-application.component.html',
     styles: [`
         button.tab {
@@ -37,8 +35,7 @@ export class SmartApplicationComponent extends OdeComponent implements OnInit, O
     public assignmentGroupPickerList: GroupModel[];
 
     constructor(injector: Injector,
-                public servicesStore: ServicesStore,
-                private servicesService: ServicesService) {
+                public servicesStore: ServicesStore) {
                     super(injector);
     }
 

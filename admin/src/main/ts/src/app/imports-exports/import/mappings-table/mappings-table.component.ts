@@ -1,9 +1,9 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, QueryList, ViewChildren, Injector } from '@angular/core';
-import {BundlesService} from 'sijil';
-import {ComponentDescriptor, DynamicComponentDirective} from '../../../shared/ux/directives';
-import {SimpleSelectComponent} from '../../../shared/ux/components';
-import {Option} from '../../../shared/ux/components/value-editable/simple-select.component';
+import {BundlesService} from 'ngx-ode-sijil';
+import {ComponentDescriptor, DynamicComponentDirective} from 'ngx-ode-ui';
+import {SimpleSelectComponent} from 'ngx-ode-ui';
+import {Option} from 'ngx-ode-ui';
 
 
 @Component({

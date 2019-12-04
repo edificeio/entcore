@@ -3,7 +3,7 @@ import {ActivatedRouteSnapshot, Resolve, Router} from '@angular/router';
 
 import {globalStore} from '../../../core/store/global.store';
 import {RoleModel} from '../../../core/store/models/role.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { routing } from 'src/app/core/services/routing.service';
 

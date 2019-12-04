@@ -4,7 +4,7 @@ import {AbstractSection} from '../abstract.section';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { UserModel } from 'src/app/core/store/models/user.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 
 @Component({

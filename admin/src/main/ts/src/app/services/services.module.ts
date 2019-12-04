@@ -2,9 +2,9 @@ import {NgModule} from '@angular/core';
 import {CommonModule, NgSwitch} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
-import {SijilModule} from 'sijil';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
-import {UxModule} from '../shared/ux/ux.module';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './services.routing';
 
 import {ServicesStore} from './services.store';
@@ -15,7 +15,6 @@ import {ApplicationRolesResolver} from './applications/application/application-r
 import {ConnectorRolesResolver} from './connectors/connector/connector-roles.resolver';
 
 import {ServicesComponent} from './services.component';
-import {ServicesListComponent, ServicesRoleAttributionComponent, ServicesRoleComponent} from './shared/';
 
 import {ApplicationsListComponent} from './applications/list/applications-list.component';
 import {SmartApplicationComponent} from './applications/application/smart-application/smart-application.component';
@@ -29,14 +28,19 @@ import {ConnectorAssignmentComponent} from './connectors/connector/assignment/co
 import {ConnectorMassAssignmentComponent} from './connectors/connector/mass-assignment/connector-mass-assignment.component';
 import {ConnectorExportComponent} from './connectors/connector/export/connector-export.component';
 import {SmartMassRoleAssignmentComponent} from './applications/application/mass-assignment/smart-mass-role-assignment/smart-mass-role-assignment.component';
+import { ServicesListComponent } from './shared/services-list/services-list.component';
+import { ServicesRoleComponent } from './shared/services-role/services-role.component';
+import { ServicesRoleAttributionComponent } from './shared/services-role-attribution/services-role-attribution.component';
+import { CoreModule } from '../core/core.module';
 
 @NgModule({
     imports: [
+        CoreModule,
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        UxModule,
-        SijilModule.forChild(),
+        NgxOdeUiModule,
+        NgxOdeSijilModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

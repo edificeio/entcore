@@ -1,6 +1,6 @@
 import { OdeComponent } from './../../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, Output, Injector } from '@angular/core';
-import {BundlesService} from 'sijil';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output, Injector } from '@angular/core';
+import {BundlesService} from 'ngx-ode-sijil';
 
 import {StructureModel} from '../../../../../core/store/models/structure.model';
 import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';

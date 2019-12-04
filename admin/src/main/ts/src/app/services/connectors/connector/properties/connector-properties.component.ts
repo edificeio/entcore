@@ -3,10 +3,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewC
 import {ConnectorModel} from '../../../../core/store/models/connector.model';
 import {CasType} from '../CasType';
 import {NgForm} from '@angular/forms';
-import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';
+import {SelectOption} from 'ngx-ode-ui';
 
 @Component({
-    selector: 'connector-properties',
+    selector: 'ode-connector-properties',
     templateUrl: './connector.properties.component.html',
     styles: [`
         .connector-properties__action {

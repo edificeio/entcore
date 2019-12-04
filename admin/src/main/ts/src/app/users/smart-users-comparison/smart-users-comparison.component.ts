@@ -1,5 +1,5 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, Injector } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, Injector } from '@angular/core';
 import {UserOverview} from '../user-overview/user-overview.component';
 import {UsersService} from '../users.service';
 import {forkJoin, Observable, Subject} from 'rxjs';

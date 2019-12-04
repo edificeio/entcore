@@ -1,13 +1,12 @@
 import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, AfterViewInit, OnDestroy, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, AfterViewInit, OnDestroy, Injector } from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
-import {Subscription} from 'rxjs';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import {Data, NavigationEnd} from '@angular/router';
 import {routing} from '../../../../core/services/routing.service';
 import {NotifyService} from '../../../../core/services/notify.service';
 import {MessageFlashService} from '../../message-flash.service';
 import {MessageFlashStore} from '../../message-flash.store';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import * as $ from 'jquery';
 
 
@@ -284,7 +283,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 { key: 'notify.management.' + key + '.success.title', parameters: {} }
             );
         })
-            .catch((error) => {
+            .catch(() => {
                 this.ns.error(
                     { key: 'notify.management.' + key + '.error.content', parameters: {} },
                     { key: 'notify.management.' + key + '.error.title', parameters: {} }

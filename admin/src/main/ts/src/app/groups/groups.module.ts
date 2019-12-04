@@ -2,9 +2,9 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {NgModule} from '@angular/core';
-import {SijilModule} from 'sijil';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
-import {UxModule} from '../shared/ux/ux.module';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './groups.routing';
 import {GroupsResolver} from './groups.resolver';
 import {GroupDetailsResolver} from './details/group-details.resolver';
@@ -31,9 +31,9 @@ import {globalStoreProvider} from '../core/store/global.store';
     imports: [
         CommonModule,
         FormsModule,
-        UxModule,
+        NgxOdeUiModule,
         CommunicationModule,
-        SijilModule.forChild(),
+        NgxOdeSijilModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

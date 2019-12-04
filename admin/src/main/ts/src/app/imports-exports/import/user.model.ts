@@ -22,10 +22,6 @@ export class User {
         this.reasons = [];
     }
 
-
-
-
-
     private static _filter: any = {} ; // {reasons: string} | {state: string} | Function;
 
     private attributes = ['line', 'firstName', 'lastName', 'birthDate', 'login', 'loginAlias', 'externalId', 'profiles', 'classesStr', 'state', 'profile'];
@@ -51,9 +47,11 @@ export class User {
             case 'state': User._filter = {state : value}; break;
             default : User._filter = {};
         }
-    }    static hasFilter(type: FilterUser, value: string): boolean {
-        if (User._filter[type] != undefined) {
-            if (User._filter[type] == value) {
+    }
+
+    static hasFilter(type: FilterUser, value: string): boolean {
+        if (User._filter[type] !== undefined) {
+            if (User._filter[type] === value) {
                 return true;
             }
         }
@@ -81,16 +79,12 @@ export class User {
         return false;
     }
     hasProfile(profile: Profile): boolean {
-        if (this.profiles != null && this.profiles[0] == profile) {
+        if (this.profiles != null && this.profiles[0] === profile) {
             return true;
         }
         return false;
     }
-    /**
-    *
-    * @param importId
-    * @param property
-    */
+
     async delete(importId: string, newState: string) {
         const res = await ImportCSVService.deleteLineReport(importId, this.profiles[0], this.line);
         this.state = newState;
@@ -101,8 +95,6 @@ export class User {
 
     /**
      * Create a user's line in repport to keep user (avoid pre-deletion)
-     * @param importId
-     * @param property
      */
     async keep(importId: string, newState: string) {
         const data = {
@@ -117,11 +109,6 @@ export class User {
         }
     }
 
-    /**
-     *
-     * @param importId
-     * @param property
-     */
     async update(importId: string, property: UserEditableProps) {
         const data = {
             line : this.line,

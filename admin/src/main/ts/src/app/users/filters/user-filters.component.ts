@@ -1,8 +1,7 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data} from '@angular/router';
-import {Subscription} from 'rxjs';
-import {BundlesService} from 'sijil';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import {Data} from '@angular/router';
+import {BundlesService} from 'ngx-ode-sijil';
 
 import {UsersStore} from '../users.store';
 import {UserFilter, UserlistFiltersService} from '../../core/services/userlist.filters.service';

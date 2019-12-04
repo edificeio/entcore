@@ -6,7 +6,7 @@ import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
 
 @Component({
-    selector: 'connector-assignment',
+    selector: 'ode-connector-assignment',
     templateUrl: './connector-assignment.component.html'
 })
 export class ConnectorAssignmentComponent extends OdeComponent {

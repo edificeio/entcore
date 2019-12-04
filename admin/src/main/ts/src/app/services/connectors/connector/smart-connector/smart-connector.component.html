@@ -106,7 +106,7 @@
   </button>
 </div>
 
-<connector-properties
+<ode-connector-properties
   *ngIf="currentTab === PROPERTIES_TAB"
   [connector]="servicesStore.connector"
   [casTypes]="casTypes"
@@ -117,29 +117,29 @@
   (create)="onCreate($event)"
   (iconFileChanged)="onIconFileChanged($event)"
   (iconFileInvalid)="onIconFileInvalid($event)">
-</connector-properties>
+</ode-connector-properties>
 
-<connector-assignment
+<ode-connector-assignment
   *ngIf="currentTab === ASSIGNMENT_TAB"
   [connector]="servicesStore.connector"
   [assignmentGroupPickerList]="assignmentGroupPickerList"
   [disabled]="isAssignmentDisabled()"
   (remove)="onRemoveAssignment($event)"
   (add)="onAddAssignment($event)">
-</connector-assignment>
+</ode-connector-assignment>
 
-<connector-mass-assignment
+<ode-connector-mass-assignment
   *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isMassAssignmentDisabled()"
   [structure]="{ id: this.servicesStore.structure.id, name: this.servicesStore.structure.name }"
   [profiles]="profiles"
   (submitUnassignment)="onRemoveMassAssignment($event)"
   (submitAssignment)="onAddMassAssignment($event)">
-</connector-mass-assignment>
+</ode-connector-mass-assignment>
 
-<connector-export
+<ode-connector-export
   *ngIf="currentTab === EXPORT_TAB"
   (submit)="onExportSubmit($event)">
-</connector-export>
+</ode-connector-export>
 
 <ode-lightbox-confirm lightboxTitle="services.connector.delete.confirm.title"
                   [show]="showDeleteConfirmation"

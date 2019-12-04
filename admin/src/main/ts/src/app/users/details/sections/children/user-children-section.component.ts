@@ -3,7 +3,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnInit
 import {AbstractSection} from '../abstract.section';
 import {UserModel} from '../../../../core/store/models/user.model';
 import { UserListService } from 'src/app/core/services/userlist.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 
 @Component({

@@ -2,12 +2,13 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {GroupPickerComponent, groupPickerLocators} from './group-picker.component';
 import {Component, DebugElement, EventEmitter, Input, Output} from '@angular/core';
 import {SijilModule} from 'sijil';
-import {GroupModel, StructureModel} from '../../../../core/store';
 import {By} from '@angular/platform-browser';
 import {MonoSelectComponent} from '../mono-select/mono-select.component';
 import {LightBoxComponent} from '../lightbox/lightbox.component';
 import {FormsModule} from '@angular/forms';
 import {OrderPipe} from '../../pipes';
+import { StructureModel } from '../../store/models/structure.model';
+import { GroupModel } from '../../store/models/group.model';
 
 describe('GroupPickerComponent', () => {
     let component: GroupPickerComponent;

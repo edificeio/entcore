@@ -1,9 +1,9 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import {CommunicationRulesService} from '../communication-rules.service';
 import {Observable, Subject} from 'rxjs';
-import { standardise } from "../../shared/ux/helpers";
+import { standardise } from 'ngx-ode-ui';
 
 import {catchError, filter, first, mergeMap, tap} from 'rxjs/operators';
 import { GroupModel } from 'src/app/core/store/models/group.model';

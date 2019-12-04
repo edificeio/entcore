@@ -2,8 +2,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {NgModule} from '@angular/core';
-import {SijilModule} from 'sijil';
-import {UxModule} from '../shared/ux/ux.module';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './users.routing';
 import {UserDetailsResolver} from './details/user-details.resolver';
 import {UsersResolver} from './users.resolver';
@@ -41,8 +41,8 @@ import { UserlistFiltersService } from '../core/services/userlist.filters.servic
         CommonModule,
         FormsModule,
         RouterModule.forChild(routes),
-        SijilModule.forChild(),
-        UxModule,
+        NgxOdeSijilModule.forChild(),
+        NgxOdeUiModule,
         CommunicationModule,
         HttpClientModule
     ],

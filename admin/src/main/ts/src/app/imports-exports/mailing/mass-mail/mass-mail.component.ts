@@ -1,15 +1,13 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
+import {Data, NavigationEnd} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
 import {UserlistFiltersService} from '../../../core/services/userlist.filters.service';
 import {NotifyService} from '../../../core/services/notify.service';
-import {SpinnerService} from '../../../core/services/spinner.service';
+import {SpinnerService} from 'ngx-ode-ui';
 import {MassMailService} from '../mass-mail.service';
-import {BundlesService} from 'sijil';
-import {FilterPipe} from '../../../shared/ux/pipes';
-import {SelectOption} from '../../../shared/ux/components/multi-select/multi-select.component';
+import {BundlesService} from 'ngx-ode-sijil';
+import {FilterPipe, SelectOption} from 'ngx-ode-ui';
 import { UserModel } from 'src/app/core/store/models/user.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 

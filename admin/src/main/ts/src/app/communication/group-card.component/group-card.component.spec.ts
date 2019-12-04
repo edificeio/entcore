@@ -1,13 +1,15 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {UxModule} from '../../shared/ux/ux.module';
-import {GroupCardComponent, groupCardLocators as locators} from './';
+import {GroupCardComponent, groupCardLocators as locators} from './group-card.component';
 import {SijilModule} from 'sijil';
-import {clickOn, generateGroup, getText} from '../../shared/utils';
+import {clickOn, generateGroup, getText} from '../../utils/testing';
 import {DebugElement} from '@angular/core';
 import {By} from '@angular/platform-browser';
 import {CommunicationRulesService} from '../communication-rules.service';
 import {ActivatedRoute} from '@angular/router';
-import {GroupNameService, NotifyService, SpinnerService} from '../../core/services';
+import {GroupNameService} from '../../core/services/group-name.service';
+import {NotifyService} from '../../core/services/notify.service';
+import {SpinnerService} from '../../core/services/spinner.service';
 
 describe('GroupCardComponent', () => {
     let component: GroupCardComponent;
@@ -69,7 +71,7 @@ describe('GroupCardComponent', () => {
         component.group = generateGroup('test');
         fixture.detectChanges();
         clickOn(getInternalCommunicationSwitch(fixture));
-        component.confirmationClicked.next('confirm');
+        component.$confirmationClicked.next('confirm');
         expect(communicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     }));
 

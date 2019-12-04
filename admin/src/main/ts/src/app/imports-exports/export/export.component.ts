@@ -1,11 +1,11 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import { Data, NavigationEnd } from '@angular/router';
 import {routing} from '../../core/services/routing.service';
 import {StructureModel} from '../../core/store/models/structure.model';
-import {SelectOption} from '../../shared/ux/components/multi-select/multi-select.component';
-import {OrderPipe} from '../../shared/ux/pipes';
+import {SelectOption} from 'ngx-ode-ui';
+import {OrderPipe} from 'ngx-ode-ui';
 
 @Component({
     selector: 'ode-export',

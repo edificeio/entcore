@@ -4,7 +4,7 @@ import {ActivatedRouteSnapshot, Resolve, Router} from '@angular/router';
 import {globalStore} from '../../core/store/global.store';
 import {MessageFlashService} from './message-flash.service';
 import {MessageFlashStore} from './message-flash.store';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from 'src/app/core/services/routing.service';
 
 @Injectable()

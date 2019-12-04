@@ -31,10 +31,11 @@
     "font-awesome": "4.7.0",
     "jquery": "^3.4.1",
     "ngx-infinite-scroll": "^0.7.0",
+    "ngx-ode-sijil": "~1.0.0",
+    "ngx-ode-ui": "^2.0.3",
     "noty": "2.4.1",
     "reflect-metadata": "0.1.10",
     "rxjs": "~6.5.3",
-    "sijil": "2.0.0",
     "tslib": "^1.10.0",
     "web-animations-js": "^2.3.2",
     "zone.js": "~0.9.1"

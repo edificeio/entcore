@@ -8,7 +8,7 @@ import {UserInfoService} from '../info/user-info.service';
 import {globalStore} from '../../../../core/store/global.store';
 import {UsersStore} from '../../../users.store';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { UserListService } from 'src/app/core/services/userlist.service';
 
 @Component({

@@ -264,7 +264,7 @@ describe('SmartConnector', () => {
 });
 
 @Component({
-    selector: 'connector-properties',
+    selector: 'ode-connector-properties',
     template: ''
 })
 class MockConnectorPropertiesComponent {
@@ -288,7 +288,7 @@ class MockConnectorPropertiesComponent {
 }
 
 @Component({
-    selector: 'connector-assignment',
+    selector: 'ode-connector-assignment',
     template: ''
 })
 class MockConnectorAssignmentComponent {
@@ -304,7 +304,7 @@ class MockConnectorAssignmentComponent {
 }
 
 @Component({
-    selector: 'connector-mass-assignment',
+    selector: 'ode-connector-mass-assignment',
     template: ''
 })
 class MockConnectorMassAssignmentComponent {
@@ -320,7 +320,7 @@ class MockConnectorMassAssignmentComponent {
 }
 
 @Component({
-    selector: 'connector-export',
+    selector: 'ode-connector-export',
     template: ''
 })
 class MockConnectorExport {

@@ -1,6 +1,5 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
-import {Router} from '@angular/router';
 
 import {UserModel} from '../../../core/store/models/user.model';
 import {UserListService} from '../../../core/services/userlist.service';

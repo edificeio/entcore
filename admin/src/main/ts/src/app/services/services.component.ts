@@ -1,7 +1,6 @@
 import { OdeComponent } from './../core/ode/OdeComponent';
 import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import {Data} from '@angular/router';
 import {ServicesStore} from './services.store';
 import {routing} from '../core/services/routing.service';
 import {ServicesService} from './services.service';

@@ -2,7 +2,6 @@ import { OdeComponent } from './../../core/ode/OdeComponent';
 import {
   AfterViewChecked,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -11,12 +10,10 @@ import {
   Output,
   Injector
 } from '@angular/core';
-import {Subscription} from 'rxjs';
 
 import {UserModel} from '../../core/store/models/user.model';
 
 import {UsersStore} from '../users.store';
-import {Router} from '@angular/router';
 import { UserListService } from 'src/app/core/services/userlist.service';
 import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
 

@@ -143,9 +143,9 @@
                          *ngIf="!user.deleteDate">
   </ode-user-children-section>
 
-  <user-aaf-functions-section [user]="user" [structure]="structure"
+  <ode-user-aaf-functions-section [user]="user" [structure]="structure"
                               *ngIf="user.type == 'Personnel' || user.type == 'Teacher'">
-  </user-aaf-functions-section>
+  </ode-user-aaf-functions-section>
 
   <ode-user-structures-section [user]="user" [structure]="structure"
                            *ngIf="!user.deleteDate">

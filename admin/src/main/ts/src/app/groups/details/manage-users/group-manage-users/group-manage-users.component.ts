@@ -1,6 +1,5 @@
 import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnInit, Output, Injector } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, Injector } from '@angular/core';
 import {Subscription} from 'rxjs';
 
 import {UserModel} from '../../../../core/store/models/user.model';

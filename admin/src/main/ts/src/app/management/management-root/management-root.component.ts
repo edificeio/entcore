@@ -1,7 +1,6 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import {Data, NavigationEnd} from '@angular/router';
 import {routing} from '../../core/services/routing.service';
 import {StructureModel} from '../../core/store/models/structure.model';
 
@@ -17,7 +16,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.message.flash', view: 'message-flash/list', active: 'message-flash'}
     ];
 
-    private dError: Error;
     private structure: StructureModel;
 
     constructor(injector: Injector) { 
@@ -43,7 +41,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
 
     onError(error: Error) {
         console.error(error);
-        this.dError = error;
     }
 
     isActive(path: string): boolean {

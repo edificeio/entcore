@@ -3,7 +3,7 @@ import {ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot} from '@ang
 
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { GlobalStore } from 'src/app/core/store/global.store';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { routing } from 'src/app/core/services/routing.service';
 

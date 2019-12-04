@@ -1,8 +1,8 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {BundlesService, SijilModule} from 'sijil';
+import {BundlesService, NgxOdeSijilModule} from 'ngx-ode-sijil';
 import {Component, DebugElement, Input} from '@angular/core';
-import {UxModule} from '../../shared/ux/ux.module';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {
   CommunicationRule,
   CommunicationRulesComponent,
@@ -10,9 +10,10 @@ import {
   sortGroups,
   uniqueGroups
 } from './communication-rules.component';
-import {generateGroup} from '../../shared/utils';
+import {generateGroup} from '../../utils/testing';
 import {CommunicationRulesService} from '../communication-rules.service';
-import {GroupNameService, NotifyService} from '../../core/services';
+import {GroupNameService} from '../../core/services/group-name.service';
+import {NotifyService} from '../../core/services/notify.service';
 import {UsersStore} from '../../users/users.store';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
@@ -57,8 +58,8 @@ describe('CommunicationRulesComponent', () => {
                 {provide: UsersStore, useValue: usersStoreMock}
             ],
             imports: [
-                SijilModule.forRoot(),
-                UxModule.forRoot(null)
+                NgxOdeSijilModule.forRoot(),
+                NgxOdeUiModule.forRoot(null)
             ]
 
         }).compileComponents();
@@ -281,13 +282,13 @@ describe('CommunicationRulesComponent', () => {
         });
         it('should close the lightbox if the user cancel', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
-            component.removeConfirmationClicked.next('cancel');
+            component.$removeConfirmationClicked.next('cancel');
             expect(communicationRulesService.removeCommunication).not.toHaveBeenCalled();
             expect(component.removeConfirmationDisplayed).toBe(false);
         });
         it('should call the communicationRulesService.removeCommunication if the user confirms', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
-            component.removeConfirmationClicked.next('confirm');
+            component.$removeConfirmationClicked.next('confirm');
             expect(communicationRulesService.removeCommunication).toHaveBeenCalled();
             expect(component.removeConfirmationDisplayed).toBe(false);
         });

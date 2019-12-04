@@ -1,14 +1,13 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
-import {ActivatedRoute, Data, Router} from '@angular/router';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, Injector, Type } from '@angular/core';
-import {CommunicationRulesService} from '../../../communication/communication-rules.service';
-import {CommunicationRule} from '../../../communication/communication-rules.component/communication-rules.component';
-import {Subscription} from 'rxjs';
-import {GroupsStore} from '../../groups.store';
-import {filter} from 'rxjs/operators';
+import { Data } from '@angular/router';
+import { Component, OnDestroy, OnInit, Injector, Type } from '@angular/core';
+import { CommunicationRulesService } from '../../../communication/communication-rules.service';
+import { CommunicationRule } from '../../../communication/communication-rules.component/communication-rules.component';
+import { GroupsStore } from '../../groups.store';
+import { filter } from 'rxjs/operators';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { GlobalStore } from 'src/app/core/store/global.store';
 import { routing } from 'src/app/core/services/routing.service';
 

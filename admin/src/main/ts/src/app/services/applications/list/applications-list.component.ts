@@ -2,7 +2,7 @@ import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { Component, Injector } from '@angular/core';
 
 @Component({
-    selector: 'apps-list',
+    selector: 'ode-apps-list',
     templateUrl: './application-list.component.html'
 })
 export class ApplicationsListComponent extends OdeComponent {

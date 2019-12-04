@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import * as noty from 'noty';
 import * as $ from 'jquery';
 

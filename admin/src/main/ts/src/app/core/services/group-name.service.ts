@@ -1,5 +1,5 @@
 import {GroupModel} from '../store/models/group.model';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import {Injectable} from '@angular/core';
 
 @Injectable()
