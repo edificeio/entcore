@@ -1,8 +1,8 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {BidirectionalCommunicationRules, CommunicationRulesService} from './communication-rules.service';
-import {generateGroup} from '../shared/utils';
-import {GroupModel} from '../core/store/models';
+import {generateGroup} from '../utils/testing';
+import {GroupModel} from '../core/store/models/group.model';
 import {skip} from 'rxjs/operators';
 
 describe('CommunicationRulesService', () => {

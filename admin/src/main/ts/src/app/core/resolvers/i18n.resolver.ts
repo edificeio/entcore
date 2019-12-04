@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Resolve} from '@angular/router';
 
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 
 @Injectable()
 export class I18nResolver implements Resolve<void> {

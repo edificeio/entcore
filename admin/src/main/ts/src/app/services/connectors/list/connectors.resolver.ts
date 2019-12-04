@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 import { ConnectorModel } from 'src/app/core/store/models/connector.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { globalStore } from 'src/app/core/store/global.store';
 import { routing } from 'src/app/core/services/routing.service';
 

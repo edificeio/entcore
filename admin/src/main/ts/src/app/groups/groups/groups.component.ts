@@ -1,6 +1,6 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import {Data, NavigationEnd} from '@angular/router';
 import {Subscription} from 'rxjs';
 
 import {routing} from '../../core/services/routing.service';

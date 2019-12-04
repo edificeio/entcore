@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 import {routing} from '../core/services/routing.service';
 
-import {SpinnerService} from '../core/services/spinner.service';
+import {SpinnerService} from 'ngx-ode-ui';
 import {sync} from '../structure/structure.resolver';
 import { UserModel } from '../core/store/models/user.model';
 import { StructureModel } from '../core/store/models/structure.model';

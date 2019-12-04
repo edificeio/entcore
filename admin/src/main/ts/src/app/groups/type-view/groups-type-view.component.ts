@@ -1,7 +1,5 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 
 import {GroupsStore} from '../groups.store';
 import {GroupModel} from '../../core/store/models/group.model';

@@ -1,15 +1,14 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ActivatedRoute, Router} from '@angular/router';
-import {merge, Observable, Subject, Subscription} from 'rxjs';
+import {merge, Observable, Subject} from 'rxjs';
 import {GroupsStore} from '../../groups.store';
 import {GroupIdAndInternalCommunicationRule} from '../group-internal-communication-rule.resolver';
 import {CommunicationRulesService} from '../../../communication/communication-rules.service';
 import {filter, first, map, mergeMap, switchMap, tap} from 'rxjs/operators';
 
 import {GroupsService} from '../../groups.service';
-import {trim} from '../../../shared/utils/string';
+import {trim} from 'ngx-ode-ui';
 import { InternalCommunicationRule, GroupModel } from 'src/app/core/store/models/group.model';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { GroupNameService } from 'src/app/core/services/group-name.service';

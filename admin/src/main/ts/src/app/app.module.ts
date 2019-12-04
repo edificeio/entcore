@@ -1,7 +1,7 @@
 import {AppRoutingModule} from './app-routing.module';
 import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
-import {SijilModule} from 'sijil';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
 import {CoreModule} from './core/core.module';
 import {AppComponent} from './app.component';
@@ -27,7 +27,7 @@ registerLocaleData(localePt);
         AppRoutingModule,
         CoreModule,
         HttpClientModule,
-        SijilModule.forRoot()
+        NgxOdeSijilModule.forRoot()
     ],
     declarations: [
         AppComponent,

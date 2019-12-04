@@ -1,6 +1,6 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
 import { ChangeDetectionStrategy, Component, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, Router} from '@angular/router';
+import {Data} from '@angular/router';
 import {routing} from '../../core/services/routing.service';
 
 @Component({

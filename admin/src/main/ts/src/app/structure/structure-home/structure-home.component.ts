@@ -1,8 +1,7 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
 import {StructureModel} from '../../core/store/models/structure.model';
 import {ActivatedRoute} from '@angular/router';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
 
 @Component({
     selector: 'ode-structure-home',

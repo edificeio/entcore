@@ -1,11 +1,14 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {GroupModel, StructureModel, UserDetailsModel, UserModel} from '../../core/store/models';
+import {GroupModel} from '../../core/store/models/group.model';
+import {StructureModel} from '../../core/store/models/structure.model';
+import {UserDetailsModel} from '../../core/store/models/userdetails.model';
+import {UserModel} from '../../core/store/models/user.model';
 import {By} from '@angular/platform-browser';
 import {BundlesService, SijilModule} from 'sijil';
 import {Component, DebugElement, Input} from '@angular/core';
 import {UxModule} from '../../shared/ux/ux.module';
 import {Column, CommunicationRule} from '../communication-rules.component/communication-rules.component';
-import {clickOn, generateGroup, getText} from '../../shared/utils';
+import {clickOn, generateGroup, getText} from '../../utils/testing';
 import {GroupsCommunicationComponent,  groupsCommunicationLocators as locators} from './groups-communication.component';
 
 describe('GroupsCommunicationComponent', () => {

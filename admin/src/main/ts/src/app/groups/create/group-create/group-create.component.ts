@@ -1,18 +1,15 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
 import {Location} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 
 import {GroupsStore} from '../../groups.store';
 import {GroupModel} from '../../../core/store/models/group.model';
 
-import {trim} from '../../../shared/utils/string';
+import {trim} from 'ngx-ode-ui';
 import {catchError, flatMap, map, tap} from 'rxjs/operators';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
-
-
+import { SpinnerService } from 'ngx-ode-ui';
 
 @Component({
     selector: 'ode-group-create',

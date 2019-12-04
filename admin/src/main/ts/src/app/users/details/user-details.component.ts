@@ -1,8 +1,7 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
 import {AbstractControl, NgForm} from '@angular/forms';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import {Data, NavigationEnd} from '@angular/router';
 
 import {globalStore} from '../../core/store/global.store';
 import {UsersStore} from '../users.store';
@@ -10,7 +9,7 @@ import {Config} from '../../core/resolvers/Config';
 import { UserDetailsModel } from 'src/app/core/store/models/userdetails.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { UserModel } from 'src/app/core/store/models/user.model';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { UserListService } from 'src/app/core/services/userlist.service';
 

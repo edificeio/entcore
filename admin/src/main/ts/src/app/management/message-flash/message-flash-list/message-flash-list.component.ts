@@ -1,12 +1,11 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit, Injector } from '@angular/core';
+import {Data, NavigationEnd} from '@angular/router';
 import {routing} from '../../../core/services/routing.service';
 import {NotifyService} from '../../../core/services/notify.service';
 import {MessageFlashService} from '../message-flash.service';
 import {MessageFlashStore} from '../message-flash.store';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
 

@@ -12,15 +12,15 @@
   </div>
 
   <div *ngFor="let role of application.roles">
-    <services-role
+    <ode-services-role
       [role]="role"
       (openLightbox)="openRoleAttributionLightbox($event)"
       (onRemove)="remove.emit({group: $event, role: role})">
-    </services-role>
+    </ode-services-role>
   </div>
 </div>
 
-<services-role-attribution
+<ode-services-role-attribution
   [show]="showRoleAttributionLightbox"
   [assignmentGroupPickerList]="assignmentGroupPickerList"
   (close)="showRoleAttributionLightbox = false"
@@ -29,4 +29,4 @@
   noResultsLabel="list.results.no.groups"
   (add)="add.emit({group: $event, role: selectedRole})"
   [selectedRole]="selectedRole">
-</services-role-attribution>
+</ode-services-role-attribution>

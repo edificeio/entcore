@@ -1,9 +1,8 @@
 import { OdeComponent } from './../ode/OdeComponent';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
-import {ActivatedRoute, Data, Router} from '@angular/router';
+import { Data } from '@angular/router';
 
-import {Subscription} from 'rxjs';
-import {Config} from '../resolvers/Config';
+import { Config } from '../resolvers/Config';
 import { StructureModel } from '../store/models/structure.model';
 import { globalStore } from '../store/global.store';
 

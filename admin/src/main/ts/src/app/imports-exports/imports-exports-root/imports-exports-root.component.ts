@@ -1,7 +1,6 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import {Data, NavigationEnd} from '@angular/router';
 import {routing} from '../../core/services/routing.service';
 
 @Component({
@@ -18,8 +17,6 @@ export class ImportsExportsRootComponent extends OdeComponent implements OnInit,
         { label: 'export.accounts', view: 'export' },
         { label: 'massmail.accounts', view: 'massmail' } // Meld MassMail into export ?
     ];
-
-    private dError: Error;
 
     constructor(injector: Injector) {
         super(injector);
@@ -43,6 +40,5 @@ export class ImportsExportsRootComponent extends OdeComponent implements OnInit,
 
     onError(error: Error) {
         console.error(error);
-        this.dError = error;
     }
 }

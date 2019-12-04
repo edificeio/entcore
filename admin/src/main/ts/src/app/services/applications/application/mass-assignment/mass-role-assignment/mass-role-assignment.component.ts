@@ -1,9 +1,9 @@
 import { OdeComponent } from './../../../../../core/ode/OdeComponent';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, Injector } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import {MassAssignment, Profile, Role, Structure} from '../../../../shared/services-types';
-import {SelectOption} from '../../../../../shared/ux/components/multi-select/multi-select.component';
+import {SelectOption} from 'ngx-ode-ui';
 
 @Component({
     selector: 'mass-role-assignment',

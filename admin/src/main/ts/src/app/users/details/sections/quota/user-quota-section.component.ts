@@ -4,7 +4,7 @@ import {HttpClient} from '@angular/common/http';
 import {UsedSpace} from './UsedSpace';
 import {UserModel} from '../../../../core/store/models/user.model';
 import {MaxQuotas} from './MaxQuotas';
-import {getUnit, Unit, UNITS} from '../../../../shared/utils/math';
+import {getUnit, Unit, UNITS} from 'ngx-ode-ui';
 import {NotifyService} from '../../../../core/services/notify.service';
 
 @Component({

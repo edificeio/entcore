@@ -3,11 +3,8 @@ import { OdeComponent } from './ode/OdeComponent';
 import {NgModule, Optional, SkipSelf} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
-
-import {SijilModule} from 'sijil';
-
-import {UxModule} from '../shared/ux/ux.module';
-import {LabelsService} from '../shared/ux/services';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
 import {NavComponent} from './nav/nav.component';
 import {I18nResolver} from './resolvers/i18n.resolver';
@@ -17,27 +14,29 @@ import {throwIfAlreadyLoaded} from './module-import.guard';
 import {ConfigResolver} from './resolvers/config.resolver';
 import { SijilLabelsService } from './services/sijil.labels.service';
 import { NotifyService } from './services/notify.service';
-import { SpinnerService } from './services/spinner.service';
+import {LabelsService} from 'ngx-ode-ui';
+import { GroupPickerComponent } from './components/group-picker/group-picker.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
     imports: [
         CommonModule,
-        SijilModule.forRoot(),
-        UxModule.forRoot({
+        FormsModule,
+        NgxOdeSijilModule.forRoot(),
+        NgxOdeUiModule.forRoot({
             provide: LabelsService,
             useExisting: SijilLabelsService
         }),
         RouterModule
     ],
-    exports: [NavComponent, OdeComponent],
-    declarations: [NavComponent, OdeComponent],
+    exports: [NavComponent, OdeComponent, GroupPickerComponent],
+    declarations: [NavComponent, OdeComponent, GroupPickerComponent],
     providers: [
         SessionResolver,
         StructuresResolver,
         I18nResolver,
         SijilLabelsService,
         NotifyService,
-        SpinnerService,
         ConfigResolver,
         Logger
     ],

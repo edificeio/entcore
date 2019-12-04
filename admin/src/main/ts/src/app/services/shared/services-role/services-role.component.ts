@@ -4,7 +4,7 @@ import { RoleModel } from 'src/app/core/store/models/role.model';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 
 @Component({
-    selector: 'services-role',
+    selector: 'ode-services-role',
     templateUrl: './services-role.component.html'
 })
 export class ServicesRoleComponent extends OdeComponent {

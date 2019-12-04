@@ -3,7 +3,7 @@ import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 
 import { StructureModel } from '../core/store/models/structure.model';
 import { globalStore } from '../core/store/global.store';
-import { SpinnerService } from '../core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { ProfilesService } from '../core/services/profiles.service';
 
 @Injectable()

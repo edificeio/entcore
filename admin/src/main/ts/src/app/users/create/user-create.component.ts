@@ -1,16 +1,15 @@
 import { OdeComponent } from './../../core/ode/OdeComponent';
 import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Data, Router} from '@angular/router';
+import {Data} from '@angular/router';
 import {Location} from '@angular/common';
-import {Subscription} from 'rxjs';
 
 import {UsersStore} from '../users.store';
 import {routing} from '../../core/services/routing.service';
 import {UserModel} from '../../core/store/models/user.model';
-import {SelectOption} from '../../shared/ux/components/multi-select/multi-select.component';
-import { UserChildrenListService, UserListService } from 'src/app/core/services/userlist.service';
+import {SelectOption} from 'ngx-ode-ui';
+import { UserChildrenListService } from 'src/app/core/services/userlist.service';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 
 @Component({
     selector: 'ode-user-create',
@@ -35,7 +34,6 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         private ns: NotifyService,
         private spinner: SpinnerService,
         private location: Location,
-        private userListService: UserListService,
         public userChildrenListService: UserChildrenListService) {
             super(injector);
     }

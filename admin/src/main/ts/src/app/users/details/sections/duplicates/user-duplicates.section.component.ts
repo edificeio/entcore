@@ -4,7 +4,7 @@ import {Router} from '@angular/router';
 import {AbstractSection} from '../abstract.section';
 import {UsersStore} from '../../../users.store';
 import { UserListService } from 'src/app/core/services/userlist.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';

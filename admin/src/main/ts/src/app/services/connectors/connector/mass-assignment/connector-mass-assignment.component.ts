@@ -1,12 +1,12 @@
 import { OdeComponent } from './../../../../core/ode/OdeComponent';
 import { Component, EventEmitter, Input, OnInit, Output, Injector } from '@angular/core';
 import {Profile, Structure} from '../../../shared/services-types';
-import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';
+import {SelectOption} from 'ngx-ode-ui';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 
 @Component({
-    selector: 'connector-mass-assignment',
+    selector: 'ode-connector-mass-assignment',
     templateUrl: './connector-mass-assignment.component.html',
     styles: [`
         form {

@@ -1,11 +1,9 @@
 import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Output, Injector, INJECTOR } from '@angular/core';
+import { Component, EventEmitter, Output, Injector } from '@angular/core';
 import {Profile} from '../../../shared/services-types';
-import {SelectOption} from '../../../../shared/ux/components/multi-select/multi-select.component';
-import { SUPER_EXPR } from '@angular/compiler/src/output/output_ast';
-
+import {SelectOption} from 'ngx-ode-ui';
 @Component({
-    selector: 'connector-export',
+    selector: 'ode-connector-export',
     templateUrl: './connector-export.component.html',
     styles: [`
         .connector-export {

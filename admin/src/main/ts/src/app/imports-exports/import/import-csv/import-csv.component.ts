@@ -1,15 +1,15 @@
 import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
+import { Data, NavigationEnd } from '@angular/router';
 import {Subscription} from 'rxjs';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 import {ImportCSVService} from '../import-csv.service';
 import {Error, Profile, User, UserEditableProps} from '../user.model';
-import {WizardComponent} from '../../../shared/ux/components';
+import {WizardComponent} from 'ngx-ode-ui';
 import {NotifyService} from '../../../core/services/notify.service';
 import {Messages} from '../messages.model';
-import {ObjectURLDirective} from '../../../shared/ux/directives/object-url.directive';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import {ObjectURLDirective} from 'ngx-ode-ui';
+import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from 'src/app/core/services/routing.service';
 
 @Component({

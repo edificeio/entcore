@@ -1,5 +1,5 @@
 import {DebugElement} from '@angular/core';
-import { InternalCommunicationRule, GroupModel } from 'src/app/core/store/models/group.model';
+import { InternalCommunicationRule, GroupModel } from '../core/store/models/group.model';
 
 export function getText(el: DebugElement): string {
     return el.nativeElement.textContent.trim();

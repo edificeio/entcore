@@ -4,7 +4,7 @@ import {ActivatedRouteSnapshot, Resolve} from '@angular/router';
 import {globalStore} from '../core/store/global.store';
 import {GroupModel} from '../core/store/models/group.model';
 import {routing} from '../core/services/routing.service';
-import {SpinnerService} from '../core/services/spinner.service';
+import {SpinnerService} from 'ngx-ode-ui';
 
 @Injectable()
 export class GroupsResolver implements Resolve<GroupModel[]> {

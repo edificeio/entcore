@@ -6,7 +6,7 @@ import {CommunicationRulesService} from '../communication-rules.service';
 import {getStructureIdOfGroup, getStructureOfGroup} from '../communication-rules.component/communication-rules.component';
 import {Subject} from 'rxjs';
 import {filter, first, mergeMap, tap} from 'rxjs/operators';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { GroupNameService } from 'src/app/core/services/group-name.service';
 

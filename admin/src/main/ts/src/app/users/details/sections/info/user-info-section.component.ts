@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Vi
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {AbstractControl, NgForm} from '@angular/forms';
 import {Observable, Subscription} from 'rxjs';
-import {BundlesService} from 'sijil';
+import {BundlesService} from 'ngx-ode-sijil';
 
 import {AbstractSection} from '../abstract.section';
 import {UserInfoService} from './user-info.service';
@@ -10,7 +10,7 @@ import {Config} from '../../../../core/resolvers/Config';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { UserModel } from 'src/app/core/store/models/user.model';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'src/app/core/services/spinner.service';
+import { SpinnerService } from 'ngx-ode-ui';
 import { PlatformInfoService } from 'src/app/core/services/platform-info.service';
 
 @Component({

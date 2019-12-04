@@ -2,8 +2,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {NgModule} from '@angular/core';
-import {SijilModule} from 'sijil';
-import {UxModule} from '../shared/ux/ux.module';
+import {NgxOdeSijilModule} from 'ngx-ode-sijil';
+import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './management-routing.module';
 import {ManagementRootComponent} from './management-root/management-root.component';
 import {MessageFlashComponent} from './message-flash/message-flash.component';
@@ -21,8 +21,8 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
     imports: [
         CommonModule,
         FormsModule,
-        UxModule,
-        SijilModule.forChild(),
+        NgxOdeUiModule,
+        NgxOdeSijilModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [
