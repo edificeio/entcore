@@ -6,6 +6,7 @@ import { StructureModel } from '../core/store';
 import { routing } from '../core/services/routing.service';
 import { SpinnerService, UserlistFiltersService, UserListService } from '../core/services';
 import { UsersStore } from './users.store';
+import { includes } from '../shared/utils/array';
 
 @Component({
     selector: 'users-root',
@@ -93,11 +94,15 @@ export class UsersComponent implements OnInit, OnDestroy {
         this.listFilters.setClassesComboModel(structure.classes);
         this.listFilters.setSourcesComboModel(structure.sources);
         
-        let aafFunctions: Array<Array<string>> = [];
-        structure.aafFunctions.forEach(f => {
-            f.forEach(f2 => aafFunctions.push([f2[2], f2[4]]))
+        let filterAafFunctions: Array<Array<string>> = [];
+        structure.aafFunctions.forEach(structureAafFunctions => {
+            structureAafFunctions.forEach(structureAafFunction => {
+                if (!includes(filterAafFunctions, [structureAafFunction[2], structureAafFunction[4]])) {
+                    filterAafFunctions.push([structureAafFunction[2], structureAafFunction[4]]);
+                }
+            });
         });
-        this.listFilters.setFunctionsComboModel(aafFunctions);
+        this.listFilters.setFunctionsComboModel(filterAafFunctions);
         
         this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));
         this.listFilters.setFunctionalGroupsComboModel(
