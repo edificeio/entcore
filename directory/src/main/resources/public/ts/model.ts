@@ -713,11 +713,22 @@ directory.User.prototype.generateMergeKey = function() {
 };
 
 directory.User.prototype.mergeByKeys = function(keys, handler) {
-	oldHttp().postJson("/directory/duplicate/user/mergeByKey", { mergeKeys : keys }).done(function(data) {
+	oldHttp().postJson("/directory/duplicate/user/mergeByKey", { mergeKeys : keys })
+	.error(function(error)
+	{
+		if(error != null && error.responseJSON != null && error.responseJSON.error != null)
+			notify.error(error.responseJSON.error);
+		else
+			notify.error("invalid.merge.keys");
+		if(typeof handler === 'function') {
+			handler(false);
+		}
+	})
+	.done(function(data) {
 		this.mergedLogins = data.mergedLogins;
         this.trigger('change');
         if(typeof handler === 'function') {
-        	handler();
+		handler(true);
         }
 	}.bind(this));
 };
