@@ -1,15 +1,14 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { Location } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
-import {Location} from '@angular/common';
-import {HttpClient} from '@angular/common/http';
-
-import {GroupsStore} from '../../groups.store';
-import {GroupModel} from '../../../core/store/models/group.model';
-
-import {trim} from 'ngx-ode-ui';
-import {catchError, flatMap, map, tap} from 'rxjs/operators';
+import { OdeComponent } from 'ngx-ode-core';
+import { SpinnerService, trim } from 'ngx-ode-ui';
+import { catchError, flatMap, map, tap } from 'rxjs/operators';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'ngx-ode-ui';
+import { GroupModel } from '../../../core/store/models/group.model';
+import { GroupsStore } from '../../groups.store';
+
+
 
 @Component({
     selector: 'ode-group-create',

@@ -1,11 +1,11 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data} from '@angular/router';
-import {BundlesService} from 'ngx-ode-sijil';
-
-import {UsersStore} from '../users.store';
-import {UserFilter, UserlistFiltersService} from '../../core/services/userlist.filters.service';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 import { routing } from 'src/app/core/services/routing.service';
+import { UserFilter, UserlistFiltersService } from '../../core/services/userlist.filters.service';
+import { UsersStore } from '../users.store';
+
 
 @Component({
     selector: 'ode-user-filters',

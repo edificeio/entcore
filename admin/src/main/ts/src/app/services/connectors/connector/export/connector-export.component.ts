@@ -1,7 +1,7 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Output, Injector } from '@angular/core';
-import {Profile} from '../../../shared/services-types';
-import {SelectOption} from 'ngx-ode-ui';
+import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { SelectOption } from 'ngx-ode-ui';
+import { Profile } from '../../../shared/services-types';
 @Component({
     selector: 'ode-connector-export',
     templateUrl: './connector-export.component.html',

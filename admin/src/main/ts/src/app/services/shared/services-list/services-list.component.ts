@@ -1,15 +1,13 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
-
-import {Data} from '@angular/router';
-import {routing} from '../../../core/services/routing.service';
-
-import {ServicesStore} from '../../services.store';
-import {InputFileService} from 'ngx-ode-ui';
-import {BundlesService} from 'ngx-ode-sijil';
+import { Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { Data } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
+import { InputFileService } from 'ngx-ode-ui';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { ConnectorModel } from 'src/app/core/store/models/connector.model';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { routing } from '../../../core/services/routing.service';
+import { ServicesStore } from '../../services.store';
 
 interface ServiceInfo {
     collection: any[];

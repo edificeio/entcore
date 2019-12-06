@@ -1,15 +1,14 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
-import {Data, NavigationEnd} from '@angular/router';
-import {routing} from '../../../core/services/routing.service';
-import {UserlistFiltersService} from '../../../core/services/userlist.filters.service';
-import {NotifyService} from '../../../core/services/notify.service';
-import {SpinnerService} from 'ngx-ode-ui';
-import {MassMailService} from '../mass-mail.service';
-import {BundlesService} from 'ngx-ode-sijil';
-import {FilterPipe, SelectOption} from 'ngx-ode-ui';
-import { UserModel } from 'src/app/core/store/models/user.model';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Data, NavigationEnd } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
+import { FilterPipe, SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { NotifyService } from '../../../core/services/notify.service';
+import { routing } from '../../../core/services/routing.service';
+import { UserlistFiltersService } from '../../../core/services/userlist.filters.service';
+import { MassMailService } from '../mass-mail.service';
 
 @Component({
     selector: 'ode-mass-mail',

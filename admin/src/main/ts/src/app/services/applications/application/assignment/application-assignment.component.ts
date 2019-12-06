@@ -1,9 +1,9 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Input, Output, Injector } from '@angular/core';
-import {Assignment} from '../../../shared/services-types';
+import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
+import { Assignment } from '../../../shared/services-types';
 
 @Component({
     selector: 'ode-application-assignment',

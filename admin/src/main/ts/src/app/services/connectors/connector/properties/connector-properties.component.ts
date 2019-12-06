@@ -1,9 +1,9 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, Injector } from '@angular/core';
-import {ConnectorModel} from '../../../../core/store/models/connector.model';
-import {CasType} from '../CasType';
-import {NgForm} from '@angular/forms';
-import {SelectOption} from 'ngx-ode-ui';
+import { Component, EventEmitter, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { OdeComponent } from 'ngx-ode-core';
+import { SelectOption } from 'ngx-ode-ui';
+import { ConnectorModel } from '../../../../core/store/models/connector.model';
+import { CasType } from '../CasType';
 
 @Component({
     selector: 'ode-connector-properties',

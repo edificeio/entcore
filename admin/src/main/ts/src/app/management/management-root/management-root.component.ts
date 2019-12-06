@@ -1,8 +1,8 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data, NavigationEnd} from '@angular/router';
-import {routing} from '../../core/services/routing.service';
-import {StructureModel} from '../../core/store/models/structure.model';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data, NavigationEnd } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { routing } from '../../core/services/routing.service';
+import { StructureModel } from '../../core/store/models/structure.model';
 
 @Component({
     selector: 'ode-management-root',

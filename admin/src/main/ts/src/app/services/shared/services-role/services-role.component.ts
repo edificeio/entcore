@@ -1,7 +1,7 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Input, Output, Injector } from '@angular/core';
-import { RoleModel } from 'src/app/core/store/models/role.model';
+import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 import { GroupModel } from 'src/app/core/store/models/group.model';
+import { RoleModel } from 'src/app/core/store/models/role.model';
 
 @Component({
     selector: 'ode-services-role',

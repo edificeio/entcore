@@ -1,6 +1,6 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnInit, Injector } from '@angular/core';
-import {ActivatedRoute, Params, Router} from '@angular/router';
+import { ChangeDetectionStrategy, Component, Injector, OnInit } from '@angular/core';
+import { Params } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
     selector: 'ode-edit-message-flash',

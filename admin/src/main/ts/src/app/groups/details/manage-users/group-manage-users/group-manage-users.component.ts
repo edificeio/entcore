@@ -1,9 +1,9 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, Injector } from '@angular/core';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, EventEmitter, Injector, OnInit, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { Subscription } from 'rxjs';
+import { UserModel } from '../../../../core/store/models/user.model';
+import { GroupsStore } from '../../../groups.store';
 
-import {UserModel} from '../../../../core/store/models/user.model';
-import {GroupsStore} from '../../../groups.store';
 
 @Component({
     selector: 'ode-group-manage-users',

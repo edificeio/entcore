@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { GroupModel, GroupType } from '../../store/models/group.model';
-import { StructureModel } from '../../store/models/structure.model';
-import { SelectOption, OrderPipe } from 'ngx-ode-ui';
+import { OrderPipe, SelectOption } from 'ngx-ode-ui';
+import { GroupModel, GroupType } from '../../../../core/store/models/group.model';
+import { StructureModel } from '../../../../core/store/models/structure.model';
 
 const css = {
     filterButton: 'lct-filters'

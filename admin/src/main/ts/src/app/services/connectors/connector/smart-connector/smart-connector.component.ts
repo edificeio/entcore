@@ -1,22 +1,22 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
-import {CasType} from '../CasType';
-import {ServicesService, WorkspaceDocument} from '../../../services.service';
-import {Data, Params} from '@angular/router';
-import {ServicesStore} from '../../../services.store';
-import {Location} from '@angular/common';
-import {BundlesService} from 'ngx-ode-sijil';
-import {ConnectorPropertiesComponent} from '../properties/connector-properties.component';
-import {Assignment, Profile} from '../../../shared/services-types';
-import {ExportFormat} from '../export/connector-export.component';
-import {catchError, tap} from 'rxjs/operators';
-import { GroupModel } from 'src/app/core/store/models/group.model';
+import { Location } from '@angular/common';
+import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Data, Params } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 import { SpinnerService } from 'ngx-ode-ui';
+import { catchError, tap } from 'rxjs/operators';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { ConnectorModel } from 'src/app/core/store/models/connector.model';
 import { routing } from 'src/app/core/services/routing.service';
 import { Session } from 'src/app/core/store/mappings/session';
+import { ConnectorModel } from 'src/app/core/store/models/connector.model';
+import { GroupModel } from 'src/app/core/store/models/group.model';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { ServicesService, WorkspaceDocument } from '../../../services.service';
+import { ServicesStore } from '../../../services.store';
+import { Assignment, Profile } from '../../../shared/services-types';
+import { CasType } from '../CasType';
+import { ExportFormat } from '../export/connector-export.component';
+import { ConnectorPropertiesComponent } from '../properties/connector-properties.component';
 
 @Component({
     selector: 'ode-smart-connector',

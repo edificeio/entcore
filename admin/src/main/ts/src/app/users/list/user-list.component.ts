@@ -1,21 +1,9 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import {
-  AfterViewChecked,
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  Injector
-} from '@angular/core';
-
-import {UserModel} from '../../core/store/models/user.model';
-
-import {UsersStore} from '../users.store';
-import { UserListService } from 'src/app/core/services/userlist.service';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
+import { UserModel } from '../../core/store/models/user.model';
+import { UsersStore } from '../users.store';
 
 @Component({
     selector: 'ode-user-list',

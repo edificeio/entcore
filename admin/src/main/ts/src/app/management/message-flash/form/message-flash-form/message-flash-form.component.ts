@@ -1,27 +1,27 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, OnInit, AfterViewInit, OnDestroy, Injector } from '@angular/core';
-import {DomSanitizer} from '@angular/platform-browser';
-import {Data, NavigationEnd} from '@angular/router';
-import {routing} from '../../../../core/services/routing.service';
-import {NotifyService} from '../../../../core/services/notify.service';
-import {MessageFlashService} from '../../message-flash.service';
-import {MessageFlashStore} from '../../message-flash.store';
-import {BundlesService} from 'ngx-ode-sijil';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Data, NavigationEnd } from '@angular/router';
 import * as $ from 'jquery';
-
-
-import 'trumbowyg/dist/trumbowyg.js';
-import 'trumbowyg/dist/langs/fr.js';
-import 'trumbowyg/dist/langs/es.js';
-import 'trumbowyg/dist/langs/it.js';
-import 'trumbowyg/dist/langs/de.js';
-import 'trumbowyg/dist/langs/pt.js';
-import 'trumbowyg/plugins/colors/trumbowyg.colors.js';
-import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js';
-import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js';
-import 'trumbowyg/plugins/history/trumbowyg.history.js';
-import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import 'trumbowyg/dist/langs/de.js';
+import 'trumbowyg/dist/langs/es.js';
+import 'trumbowyg/dist/langs/fr.js';
+import 'trumbowyg/dist/langs/it.js';
+import 'trumbowyg/dist/langs/pt.js';
+import 'trumbowyg/dist/trumbowyg.js';
+import 'trumbowyg/plugins/colors/trumbowyg.colors.js';
+import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js';
+import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js';
+import 'trumbowyg/plugins/history/trumbowyg.history.js';
+import { NotifyService } from '../../../../core/services/notify.service';
+import { routing } from '../../../../core/services/routing.service';
+import { MessageFlashService } from '../../message-flash.service';
+import { MessageFlashStore } from '../../message-flash.store';
+
+
 
 
 @Component({

@@ -1,11 +1,11 @@
-import { OdeComponent } from './../../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, Injector } from '@angular/core';
-
-import {GroupsStore} from '../../../../groups.store';
-import {UserModel} from '../../../../../core/store/models/user.model';
-import { UserListService } from 'src/app/core/services/userlist.service';
+import { ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
+import { UserModel } from '../../../../../core/store/models/user.model';
+import { GroupsStore } from '../../../../groups.store';
+
 
 @Component({
     selector: 'ode-group-output-users',

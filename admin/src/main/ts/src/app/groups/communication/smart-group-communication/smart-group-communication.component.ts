@@ -1,15 +1,15 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
+import { Component, Injector, OnDestroy, OnInit, Type } from '@angular/core';
 import { Data } from '@angular/router';
-import { Component, OnDestroy, OnInit, Injector, Type } from '@angular/core';
-import { CommunicationRulesService } from '../../../communication/communication-rules.service';
-import { CommunicationRule } from '../../../communication/communication-rules.component/communication-rules.component';
-import { GroupsStore } from '../../groups.store';
+import { OdeComponent } from 'ngx-ode-core';
+import { SpinnerService } from 'ngx-ode-ui';
 import { filter } from 'rxjs/operators';
+import { routing } from 'src/app/core/services/routing.service';
+import { GlobalStore } from 'src/app/core/store/global.store';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { SpinnerService } from 'ngx-ode-ui';
-import { GlobalStore } from 'src/app/core/store/global.store';
-import { routing } from 'src/app/core/services/routing.service';
+import { CommunicationRule } from '../../../communication/communication-rules.component/communication-rules.component';
+import { CommunicationRulesService } from '../../../communication/communication-rules.service';
+import { GroupsStore } from '../../groups.store';
 
 @Component({
     selector: 'ode-smart-group-communication',

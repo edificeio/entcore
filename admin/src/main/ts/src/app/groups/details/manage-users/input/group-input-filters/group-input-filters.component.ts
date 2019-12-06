@@ -1,10 +1,10 @@
-import { OdeComponent } from './../../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output, Injector } from '@angular/core';
-import {BundlesService} from 'ngx-ode-sijil';
-
-import {StructureModel} from '../../../../../core/store/models/structure.model';
-import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, OnChanges, Output } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 import { ProfilesService } from 'src/app/core/services/profiles.service';
+import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
+import { StructureModel } from '../../../../../core/store/models/structure.model';
+
 
 @Component({
     selector: 'ode-group-input-filters-users',
