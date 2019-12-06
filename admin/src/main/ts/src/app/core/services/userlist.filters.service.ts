@@ -3,7 +3,8 @@ import {Subject} from 'rxjs';
 
 export abstract class UserFilter<T> {
 
-    constructor(protected observable: Subject<void>) {}
+    constructor(protected observable: Subject<void>) {
+    }
 
     abstract type: string;
     abstract label: string;
@@ -17,6 +18,10 @@ export abstract class UserFilter<T> {
     }
     get outputModel() {
         return this._outputModel;
+    }
+    protected defaultModel: Array<T> = [];
+    public reset() {
+        this.outputModel = this.defaultModel;
     }
 
     display?: string;
@@ -211,6 +216,7 @@ export class DeleteFilter extends UserFilter<string> {
     type = "deleteDate, disappearanceDate";
     label = "delete.multi.combo.title";
     comboModel = ["users.deleted", "users.waiting.deleted", "users.not.deleted"];
+    defaultModel = ["users.waiting.deleted", "users.not.deleted"];
     order = "+";
     filterProp = "this";
 
@@ -260,7 +266,7 @@ export class UserlistFiltersService {
 
     resetFilters() {
         for (const filter of this.filters) {
-            filter.outputModel = [];
+            filter.reset();
         }
     }
 
