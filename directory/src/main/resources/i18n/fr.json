@@ -501,6 +501,7 @@
     "invalid.firstName": "Le prénom est invalide à la ligne ",
     "invalid.lastName": "Le nom est invalide à la ligne ",
     "invalid.structure": "Structure invalide",
+    "invalid.merge.keys": "La clef de fusion n'est pas valide",
     "loading": "Chargement en cours...",
     "mail.invalid": "Adresse courriel invalide",
     "mark": "Marquer",

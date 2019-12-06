@@ -191,7 +191,8 @@
 
 			<div class="row" ng-if="account.id === me.userId  && account.type.indexOf('Relative') !== -1" workflow="directory.mergeByKey">
 				<label translate content="userBook.profile.mergeByKey" class="four cell"></label>
-				<input class="seven cell inline-editing" type="text" ng-model="account.mergeByKey" complete-change="mergeByKeys(account)" />
+				<input class="seven cell inline-editing" type="text" ng-model="account.mergeByKey"/>
+				<i class="right-magnet" ng-class="mergeLoading ? 'loading' : checkMergeKey(account.mergeByKey) ? 'link' : ''" ng-click="mergeByKeys(account)"></i>
 			</div>
 		</form>
 

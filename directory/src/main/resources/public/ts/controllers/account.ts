@@ -350,11 +350,30 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		directory.account.generateMergeKey();
 	};
 
-	$scope.mergeByKeys = function(account) {
-		directory.account.mergeByKeys([account.mergeByKey], function() {
-			delete account.mergeByKey;
-			$scope.$apply();
-		});
+	$scope.checkMergeKey = function(key: string): boolean
+	{
+		return /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.test(key);
+	}
+
+	$scope.mergeByKeys = function(account)
+	{
+		if(this.checkMergeKey(account.mergeByKey) == true)
+		{
+			$scope.mergeLoading = true;
+			directory.account.mergeByKeys([account.mergeByKey], function(succeeded: boolean)
+			{
+				if(succeeded == true)
+				{
+					delete account.mergeByKey;
+				}
+				$scope.mergeLoading = false;
+				$scope.$apply();
+			});
+		}
+		else
+		{
+			notify.error("invalid.merge.keys");
+		}
 	};
 
 	$scope.isMottoChanged = function() {
