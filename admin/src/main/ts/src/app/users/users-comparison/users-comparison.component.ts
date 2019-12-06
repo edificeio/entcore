@@ -1,6 +1,6 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
-import {UserOverview} from '../user-overview/user-overview.component';
+import { ChangeDetectionStrategy, Component, Injector, Input } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { UserOverview } from '../user-overview/user-overview.component';
 
 @Component({
     selector: 'ode-users-comparison',

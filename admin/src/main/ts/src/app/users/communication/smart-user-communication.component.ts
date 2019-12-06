@@ -1,20 +1,20 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import {Data} from '@angular/router';
-import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {CommunicationRulesService} from '../../communication/communication-rules.service';
-import {CommunicationRule} from '../../communication/communication-rules.component/communication-rules.component';
-import {UsersStore} from '../users.store';
-import { UserModel } from 'src/app/core/store/models/user.model';
-import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { GroupModel } from 'src/app/core/store/models/group.model';
-import { GlobalStore } from 'src/app/core/store/global.store';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
 import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from 'src/app/core/services/routing.service';
+import { GlobalStore } from 'src/app/core/store/global.store';
+import { GroupModel } from 'src/app/core/store/models/group.model';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { CommunicationRule } from '../../communication/communication-rules.component/communication-rules.component';
+import { CommunicationRulesService } from '../../communication/communication-rules.service';
+import { UsersStore } from '../users.store';
 
 @Component({
     selector: 'ode-smart-user-communication',
     providers: [CommunicationRulesService],
-    templateUrl: './smart-users-comparison.component.html'
+    templateUrl: './smart-user-communication.component.html'
 })
 export class SmartUserCommunicationComponent extends OdeComponent implements OnInit, OnDestroy {
 

@@ -31,11 +31,10 @@ import {SmartMassRoleAssignmentComponent} from './applications/application/mass-
 import { ServicesListComponent } from './shared/services-list/services-list.component';
 import { ServicesRoleComponent } from './shared/services-role/services-role.component';
 import { ServicesRoleAttributionComponent } from './shared/services-role-attribution/services-role-attribution.component';
-import { CoreModule } from '../core/core.module';
+import { GroupPickerComponent } from './shared/services-role-attribution/group-picker/group-picker.component';
 
 @NgModule({
     imports: [
-        CoreModule,
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
@@ -58,7 +57,8 @@ import { CoreModule } from '../core/core.module';
         SmartConnectorComponent,
         ConnectorPropertiesComponent,
         ConnectorMassAssignmentComponent,
-        ConnectorExportComponent
+        ConnectorExportComponent,
+        GroupPickerComponent
     ],
     providers: [
         NgSwitch,

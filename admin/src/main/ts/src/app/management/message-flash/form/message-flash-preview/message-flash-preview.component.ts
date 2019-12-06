@@ -1,5 +1,5 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
     selector: 'ode-message-flash-preview',

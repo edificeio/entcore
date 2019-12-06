@@ -1,10 +1,9 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { Component, Input, OnChanges, OnInit, SimpleChanges, Injector } from '@angular/core';
-import {UserOverview} from '../user-overview/user-overview.component';
-import {UsersService} from '../users.service';
-import {forkJoin, Observable, Subject} from 'rxjs';
-import {map, switchMap, tap} from 'rxjs/operators';
-
+import { Component, Injector, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { forkJoin, Observable, Subject } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
+import { UserOverview } from '../user-overview/user-overview.component';
+import { UsersService } from '../users.service';
 
 interface Users<K> {
     user1: K;

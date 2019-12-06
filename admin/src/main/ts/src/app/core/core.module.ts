@@ -1,22 +1,17 @@
-import { Logger } from './ode/Logger';
-import { OdeComponent } from './ode/OdeComponent';
-import {NgModule, Optional, SkipSelf} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {NgxOdeUiModule} from 'ngx-ode-ui';
-import {NgxOdeSijilModule} from 'ngx-ode-sijil';
-
-import {NavComponent} from './nav/nav.component';
-import {I18nResolver} from './resolvers/i18n.resolver';
-import {SessionResolver} from './resolvers/session.resolver';
-import {StructuresResolver} from './resolvers/structures.resolver';
-import {throwIfAlreadyLoaded} from './module-import.guard';
-import {ConfigResolver} from './resolvers/config.resolver';
-import { SijilLabelsService } from './services/sijil.labels.service';
-import { NotifyService } from './services/notify.service';
-import {LabelsService} from 'ngx-ode-ui';
-import { GroupPickerComponent } from './components/group-picker/group-picker.component';
+import { CommonModule } from '@angular/common';
+import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { NgxOdeSijilModule } from 'ngx-ode-sijil';
+import { LabelsService, NgxOdeUiModule, SpinnerService } from 'ngx-ode-ui';
+import { throwIfAlreadyLoaded } from './module-import.guard';
+import { NavComponent } from './nav/nav.component';
+import { ConfigResolver } from './resolvers/config.resolver';
+import { I18nResolver } from './resolvers/i18n.resolver';
+import { SessionResolver } from './resolvers/session.resolver';
+import { StructuresResolver } from './resolvers/structures.resolver';
+import { NotifyService } from './services/notify.service';
+import { SijilLabelsService } from './services/sijil.labels.service';
 
 @NgModule({
     imports: [
@@ -29,16 +24,16 @@ import { FormsModule } from '@angular/forms';
         }),
         RouterModule
     ],
-    exports: [NavComponent, OdeComponent, GroupPickerComponent],
-    declarations: [NavComponent, OdeComponent, GroupPickerComponent],
+    exports: [NavComponent],
+    declarations: [NavComponent],
     providers: [
         SessionResolver,
         StructuresResolver,
         I18nResolver,
         SijilLabelsService,
         NotifyService,
-        ConfigResolver,
-        Logger
+        SpinnerService,
+        ConfigResolver
     ],
 })
 export class CoreModule {

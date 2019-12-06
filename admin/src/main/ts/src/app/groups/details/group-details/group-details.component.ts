@@ -1,17 +1,17 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {HttpErrorResponse} from '@angular/common/http';
-import {merge, Observable, Subject} from 'rxjs';
-import {GroupsStore} from '../../groups.store';
-import {GroupIdAndInternalCommunicationRule} from '../group-internal-communication-rule.resolver';
-import {CommunicationRulesService} from '../../../communication/communication-rules.service';
-import {filter, first, map, mergeMap, switchMap, tap} from 'rxjs/operators';
-
-import {GroupsService} from '../../groups.service';
-import {trim} from 'ngx-ode-ui';
-import { InternalCommunicationRule, GroupModel } from 'src/app/core/store/models/group.model';
-import { NotifyService } from 'src/app/core/services/notify.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { trim } from 'ngx-ode-ui';
+import { merge, Observable, Subject } from 'rxjs';
+import { filter, first, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { GroupNameService } from 'src/app/core/services/group-name.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { GroupModel, InternalCommunicationRule } from 'src/app/core/store/models/group.model';
+import { CommunicationRulesService } from '../../../communication/communication-rules.service';
+import { GroupsService } from '../../groups.service';
+import { GroupsStore } from '../../groups.store';
+import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
+
 
 @Component({
     selector: 'ode-group-detail',

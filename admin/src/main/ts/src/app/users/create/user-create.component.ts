@@ -1,15 +1,14 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data} from '@angular/router';
-import {Location} from '@angular/common';
-
-import {UsersStore} from '../users.store';
-import {routing} from '../../core/services/routing.service';
-import {UserModel} from '../../core/store/models/user.model';
-import {SelectOption} from 'ngx-ode-ui';
-import { UserChildrenListService } from 'src/app/core/services/userlist.service';
+import { Location } from '@angular/common';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { SpinnerService } from 'ngx-ode-ui';
+import { UserChildrenListService } from 'src/app/core/services/userlist.service';
+import { routing } from '../../core/services/routing.service';
+import { UserModel } from '../../core/store/models/user.model';
+import { UsersStore } from '../users.store';
+
 
 @Component({
     selector: 'ode-user-create',

@@ -1,9 +1,9 @@
-import { OdeComponent } from './../core/ode/OdeComponent';
-import { Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data} from '@angular/router';
-import {ServicesStore} from './services.store';
-import {routing} from '../core/services/routing.service';
-import {ServicesService} from './services.service';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { routing } from '../core/services/routing.service';
+import { ServicesService } from './services.service';
+import { ServicesStore } from './services.store';
 
 @Component({
     selector: 'ode-services-root',

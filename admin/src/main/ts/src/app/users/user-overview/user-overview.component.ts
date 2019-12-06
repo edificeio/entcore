@@ -1,6 +1,6 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
-import {BundlesService} from 'ngx-ode-sijil';
+import { ChangeDetectionStrategy, Component, Injector, Input } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 
 export interface UserOverview {
     displayName: string;

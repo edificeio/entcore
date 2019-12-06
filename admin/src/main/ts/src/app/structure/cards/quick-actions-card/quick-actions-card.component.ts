@@ -1,5 +1,5 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
 import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
     selector: 'ode-quick-actions-card',

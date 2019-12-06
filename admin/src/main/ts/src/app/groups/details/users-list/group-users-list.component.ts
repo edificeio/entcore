@@ -1,8 +1,8 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector, Input } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { UserListService } from '../../../core/services/userlist.service';
+import { UserModel } from '../../../core/store/models/user.model';
 
-import {UserModel} from '../../../core/store/models/user.model';
-import {UserListService} from '../../../core/services/userlist.service';
 
 @Component({
     selector: 'ode-group-users-list',

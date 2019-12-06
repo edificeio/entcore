@@ -1,16 +1,14 @@
-import { OdeComponent } from './../../../../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Injector } from '@angular/core';
-
-import {GroupsStore} from '../../../../groups.store';
-import {SelectOption} from 'ngx-ode-ui';
-import {OrderPipe} from 'ngx-ode-ui';
-import {DeleteFilter, UserlistFiltersService} from '../../../../../core/services/userlist.filters.service';
-import { UserListService } from 'src/app/core/services/userlist.service';
-import { UserModel } from 'src/app/core/store/models/user.model';
-import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { SpinnerService } from 'ngx-ode-ui';
+import { ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { OrderPipe, SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { UserListService } from 'src/app/core/services/userlist.service';
 import { globalStore } from 'src/app/core/store/global.store';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { UserModel } from 'src/app/core/store/models/user.model';
+import { DeleteFilter, UserlistFiltersService } from '../../../../../core/services/userlist.filters.service';
+import { GroupsStore } from '../../../../groups.store';
+
 
 @Component({
     selector: 'ode-group-input-users',

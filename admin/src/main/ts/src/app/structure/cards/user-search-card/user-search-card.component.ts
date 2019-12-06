@@ -1,6 +1,6 @@
-import { OdeComponent } from './../../../core/ode/OdeComponent';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, Injector } from '@angular/core';
-import {StructureModel} from '../../../core/store/models/structure.model';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, Input } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { StructureModel } from '../../../core/store/models/structure.model';
 
 @Component({
     selector: 'ode-user-search-card',

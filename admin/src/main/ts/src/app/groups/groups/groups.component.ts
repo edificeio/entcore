@@ -1,11 +1,11 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data, NavigationEnd} from '@angular/router';
-import {Subscription} from 'rxjs';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data, NavigationEnd } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
+import { Subscription } from 'rxjs';
+import { CommunicationRulesService } from '../../communication/communication-rules.service';
+import { routing } from '../../core/services/routing.service';
+import { GroupsStore } from '../groups.store';
 
-import {routing} from '../../core/services/routing.service';
-import {GroupsStore} from '../groups.store';
-import {CommunicationRulesService} from '../../communication/communication-rules.service';
 
 @Component({
     selector: 'ode-groups-root',

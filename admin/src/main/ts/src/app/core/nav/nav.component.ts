@@ -1,10 +1,10 @@
-import { OdeComponent } from './../ode/OdeComponent';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, Injector } from '@angular/core';
+import { Component, ElementRef, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Data } from '@angular/router';
-
+import { OdeComponent } from 'ngx-ode-core';
 import { Config } from '../resolvers/Config';
-import { StructureModel } from '../store/models/structure.model';
 import { globalStore } from '../store/global.store';
+import { StructureModel } from '../store/models/structure.model';
+
 
 @Component({
     selector: 'ode-app-nav',

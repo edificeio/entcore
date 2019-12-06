@@ -1,8 +1,8 @@
-import { OdeComponent } from './../../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { GroupModel } from '../../core/store/models/group.model';
+import { GroupsStore } from '../groups.store';
 
-import {GroupsStore} from '../groups.store';
-import {GroupModel} from '../../core/store/models/group.model';
 
 @Component({
     selector: 'ode-groups-type-view',

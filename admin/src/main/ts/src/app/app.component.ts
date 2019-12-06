@@ -1,7 +1,7 @@
-import { OdeComponent } from './core/ode/OdeComponent';
 import { AfterViewInit, Component, ElementRef, Injector, Type } from '@angular/core';
-
 import http from 'axios';
+import { OdeComponent } from 'ngx-ode-core';
+
 
 @Component({
     selector: 'ode-admin-app',

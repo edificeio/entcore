@@ -1,13 +1,12 @@
-import { OdeComponent } from './../core/ode/OdeComponent';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Injector } from '@angular/core';
-import {Data, NavigationEnd} from '@angular/router';
-
-import {StructureModel} from '../core/store/models/structure.model';
-import {routing} from '../core/services/routing.service';
-import {UsersStore} from './users.store';
-import { UserListService } from '../core/services/userlist.service';
-import { UserlistFiltersService } from '../core/services/userlist.filters.service';
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Data, NavigationEnd } from '@angular/router';
+import { OdeComponent } from 'ngx-ode-core';
 import { SpinnerService } from 'ngx-ode-ui';
+import { routing } from '../core/services/routing.service';
+import { UserlistFiltersService } from '../core/services/userlist.filters.service';
+import { UserListService } from '../core/services/userlist.service';
+import { StructureModel } from '../core/store/models/structure.model';
+import { UsersStore } from './users.store';
 
 @Component({
     selector: 'ode-users-root',

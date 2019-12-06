@@ -1,9 +1,9 @@
-import { OdeComponent } from './../../../../core/ode/OdeComponent';
-import { Component, EventEmitter, Input, OnInit, Output, Injector } from '@angular/core';
-import {Profile, Structure} from '../../../shared/services-types';
-import {SelectOption} from 'ngx-ode-ui';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {BundlesService} from 'ngx-ode-sijil';
+import { Component, EventEmitter, Injector, Input, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
+import { SelectOption } from 'ngx-ode-ui';
+import { Profile, Structure } from '../../../shared/services-types';
 
 @Component({
     selector: 'ode-connector-mass-assignment',

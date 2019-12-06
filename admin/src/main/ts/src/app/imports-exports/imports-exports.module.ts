@@ -28,7 +28,7 @@ import {UserlistFiltersService} from '../core/services/userlist.filters.service'
         MassMailComponent
     ],
     providers: [
-        UserlistFiltersService,
+        UserlistFiltersService
     ],
     exports: [
         RouterModule
