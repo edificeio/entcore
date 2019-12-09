@@ -121,6 +121,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "bulkDelete":
 				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
 				break;
+			case "getParentInfos":
 			case "renameDocument":
 			case "renameFolder":
 				authorizeDocument(request, user, binding.getServiceMethod(), handler);
@@ -241,12 +242,13 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 
 	@SuppressWarnings("unchecked")
 	private void authorizeDocuments(HttpServerRequest request, UserInfos user, String serviceMethod,
-			Handler<Boolean> handler) {
+                       Handler<Boolean> handler) {
 		bodyToJson(request, body -> {
 			JsonArray idsArray = body.getJsonArray("ids");
 			if (idsArray != null && !idsArray.isEmpty()) {
 				ElementQuery query = new ElementQuery(true);
 				query.setIds(idsArray.getList());
+				query.setActionExists(serviceMethod);
 				executeCountQuery(request, user, query, idsArray.size(), handler);
 			} else {
 				handler.handle(false);
@@ -255,7 +257,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	}
 
 	private void authorizeGetDocument(HttpServerRequest request, UserInfos user, String serviceMethod,
-			Handler<Boolean> handler) {
+                       Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
@@ -263,6 +265,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			query.getVisibilitiesOr().add("public");
 			query.getVisibilitiesOr().add("protected");
 			query.setId(id);
+			query.setActionExists(serviceMethod);
 			executeCountQuery(request, user, query, 1, handler);
 		} else {
 			handler.handle(false);
@@ -270,11 +273,12 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	}
 
 	private void authorizeDocument(HttpServerRequest request, UserInfos user, String serviceMethod,
-			Handler<Boolean> handler) {
+                       Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
 			query.setId(id);
+			query.setActionExists(serviceMethod);
 			executeCountQuery(request, user, query, 1, handler);
 
 		} else {

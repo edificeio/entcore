@@ -1,5 +1,15 @@
-<h2 translate content="workspace.rename"></h2>
+<h2 translate content="workspace.properties"></h2>
 
+<div class="flex-row rename-parent" ng-if="renameParent">
+    <label><i18n>workspace.properties.parent</i18n></label>
+    <a ng-href="/workspace/workspace#/folder/[[renameParent._id]]" target=”_blank”>[[renameParent.name]]</a>
+    <ul class="toc">
+        <li><i18n>workspace.properties.managers</i18n></li>
+        <li ng-repeat="manager in getRenameManagers()">
+            <a ng-href="[[manager.uri]]" target=”_blank”>[[manager.name]]</a>
+        </li>
+    </ul>
+</div>
 <div class="row">
     <label class="two cell">
         <i18n ng-if="renameTarget.folder">workspace.folder.name</i18n>
@@ -10,7 +20,7 @@
 </div>
 
 <div class="lightbox-buttons fluid">
-    <button class="right-magnet" ng-click="rename(renameTarget, renameTarget.newName)"><i18n>workspace.rename</i18n></button>
+    <button class="right-magnet" ng-click="rename(renameTarget, renameTarget.newName)"><i18n>save</i18n></button>
 </div>
 
 <div class="clear"></div>

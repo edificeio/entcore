@@ -68,7 +68,7 @@
 						<a data-ng-click="openFolderRoute(folder)">[[folder.name]]</a>
 					</strong>
 				</td>
-				<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
+				<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner.userId]]">[[folder.ownerName]]</a></td>
 				<td class="date small-font zero-mobile">[[shortDate(folder.modified)]]</td>
 				<th scope="col" class="size zero-mobile">
 				</th>

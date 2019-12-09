@@ -796,6 +796,20 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	@Get("/document/parent/:id")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void getParentInfos(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			workspaceService.getParentInfos(request.params().get("id"), user, res -> {
+				if (res.succeeded()) {
+					renderJson(request, res.result());
+				} else {
+					notFound(request);
+				}
+			});
+		});
+	}
+
 	private void getFile(final HttpServerRequest request, String owner, boolean publicOnly) {
 		workspaceService.findById(request.params().get("id"), owner, publicOnly, new Handler<JsonObject>() {
 			@Override
