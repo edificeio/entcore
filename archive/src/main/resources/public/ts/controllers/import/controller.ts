@@ -128,7 +128,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                 .then(result => {
                     $scope.resultsApps = Object.keys(result.data);
                     $scope.resultsApps.forEach(app => {
-                        if (app == "actualites" || app == "schoolbook" || app == "exercizer") {
+                        if (app == "actualites" || app == "schoolbook" || app == "exercizer" || app == "conversation") {
                             result.data[app].duplicatesNumber = lang.translate("archive.import.na");
                         }
                     });

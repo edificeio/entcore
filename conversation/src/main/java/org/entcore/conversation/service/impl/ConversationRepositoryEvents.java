@@ -226,22 +226,23 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				if (!ja.isEmpty()) {
 					exportUserId.put(userId,ja.getJsonArray(0).getString(results.getJsonArray("fields").getList().indexOf("user_id")));
 				}
+				uuidReplacement.put(userId, new HashMap<>());
 
 				List<String> tables = new ArrayList<>(Arrays.asList("messages", "attachments", "folders",
 						"usermessages", "usermessagesattachments"));
-				String postgresRandomUuid = "md5(random()::text || clock_timestamp()::text)::uuid";
-				Map<String,String> tablesWithId = new HashMap<>();
-				tablesWithId.put("messages", postgresRandomUuid);
-				tablesWithId.put("attachments", postgresRandomUuid);
-				tablesWithId.put("folders", postgresRandomUuid);
 
-				importTables(importPath, "conversation", tables, tablesWithId, userId, username, locale,
-					new SqlStatementsBuilder(), forceImportAsDuplication, handler);
+				importTables(importPath, "conversation", tables, new HashMap<>(), userId, username, locale,
+					new SqlStatementsBuilder(), forceImportAsDuplication, done -> {
+					exportUserId.remove(userId);
+					uuidReplacement.remove(userId);
+					handler.handle(done);
+				});
 			}
 		});
 	}
 
 	private final Map<String,String> exportUserId = new HashMap<>();
+	private final Map<String, Map<String,String>> uuidReplacement = new HashMap<>();
 
 	@Override
 	public JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username, SqlStatementsBuilder builder,
@@ -277,10 +278,14 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			});
 		}
 
+		final int indexId = fields.getList().indexOf("id");
+		final int parentId = fields.getList().indexOf("parent_id");
+		final int messageId = fields.getList().indexOf("message_id");
+		final int attachmentId = fields.getList().indexOf("attachment_id");
+		final int folderId = fields.getList().indexOf("folder_id");
+
 		// Re-orders items to avoid breaking foreign key constraint
 		if ("folders".equals(table) || "messages".equals(table)) {
-			final int indexId = fields.getList().indexOf("id");
-			final int parentId = fields.getList().indexOf("parent_id");
 			label: for (int i = 0; i < results.size();) {
 				String parent = results.getJsonArray(i).getString(parentId);
 				if (parent != null) {
@@ -297,6 +302,28 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				i++;
 			}
 		}
+
+		Map<String,String> map = uuidReplacement.get(userId);
+		results.forEach(res -> {
+			JsonArray ja = ((JsonArray)res);
+			if (indexId != -1) {
+				String id = ja.getString(indexId), newId = UUID.randomUUID().toString();
+				ja.getList().set(indexId, newId);
+				map.put(id, newId);
+			}
+			if (parentId != -1 && map.containsKey(ja.getString(parentId))) {
+				ja.getList().set(parentId, map.get(ja.getString(parentId)));
+			}
+			if (messageId != -1 && map.containsKey(ja.getString(messageId))) {
+				ja.getList().set(messageId, map.get(ja.getString(messageId)));
+			}
+			if (attachmentId != -1 && map.containsKey(ja.getString(attachmentId))) {
+				ja.getList().set(attachmentId, map.get(ja.getString(attachmentId)));
+			}
+			if (folderId != -1 && map.containsKey(ja.getString(folderId))) {
+				ja.getList().set(folderId, map.get(ja.getString(folderId)));
+			}
+		});
 
 		return results;
 	}
