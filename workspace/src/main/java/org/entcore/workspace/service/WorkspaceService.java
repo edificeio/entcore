@@ -114,4 +114,5 @@ public interface WorkspaceService extends FolderManager {
 
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler);
 
+	void getParentInfos(final String childId, UserInfos user, final Handler<AsyncResult<JsonObject>> handler);
 }

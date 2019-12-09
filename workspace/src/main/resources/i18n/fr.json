@@ -145,6 +145,7 @@
     "workspace.deleted.message": "L'élément a été supprimé définitivement.",
     "workspace.empty.trash.confirm": "La corbeille a été vidée.",
     "workspace.rename": "Renommer",
+    "workspace.properties": "Propriétés",
     "workspace.return": "Retour",
     "workspace.select.all": "Tous",
     "workspace.send.rack": "Déposer dans un casier",
@@ -252,5 +253,7 @@
     "document.preview.save.failed": "Une erreur est survenue lors de la génération de la prévisualisation.",
     "workspace.share.document": "Partager des documents",
     "workspace.upload.forbidden": "Vous n'avez pas les droits sur ce dossier.",
-    "workspace.notify.forbidden": "Vous n'avez pas les droits sur certains fichiers ou dossiers"
+    "workspace.notify.forbidden": "Vous n'avez pas les droits sur certains fichiers ou dossiers",
+    "workspace.properties.parent": "Dossier parent",
+    "workspace.properties.managers": "Liste des gestionnaires"
 }

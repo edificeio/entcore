@@ -726,4 +726,53 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		JsonObject query = MongoQueryBuilder.build(qb);
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo,false, true, (MongoDb.WriteConcern)null, res -> handler.handle(res));
 	}
+
+	@Override
+	public void getParentInfos(String childId, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
+		final ElementQuery queryChild = new ElementQuery(true);
+		queryChild.setId(childId);
+		super.findByQuery(queryChild, user, resChild -> {
+			final JsonArray resultChild = resChild.result();
+			if (resChild.succeeded()) {
+				if (resultChild.size() != 1 || !(resultChild.getValue(0) instanceof  JsonObject)) {
+					handler.handle(new DefaultAsyncResult<>(new Exception("workspace.getparent.childnotfound")));
+					return;
+				}
+				final String eParent = DocumentHelper.getParent(resultChild.getJsonObject(0));
+				if(StringUtils.isEmpty(eParent)){
+					handler.handle(new DefaultAsyncResult<>(new Exception("workspace.getparent.notfound")));
+					return;
+				}
+				final ElementQuery queryParent = new ElementQuery(false);
+				queryParent.setId(eParent);
+				queryParent.setProjection(ElementQuery.defaultProjection());
+				super.findByQuery(queryParent, null, resParent ->{
+					if (resParent.succeeded()) {
+						final JsonArray resultParent = resParent.result();
+						if (resultParent.size() != 1 || !(resultParent.getValue(0) instanceof  JsonObject)) {
+							handler.handle(new DefaultAsyncResult<>(new Exception("workspace.getparent.notfound")));
+							return;
+						}
+						final JsonObject parent = resultParent.getJsonObject(0);
+						shareService.inheritShareInfos(user.getUserId(), eParent,null,null,resShare->{
+							if(resShare.isLeft()){
+								handler.handle(new DefaultAsyncResult<>(new Exception(resShare.left().getValue())));
+								return;
+							}
+							final JsonObject shares = resShare.right().getValue();
+							final JsonArray visiblesGroups = shares.getJsonObject("groups", new JsonObject()).getJsonArray("visibles");
+							final JsonArray visiblesUsers = shares.getJsonObject("users", new JsonObject()).getJsonArray("visibles");
+							parent.put("visibleGroups", visiblesGroups);
+							parent.put("visibleUsers", visiblesUsers);
+							handler.handle(new DefaultAsyncResult<>(parent));
+						});
+					} else {
+						handler.handle(new DefaultAsyncResult<>(resChild.cause()));
+					}
+				});
+			} else {
+				handler.handle(new DefaultAsyncResult<>(resChild.cause()));
+			}
+		});
+	}
 }
