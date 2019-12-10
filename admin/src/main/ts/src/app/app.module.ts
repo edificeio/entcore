@@ -15,6 +15,7 @@ import localeEs from '@angular/common/locales/es';
 import localeFr from '@angular/common/locales/fr';
 import localeIt from '@angular/common/locales/it';
 import localePt from '@angular/common/locales/pt';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 registerLocaleData(localeDe);
 registerLocaleData(localeEs);
@@ -28,7 +29,8 @@ registerLocaleData(localePt);
         AppRoutingModule,
         CoreModule,
         HttpClientModule,
-        NgxOdeSijilModule.forRoot()
+        NgxOdeSijilModule.forRoot(),
+        BrowserAnimationsModule
     ],
     declarations: [
         AppComponent,
