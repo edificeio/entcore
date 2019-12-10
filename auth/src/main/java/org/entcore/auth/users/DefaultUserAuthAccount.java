@@ -299,7 +299,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE 1=1 " +
 				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
-				"RETURN n.email as email, n.mobile as mobile, n.displayName as displayName";
+				"RETURN n.email as email, n.mobile as mobile, n.displayName as displayName, n.activationCode as activationCode";
 		final String basicQuery = "MATCH (n:User {login:{login}}) " + baseQuery;
 
 		final JsonObject params = new JsonObject().put("login", login);
