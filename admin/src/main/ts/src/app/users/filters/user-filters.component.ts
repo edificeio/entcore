@@ -41,6 +41,11 @@ export class UserFiltersComponent extends OdeComponent implements OnInit, OnDest
                 if (filter) {
                     filter.outputModel = ['users.duplicated'];
                 }
+            } else if (params.blocked) {
+                const filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'blocked');
+                if (filter) {
+                    filter.outputModel = ['users.blocked'];
+                }
             }
         }));
 

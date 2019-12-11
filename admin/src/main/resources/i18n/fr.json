@@ -88,6 +88,13 @@
     "management.block.profile.unblock.success.title": "Déblocage en lot avec succès",
     "management.block.profile.unblock.error.content": "Le profil {{profile}} n'a pas pu être débloqué en lot.",
     "management.block.profile.unblock.error.title": "Erreur lors du déblocage",
+    "management.block.profile.traces.header": "Historique des actions",
+    "management.block.profile.traces.table.header.date": "Date",
+    "management.block.profile.traces.table.header.action": "Type d'action",
+    "management.block.profile.traces.table.header.profile": "Profil",
+    "management.block.profile.traces.table.header.displayName": "Nom d'affichage",
+    "BLOCK": "Blocage",
+    "UNBLOCK": "Déblocage",
 
     "filters": "Filtres",
     "filter": "Filtre",
@@ -833,5 +840,12 @@
     "csv.file.too.long" : "Fichier trop volumineux. La taille maximum est d'un méga-octets par fichier.",
     "csv.file.size.error": "Erreur lors du calcul de la taille du fichier.",
     "flashmsg.message": "Message",
-    "flashmsg.preview": "Aperçu du message"
+    "flashmsg.preview": "Aperçu du message",
+
+    "mat.paginator.itemsPerPageLabel": "Éléments par page",
+    "mat.paginator.nextPageLabel": "Page suivante",
+    "mat.paginator.previousPageLabel": "Page précédente",
+    "mat.paginator.firstPageLabel": "Première page",
+    "mat.paginator.lastPageLabel": "Dernière page",
+    "mat.paginator.of": "de"
 }

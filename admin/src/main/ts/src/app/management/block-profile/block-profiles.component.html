@@ -1,0 +1,55 @@
+<div class="block-profiles container">
+    <h2>
+        <s5l>management.block.profile.header</s5l>
+    </h2>
+    <p>
+        <s5l>management.block.profile.info.1</s5l>
+        <a routerLink="../../users/filter" [queryParams]="{blocked: true}">
+            <s5l>management.block.profile.info.2</s5l>
+        </a>
+    </p>
+    <p class="block-profiles-warning">
+        <i class="block-profiles-warning_icon fa fa-exclamation-circle"></i>
+        <span class="block-profiles-warning_text"><s5l>management.block.profile.warning</s5l></span>
+    </p>
+
+    <table class="block-profiles-table">
+        <tr class="block-profiles-table-line" *ngFor="let profile of blockProfiles">
+            <td class="block-profiles-table-profileCell">{{ profile.profile | translate }}</td>
+            <td><button type="button" (click)="block(profile)"><s5l>block</s5l></button></td>
+            <td><button type="button" (click)="unblock(profile)"><s5l>unblock</s5l></button></td>
+        </tr>
+    </table>
+
+    <h3><s5l>management.block.profile.traces.header</s5l></h3>
+
+    <table mat-table [dataSource]="tracesDataSource" matSort matSortActive="created" matSortDirection="desc" matSortDisableClear>
+        <ng-container matColumnDef="created">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <s5l>management.block.profile.traces.table.header.date</s5l>
+            </th>
+            <td mat-cell *matCellDef="let trace">{{trace.created | date:'dd/MM/yyyy HH:mm'}}</td>
+        </ng-container>
+        <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <s5l>management.block.profile.traces.table.header.action</s5l>
+            </th>
+            <td mat-cell *matCellDef="let trace">{{trace.action | translate}}</td>
+        </ng-container>
+        <ng-container matColumnDef="profile">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <s5l>management.block.profile.traces.table.header.profile</s5l>
+            </th>
+            <td mat-cell *matCellDef="let trace">{{trace.profile | translate}}</td>
+        </ng-container>
+        <ng-container matColumnDef="ownerDisplayName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <s5l>management.block.profile.traces.table.header.displayName</s5l>
+            </th>
+            <td mat-cell *matCellDef="let trace">{{trace.ownerDisplayName}}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="tracesTableColumnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let myRowData; columns: tracesTableColumnsToDisplay"></tr>
+    </table>
+    <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+</div>
