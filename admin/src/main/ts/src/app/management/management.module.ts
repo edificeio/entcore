@@ -2,7 +2,10 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {NgModule} from '@angular/core';
-import {NgxOdeSijilModule} from 'ngx-ode-sijil';
+import {MatPaginatorModule, MatPaginatorIntl} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatTableModule} from '@angular/material/table';
+import {NgxOdeSijilModule, BundlesService} from 'ngx-ode-sijil';
 import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './management-routing.module';
 import {ManagementRootComponent} from './management-root/management-root.component';
@@ -15,7 +18,9 @@ import {MessageFlashFormComponent} from './message-flash/form/message-flash-form
 import {MessageFlashPreviewComponent} from './message-flash/form/message-flash-preview/message-flash-preview.component';
 import {MessageFlashStore} from './message-flash/message-flash.store';
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
-
+import {BlockProfilesComponent} from './block-profile/block-profiles.component';
+import {BlockProfilesService} from './block-profile/block-profiles.service';
+import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 
 @NgModule({
     imports: [
@@ -23,7 +28,10 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
         FormsModule,
         NgxOdeUiModule,
         NgxOdeSijilModule.forChild(),
-        RouterModule.forChild(routes)
+        RouterModule.forChild(routes),
+        MatPaginatorModule,
+        MatSortModule,
+        MatTableModule
     ],
     declarations: [
         ManagementRootComponent,
@@ -33,14 +41,21 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
         DuplicateMessageFlashComponent,
         CreateMessageFlashComponent,
         MessageFlashFormComponent,
-        MessageFlashPreviewComponent
+        MessageFlashPreviewComponent,
+        BlockProfilesComponent
     ],
     exports: [
         RouterModule
     ],
     providers: [
         MessageFlashStore,
-        MessageFlashResolver
+        MessageFlashResolver,
+        BlockProfilesService,
+        {
+            provide: MatPaginatorIntl,
+            useFactory: (bundlesService) => new MatPaginatorIntlService(bundlesService),
+            deps: [BundlesService]
+        }
     ]
 })
 export class ManagementModule {}
