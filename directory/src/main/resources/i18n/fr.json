@@ -9,6 +9,7 @@
     "Teacher": "Enseignant",
     "account.myaccount": "Mon compte",
     "account.useraccount": "Compte utilisateur",
+    "account.mergebykey.placeholder": "Veuillez saisir une clé valide puis cliquer sur le lien qui s'affichera à droite pour valider",
     "admin.block": "Bloquer",
     "admin.blocked.account": "Compte bloqué",
     "admin.changeavatar": "Changer la photo",
