@@ -80,7 +80,6 @@ buildNode () {
 }
 
 buildAdminNode() {
-  NG_CLI_ANALYTICS=false
   case `uname -s` in
     MINGW*)
       docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm --no-bin-links install && npm run build-docker-prod"
@@ -113,81 +112,14 @@ publish () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
 }
 
-# Admin v2 tasks
-adminV2GradleClean () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle :admin:clean
-}
-
-adminV2GradleInstall () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle :admin:shadowJar :admin:install :admin:publishToMavenLocal
-}
-
-adminV2NodeClean () {
-  echo "[buildNode] Get branch name from GIT_BRANCH var..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git branch..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Branch name should not be empty!"
-      exit -1
-    fi
-  fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-clean"
-}
-
-adminV2NodeBuildDev () {
-  echo "[buildNode] Get branch name from GIT_BRANCH var..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git branch..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Branch name should not be empty!"
-      exit -1
-    fi
-  fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-build-dev"
-}
-
-adminV2NodeBuildProd () {
-  echo "[buildNode] Get branch name from GIT_BRANCH var..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git branch..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Branch name should not be empty!"
-      exit -1
-    fi
-  fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-build"
-}
-
-adminV2NodeDevServer () {
-  echo "[buildNode] Get branch name from GIT_BRANCH var..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git branch..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Branch name should not be empty!"
-      exit -1
-    fi
-  fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-dev-server"
-}
-
-adminV2NodeWatch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js adminV2-watch"
-}
-# End of AdminV2 tasks
-
 for param in "$@"
 do
   case $param in
     clean)
       clean
+      ;;
+    buildAdminNode)
+      buildAdminNode
       ;;
     buildNode)
       buildNode && buildAdminNode
@@ -206,27 +138,6 @@ do
       ;;
     publish)
       publish
-      ;;
-    adminV2GradleClean)
-      adminV2GradleClean
-      ;;
-    adminV2GradleInstall)
-      adminV2GradleInstall
-      ;;
-    adminV2NodeClean)
-      adminV2NodeClean
-      ;;
-    adminV2NodeBuildDev)
-      adminV2NodeBuildDev
-      ;;
-    adminV2NodeBuildProd)
-      adminV2NodeBuildProd
-      ;;
-    adminV2NodeDevServer)
-      adminV2NodeDevServer
-      ;;
-    adminV2NodeWatch)
-      adminV2NodeWatch
       ;;
     *)
       echo "Invalid argument : $param"

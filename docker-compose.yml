@@ -25,3 +25,5 @@ node12:
     - ./admin:/home/node/base
     - ~/.npm:/.npm
     - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
+  environment:
+      - NG_CLI_ANALYTICS=false
