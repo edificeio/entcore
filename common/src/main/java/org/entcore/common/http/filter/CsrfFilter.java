@@ -96,7 +96,7 @@ public class CsrfFilter implements Filter {
 		if (ignoreBinding == null) {
 			loadIgnoredMethods();
 		}
-		if (request instanceof SecureHttpServerRequest && securedMethods.contains(request.method()) &&
+		if (request instanceof SecureHttpServerRequest && securedMethods.contains(request.method().name()) &&
 				isEmpty(((SecureHttpServerRequest) request).getAttribute("client_id")) && !ignore(request)) {
 			compareToken(request, handler);
 		} else {
@@ -129,7 +129,7 @@ public class CsrfFilter implements Filter {
 	protected boolean ignore(HttpServerRequest request) {
 		if (!ignoreBinding.isEmpty()) {
 			for (Binding binding : ignoreBinding) {
-				if (!request.method().equals(binding.getMethod().name())) {
+				if (!request.method().name().equals(binding.getMethod().name())) {
 					continue;
 				}
 				Matcher m = binding.getUriPattern().matcher(request.path());
