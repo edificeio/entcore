@@ -700,22 +700,31 @@ Structure.prototype.blockUsers = function(profile, block, cb){
     })
 }
 
-Structure.prototype._getDescendants = function(descendants)
+Structure.prototype._getDescendants = function(unique, descendants)
 {
     if(this.children != null)
     {
+        childrenLoop:
         for(let i = this.children.length; i-- > 0;)
         {
+            if(unique == true)
+            {
+                for(let d = descendants.length; d-- > 0;)
+                {
+                    if(descendants[d].id == this.children[i].id)
+                        continue childrenLoop;
+                }
+            }
             descendants.push(this.children[i]);
-            this.children[i]._getDescendants(descendants);
+            this.children[i]._getDescendants(unique, descendants);
         }
     }
     return descendants;
 }
 
-Structure.prototype.getDescendants = function()
+Structure.prototype.getDescendants = function(unique)
 {
-    return this._getDescendants([]);
+    return this._getDescendants(unique, []);
 }
 
 Structure.prototype.toString = function(){
