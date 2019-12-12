@@ -191,6 +191,7 @@ project(':common') {
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
     compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    compile "io.vertx:vertx-redis-client:$vertxVersion"
   }
 }
 
