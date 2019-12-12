@@ -841,11 +841,25 @@
     "csv.file.size.error": "Erreur lors du calcul de la taille du fichier.",
     "flashmsg.message": "Message",
     "flashmsg.preview": "Aperçu du message",
-
     "mat.paginator.itemsPerPageLabel": "Éléments par page",
     "mat.paginator.nextPageLabel": "Page suivante",
     "mat.paginator.previousPageLabel": "Page précédente",
     "mat.paginator.firstPageLabel": "Première page",
     "mat.paginator.lastPageLabel": "Dernière page",
-    "mat.paginator.of": "de"
+    "mat.paginator.of": "de",
+    "alerts": "Alertes",
+    "quotas": "Quotas",
+    "alerts.atraiter": "Signalements à traiter",
+    "alert.treatment": "Traitement du signalement",
+    "alert.action.confirmation": "<p>Voulez-vous supprimer ou conserver la notification?</p><p>Si vous choisissez de la supprimer, elle sera supprimée du fil de toutes les personnes qui peuvent actuellement la voir.</p><p><b>Il ne sera pas possible de restaurer la notification.</b></p>",
+    "alert.cancel": "Annuler",
+    "alert.delete": "Supprimer",
+    "alert.keep": "Conserver",
+    "alerts.list.treated": "Liste des signalements traités",
+    "alerts.history": "Historique",
+    "alert.date": "Signalé le",
+    "alert.by": "par",
+    "alert.todo": "Traiter le signalement",
+    "alert.notification.delete": "Notification supprimée",
+    "alert.notification.keep": "Notification conservée"
 }

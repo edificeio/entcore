@@ -48,7 +48,8 @@
     <i class="fa fa-exclamation-triangle"
        *ngIf="currentStructure"
        [title]="'reports' | translate"
-       (click)="openReports()">
+       [routerLink]="'/admin/' + currentStructure?.id + '/alertes/signalements'"
+       [class.active]="router.isActive('/admin/' + currentStructure?.id + '/alertes', false)">
     </i>
     <a href="/auth/logout"
        [title]="'logout' | translate">

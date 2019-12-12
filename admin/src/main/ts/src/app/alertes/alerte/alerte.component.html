@@ -1,0 +1,42 @@
+<div class="card">
+    <div fxLayout="column" fxLayoutAlign="none" class="has-padding-10 has-bottom-margin-10">
+        <div fxLayoutAlign="space-between">
+            <div fxLayout="row" fxLayoutAlign="start">
+                <div class="has-padding-5">
+                    <img src="/userbook/avatar/{{alerte.sender}}?thumbnail=100x100" width="77" height="77"/>
+                </div>
+                <div class="has-padding-5">
+                    <div innerHTML="{{alerte.message}}"></div>
+                </div>
+            </div>
+            <div class="has-padding-5">
+                <div *ngIf="alerte.reportAction && alerte.reportAction.action">
+                    <div [ngSwitch]="alerte.reportAction.action" class="alerte-report-action">
+                        <div *ngSwitchCase="'DELETE'" class="alerte-report-action__delete">
+                            <s5l>alert.notification.delete</s5l>
+                        </div>
+                        <div *ngSwitchCase="'KEEP'" class="alerte-report-action__keep">
+                            <s5l>alert.notification.keep</s5l>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div fxLayoutAlign="start end" style="vertical-align: bottom">
+            <div fxFlex="70" class="has-padding-5">
+                <s5l>alert.date</s5l>: {{alerte.created.$date}}
+                <s5l>alert.by</s5l> {{reporters | async}}
+            </div>
+            <div *ngIf="!alerte.reportAction || alerte.reportAction && alerte.reportAction.action === 'KEEP'" 
+                fxFlex="30" 
+                class="has-padding-5" 
+                style="text-align: end;">
+                <button (click)="onSignalementClic()">
+                    <s5l>alert.todo</s5l>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
