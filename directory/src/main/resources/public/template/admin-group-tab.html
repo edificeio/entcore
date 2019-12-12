@@ -26,7 +26,7 @@
                     ng-model="autolinkGroup.targetStructs" ng-disabled="autolinkGroup.targetAllStructs"
                     class="twelve cell" size=8 style="height: auto;"
                 >
-                    <option ng-repeat="struct in structure.getDescendants() | orderBy: 'name'" value="[[struct.id]]">
+                    <option ng-repeat="struct in structure.getDescendants(true) | orderBy: ['name', 'id']" value="[[struct.id]]">
                         [[struct.name]]
                     </option>
                 </select>
