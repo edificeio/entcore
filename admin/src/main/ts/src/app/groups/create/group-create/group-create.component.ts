@@ -15,7 +15,7 @@ import { GroupsStore } from '../../groups.store';
     templateUrl: './group-create.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupCreateComponent extends OdeComponent{
+export class GroupCreateComponent extends OdeComponent {
 
     newGroup: GroupModel = new GroupModel();
 

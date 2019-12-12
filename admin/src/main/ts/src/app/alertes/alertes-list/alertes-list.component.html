@@ -1,0 +1,13 @@
+<div fxLayout="row" fxLayoutAlign="space-between center"  style="height: 50px">
+    <div fxFlex="50">
+        <h3><s5l>alerts.atraiter</s5l></h3>
+    </div>
+    <div fxFlex="50" style="text-align: end">
+        <button (click)="openDialog()" class="alertes-list-button-history">
+            <s5l>alerts.history</s5l>
+        </button>
+    </div>
+</div>
+
+<ode-alerte *ngFor="let alerte of this.pendingAlertes | async" [alerte]="alerte" [structure]="structure" [subject]="updateSubject">
+</ode-alerte>

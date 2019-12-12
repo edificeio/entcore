@@ -1,0 +1,19 @@
+<div fxLayout="row"  fxFill>
+    <h2 fxFlex="50" fxLayoutAlign="start center"><s5l>alert.treatment</s5l></h2>
+    <mat-dialog-actions fxLayoutAlign="end start" fxFlex="50" style="text-align: end">
+        <button class="mat-raised-button" (click)="close()">X</button>
+    </mat-dialog-actions>
+</div>
+
+<s5l>alert.action.confirmation</s5l>
+<div style="text-align: end">
+    <button (click)="close()" class="has-right-margin-5">
+        <s5l>alert.cancel</s5l>
+    </button>
+    <button (click)="supprimer()" class="traitement-alerte-model-button-action has-right-margin-5">
+        <s5l>alert.delete</s5l>
+    </button>
+    <button (click)="conserver()" class="traitement-alerte-model-button-action has-right-margin-5">
+        <s5l>alert.keep</s5l>
+    </button>
+</div>

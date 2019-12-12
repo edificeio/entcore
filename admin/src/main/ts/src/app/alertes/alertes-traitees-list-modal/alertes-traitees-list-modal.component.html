@@ -1,0 +1,13 @@
+<div fxLayout="row" fxFill>
+    <h2 fxFlex="80" fxLayoutAlign="start center"><s5l>alerts.list.treated</s5l></h2>
+    <mat-dialog-actions fxLayoutAlign="end start" fxFlex="20" style="text-align: end">
+        <button (click)="close()" class="mat-raised-button">X</button>
+    </mat-dialog-actions>
+</div>
+<div class="alertes-traitees-list-modal-list">
+    <ode-alerte *ngFor="let alerte of this.doneAlertes | async" 
+        [alerte]="alerte" 
+        [structure]="data.structure" 
+        [subject]="updateSubject">
+    </ode-alerte>
+</div>

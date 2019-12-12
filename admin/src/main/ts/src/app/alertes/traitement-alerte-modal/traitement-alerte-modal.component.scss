@@ -1,0 +1,8 @@
+.traitement-alerte-model-button-action {
+    color: white;
+    border: 1px solid rgb(255, 131, 82);
+    background-color: rgb(255, 131, 82);
+    &:hover:not(:disabled) {
+      background-color: darken(rgb(255, 131, 82), 5%);
+    }
+}

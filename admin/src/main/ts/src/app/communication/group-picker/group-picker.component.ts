@@ -40,8 +40,7 @@ export class GroupPickerComponent implements OnInit, OnChanges {
     selectedStructure: StructureModel;
     structureOptions: SelectOption<StructureModel>[] = [];
 
-    constructor(private orderPipe: OrderPipe) {
-    }
+    constructor(private orderPipe: OrderPipe) {}
 
     ngOnInit(): void {
         this.initialList = [...this.list];

@@ -1,0 +1,16 @@
+<div class="flex-header">
+  <h1><i class="fa fa-exclamation-triangle"></i><s5l>alerts</s5l></h1>
+</div>
+  
+<div class="tabs">
+  <button class="tab" 
+          *ngFor="let tab of tabs"
+          [routerLink]="tab.view"
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: true}">
+    {{ tab.label | translate }}
+  </button>
+</div>
+
+<router-outlet></router-outlet>
+  
