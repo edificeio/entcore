@@ -150,8 +150,7 @@ public class Group {
 				"	(g:ManualGroup)<-[old:IN]-(:User) " +
 				"WHERE " +
 				"	NOT EXISTS(old.source) OR old.source <> 'MANUAL' " +
-				"DELETE old " +
-				"RETURN *; ";
+				"DELETE old; ";
 			String linkQuery =
 				"MATCH " +
 				"	(g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
@@ -163,8 +162,7 @@ public class Group {
 				"	(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
 				"	AND target.filter IN g.autolinkUsersFromGroups " +
 				"WITH g, u " +
-				"MERGE (u)-[new:IN]->(g) " +
-				"RETURN *; ";
+				"MERGE (u)-[new:IN]->(g); ";
 
 			JsonObject params = new JsonObject();
 
