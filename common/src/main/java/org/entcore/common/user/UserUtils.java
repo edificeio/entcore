@@ -559,10 +559,16 @@ public class UserUtils {
 
 	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
 			final Handler<Boolean> handler) {
+		deletePermanentSession(eb, userId, currentSessionId, true, handler);
+	}
+
+	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
+											  boolean immediate, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
 				.put("action", "dropPermanentSessions")
 				.put("userId", userId)
-				.put("currentSessionId", currentSessionId);
+				.put("currentSessionId", currentSessionId)
+				.put("immediate", immediate);
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
