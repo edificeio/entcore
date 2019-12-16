@@ -615,7 +615,7 @@ public class StructureController extends BaseController {
 							request.response().end();
 							JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 							for (Object userId : usersId) {
-								UserUtils.deletePermanentSession(eb, (String) userId, null, new Handler<Boolean>() {
+								UserUtils.deletePermanentSession(eb, (String) userId, null, false, new Handler<Boolean>() {
 									@Override
 									public void handle(Boolean event) {
 										if (!event) {

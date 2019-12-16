@@ -19,7 +19,10 @@
 
 package org.entcore.session;
 
+import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;
@@ -125,25 +128,36 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void doDropPermanentSessions(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
 		String currentSessionId = message.body().getString("currentSessionId");
+		boolean immediate = getOrElse(message.body().getBoolean("immediate"), true);
+
 		if (userId == null || userId.trim().isEmpty()) {
 			sendError(message, "[doDropPermanentSessions] Invalid userId : " + message.body().encode());
 			return;
 		}
 
-		JsonObject query = new JsonObject().put("userId", userId);
-		if (currentSessionId != null) {
-			query.put("_id", new JsonObject().put("$ne", currentSessionId));
-		}
-		mongo.delete(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					sendOK(message);
-				} else {
-					sendError(message, event.body().getString("message"));
-				}
+		Handler<Message<JsonObject>> handler = event -> {
+			if ("ok".equals(event.body().getString("status"))) {
+				sendOK(message);
+			} else {
+				sendError(message, event.body().getString("message"));
 			}
-		});
+		};
+
+		if (immediate) {
+			JsonObject query = new JsonObject().put("userId", userId);
+			if (currentSessionId != null) {
+				query.put("_id", new JsonObject().put("$ne", currentSessionId));
+			}
+			mongo.delete(SESSIONS_COLLECTION, query, handler);
+		} else {
+			// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
+			mongo.update(SESSIONS_COLLECTION,
+					MongoQueryBuilder.build(QueryBuilder.start("userId").is(userId)),
+					new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build(),
+					false,
+					true,
+					handler);
+		}
 	}
 
 	private void doFindByUserId(final Message<JsonObject> message) {
