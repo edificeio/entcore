@@ -42,11 +42,14 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
         $scope.renameManagers=[];
         try {
             const document = $scope.selectedItems()[0];
-            const ownerId = typeof document.owner == "string"? document.owner: document.owner.userId;
+            let ownerId = "-1";
             if (document.eParent) $scope.renameParent = await workspaceService.fetchParentInfo(document._id);
             else $scope.renameParent = undefined;
             //fetch managers
-            $scope.renameManagers.push({id:ownerId, name:document.ownerName, uri:`/userbook/annuaire#/${ownerId}`});
+            if($scope.renameParent){
+                ownerId = typeof $scope.renameParent.owner == "string"? $scope.renameParent.owner: $scope.renameParent.owner.userId;
+                $scope.renameManagers.push({id:ownerId, name:$scope.renameParent.ownerName, uri:`/userbook/annuaire#/${ownerId}`});
+            }
             if($scope.renameParent && $scope.renameParent.inheritedShares){
                 for(const share of $scope.renameParent.inheritedShares){
                     let addToManager = false;
