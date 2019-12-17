@@ -561,7 +561,7 @@ public class Validator {
 	public static void initLogin(Neo4j neo4j, Vertx vertx) {
 		final long startInit = System.currentTimeMillis();
 		if (logins == null) {
-			logins = MapFactory.getSyncClusterMap("usedLogins", vertx);
+			logins = new HashMap<>();
 			initLogins(neo4j, startInit, false);
 		} else {
 			initLogins(neo4j, startInit, true);
