@@ -200,7 +200,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 						exportAttachments(path, attachments, new Handler<Boolean>() {
 							@Override
 							public void handle(Boolean event) {
-								exportTables(queries, new JsonArray(), path, exported, handler);
+								exportTables(queries, new JsonArray(), null, path, exported, handler);
 							}
 						});
 					} else {

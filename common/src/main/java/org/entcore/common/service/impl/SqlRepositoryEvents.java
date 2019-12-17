@@ -32,8 +32,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 		fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
 	}
 
-	protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, String exportPath,
-			AtomicBoolean exported, Handler<Boolean> handler) {
+    protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, HashMap<String, JsonArray> fieldsToNull,
+            String exportPath, AtomicBoolean exported, Handler<Boolean> handler) {
 		if (queries.isEmpty()) {
 			exportDocumentsDependancies(cumulativeResult, exportPath, new Handler<Boolean>() {
 				@Override
@@ -57,16 +57,49 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
 						JsonArray ja = event.body().getJsonArray("results");
-						if (ja != null && !ja.isEmpty()) {
-							JsonObject results = new JsonObject();
-							results.put("fields",ja.getJsonObject(0).getJsonArray("fields"));
-							results.put("results",ja.getJsonObject(0).getJsonArray("results"));
-							queries.remove(tableName);
+                        if (ja != null && !ja.isEmpty())
+                        {
+                            JsonObject results = new JsonObject();
+                            JsonArray fields = ja.getJsonObject(0).getJsonArray("fields");
+                            JsonArray rows = ja.getJsonObject(0).getJsonArray("results");
+
+                            JsonArray tableFieldsToNull = fieldsToNull.get(tableName);
+
+                            if(tableFieldsToNull != null)
+                            {
+                                for(int i = tableFieldsToNull.size(); i-- > 0;)
+                                {
+                                    String field = tableFieldsToNull.getString(i);
+                                    int fieldIx = -1;
+                                    for(int f = fields.size(); f-- > 0;)
+                                    {
+                                        if(fields.getString(f).equals(field))
+                                        {
+                                            fieldIx = f;
+                                            break;
+                                        }
+                                    }
+
+                                    if(fieldIx != -1)
+                                    {
+                                        for(int r = rows.size(); r-- > 0;)
+                                        {
+                                            JsonArray row = rows.getJsonArray(r);
+                                            fr.wseduc.webutils.collections.JsonArray.setInJsonArray(row, fieldIx, null);
+                                        }
+                                    }
+                                }
+                            }
+
+							results.put("fields", fields);
+							results.put("results", rows);
+                            queries.remove(tableName);
+
 							vertx.fileSystem().writeFile(filePath, results.toBuffer(),
 									new Handler<AsyncResult<Void>>() {
 										@Override
 										public void handle(AsyncResult<Void> voidAsyncResult) {
-											exportTables(queries, cumulativeResult.add(results), exportPath,
+											exportTables(queries, cumulativeResult.add(results), fieldsToNull, exportPath,
 													exported, handler);
 										}
 							});
