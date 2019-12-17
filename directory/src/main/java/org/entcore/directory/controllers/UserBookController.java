@@ -203,95 +203,16 @@ public class UserBookController extends BaseController {
 	@Get("/api/person")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void person(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					String hobbyVisibility;
-					String personnalInfos;
-					Map<String, Object> params = new HashMap<>();
-					if (request.params().get("id") == null) {
-						Object person = user.getAttribute(PERSON_ATTRIBUTE);
-						if (person != null) {
-							renderJson(request, new JsonObject(person.toString()));
-							return;
-						}
-						params.put("userId",user.getUserId());
-						hobbyVisibility = "PUBLIC|PRIVE";
-						personnalInfos =
-								"OPTIONAL MATCH u-[r0:SHOW_EMAIL]->() " +
-								"OPTIONAL MATCH u-[r1:SHOW_BIRTHDATE]->() " +
-								"OPTIONAL MATCH u-[r2:SHOW_PHONE]->() " +
-								"OPTIONAL MATCH u-[r3:SHOW_MAIL]->() " +
-								"OPTIONAL MATCH u-[r4:SHOW_HEALTH]->u " +
-								"OPTIONAL MATCH u-[r5:SHOW_MOBILE]->() " +
-								"WITH DISTINCT h, s, c, n, v, u, n2, p, n.address as address, " +
-								"n.email as email, u.health as health, " +
-								"n.homePhone as tel, n.birthDate as birthdate, n.mobile as mobile, " +
-								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4),type(r5)]) as r ";
-					} else {
-						params.put("userId",request.params().get("id"));
-						hobbyVisibility = "PUBLIC";
-						personnalInfos = "OPTIONAL MATCH u-[:SHOW_EMAIL]->e " +
-								"OPTIONAL MATCH u-[:SHOW_MAIL]->a " +
-								"OPTIONAL MATCH u-[:SHOW_PHONE]->ph " +
-								"OPTIONAL MATCH u-[:SHOW_MOBILE]->mo " +
-								"OPTIONAL MATCH u-[:SHOW_BIRTHDATE]->b " +
-								"OPTIONAL MATCH u-[:SHOW_HEALTH]->st " +
-								"WITH h, s, c, n, v, u, n2, p, a.address as address, " +
-								"e.email as email, st.health as health, " +
-								"ph.homePhone as tel, b.birthDate as birthdate, mo.mobile as mobile, " +
-								"COLLECT([]) as r ";
-					}
-					String query = "MATCH (n:User) "
-								+ "WHERE n.id = {userId} "
-								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
-								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) "
-								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(s) "
-								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
-								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
-								+ "OPTIONAL MATCH (n)-[:RELATED]-(n2) "
-								+ "WITH DISTINCT h1 as h, s, collect(distinct c.name) as c, n, v, u, n2, p "
-								+ personnalInfos
-								+ "WITH COLLECT(DISTINCT {name: s.name, id: s.id, classes: c}) as schools, "
-								+ "n, u, n2, address, email, health, tel, mobile, birthdate, r,  COLLECT(p.name) as type, "
-								+ "COLLECT(DISTINCT {visibility: type(v), category: h.category, values: h.values}) as hobbies "
-								+ "RETURN DISTINCT "
-									+ "n.id as id,"
-									+ "n.login as login, "
-									+ "n.displayName as displayName,"
-									+ "type,"
-									+ "address,"
-									+ "email, "
-									+ "tel, "
-									+ "mobile, "
-									+ "birthdate, "
-									+ "HEAD(r) as visibleInfos, "
-									+ "schools, "
-									+ "n2.displayName as relatedName, "
-									+ "n2.id as relatedId,"
-									+ "n2.type as relatedType,"
-									+ "u.userid as userId,"
-									+ "u.motto as motto,"
-									+ "COALESCE(u.picture, {defaultAvatar}) as photo,"
-									+ "COALESCE(u.mood, {defaultMood}) as mood,"
-									+ "health,"
-									+ "hobbies";
-					params.put("defaultAvatar", userBookData.getString("default-avatar"));
-					params.put("defaultMood", userBookData.getString("default-mood"));
-					neo.send(query, params, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> message) {
-							JsonObject r = message.body();
-							if (request.params().get("id") == null) {
-								UserUtils.addSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, r.encode(), null);
-							}
-							renderJson(request, r);
-						}
-					});
-				} else {
-					unauthorized(request);
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final String userId = request.params().get("id");
+				if (userId == null) {
+					userBookService.getCurrentUserInfos(user, defaultResponseHandler(request));
+				}else{
+					userBookService.getPersonInfos(userId, defaultResponseHandler(request));
 				}
+			} else {
+				unauthorized(request);
 			}
 		});
 	}
@@ -448,19 +369,10 @@ public class UserBookController extends BaseController {
 	@Get("/api/set-visibility")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void setVisibility(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				Map<String, Object> params = new HashMap<>();
-				params.put("id", user.getUserId());
-				params.put("category", request.params().get("category"));
-				String visibility = "PUBLIC".equals(request.params().get("value")) ? "PUBLIC" : "PRIVE";
-				UserUtils.removeSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, null);
-				neo.send("MATCH (n:User)-[:USERBOOK]->(m)-[s]->(p) "
-					+ "WHERE n.id = {id} AND p.category={category} "
-					+ "DELETE s CREATE (m)-[j:"+ visibility +"]->(p) "
-					+ "RETURN n,m,j,p", params, request.response());
-			}
+		UserUtils.getUserInfos(eb, request, user -> {
+			final String category = request.params().get("category");
+			final String visibility = request.params().get("value");
+			userBookService.setHobbyVisibility(user, category, visibility, defaultResponseHandler(request));
 		});
 	}
 
@@ -486,11 +398,9 @@ public class UserBookController extends BaseController {
 
 	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
-		JsonObject params = new JsonObject();
-		params.put("userId", message.body().getString("userId"));
-		params.put("avatar", userBookData.getString("default-avatar"));
-		params.put("theme", userBookData.getString("default-theme", ""));
-
+		//prepare params
+		final String userId = message.body().getString("userId");
+		final String theme = message.body().getString("theme");
 		final JsonObject headers = message.body().getJsonObject("request", new JsonObject()).getJsonObject("headers", new JsonObject());
 		final String defaultLanguage = userBookData.getString("default-language", "en");
 		final JsonArray languages = I18n.getInstance().getLanguages(headers.getString("Host"));
@@ -498,42 +408,8 @@ public class UserBookController extends BaseController {
 		final String locale = Locale.forLanguageTag(lang.split(",")[0].split("-")[0]).toString();
 		final String localeAvailable = (languages.contains(locale)) ? locale : defaultLanguage;
 		final JsonObject uacLanguage = new JsonObject().put(I18n.DEFAULT_DOMAIN, localeAvailable);
-
-		JsonArray queries = new fr.wseduc.webutils.collections.JsonArray();
-		String query =
-				"MERGE (m:UserBook { userid : {userId}}) " +
-				"SET m.type = 'USERBOOK', m.picture = {avatar}, m.motto = '', " +
-				"m.health = '', m.mood = 'default', m.theme =  {theme} " +
-				"WITH m "+
-				"MATCH (n:User {id : {userId}}) " +
-				"CREATE UNIQUE n-[:USERBOOK]->m";
-		queries.add(Neo.toJsonObject(query, params));
-		String query2 = "MATCH (n:User)-[:USERBOOK]->m "
-				+ "WHERE n.id = {userId} "
-				+ "CREATE m-[:PUBLIC]->(c:Hobby {category: {category}, values: {values}})";
-		String query3 =
-				"MATCH (u:User {id:{userId}}) " +
-				"MERGE (u)-[:PREFERS]->(uac:UserAppConf) " +
-				"SET uac.language = {language}";
-		JsonObject paramsQuery3 = new JsonObject()
-				.put("userId", message.body().getString("userId"))
-				.put("language", uacLanguage.encode());
-
-		if (isNotEmpty(message.body().getString("theme"))) {
-			query3 += ", uac.theme = {theme}";
-			paramsQuery3.put("theme", message.body().getString("theme"));
-		}
-
-		queries.add(Neo.toJsonObject(query3, paramsQuery3));
-
-		for (Object hobby : userBookData.getJsonArray("hobbies")) {
-			JsonObject j = params.copy();
-			j.put("category", (String)hobby);
-			j.put("values", "");
-			queries.add(Neo.toJsonObject(query2, j));
-		}
-		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
-
+		//init userbook
+		userBookService.initUserbook(userId, theme, uacLanguage);
 		welcomeMessage(message);
 	}
 
@@ -703,31 +579,12 @@ public class UserBookController extends BaseController {
 			badRequest(request);
 			return;
 		}
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null) {
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", user.getUserId());
-					String relationship = "SHOW_" + info.toUpperCase();
-					String query = "";
-					if ("public".equals(request.params().get("state"))) {
-						query += "MATCH (n:User)-[:USERBOOK]->u WHERE n.id = {id} ";
-						if ("health".equals(info)) {
-							query += "CREATE u-[r:" + relationship + "]->u ";
-						} else {
-							query += "CREATE u-[r:" + relationship + "]->n ";
-						}
-					} else {
-						query += "MATCH (n:User)-[:USERBOOK]->u-[r:" + relationship + "]->() " +
-								 "WHERE n.id = {id} " +
-								 "DELETE r";
-					}
-					UserUtils.removeSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, null);
-					neo.send(query, params, request.response());
-				} else {
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final String state = request.params().get("state");
+				userBookService.setInfosVisibility(user, state, info, defaultResponseHandler(request));
+			} else {
+				unauthorized(request);
 			}
 		});
 	}
