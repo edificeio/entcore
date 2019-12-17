@@ -34,8 +34,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
+import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
 import java.util.List;
@@ -53,9 +55,11 @@ public class DefaultUserService implements UserService {
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EmailSender notification;
 	private final EventBus eb;
+	private final JsonObject userBookData;
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
 
-	public DefaultUserService(EmailSender notification, EventBus eb) {
+	public DefaultUserService(EmailSender notification, EventBus eb, JsonObject aUserBookData) {
+		this.userBookData = aUserBookData;
 		this.notification = notification;
 		this.eb = eb;
 	}
@@ -693,18 +697,26 @@ public class DefaultUserService implements UserService {
 	@Override
 	public void getUserInfos(String userId, final Handler<Either<String,JsonObject>> handler) {
 		String query = "MATCH (u:`User` { id : {userId}}) " +
-				"OPTIONAL MATCH u-[:USERBOOK]->(ub: UserBook)-[v:PUBLIC|PRIVE]->(h:Hobby) WITH ub.motto as motto, ub.health as health, ub.mood as mood, COLLECT(distinct {visibility: type(v), category: h.category, values: h.values}) as hobbies, u  " +
+				"OPTIONAL MATCH u-[:USERBOOK]->(ub: UserBook) WITH ub.motto as motto, ub.health as health, ub.mood as mood, u,  "+
+				UserBookService.selectHobbies(userBookData, "ub")+
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(Profile), cpg<-[:IN]-u-[:IN]->spg WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
 				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c}) as schools, motto, health, mood, hobbies, u " +
 				"OPTIONAL MATCH u-[:RELATED]-(u2: User) WITH COLLECT(distinct {relatedName: u2.displayName, relatedId: u2.id, relatedType: u2.profiles}) as relativeList, schools, motto, health, mood, hobbies, u " +
 				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
-				"motto, health, mood, " +
-				"CASE WHEN hobbies IS NULL THEN [] ELSE hobbies END as hobbies, " +
+				"motto, health, mood, hobbies, " +
 				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
-		neo.execute(query, params, validUniqueResultHandler(handler));
+		neo.execute(query, params, validUniqueResultHandler(res->{
+			if(res.isRight()){
+				final JsonObject result = res.right().getValue();
+				result.put("hobbies", UserBookService.extractHobbies(userBookData, result, true));
+				handler.handle(new Either.Right<>(result));
+			}else{
+				handler.handle(res);
+			}
+		}));
 	}
 
 	@Override

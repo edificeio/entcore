@@ -76,8 +76,9 @@ public class Directory extends BaseServer {
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender emailSender = emailFactory.getSender();
-		UserService userService = new DefaultUserService(emailSender, eb);
-		UserBookService userBookService = new DefaultUserBookService(storageAvatar, wsHelper);
+		final JsonObject userBookData = config.getJsonObject("user-book-data");
+		UserService userService = new DefaultUserService(emailSender, eb, userBookData);
+		UserBookService userBookService = new DefaultUserBookService(eb, storageAvatar, wsHelper, userBookData);
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb);

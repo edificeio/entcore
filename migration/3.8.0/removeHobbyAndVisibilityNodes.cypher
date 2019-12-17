@@ -1,0 +1,7 @@
+MATCH ()-[sma:SHOW_MAIL]-() DELETE sma;
+MATCH ()-[sem:SHOW_EMAIL]-() DELETE sem;
+MATCH ()-[sp:SHOW_PHONE]-() DELETE sp;
+MATCH ()-[smo:SHOW_MOBILE]-() DELETE smo;
+MATCH ()-[sb:SHOW_BIRTHDATE]-() DELETE sb;
+MATCH ()-[sh:SHOW_HEALTH]-() DELETE sh;
+MATCH (hob:Hobby) DETACH DELETE hob;
