@@ -23,12 +23,11 @@
                     <span class="twelve cell"><i18n>directory.manualgroup.autolink.structs.choose</i18n></span>
                 </label>
                 <select multiple id="autolinkGroup.structSelect"
-                    ng-model="autolinkGroup.targetStructs" ng-disabled="autolinkGroup.targetAllStructs"
+                    ng-model="autolinkGroup.targetStructs"
+                    ng-disabled="autolinkGroup.targetAllStructs"
+                    ng-options="struct.id as struct.name for struct in structure.getDescendants(true) | orderBy: ['name', 'id']"
                     class="twelve cell" size=8 style="height: auto;"
                 >
-                    <option ng-repeat="struct in structure.getDescendants(true) | orderBy: ['name', 'id']" value="[[struct.id]]">
-                        [[struct.name]]
-                    </option>
                 </select>
             </div>
             <h6 style="float: left;"><i18n>directory.manualgroup.autolink.groups.title</i18n></h6>
