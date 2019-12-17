@@ -1,44 +1,23 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
 import { Data, NavigationEnd } from '@angular/router';
-import * as $ from 'jquery';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
-import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
-import { StructureModel } from 'src/app/core/store/models/structure.model';
-import 'trumbowyg/dist/langs/de.js';
-import 'trumbowyg/dist/langs/es.js';
-import 'trumbowyg/dist/langs/fr.js';
-import 'trumbowyg/dist/langs/it.js';
-import 'trumbowyg/dist/langs/pt.js';
-import 'trumbowyg/dist/trumbowyg.js';
-import 'trumbowyg/plugins/colors/trumbowyg.colors.js';
-import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js';
-import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js';
-import 'trumbowyg/plugins/history/trumbowyg.history.js';
 import { NotifyService } from '../../../../core/services/notify.service';
 import { routing } from '../../../../core/services/routing.service';
 import { MessageFlashService } from '../../message-flash.service';
 import { MessageFlashStore } from '../../message-flash.store';
-
-
-
+import { StructureModel } from '../../../../core/store/models/structure.model';
+import { FlashMessageModel } from '../../../../core/store/models/flashmessage.model';
 
 @Component({
     selector: 'ode-message-flash-form',
     templateUrl: './message-flash-form.component.html',
+    styleUrls: ['./message-flash-form.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageFlashFormComponent extends OdeComponent implements OnInit, OnDestroy, AfterViewInit {
-
-    constructor(
-        injector: Injector,
-        public bundles: BundlesService,
-        public ns: NotifyService,
-        public messageStore: MessageFlashStore,
-        public sanitized: DomSanitizer) { 
-            super(injector);
-        }
+export class MessageFlashFormComponent extends OdeComponent implements OnInit, OnDestroy {
+    @Input() action: 'create' | 'edit' | 'duplicate';
+    @Input() messageId = 'none';
 
     structure: StructureModel;
     originalMessage: FlashMessageModel;
@@ -49,18 +28,16 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     dateFormat: Intl.DateTimeFormat;
     comboModel = ['Teacher', 'Student', 'Relative', 'Personnel', 'Guest', 'AdminLocal'];
     showLightbox = false;
-
     mailNotification = false;
     pushNotification = false;
-
-    @Input() action: 'create' | 'edit' | 'duplicate';
-    @Input() messageId = 'none';
-
-    updateEditor: (lang: string) => void;
-
-    // Lightbox methods
-
     private lightboxSubStructures: string[];
+
+    constructor(injector: Injector,
+                public bundles: BundlesService,
+                public ns: NotifyService,
+                public messageStore: MessageFlashStore) {
+        super(injector);
+    }
 
     ngOnInit(): void {
         super.ngOnInit();
@@ -119,32 +96,6 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 this.changeDetector.detectChanges();
             });
     }
-
-    ngAfterViewInit() {
-        super.ngAfterViewInit();
-        const jq = $ as any;
-        jq.trumbowyg.svgPath = '/admin/public/assets/icons.svg';
-        const trumbowygEditor = jq('#trumbowyg-editor');
-        trumbowygEditor.trumbowyg({
-            lang: this.bundles.currentLanguage,
-            removeformatPasted: true,
-            semantic: false,
-            btns: [['historyUndo', 'historyRedo'], ['strong', 'em', 'underline'],
-            ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
-            ['foreColor', 'fontfamily', 'fontsize'], ['link'], ['viewHTML']]
-        });
-        trumbowygEditor.on('tbwchange', () => {
-            const transform = trumbowygEditor.trumbowyg('html')
-                .replace(/<i>/g, '<em>').replace(/<\/i[^>]*>/g, '</em>');
-            this.message.contents[this.selectedLanguage] = transform;
-            this.changeDetector.detectChanges();
-        });
-        this.updateEditor = function(lang: string) {
-            trumbowygEditor.trumbowyg('html', this.message.contents[lang] ? this.message.contents[lang] : '');
-            this.cdRef.detectChanges();
-        };
-    }
-
 
     deselect(item) {
         this.message.profiles.splice(this.message.profiles.indexOf(item), 1);

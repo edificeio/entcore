@@ -2,12 +2,10 @@
   <h3><s5l>flashmsg.preview</s5l> :</h3>
   <div class="twelve cell">
     <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
-      <i class="close is-pulled-right"></i>
-      <div [innerHTML]="text"></div>
+      <quill-view [content]="text"></quill-view>
     </div>
     <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
-      <i class="close is-pulled-right"></i>
-      <div [innerHTML]="text"></div>
+      <quill-view [content]="text"></quill-view>
     </div>
   </div>
 </article>

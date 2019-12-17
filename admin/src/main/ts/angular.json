@@ -26,11 +26,13 @@
             "styles": [
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/flatpickr/dist/themes/confetti.css",
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/assets/admin.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/trumbowyg/dist/trumbowyg.js"
+              "node_modules/quill/dist/quill.min.js"
             ]
           },
           "configurations": {
@@ -100,7 +102,6 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/trumbowyg/dist/trumbowyg.js"
             ]
           }
         },
