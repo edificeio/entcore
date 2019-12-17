@@ -151,7 +151,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);
-		vertx.eventBus().localConsumer(
+		vertx.eventBus().consumer(
 				config.getString("address", FEEDER_ADDRESS), this);
 		switch (config.getString("exporter", "")) {
 			case "ELIOT" :
