@@ -861,5 +861,11 @@
     "alert.by": "par",
     "alert.todo": "Traiter le signalement",
     "alert.notification.delete": "Notification supprimée",
-    "alert.notification.keep": "Notification conservée"
+    "alert.notification.keep": "Notification conservée",
+
+    "quill.placeholder": "Saisir votre texte ici...",
+    "quill.toolbar.size.small": "Petit",
+    "quill.toolbar.size.normal": "Normal",
+    "quill.toolbar.size.large": "Grand",
+    "quill.toolbar.size.huge": "Très grand"
 }

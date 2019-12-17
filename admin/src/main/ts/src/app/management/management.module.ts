@@ -21,6 +21,7 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
     imports: [
@@ -31,7 +32,8 @@ import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.servic
         RouterModule.forChild(routes),
         MatPaginatorModule,
         MatSortModule,
-        MatTableModule
+        MatTableModule,
+        QuillModule.forRoot()
     ],
     declarations: [
         ManagementRootComponent,
