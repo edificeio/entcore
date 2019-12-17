@@ -157,7 +157,7 @@ subprojects {
             artifact("build/libs/${modowner}~${project.name}~$version-fat.jar") { classifier "fat" }
         }
       }
-      if ("common".equals(project.name) || "tests".equals(project.name)) {
+      if ("common".equals(project.name) || "tests".equals(project.name) || "session".equals(project.name)) {
         mavenJava(MavenPublication) {
           from components.java
           groupId "${modowner}"
