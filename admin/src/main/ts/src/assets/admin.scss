@@ -981,7 +981,7 @@ ode-lightbox {
     .padded {
       padding-top: 0px;
     }
-    list {
+    ode-list {
       ul {
           max-height: 46vh;
           overflow-y: auto;
@@ -1829,7 +1829,7 @@ ode-group-manage-users {
         display: flex;
         flex-flow: row wrap;
         align-items: center;
-        list {
+        ode-list {
           min-height: 60vh;
           max-height: 60vh;
           flex: 1;
