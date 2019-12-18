@@ -18,8 +18,8 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 })
 export class AlertesListComponent extends OdeComponent implements OnInit {
     structure: StructureModel;
-    pendingAlertes = new Subject<AlerteModel[]>();
-    updateSubject = new Subject<void>();
+    $pendingAlertes = new Subject<AlerteModel[]>();
+    $updateSubject = new Subject<void>();
 
     constructor(injector: Injector,
                 private httpClient: HttpClient,
@@ -30,7 +30,7 @@ export class AlertesListComponent extends OdeComponent implements OnInit {
     ngOnInit() {
       super.ngOnInit();
       this.subscriptions.add(
-          this.updateSubject
+          this.$updateSubject
           .pipe(mergeMap( () => this.getPendingAlertes()))
           .subscribe(() => {})
       );
@@ -44,8 +44,7 @@ export class AlertesListComponent extends OdeComponent implements OnInit {
       return this.httpClient.get(`timeline/reported?structure=${this.structure.id}&page=0&pending=true`)
           .pipe(
               tap( (data: AlerteModel[]) => {
-                  this.info('getPendingAlertes');
-                  this.pendingAlertes.next(data);
+                  this.$pendingAlertes.next(data) ;
               })
           );
     }
