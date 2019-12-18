@@ -1,4 +1,4 @@
-<div class="embedded-viewer" ng-class="{'height-minus200 height-minus270-1d':!isFullscreen}">
+<div class="embedded-viewer" ng-class="{'height-minus200 height-minus270-1d':!isFullscreen}" id="embeded-viewer">
 	<div class="controls__navbar flex-row align-center justify-between" ng-if="!isFullscreen">
 		<div class="flex-row align-center justify-between">
 			<h2><i class="back" ng-click="closeViewFile()"></i></h2>
@@ -33,7 +33,7 @@
 		<audio ng-if="contentType === 'audio'" controls class="render" ng-src="[[ngModel.link]]"></audio>
 		<video ng-if="contentType === 'video'" controls class="render" ng-src="[[ngModel.link]]"></video>
 		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
-		<pdf-viewer ng-if="isOfficePdf()" ng-src="[[previewUrl()]]"></pdf-viewer>
+		<pdf-viewer ng-if="isOfficePdf()" ng-src="[[previewUrl()]]" scroller="'#embeded-viewer'"></pdf-viewer>
 		<csv-viewer ng-if="isOfficeExcelOrCsv()" csv-delegate="csvDelegate"></csv-viewer>
 		<txt-viewer ng-if="isTxt()" txt-delegate="txtDelegate"></txt-viewer>
 		<div ng-if="contentType === 'unknown' || contentType === 'zip'" class="default-viewer">
