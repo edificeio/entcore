@@ -36,15 +36,12 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
     @Input()
     selectedItem: ApplicationModel | ConnectorModel;
 
-    public sortOnDisplayName = true;
-
     public collectionRef: { [serviceName: string]: ServiceInfo };
 
     itemInputFilter: string;
 
     ngOnInit(): void {
         super.ngOnInit();
-        this.sortOnDisplayName = this.serviceName !== 'applications';
 
         SessionModel.getSession().then(session => {
             if (!this.serviceName) {
