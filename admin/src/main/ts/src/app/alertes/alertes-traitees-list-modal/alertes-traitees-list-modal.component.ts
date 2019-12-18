@@ -13,8 +13,8 @@ import {OdeComponent} from 'ngx-ode-core';
 })
 export class AlertesTraiteesListModalComponent extends OdeComponent implements OnInit {
 
-  doneAlertes = new Subject<AlerteModel[]>();
-  updateSubject: Subject<void> = new Subject<void>();
+  $doneAlertes = new Subject<AlerteModel[]>();
+  $updateSubject: Subject<void> = new Subject<void>();
 
   constructor(injector: Injector,
               @Inject(MAT_DIALOG_DATA) public data: any,
@@ -28,7 +28,7 @@ export class AlertesTraiteesListModalComponent extends OdeComponent implements O
         this.getDoneAlertes().subscribe(() => {})
     );
     this.subscriptions.add(
-        this.updateSubject
+        this.$updateSubject
         .pipe(mergeMap(() => this.getDoneAlertes()))
         .subscribe(() => {})
     );
@@ -42,7 +42,7 @@ export class AlertesTraiteesListModalComponent extends OdeComponent implements O
               for (const d of data) {
                 d.created.$date = new Date(d.created.$date);
               }
-              this.doneAlertes.next(data);
+              this.$doneAlertes.next(data);
             })
         );
   }

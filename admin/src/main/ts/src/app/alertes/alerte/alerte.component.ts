@@ -20,6 +20,7 @@ export class AlerteComponent extends OdeComponent implements OnInit {
   @Input()
   set alerte(value: AlerteModel) {
     this._alerte = value;
+    console.log('set alerte', value)
     this._alerte.created.$date = new Date(this._alerte.created.$date).toLocaleString('fr-FR');
     this.buildReportersString();
   }

@@ -4,10 +4,13 @@
         <button (click)="close()" class="mat-raised-button">X</button>
     </mat-dialog-actions>
 </div>
-<div class="alertes-traitees-list-modal-list">
-    <ode-alerte *ngFor="let alerte of this.doneAlertes | async" 
+<div class="alertes-traitees-list-modal-list" *ngIf="(this.$doneAlertes | async)?.length !== 0; else elseBlock">
+    <ode-alerte *ngFor="let alerte of this.$doneAlertes | async"
         [alerte]="alerte" 
         [structure]="data.structure" 
-        [subject]="updateSubject">
+        [subject]="$updateSubject">
     </ode-alerte>
 </div>
+<ng-template #elseBlock>
+    <div class="no-alert-text">Aucun  signalement</div>
+</ng-template>

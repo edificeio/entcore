@@ -8,6 +8,10 @@
         </button>
     </div>
 </div>
-
-<ode-alerte *ngFor="let alerte of this.pendingAlertes | async" [alerte]="alerte" [structure]="structure" [subject]="updateSubject">
-</ode-alerte>
+<div *ngIf="(this.$pendingAlertes | async)?.length !== 0  ; else elseBlock">
+    <ode-alerte *ngFor="let alerte of this.$pendingAlertes | async" [alerte]="alerte" [structure]="structure" [subject]="$updateSubject">
+    </ode-alerte>
+</div>
+<ng-template #elseBlock>
+    <div class="no-alert-text">Aucun signalement</div>
+</ng-template>
