@@ -30,8 +30,8 @@
           (onCancel)="showConfirmation = false">
           <s5l>management.message.flash.confirm.delete</s5l>
         </ode-lightbox-confirm>
-        <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()"><s5l>management.message.flash.copy</s5l></button>
-        <button class="action" *ngIf="isSelectionCopyable()" (click)="editMessage()"><s5l>management.message.flash.button.edit</s5l></button>
+        <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()" class="has-left-margin-5"><s5l>management.message.flash.copy</s5l></button>
+        <button class="action" *ngIf="isSelectionCopyable()" (click)="editMessage()" class="has-left-margin-5"><s5l>management.message.flash.button.edit</s5l></button>
       </div>
     </div>
     <table class="table">
