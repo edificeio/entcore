@@ -42,11 +42,11 @@ export const csvViewer = ng.directive('csvViewer', ['$sce', ($sce) => {
         },
         template: `
             <div ng-if="showTabs()" class="pagination__area flex-row align-center justify-center">
-                <div class="file-controls left"><i class="left" ng-click="previousPage(e)"></i></div>
+                <div class="file-controls left" ng-click="previousPage(e)"><i class="left"></i></div>
                 <div class="pagination">
                 [[nameTab()]] <input type="text" ng-model="pageIndex" /> / [[numPages()]]
                 </div>
-                <div class="file-controls right"><i class="right" ng-click="nextPage(e)"></i></div>
+                <div class="file-controls right" ng-click="nextPage(e)"><i class="right"></i></div>
             </div>
             <div class="render">
 			    <p ng-if="loading" class="top-spacing-four flex-row align-start justify-center centered-text"><i18n>workspace.preview.loading</i18n>&nbsp;<i class="loading"></i></p>
@@ -168,6 +168,22 @@ export const csvViewer = ng.directive('csvViewer', ['$sce', ($sce) => {
                     scope.currentTab = scope.tabs[0];
                 }
             }
+
+			let keyNav = function(e)
+			{
+				switch(e.keyCode)
+				{
+					case 37: scope.previousPage(e); break;
+					case 39: scope.nextPage(e); break;
+                }
+                scope.$apply();
+			};
+			document.addEventListener("keydown", keyNav);
+			(scope as any).$on("$destroy", function()
+			{
+				document.removeEventListener("keydown", keyNav);
+            });
+
             scope.getValue = (row, index) => {
                 return `${row[index] || ""}`;
             }
