@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Injector, OnInit } from '@angular/core';
-import { Data, NavigationEnd } from '@angular/router';
+import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
@@ -63,13 +63,6 @@ export class MessageFlashListComponent extends OdeComponent implements OnInit {
             this.filter.obsolete = true;
             this.changeDetector.detectChanges();
         }));
-
-        this.subscriptions.add(this.router.events.subscribe(e => {
-            if (e instanceof NavigationEnd) {
-                this.changeDetector.markForCheck();
-            }
-        }));
-
     }
 
     updateData(): void {

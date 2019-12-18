@@ -48,7 +48,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             }
             if (this.action !== 'create' && data.messages) {
                 this.messages = data.messages;
-                this.originalMessage = this.messages.find(mess => mess.id === this.messageId);
+                this.originalMessage = this.messages.find(mess => mess.id == this.messageId);
                 if (!this.originalMessage || this.originalMessage.structureId !== this.structure.id) {
                     this.router.navigate(['/admin', this.structure.id, 'management', 'message-flash', 'list']);
                     return;
