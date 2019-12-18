@@ -249,6 +249,6 @@
     "appregistry.connector.parameters": "Paramètres du connecteur",
     "appregistry.show.connector.opts": "Afficher les paramètres du connecteur",
     "appregistry.hide.connector.opts": "Cacher les paramètres du connecteur",
-    "appregistry.connector.opts.header" : "<p>Les paramètres du connecteur permettent de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de se réauthentifier.</p><p>Ce type de lien n'est possible qu'avec certains sites web. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaître les paramétrages à effectuer.</p>",
+    "appregistry.connector.opts.header" : "<p>Les paramètres du connecteur permettent de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de se ré-authentifier.</p><p>Ce type de lien n'est possible qu'avec certains sites web. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaître les paramétrages à effectuer.</p>",
     "appregistry.external.app.header": "Ce lien/connecteur sera uniquement visible par les membres des groupes sélectionnés dans l'onglet \"Droits d'accès\"."
 }

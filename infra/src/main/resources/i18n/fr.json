@@ -8,7 +8,7 @@
     "load.image": "Charger une image",
     "embed.name": "Nom",
     "embed.name.tooltip": "Nom technique du fournisseur",
-    "embed.displayName": "Nom d’affichage",
+    "embed.displayName": "Nom d'affichage",
     "embed.displayName.tooltip": "Nom affiché sur la plateforme",
     "embed.url": "URL variabilisée",
     "embed.url.tooltip": "URL variabilisée de la vidéo",
@@ -17,7 +17,7 @@
     "embed.embed": "Embed",
     "embed.embed.tooltip": "Lien embed variabilisé de la vidéo",
     "embed.example": "Exemple",
-    "embed.example.tooltip": "URL d’exemple présente dans le message d’information",
+    "embed.example.tooltip": "URL d'exemple présente dans le message d'information",
     "embed.confirm.deletion": "Veuillez confirmer la suppression définitive de la ressource ",
     "confirm": "Confirmer"
 }
