@@ -37,8 +37,10 @@
       </ode-form-field>
 
       <ode-form-field label="management.message.flash.language">
-        <ode-mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
-        </ode-mono-select>
+        <div>
+          <ode-mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
+          </ode-mono-select>
+        </div>
       </ode-form-field>
 
       <ode-form-field label="management.message.flash.color">
