@@ -52,6 +52,7 @@ export class AlertesListComponent extends OdeComponent implements OnInit {
     openDialog() {
         const dialogRef = this.dialog.open(AlertesTraiteesListModalComponent, {
             width: '80%',
+            height: '70%',
             data: { structure: this.structure },
             disableClose: true
         });
