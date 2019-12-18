@@ -1,5 +1,5 @@
 {
-    "archive.info": "Sélectionnez les applications dont vous voulez exporter les données et les documents.<br>Note : l'export des applications autres que Espace Documentaire ou Casier sera au format brut json.",
+    "archive.info": "Sélectionnez les applications dont vous voulez exporter les données et les documents.<br/>Note : l'export des applications autres que Espace Documentaire ou Casier sera au format brut json.",
     "archive.download.docs": "Vos documents de l'espace documentaire et du casier seront exportés.",
     "archive.download.all": "Toutes vos données seront exportées mais ne seront pas toutes dans un format lisible.",
     "archive.title": "Mes données",
