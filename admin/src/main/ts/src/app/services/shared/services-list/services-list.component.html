@@ -2,7 +2,7 @@
   <div side-card>
     <ode-list
       [model]="collectionRef[serviceName].collection"
-      [sort]="sortOnDisplayName? 'displayName' : null"
+      [sort]="'+displayName'"
       [inputFilter]="filterByInput"
       [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
       [noResultsLabel]="collectionRef[serviceName].noResultsLabel"

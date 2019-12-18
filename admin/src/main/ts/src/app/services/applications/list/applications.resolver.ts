@@ -6,10 +6,12 @@ import {ApplicationModel} from '../../../core/store/models/application.model';
 import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from 'src/app/core/services/routing.service';
 
+import {BundlesService} from 'ngx-ode-sijil';
+
 @Injectable()
 export class ApplicationsResolver implements Resolve<ApplicationModel[]> {
 
-    constructor(private spinner: SpinnerService) { }
+    constructor(private spinner: SpinnerService, private bundlesService: BundlesService) { }
 
     resolve(route: ActivatedRouteSnapshot): Promise<ApplicationModel[]> {
         const currentStructure = globalStore.structures.data.find(
@@ -21,6 +23,7 @@ export class ApplicationsResolver implements Resolve<ApplicationModel[]> {
             const p = new Promise<ApplicationModel[]>((resolve, reject) => {
                 currentStructure.applications.syncApps(currentStructure.id)
                 .then(data => {
+                    currentStructure.applications.data.map(app => app.displayName = this.bundlesService.translate(app.displayName));
                     resolve(currentStructure.applications.data);
                 }, error => {
                     reject(error);
