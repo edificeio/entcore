@@ -54,10 +54,4 @@
       <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
     </ng-template>
   </ode-list>
-
-  <button (click)="addUsers()"
-          [disabled]="selectedUsers.length === 0"
-          class="add"
-          [title]="'group.manage.users.button.add' | translate">+
-  </button>
 </div>

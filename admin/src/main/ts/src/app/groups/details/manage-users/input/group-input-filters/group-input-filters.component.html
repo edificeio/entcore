@@ -5,7 +5,7 @@
   <s5l>filters</s5l>
   <i class="fa fa-chevron-down" aria-hidden="true"></i>
 </a>
-<div *ngIf="show">
+<div *ngIf="show" class="group-input-filters">
   <div *ngFor="let filter of listFilters.filters">
     <div *ngIf="filter.comboModel.length > 0">
       <ode-multi-combo

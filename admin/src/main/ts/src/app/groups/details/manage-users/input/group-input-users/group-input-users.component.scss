@@ -1,0 +1,25 @@
+ode-list {
+  min-height: 60vh;
+  max-height: 60vh;
+  flex: 1;
+  div.user-toolbar {
+    > i {
+      cursor: pointer;
+      margin: 0 2px;
+    }
+    .toolbar-right {
+      font-size: 1.2em;
+      float: right;
+    }
+    button {
+      &.select-all {
+        padding: 10px 5px;
+        margin: 5px 2px;
+      }
+      &.deselect-all {
+        padding: 10px 5px;
+        margin: 5px 2px;
+      }
+    }
+  }
+}

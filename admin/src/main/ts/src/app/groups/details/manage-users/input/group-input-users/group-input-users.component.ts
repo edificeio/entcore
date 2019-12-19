@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injector, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 import { OrderPipe, SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
@@ -13,11 +13,12 @@ import { GroupsStore } from '../../../../groups.store';
 @Component({
     selector: 'ode-group-input-users',
     templateUrl: './group-input-users.component.html',
-    providers: [UserListService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    styleUrls: ['./group-input-users.component.scss'],
+    providers: [UserListService]
 })
 export class GroupInputUsersComponent extends OdeComponent implements OnInit, OnDestroy {
     @Input() model: UserModel[] = [];
+    @Output() selectUsers: EventEmitter<UserModel[]> = new EventEmitter();
 
     public excludeDeletedUsers: DeleteFilter;
 
@@ -40,9 +41,9 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
                 injector: Injector,
                 private orderPipe: OrderPipe,
                 public listFilters: UserlistFiltersService) {
-                    super(injector);
+        super(injector);
         this.excludeDeletedUsers = new DeleteFilter(listFilters.$updateSubject);
-        this.excludeDeletedUsers.outputModel = ["users.not.deleted"];
+        this.excludeDeletedUsers.outputModel = ['users.not.deleted'];
     }
 
     ngOnInit(): void {
@@ -57,13 +58,13 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
         }));
     }
 
-   
     selectUser(u: UserModel): void {
         if (this.selectedUsers.indexOf(u) === -1) {
             this.selectedUsers.push(u);
         } else {
             this.selectedUsers = this.selectedUsers.filter(su => su.id !== u.id);
         }
+        this.selectUsers.emit(this.selectedUsers);
     }
 
     isSelected = (user: UserModel) => {
@@ -72,10 +73,12 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
 
     selectAll(): void {
         this.selectedUsers = this.storedElements;
+        this.selectUsers.emit(this.selectedUsers);
     }
 
     deselectAll(): void {
         this.selectedUsers = [];
+        this.selectUsers.emit(this.selectedUsers);
     }
 
     structureChange(s: StructureModel): void {
@@ -108,22 +111,5 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
                 .filter(u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1);
             this.changeDetector.markForCheck();
         }
-    }
-
-    addUsers(): void {
-        this.spinner.perform('group-manage-users',
-            this.groupsStore.group.addUsers(this.selectedUsers)
-                .then(() => {
-                    this.groupsStore.group.users = this.groupsStore.group.users.concat(this.selectedUsers);
-                    this.model = this.model.filter(u => this.selectedUsers.indexOf(u) === -1);
-                    this.selectedUsers = [];
-                    this.ns.success('notify.group.manage.users.added.content');
-                    this.changeDetector.markForCheck();
-                })
-                .catch((err) => {
-                    this.ns.error('notify.group.manage.users.added.error.content'
-                        , 'notify.group.manage.users.added.error.title', err);
-                })
-        );
     }
 }

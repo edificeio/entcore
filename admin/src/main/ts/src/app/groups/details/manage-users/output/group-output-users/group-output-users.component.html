@@ -3,11 +3,6 @@
 </div>
 
 <div class="flex-row-wrap">
-  <button (click)="removeUsers()"
-          [disabled]="selectedUsers.length === 0"
-          class="remove"
-          [title]="'group.manage.users.button.remove' | translate">-</button>
-
   <ode-list
     [model]="model"
     [sort]="userLS.sorts"
