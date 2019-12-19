@@ -1,18 +1,29 @@
 <ode-spinner-cube class="component-spinner" waitingFor="group-manage-users">
 </ode-spinner-cube>
 
-<div class="padded">
-  <h2>
-    <span><s5l>group.manage.users</s5l></span>
-  </h2>
+<h2>
+  <span><s5l>group.manage.users</s5l></span>
+</h2>
 
-
-  <div class="container">
-    <ode-group-input-users [model]="inputUsers">
+<div class="group-manage-users-container">
+  <div class="group-manage-users-input">
+    <ode-group-input-users [model]="inputUsers" (selectUsers)="onInputSelectUsers($event)" #inputUsersRef>
     </ode-group-input-users>
+  </div>
 
-    <ode-group-output-users [model]="groupsStore.group.users"
-                        (onDelete)="populateInputUsers()">
+  <div class="group-manage-users-buttons">
+    <button (click)="addUsers()" 
+            [disabled]="isAddUsersButtonDisabled()" 
+            class="group-manage-users-buttons__add" 
+            [title]="'group.manage.users.button.add' | translate">+</button>
+    <button (click)="removeUsers()" 
+            [disabled]="isRemoveUsersButtonDisabled()" 
+            class="group-manage-users-buttons__remove" 
+            [title]="'group.manage.users.button.remove' | translate">-</button>
+  </div>
+
+  <div class="group-manage-users-output">
+    <ode-group-output-users [model]="groupsStore.group.users" (selectUsers)="onOutputSelectUsers($event)" #outputUsersRef>
     </ode-group-output-users>
   </div>
 </div>

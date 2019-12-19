@@ -1,0 +1,54 @@
+.group-manage-users-container {
+    display: flex;
+    align-items: center;
+}
+
+.group-manage-users-input {
+    height: 500px;
+}
+
+.group-manage-users-output {
+    height: 500px;
+    margin-top: 35px;
+}
+
+.group-manage-users-buttons {
+    flex-shrink: 0;
+}
+
+.group-manage-users-buttons__add {
+    text-align: center;
+    border-radius: 25px;
+    width: 50px;
+    height: 50px;
+    padding: 0px 0px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 1.5em;
+    &:not(:disabled) {
+        background-color: rgb(255, 131, 82);
+        color: #fff;
+        &:hover {
+            background-color: darken(rgb(255, 131, 82), 5%);
+        }
+    }
+}
+
+.group-manage-users-buttons__remove {
+    text-align: center;
+    border-radius: 25px;
+    width: 50px;
+    height: 50px;
+    padding: 0px 0px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 1.5em;
+    &:not(:disabled) {
+        background-color: indianred;
+        color: #fff;
+        &:hover {
+            background-color: darken(indianred, 5%);
+            border-color: darken(indianred, 10%);
+        }
+    }
+}

@@ -1,21 +1,17 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
-import { SpinnerService } from 'ngx-ode-ui';
-import { NotifyService } from 'src/app/core/services/notify.service';
 import { UserListService } from 'src/app/core/services/userlist.service';
 import { UserModel } from '../../../../../core/store/models/user.model';
-import { GroupsStore } from '../../../../groups.store';
-
 
 @Component({
     selector: 'ode-group-output-users',
     templateUrl: './group-output-users.component.html',
-    providers: [ UserListService ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    styleUrls: ['./group-output-users.component.scss'],
+    providers: [ UserListService ]
 })
-export class GroupOutputUsersComponent extends OdeComponent{
+export class GroupOutputUsersComponent extends OdeComponent {
     @Input() model: UserModel[] = [];
-    @Output() onDelete: EventEmitter<any> = new EventEmitter();
+    @Output() selectUsers: EventEmitter<UserModel[]> = new EventEmitter();
 
     // list elements stored by store pipe in list component
     // (takes filters in consideration)
@@ -24,11 +20,8 @@ export class GroupOutputUsersComponent extends OdeComponent{
     // Users selected by enduser
     selectedUsers: UserModel[] = [];
 
-    constructor(private groupsStore: GroupsStore,
-                injector: Injector,
-                public userLS: UserListService,
-                private spinner: SpinnerService,
-                private ns: NotifyService) {
+    constructor(injector: Injector,
+                public userLS: UserListService) {
         super(injector);
     }
 
@@ -38,6 +31,7 @@ export class GroupOutputUsersComponent extends OdeComponent{
         } else {
             this.selectedUsers = this.selectedUsers.filter(su => su.id !== u.id);
         }
+        this.selectUsers.emit(this.selectedUsers);
     }
 
     isSelected = (user: UserModel) => {
@@ -46,28 +40,11 @@ export class GroupOutputUsersComponent extends OdeComponent{
 
     selectAll(): void {
         this.selectedUsers = this.storedElements;
+        this.selectUsers.emit(this.selectedUsers);
     }
 
     deselectAll(): void {
         this.selectedUsers = [];
-    }
-
-    removeUsers(): void {
-        this.spinner.perform('group-manage-users',
-            this.groupsStore.group.removeUsers(this.selectedUsers)
-                .then(() => {
-                    this.groupsStore.group.users = this.groupsStore.group.users
-                        .filter(gu => this.selectedUsers.indexOf(gu) === -1);
-                    this.onDelete.emit();
-                    this.selectedUsers = [];
-                    this.ns.success('notify.group.manage.users.removed.content');
-                    this.changeDetector.markForCheck();
-                })
-                .catch((err) => {
-                    this.ns.error('notify.group.manage.users.removed.error.content'
-                        , 'notify.group.manage.users.removed.error.title'
-                        , err);
-                })
-        );
+        this.selectUsers.emit(this.selectedUsers);
     }
 }

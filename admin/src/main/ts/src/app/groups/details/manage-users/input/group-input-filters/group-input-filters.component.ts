@@ -9,6 +9,7 @@ import { StructureModel } from '../../../../../core/store/models/structure.model
 @Component({
     selector: 'ode-group-input-filters-users',
     templateUrl: './group-input-filters.component.html',
+    styleUrls: ['./group-input-filters.component.scss'],
     host: {
         '(document:click)': 'onClick($event)',
     },
