@@ -21,6 +21,7 @@ package org.entcore.workspace.dao;
 
 import java.util.Date;
 
+import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.utils.StringUtils;
 
@@ -76,7 +77,7 @@ public class DocumentDao extends GenericDao {
 				.set("file", revision.getString("file"))//
 				.set("thumbnails", revision.getJsonObject("thumbnails"))//
 				.set("metadata", revision.getJsonObject("metadata"))//
-				.set("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "").unset("previewDate");
+				.set("nameSearch", name != null ? DocumentHelper.prepareNameForSearch(name) : "").unset("previewDate");
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(docId)), set.build(), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -88,7 +89,7 @@ public class DocumentDao extends GenericDao {
 				.put("file", revision.getString("file"))//
 				.put("thumbnails", revision.getJsonObject("thumbnails"))//
 				.put("metadata", revision.getJsonObject("metadata"))//
-				.put("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
+				.put("nameSearch", name != null ? DocumentHelper.prepareNameForSearch(name) : "");
 				future.complete(doc);
 			} else {
 				future.fail(toErrorStr(body));

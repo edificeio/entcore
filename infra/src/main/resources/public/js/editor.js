@@ -2391,7 +2391,9 @@ window.RTE = (function () {
 					link: function (scope, element, attributes) {
 					    ui.extendSelector.touchEvents('[contenteditable] a');
 						scope.linker = {
-							display: {},
+							display: {
+								searching: false
+							},
 							apps: [],
 							search: {
 								application: {},
@@ -2473,22 +2475,56 @@ window.RTE = (function () {
 								};
 							}
 							Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
-							    Behaviours.applicationsBehaviours[prefix].loadResources(cb);
-							    scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+								var behaviour = Behaviours.applicationsBehaviours[prefix];
+								scope.linker.addResource = behaviour.create;
+								if(behaviour.loadResourcesWithFilter){
+									cb();
+								}else{
+									behaviour.loadResources(cb);
+								}
 							});
 						};
-
+						function debounce(func, wait, immediate) {
+							var timeout;
+							return function() {
+								var context = this, args = arguments;
+								var later = function() {
+									timeout = null;
+									if (!immediate) func.apply(context, args);
+								};
+								var callNow = immediate && !timeout;
+								clearTimeout(timeout);
+								timeout = setTimeout(later, wait);
+								if (callNow) func.apply(context, args);
+							};
+						};
+						var searchDebounced = debounce(function(appBehaviour, cb){
+							scope.linker.display.searching = true;
+							scope.$apply('linker');
+							appBehaviour.loadResourcesWithFilter(scope.linker.search.text, function(r){
+								scope.linker.resources = r;
+								scope.linker.display.searching = false;
+								scope.$apply('linker');
+								cb && cb();
+							})
+						}, 400);
 						scope.linker.searchApplication = function(cb){
 							var split = scope.linker.search.application.address.split('/');
 							var prefix = split[split.length - 1];
 							scope.linker.params.appPrefix = prefix;
 							Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
-								scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
-									return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
-										resource._id === scope.linker.search.text);
-								});
-								if(typeof cb === 'function'){
-									cb();
+								if(appBehaviour.loadResourcesWithFilter){
+									if(scope.linker.search.text){
+										searchDebounced(appBehaviour, cb)
+									}
+								}else{
+									scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
+										return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
+											resource._id === scope.linker.search.text);
+									});
+									if(typeof cb === 'function'){
+										cb();
+									}
 								}
 							});
 						};
