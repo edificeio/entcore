@@ -632,7 +632,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void rename(String id, String newName, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
 		this.info(id, user, msg -> {
 			if (msg.succeeded()) {
-				String nameSearch = newName != null ? StringUtils.stripAccentsToLowerCase(newName) : "";
+				String nameSearch = newName != null ? DocumentHelper.prepareNameForSearch(newName) : "";
 				JsonObject doc = msg.result();
 				doc.put("name", newName);// need for result
 				doc.put("nameSearch", nameSearch);

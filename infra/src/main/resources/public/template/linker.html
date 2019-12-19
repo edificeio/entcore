@@ -28,21 +28,26 @@
 				</div>
 			</div>
 			<article class="found-resources" ng-class="{ info: linker.search.text === '' }">
-				<div ng-if="linker.search.text === ''" class="reduce-block-six">
-					<div class="row">
-						<i18n>linker.warning</i18n>
+				<div ng-if="linker.display.searching">
+					<label><i18n>linker.search.inprogress</i18n></label><i class="spinner left-spacing"></i>
+				</div>
+				<div ng-if="!linker.display.searching">
+					<div ng-if="linker.search.text === ''" class="reduce-block-six">
+						<div class="row">
+							<i18n>linker.warning</i18n>
+						</div>
 					</div>
+					<div ng-if="linker.resources.length === 0 && linker.search.text !== ''">
+						<div ng-include="'/' + linker.params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
+					</div>
+					<ul class="illustrated-list" ng-if="linker.search.text">
+						<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
+							<img skin-src="[[resource.icon]]" class="illustration" />
+							<a class="eight cell-ellipsis name">[[resource.title]]</a>
+							<em class="two cell-ellipsis owner">[[resource.ownerName]]</em>
+						</li>
+					</ul>
 				</div>
-				<div ng-if="linker.resources.length === 0 && linker.search.text !== ''">
-					<div ng-include="'/' + linker.params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
-				</div>
-				<ul class="illustrated-list" ng-if="linker.search.text">
-					<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
-						<img skin-src="[[resource.icon]]" class="illustration" />
-						<a class="eight cell-ellipsis name">[[resource.title]]</a>
-						<em class="two cell-ellipsis owner">[[resource.ownerName]]</em>
-					</li>
-				</ul>
 			</article>
 			<div class="twelve cell vertical-spacing">
 				<div class="row">

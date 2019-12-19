@@ -17,6 +17,14 @@ import io.vertx.core.json.JsonObject;
 
 public class DocumentHelper {
 
+	public static String prepareNameForSearch(String name){
+		if(StringUtils.isEmpty(name)){
+			return name;
+		}
+		final String stripped = StringUtils.stripAccentsToLowerCase(name);
+		return stripped.replaceAll("_", " ");
+	}
+
 	private static JsonObject initBase(JsonObject doc, String owner, String ownerName, String name, String application)
 	{
 		if(doc == null)
@@ -45,7 +53,7 @@ public class DocumentHelper {
 			name = DocumentHelper.getName(doc, "");
 
 		doc.put("name", name);
-		doc.put("nameSearch", StringUtils.stripAccentsToLowerCase(name));
+		doc.put("nameSearch", prepareNameForSearch(name));
 
 		if(application != null)
 			doc.put("application", application);
@@ -186,7 +194,7 @@ public class DocumentHelper {
 	public static JsonObject setName(JsonObject doc, String name)
 	{
 		doc.put("name", name);
-		doc.put("nameSearch", StringUtils.stripAccentsToLowerCase(name));
+		doc.put("nameSearch", prepareNameForSearch(name));
 		return doc;
 	}
 
