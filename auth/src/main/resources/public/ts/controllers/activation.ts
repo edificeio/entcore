@@ -92,6 +92,8 @@ export let activationController = ng.controller('ActivationController', ['$scope
 		return lang.translate("strong")
 	};
 
+	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
+
 	$scope.noThemePicked = () => !Object.keys($scope.user.themes).length;
 	
 	$scope.refreshSelectionTheme = (theme) => {
