@@ -59,6 +59,8 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	});
 
 	$scope.template = template;
+	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
+	
 
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){
