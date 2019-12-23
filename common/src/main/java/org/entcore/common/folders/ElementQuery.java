@@ -37,7 +37,7 @@ public class ElementQuery {
 	private List<String> fullTextSearch;
 	private Set<String> ownerIds;
 	private String actionNotExists;
-	private String actionExists;
+	private String actionExistsInInheritedShares;
 	private Boolean hasBeenShared;
 	private String notApplication;
 	private String trasherId;
@@ -115,12 +115,15 @@ public class ElementQuery {
 		this.actionNotExists = actionNotExists;
 	}
 
-	public void setActionExists(String actionExists) {
-		this.actionExists = actionExists;
+	public void setActionExistsInInheritedShares(String actionExistsInInheritedShares) {
+		if(actionExistsInInheritedShares != null){
+			actionExistsInInheritedShares = actionExistsInInheritedShares.replaceAll("\\.", "-");
+		}
+		this.actionExistsInInheritedShares = actionExistsInInheritedShares;
 	}
 
-	public String getActionExists() {
-		return actionExists;
+	public String getActionExistsInInheritedShares() {
+		return actionExistsInInheritedShares;
 	}
 
 	public Set<String> getOwnerIds() {
