@@ -24,8 +24,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import javax.management.Query;
-
 class QueryHelper {
 	final static int MAX_BATCH = 10;
 	final static long MAX_DEPTH = 10;
@@ -62,7 +60,9 @@ class QueryHelper {
 			if (user.isPresent()) {
 				// filters that belongs to user and shares
 				// search by share or owner
-				if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
+				if(!StringUtils.isEmpty(query.getActionExistsInInheritedShares())){
+					builder.withActionExistingInInheritedShared(user.get(), query.getActionExistsInInheritedShares());
+				} else if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
 					if (query.isDirectShared()){
 						builder.filterBySharedAndOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
 					} else if (query.getShared()) {
@@ -89,11 +89,7 @@ class QueryHelper {
 				}
 				//
 				if (query.getActionNotExists() != null) {
-					builder.withActionNotExistingInShared(user.get(), query.getActionNotExists());
-				}
-				//
-				if (query.getActionExists() != null) {
-					builder.withActionExistingInShared(user.get(), query.getActionExists());
+					builder.withActionNotExistingInInheritedShared(user.get(), query.getActionNotExists());
 				}
 			}
 			//
@@ -398,10 +394,22 @@ class QueryHelper {
 			return this;
 		}
 
-		public DocumentQueryBuilder withActionNotExistingInShared(UserInfos user, String action) {
+		public DocumentQueryBuilder withActionNotExistingInInheritedShared(UserInfos user, String action) {
 			builder.and(QueryBuilder.start("inheritedShares")
 					.elemMatch(QueryBuilder.start("userId").notEquals(user.getUserId()).and(action).is(true).get())
 					.get());
+			return this;
+		}
+
+		public DocumentQueryBuilder withActionExistingInInheritedShared(UserInfos user, String action) {
+			List<DBObject> groups = new ArrayList<>();
+			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+			}
+			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
+			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
+					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
 			return this;
 		}
 
@@ -413,7 +421,7 @@ class QueryHelper {
 			}
 			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
 			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
-					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+					QueryBuilder.start("shared").elemMatch(subQuery).get());
 			return this;
 		}
 

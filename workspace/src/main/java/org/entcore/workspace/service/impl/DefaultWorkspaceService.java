@@ -35,8 +35,6 @@ import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.RevisionDao;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -89,7 +87,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		if(elementId.isPresent()){
 			final ElementQuery query = new ElementQuery(true);
 			query.setId(elementId.get());
-			query.setActionExists(WorkspaceController.WRITE_ACTION);
+			query.setActionExistsInInheritedShares(WorkspaceController.WRITE_ACTION);
 			this.countByQuery(query, user, res -> {
 				handler.handle(new DefaultAsyncResult<>(res.succeeded() && res.result()==1));
 			});

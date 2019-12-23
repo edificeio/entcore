@@ -248,7 +248,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			if (idsArray != null && !idsArray.isEmpty()) {
 				ElementQuery query = new ElementQuery(true);
 				query.setIds(idsArray.getList());
-				query.setActionExists(serviceMethod);
+				query.setActionExistsInInheritedShares(serviceMethod);
 				executeCountQuery(request, user, query, idsArray.size(), handler);
 			} else {
 				handler.handle(false);
@@ -265,7 +265,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			query.getVisibilitiesOr().add("public");
 			query.getVisibilitiesOr().add("protected");
 			query.setId(id);
-			query.setActionExists(serviceMethod);
+			query.setActionExistsInInheritedShares(serviceMethod);
 			executeCountQuery(request, user, query, 1, handler);
 		} else {
 			handler.handle(false);
@@ -278,7 +278,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
 			query.setId(id);
-			query.setActionExists(serviceMethod);
+			query.setActionExistsInInheritedShares(serviceMethod);
 			executeCountQuery(request, user, query, 1, handler);
 
 		} else {
