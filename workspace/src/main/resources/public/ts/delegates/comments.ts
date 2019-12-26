@@ -47,6 +47,7 @@ export function CommentDelegate($scope: CommentDelegateScope) {
     $scope.toggleComments = function () {
         if ($scope.selectedItems().length > 0) {
             let document = $scope.selectedItems()[0];
+            $scope.targetElement = document;
             document.showComments = !document.showComments;
         }
     };
