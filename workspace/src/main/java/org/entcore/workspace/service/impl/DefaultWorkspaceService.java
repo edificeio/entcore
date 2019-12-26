@@ -162,15 +162,15 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.findById(id, PROPERTIES_KEYS, handler);
 	}
 
-	public void addComment(final String id, final String comment, final UserInfos user,
+	public String addComment(final String id, final String commentId, final String comment, final UserInfos user,
 			final Handler<JsonObject> handler) {
-		final String commentId = UUID.randomUUID().toString();
 		JsonObject query = new JsonObject().put("$push",
 				new JsonObject().put("comments",
 						new JsonObject().put("id", commentId).put("author", user.getUserId())
 								.put("authorName", user.getUsername()).put("posted", MongoDb.formatDate(new Date()))
 								.put("comment", comment)));
 		dao.update(id, query, handler);
+		return commentId;
 	}
 
 	public void deleteComment(final String id, final String commentId, final Handler<JsonObject> handler) {

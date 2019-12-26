@@ -213,7 +213,7 @@ public class WorkspaceController extends BaseController {
 					String comment = request.formAttributes().get("comment");
 					if (comment != null && !comment.trim().isEmpty()) {
 						final String id = UUID.randomUUID().toString();
-						workspaceService.addComment(request.params().get("id"), comment, user, res -> {
+						workspaceService.addComment(request.params().get("id"), id, comment, user, res -> {
 							if ("ok".equals(res.getString("status"))) {
 								notifyComment(request, request.params().get("id"), user, isFolder);
 								renderJson(request, res.put("id", id));
