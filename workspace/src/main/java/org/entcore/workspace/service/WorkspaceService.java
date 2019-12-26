@@ -58,7 +58,7 @@ public interface WorkspaceService extends FolderManager {
 
 	public void documentProperties(final String id, final Handler<JsonObject> handler);
 
-	public void addComment(final String id, final String comment, final UserInfos user,
+	public String addComment(final String id, final String commentId, final String comment, final UserInfos user,
 			final Handler<JsonObject> handler);
 
 	public void hasRightsOn(final Collection<String> elementIds, Boolean onEmpty, UserInfos user, final Handler<AsyncResult<Boolean>> handler);
