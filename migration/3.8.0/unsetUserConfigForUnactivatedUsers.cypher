@@ -1,0 +1,1 @@
+MATCH (u:User)-[]-(uac:UserAppConf) WHERE EXISTS(u.activationCode) AND HAS(uac.theme) DETACH DELETE uac RETURN u.login,u.activationCode;
