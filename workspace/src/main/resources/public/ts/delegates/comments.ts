@@ -18,7 +18,7 @@ export interface CommentDelegateScope {
     canShowBadgeComments(current: models.Element): boolean
     canShowCommentLightbox(current: models.Element): boolean
     canDeleteComment(current: models.Element, comment: models.Comment): boolean
-    sendComment()
+    sendComment(item?:models.Element)
     openCommentView()
     removeComment(item: models.Element, comment: models.Comment)
     toggleComments()
@@ -80,7 +80,10 @@ export function CommentDelegate($scope: CommentDelegateScope) {
         $scope.safeApply()
     }
 
-    $scope.sendComment = async function () {
+    $scope.sendComment = async function (el) {
+        if(el){
+            $scope.targetElement = el;
+        }
         template.close('lightbox');
         const comment = await workspaceService.sendComment($scope.targetElement);
         $scope.targetElement.comments = $scope.targetElement.comments || [];
