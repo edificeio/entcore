@@ -40,7 +40,7 @@
 						<h2><i18n>comments</i18n></h2>
 
 						<div class="row" ng-if="folder.myRights.comment">
-							<form class="twelve fluid cell" ng-submit="sendFolderComment(folder)">
+							<form class="twelve fluid cell" ng-submit="sendComment(folder)">
 								<div class="row">
 									<textarea ng-model="folder.comment"></textarea>
 								</div>
