@@ -37,13 +37,13 @@ export class UserModel extends Model<UserModel> {
     displayName: string;
     source: string;
     blocked: boolean;
-    aafFunctions: Array<Array<string>>;
-    functionalGroups: string[];
-    manualGroups: string[];
-    functions?: Array<[string, Array<string>]>;
-    structures: { id: string, name: string }[];
-    classes: Classe[];
-    duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[];
+    aafFunctions: Array<Array<string>> = [];
+    functionalGroups: string[] = [];
+    manualGroups: string[] = [];
+    functions?: Array<[string, Array<string>]> = [];
+    structures: { id: string, name: string }[] = [];
+    classes: Classe[] = [];
+    duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[] = [];
     deleteDate?: number;
     disappearanceDate?: number;
 
