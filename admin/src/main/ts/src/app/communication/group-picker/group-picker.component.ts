@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
+import {Component, EventEmitter, Injector, Input, OnChanges, OnInit, Output} from '@angular/core';
 import { OrderPipe, SelectOption } from 'ngx-ode-ui';
 import { GroupModel, GroupType } from '../../core/store/models/group.model';
 import { StructureModel } from '../../core/store/models/structure.model';
+import {OdeComponent} from 'ngx-ode-core';
 
 const css = {
     filterButton: 'lct-filters'
@@ -15,7 +16,7 @@ export const groupPickerLocators = {
     selector: 'ode-group-picker',
     templateUrl: './group-picker.component.html'
 })
-export class GroupPickerComponent implements OnInit, OnChanges {
+export class GroupPickerComponent extends OdeComponent implements OnInit, OnChanges {
 
     @Input() lightboxTitle: string;
     @Input() list: GroupModel[];
@@ -40,9 +41,12 @@ export class GroupPickerComponent implements OnInit, OnChanges {
     selectedStructure: StructureModel;
     structureOptions: SelectOption<StructureModel>[] = [];
 
-    constructor(private orderPipe: OrderPipe) {}
+    constructor(private orderPipe: OrderPipe, injector: Injector) {
+        super(injector);
+    }
 
     ngOnInit(): void {
+        super.ngOnInit();
         this.initialList = [...this.list];
         this.selectedStructure = this.activeStructure;
         this.structureOptions = this.orderPipe.transform(this.structures, '+name')
