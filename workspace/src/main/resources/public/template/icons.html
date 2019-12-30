@@ -37,30 +37,32 @@
 
 				<div ng-if="folder.showComments">
 					<lightbox show="canShowCommentLightbox(folder)" on-close="folder.showComments = false;">
-						<h2><i18n>comments</i18n></h2>
+						<div ng-click="$event.stopPropagation()">
+							<h2><i18n>comments</i18n></h2>
 
-						<div class="row" ng-if="folder.myRights.comment">
-							<form class="twelve fluid cell" ng-submit="sendComment(folder)">
-								<div class="row">
-									<textarea ng-model="folder.comment"></textarea>
-								</div>
-								<div class="lightbox-buttons fluid">
-									<button class="right-magnet" ng-disabled="!folder.comment.length"><i18n>workspace.comment</i18n></button>
-									<button class="cancel right-magnet" type="button" ng-click="folder.showComments = false;"><i18n>cancel</i18n></button>
-								</div>
-							</form>
+							<div class="row" ng-if="folder.myRights.comment">
+								<form class="twelve fluid cell" ng-submit="sendComment(folder)">
+									<div class="row">
+										<textarea ng-model="folder.comment"></textarea>
+									</div>
+									<div class="lightbox-buttons fluid">
+										<button class="right-magnet" ng-disabled="!folder.comment.length"><i18n>workspace.comment</i18n></button>
+										<button class="cancel right-magnet" type="button" ng-click="folder.showComments = false;"><i18n>cancel</i18n></button>
+									</div>
+								</form>
+							</div>
+
+							<article class="twelve cell comment" ng-repeat="comment in folder.comments">
+								<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+								<em>[[longDate(comment.posted)]]</em>
+								<a class="right-magnet"
+								ng-click="removeComment(folder, comment)"
+								ng-if="canDeleteComment(folder,comment)">
+									<i18n>workspace.delete</i18n>
+								</a>
+								<p>[[comment.comment]]</p>
+							</article>
 						</div>
-
-						<article class="twelve cell comment" ng-repeat="comment in folder.comments">
-							<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-							<em>[[longDate(comment.posted)]]</em>
-							<a class="right-magnet"
-							   ng-click="removeComment(folder, comment)"
-							   ng-if="canDeleteComment(folder,comment)">
-								<i18n>workspace.delete</i18n>
-							</a>
-							<p>[[comment.comment]]</p>
-						</article>
 					</lightbox>
 				</div>
 			</explorer>
