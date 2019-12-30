@@ -61,7 +61,11 @@ class QueryHelper {
 				// filters that belongs to user and shares
 				// search by share or owner
 				if(!StringUtils.isEmpty(query.getActionExistsInInheritedShares())){
-					builder.withActionExistingInInheritedShared(user.get(), query.getActionExistsInInheritedShares());
+					if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
+						builder.withActionExistingInInheritedSharedWithOrVisiblities(user.get(), query.getActionExistsInInheritedShares(),query.getVisibilitiesOr());
+					}else{
+						builder.withActionExistingInInheritedShared(user.get(), query.getActionExistsInInheritedShares());
+					}
 				} else if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
 					if (query.isDirectShared()){
 						builder.filterBySharedAndOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
@@ -410,6 +414,27 @@ class QueryHelper {
 			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
 			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
 					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			return this;
+		}
+
+		public DocumentQueryBuilder withActionExistingInInheritedSharedWithOrVisiblities(UserInfos user, String action, Set<String> visibilities) {
+			final List<DBObject> ors = new ArrayList<>();
+			final List<DBObject> groups = new ArrayList<>();
+			//owner
+			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			//inherit shares
+			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+			}
+			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
+			ors.add(QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			//visibilities
+			for (String visibility : visibilities) {
+				ors.add(QueryBuilder.start(visibility).is(true).get());
+			}
+			//
+			builder.or(ors.toArray(new DBObject[ors.size()]));
 			return this;
 		}
 
