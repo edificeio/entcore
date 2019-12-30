@@ -98,45 +98,37 @@ export class CommunicationRulesComponent {
         this.highlighted = null;
     }
 
-    public toFilterWords(filter: string): string[]
-    {
-        return filter == null || filter == "" ? null : standardise(filter).split(/\s+/);
+    public toFilterWords(filter: string): string[] {
+        return filter === null || filter === '' ? null : standardise(filter).split(/\s+/);
     }
 
-    public filterRule(sender: GroupModel, receivers: GroupModel[]): boolean
-    {
-        if(!!sender == false)
+    public filterRule(sender: GroupModel, receivers: GroupModel[]): boolean {
+        if (!!sender === false) {
             return false;
+        }
 
-        let name = standardise(this.groupNameService.getGroupName(sender));
+        const name = standardise(this.groupNameService.getGroupName(sender));
 
-        let senderWords = this.filterSenders;
-        let receiveWords = this.filterReceivers;
+        const senderWords = this.filterSenders;
+        const receiveWords = this.filterReceivers;
         let included = null;
 
-        if(senderWords != null)
-        {
-            for(let i = senderWords.length; i-- > 0;)
-            {
-                if(name.indexOf(senderWords[i]) == -1)
-                {
+        if (senderWords != null) {
+            for (let i = senderWords.length; i-- > 0;) {
+                if (name.indexOf(senderWords[i]) === -1) {
                     included = false;
                     break;
                 }
             }
         }
 
-        if(included == null && receiveWords != null)
-        {
+        if (included == null && receiveWords != null) {
             included = false;
             loopReceivers:
-            for(let r = receivers.length; r-- > 0;)
-            {
-                let rName = standardise(this.groupNameService.getGroupName(receivers[r]));
-                for(let i = receiveWords.length; i-- > 0;)
-                {
-                    if(rName.indexOf(receiveWords[i]) != -1)
-                    {
+            for (let r = receivers.length; r-- > 0;) {
+                const rName = standardise(this.groupNameService.getGroupName(receivers[r]));
+                for (let i = receiveWords.length; i-- > 0;) {
+                    if (rName.indexOf(receiveWords[i]) !== -1) {
                         included = true;
                         break loopReceivers;
                     }
@@ -157,9 +149,11 @@ export class CommunicationRulesComponent {
     public getReceivers(): GroupModel[] {
         const receivers: GroupModel[] = [];
         this.communicationRules.forEach(rule => {
-            for(let i = rule.receivers.length; i-- > 0;)
-                if(this.filterRule(rule.sender, [rule.receivers[i]]) == true)
+            for (let i = rule.receivers.length; i-- > 0;) {
+                if (this.filterRule(rule.sender, [rule.receivers[i]]) === true) {
                     receivers.push(rule.receivers[i]);
+                }
+            }
         });
         return sortGroups(uniqueGroups(receivers), (g) => this.groupNameService.getGroupName(g), this.activeStructure.id);
     }
