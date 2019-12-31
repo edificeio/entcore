@@ -11,6 +11,12 @@
     "logLevel": "debug",
     "changeOrigin": true
   },
+  "/admin/public/dist/assets/trumbowyg": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
   "/appregistry/*": {
     "target": "http://localhost:8090",
     "secure": false,

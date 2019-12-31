@@ -21,7 +21,7 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
-import { QuillModule } from 'ngx-quill';
+import { NgxTrumbowygModule } from 'ngx-trumbowyg';
 
 @NgModule({
     imports: [
@@ -33,7 +33,19 @@ import { QuillModule } from 'ngx-quill';
         MatPaginatorModule,
         MatSortModule,
         MatTableModule,
-        QuillModule.forRoot()
+        NgxTrumbowygModule.withConfig({
+            svgPath: '/admin/public/dist/assets/trumbowyg/icons.svg',
+            removeformatPasted: true,
+            semantic: false,
+            btns: [
+                ['historyUndo', 'historyRedo'],
+                ['strong', 'em', 'underline'],
+                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                ['foreColor', 'fontfamily', 'fontsize'],
+                ['link'],
+                ['viewHTML']
+            ]
+        })
     ],
     declarations: [
         ManagementRootComponent,

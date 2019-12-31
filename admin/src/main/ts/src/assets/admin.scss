@@ -2304,3 +2304,11 @@ ode-message-flash, ode-message-flash-form {
     margin-bottom: 10px;
   }
 }
+
+.trumbowyg-button-pane button:not(.trumbowyg-disable):hover {
+  background-color: $accent;
+}
+
+.trumbowyg-dropdown-link {
+  min-width: 170px;
+}

@@ -8,6 +8,7 @@ import { MessageFlashService } from '../../message-flash.service';
 import { MessageFlashStore } from '../../message-flash.store';
 import { StructureModel } from '../../../../core/store/models/structure.model';
 import { FlashMessageModel } from '../../../../core/store/models/flashmessage.model';
+import { TrumbowygOptions } from 'ngx-trumbowyg';
 
 @Component({
     selector: 'ode-message-flash-form',
@@ -31,6 +32,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     mailNotification = false;
     pushNotification = false;
     private lightboxSubStructures: string[];
+    trumbowygOptions: TrumbowygOptions = {lang: this.bundles.currentLanguage};
 
     constructor(injector: Injector,
                 public bundles: BundlesService,
@@ -118,6 +120,14 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             }
         }
         return defaultLanguage;
+    }
+
+    onSelectedLanguageChange(lang: string): void {
+        this.selectedLanguage = lang;
+        // prevents domSanitizer to display "undefined"
+        if (!this.message.contents[this.selectedLanguage]) {
+            this.message.contents[this.selectedLanguage] = '';
+        }
     }
 
     areSelectedChildren(): boolean {

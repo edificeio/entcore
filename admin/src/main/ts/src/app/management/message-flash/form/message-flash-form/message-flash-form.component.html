@@ -38,7 +38,9 @@
 
       <ode-form-field label="management.message.flash.language">
         <div>
-          <ode-mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
+          <ode-mono-select  [ngModel]="selectedLanguage"
+                            (ngModelChange)="onSelectedLanguageChange($event)"
+                            [options]="languageOptions()">
           </ode-mono-select>
         </div>
       </ode-form-field>
@@ -71,45 +73,10 @@
     <div class="has-top-margin-40" style="width: 100%; display : flex">
       <div style="flex: 1 1; margin: 10px;">
         <h3><s5l>flashmsg.message</s5l> :</h3>
-        <quill-editor [(ngModel)]="message.contents[selectedLanguage]" 
-                      [placeholder]="'quill.placeholder' | translate"
-                      [sanitize]="true" 
-                      [styles]="{height: '200px', 'font-size': '1em'}">
-          <div quill-editor-toolbar>
-            <span class="ql-formats">
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-            </span>
-            <span class="ql-formats">
-              <select class="ql-align">
-                <option selected></option>
-                <option value="center"></option>
-                <option value="right"></option>
-                <option value="justify"></option>
-              </select>
-            </span>
-            <span class="ql-formats">
-              <select class="ql-color"></select>
-            </span>
-            <span class="ql-formats">
-              <select class="ql-font">
-                <option selected></option>
-                <option value="serif"></option>
-                <option value="monospace"></option>
-              </select>
-              <select class="ql-size">
-                <option value="small"><s5l>quill.toolbar.size.small</s5l></option>
-                <option selected><s5l>quill.toolbar.size.normal</s5l></option>
-                <option value="large"><s5l>quill.toolbar.size.large</s5l></option>
-                <option value="huge"><s5l>quill.toolbar.size.huge</s5l></option>
-              </select>
-            </span>
-            <span class="ql-formats">
-              <button class="ql-link"></button>
-            </span>
-          </div>
-        </quill-editor>
+        <ngx-trumbowyg-editor name="editor" 
+                              [(ngModel)]="message.contents[selectedLanguage]"
+                              [options]="trumbowygOptions">
+        </ngx-trumbowyg-editor>
       </div>
 
       <ode-message-flash-preview

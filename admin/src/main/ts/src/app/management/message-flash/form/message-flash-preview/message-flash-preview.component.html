@@ -2,10 +2,10 @@
   <h3><s5l>flashmsg.preview</s5l> :</h3>
   <div class="twelve cell">
     <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
-      <quill-view [content]="text"></quill-view>
+      <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
     </div>
     <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
-      <quill-view [content]="text"></quill-view>
+      <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
     </div>
   </div>
 </article>

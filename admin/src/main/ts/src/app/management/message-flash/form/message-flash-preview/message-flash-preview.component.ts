@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
@@ -12,14 +13,16 @@ export class MessageFlashPreviewComponent extends OdeComponent implements OnInit
     @Input() color: string;
     @Input() customColor: string;
 
-    constructor(injector: Injector) {
+    constructor(injector: Injector,
+                public domSanitizer: DomSanitizer) {
         super(injector);
     }
 
     ngOnInit() {
         super.ngOnInit();
+        // prevents domSanitizer to display "undefined"
+        if (!this.text) {
+            this.text = '';
+        }
     }
-
-    
-
 }
