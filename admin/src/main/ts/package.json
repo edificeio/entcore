@@ -37,11 +37,11 @@
     "ngx-ode-core": "~0.0.1",
     "ngx-ode-sijil": "~1.0.0",
     "ngx-ode-ui": "^3.0.1",
-    "ngx-quill": "^7.3.11",
+    "ngx-trumbowyg": "^6.0.7",
     "noty": "2.4.1",
-    "quill": "^1.3.7",
     "reflect-metadata": "0.1.10",
     "rxjs": "~6.5.3",
+    "trumbowyg": "^2.20.0",
     "tslib": "^1.10.0",
     "web-animations-js": "^2.3.2",
     "zone.js": "~0.9.1"

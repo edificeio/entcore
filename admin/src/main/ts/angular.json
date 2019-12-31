@@ -21,18 +21,28 @@
             "aot": false,
             "assets": [
               "src/favicon.ico",
+              "src/assets/trumbowyg/icons.svg",
               "src/assets"
             ],
             "styles": [
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/flatpickr/dist/themes/confetti.css",
-              "node_modules/quill/dist/quill.core.css",
-              "node_modules/quill/dist/quill.snow.css",
+              "node_modules/trumbowyg/dist/ui/trumbowyg.min.css",
+              "node_modules/trumbowyg/dist/plugins/colors/ui/trumbowyg.colors.min.css",
               "src/assets/admin.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/quill/dist/quill.min.js"
+              "node_modules/trumbowyg/dist/trumbowyg.min.js",
+              "node_modules/trumbowyg/dist/langs/de.js",
+              "node_modules/trumbowyg/dist/langs/es.js",
+              "node_modules/trumbowyg/dist/langs/fr.js",
+              "node_modules/trumbowyg/dist/langs/it.js",
+              "node_modules/trumbowyg/dist/langs/pt.js",
+              "node_modules/trumbowyg/plugins/colors/trumbowyg.colors.js",
+              "node_modules/trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js",
+              "node_modules/trumbowyg/plugins/fontsize/trumbowyg.fontsize.js",
+              "node_modules/trumbowyg/plugins/history/trumbowyg.history.js"
             ]
           },
           "configurations": {
@@ -101,7 +111,7 @@
               "src/assets/admin.scss"
             ],
             "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/jquery/dist/jquery.min.js"
             ]
           }
         },
