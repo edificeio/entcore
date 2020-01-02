@@ -1,15 +1,16 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {BundlesService} from 'ngx-ode-sijil';
 import {CommunicationRulesService} from '../communication-rules.service';
-import {Observable, Subject} from 'rxjs';
+import {combineLatest, Observable, ReplaySubject, Subject} from 'rxjs';
 import { standardise } from 'ngx-ode-ui';
 
-import {catchError, filter, first, mergeMap, tap} from 'rxjs/operators';
+import {catchError, filter, first, map, mergeMap, tap} from 'rxjs/operators';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { GroupNameService } from 'src/app/core/services/group-name.service';
+import {OdeComponent} from 'ngx-ode-core';
 
 const css = {
     group: 'lct-user-communication-group',
@@ -32,15 +33,34 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = 'both-groups-users-can-communi
     templateUrl: './communication-rules.component.html',
     styleUrls: ['./communication-rules.component.scss']
 })
-export class CommunicationRulesComponent {
+export class CommunicationRulesComponent  extends OdeComponent implements OnInit {
+    get activeStructure(): StructureModel {
+        return this._activeStructure;
+    }
+    @Input()
+    set activeStructure(value: StructureModel) {
+        this._activeStructure = value;
+        this.$activeStructure.next(value);
+    }
+    get communicationRules(): CommunicationRule[] {
+        return this._communicationRules;
+    }
+
+    @Input()
+    set communicationRules(value: CommunicationRule[]) {
+        this._communicationRules = value;
+        if (value) {
+            this.getSenders();
+            this.getReceivers();
+        }
+    }
     @Input()
     public sendingHeaderLabel = '';
 
     @Input()
     public receivingHeaderLabel = '';
 
-    @Input()
-    public communicationRules: CommunicationRule[];
+    private _communicationRules: CommunicationRule[];
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
@@ -48,8 +68,8 @@ export class CommunicationRulesComponent {
     @Input()
     public activeColumn: Column;
 
-    @Input()
-    public activeStructure: StructureModel;
+
+    private _activeStructure: StructureModel;
 
     @Input()
     public manageableStructuresId: string[];
@@ -72,7 +92,13 @@ export class CommunicationRulesComponent {
     public warningGroupSender = false;
     public warningGroupReceiver = false;
     public pickedGroup: GroupModel;
+    public $receiversCommunicationRules = new ReplaySubject<GroupModel[]>();
+    public $sendersCommunicationRules = new ReplaySubject<GroupModel[]>();
 
+    public $receivers: Observable<GroupModel[]>;
+    public $senders: Observable<GroupModel[]>;
+
+    public $activeStructure = new ReplaySubject<StructureModel>();
     public filterSenders: string[];
     public filterReceivers: string[];
 
@@ -80,7 +106,21 @@ export class CommunicationRulesComponent {
                 private notifyService: NotifyService,
                 public groupNameService: GroupNameService,
                 private bundlesService: BundlesService,
-                private changeDetectorRef: ChangeDetectorRef) {
+                private changeDetectorRef: ChangeDetectorRef,
+                injector: Injector) {
+        super(injector);
+    }
+
+    public ngOnInit(): void {
+        super.ngOnInit();
+
+        this.$senders = combineLatest([this.$activeStructure, this.$sendersCommunicationRules]).pipe(
+            map((result: [StructureModel, GroupModel[]]) => sortGroups(uniqueGroups(result[1]), (g) => this.groupNameService.getGroupName(g), result[0].id)));
+
+        this.$receivers = combineLatest([this.$activeStructure, this.$receiversCommunicationRules]).pipe(
+            map((result: [StructureModel, GroupModel[]]) => sortGroups(uniqueGroups(result[1]), (g) => this.groupNameService.getGroupName(g), result[0].id))
+        );
+
     }
 
     public select(column: Column, group: GroupModel): void {
@@ -125,37 +165,35 @@ export class CommunicationRulesComponent {
         if (included == null && receiveWords != null) {
             included = false;
             loopReceivers:
-            for (let r = receivers.length; r-- > 0;) {
-                const rName = standardise(this.groupNameService.getGroupName(receivers[r]));
-                for (let i = receiveWords.length; i-- > 0;) {
-                    if (rName.indexOf(receiveWords[i]) !== -1) {
-                        included = true;
-                        break loopReceivers;
+                for (let r = receivers.length; r-- > 0;) {
+                    const rName = standardise(this.groupNameService.getGroupName(receivers[r]));
+                    for (let i = receiveWords.length; i-- > 0;) {
+                        if (rName.indexOf(receiveWords[i]) !== -1) {
+                            included = true;
+                            break loopReceivers;
+                        }
                     }
                 }
-            }
         }
 
         return included == null ? true : included;
     }
 
-    public getSenders(): GroupModel[] {
-        const senders = this.communicationRules
+    public getSenders(): void {
+        const senders = this._communicationRules
             .filter(rule => this.filterRule(rule.sender, rule.receivers))
             .map(rule => rule.sender);
-        return sortGroups(uniqueGroups(senders), (g) => this.groupNameService.getGroupName(g), this.activeStructure.id);
+        this.$sendersCommunicationRules.next(senders);
     }
 
-    public getReceivers(): GroupModel[] {
+    public getReceivers(): void {
         const receivers: GroupModel[] = [];
-        this.communicationRules.forEach(rule => {
+        this._communicationRules.forEach(rule => {
             for (let i = rule.receivers.length; i-- > 0;) {
-                if (this.filterRule(rule.sender, [rule.receivers[i]]) === true) {
                     receivers.push(rule.receivers[i]);
-                }
             }
         });
-        return sortGroups(uniqueGroups(receivers), (g) => this.groupNameService.getGroupName(g), this.activeStructure.id);
+        this.$receiversCommunicationRules.next(receivers);
     }
 
     public trackByGroupId(index: number, group: GroupModel): string {
@@ -187,12 +225,12 @@ export class CommunicationRulesComponent {
     public removeCommunication(sender: GroupModel, receiver: GroupModel) {
         this.removeConfirmationDisplayed = true;
         this.$removeConfirmationClicked.asObservable()
-    .pipe(  first(),
+            .pipe(  first(),
                 tap(() => this.removeConfirmationDisplayed = false),
                 filter(choice => choice === 'confirm'),
                 mergeMap(() => this.communicationRulesService.removeCommunication(sender, receiver, this.activeColumn))
-        )
-        .subscribe(() => this.notifyService.success({
+            )
+            .subscribe(() => this.notifyService.success({
                 key: 'user.communication.remove-communication.success',
                 parameters: {groupName: this.groupNameService.getGroupName(sender)}
             }), () => this.notifyService.error({
@@ -212,11 +250,11 @@ export class CommunicationRulesComponent {
             }
 
             if (this.activeColumn === 'sending') {
-                return !this.communicationRules
+                return !this._communicationRules
                     .find(commRule => commRule.sender.id === this.selected.group.id).receivers
                     .find(receiver => receiver.id === group.id);
             } else {
-                return !this.communicationRules
+                return !this._communicationRules
                     .filter(commRule => commRule.receivers.some(receiver => receiver.id === this.selected.group.id))
                     .some(commRule => !!commRule.sender && (commRule.sender.id === group.id));
             }
@@ -241,37 +279,37 @@ export class CommunicationRulesComponent {
         const sender: GroupModel = this.activeColumn === 'sending' ? this.selected.group : pickedGroup;
         const receiver: GroupModel = this.activeColumn === 'sending' ? pickedGroup : this.selected.group;
         this.communicationRulesService.checkAddLink(sender, receiver)
-          .pipe(
-            catchError((error: HttpErrorResponse) => {
-                if (error.status === 409) {
-                    this.notifyService.error('user.communication.add-communication.error.impossible.content'
-                        , 'user.communication.add-communication.error.impossible.title');
-                } else {
-                    this.notifyService.error({
-                        key: 'group.internal-communication-rule.change.error.content',
-                        parameters: {groupName: this.groupNameService.getGroupName(this.selected.group)}
-                    }, 'group.internal-communication-rule.change.error.title');
-                }
-                return Observable.throw({printed: true, original: error});
-            }),
-            tap((res: any) => {
-                if (res.warning === WARNING_STARTGROUP_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupSender = true;
-                } else if (res.warning === WARNING_ENDGROUP_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupReceiver = true;
-                } else if (res.warning === WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupSender = true;
-                    this.warningGroupReceiver = true;
-                }
-                this.pickedGroup = pickedGroup;
-                this.addConfirmationDisplayed = true;
-                this.changeDetectorRef.markForCheck();
-            }),
-            mergeMap(() => this.$addConfirmationClicked.asObservable()),
-            first(),
-            tap(() => this.addConfirmationDisplayed = false),
-            filter(choice => choice === 'confirm'),
-            mergeMap(() => this.communicationRulesService.createCommunication(sender, receiver, this.activeColumn))
+            .pipe(
+                catchError((error: HttpErrorResponse) => {
+                    if (error.status === 409) {
+                        this.notifyService.error('user.communication.add-communication.error.impossible.content'
+                            , 'user.communication.add-communication.error.impossible.title');
+                    } else {
+                        this.notifyService.error({
+                            key: 'group.internal-communication-rule.change.error.content',
+                            parameters: {groupName: this.groupNameService.getGroupName(this.selected.group)}
+                        }, 'group.internal-communication-rule.change.error.title');
+                    }
+                    return Observable.throw({printed: true, original: error});
+                }),
+                tap((res: any) => {
+                    if (res.warning === WARNING_STARTGROUP_USERS_CAN_COMMUNICATE) {
+                        this.warningGroupSender = true;
+                    } else if (res.warning === WARNING_ENDGROUP_USERS_CAN_COMMUNICATE) {
+                        this.warningGroupReceiver = true;
+                    } else if (res.warning === WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE) {
+                        this.warningGroupSender = true;
+                        this.warningGroupReceiver = true;
+                    }
+                    this.pickedGroup = pickedGroup;
+                    this.addConfirmationDisplayed = true;
+                    this.changeDetectorRef.markForCheck();
+                }),
+                mergeMap(() => this.$addConfirmationClicked.asObservable()),
+                first(),
+                tap(() => this.addConfirmationDisplayed = false),
+                filter(choice => choice === 'confirm'),
+                mergeMap(() => this.communicationRulesService.createCommunication(sender, receiver, this.activeColumn))
             )
             .subscribe(() => this.notifyService.success('user.communication.add-communication.success'),
                 (err) => {
@@ -347,3 +385,4 @@ interface Cell {
     column: Column;
     group: GroupModel;
 }
+

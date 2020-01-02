@@ -19,6 +19,23 @@ export const groupsCommunicationLocators = {
     styleUrls: ['./groups-communication.component.scss']
 })
 export class GroupsCommunicationComponent {
+    get sendingCommunicationRules(): CommunicationRule[] {
+        return this._sendingCommunicationRules;
+    }
+
+    @Input()
+    set sendingCommunicationRules(value: CommunicationRule[]) {
+        console.log('sending rules ', value)
+        this._sendingCommunicationRules = value;
+    }
+    get receivingCommunicationRules(): CommunicationRule[] {
+        return this._receivingCommunicationRules;
+    }
+    @Input()
+    set receivingCommunicationRules(value: CommunicationRule[]) {
+        console.log('receiving rules', value)
+        this._receivingCommunicationRules = value;
+    }
     @Input()
     public title = '';
 
@@ -49,14 +66,13 @@ export class GroupsCommunicationComponent {
     @Input()
     public manageableStructuresId: string[];
 
-    @Input()
-    public sendingCommunicationRules: CommunicationRule[];
+    private _sendingCommunicationRules: CommunicationRule[];
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
 
-    @Input()
-    public receivingCommunicationRules: CommunicationRule[];
+
+    private _receivingCommunicationRules: CommunicationRule[];
 
     @Input()
     public structures: StructureModel[];
