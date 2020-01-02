@@ -10,6 +10,7 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { CommunicationRule } from '../../../communication/communication-rules.component/communication-rules.component';
 import { CommunicationRulesService } from '../../../communication/communication-rules.service';
 import { GroupsStore } from '../../groups.store';
+import {ReplaySubject} from 'rxjs';
 
 @Component({
     selector: 'ode-smart-group-communication',
@@ -21,8 +22,8 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
     public group: GroupModel;
     public activeStructure: StructureModel;
     public manageableStructuresId: string[];
-    public groupsSendingCommunicationRules: CommunicationRule[];
-    public groupsReceivingCommunicationRules: CommunicationRule[];
+    public groupsSendingCommunicationRules = new ReplaySubject<CommunicationRule[]>();
+    public groupsReceivingCommunicationRules = new ReplaySubject<CommunicationRule[]>();
     public addCommunicationPickableGroups: GroupModel[];
 
     public spinner: SpinnerService;
@@ -41,8 +42,8 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
     ngOnInit() {
         this.subscriptions.add(this.communicationRulesService.changes()
             .subscribe(rules => {
-                this.groupsSendingCommunicationRules = rules.sending;
-                this.groupsReceivingCommunicationRules = rules.receiving;
+                this.groupsSendingCommunicationRules.next(rules.sending);
+                this.groupsReceivingCommunicationRules.next(rules.receiving);
                 this.changeDetector.markForCheck();
             }));
         this.subscriptions.add(this.route.data.subscribe((data: Data) => {

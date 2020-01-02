@@ -12,7 +12,7 @@
 </div>
 <div class="communication-rules__columns">
     <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
-        <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
+        <div class="group ${css.group}" *ngFor="let group of $senders | async; trackBy: trackByGroupId">
             <ode-group-card
                 (click)="activeColumn === 'sending' ? select('sending', group) : $event.stopPropagation()"
                 (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
@@ -29,7 +29,7 @@
         </div>
     </div>
     <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
-        <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
+        <div class="group ${css.group}" *ngFor="let group of $receivers | async; trackBy: trackByGroupId">
             <ode-group-card
                 (click)="activeColumn === 'receiving' ? select('receiving', group) : $event.stopPropagation()"
                 (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
