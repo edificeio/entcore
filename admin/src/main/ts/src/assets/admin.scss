@@ -2311,3 +2311,31 @@ ode-message-flash, ode-message-flash-form {
 .trumbowyg-dropdown-link {
   min-width: 170px;
 }
+
+.trumbowyg-modal-box .trumbowyg-modal-button {
+  font-family: unset;
+  font-size: 11px;
+  height: unset;
+  line-height: 15px;
+  width: unset;
+
+  &.trumbowyg-modal-reset {
+    background-color: #fff;
+    border: 1px solid $grey-light;
+    color: $accent;
+    &:hover {
+      background-color: $accent;
+      color: #fff;
+    }
+  }
+
+  &.trumbowyg-modal-submit {
+    background-color: $accent;
+    border: 1px solid $accent;
+    right: 75px;
+    
+    &:hover {
+      background-color: $accent-dark;
+    }
+  }
+}
