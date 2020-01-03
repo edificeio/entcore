@@ -11,7 +11,8 @@ import { Trace } from 'src/app/types/trace';
 import { BlockProfilesService } from './block-profiles.service';
 import { BlockProfile } from './BlockProfile';
 import { MatSort } from '@angular/material/sort';
-import { map } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
+import { SpinnerService } from 'ngx-ode-ui';
 
 @Component({
     selector: 'ode-block-profiles',
@@ -29,7 +30,8 @@ export class BlockProfilesComponent extends OdeComponent implements OnInit, OnDe
 
     constructor(injector: Injector,
                 private blockProfilesService: BlockProfilesService,
-                private notifyService: NotifyService) {
+                private notifyService: NotifyService,
+                private spinnerService: SpinnerService) {
         super(injector);
     }
 
@@ -58,38 +60,48 @@ export class BlockProfilesComponent extends OdeComponent implements OnInit, OnDe
 
     block(profile: BlockProfile): void {
         profile.block = true;
-        this.blockProfilesService
-            .update(this.structure.id, profile)
-            .subscribe(
-                () => {
-                    // update users in structure (because of cache)
-                    this.structure.users.data.filter(user => user.type === profile.profile).forEach(u => u.blocked = true);
-                    this.notifyService.success(
-                        {key: 'management.block.profile.block.success.content', parameters: {profile: profile.profile}}
-                        , 'management.block.profile.block.success.title');
-                    this.getTraces().subscribe(data => this.tracesDataSource.data = data);
-                },
-                error => this.notifyService.error(
-                    {key: 'management.block.profile.block.error.content', parameters: {profile: profile.profile}}, 
-                    'management.block.profile.block.error.title'));
+        this.spinnerService.perform('portal-content',
+            this.blockProfilesService
+                .update(this.structure.id, profile)
+                .pipe(
+                    tap(res => {
+                        // update users in structure (because of cache)
+                        this.structure.users.data.filter(user => user.type === profile.profile).forEach(u => u.blocked = true);
+                        this.notifyService.success(
+                            {key: 'management.block.profile.block.success.content', parameters: {profile: profile.profile}}
+                            , 'management.block.profile.block.success.title');
+                        this.getTraces().subscribe(data => this.tracesDataSource.data = data);
+                    }),
+                    catchError(error => {
+                        this.notifyService.error(
+                            {key: 'management.block.profile.block.error.content', parameters: {profile: profile.profile}}, 
+                            'management.block.profile.block.error.title');
+                        throw error;
+                    })
+                ).toPromise());
     }
 
     unblock(profile: BlockProfile): void {
         profile.block = false;
-        this.blockProfilesService
-            .update(this.structure.id, profile)
-            .subscribe(
-                () => {
-                    // update users in structure (because of cache)
-                    this.structure.users.data.filter(user => user.type === profile.profile).forEach(u => u.blocked = false);
-                    this.notifyService.success(
-                        {key: 'management.block.profile.unblock.success.content', parameters: {profile: profile.profile}}
-                        , 'management.block.profile.unblock.success.title');
-                    this.getTraces().subscribe(data => this.tracesDataSource.data = data);
-                },
-                error => this.notifyService.error(
-                    {key: 'management.block.profile.unblock.error.content', parameters: {profile: profile.profile}}, 
-                    'management.block.profile.unblock.error.title'));
+        this.spinnerService.perform('portal-content',
+            this.blockProfilesService
+                .update(this.structure.id, profile)
+                .pipe(
+                    tap(res => {
+                        // update users in structure (because of cache)
+                        this.structure.users.data.filter(user => user.type === profile.profile).forEach(u => u.blocked = false);
+                        this.notifyService.success(
+                            {key: 'management.block.profile.unblock.success.content', parameters: {profile: profile.profile}}
+                            , 'management.block.profile.unblock.success.title');
+                        this.getTraces().subscribe(data => this.tracesDataSource.data = data);
+                    }),
+                    catchError(error => {
+                        this.notifyService.error(
+                            {key: 'management.block.profile.unblock.error.content', parameters: {profile: profile.profile}}, 
+                            'management.block.profile.unblock.error.title');
+                        throw error;
+                    })
+                ).toPromise());
     }
 
     getTraces(): Observable<Trace[]> {
