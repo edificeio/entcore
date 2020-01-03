@@ -1,0 +1,1 @@
+db.sessions.createIndex({userId: 1})
