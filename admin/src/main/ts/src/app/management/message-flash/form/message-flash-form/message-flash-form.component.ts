@@ -227,6 +227,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     upload() {
         let promise;
         let key: string;
+        this.loadedLanguages.forEach(lang => this.message.contents[lang] = this.replaceItalicTags(this.message.contents[lang]));
         if (this.action === 'edit') {
             promise = MessageFlashService.editMessage(this.message);
             key = 'edit';
@@ -261,4 +262,10 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         return;
     }
 
+    private replaceItalicTags(html: string): string {
+        if (html) {
+            return html.replace(/<i>/g, '<em>').replace(/<\/i[^>]*>/g, '</em>');
+        }
+        return;
+    }
 }
