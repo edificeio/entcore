@@ -26,6 +26,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import io.vertx.core.Handler;
@@ -36,6 +37,7 @@ import io.vertx.core.json.JsonObject;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -425,7 +427,11 @@ public class DefaultSchoolService implements SchoolService {
 			JsonObject jo = (JsonObject) entry;
 			String structureId = jo.getString("ent_structure_id");
 			String distribution = jo.getString("distribution");
-			Integer education = jo.getInteger("education");
+			List<String> distributions = StringUtils.isEmpty(distribution) ? Collections.EMPTY_LIST :
+					Arrays.stream(distribution.split(",")).collect(Collectors.toList());
+			String education = jo.getString("education");
+			List<String> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
+					Arrays.stream(education.split(",")).collect(Collectors.toList());
 
 			if (structureId != null) {
 				String query = "MATCH (s:Structure {id: {structureId}}) " +
@@ -433,8 +439,8 @@ public class DefaultSchoolService implements SchoolService {
 						"SET s.distributions = {distributions} ";
 
 				JsonObject params = new JsonObject().put("structureId", structureId)
-						.put("levelsOfEducation", education != null ? Arrays.asList(education) : Collections.EMPTY_LIST)
-						.put("distributions", distribution != null ? Arrays.asList(distribution) : Collections.EMPTY_LIST);
+						.put("levelsOfEducation", education_levels)
+						.put("distributions", distributions);
 
 				s.add(query, params);
 			}

@@ -778,9 +778,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 					String query2 =
 							"MATCH (s:Structure {id: {structureId}}), " +
 							"(r:" + (roleOrWidget.getKey().charAt(0) == 'R' ? "Role" : "Widget") + " {id: {roleOrWidgetId}}) " +
-							"WITH s, r MATCH (s)<-[:DEPENDS]-(g:Group) " +
+							"WITH s, r MATCH (s)<-[:DEPENDS]-(g:Group)-[:HAS_PROFILE]->(p:Profile) " +
 							"WHERE CASE WHEN g.externalId ENDS WITH 'ADMIN_LOCAL' THEN 'AdminLocal' IN {profiles} "+
-							"ELSE g.filter IN {profiles} END " +
+							"ELSE p.name IN {profiles} END " +
 							"CREATE UNIQUE g-[:AUTHORIZED]->r ";
 					JsonObject params2 = new JsonObject().put("structureId", structure.getKey())
 							.put("roleOrWidgetId", roleOrWidget.getKey().substring(1))
