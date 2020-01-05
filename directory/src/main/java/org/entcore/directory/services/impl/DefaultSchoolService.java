@@ -418,7 +418,7 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void massDistributionAndLevelOfEducation(JsonArray data, Handler<Either<String, JsonObject>> handler) {
+	public void massDistributionEducationMobileApp(JsonArray data, Handler<Either<String, JsonObject>> handler) {
 
 		StatementsBuilder s = new StatementsBuilder();
 
@@ -432,15 +432,18 @@ public class DefaultSchoolService implements SchoolService {
 			String education = jo.getString("education");
 			List<String> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
 					Arrays.stream(education.split(",")).collect(Collectors.toList());
+			Boolean hasApp = jo.getBoolean("hasApp");
 
 			if (structureId != null) {
 				String query = "MATCH (s:Structure {id: {structureId}}) " +
 						"SET s.levelsOfEducation = {levelsOfEducation} " +
-						"SET s.distributions = {distributions} ";
+						"SET s.distributions = {distributions} " +
+						"SET s.hasApp = {hasApp}";
 
 				JsonObject params = new JsonObject().put("structureId", structureId)
 						.put("levelsOfEducation", education_levels)
-						.put("distributions", distributions);
+						.put("distributions", distributions)
+						.put("hasApp", hasApp);
 
 				s.add(query, params);
 			}

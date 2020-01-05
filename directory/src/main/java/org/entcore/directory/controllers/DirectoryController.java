@@ -555,7 +555,7 @@ public class DirectoryController extends BaseController {
 				break;
 			case "set-distrib-and-education-by-structureId" :
 				JsonArray data = message.body().getJsonArray("data");
-				schoolService.massDistributionAndLevelOfEducation(data, busResponseHandler(message));
+				schoolService.massDistributionEducationMobileApp(data, busResponseHandler(message));
 				break;
 		default:
 			message.reply(new JsonObject()
