@@ -95,6 +95,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "addAttribute":
 			doAddAttribute(message);
 			break;
+		case "addAttributeOnSessionId":
+			doAddAttributeOnSessionId(message);
+			break;
 		case "removeAttribute":
 			doRemoveAttribute(message);
 			break;
@@ -351,6 +354,34 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			}
 			if (message != null) {
 				sendOK(message, res);
+			}
+		});
+	}
+
+	private void doAddAttributeOnSessionId(Message<JsonObject> message) {
+		final String sessionId = message.body().getString("sessionId");
+		if (sessionId == null || sessionId.trim().isEmpty()) {
+			sendError(message, "[CookieOneSessionId] Invalid sessionId : " + message.body().encode());
+			return;
+		}
+		String key = message.body().getString("key");
+		if (key == null || key.trim().isEmpty()) {
+			sendError(message, "Invalid key.");
+			return;
+		}
+
+		Object value = message.body().getValue("value");
+		if (value == null || (!(value instanceof String) && !(value instanceof Long) && !(value instanceof JsonObject))) {
+			sendError(message, "Invalid value.");
+			return;
+		}
+
+		sessionStore.addCacheAttribute(sessionId, key, value, ar -> {
+			if (ar.succeeded()) {
+				sendOK(message);
+			} else {
+				logger.error("Error adding cache attribute in session", ar.cause());
+				sendError(message, "Error adding cache attribute in session");
 			}
 		});
 	}

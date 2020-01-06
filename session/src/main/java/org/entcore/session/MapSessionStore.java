@@ -249,6 +249,19 @@ public class MapSessionStore extends AbstractSessionStore {
         return session;
     }
 
+    private JsonObject getSessionBySessionId(String sessionId) {
+        JsonObject session = null;
+        try {
+            session = unmarshal(sessions.get(sessionId));
+        } catch (Exception e) {
+            logger.error("Error in deserializing hazelcast session " + sessionId, e);
+        }
+        if (session == null) {
+            return null;
+        }
+        return session;
+    }
+
     private void updateSessionByUserId(String userId, JsonObject session) throws SessionException {
         List<LoginInfo> infos = logins.get(userId);
         if (infos == null || infos.isEmpty()) {
@@ -265,7 +278,20 @@ public class MapSessionStore extends AbstractSessionStore {
 
     @Override
     public void addCacheAttribute(String sessionId, String key, Object value, Handler<AsyncResult<Void>> handler) {
-        // TODO Auto-generated method stub
+        final JsonObject session = getSessionBySessionId(sessionId);
+        if (session == null) {
+            handler.handle(Future.failedFuture(new SessionException("Session not found when add attribute : " + sessionId)));
+            return;
+        }
+
+        session.getJsonObject("cache").put(key, value);
+        try {
+            sessions.put(sessionId, session.encode());
+            handler.handle(Future.succeededFuture());
+        } catch (Exception e) {
+            logger.error("Error putting session in hazelcast map : " + sessionId, e);
+            handler.handle(Future.failedFuture(new SessionException("Error putting session in hazelcast map: " + sessionId)));
+        }
     }
 
     @Override
