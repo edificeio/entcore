@@ -262,14 +262,40 @@ public class MapSessionStore extends AbstractSessionStore {
         return session;
     }
 
-    private void updateSessionByUserId(String userId, JsonObject session) throws SessionException {
+    private void updateCacheAttributeByUserId(String userId, String key, Object value) throws SessionException {
         List<LoginInfo> infos = logins.get(userId);
         if (infos == null || infos.isEmpty()) {
             throw new SessionException("LoginInfo not found");
         }
         for (LoginInfo info : infos) {
             try {
-                sessions.put(info.sessionId, session.encode());
+                JsonObject session = unmarshal(sessions.get(info.sessionId));
+                if (session != null) {
+                    session.getJsonObject("cache").put(key, value);
+                    sessions.put(info.sessionId, session.encode());
+                } else {
+                    logger.error("Error getting session in hazelcast map : " + info.sessionId);
+                }
+            } catch (Exception e) {
+                logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
+            }
+        }
+    }
+
+    private void removeCacheAttributeByUserId(String userId, String key) throws SessionException {
+        List<LoginInfo> infos = logins.get(userId);
+        if (infos == null || infos.isEmpty()) {
+            throw new SessionException("LoginInfo not found");
+        }
+        for (LoginInfo info : infos) {
+            try {
+                JsonObject session = unmarshal(sessions.get(info.sessionId));
+                if (session != null) {
+                    session.getJsonObject("cache").remove(key);
+                    sessions.put(info.sessionId, session.encode());
+                } else {
+                    logger.error("Error getting session in hazelcast map : " + info.sessionId);
+                }
             } catch (Exception e) {
                 logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
             }
@@ -308,9 +334,8 @@ public class MapSessionStore extends AbstractSessionStore {
             return;
         }
 
-        session.getJsonObject("cache").put(key, value);
         try {
-            updateSessionByUserId(userId, session);
+            updateCacheAttributeByUserId(userId, key, value);
             handler.handle(Future.succeededFuture());
         } catch (SessionException e) {
             handler.handle(Future.failedFuture(new SessionException("Session not found when update add attribute: " + userId)));
@@ -325,9 +350,8 @@ public class MapSessionStore extends AbstractSessionStore {
             return;
         }
 
-        session.getJsonObject("cache").remove(key);
 		try {
-            updateSessionByUserId(userId, session);
+            removeCacheAttributeByUserId(userId, key);
             handler.handle(Future.succeededFuture());
         } catch (SessionException e) {
             handler.handle(Future.failedFuture(new SessionException("Session not found when update drop attribute: " + userId)));
