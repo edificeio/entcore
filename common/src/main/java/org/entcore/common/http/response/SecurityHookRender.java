@@ -111,7 +111,6 @@ public class SecurityHookRender implements HookProcess {
 
 		String token = null;
 		final String xsrfToken;
-		final String userId = session.getString("userId");
 		if (session.getJsonObject("cache") != null) {
 			token = session.getJsonObject("cache").getString("xsrf-token");
 			if (token == null) { // TODO remove when support session cache persistence
@@ -125,7 +124,8 @@ public class SecurityHookRender implements HookProcess {
 		}
 
 		if (token == null) {
-			UserUtils.addSessionAttribute(eb, userId, "xsrf-token", xsrfToken, new Handler<Boolean>() {
+			final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+			UserUtils.addSessionAttributeOnId(eb, sessionId, "xsrf-token", xsrfToken, new Handler<Boolean>() {
 				@Override
 				public void handle(Boolean s) {
 					if (Boolean.TRUE.equals(s)) {

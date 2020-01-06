@@ -600,6 +600,11 @@ public class UserUtils {
 		}));
 	}
 
+	public static void addSessionAttributeOnId(EventBus eb, String sessionId,
+										   String key, String value, final Handler<Boolean> handler) {
+		addSessionAttributeOnId(eb, sessionId, key, (Object) value, handler);
+	}
+
 	public static void addSessionAttribute(EventBus eb, String userId,
 	String key, String value, final Handler<Boolean> handler) {
 		addSessionAttribute(eb, userId, key, (Object) value, handler);
@@ -616,6 +621,17 @@ public class UserUtils {
 		addSessionAttribute(eb, userId, key, (Object) value, handler);
 	}
 
+	private static void addSessionAttributeOnId(EventBus eb, String sessionId,
+											String key, Object value, final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.put("action", "addAttributeOnSessionId")
+				.put("sessionId", sessionId)
+				.put("key", key)
+				.put("value", value);
+
+		sendSessionAttribute(eb, handler, json);
+	}
+
 	private static void addSessionAttribute(EventBus eb, String userId,
 			String key, Object value, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
@@ -623,6 +639,11 @@ public class UserUtils {
 				.put("userId", userId)
 				.put("key", key)
 				.put("value", value);
+
+		sendSessionAttribute(eb, handler, json);
+	}
+
+	private static void sendSessionAttribute(EventBus eb, final Handler<Boolean> handler, JsonObject json) {
 		final long startAddAttrSessionTime = System.currentTimeMillis();
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
