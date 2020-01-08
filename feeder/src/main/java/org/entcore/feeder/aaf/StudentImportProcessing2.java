@@ -26,10 +26,15 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Set;
+
 public class StudentImportProcessing2 extends StudentImportProcessing {
 
-	protected StudentImportProcessing2(String path, Vertx vertx) {
+	protected final Set<String> allRelatives;
+
+	protected StudentImportProcessing2(String path, Vertx vertx, Set<String> allRelatives) {
 		super(path, vertx);
+		this.allRelatives = allRelatives;
 	}
 
 	@Override
@@ -41,6 +46,8 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 	protected void preCommit() {
 		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
 		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
+
+		importer.applyRemoveRelativesFromStructure(allRelatives);
 	}
 
 	@Override

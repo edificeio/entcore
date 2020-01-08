@@ -31,11 +31,11 @@ import java.util.Set;
 public class UserImportProcessing extends BaseImportProcessing {
 
 	private final Importer importer = Importer.getInstance();
-	private final Set<String> resp;
+	protected final Set<String> allRelatives;
 
-	protected UserImportProcessing(String path, Vertx vertx, Set<String> resp) {
+	protected UserImportProcessing(String path, Vertx vertx, Set<String> allRelatives) {
 		super(path, vertx);
-		this.resp = resp;
+		this.allRelatives = allRelatives;
 	}
 
 	@Override
@@ -49,12 +49,12 @@ public class UserImportProcessing extends BaseImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing(path, vertx);
+		return new PersonnelImportProcessing(path, vertx, allRelatives);
 	}
 
 	@Override
 	public void process(JsonObject object) {
-		if (resp.contains(object.getString("externalId"))) {
+		if (allRelatives.contains(object.getString("externalId"))) {
 			object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Relative"));
 			importer.createOrUpdateUser(object);
 		}

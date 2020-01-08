@@ -29,8 +29,8 @@ import java.util.*;
 
 public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 
-	protected PersonnelImportProcessing2(String path, Vertx vertx) {
-		super(path, vertx);
+	protected PersonnelImportProcessing2(String path, Vertx vertx, Set<String> allRelatives) {
+		super(path, vertx, allRelatives);
 	}
 
 	@Override
@@ -41,13 +41,13 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
 		if (importer.isFirstImport()) {
-			parse(handler, new StudentImportProcessing2(path, vertx));
+			parse(handler, new StudentImportProcessing2(path, vertx, allRelatives));
 		} else {
 			initAcademyPrefix(path);
 			importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
 				@Override
 				public void handle(Void event) {
-					parse(handler, new StudentImportProcessing2(path, vertx));
+					parse(handler, new StudentImportProcessing2(path, vertx, allRelatives));
 				}
 			});
 		}

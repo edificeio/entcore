@@ -40,7 +40,7 @@ public class StudentImportProcessing1d extends StudentImportProcessing {
 
 	@Override
 	protected ImportProcessing getNextImportProcessing() {
-		return new UserImportProcessing1d(path, vertx, resp);
+		return new UserImportProcessing1d(path, vertx, allRelatives);
 	}
 
 	@Override

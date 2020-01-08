@@ -27,10 +27,12 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Set;
+
 public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 
-	protected StudentImportProcessing1d2(String path, Vertx vertx) {
-		super(path, vertx);
+	protected StudentImportProcessing1d2(String path, Vertx vertx, Set<String> allRelatives) {
+		super(path, vertx, allRelatives);
 	}
 
 	@Override

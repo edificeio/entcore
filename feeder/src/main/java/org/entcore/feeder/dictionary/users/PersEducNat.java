@@ -34,6 +34,8 @@ import java.util.Set;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
+import org.entcore.feeder.ManualFeeder;
+
 public class PersEducNat extends AbstractUser {
 
 	private final Validator personnelValidator = new Validator("dictionary/schema/Personnel.json");
@@ -246,6 +248,7 @@ public class PersEducNat extends AbstractUser {
 						transactionHelper.add(q2, pdfg.copy().put("groups", fgm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
+				ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
 			}
 		}
 	}

@@ -23,6 +23,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
@@ -663,6 +664,7 @@ public class Importer {
 						transactionHelper.add(query, p);
 					}
 				}
+				ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
 			}
 		}
 	}
@@ -778,6 +780,12 @@ public class Importer {
 				"WITH u, collect(c.externalId) as classes " +
 				"SET u.classes = classes";
 		transactionHelper.add(query3, null);
+	}
+
+	public void applyRemoveRelativesFromStructure(Set<String> allRelatives)
+	{
+		for(String relativeExternalId : allRelatives)
+			ManualFeeder.applyRemoveUserFromStructure(null, relativeExternalId, null, null, transactionHelper);
 	}
 
 	public void addRelativeProperties(String source) {

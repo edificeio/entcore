@@ -32,7 +32,7 @@ import java.util.Set;
 
 public class StudentImportProcessing extends BaseImportProcessing {
 
-	protected Set<String> resp = new HashSet<>();
+	protected Set<String> allRelatives = new HashSet<>();
 	protected StudentImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
 	}
@@ -48,7 +48,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new UserImportProcessing(path, vertx, resp);
+		return new UserImportProcessing(path, vertx, allRelatives);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 		createGroups(object.getJsonArray("groups"));
 		JsonArray r = parseRelativeField(object.getJsonArray("relative"));
 		if (r != null) {
-			resp.addAll(r.getList());
+			allRelatives.addAll(r.getList());
 		}
 		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Student"));
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
