@@ -23,4 +23,4 @@ MATCH (h:Hobby)<-[t]-(ub:UserBook)
  ub.hobby_sport = [COALESCE(found_sport.visibility,'PRIVE'),COALESCE(found_sport.values,'')] ,
  ub.hobby_cinema = [COALESCE(found_cinema.visibility,'PRIVE'),COALESCE(found_cinema.values,'')] ,
  ub.hobby_animals = [COALESCE(found_animals.visibility,'PRIVE'),COALESCE(found_animals.values,'')] 
- RETURN COUNT(ub)
+ RETURN COUNT(ub);
