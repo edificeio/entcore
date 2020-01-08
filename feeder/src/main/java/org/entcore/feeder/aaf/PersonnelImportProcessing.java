@@ -29,11 +29,15 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
-	protected PersonnelImportProcessing(String path, Vertx vertx) {
+	protected final Set<String> allRelatives;
+
+	protected PersonnelImportProcessing(String path, Vertx vertx, Set<String> allRelatives) {
 		super(path, vertx);
+		this.allRelatives = allRelatives;
 	}
 
 	@Override
@@ -213,7 +217,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing2(path, vertx);
+		return new PersonnelImportProcessing2(path, vertx, allRelatives);
 	}
 
 }
