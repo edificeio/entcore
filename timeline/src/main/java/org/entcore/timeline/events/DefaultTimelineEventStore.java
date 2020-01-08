@@ -71,7 +71,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 	@Override
 	public void get(final UserInfos user, List<String> types, int offset, int limit, JsonObject restrictionFilter,
-			boolean mine, String version, final Handler<JsonObject> result) {
+			boolean mine, boolean both, String version, final Handler<JsonObject> result) {
 		final String recipient = user.getUserId();
 		final String externalId = user.getExternalId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
@@ -80,10 +80,23 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 						.put("$exists", false))
 					.put("date", new JsonObject().put("$lt", MongoDb.now()));
 			if (externalId == null || externalId.trim().isEmpty()) {
-				query.put(mine ? "sender" : "recipients.userId", recipient);
+				if (mine) { query.put("sender", recipient); }
+				else if (both) {
+					query.put("$or", new JsonArray()
+						.add(new JsonObject().put("sender", recipient))
+						.add(new JsonObject().put("recipients.userId", recipient))
+					);
+				} else { query.put("recipients.userId", recipient); }
 			} else {
-				query.put(mine ? "sender" : "recipients.userId", new JsonObject()
-						.put("$in", new fr.wseduc.webutils.collections.JsonArray().add(recipient).add(externalId)));
+				final JsonObject recipientJson = new JsonObject()
+						.put("$in", new fr.wseduc.webutils.collections.JsonArray().add(recipient).add(externalId));
+				if (mine) { query.put("sender", recipientJson); }
+				else if (both) {
+					query.put("$or", new JsonArray()
+						.add(new JsonObject().put("sender", recipientJson))
+						.add(new JsonObject().put("recipients.userId", recipientJson))
+					);
+				} else { query.put("recipients.userId", recipientJson); }
 			}
 			query.put("reportAction.action", new JsonObject().put("$ne", "DELETE"));
 			if (types != null && !types.isEmpty()) {
@@ -120,7 +133,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				.put("resource", 1)
 				.put("sub-resource", 1)
 				.put("add-comment", 1);
-			if(!mine){
+			if(!mine || both){
 				keys.put("recipients", new JsonObject()
 						.put("$elemMatch", new JsonObject()
 							.put("userId", user.getUserId())));
