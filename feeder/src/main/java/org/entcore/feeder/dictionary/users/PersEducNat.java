@@ -66,13 +66,13 @@ public class PersEducNat extends AbstractUser {
 				JsonObject params;
 				sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
 				sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, ");
-				sb.append("u.displayName = {displayName}, u.created = {created} ");
+				sb.append("u.displayName = {displayName}, u.displayNameSearchField = {displayNameSearchField}, u.created = {created} ");
 				sb.append("WITH u ");
 				if (!EDTImporter.EDT.equals(currentSource)) {
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 				}
 				sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
-						"id", "externalId", "login", "activationCode", "displayName", "email", "created"));
+						"id", "externalId", "login", "activationCode", "displayName", "displayNameSearchField", "email", "emailSearchField", "created"));
 				if (EDTImporter.EDT.equals(currentSource)) {
 					sb.append("RETURN u.id as id, u.IDPN as IDPN, head(u.profiles) as profile");
 				}

@@ -361,11 +361,11 @@ public class Importer {
 			String query =
 					"MERGE (u:User { externalId : {externalId}}) " +
 					"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, " +
-					"u.displayName = {displayName}, u.created = {created} " +
+					"u.displayName = {displayName}, u.displayNameSearchField = {displayNameSearchField}, u.created = {created} " +
 					"WITH u " +
 					"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode", "displayName", "email", "created");
+							"id", "externalId", "login", "activationCode", "displayName", "displayNameSearchField", "email", "emailSearchField", "created");
 			transactionHelper.add(query, object);
 			checkUpdateEmail(object);
 			if (linkStudent != null && linkStudent.size() > 0) {
@@ -412,11 +412,11 @@ public class Importer {
 			String query =
 					"MERGE (u:User { externalId : {externalId}}) " +
 					"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, " +
-					"u.displayName = {displayName}, u.created = {created} " +
+					"u.displayName = {displayName}, u.displayNameSearchField = {displayNameSearchField}, u.created = {created} " +
 					"WITH u " +
 					"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
-					"id", "externalId", "login", "activationCode", "displayName", "email", "created");
+					"id", "externalId", "login", "activationCode", "displayName", "displayNameSearchField", "email", "emailSearchField", "created");
 			transactionHelper.add(query, object);
 			checkUpdateEmail(object);
 			JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
@@ -509,11 +509,11 @@ public class Importer {
 				String query =
 					"MERGE (u:`User` { externalId : {externalId}}) " +
 					"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, " +
-					"u.displayName = {displayName}, u.created = {created} " +
+					"u.displayName = {displayName}, u.displayNameSearchField = {displayNameSearchField}, u.created = {created} " +
 					"WITH u " +
 					"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode", "displayName", "email", "created");
+							"id", "externalId", "login", "activationCode", "displayName", "displayNameSearchField", "email", "emailSearchField", "created");
 				transactionHelper.add(query, object);
 				checkUpdateEmail(object);
 			}
