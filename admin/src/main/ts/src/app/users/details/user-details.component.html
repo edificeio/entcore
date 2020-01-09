@@ -21,11 +21,11 @@
             </span>
   </div>
 
-  <div class="panel-message" *ngIf="details?.blocked">
+  <div class="panel-message" *ngIf="!isUnblocked()">
     <i class="fa fa-ban"></i>
     <s5l>user.blocked</s5l>
 
-    <button class="action" (click)="toggleUserBlock()"
+    <button class="action" (click)="toggleUserBlock(false)"
             [disabled]="spinner.isLoading('portal-content')">
       <s5l>unblock</s5l>
       <i class="fa fa-check"></i>
@@ -79,7 +79,7 @@
         </button>
       </div>
       <div *ngIf="isUnblocked()">
-        <button (click)="toggleUserBlock()"
+        <button (click)="toggleUserBlock(true)"
                 [disabled]="spinner.isLoading('portal-content')"
                 class="relative">
           <s5l [s5l-params]="[details.blocked]">
@@ -87,6 +87,18 @@
           </s5l>
           <i class="fa fa-ban"></i>
         </button>
+        <ode-lightbox-confirm lightboxTitle="warning"
+                          [show]="showPersEducNatBlockingConfirmation"
+                          [title]="'warning'"
+                          [confirmText]="'block'"
+                          [extraButtons]="['user.block.disclaimer.alternative.button']"
+                          (onConfirm)="toggleUserBlock(false)"
+                          (onExtra)="removeFromStructure()"
+                          (onCancel)="showPersEducNatBlockingConfirmation = false">
+          <p><s5l [s5l-params]="{ username: user.displayName }">user.block.disclaimer.info</s5l></p>
+          <p><s5l>user.block.disclaimer.alternative</s5l></p>
+          <strong>{{ 'user.remove.disclaimer.confirm' | translate }}</strong>
+        </ode-lightbox-confirm>
       </div>
       <div *ngIf="isRemovable() && isActive()">
         <button (click)="removeUser()"

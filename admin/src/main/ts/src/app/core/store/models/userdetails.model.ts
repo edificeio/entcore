@@ -45,6 +45,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     quota?: number;
     storage?: number;
     maxQuota?: number;
+    structures?: Array<String>;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
