@@ -31,6 +31,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
     private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
 
     public showRemoveUserConfirmation = false;
+    public showPersEducNatBlockingConfirmation = false;
     forceDuplicates: boolean;
     details: UserDetailsModel;
     structure: StructureModel = this.usersStore.structure;
@@ -143,7 +144,45 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
         }, 0);
     }
 
-    toggleUserBlock() {
+    removeFromStructure() {
+        this.spinner.perform('portal-content', this.user.removeStructure(this.structure.id)
+            .then(() => {
+                this.changeDetector.markForCheck();
+
+                this.showPersEducNatBlockingConfirmation = false;
+                this.ns.success(
+                    {
+                        key: 'notify.user.remove.structure.content',
+                        parameters: {
+                            structure:  this.structure.name
+                        }
+                    }, 'notify.user.remove.structure.title');
+            })
+            .catch(err => {
+                this.changeDetector.markForCheck();
+
+                this.showPersEducNatBlockingConfirmation = false;
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.structure.error.content',
+                        parameters: {
+                            structure:  this.structure.name
+                        }
+                    }, 'notify.user.remove.structure.error.title', err);
+            })
+        );
+    }
+
+    toggleUserBlock(withLightbox: boolean) {
+        if(withLightbox == true)
+        {
+            // Only display a lightbox for teachers & personnel
+            if((this.details.type.indexOf("Teacher") > -1 || this.details.type.indexOf("Personnel") > -1) && this.details.structures.length > 0)
+            {
+                this.showPersEducNatBlockingConfirmation = true;
+                return;
+            }
+        }
         this.spinner.perform('portal-content', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked;
@@ -151,6 +190,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
                 this.userListService.$updateSubject.next();
                 this.changeDetector.markForCheck();
 
+                this.showPersEducNatBlockingConfirmation = false;
                 this.ns.success(
                     {
                         key: 'notify.user.toggleblock.content',
@@ -166,6 +206,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
                         }
                     });
             }).catch(err => {
+                this.showPersEducNatBlockingConfirmation = false;
             this.ns.error(
                 {
                     key: 'notify.user.toggleblock.error.content',
@@ -185,7 +226,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
     }
 
     isUnblocked() {
-        return !this.details.blocked;
+        return this.details != null && !this.details.blocked;
     }
 
     isRemovable() {
