@@ -32,6 +32,17 @@
     </button>
   </div>
 
+  <div class="panel-message" *ngIf="showCancelRemove">
+    <i class="fa fa-unlink"></i>
+    <s5l>user.removedFromStructure</s5l>
+
+    <button class="action" (click)="unremoveFromStructure()"
+            [disabled]="spinner.isLoading('portal-content')">
+      <s5l>unremoveFromStructure</s5l>
+      <i class="fa fa-check"></i>
+    </button>
+  </div>
+
   <div class="panel-message" *ngIf="hasDuplicates()">
     <i class="fonticon duplicates"></i>
     <s5l>user.has.duplicates</s5l>
