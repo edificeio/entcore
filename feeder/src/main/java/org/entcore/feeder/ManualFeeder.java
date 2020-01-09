@@ -282,7 +282,8 @@ public class ManualFeeder extends BusModBase {
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
 				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u " +
 				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-				"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
+				"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
+				"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
