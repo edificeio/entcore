@@ -296,7 +296,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
                     this.usersStore.structure.users.data.splice(
                         this.usersStore.structure.users.data.findIndex(u => u.id === this.user.id), 1
                     );
-                    this.router.navigate(['/admin', this.structure.id, 'users', 'filter']);
+                    this.router.navigate(['/admin', this.structure.id, 'users', 'list', 'filter']);
                     this.ns.success(
                         {key: 'notify.user.delete.content', parameters},
                         {key: 'notify.user.delete.title', parameters}

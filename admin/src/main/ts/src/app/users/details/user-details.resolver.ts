@@ -19,12 +19,12 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
         if (user) {
             return this.spinner.perform('portal-content', user.userDetails.sync()
                 .catch((err) => {
-                    this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false});
+                    this.router.navigate(['/admin', structure.id, 'users', 'list'], {replaceUrl: false});
                 }).then(() => {
                     return user;
                 }));
         } else {
-            this.router.navigate(['/admin', structure.id, 'users', 'filter'], {replaceUrl: false});
+            this.router.navigate(['/admin', structure.id, 'users', 'list', 'filter'], {replaceUrl: false});
         }
     }
 }
