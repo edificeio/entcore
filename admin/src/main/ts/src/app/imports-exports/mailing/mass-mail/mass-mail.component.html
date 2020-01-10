@@ -151,7 +151,7 @@
       </thead>
       <tbody>
       <tr *ngFor="let user of (getFilteredUsers() | filter: inputFilters) | orderBy: userOrder "
-          [routerLink]="'/admin/'+structureId+'/users/'+user.id + '/details'"
+          [routerLink]="'/admin/'+structureId+'/users/list/'+user.id + '/details'"
           routerLinkActive="active"
           title="{{ 'massmail.link.user' | translate}}">
         <td>

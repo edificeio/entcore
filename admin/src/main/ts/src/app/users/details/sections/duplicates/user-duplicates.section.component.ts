@@ -72,7 +72,7 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
                 );
                 const resUser = this.usersStore.structure.users.data.find(u => u.id === res.id);
                 resUser.duplicates = resUser.duplicates.filter(d => d.id !== this.user.id);
-                this.router.navigate(['/admin', res.structure.id, 'users', res.id, 'details']);
+                this.router.navigate(['/admin', res.structure.id, 'users', 'list', res.id, 'details']);
                 this.userListService.$updateSubject.next();
                 this.ns.success({
                     key: 'notify.user.merge.success.content',
