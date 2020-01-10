@@ -1509,10 +1509,19 @@ ode-imports-exports-card {
 
 /* Users component */
 ode-users-root {
-  div.flex-header {
+  & > div.flex-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+  }
+}
+
+ode-users-list {
+  & > .flex-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    margin-bottom: 10px;
     button {
       border-color: $accent;
       background-color: $accent;

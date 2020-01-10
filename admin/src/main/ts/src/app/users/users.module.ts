@@ -35,6 +35,8 @@ import { UserManualgroupsSectionComponent } from './details/sections/manualgroup
 import { UserFunctionalgroupsSectionComponent } from './details/sections/functionalgroups/user-functionalgroups-section.component';
 import { UserQuotaSectionComponent } from './details/sections/quota/user-quota-section.component';
 import { UserlistFiltersService } from '../core/services/userlist.filters.service';
+import { UsersListComponent } from './users-list/users-list.component';
+import { UsersRelinkComponent } from './users-relink/users-relink.component';
 
 @NgModule({
     imports: [
@@ -66,7 +68,9 @@ import { UserlistFiltersService } from '../core/services/userlist.filters.servic
         UserQuotaSectionComponent,
         UsersComparisonComponent,
         UserOverviewComponent,
-        SmartUsersComparisonComponent
+        SmartUsersComparisonComponent,
+        UsersRelinkComponent,
+        UsersListComponent,
     ],
     providers: [
         UserDetailsResolver,
