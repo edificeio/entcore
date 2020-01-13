@@ -307,6 +307,8 @@ body editor{
 			width: 100%;
             border: 1px solid #ddd;
             overflow: hidden;
+            color: transparent;
+            caret-color: black;
 		}
         > code{
             width: 100%;
