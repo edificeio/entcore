@@ -1,5 +1,5 @@
 import {Routes} from '@angular/router';
-import {UsersResolver} from './users.resolver';
+import {UsersResolver, RemovedUsersResolver} from './users.resolver';
 import {UserDetailsResolver} from './details/user-details.resolver';
 import {UsersComponent} from './users.component';
 import {UserCreateComponent} from './create/user-create.component';
@@ -13,10 +13,10 @@ import { UsersListComponent } from './users-list/users-list.component';
 
 export let routes: Routes = [
     {
-        path: '', component: UsersComponent, resolve: {users: UsersResolver},
+        path: '', component: UsersComponent,
         children: [
             {
-                path: 'list', component: UsersListComponent,
+                path: 'list', component: UsersListComponent, resolve: {users: UsersResolver},
                 children: [
                     {path: 'create', component: UserCreateComponent},
                     {path: 'filter', component: UserFiltersComponent},
@@ -35,7 +35,25 @@ export let routes: Routes = [
                     {path:'',redirectTo:'filter'},
                 ]
             },
-            {path: 'relink', component: UsersRelinkComponent},
+            {
+                path: 'relink', component: UsersRelinkComponent, resolve: {users: RemovedUsersResolver},
+                children: [
+                    {path: 'filter', component: UserFiltersComponent},
+                    {
+                        path: ':userId/details', component: UserDetailsComponent, resolve: {
+                            config: ConfigResolver,
+                            user: UserDetailsResolver
+                        }
+                    },
+                    {
+                        path: ':userId/communication', component: SmartUserCommunicationComponent, resolve: {
+                            user: UserDetailsResolver,
+                            groups: UserGroupsResolver
+                        }
+                    },
+                    {path:'',redirectTo:'filter'},
+                ]
+            },
             // Redirections for compatibility with old URLs
             {path:'', redirectTo: 'list/filter'},
             {path:'create', redirectTo: 'list/create'},

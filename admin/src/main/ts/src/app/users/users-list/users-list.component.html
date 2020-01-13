@@ -6,7 +6,7 @@
   </button>
 </div>
 <ode-side-layout (closeCompanion)="closeCompanion()"
-            [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users', true)">
+            [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users/list', true)">
   <div side-card>
     <ode-user-list [userlist]="usersStore.structure.users.data"
               (companionChange)="openCompanionView($event)"

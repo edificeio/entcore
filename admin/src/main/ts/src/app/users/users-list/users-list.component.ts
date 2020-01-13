@@ -19,8 +19,8 @@ export class UsersListComponent extends OdeComponent {
     constructor(
         injector: Injector,
         public usersStore: UsersStore,
-        private listFilters: UserlistFiltersService,
-        private spinner: SpinnerService
+        protected listFilters: UserlistFiltersService,
+        protected spinner: SpinnerService
     ) {
         super(injector);
     }

@@ -70,14 +70,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
         super.ngOnInit();
         this.subscriptions.add(this.usersStore.$onchange.subscribe(field => {
             if (field === 'user') {
-                if (this.usersStore.user &&
-                    !this.usersStore.user.structures.find(
-                        s => this.usersStore.structure.id === s.id)) {
-                    setTimeout(() => {
-                        this.router.navigate(['..'],
-                            {relativeTo: this.route, replaceUrl: true});
-                    }, 0);
-                } else if (this.user !== this.usersStore.user || this.structure !== this.usersStore.structure) {
+                if (this.user !== this.usersStore.user || this.structure !== this.usersStore.structure) {
                     this.structure = this.usersStore.structure;
                     this.user = this.usersStore.user;
                 }

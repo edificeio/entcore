@@ -337,11 +337,15 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void userList(String structureId, Handler<Either<String, JsonArray>> handler) {
+	public void userList(String structureId, boolean listRemovedUsersInsteadOfNormalUsers, Handler<Either<String, JsonArray>> handler) {
+		String userStructMatcher = listRemovedUsersInsteadOfNormalUsers == false
+			? "MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}}) "
+			: "MATCH (s:Structure {id:{structureId}}), " +
+				"(u:User)-[:IN]->(pg:ProfileGroup) WHERE EXISTS(u.removedFromStructures) AND s.externalId IN (coalesce(u.removedFromStructures, [])) ";
 		String query =
-			"MATCH (u: User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure) " +
-			"WHERE s.id = {structureId} " +
-			"MATCH (pg)-[:HAS_PROFILE]->(p: Profile) WITH distinct u, p " +
+			userStructMatcher +
+			"MATCH (pg)-[:HAS_PROFILE]->(p: Profile) " +
+			"WITH distinct u, p " +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class: Class) " +
 			"  WITH distinct u, p, CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes  " +
 			"OPTIONAL MATCH (u)-[d: DUPLICATE]-(duplicate: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(sd: Structure) " +
