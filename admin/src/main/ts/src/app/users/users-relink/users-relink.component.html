@@ -1,3 +1,16 @@
 <div class="container">
   <s5l>users.relink.info</s5l>
 </div>
+
+<ode-side-layout (closeCompanion)="closeCompanion()"
+            [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users/relink', true)">
+  <div side-card>
+    <ode-user-list [userlist]="usersStore.structure.removedUsers.data"
+              (companionChange)="openCompanionView($event)"
+              [selectedUser]="usersStore.user"
+              (onselect)="openUserDetail($event)"></ode-user-list>
+  </div>
+  <div side-companion>
+    <router-outlet></router-outlet>
+  </div>
+</ode-side-layout>

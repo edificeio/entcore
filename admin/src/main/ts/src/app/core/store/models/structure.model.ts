@@ -9,6 +9,7 @@ export class StructureModel extends Model<StructureModel> {
     constructor() {
         super({});
         this.users = new UserCollection();
+        this.removedUsers = new UserCollection("/directory/structure/:structureId/removedUsers");
         this.groups = new GroupCollection();
         this.applications = new ApplicationCollection();
         this.connectors = new ConnectorCollection();
@@ -17,6 +18,7 @@ export class StructureModel extends Model<StructureModel> {
     _id?: string;
     set id(id: string) {
         this.users.structureId = id;
+        this.removedUsers.structureId = id;
         this.groups.structureId = id;
         this.applications.structureId = id;
         this.connectors.structureId = id;
@@ -33,6 +35,7 @@ export class StructureModel extends Model<StructureModel> {
     parents?: Array<{ id: string, name: string }>;
     children?: StructureModel[];
     users: UserCollection;
+    removedUsers: UserCollection;
     classes: Array<{ id: string, name: string }> = [];
     groups: GroupCollection;
     applications: ApplicationCollection;

@@ -15,16 +15,26 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
         const structure = globalStore.structures.data.find(s => s.id === routing.getParam(route, 'structureId'));
         const user = structure &&
             structure.users.data.find(u => u.id === route.params.userId);
+        const removedUser = structure &&
+            structure.removedUsers.data.find(u => u.id === route.params.userId);
 
-        if (user) {
+        if (user && !removedUser) {
             return this.spinner.perform('portal-content', user.userDetails.sync()
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users', 'list'], {replaceUrl: false});
                 }).then(() => {
                     return user;
                 }));
-        } else {
-            this.router.navigate(['/admin', structure.id, 'users', 'list', 'filter'], {replaceUrl: false});
+        } else if(removedUser && !user) {
+            return this.spinner.perform('portal-content', removedUser.userDetails.sync()
+                .catch((err) => {
+                    this.router.navigate(['/admin', structure.id, 'users', 'relink'], {replaceUrl: false});
+                }).then(() => {
+                    return removedUser;
+                }));
+        } else
+        {
+            this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false});
         }
     }
 }

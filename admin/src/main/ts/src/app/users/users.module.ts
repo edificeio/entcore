@@ -6,7 +6,7 @@ import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './users.routing';
 import {UserDetailsResolver} from './details/user-details.resolver';
-import {UsersResolver} from './users.resolver';
+import {UsersResolver, RemovedUsersResolver} from './users.resolver';
 import {UsersComponent} from './users.component';
 import {UserCreateComponent} from './create/user-create.component';
 import {UserDetailsComponent} from './details/user-details.component';
@@ -75,6 +75,7 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
     providers: [
         UserDetailsResolver,
         UsersResolver,
+        RemovedUsersResolver,
         UserGroupsResolver,
         UserlistFiltersService,
         UserInfoService,

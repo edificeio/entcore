@@ -36,3 +36,32 @@ export class UsersResolver implements Resolve<UserModel[]> {
         }
     }
 }
+
+@Injectable()
+export class RemovedUsersResolver implements Resolve<UserModel[]> {
+
+    constructor(private spinner: SpinnerService) {
+    }
+
+    resolve(route: ActivatedRouteSnapshot): Promise<UserModel[]> {
+        const currentStructure: StructureModel = globalStore.structures.data.find(s => s.id === routing.getParam(route, 'structureId'));
+
+        if (route.queryParams.sync) {
+            sync(currentStructure, true);
+        }
+
+        if (currentStructure.removedUsers.data.length > 0 && !route.queryParams.sync) {
+            return Promise.resolve(currentStructure.removedUsers.data);
+        } else {
+            const p = new Promise<UserModel[]>( (resolve, reject) => {
+                currentStructure.removedUsers.sync()
+                .then(() => {
+                    resolve(currentStructure.removedUsers.data);
+                }).catch(e => {
+                    reject(e);
+                });
+            });
+            return this.spinner.perform('portal-content', p);
+        }
+    }
+}
