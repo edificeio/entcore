@@ -3,9 +3,9 @@ import {Collection} from 'entcore-toolkit';
 
 export class UserCollection extends Collection<UserModel> {
 
-    constructor() {
+    constructor(syncUrl?: string) {
         super({
-            sync: '/directory/structure/:structureId/users'
+            sync: syncUrl != null ? syncUrl : '/directory/structure/:structureId/users'
         }, UserModel);
     }
 

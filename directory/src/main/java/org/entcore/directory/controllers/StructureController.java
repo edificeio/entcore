@@ -601,7 +601,15 @@ public class StructureController extends BaseController {
 	@ResourceFilter(AdminStructureFilter.class)
 	public void userList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
-		this.structureService.userList(structureId, arrayResponseHandler(request));
+		this.structureService.userList(structureId, false, arrayResponseHandler(request));
+	}
+
+	@Get("/structure/:id/removedUsers")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminStructureFilter.class)
+	public void removedUserList(HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		this.structureService.userList(structureId, true, arrayResponseHandler(request));
 	}
 
 	@Put("structure/:id/profile/block")

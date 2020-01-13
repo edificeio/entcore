@@ -1,5 +1,4 @@
 <ode-groups-communication 
-    *ngIf="user && userSendingCommunicationRules"
     [title]="'user.communication.title' | translate:{firstName: user.firstName, lastName: user.lastName.toUpperCase()}"
     [backButtonLabel]="'user.communication.back-to-user-details' | translate"
     [sendingSectionTitle]="'user.communication.section.title.sending-rules'"
