@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import io.netty.util.internal.StringUtil;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.folders.ElementQuery;
@@ -30,7 +29,6 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.MimeTypeUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.storage.FileStats;
 import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
@@ -51,7 +49,6 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -844,8 +841,8 @@ public class WorkspaceController extends BaseController {
 									storage.sendFile(file, result.getString("name"), request, inline,
 											result.getJsonObject("metadata"));
 								}
-								eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-										new JsonObject().put("resource", request.params().get("id")));
+								// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+								// 		new JsonObject().put("resource", request.params().get("id")));
 							} else {
 								request.response().setStatusCode(404).end();
 							}
@@ -890,8 +887,8 @@ public class WorkspaceController extends BaseController {
 						storage.sendFile(file, result.getString("name"), request, false,
 								result.getJsonObject("metadata"));
 					}
-					eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-							new JsonObject().put("resource", documentId));
+					// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+					// 		new JsonObject().put("resource", documentId));
 				} else {
 					notFound(request);
 				}

@@ -799,8 +799,8 @@ public class ConversationController extends BaseController {
 							if (r.isRight()) {
 								translateGroupsNames(r.right().getValue(), user, request);
 								renderJson(request, r.right().getValue());
-								eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(), request,
-										new JsonObject().put("resource", id));
+								// eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(), request,
+								// 		new JsonObject().put("resource", id));
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", r.left().getValue());
