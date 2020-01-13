@@ -88,10 +88,10 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	@Override
 	public void sendImmediateMails(HttpServerRequest request, String notificationName, JsonObject notification, JsonObject templateParameters, JsonArray userList, JsonObject notificationProperties) {
 
-		final Map<String, Map<String, String>> processedTemplates = new HashMap<>();
+		final Map<String, Map<String, Map<String,String>>> processedTemplates = new HashMap<>();
 		templateParameters.put("innerTemplate", notification.getString("template", ""));
 
-		final Map<String, Map<String, List<Object>>> toByDomainLang = new HashMap<>();
+		final Map<String, Map<String, Map<String,String>>> toByDomainLang = new HashMap<>();
 
 		final AtomicInteger userCount = new AtomicInteger(userList.size());
 		final Handler<Void> templatesHandler = new Handler<Void>(){
@@ -115,16 +115,18 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 							for(final String lang : toByDomainLang.get(domain).keySet()){
 								translateTimeline(keys, domain, lang, new Handler<JsonArray>() {
 									public void handle(JsonArray translations) {
-										//Send mail containing the "immediate" notification
-										emailSender.sendEmail(request,
-												toByDomainLang.get(domain).get(lang),
-												null,
-												null,
-												translations.getString(0) + translations.getString(1),
-												processedTemplates.get(domain).get(lang),
-												null,
-												false,
-												completionHandler);
+										for(final String userId : toByDomainLang.get(domain).get(lang).keySet()) {
+											//Send mail containing the "immediate" notification
+											emailSender.sendEmail(request,
+													Arrays.asList(toByDomainLang.get(domain).get(lang).get(userId)),
+													null,
+													null,
+													translations.getString(0) + translations.getString(1),
+													processedTemplates.get(domain).get(lang).get(userId),
+													null,
+													false,
+													completionHandler);
+										}
 									}
 								});
 							}
@@ -150,7 +152,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			templateParameters.put("displayName", userDisplayName);
 
 			if(!processedTemplates.containsKey(userDomain))
-				processedTemplates.put(userDomain, new HashMap<String, String>());
+				processedTemplates.put(userDomain, new HashMap<String, Map<String,String>>());
 			JsonObject notificationPreference = userPref
 					.getJsonObject("preferences", new JsonObject())
 					.getJsonObject("config", new JsonObject())
@@ -166,24 +168,23 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 							notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
 					userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
 				if(!toByDomainLang.containsKey(userDomain)){
-					toByDomainLang.put(userDomain,new HashMap<String, List<Object>>());
+					toByDomainLang.put(userDomain,new HashMap<String, Map<String, String>>());
 				}
 				if(!toByDomainLang.get(userDomain).containsKey(userLanguage)){
-					toByDomainLang.get(userDomain).put(userLanguage, new ArrayList<Object>());
+					toByDomainLang.get(userDomain).put(userLanguage, new HashMap<String, String>());
 				}
-				toByDomainLang.get(userDomain).get(userLanguage).add(userPref.getString("userMail"));
+				toByDomainLang.get(userDomain).get(userLanguage).put(userPref.getString("userId", ""),userPref.getString("userMail"));
 			}
-			if(!processedTemplates.get(userDomain).containsKey(userLanguage)){
-				processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
-						userDomain, userScheme, userLanguage, false, new Handler<String>(){
-							public void handle(String processedTemplate) {
-								processedTemplates.get(userDomain).put(userLanguage, processedTemplate);
-								templatesHandler.handle(null);
-							}
-						});
-			} else {
-				templatesHandler.handle(null);
+			if(!processedTemplates.get(userDomain).containsKey(userLanguage)) {
+				processedTemplates.get(userDomain).put(userLanguage, new HashMap<>());
 			}
+			processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
+					userDomain, userScheme, userLanguage, false, new Handler<String>(){
+						public void handle(String processedTemplate) {
+							processedTemplates.get(userDomain).get(userLanguage).put(userPref.getString("userId", ""), processedTemplate);
+							templatesHandler.handle(null);
+						}
+					});
 		}
 	}
 
