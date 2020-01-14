@@ -199,8 +199,9 @@ public class TimelineController extends BaseController {
 											endHandler.handle(null);
 
 										for (Object notifObj : results) {
+											if (!(notifObj instanceof JsonObject)) continue;
 											final JsonObject notif = (JsonObject) notifObj;
-											if (!notif.getString("message", "").isEmpty()) {
+											if (!Utils.getOrElse(notif.getString("message"), "").isEmpty()) {
 												compiledResults.add(notif);
 												endHandler.handle(null);
 												continue;
