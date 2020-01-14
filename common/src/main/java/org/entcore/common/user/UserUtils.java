@@ -54,6 +54,7 @@ public class UserUtils {
 	.put("action", "visibleManualGroups");
 	private static final I18n i18n = I18n.getInstance();
 	private static final long JWT_TOKEN_EXPIRATION_TIME = 600L;
+	private static final long LOG_SESSION_DELAY = 500L;
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
@@ -431,7 +432,7 @@ public class UserUtils {
 					handler.handle(null);
 				}
 				final long timeGetSessionDelay = System.currentTimeMillis() - startSessionTime;
-				if (timeGetSessionDelay > 100) {
+				if (timeGetSessionDelay > LOG_SESSION_DELAY) {
 					log.info("Find session time : " + timeGetSessionDelay + " ms.");
 				}
 			}
@@ -653,7 +654,7 @@ public class UserUtils {
 					handler.handle(res.succeeded() && "ok".equals(res.result().body().getString("status")));
 				}
 				final long timeAddAttrSessionDelay = System.currentTimeMillis() - startAddAttrSessionTime;
-				if (timeAddAttrSessionDelay > 100) {
+				if (timeAddAttrSessionDelay > LOG_SESSION_DELAY) {
 					log.info("Add session attribute time : " + timeAddAttrSessionDelay + " ms.");
 				}
 			}
