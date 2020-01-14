@@ -29,6 +29,12 @@
          [title]="'delete.this.structure' | translate"
          [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
     </li>
+    <li *ngFor="let structure of user.visibleRemovedStructures()">
+      <span><s>{{ structure.name }}</s></span>
+      <i class="fa fa-plus action"  (click)="addStructure(structure)"
+         [title]="'unremoveFromStructure' | translate"
+         [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
+    </li>
     <li *ngFor="let structure of user.invisibleStructures()">
       <span>{{ structure.name }}</span>
     </li>

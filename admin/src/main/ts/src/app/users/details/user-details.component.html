@@ -32,7 +32,7 @@
     </button>
   </div>
 
-  <div class="panel-message" *ngIf="showCancelRemove">
+  <div class="panel-message" *ngIf="isRemovedFromStructure()">
     <i class="fa fa-unlink"></i>
     <s5l>user.removedFromStructure</s5l>
 
@@ -137,6 +137,12 @@
         <button (click)="openUserCommunication()">
           <s5l>users.details.button.comm.rules</s5l>
           <i class="fa fa-podcast"></i>
+        </button>
+      </div>
+      <div *ngIf="isRemovedFromStructure()">
+        <button (click)="unremoveFromStructure()">
+          <s5l>unremoveFromStructure</s5l>
+          <i class="fa fa-link"></i>
         </button>
       </div>
     </div>
