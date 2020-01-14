@@ -3,9 +3,7 @@ package org.entcore.common.cache;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.redis.Redis;
 import org.entcore.common.user.UserInfos;
 
