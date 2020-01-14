@@ -32,7 +32,6 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
 
     public showRemoveUserConfirmation = false;
     public showPersEducNatBlockingConfirmation = false;
-    public showCancelRemove = false;
     forceDuplicates: boolean;
     details: UserDetailsModel;
     structure: StructureModel = this.usersStore.structure;
@@ -144,7 +143,6 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
                 this.changeDetector.markForCheck();
 
                 this.showPersEducNatBlockingConfirmation = false;
-                this.showCancelRemove = true;
                 this.ns.success(
                     {
                         key: 'notify.user.remove.structure.content',
@@ -174,7 +172,6 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
                 this.changeDetector.markForCheck();
 
                 this.showPersEducNatBlockingConfirmation = false;
-                this.showCancelRemove = false;
                 this.ns.success(
                     {
                         key: 'notify.user.unremove.structure.content',
@@ -264,6 +261,10 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
 
     isActive() {
         return !(this.details.activationCode && this.details.activationCode.length > 0);
+    }
+
+    isRemovedFromStructure() {
+        return this.details.removedFromStructures != null && this.details.removedFromStructures.indexOf(this.structure.externalId) != -1;
     }
 
     removeUser() {
