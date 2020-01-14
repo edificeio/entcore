@@ -284,6 +284,8 @@
   "empty.workspace.shared.title": "Oups, il n'y a rien sur l'étagère…",
   "empty.workspace.subfolder.title": "Ce dossier est vide...",
   "empty.workspace.title": "Vous n'avez pas encore de documents. Changeons ça !",
+  "mepty.calendar.title": "Vos documents, comme sur un nuage…",
+  "empty.calendar": "Oubliez les clefs USB ! L’appli Poste-fichiers permet de stocker en ligne ses documents volumineux et de les consulter n’importe où, pendant 30 jours.",
   "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "en_EN": "Anglais",
   "es_ES": "Espagnol",
