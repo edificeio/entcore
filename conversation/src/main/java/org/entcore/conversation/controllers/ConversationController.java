@@ -32,6 +32,9 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
+import org.entcore.common.cache.Cache;
+import org.entcore.common.cache.CacheOperation;
+import org.entcore.common.cache.CacheScope;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -116,6 +119,7 @@ public class ConversationController extends BaseController {
 
 	@Get("conversation")
 	@SecuredAction("conversation.view")
+	@Cache(value = "/conversation/count/INBOX",useQueryParams = true,scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderView(request);
 		eventStore.createAndStoreEvent(ConversationEvent.ACCESS.name(), request);
@@ -716,6 +720,7 @@ public class ConversationController extends BaseController {
 	}
 
 	@Get("count/:folder")
+	@Cache(usePath = true, scope = CacheScope.USER, ttlAsMinutes = 15)
 	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
 	public void count(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");

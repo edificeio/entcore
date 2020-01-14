@@ -33,6 +33,9 @@ import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.cache.CacheFilter;
+import org.entcore.common.cache.CacheService;
+import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.elasticsearch.ElasticSearch;
@@ -100,6 +103,14 @@ public abstract class BaseServer extends Server {
 
 		if (config.getBoolean("csrf-token", false)) {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
+		}
+
+		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-enabled", false);
+		if(Boolean.TRUE.equals(cacheEnabled)){
+			final String redisConfig = (String)server.get("redisConfig");
+			final CacheService cacheService = new RedisCacheService(vertx, new JsonObject(redisConfig));
+			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
 		}
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
