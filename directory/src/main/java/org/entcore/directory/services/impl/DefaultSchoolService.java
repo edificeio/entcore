@@ -363,7 +363,7 @@ public class DefaultSchoolService implements SchoolService {
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
-			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
+			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures AS removedFromStructures, " +
 			"EXTRACT(function IN u.functions | split(function, \"$\")) as aafFunctions," +
 			" classes, functionalGroups, manualGroups, functions, duplicates, structures " +
 			"ORDER BY lastName, firstName " +
@@ -373,8 +373,8 @@ public class DefaultSchoolService implements SchoolService {
 			"MATCH (s: Structure) " +
 			"WHERE s.id IN b.structureIds " +
 			"WITH u, b, s " +
-			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, " +
-			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
+			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
+			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
 			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";

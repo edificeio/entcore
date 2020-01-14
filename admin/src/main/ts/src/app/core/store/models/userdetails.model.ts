@@ -1,5 +1,6 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from '../../store/models/group.model';
+import { StructureModel } from './structure.model';
 
 export class UserDetailsModel extends Model<UserDetailsModel> {
 
@@ -46,6 +47,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     storage?: number;
     maxQuota?: number;
     structures?: Array<String>;
+    removedFromStructures?: Array<String>;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
@@ -207,6 +209,18 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     updateLoginAlias() {
         return this.http.put(`/directory/user/${this.id}`, {loginAlias: this.loginAlias});
+    }
+
+    removeFromStructure(struct: StructureModel)
+    {
+        if(this.removedFromStructures == null)
+            this.removedFromStructures = [];
+        this.removedFromStructures.push(struct.externalId);
+    }
+
+    unremoveFromStructure(struct: StructureModel)
+    {
+        this.removedFromStructures = this.removedFromStructures.filter(s => s != struct.externalId);
     }
 
     toJSON() {
