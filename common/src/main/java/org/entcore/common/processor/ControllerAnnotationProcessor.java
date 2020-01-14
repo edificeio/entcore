@@ -21,6 +21,7 @@ package org.entcore.common.processor;
 
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import org.entcore.common.cache.Cache;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -42,7 +43,7 @@ import java.util.*;
 		"fr.wseduc.rs.Get", "fr.wseduc.rs.Post", "fr.wseduc.rs.Delete", "fr.wseduc.rs.Put",
 		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc",
 		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf",
-        "org.entcore.common.http.filter.Trace"})
+        "org.entcore.common.http.filter.Trace", "org.entcore.common.cache.Cache"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ControllerAnnotationProcessor extends fr.wseduc.processor.ControllerAnnotationProcessor {
 
@@ -52,7 +53,31 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 		resourceFilter(roundEnv);
 		ignoreCsrf(roundEnv);
 		trace(roundEnv);
+		cache(roundEnv);
 		return false;
+	}
+
+	private void cache(RoundEnvironment roundEnv) {
+		final Map<String,Set<String>> filtersMap = new HashMap<>();
+		Set<String> filters = new TreeSet<>();
+		filtersMap.put("Cache", filters);
+		for (Element element : roundEnv.getElementsAnnotatedWith(Cache.class)) {
+			Cache annotation = element.getAnnotation(Cache.class);
+			TypeElement clazz = (TypeElement) element.getEnclosingElement();
+			if(annotation == null || !isMethod(element) || clazz == null) {
+				continue;
+			}
+			filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" + element.getSimpleName().toString() + "\", " +
+					"\"key\" :  \"" + annotation.value() +  "\", " +
+					"\"scope\" :  \"" + annotation.scope() +  "\", " +
+					"\"ttl\" :  " + annotation.ttlAsMinutes() +  ", " +
+					"\"usePath\" :  " + annotation.usePath() +  ", " +
+					"\"useQueryParams\" :  " + annotation.useQueryParams() +  ", " +
+					"\"operation\" :  \"" + annotation.operation() + "\" }");
+		}
+		if (filters.size() > 0) {
+			writeFile("", "", filtersMap);
+		}
 	}
 
 	private void trace(RoundEnvironment roundEnv) {
