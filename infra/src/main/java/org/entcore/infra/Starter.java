@@ -83,6 +83,10 @@ public class Starter extends BaseServer {
 			if (neo4jConfig != null) {
 				serverMap.put("neo4jConfig", neo4jConfig.encode());
 			}
+			JsonObject redisConfig = config.getJsonObject("redisConfig");
+			if (redisConfig != null) {
+				serverMap.put("redisConfig", redisConfig.encode());
+			}
 			final String csp = config.getString("content-security-policy");
 			if (isNotEmpty(csp)) {
 				serverMap.put("contentSecurityPolicy", csp);
