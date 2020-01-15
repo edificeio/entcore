@@ -237,6 +237,11 @@ User.prototype.generateMergeKey = function(hook){
     })
 }
 
+function RemovedUser() {};
+for(var prop in User.prototype){
+    RemovedUser.prototype[prop] = User.prototype[prop];
+}
+
 function Classe(){
     this.sync = function(hook){
         var that = this
@@ -465,6 +470,7 @@ function Structure(){
     })
 
     this.collection(User, {})
+    this.collection(RemovedUser, {});
 
     this.collection(ChildrenAutoGroup, {
         sync: function(hook)
@@ -598,6 +604,7 @@ Structure.prototype.loadStructure = function(periodicHook, endHook){
 
     structure.classes.sync(function(){
         structure.users.removeAll()
+        structure.removedUsers.removeAll();
 
         //Add all users
         http().get("user/admin/list", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
@@ -613,6 +620,14 @@ Structure.prototype.loadStructure = function(periodicHook, endHook){
             //For each class, flag users.
             structure.classes.forEach(function(classe){
                 structure.addClassUsers(classe, [periodicHook, endHookLauncher.exec], true)
+            })
+        })
+
+        //Add all removed users
+        http().get("structure/" + structure.id + "/removedUsers", {}, { requestName: 'removed-user-requests' }).done(function(data){
+            _.forEach(data, function(u){
+                u.isolated = true;
+                structure.removedUsers.all.push(new RemovedUser(u));
             })
         })
     })
@@ -822,7 +837,7 @@ Profiles.prototype.save = function(block, callback) {
 };
 
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures,
+    this.makeModels([User, RemovedUser, IsolatedUsers, CrossUsers, Structure, Structures,
         Classe, ChildrenAutoGroup, ManualGroup, FunctionalGroup, Duplicate, Level, Profile, Profiles])
 
     this.structures = new Structures()

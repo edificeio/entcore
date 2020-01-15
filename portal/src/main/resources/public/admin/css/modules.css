@@ -6275,6 +6275,9 @@ div.vertical-buttons-container button.directory-list-glyph-button.question-mark-
 div.vertical-buttons-container button.directory-list-glyph-button.plus-icon {
   background-position: -1.5% 68%;
 }
+div.vertical-buttons-container button.directory-list-glyph-button.cross-icon {
+  background-position: 9.4% 67.5%;
+}
 div.vertical-buttons-container button.directory-list-sort-button {
   width: 30px;
   height: 30px;

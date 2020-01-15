@@ -130,12 +130,17 @@
     <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.structures")]]</h3>
     <div class="row">
         <ul class="angle-list small" style="padding-left: 5%">
-            <li ng-repeat="structure in targetUser.data.structures | orderBy: 'name'">
+            <li ng-repeat="structure in targetUser.data.structures | filter: {id: ''} | orderBy: 'name'">
                 <a href="[['/directory/admin-console#/structure/'+structure.id]]" target="_blank">[[structure.name]]</a>
                 <em ng-if="isMainStructure(targetUser, structure)" class="horizontal-spacing">
                     (<i18n>directory.main.structure</i18n>)
                 </em>
                 <button ng-click="removeUserFromStructure(targetUser, structure, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close"></button>
+            </li>
+            <style>li > button.close.__hacky_add::after { content: '+' !important; }</style>
+            <li ng-repeat="structure in getStructuresFromExternalIds(targetUser.data.removedFromStructures) | orderBy: 'name'" style="border-color: #ccc;">
+                <s><a href="[['/directory/admin-console#/structure/'+structure.id]]" target="_blank" style="color: #999;">[[structure.name]]</a></s>
+                <button ng-click="structure.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close __hacky_add"></button>
             </li>
         </ul>
     </div>
