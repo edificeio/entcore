@@ -242,7 +242,7 @@ input[type="search"] {
   &::-moz-placeholder {color:rgba(0,0,0,0.4);}
 }
 
-input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
+input[type="text"], input[type="tel"], input[type="email"], input[type="date"], input[type="number"] {
   color: $grey-dark;
   border: none;
   border-bottom: 1px solid mix($grey-light, $grey-dark);
