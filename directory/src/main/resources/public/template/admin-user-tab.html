@@ -25,6 +25,12 @@
                     class="sort-button">
             </button>
 
+            <!-- Removed users button -->
+            <button ng-click="toggleRemovedUsers()"
+                    tooltip="tooltip.users.removedUsers"
+                    class="glyph-button" style="background-position: 9.4% 67.5%;">
+            </button>
+
             <!-- Creation button -->
             <button ng-click="setShowWhat('showCreatedUser')"
                     tooltip="directory.tooltip.creationTooltip"
@@ -41,7 +47,7 @@
         <!-- User list -->
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers" ng-change="scrollOpts.reset()"/>
         <ul bottom-scroll-action="scrollOpts.increment()">
-            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: scrollOpts.scrollLimit" ng-click="$root.targetUser = user; setShowWhat('showStructureUser'); getUserDetails(user);" style="padding-left: 0">
+            <li ng-repeat="user in getUsers() | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: scrollOpts.scrollLimit" ng-click="$root.targetUser = user; setShowWhat('showStructureUser'); getUserDetails(user);" style="padding-left: 0">
                 <span ng-class="userStyle(user)">[[user.lastName]] [[user.firstName]]</span>
             </li>
         </ul>

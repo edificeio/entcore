@@ -499,6 +499,23 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         $scope.userOrdering[1] = temp
     }
 
+		$scope.displayRemovedUsers = false;
+		$scope.toggleRemovedUsers = function()
+		{
+			$scope.displayRemovedUsers ^= true;
+		}
+		
+		$scope.getUsers = function()
+		{
+			return $scope.displayRemovedUsers == false ? $scope.structure.users.all : $scope.structure.removedUsers.all;
+		}
+
+		$scope.getStructuresFromExternalIds = function(externalIds)
+		{
+			if(externalIds == null) return [];
+			return $scope.structures.all.filter(struct => externalIds.indexOf(struct.externalId) != -1);
+		}
+
 	$scope.setShowWhat = function(what){
 		$scope.showWhat = what
 	}
@@ -898,8 +915,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
             $scope.structure.loadStructure(
                 $scope.refreshScope,
                 function(){
-                    $rootScope.targetUser = _.findWhere($scope.structure.users.all, {id: user.id})
-					$scope.getUserDetails($rootScope.targetUser)
+										$rootScope.targetUser = _.findWhere($scope.structure.users.all, {id: user.id})
+										if($rootScope.targetUser == null)
+											$rootScope.targetUser = _.findWhere($scope.structure.removedUsers.all, {id: user.id});
+										$scope.getUserDetails($rootScope.targetUser)
                 }
             )
         }
