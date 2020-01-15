@@ -118,7 +118,7 @@ public class DefaultQuotaService implements org.entcore.common.folders.QuotaServ
 	@Override
 	public void update(JsonArray users, long quota, Handler<Either<String, JsonArray>> handler) {
 		String query = "MATCH (u:UserBook)<-[:USERBOOK]-(:User)-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
-				+ "WHERE u.userid IN {users} AND u.storage < {quota} AND {quota} < coalesce(p.maxQuota, 1073741824) "
+				+ "WHERE u.userid IN {users} AND u.storage <= {quota} AND {quota} <= coalesce(p.maxQuota, 1073741824) "
 				+ "SET u.quota = {quota}, u.alertSize = false " + "RETURN u.userid as id ";
 		JsonObject params = new JsonObject().put("users", users).put("quota", quota);
 		neo4j.execute(query, params, validResultHandler(handler));
