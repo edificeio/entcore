@@ -42,6 +42,7 @@ import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.redis.Redis;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
@@ -131,10 +132,8 @@ public abstract class BaseServer extends Server {
 		if (config.getJsonObject("override-theme") != null) {
 			controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getJsonObject("override-theme")));
 		}
-		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
-			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
-					config.getBoolean("csrf-token", true), contentSecurityPolicy));
-		}
+		controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+				true, contentSecurityPolicy));
 		return this;
 	}
 
@@ -187,6 +186,10 @@ public abstract class BaseServer extends Server {
 				String elasticsearchConfig = (String) vertx.sharedData().getLocalMap("server").get("elasticsearchConfig");
 				ElasticSearch.getInstance().init(vertx, new JsonObject(elasticsearchConfig));
 			}
+		}
+		final String redisConfig = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
+		if (redisConfig != null) {
+			Redis.getInstance().init(vertx, new JsonObject(redisConfig));
 		}
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
