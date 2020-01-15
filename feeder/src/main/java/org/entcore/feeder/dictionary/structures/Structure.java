@@ -323,6 +323,7 @@ public class Structure {
 										User.transition(u.toString(), tx);
 									}
 									transitionClassGroup();
+									transitionReattachUsers();
 								}
 								handler.handle(event);
 							} else {
@@ -380,6 +381,17 @@ public class Structure {
 		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
 				"OPTIONAL MATCH fg-[r1]-() " +
 				"DELETE r, r1, fg";
+		tx.add(query, params);
+	}
+
+	private void transitionReattachUsers()
+	{
+		TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
+		JsonObject params = new JsonObject().put("externalId", externalId);
+		String query =
+			"MATCH (u:User) " +
+			"WHERE EXISTS(u.removedFromStructures) AND {externalId} IN u.removedFromStructures " +
+			"SET u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> {externalId}]";
 		tx.add(query, params);
 	}
 
