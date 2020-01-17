@@ -331,8 +331,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	private void checkClassesMapping(String path, String profile, String charset, Handler<JsonObject> handler) {
+		CSVReader csvParser = null;
 		try {
-			CSVReader csvParser = getCsvReader(path, charset);
+			csvParser = getCsvReader(path, charset);
 
 			String[] strings;
 			final List<String> columns = new ArrayList<>();
@@ -372,12 +373,20 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			log.error("csv.exception", e);
 		} finally {
 			handler.handle(result);
+			if(csvParser!=null) {
+				try {
+					csvParser.close();
+				} catch (Exception e) {
+					log.error("Could not close parser", e);
+				}
+			}
 		}
 	}
 
 	private void checkColumnsMapping(String path, String profile, String charset, Handler<JsonObject> handler) {
+		CSVReader csvParser = null;
 		try {
-			CSVReader csvParser = getCsvReader(path, charset);
+			csvParser = getCsvReader(path, charset);
 
 			String[] strings;
 			int columnsNumber = -1;
@@ -401,6 +410,13 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			addError(profile, "csv.exception");
 			log.error("csv.exception", e);
 		} finally {
+			if(csvParser!=null) {
+				try {
+					csvParser.close();
+				} catch (Exception e) {
+					log.error("Could not close parser", e);
+				}
+			}
 			handler.handle(result);
 		}
 	}
@@ -410,8 +426,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
 		final Set<String> externalIds = new HashSet<>();
+		CSVReader csvParser = null;
 		try {
-			CSVReader csvParser = getCsvReader(path, charset);
+			csvParser = getCsvReader(path, charset);
 
 			String[] strings;
 			int i = 0;
@@ -463,6 +480,14 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			log.error("csv.exception", e);
 			handler.handle(result);
 			return;
+		} finally {
+			if(csvParser!=null) {
+				try {
+					csvParser.close();
+				} catch (Exception e) {
+					log.error("Could not close parser", e);
+				}
+			}
 		}
 		if (filterExternalId.get() >= 0) {
 			filterExternalIdExists(admlStructures, profile, externalIds, ar -> {
@@ -610,9 +635,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				}
 				final JsonObject checkChildExists = new JsonObject();
 //				setStructureExternalIdIfAbsent(structure.getExternalId());
+				CSVReader csvParser = null;
 				try {
 					final JsonObject classMapping = getClassesMapping(profile);
-					CSVReader csvParser = getCsvReader(path, charset, 1);
+					csvParser = getCsvReader(path, charset, 1);
 					final int nbColumns = columns.size();
 					String[] strings;
 					int i = 1;
@@ -983,6 +1009,14 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				} catch (Exception e) {
 					addError(profile, "csv.exception");
 					log.error("csv.exception", e);
+				} finally {
+					if(csvParser!=null) {
+						try {
+							csvParser.close();
+						} catch (Exception e) {
+							log.error("Could not close parser", e);
+						}
+					}
 				}
 				if (!checkChildExists.isEmpty()) {
 					final String query =

@@ -239,16 +239,18 @@ public class ImportController extends BaseController {
 				upload.streamToFileSystem(filename);
 			}
 		});
-		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					request.resume();
-				} else {
-					handler.handle(new DefaultAsyncResult<ImportInfos>(
-							new ImportException("mkdir.error", event.cause())));
+		deleteImportPath(vertx, path,res->{
+			vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
+				@Override
+				public void handle(AsyncResult<Void> event) {
+					if (event.succeeded()) {
+						request.resume();
+					} else {
+						handler.handle(new DefaultAsyncResult<ImportInfos>(
+								new ImportException("mkdir.error", event.cause())));
+					}
 				}
-			}
+			});
 		});
 	}
 
