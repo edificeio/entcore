@@ -23,7 +23,14 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
-    $scope.filtered = {}
+	$scope.filtered = {}
+	$scope.config = {
+		hideAdminv1Link: false
+	}
+	$scope.userStructures = model.me.structures;
+	if ($scope.userStructures && $scope.userStructures.length == 1) {
+		$scope.userStructure = $scope.userStructures[0];
+	}
 
 	$scope.actions = {
 		discard: {
@@ -135,6 +142,23 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		return lang.translate(type === 'timeline' ? type + '.notification' : type);
 	}
 
+	http()
+		.get('/admin/api/platform/config')
+		.done(res => {
+			$scope.config.hideAdminv1Link = res['hide-adminv1-link'];
+		});
+
+	$scope.showAdminv1Link = function() {
+		return !$scope.config.hideAdminv1Link;
+	}
+
+	$scope.showAdminv2HomeLink = function() {
+		return !$scope.showAdminv1Link() && $scope.userStructures && $scope.userStructures.length > 1;
+	}
+
+	$scope.showAdminv2AlertsLink = function() {
+		return !$scope.showAdminv1Link() && $scope.userStructures && $scope.userStructures.length == 1;
+	}
 }]);
 
 export let personalizationController = ng.controller('Personalization', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
