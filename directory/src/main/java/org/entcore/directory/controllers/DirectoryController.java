@@ -525,6 +525,10 @@ public class DirectoryController extends BaseController {
 			case "getUserInfos" :
 				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
 				break;
+			case "getMainStructure" :
+				JsonArray structuresToExclude = message.body().getJsonArray("structures-to-exclude");
+				userService.getMainStructure(userId, structuresToExclude, BusResponseHandler.busResponseHandler(message));
+				break;
 			case "list-users":
 				JsonArray userIds = message.body().getJsonArray("userIds", new fr.wseduc.webutils.collections.JsonArray());
 				JsonArray groupIds = message.body().getJsonArray("groupIds", new fr.wseduc.webutils.collections.JsonArray());

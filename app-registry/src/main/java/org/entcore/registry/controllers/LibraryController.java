@@ -31,6 +31,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -42,9 +43,11 @@ import java.util.List;
 
 public class LibraryController extends BaseController {
     final LibraryService service;
+    final JsonObject config;
 
     public LibraryController(Vertx vertx, JsonObject config) throws Exception {
         service = new DefaultLibraryService(vertx, config);
+        this.config = config;
     }
 
     @Post("/library/resource")
@@ -103,6 +106,24 @@ public class LibraryController extends BaseController {
         return futureUser;
     }
 
+    private Future<String> getMainStructureName(final String userId, final String def) {
+        Future<String> future = Future.future();
+        JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
+        eb.send("directory", new JsonObject().put("action", "getMainStructure")
+                .put("userId", userId).put("structures-to-exclude", structuresToExclude), handler -> {
+            if (handler.succeeded()) {
+                JsonObject body = ((JsonObject)handler.result().body());
+                if ("ok".equals(body.getString("status"))) {
+                    String mainStructureName = body.getJsonObject("result").getString("name");
+                    future.complete(mainStructureName);
+                    return;
+                }
+            }
+            future.complete(def);
+        });
+        return future;
+    }
+
     private Future<MultiMap> getAttributes(HttpServerRequest request, Future<UserInfos> futureUser) {
         MultiMap form = request.formAttributes();
         form.add("platformURL", Renders.getHost(request));
@@ -112,11 +133,16 @@ public class LibraryController extends BaseController {
             futureUser.setHandler(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
-                    form
-                            .add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
-                            .add("teacherSchool", user.getStructureNames().stream().findFirst().orElse(""))
-                            .add("teacherId", user.getUserId());
-                    future.complete(form);
+                    String defaultStructure = user.getStructureNames().isEmpty() ? "" : user.getStructureNames().get(0);
+                    Future<String> mainStructureName = getMainStructureName(user.getUserId(), defaultStructure);
+                    mainStructureName.setHandler(result -> {
+                        String mainStructure = result.result();
+                        form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
+                                .add("teacherSchool", mainStructure)
+                                .add("teacherId", user.getUserId());
+                        future.complete(form);
+                    });
+
                 } else {
                     future.fail(resuser.cause());
                 }
