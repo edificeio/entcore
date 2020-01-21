@@ -905,7 +905,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 								if(documentId != null)
 								{
-									Future update = queryHelper.update(documentId, mongoUpdate);
+									Future<Void> update = queryHelper.update(documentId, mongoUpdate);
 									update.setHandler(new Handler<AsyncResult<Void>>()
 									{
 										@Override

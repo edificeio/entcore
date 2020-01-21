@@ -602,6 +602,19 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						}
 					}
 
+					// Update documents that are inside duplicate folders to link them to the new folder
+					for(int i = 0, l = savePayload.size(); i < l; ++i)
+					{
+						JsonObject d = savePayload.getJsonObject(i);
+
+						if(d == null)
+							continue;
+
+						String parentId = DocumentHelper.getParent(d);
+						if(oldIdsToNewIds.containsKey(parentId))
+							DocumentHelper.setParent(d, oldIdsToNewIds.get(parentId));
+					}
+
 					final int totalDuplicates = nbDuplicates;
 					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
 					{
