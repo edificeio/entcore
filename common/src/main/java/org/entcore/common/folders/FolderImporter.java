@@ -1,11 +1,6 @@
 package org.entcore.common.folders;
 
 import java.io.File;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -18,8 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.entcore.common.folders.impl.DocumentHelper;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.FileStats;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.service.impl.AbstractRepositoryEvents;
@@ -31,17 +24,12 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class FolderImporter
 {
-	private static final Logger log = LoggerFactory.getLogger(FolderImporter.class);
-
 	public static class FolderImporterContext
 	{
 		public final String										basePath;
@@ -155,7 +143,7 @@ public class FolderImporter
 		return docData;
 	}
 
-	private Future<JsonObject> commitToMongo(FolderImporterContext context, Future beforeCommit)
+	private Future<JsonObject> commitToMongo(FolderImporterContext context, Future<FolderImporterContext> beforeCommit)
 	{
 		FolderImporter self = this;
 		Future<JsonObject> promise = Future.future();
@@ -385,7 +373,7 @@ public class FolderImporter
 		});
 	}
 
-	private Future importFlatFiles(FolderImporterContext context)
+	private Future<FolderImporterContext> importFlatFiles(FolderImporterContext context)
 	{
 		Future<FolderImporterContext> importDone = Future.future().map(context);
 		FolderImporter self = this;
