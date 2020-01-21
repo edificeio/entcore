@@ -218,12 +218,18 @@ public class MapSessionStore extends AbstractSessionStore {
                 if (info != null) {
                     vertx.cancelTimer(info.timerId);
                 }
-                handler.handle(Future.succeededFuture(s));
+                if (handler != null) {
+                    handler.handle(Future.succeededFuture(s));
+                }
             } else {
-                handler.handle(Future.succeededFuture(session));
+                if (handler != null) {
+                    handler.handle(Future.succeededFuture(session));
+                }
             }
         } else {
-            handler.handle(Future.failedFuture(new SessionException("Session not found when drop")));
+            if (handler != null) {
+                handler.handle(Future.failedFuture(new SessionException("Session not found when drop")));
+            }
         }
         if (inactivity != null) {
             inactivity.remove(sessionId);
