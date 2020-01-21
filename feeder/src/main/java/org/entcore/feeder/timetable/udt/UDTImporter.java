@@ -112,21 +112,21 @@ public class UDTImporter extends AbstractTimetableImporter {
 					return;
 				}
 				try {
-					parse(basePath + "UDCal_24.xml");
-					parse(basePath + "UDCal_00.xml");
-					parse(basePath + "semaines.xml");
-					parse(basePath + "UDCal_03.xml");
-					parse(basePath + "UDCal_04.xml");
-					parse(basePath + "UDCal_05.xml");
-					parse(basePath + "UDCal_07.xml");
-					parse(basePath + "UDCal_08.xml");
-					parse(basePath + "UDCal_10.xml");
-					parse(basePath + "UDCal_19.xml");
-					parse(basePath + "UDCal_13.xml");
-					parse(basePath + "UDCal_21.xml");
-					parse(basePath + "UDCal_23.xml");
-					parse(basePath + "UDCal_11.xml");
-					parse(basePath + "UDCal_12.xml");
+					parse(basePath + "UDCal_24.xml"); // Calendrier
+					parse(basePath + "UDCal_00.xml"); // Paramètres
+					parse(basePath + "semaines.xml"); // Période de publication
+					parse(basePath + "UDCal_03.xml"); // Salles
+					parse(basePath + "UDCal_04.xml"); // Professeurs
+					parse(basePath + "UDCal_05.xml"); // Matières
+					parse(basePath + "UDCal_07.xml"); // Demi-séquences
+					parse(basePath + "UDCal_08.xml"); // Divisions
+					parse(basePath + "UDCal_10.xml"); // Elèves
+					parse(basePath + "UDCal_19.xml"); // Groupes
+					parse(basePath + "UDCal_13.xml"); // Regroupements
+					parse(basePath + "UDCal_21.xml"); // Appartenance des élèves dans les groupes
+					parse(basePath + "UDCal_23.xml"); // Coenseignements
+					parse(basePath + "UDCal_11.xml"); // Fiches-T
+					parse(basePath + "UDCal_12.xml"); // Lignes de Fiches-T
 					generateCourses(startDateWeek1.getWeekOfWeekyear(), true);
 					final String UCal12Filter = udcalLowerCase ? "udcal_12_[0-9]+.xml" : "UDCal_12_[0-9]+.xml";
 					vertx.fileSystem().readDir(basePath, UCal12Filter, new Handler<AsyncResult<List<String>>>() {
@@ -172,21 +172,25 @@ public class UDTImporter extends AbstractTimetableImporter {
 		xr.parse(in);
 	}
 
+	// Origine: Calendrier
 	void setYear(String year) {
 		if (this.year == 0) {
 			this.year = Integer.parseInt(year);
 		}
 	}
 
+	// Origine: Calendrier
 	public void setEndStudents(String endStudents) {
 		this.endStudents = DateTime.parse(endStudents, DateTimeFormat.forPattern(DATE_FORMAT)).getMillis();
 	}
 
+	// Origine: Calendrier
 	public void setStartDateStudents(String startDateStudents) {
 		this.startDateStudents = DateTime.parse(startDateStudents, DateTimeFormat.forPattern(DATE_FORMAT));
 		maxYearWeek = this.startDateStudents.weekOfWeekyear().withMaximumValue().weekOfWeekyear().get();
 	}
 
+	// Origine: Paramètres
 	void initSchoolYear(JsonObject currentEntity) {
 		startDateWeek1 = startDateStudents
 				.withWeekOfWeekyear(Integer.parseInt(currentEntity.getString("premiere_semaine_ISO")))
@@ -200,12 +204,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
+	// Origine: Demi-séquences
 	void initSchedule(JsonObject e) {
 		final String slotKey = e.getString("code_jour") + padLeft(e.getString(CODE), 2, '0') + e.getString("code_site");
 		Slot s = new Slot(e.getString("hre_deb"), e.getString("hre_fin"), slotDuration);
 		slots.put(slotKey, s);
 	}
 
+	// Origine: Période de publication
 	void initPeriods(JsonObject currentEntity) {
 		JsonArray weeks = currentEntity.getJsonArray("semaine");
 		if (weeks != null && weeks.size() > 0) {
@@ -226,7 +232,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-
+	// Origine: Calendrier
 	void initHolidays(JsonObject currentEntity) {
 		DateTime s = DateTime.parse(currentEntity.getString("debut"), DateTimeFormat.forPattern(DATE_FORMAT));
 		DateTime e = DateTime.parse(currentEntity.getString("fin"), DateTimeFormat.forPattern(DATE_FORMAT));
@@ -238,6 +244,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		holidays.add(e);
 	}
 
+	// Origine: Salles
 	void addRoom(JsonObject currentEntity) {
 		rooms.put(currentEntity.getString(CODE), currentEntity.getString("nom"));
 	}
@@ -252,6 +259,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return UDT;
 	}
 
+	// Origine: Professeurs
 	void addProfesseur(JsonObject currentEntity) {
 		try {
 			if (isEmpty(currentEntity.getString("code_matppl"))) {
@@ -293,12 +301,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
+	// Origine: Matières
 	void addSubject(JsonObject s) {
 		final String code = s.getString(CODE);
 		super.addSubject(code, new JsonObject().put("Code", code).put("Libelle", s.getString("libelle"))
 				.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false)));
 	}
 
+	// Origine: Divisions
 	void addClasse(JsonObject currentEntity) {
 		final String id = currentEntity.getString(CODE);
 		classes.put(id, currentEntity);
@@ -313,6 +323,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
+	// Origine: Groupe
 	void addGroup(JsonObject currentEntity) {
 		final String id = currentEntity.getString("code_div") + currentEntity.getString(CODE);
 		groups.put(id, currentEntity);
@@ -329,6 +340,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 	}
 
+	// Origine: Regroupements
 	void addGroup2(JsonObject currentEntity) {
 		final String codeGroup = currentEntity.getString("code_gpe");
 		final String name = currentEntity.getString("nom");
@@ -379,10 +391,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("usedGroups", new JsonArray(new ArrayList<>(usedGroupInCourses))));
 	}
 
+	// Origine: Elèves
 	void eleveMapping(JsonObject currentEntity) {
 		eleves.put(currentEntity.getString(CODE), currentEntity);
 	}
 
+	// Origine: Appartenance des élèves dans les groupes
 	void addEleve(JsonObject currentEntity) {
 		if("0".equals(currentEntity.getString("theorique"))) {
 			return;
@@ -443,6 +457,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
+	// Origine: Coenseignements
 	void addCoens(JsonObject currentEntity) {
 		final String clf = currentEntity.getString("lignefic");
 		Set<String> teachers = coens.get(clf);
@@ -463,11 +478,13 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
+	// Origine: Fiches-T
 	void addFicheT(JsonObject currentEntity) {
 		final String id = currentEntity.getString(CODE);
 		fichesT.put(id, currentEntity);
 	}
 
+	// Origine: Lignes de Fiches-T
 	void addCourse(JsonObject entity) {
 		final String div = entity.getString("div");
 		if (isEmpty(div)) {
