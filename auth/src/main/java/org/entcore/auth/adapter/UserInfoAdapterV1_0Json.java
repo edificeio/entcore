@@ -46,6 +46,11 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 	public JsonObject getInfo(JsonObject info, String clientId) {
 		final JsonObject filteredInfos = getCommonFilteredInfos(info, clientId);
 		filteredInfos.remove("realClassesNames");
+
+		if (clientId != null && !clientId.trim().isEmpty()) {
+			filteredInfos.remove("classes");
+		}
+
 		return filteredInfos;
 	}
 
@@ -75,7 +80,6 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.remove("functions");
 			filteredInfos.remove("groupsIds");
 			filteredInfos.remove("structures");
-			filteredInfos.remove("classes");
 			filteredInfos.remove("apps");
 			filteredInfos.remove("authorizedActions");
 			filteredInfos.remove("children");
