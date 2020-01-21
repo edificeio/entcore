@@ -60,7 +60,7 @@ public class GraphData {
 								if (!(o instanceof JsonObject)) continue;
 								JsonObject r = (JsonObject) o;
 								JsonObject p = r.getJsonObject("p", new JsonObject()).getJsonObject("data");
-								profiles.putIfAbsent(p.getString("externalId"),
+								profiles.put(p.getString("externalId"),
 										new Profile(p, r.getJsonArray("functions")));
 							}
 						}
@@ -77,15 +77,15 @@ public class GraphData {
 						JsonObject s = r.getJsonObject("s", new JsonObject()).getJsonObject("data");
 						Structure structure = new Structure(s, r.getJsonArray("groups"), r.getJsonArray("classes"));
 						String externalId = s.getString("externalId");
-						structures.putIfAbsent(externalId, structure);
+						structures.put(externalId, structure);
 						String UAI = s.getString("UAI");
 						if (UAI != null && !UAI.trim().isEmpty()) {
-							structuresByUAI.putIfAbsent(UAI, structure);
+							structuresByUAI.put(UAI, structure);
 						}
 						JsonArray joinKeys = s.getJsonArray("joinKey");
 						if (joinKeys != null && joinKeys.size() > 0) {
 							for (Object key : joinKeys) {
-								externalIdMapping.putIfAbsent(key.toString(), externalId);
+								externalIdMapping.put(key.toString(), externalId);
 							}
 						}
 					}
