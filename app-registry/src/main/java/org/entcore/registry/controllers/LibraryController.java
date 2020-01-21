@@ -106,20 +106,22 @@ public class LibraryController extends BaseController {
         return futureUser;
     }
 
-    private Future<String> getMainStructureName(final String userId, final String def) {
+    private Future<String> getMainStructureName(final String userId) {
         Future<String> future = Future.future();
         JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
         eb.send("directory", new JsonObject().put("action", "getMainStructure")
                 .put("userId", userId).put("structures-to-exclude", structuresToExclude), handler -> {
+            String mainStructureName = "";
             if (handler.succeeded()) {
                 JsonObject body = ((JsonObject)handler.result().body());
                 if ("ok".equals(body.getString("status"))) {
-                    String mainStructureName = body.getJsonObject("result").getString("name");
-                    future.complete(mainStructureName);
-                    return;
+                    String result = body.getJsonObject("result").getString("name");
+                    if (result != null) {
+                        mainStructureName = result;
+                    }
                 }
             }
-            future.complete(def);
+            future.complete(mainStructureName);
         });
         return future;
     }
@@ -133,10 +135,10 @@ public class LibraryController extends BaseController {
             futureUser.setHandler(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
-                    String defaultStructure = user.getStructureNames().isEmpty() ? "" : user.getStructureNames().get(0);
-                    Future<String> mainStructureName = getMainStructureName(user.getUserId(), defaultStructure);
+                    Future<String> mainStructureName = getMainStructureName(user.getUserId());
                     mainStructureName.setHandler(result -> {
                         String mainStructure = result.result();
+                        log.info("[Library] Main structure identified as " + mainStructure + " for " + user.getLogin());
                         form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
                                 .add("teacherSchool", mainStructure)
                                 .add("teacherId", user.getUserId());
