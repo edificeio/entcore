@@ -771,7 +771,7 @@ public class DefaultUserService implements UserService {
 	public void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> handler) {
 	    String query = "MATCH (u:User {id : {userId}})-[:IN]->(Group)-[:DEPENDS]->(s:Structure) " +
                 "WHERE NOT s.id IN {structuresIds} " +
-                "OPTIONAL MATCH (u)-[:ADMINISTRATIVE_ATTACHMENT]->(s2:Structure) " +
+                "OPTIONAL MATCH (u)-[:ADMINISTRATIVE_ATTACHMENT]->(s2:Structure) WHERE NOT s2.id IN {structuresIds} " +
                 "RETURN CASE WHEN s2 IS NULL THEN s.name ELSE s2.name END AS name LIMIT 1";
 	    JsonObject params = new JsonObject().put("userId", userId).put("structuresIds", structuresToExclude);
 	    neo.execute(query, params, validUniqueResultHandler(res->{
