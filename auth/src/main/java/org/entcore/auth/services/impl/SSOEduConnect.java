@@ -36,7 +36,15 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class SSOEduConnect extends AbstractSSOProvider {
 
-	private final boolean noPrefix = Vertx.currentContext().config().getBoolean("not-prefix-educonnect", false);
+	private final boolean noPrefix;
+
+	public SSOEduConnect() {
+		this(Vertx.currentContext().config().getBoolean("not-prefix-educonnect", false));
+	}
+
+	public SSOEduConnect(boolean noPrefix) {
+		this.noPrefix = noPrefix;
+	}
 
 	private static final Map<String, String> academiesMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
 		put("00","ETRANGER");
@@ -113,7 +121,8 @@ public class SSOEduConnect extends AbstractSSOProvider {
 			}
 			String query =
 					"MATCH (u:User) " +
-					"WHERE u.externalId IN {joinKeys} AND NOT(HAS(u.mergedWith)) ";
+					"WHERE u.externalId IN {joinKeys} AND NOT(HAS(u.mergedWith)) " +
+					"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) ";
 			JsonObject params = new JsonObject()
 					.put("joinKeys", joinKeys);
 			executeMultiVectorQuery(query, params, assertion, handler);
