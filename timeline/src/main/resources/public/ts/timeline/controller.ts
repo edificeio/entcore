@@ -142,11 +142,22 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		return lang.translate(type === 'timeline' ? type + '.notification' : type);
 	}
 
-	http()
-		.get('/admin/api/platform/config')
-		.done(res => {
-			$scope.config.hideAdminv1Link = res['hide-adminv1-link'];
-		});
+	let isAdml = () => {
+		return model.me.functions && model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope;
+	}
+
+	let isAdmc = () => {
+		return model.me.functions && model.me.functions.SUPER_ADMIN && model.me.functions.SUPER_ADMIN.scope;
+	}
+
+	// get platform config about admin version to create admin (v1 or v2) link for report notification
+	if (isAdml() || isAdmc()) {
+		http()
+			.get('/admin/api/platform/config')
+			.done(res => {
+				$scope.config.hideAdminv1Link = res['hide-adminv1-link'];
+			});
+	}
 
 	$scope.showAdminv1Link = function() {
 		return !$scope.config.hideAdminv1Link;
