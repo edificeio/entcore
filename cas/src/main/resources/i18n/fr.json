@@ -36,5 +36,7 @@
   "AcademicSuffixRegisteredService.name" : "OGIL/Césame",
   "AcademicSuffixRegisteredService.description" : "Service CAS spécifique pour Ogil et Césame",
   "UuidRegisteredService.name" : "Moodle",
-  "UuidRegisteredService.description" : "Renvoie uniquement l'identifiant interne au client CAS."
+  "UuidRegisteredService.description" : "Renvoie uniquement l'identifiant interne au client CAS.",
+  "UaiRegisteredService.name" : "UAI",
+  "UaiRegisteredService.description" : "Renvoie uniquement la liste des UAI au client CAS."
 }
