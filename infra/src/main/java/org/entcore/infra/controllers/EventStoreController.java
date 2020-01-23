@@ -21,11 +21,14 @@ package org.entcore.infra.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.infra.services.EventStoreService;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -34,14 +37,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.voidResponseHandler;
+import static org.entcore.common.aggregation.MongoConstants.*;
 
 public class EventStoreController extends BaseController {
 
 	private EventStoreService eventStoreService;
 	private JsonArray userBlackList;
 
+
 	public EventStoreController (JsonObject eventConfig) {
         this.userBlackList = eventConfig.getJsonArray("user-blacklist", new fr.wseduc.webutils.collections.JsonArray());
+
 	}
 
 	@Post("/event/store")
@@ -55,6 +61,27 @@ public class EventStoreController extends BaseController {
                 } else {
                     eventStoreService.store(event, voidResponseHandler(request));
                 }
+			}
+		});
+	}
+
+	@Post("/event/mobile/store")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void storeMobile(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null && !userBlackList.contains(user.getUserId())) {
+				RequestUtils.bodyToJson(request, body -> {
+					final String module = body.getString("module");
+					if (!StringUtils.isEmpty(module)) {
+						eventStoreService.generateMobileEvent(TRACE_TYPE_MOBILE, user,
+								request, module, voidResponseHandler(request));
+						Renders.ok(request);
+					} else {
+						Renders.badRequest(request);
+					}
+				});
+			} else {
+				Renders.unauthorized(request);
 			}
 		});
 	}
