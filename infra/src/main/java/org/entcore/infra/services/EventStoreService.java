@@ -21,11 +21,15 @@ package org.entcore.infra.services;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 
 public interface EventStoreService {
 
 	void store(JsonObject event, Handler<Either<String, Void>> handler);
+
+	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 
 }
