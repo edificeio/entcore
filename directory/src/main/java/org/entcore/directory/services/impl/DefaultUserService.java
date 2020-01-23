@@ -485,7 +485,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH n-[:ADMINISTRATIVE_ATTACHMENT]->(sa:Structure) " +
 				"RETURN distinct " +
-				"n, COLLECT(distinct c) as classes, HEAD(COLLECT(distinct p.name)) as type, " +
+				"n, n.functions as ufunctions, COLLECT(distinct c) as classes, HEAD(COLLECT(distinct p.name)) as type, " +
 				"COLLECT(distinct s) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct gp) as groups, COLLECT(distinct sa) as administratives";
 		neo.execute(query, new JsonObject().put("id", userId),
