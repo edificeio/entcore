@@ -159,7 +159,7 @@ public class DefaultUserService implements UserService {
 		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
+				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) as children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
@@ -479,7 +479,7 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH (n:User {id : {id}}) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
