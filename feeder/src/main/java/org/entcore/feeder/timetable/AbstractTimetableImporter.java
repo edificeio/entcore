@@ -130,6 +130,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected long importTimestamp;
 	protected final String UAI;
 	protected final Report report;
+	protected final TimetableReport ttReport = new TimetableReport();
 	protected final JsonArray structure = new fr.wseduc.webutils.collections.JsonArray();
 	protected String structureExternalId;
 	protected String structureId;
@@ -148,6 +149,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, JsonObject> classes = new HashMap<>();
 	protected final Map<String, JsonObject> groups = new HashMap<>();
 	protected final Map<String, String> classNameExternalId = new HashMap<>();
+	protected final Map<String, String> functionalGroupExternalId = new HashMap<>();
+	protected final Map<String, String> studentsIdStrings = new HashMap<>();
 	protected String academyPrefix = "";
 
 	protected PersEducNat persEducNat;
@@ -168,7 +171,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		this.authorizeUserCreation = authorizeUserCreation;
 	}
 
-	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException {
+	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException
+	{
+		this.ttReport.start();
 		importTimestamp = System.currentTimeMillis();
 		final String externalIdFromUAI = "MATCH (s:Structure {UAI : {UAI}}) " +
 				"return s.externalId as externalId, s.id as id, s.timetable as timetable ";
@@ -186,6 +191,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"MATCH (:Structure {UAI : {UAI}})<-[:BELONGS]-(c:Class) RETURN c.externalId as externalId, c.name as name";
 		final String subjectsBCNMappingQuery =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject) RETURN sub.code as code, sub.id as id";
+		final String functionalGroupsExternalIdQuery =
+				"MATCH (s:Structure {UAI : {UAI}})<-[:DEPENDS]-(fg:FunctionalGroup:Group {source: {source}}) RETURN fg.externalId AS externalId, fg.name AS name";
+		final String getStudents =
+				"MATCH (s:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+				"WHERE head(u.profiles) = 'Student' " +
+				"RETURN coalesce(u.firstName, '') + '$' + coalesce(u.lastName, '') + '$' + coalesce(u.birthDate,'') AS idStr, u.id AS id";
 		final TransactionHelper tx = TransactionManager.getTransaction();
 		tx.add(getUsersByProfile, new JsonObject().put("UAI", UAI).put("profile", "Teacher"));
 		tx.add(externalIdFromUAI, new JsonObject().put("UAI", UAI));
@@ -193,11 +204,13 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		tx.add(subjectsMappingQuery, new JsonObject().put("UAI", UAI));
 		tx.add(classesNameExternalIdQuery, new JsonObject().put("UAI", UAI));
 		tx.add(subjectsBCNMappingQuery, new JsonObject().put("UAI", UAI));
+		tx.add(functionalGroupsExternalIdQuery, new JsonObject().put("UAI", UAI).put("source", getSource()));
+		tx.add(getStudents, new JsonObject().put("UAI", UAI));
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray res = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 6) {
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 8) {
 					try {
 						for (Object o : res.getJsonArray(0)) {
 							if (o instanceof JsonObject) {
@@ -273,6 +286,24 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								}
 							}
 						}
+						JsonArray functionalGroupsExternalIds = res.getJsonArray(6);
+						if (functionalGroupsExternalIds != null && functionalGroupsExternalIds.size() > 0) {
+							for (Object o : functionalGroupsExternalIds) {
+								if (o instanceof JsonObject) {
+									final  JsonObject fgnei = (JsonObject) o;
+									functionalGroupExternalId.put(fgnei.getString("externalId"), fgnei.getString("name"));
+								}
+							}
+						}
+						JsonArray studentsIds = res.getJsonArray(7);
+						if (studentsIds != null && studentsIds.size() > 0) {
+							for (Object o : studentsIds) {
+								if (o instanceof JsonObject) {
+									final  JsonObject snei = (JsonObject) o;
+									studentsIdStrings.put(snei.getString("idStr"), snei.getString("id"));
+								}
+							}
+						}
 						txXDT = TransactionManager.getTransaction();
 						persEducNat = new PersEducNat(txXDT, report, getSource());
 						persEducNat.setMapping("dictionary/mapping/" + getSource().toLowerCase() + "/PersEducNat.json");
@@ -313,7 +344,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected void persistCourse(JsonObject object) {
 		if (object == null) {
+			ttReport.courseIgnored();
 			return;
+		}
+		else
+		{
+			ttReport.courseCreated();
 		}
 		persEducNatToClasses(object);
 		persEducNatToGroups(object);
@@ -522,6 +558,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 									if (!"ok".equals(event.body().getString("status"))) {
 										report.addError("error.set.deleted.courses");
 									}
+									else
+									{
+										ttReport.courseDeleted(event.body().getInteger("number"));
+									}
 									future.complete();
 								}
 							});
@@ -557,7 +597,15 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						} else {
 							txSuccess = true;
 						}
-						endHandler = handler;
+						endHandler = new Handler<AsyncResult<Report>>()
+						{
+							@Override
+							public void handle(AsyncResult<Report> report)
+							{
+								ttReport.end();
+								handler.handle(report);
+							}
+						};
 						end();
 					}
 				});
@@ -672,6 +720,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if (id != null) {
 			params.put("id", id);
 		}
+		ttReport.addCreatedSubject(params);
 		tx.add(query, params);
 	}
 
