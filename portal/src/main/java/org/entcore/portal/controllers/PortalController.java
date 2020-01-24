@@ -294,11 +294,17 @@ public class PortalController extends BaseController {
 								List<String> t = themes.get(getSkinFromConditions(request));
 								if (userTheme != null && t != null && t.contains(userTheme)) {
 									theme.put("skin", getThemePrefix(request) + "/skins/" + userTheme + "/");
+									theme.put("themeName", getSkinFromConditions(request));
+									theme.put("skinName", userTheme);
 								} else {
 									theme.put("skin", getThemePrefix(request) + "/skins/default/");
+									theme.put("themeName", getSkinFromConditions(request));
+									theme.put("skinName", "default");
 								}
 							} else {
 								theme.put("skin", getThemePrefix(request) + "/skins/default/");
+								theme.put("themeName", getSkinFromConditions(request));
+								theme.put("skinName", "default");
 							}
 							renderJson(request, theme);
 							UserUtils.addSessionAttribute(eb, user.getUserId(), theme_attr, theme.encode(), null);
