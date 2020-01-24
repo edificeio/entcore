@@ -90,6 +90,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private final boolean udcalLowerCase;
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
+	private Map<String, String> functionalGroupExternalIdCopy;
+	private Map<String, List<JsonObject>> teachersBySubject = new HashMap<String, List<JsonObject>>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(uai, path, acceptLanguage, authorizeUserCreation);
@@ -111,6 +113,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					handler.handle(new DefaultAsyncResult<Report>(event.cause()));
 					return;
 				}
+				functionalGroupExternalIdCopy = new HashMap<String, String>(functionalGroupExternalId);
 				try {
 					parse(basePath + "UDCal_24.xml"); // Calendrier
 					parse(basePath + "UDCal_00.xml"); // Paramètres
@@ -139,6 +142,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 										if (m.find()) {
 											final int weekNumber = Integer.parseInt(m.group(1));
 											if (periods.containsKey(weekNumber)) {
+												ttReport.addWeek(weekNumber);
 												parse(p);
 												generateCourses(weekNumber, false);
 											} else {
@@ -147,6 +151,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 										}
 									}
 									persistUsedGroups();
+
+									for(String group : functionalGroupExternalIdCopy.values())
+										ttReport.groupDeleted(group);
+
 									commit(handler);
 								} catch (Exception e) {
 									handler.handle(new DefaultAsyncResult<Report>(e));
@@ -287,6 +295,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				if (getSource().equals(teacherId[1]) && authorizeUserCreation) {
 					updateUser(p);
 				}
+				this.ttReport.teacherFound();
 			} else {
 				final String userId = UUID.randomUUID().toString();
 				p.put("id", userId);
@@ -295,7 +304,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 					persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 				}
 				teachers.put(id, userId);
+				this.ttReport.addUnknownTeacher(p);
 			}
+			List<JsonObject> colleagues = teachersBySubject.get(currentEntity.getString("code_matppl"));
+			if(colleagues == null)
+			{
+				colleagues = new ArrayList<JsonObject>();
+				teachersBySubject.put(currentEntity.getString("code_matppl"), colleagues);
+			}
+			colleagues.add(currentEntity);
 		} catch (Exception e) {
 			report.addError(e.getMessage());
 		}
@@ -304,8 +321,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 	// Origine: Matières
 	void addSubject(JsonObject s) {
 		final String code = s.getString(CODE);
-		super.addSubject(code, new JsonObject().put("Code", code).put("Libelle", s.getString("libelle"))
-				.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false)));
+		JsonObject subject = new JsonObject().put("Code", code).put("Libelle", s.getString("libelle"))
+													.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false));
+		super.addSubject(code, subject);
+
+		List<JsonObject> teachers = teachersBySubject.get(code);
+		if(teachers == null)
+			ttReport.addUserToSubject(null, subject);
+		else
+			for(JsonObject t : teachers)
+				ttReport.addUserToSubject(t, subject);
 	}
 
 	// Origine: Divisions
@@ -318,9 +343,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(id), id, false) : id;
 		currentEntity.put("className", className);
-		if (className != null) {
-			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
-		}
+
+		// The class won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
+
+		if(classNameExternalId.containsKey(className) == true)
+			ttReport.classFound();
+		else
+			ttReport.addClassToReconciliate(currentEntity);
 	}
 
 	// Origine: Groupe
@@ -334,10 +364,19 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
 		currentEntity.put("idgpe", currentEntity.remove("id"));
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
+		final String externalId = structureExternalId + "$" + name;
 		txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", structureExternalId + "$" + name)
+				.put("externalId", externalId)
 				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+
+		if(functionalGroupExternalId.containsKey(externalId) == true)
+		{
+			functionalGroupExternalIdCopy.remove(externalId);
+			ttReport.groupUpdated(getOrElse(currentEntity.getString("code_sts"), name, false));
+		}
+		else
+			ttReport.groupCreated(getOrElse(currentEntity.getString("code_sts"), name, false));
 	}
 
 	// Origine: Regroupements
@@ -378,12 +417,21 @@ public class UDTImporter extends AbstractTimetableImporter {
 			groups.add(name);
 		}
 		regroup.put(currentEntity.getString(CODE), name);
+		final String externalId = structureExternalId + "$" + name;
 		txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
 				.put("structureExternalId", structureExternalId)
 				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", structureExternalId + "$" + name)
+				.put("externalId", externalId)
 				.put("id", UUID.randomUUID().toString()).put("source", getSource())
 				.put("idrgpmt", currentEntity.getString("id")));
+
+		if(functionalGroupExternalId.containsKey(externalId) == true)
+		{
+			functionalGroupExternalIdCopy.remove(externalId);
+			ttReport.groupUpdated(name);
+		}
+		else
+			ttReport.groupCreated(name);
 	}
 
 	private void persistUsedGroups() {
@@ -394,6 +442,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 	// Origine: Elèves
 	void eleveMapping(JsonObject currentEntity) {
 		eleves.put(currentEntity.getString(CODE), currentEntity);
+
+		String date = StringValidation.convertDate(currentEntity.getString("naissance", ""));
+		String idStr = currentEntity.getString("prenom", "") + "$" + currentEntity.getString("nom", "") + "$" + date;
+
+		if(studentsIdStrings.containsKey(idStr) == true)
+			ttReport.userFound();
+		else
+			ttReport.addMissingUser(currentEntity);
 	}
 
 	// Origine: Appartenance des élèves dans les groupes
@@ -712,7 +768,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
-						log.info("Import EDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+						log.info("Import UDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 						message.reply(new JsonObject().put("status", "ok")
 								.put("result", event.result().getResult()));
 						if (postImport != null && udtUserCreation) {
