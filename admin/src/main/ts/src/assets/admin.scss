@@ -303,6 +303,8 @@ ode-mono-select {
     left: 0;
     right: 0;
     box-shadow: 1px 1px 10px $shadow-light;
+    max-height: 400px;
+    overflow-y: scroll;
   }
   &__options {
     padding: 10px 15px;
