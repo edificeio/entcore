@@ -158,7 +158,11 @@ public class TimetableReport
     if(this.usersAttachedToSubject.containsKey(subject) == false)
       this.usersAttachedToSubject.put(subject, new LinkedList<JsonObject>());
     if(user != null)
-      this.usersAttachedToSubject.get(subject).add(user);
+    {
+      List<JsonObject> teachers = this.usersAttachedToSubject.get(subject);
+      if(teachers.contains(user) == false)
+        teachers.add(user);
+    }
   }
 
   public void userFound()
