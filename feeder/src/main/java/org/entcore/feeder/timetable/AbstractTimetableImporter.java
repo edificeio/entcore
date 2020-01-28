@@ -150,6 +150,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, JsonObject> groups = new HashMap<>();
 	protected final Map<String, String> classNameExternalId = new HashMap<>();
 	protected final Map<String, String> functionalGroupExternalId = new HashMap<>();
+	protected final Map<String, String> functionalGroupExternalIdCopy = new HashMap<>();
 	protected final Map<String, String> studentsIdStrings = new HashMap<>();
 	protected String academyPrefix = "";
 
@@ -294,6 +295,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 									functionalGroupExternalId.put(fgnei.getString("externalId"), fgnei.getString("name"));
 								}
 							}
+							functionalGroupExternalIdCopy.putAll(functionalGroupExternalId);
 						}
 						JsonArray studentsIds = res.getJsonArray(7);
 						if (studentsIds != null && studentsIds.size() > 0) {

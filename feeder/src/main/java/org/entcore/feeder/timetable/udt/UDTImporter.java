@@ -90,7 +90,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private final boolean udcalLowerCase;
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
-	private Map<String, String> functionalGroupExternalIdCopy;
 	private Map<String, List<JsonObject>> teachersBySubject = new HashMap<String, List<JsonObject>>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
@@ -113,7 +112,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 					handler.handle(new DefaultAsyncResult<Report>(event.cause()));
 					return;
 				}
-				functionalGroupExternalIdCopy = new HashMap<String, String>(functionalGroupExternalId);
 				try {
 					parse(basePath + "UDCal_24.xml"); // Calendrier
 					parse(basePath + "UDCal_00.xml"); // Paramètres

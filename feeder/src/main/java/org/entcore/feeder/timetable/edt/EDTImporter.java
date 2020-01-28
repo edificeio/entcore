@@ -22,6 +22,7 @@ package org.entcore.feeder.timetable.edt;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.Md5;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
@@ -87,6 +88,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, JsonObject> subClasses = new HashMap<>();
 	private final Set<String> userImportedPronoteId = new HashSet<>();
 	private final Map<String, String> idpnIdent = new HashMap<>();
+	private final Map<String, JsonObject> teachersById = new HashMap<>();
+	private final Map<String, JsonObject> subjectsById = new HashMap<>();
 
 	public EDTImporter(EDTUtils edtUtils, String uai, String path, String acceptLanguage,
 			String mode, boolean authorizeUserCreation) {
@@ -132,6 +135,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 											userExternalId(new Handler<Void>(){
 												@Override
 												public void handle(Void v) {
+													for(String group : functionalGroupExternalIdCopy.values())
+														ttReport.groupDeleted(group);
 													commit(handler);
 												}
 											});
@@ -186,6 +191,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 	void initSchoolYear(JsonObject schoolYear) {
 		startDateWeek1 = DateTime.parse(schoolYear.getString("DatePremierJourSemaine1"));
+		byte week1 = (byte) startDateWeek1.getWeekOfWeekyear();
+		for(byte i = 0; i < 52; ++i)
+			ttReport.addWeek(((week1 + i) % 52) + 1);
 	}
 
 	void initSchedule(JsonObject currentEntity) {
@@ -210,6 +218,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 	void addSubject(JsonObject currentEntity) {
 		super.addSubject(currentEntity.getString(IDENT),
 				currentEntity.put("mappingCode", currentEntity.getString("Code")));
+		subjectsById.put(currentEntity.getString(IDENT), currentEntity);
+		ttReport.addUserToSubject(null, currentEntity);
 	}
 
 	void addGroup(JsonObject currentEntity) {
@@ -221,10 +231,21 @@ public class EDTImporter extends AbstractTimetableImporter {
 		classInGroups(id, pcs, this.subClasses);
 
 		final String name = currentEntity.getString("Nom");
+		String externalId = structureExternalId + "$" + name;
 		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
 				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", structureExternalId + "$" + name)
+				.put("externalId", externalId)
 				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+
+		if(functionalGroupExternalId.containsKey(externalId) == true)
+		{
+			functionalGroupExternalIdCopy.remove(externalId);
+			ttReport.groupUpdated(name);
+		}
+		else
+		{
+			ttReport.groupCreated(name);
+		}
 	}
 
 	private void classInGroups(String id, JsonArray classes, Map<String, JsonObject> ref) {
@@ -262,6 +283,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 		if (className != null) {
 			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
+
+			if(classNameExternalId.containsKey(className) == true)
+				ttReport.classFound();
+			else
+				ttReport.addClassToReconciliate(currentEntity);
 		}
 	}
 
@@ -276,6 +302,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 				try {
 					final JsonObject user = persEducNat.applyMapping(currentEntity.copy());
 					updateUser(user.put(IDPN, idPronote));
+					ttReport.teacherFound();
 				} catch (ValidationException e) {
 					report.addError("update.user.error");
 				}
@@ -283,7 +310,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 		} else {
 			idpnIdent.put(idPronote, id);
 			findPersEducNat(currentEntity, idPronote, "Teacher");
+			ttReport.addUnknownTeacher(currentEntity);
 		}
+		teachersById.put(id, currentEntity);
 	}
 
 	void addPersonnel(JsonObject currentEntity) {
@@ -411,6 +440,14 @@ public class EDTImporter extends AbstractTimetableImporter {
 			final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
 			studentToGroups(sconetId, classes, this.classes);
 			studentToGroups(sconetId, pcs, this.subClasses);
+
+			String date = StringValidation.convertDate(currentEntity.getString("DateNaissance", ""));
+			String idStr = currentEntity.getString("Prenom", "") + "$" + currentEntity.getString("Nom", "") + "$" + date;
+
+			if(studentsIdStrings.containsKey(idStr) == true)
+				ttReport.userFound();
+			else
+				ttReport.addMissingUser(currentEntity);
 		}
 	}
 
@@ -449,6 +486,19 @@ public class EDTImporter extends AbstractTimetableImporter {
 	void addCourse(JsonObject currentEntity) {
 		final List<Long> weeks = new ArrayList<>();
 		final List<JsonObject> items = new ArrayList<>();
+
+		final String subject = currentEntity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT);
+		final JsonArray courseTeachers = currentEntity.getJsonArray("Professeur");
+
+		if(courseTeachers != null)
+		{
+			for(Object o : courseTeachers)
+			{
+				if (!(o instanceof JsonObject)) continue;
+				final JsonObject j = (JsonObject) o;
+				ttReport.addUserToSubject(teachersById.get(j.getString(IDENT)), subjectsById.get(subject));
+			}
+		}
 
 		for (String attr: currentEntity.fieldNames()) {
 			if (!ignoreAttributes.contains(attr) && currentEntity.getValue(attr) instanceof JsonArray) {
