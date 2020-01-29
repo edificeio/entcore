@@ -430,8 +430,8 @@ public class DefaultSchoolService implements SchoolService {
 			List<String> distributions = StringUtils.isEmpty(distribution) ? Collections.EMPTY_LIST :
 					Arrays.stream(distribution.split(",")).collect(Collectors.toList());
 			String education = jo.getString("education");
-			List<String> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
-					Arrays.stream(education.split(",")).collect(Collectors.toList());
+			List<Long> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
+					Arrays.stream(education.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
 			Boolean hasApp = jo.getBoolean("hasApp");
 
 			if (structureId != null) {
