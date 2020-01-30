@@ -335,7 +335,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				AbstractTimetableImporter.initStructure(eb, message);
 				break;
 			case "manual-edt":
-				EDTImporter.launchImport(edtUtils, config.getString("mode", "prod"), message, postImport,
+				EDTImporter.launchImport(vertx, edtUtils, config.getString("mode", "prod"), message, postImport,
 						config.getBoolean("edt-user-creation", false));
 				break;
 			case "manual-udt":
