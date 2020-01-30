@@ -183,5 +183,12 @@
     "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services...",
     "panel.user.messagerie":"messagerie",
 
-    "AdminLocal": "Administrateurs locaux"
+    "AdminLocal": "Administrateurs locaux",
+
+    "empty.timeline.title": "Mais, où sont passés tous les autres ?",
+    "empty.timeline": "Léa a publié un billet de Blog, Enzo vous a partagé une Carte mentale, Chloé a écrit un message dans Forum. Retrouvez bientôt toutes vos notifications dans ce Fil de nouveautés.",
+    "empty.timeline.noresults.title": "Qui a éteint la lumière ?",
+    "empty.timeline.noresults": "Il n’y a aucun résultat. Cochez de nouveaux filtres pour faire apparaître vos notifications.",
+    "empty.timeline.nofilters.title": "Qui a éteint la lumière ?",
+    "empty.timeline.nofilters": "Oups, vous avez décoché tous les filtres... Sélectionnez vos rubriques préférées pour accéder aux notifications les plus importantes !"
 }
