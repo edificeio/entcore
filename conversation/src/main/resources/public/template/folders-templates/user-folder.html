@@ -1,6 +1,6 @@
 <h3 whereami></h3>
 <nav class="twelve bottom-spacing-twice">
-	<div class="">
+	<div class="" ng-if="!isLoading() && conversation.currentFolder.mails.all.length > 0">
 		<switch-search
 			ng-model="searchField.words"
 			ng-change="search(words)"
@@ -50,7 +50,16 @@
 		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
 	<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0">
-		<div class="info fade-in"><i18n>[[state.emptyMessage]]</i18n></div>
+		<!-- Emptyscreen: no messages -->
+		<div class="emptyscreen">
+			<h2 class="emptyscreen-header">
+				<i18n>folder.empty</i18n>
+			</h2>
+			<img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-search.svg">
+			<button class="cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i18n>new.message</i18n>
+			</button>
+		</div>
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
