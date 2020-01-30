@@ -56,7 +56,8 @@ public class XpCommunicationService extends DefaultCommunicationService {
 		}
 		query.append("WHERE  g.id IN comGroups " +
 				"AND (length(p) < 1 OR (length(p) < 2 AND g.id <> cg.id) OR (length(p) < 2 AND m:User)) " +
-				"AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
+				"AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
+				"AND (NOT(HAS(m.nbUsers)) OR m.nbUsers > 0) ");
 		if (preFilter != null) {
 			query.append(preFilter);
 			if (union != null) {
