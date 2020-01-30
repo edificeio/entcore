@@ -22,14 +22,14 @@ export let Timeline = {
 		this.reported = this.reporters && this.reporters.length > 0
 	},
 	NotificationType: function(){
-		this.apply = function(){
+		this.apply = function(cb){
 			model.notifications.all = [];
 			model.notifications.lastPage = false;
 			model.notifications.page = 0;
 			if(model.notificationTypes.selection().length > 0){
 				model.notificationTypes.noFilter = false;
 			}
-			model.notifications.sync();
+			model.notifications.sync(false, cb);
 		}
 	},
 	Skin: function(){
@@ -79,7 +79,7 @@ export const build = function (){
 		lastPage: false,
 		loading: false,
 		mine: model.notifications && model.notifications.mine,
-		sync: function(paginate){
+		sync: function(paginate, cb){
 			var that = this;
 
 			if(that.loading || (paginate && that.lastPage))
@@ -95,6 +95,9 @@ export const build = function (){
 				return;
 			}
 			if(!types.length){
+				if (cb) {
+					cb();
+				}
 				return;
 			}
 
@@ -122,9 +125,14 @@ export const build = function (){
 					that.lastPage = true;
 					model.trigger('notifications.change')
 				}
-
+				if (cb) {
+					cb();
+				}
 			}).error(function(data){
 				that.loading = false;
+				if (cb) {
+					cb();
+				}
 				notify.error(data);
 			});
 

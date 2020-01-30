@@ -1,5 +1,4 @@
 <div class="twelve cell" pulsar-highlight="0">
-
 	<app-title>
 		<h1 data-reload class="application-title">
 			<i18n
@@ -7,20 +6,19 @@
 			>timeline.title</i18n>
 		</h1>
 	</app-title>
+	
 	<div data-ng-controller="FlashMessages" class="twelve cell">
 		<div class="flashmsg" ng-repeat="message in messages.all" ng-class="message.color" ng-style="{ 'background-color': message.customColor }">
 			<i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
 			<div bind-html="message.contents[currentLanguage]"></div>
 		</div>
 	</div>
+
 	<div data-ng-controller="Timeline" class="twelve cell" bottom-scroll="loadPage()">
-
-		<div class="row drop-down-block" ng-class="{slided: display.slide}">
-
+		<div ng-if="!isEmpty()" class="row drop-down-block" ng-class="{slided: display.slide}">
 			<div class="drop-down-label"
 				ng-if="filtered.notificationTypes.length > 0"
 				ng-click="display.slide = !display.slide">
-
 				<div class="twelve cell" pulsar-highlight="7">
 					<i class="arrow"></i>
 					<label
@@ -30,6 +28,7 @@
 					</label>
 				</div>
 			</div>
+
 			<div class="drop-down-info" ng-model="notificationTypes" ng-if="filtered.notificationTypes.length > 0">
 				<span><i18n>filters.unactives</i18n></span><span> [[unactivesFilters()]]</span>
 			</div>
@@ -43,9 +42,10 @@
 					<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)">
 						<i class="[[type.data.toLowerCase()]] type"></i>
 						<span>[[suffixTitle(type.data.toLowerCase())]]</span>
-						<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+						<input type="checkbox" ng-model="type.selected" ng-change="switchFilter(type)" />
 					</label>
 				</div>
+
 				<div class="drop-up-label" ng-click="display.slide = !display.slide" ng-if="filtered.notificationTypes.length > 0">
 					<label>
 						<i18n>filters.close</i18n>
@@ -55,13 +55,38 @@
 			</div>
 		</div>
 
-	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() !== notificationTypes.selection().length">
-		<b><span><i18n>filters.unselected</i18n></span></b>
-	</div>
+		<!-- Emptyscreen: no notifications -->
+		<div class="emptyscreen" ng-if="isEmpty() && !switchingFilters">
+			<h2 class="emptyscreen-header">
+				<i18n>empty.timeline.title</i18n>
+			</h2>
+			<img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg">
+			<p class="emptyscreen-footer">
+				<i18n>empty.timeline</i18n>
+			</p>
+		</div>
 
-	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length && notifications.lastPage">
-		<b><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
-	</div>
+		<!-- Emptyscreen: no results with filters -->
+		<div class="emptyscreen" ng-if="noResultsWithFilters() && !switchingFilters">
+			<h2 class="emptyscreen-header">
+				<i18n>empty.timeline.noresults.title</i18n>
+			</h2>
+			<img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg">
+			<p class="emptyscreen-footer">
+				<i18n>empty.timeline.noresults</i18n>
+			</p>
+		</div>
+
+		<!-- Emptyscreen: no filters selected -->
+		<div class="emptyscreen" ng-if="noFiltersSelected() && !switchingFilters">
+			<h2 class="emptyscreen-header">
+				<i18n>empty.timeline.nofilters.title</i18n>
+			</h2>
+			<img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg">
+			<p class="emptyscreen-footer">
+				<i18n>empty.timeline.nofilters</i18n>
+			</p>
+		</div>
 
 		<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]">
 			<article ng-class="{ 'unread': isUnRead(notification) }">
