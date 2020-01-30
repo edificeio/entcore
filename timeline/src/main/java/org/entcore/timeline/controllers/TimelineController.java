@@ -95,9 +95,9 @@ public class TimelineController extends BaseController {
 
 	/* Override i18n to use additional timeline translations and nested templates */
 	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request, final Map<String, Object> ctx) {
-		super.setLambdaTemplateRequest(request, ctx);
-		TimelineLambda.setLambdaTemplateRequest(request, ctx, eventsI18n, lazyEventsI18n);
+	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
+		super.setLambdaTemplateRequest(request);
+		TimelineLambda.setLambdaTemplateRequest(request, this.templateProcessor, eventsI18n, lazyEventsI18n);
 	}
 
 	private boolean isLightmode(){
