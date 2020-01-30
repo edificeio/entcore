@@ -32,6 +32,7 @@ import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -91,9 +92,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, JsonObject> teachersById = new HashMap<>();
 	private final Map<String, JsonObject> subjectsById = new HashMap<>();
 
-	public EDTImporter(EDTUtils edtUtils, String uai, String path, String acceptLanguage,
+	public EDTImporter(Vertx vertx, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
 			String mode, boolean authorizeUserCreation) {
-		super(uai, path, acceptLanguage, authorizeUserCreation);
+		super(vertx, uai, path, acceptLanguage, authorizeUserCreation);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -662,11 +663,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 		return "IDPN";
 	}
 
-	public static void launchImport(EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
-		launchImport(edtUtils, "prod", message, null, edtUserCreation);
+	public static void launchImport(Vertx vertx, EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
+		launchImport(vertx, edtUtils, "prod", message, null, edtUserCreation);
 	}
 
-	public static void launchImport(EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
+	public static void launchImport(Vertx vertx, EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String acceptLanguage = message.body().getString("language", "fr");
 		if (edtUtils == null) {
@@ -688,7 +689,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch EDT import : " + uai);
 
-			new EDTImporter(edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {
