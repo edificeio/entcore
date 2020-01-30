@@ -33,6 +33,7 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -130,7 +131,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected long importTimestamp;
 	protected final String UAI;
 	protected final Report report;
-	protected final TimetableReport ttReport = new TimetableReport();
+	protected final TimetableReport ttReport;
 	protected final JsonArray structure = new fr.wseduc.webutils.collections.JsonArray();
 	protected String structureExternalId;
 	protected String structureId;
@@ -165,11 +166,15 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 	protected final boolean authorizeUserCreation;
 
-	protected AbstractTimetableImporter(String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
+	protected AbstractTimetableImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation)
+	{
 		UAI = uai;
 		this.basePath = path;
 		this.report = new Report(acceptLanguage);
 		this.authorizeUserCreation = authorizeUserCreation;
+
+		this.ttReport = new TimetableReport(vertx);
+		this.ttReport.setSource(this.getSource());
 	}
 
 	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException

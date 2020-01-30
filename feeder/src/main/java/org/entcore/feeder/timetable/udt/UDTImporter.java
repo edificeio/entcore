@@ -93,7 +93,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, List<JsonObject>> teachersBySubject = new HashMap<String, List<JsonObject>>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
-		super(uai, path, acceptLanguage, authorizeUserCreation);
+		super(vertx, uai, path, acceptLanguage, authorizeUserCreation);
 		this.vertx = vertx;
 		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
 		if (udcalLowerCase) {

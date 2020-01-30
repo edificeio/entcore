@@ -1,5 +1,5 @@
 /*
- * Copyright © "Open Digital Education", 2016
+ * Copyright © "Open Digital Education", 2020
  *
  * This program is published by "Open Digital Education".
  * You must indicate the name of the software and the company in any production /contribution
@@ -22,12 +22,22 @@ package org.entcore.feeder.timetable;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.LinkedList;
 
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import fr.wseduc.webutils.template.TemplateProcessor;
+import fr.wseduc.webutils.template.lambdas.I18nLambda;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class TimetableReport
 {
+  private String source;
   private long startTime;
   private long endTime;
 
@@ -53,6 +63,28 @@ public class TimetableReport
   private long nbUsersFound = 0;
   private List<JsonObject> missingUsers = new LinkedList<JsonObject>();
 
+  private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
+  private TemplateProcessor templator;
+
+  public TimetableReport(Vertx vertx)
+  {
+    this(vertx, "fr");
+  }
+
+  public TimetableReport(Vertx vertx, String locale)
+  {
+    this.templator = TimetableReport.templateProcessors.get(vertx);
+
+    if(this.templator == null)
+    {
+      this.templator = new TemplateProcessor(vertx, "template").escapeHTML(false);
+
+      this.templator.setLambda("i18n", new I18nLambda(locale));
+
+      TimetableReport.templateProcessors.put(vertx, this.templator);
+    }
+  }
+
   public String print()
   {
     return
@@ -64,6 +96,11 @@ public class TimetableReport
       "Courses:  " + nbCoursesCreated + "/" + nbCoursesDeleted + "/" + nbCoursesIgnored + "\n" +
       "Subjects:\n" + createdSubjects + "\nSubjectMap:\n" + usersAttachedToSubject + "\n" +
       "Users:    " + nbUsersFound +    " OK; KO: " + missingUsers + "\n";
+  }
+
+  public void setSource(String source)
+  {
+    this.source = source;
   }
 
   public void start()

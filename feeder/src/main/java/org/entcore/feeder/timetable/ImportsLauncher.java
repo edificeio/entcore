@@ -96,7 +96,7 @@ public class ImportsLauncher implements Handler<Long> {
 											.put("UAI", matcher.group(1))
 											.put("language", "fr");
 									if (edtUtils != null) {
-										EDTImporter.launchImport(edtUtils, m, timetableUserCreation);
+										EDTImporter.launchImport(vertx, edtUtils, m, timetableUserCreation);
 									} else {
 										UDTImporter.launchImport(vertx, m, timetableUserCreation);
 									}
