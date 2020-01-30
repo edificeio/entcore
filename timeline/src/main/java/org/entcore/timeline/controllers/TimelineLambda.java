@@ -23,6 +23,7 @@ import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.DecodeException;
@@ -45,10 +46,10 @@ public final class TimelineLambda {
 
 	private TimelineLambda() {}
 
-	public static void setLambdaTemplateRequest(final HttpServerRequest request, final Map<String, Object> ctx,
+	public static void setLambdaTemplateRequest(final HttpServerRequest request, final TemplateProcessor processor,
 			final LocalMap<String, String> eventsI18n, final HashMap<String, JsonObject> lazyEventsI18n) {
 
-		ctx.put("i18n", new Mustache.Lambda() {
+		processor.setLambda("i18n", new Mustache.Lambda() {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String key = frag.execute();
@@ -73,11 +74,11 @@ public final class TimelineLambda {
 				if (translatedContents.equals(key)) {
 					translatedContents = timelineI18n.getString(key, key);
 				}
-				Mustache.compiler().compile(translatedContents).execute(ctx, out);
+				Mustache.compiler().compile(translatedContents).execute(TimelineLambda.getRootContext(frag), out);
 			}
 		});
 
-		ctx.put("host", new Mustache.Lambda() {
+		processor.setLambda("host", new Mustache.Lambda() {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException{
 				String contents = frag.execute();
@@ -90,18 +91,20 @@ public final class TimelineLambda {
 			}
 		});
 
-		ctx.put("nested", new Mustache.Lambda() {
+		processor.setLambda("nested", new Mustache.Lambda() {
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String nestedTemplateName = frag.execute();
+				Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
 				String nestedTemplate = (String) ctx.get(nestedTemplateName);
 				if(nestedTemplate != null)
 					Mustache.compiler().compile(nestedTemplate).execute(ctx, out);
 			}
 		});
 
-		ctx.put("nestedArray", new Mustache.Lambda() {
+		processor.setLambda("nestedArray", new Mustache.Lambda() {
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String nestedTemplatePos = frag.execute();
+				Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
 				JsonArray nestedArray = new fr.wseduc.webutils.collections.JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
 				try {
 					JsonObject nestedTemplate = nestedArray.getJsonObject(Integer.parseInt(nestedTemplatePos) - 1);
@@ -114,6 +117,24 @@ public final class TimelineLambda {
 				}
 			}
 		});
+	}
+
+	private static Map<String, Object> getRootContext(Template.Fragment frag)
+	{
+		Object parentCtx = null, ctx = null;
+		try
+		{
+			int i = 0;
+			do
+			{
+				parentCtx = ctx;
+				ctx = frag.context(i++);
+			}
+			while(ctx != null);
+		}
+		catch(Exception e) {}
+
+		return parentCtx instanceof Map ? ((Map<String, Object>) parentCtx) : new HashMap<String, Object>();
 	}
 
 }
