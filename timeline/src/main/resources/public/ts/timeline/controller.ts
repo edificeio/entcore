@@ -38,6 +38,7 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 	if ($scope.userStructures && $scope.userStructures.length == 1) {
 		$scope.userStructure = $scope.userStructures[0];
 	}
+	$scope.switchingFilters = false;
 
 	$scope.actions = {
 		discard: {
@@ -122,6 +123,7 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 	};
 
 	$scope.allFilters = function(){
+		$scope.switchingFilters = true;
 		if(model.notificationTypes.selection().length === model.notificationTypes.length()){
 			model.notificationTypes.deselectAll();
 		}else{
@@ -130,8 +132,8 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 
 		model.notifications.page = 0;
 		model.notifications.lastPage = false;
-		model.notifications.all= [];
-		model.notifications.sync();
+		model.notifications.all = [];
+		model.notifications.sync(false, () => $scope.switchingFilters = false);
 	};
 
 	$scope.isCache = () => (window as any).TIMELINE_CACHE;
@@ -158,6 +160,11 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		$scope.notifications.lastPage = false;
 		model.notifications.page++
 		$scope.loadPage();
+	}
+	
+	$scope.switchFilter = (type) => {
+		$scope.switchingFilters = true;
+		type.apply(() => $scope.switchingFilters = false);
 	}
 
 	$scope.unactivesFilters = function(){
@@ -202,6 +209,29 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 
 	$scope.showAdminv2AlertsLink = function() {
 		return !$scope.showAdminv1Link() && $scope.userStructures && $scope.userStructures.length == 1;
+	}
+
+	$scope.allFiltersOn = (): boolean => {
+		return $scope.notificationTypes.selection() 
+			&& $scope.notificationTypes.all.length > 0
+			&& $scope.notificationTypes.selection().length === $scope.notificationTypes.all.length;
+	}
+
+	$scope.isEmpty = (): boolean => {
+		return $scope.notifications.all 
+			&& $scope.notifications.all.length === 0 
+			&& $scope.allFiltersOn();
+	}
+
+	$scope.noFiltersSelected = (): boolean => {
+		return $scope.notificationTypes.selection().length == 0;
+	}
+
+	$scope.noResultsWithFilters = (): boolean => {
+		return $scope.notifications.all 
+			&& $scope.notifications.all.length === 0 
+			&& $scope.notificationTypes.selection().length < $scope.notificationTypes.all.length
+			&& $scope.notificationTypes.selection().length > 0;
 	}
 }]);
 

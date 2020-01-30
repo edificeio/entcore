@@ -189,5 +189,11 @@
     "lightmode.timeline.notifications": "Face à un pic de connexions sans précédent, votre Fil de nouveautés est momentanément inaccessible. L'historique des notifications sera rétabli par la suite. Aussi, pour vous avertir des nouveautés de votre réseau, les notifications externes sont toujours envoyées sur l'adresse mail renseignée dans Mon compte.",
     "lightmode.timeline.notifications.html": "<div><h1>Votre Fil de nouveautés est indisponible…</h1><h2>Face à un pic de connexions sans précédent, votre Fil de nouveautés est momentanément inaccessible. L'historique des notifications sera rétabli par la suite. Aussi, pour vous avertir des nouveautés de votre réseau, les notifications externes sont toujours envoyées sur l'adresse mail renseignée dans Mon compte.</h2></div>",
     "timeline.seeold": "Voir les notifications plus anciennes",
-    "timeline.historyold": "Charger l’historique de notifications"
+    "timeline.historyold": "Charger l’historique de notifications",
+    "empty.timeline.title": "Mais, où sont passés tous les autres ?",
+    "empty.timeline": "Léa a publié un billet de Blog, Enzo vous a partagé une Carte mentale, Chloé a écrit un message dans Forum. Retrouvez bientôt toutes vos notifications dans ce Fil de nouveautés.",
+    "empty.timeline.noresults.title": "Qui a éteint la lumière ?",
+    "empty.timeline.noresults": "Il n’y a aucun résultat. Cochez de nouveaux filtres pour faire apparaître vos notifications.",
+    "empty.timeline.nofilters.title": "Qui a éteint la lumière ?",
+    "empty.timeline.nofilters": "Oups, vous avez décoché tous les filtres... Sélectionnez vos rubriques préférées pour accéder aux notifications les plus importantes !"
 }
