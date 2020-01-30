@@ -783,7 +783,7 @@ public class User {
 			final String query0 = "MATCH (g:" + type + ") SET g.nbUsers = 0;";
 			tx.add(query0, params);
 		} else {
-			final String query0 = "MATCH (g:" + type + ") WHERE g.nbUsers > 0 AND NOT(g<-[:IN]-(:User)) SET g.nbUsers = 0;";
+			final String query0 = "MATCH (g:" + type + ") WHERE (NOT(HAS(g.nbUsers)) OR g.nbUsers > 0) AND NOT(g<-[:IN]-(:User)) SET g.nbUsers = 0;";
 			tx.add(query0, params);
 		}
 		final String query = "MATCH (g:" + type + filter + ")<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";

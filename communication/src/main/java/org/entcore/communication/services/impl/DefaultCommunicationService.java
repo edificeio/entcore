@@ -546,7 +546,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 			}
 		}
-		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
+		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) AND (NOT(HAS(m.nbUsers)) OR m.nbUsers > 0) ");
 		if (preFilter != null) {
 			query.append(preFilter);
 			if (union != null) {
