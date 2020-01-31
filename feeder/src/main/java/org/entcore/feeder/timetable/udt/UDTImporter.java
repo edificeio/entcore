@@ -28,6 +28,7 @@ import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
+import org.entcore.feeder.timetable.TimetableReport;
 import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.Validator;
@@ -90,7 +91,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private final boolean udcalLowerCase;
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
-	private Map<String, List<JsonObject>> teachersBySubject = new HashMap<String, List<JsonObject>>();
+	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(vertx, uai, path, acceptLanguage, authorizeUserCreation);
@@ -302,15 +303,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 					persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 				}
 				teachers.put(id, userId);
-				this.ttReport.addUnknownTeacher(p);
+				TimetableReport.Teacher teacher = new TimetableReport.Teacher(firstName, lastName, p.getString("birthDate"));
+				this.ttReport.addUnknownTeacher(teacher);
 			}
-			List<JsonObject> colleagues = teachersBySubject.get(currentEntity.getString("code_matppl"));
+			List<TimetableReport.Teacher> colleagues = teachersBySubject.get(currentEntity.getString("code_matppl"));
 			if(colleagues == null)
 			{
-				colleagues = new ArrayList<JsonObject>();
+				colleagues = new ArrayList<TimetableReport.Teacher>();
 				teachersBySubject.put(currentEntity.getString("code_matppl"), colleagues);
 			}
-			colleagues.add(currentEntity);
+			colleagues.add(new TimetableReport.Teacher(firstName, lastName, p.getString("birthDate")));
 		} catch (Exception e) {
 			report.addError(e.getMessage());
 		}
@@ -323,12 +325,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 													.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false));
 		super.addSubject(code, subject);
 
-		List<JsonObject> teachers = teachersBySubject.get(code);
+		List<TimetableReport.Teacher> teachers = teachersBySubject.get(code);
 		if(teachers == null)
-			ttReport.addUserToSubject(null, subject);
+			ttReport.addUserToSubject(null, new TimetableReport.Subject(code));
 		else
-			for(JsonObject t : teachers)
-				ttReport.addUserToSubject(t, subject);
+			for(TimetableReport.Teacher t : teachers)
+				ttReport.addUserToSubject(t, new TimetableReport.Subject(code));
 	}
 
 	// Origine: Divisions
@@ -348,7 +350,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if(classNameExternalId.containsKey(className) == true)
 			ttReport.classFound();
 		else
-			ttReport.addClassToReconciliate(currentEntity);
+			ttReport.addClassToReconciliate(
+				new TimetableReport.SchoolClass(getOrElse(currentEntity.getString("libelle"), currentEntity.getString("className"), false)));
 	}
 
 	// Origine: Groupe
@@ -447,7 +450,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if(studentsIdStrings.containsKey(idStr) == true)
 			ttReport.userFound();
 		else
-			ttReport.addMissingUser(currentEntity);
+			ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("prenom"), currentEntity.getString("nom"), date));
 	}
 
 	// Origine: Appartenance des élèves dans les groupes
