@@ -22,6 +22,8 @@ package org.entcore.feeder.timetable.edt;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.Md5;
+
+import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -93,9 +95,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, TimetableReport.Teacher> teachersById = new HashMap<>();
 	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
 
-	public EDTImporter(Vertx vertx, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
+	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
 			String mode, boolean authorizeUserCreation) {
-		super(vertx, uai, path, acceptLanguage, authorizeUserCreation);
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -669,11 +671,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 		return "IDPN";
 	}
 
-	public static void launchImport(Vertx vertx, EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
-		launchImport(vertx, edtUtils, "prod", message, null, edtUserCreation);
+	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
+		launchImport(vertx, storage, edtUtils, "prod", message, null, edtUserCreation);
 	}
 
-	public static void launchImport(Vertx vertx, EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
+	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String acceptLanguage = message.body().getString("language", "fr");
 		if (edtUtils == null) {
@@ -695,7 +697,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch EDT import : " + uai);
 
-			new EDTImporter(vertx, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {

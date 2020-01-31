@@ -25,6 +25,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.storage.Storage;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.users.PersEducNat;
@@ -129,6 +130,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"SET u.groups = groups";
 	public static final String COURSES = "courses";
 	protected long importTimestamp;
+	protected final Storage storage;
 	protected final String UAI;
 	protected final Report report;
 	protected final TimetableReport ttReport;
@@ -166,8 +168,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 	protected final boolean authorizeUserCreation;
 
-	protected AbstractTimetableImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation)
+	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation)
 	{
+		this.storage = storage;
 		UAI = uai;
 		this.basePath = path;
 		this.report = new Report(acceptLanguage);
@@ -176,6 +179,18 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getSource());
 		this.ttReport.setUAI(UAI);
+
+		storage.writeFsFile(path, new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(JsonObject o)
+			{
+				if(o.getString("status").equals("ok"))
+					ttReport.setFileID(o.getString("_id"));
+				else
+					ttReport.setFileID("null");
+			}
+		});
 	}
 
 	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException
