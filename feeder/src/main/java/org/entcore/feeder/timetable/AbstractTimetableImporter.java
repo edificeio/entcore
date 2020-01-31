@@ -175,6 +175,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getSource());
+		this.ttReport.setUAI(UAI);
 	}
 
 	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException
