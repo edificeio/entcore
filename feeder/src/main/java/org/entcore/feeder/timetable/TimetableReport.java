@@ -25,12 +25,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.template.lambdas.I18nLambda;
 import fr.wseduc.webutils.template.lambdas.LocaleDateLambda;
@@ -100,6 +103,7 @@ public class TimetableReport
     public String toString() { return this.view.getString("code"); }
   }
 
+  private String UAI;
   private String source;
   private long startTime;
   private long endTime;
@@ -149,20 +153,33 @@ public class TimetableReport
     }
   }
 
-  public String print()
+  public void persist()
   {
-    return
-      "S: " + startTime + "\tE: " + endTime + "\n" +
-      "Weeks: " + processedWeeks + "\n" +
-      "Teachers: " + nbTeachersFound + " OK; KO: " + unknownTeachers + "\n" +
-      "Classes:  " + nbClassesFound +  " OK; KO: " + classesToReconciliate + "\n" +
-      "Groups:\n" + groupsCreated + "\n" + groupsUpdated + "\n" + groupsDeleted + "\n" +
-      "Courses:  " + nbCoursesCreated + "/" + nbCoursesDeleted + "/" + nbCoursesIgnored + "\n" +
-      "Subjects:\n" + createdSubjects + "\nSubjectMap:\n" + usersAttachedToSubject + "\n" +
-      "Users:    " + nbUsersFound +    " OK; KO: " + missingUsers + "\n";
+    this.template(new Handler<String>()
+    {
+      @Override
+      public void handle(String report)
+      {
+        JsonObject document = new JsonObject()
+          .put("_id", UUID.randomUUID().toString())
+          .put("created", MongoDb.now())
+          .put("source", source)
+          .put("UAI", UAI)
+          .put("report", report);
+
+        MongoDb.getInstance().save("timetableImports", document, new Handler<Message<JsonObject>>()
+        {
+          @Override
+          public void handle(Message<JsonObject> msg)
+          {
+
+          }
+        });
+      }
+    });
   }
 
-  public String template()
+  public void template(Handler<String> handler)
   {
     JsonObject params = new JsonObject();
 
@@ -186,6 +203,7 @@ public class TimetableReport
       (seconds.length() == 1 ? "0" : "") + seconds + "s";
 
     params
+      .put("UAI", this.UAI)
       .put("source", this.source)
       .put("date", startTime)
       .put("startTime", startTime)
@@ -213,12 +231,9 @@ public class TimetableReport
       @Override
       public void handle(String template)
       {
-        System.out.println();
-        System.out.println(template);
-        System.out.println();
+        handler.handle(template);
       }
     });
-    return "";
   }
 
   private JsonArray getTemplateWeeks()
@@ -261,6 +276,11 @@ public class TimetableReport
 
   //====================================================== SETTERS ======================================================
 
+  public void setUAI(String UAI)
+  {
+    this.UAI = UAI;
+  }
+
   public void setSource(String source)
   {
     this.source = source;
@@ -275,8 +295,7 @@ public class TimetableReport
   {
     this.endTime = System.currentTimeMillis();
 
-    System.out.println(this.print());
-    this.template();
+    this.persist();
   }
 
   public void addWeek(int week)
