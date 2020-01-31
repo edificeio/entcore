@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.timetable;
 
+import org.entcore.common.storage.Storage;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
@@ -41,21 +42,23 @@ public class ImportsLauncher implements Handler<Long> {
 	private static final Logger log = LoggerFactory.getLogger(ImportsLauncher.class);
 	private static final Pattern UAI_PATTERN = Pattern.compile(".*([0-9]{7}[A-Z]).*");
 	private final Vertx vertx;
+	private final Storage storage;
 	private final String path;
 	private final PostImport postImport;
 	private EDTUtils edtUtils;
 	private final boolean timetableUserCreation;
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, boolean timetableUserCreation) {
+	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, boolean timetableUserCreation) {
 		this.vertx = vertx;
+		this.storage = storage;
 		this.path = path;
 		this.postImport = postImport;
 		this.timetableUserCreation = timetableUserCreation;
 	}
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, EDTUtils edtUtils,
+	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, EDTUtils edtUtils,
 			boolean timetableUserCreation) {
-		this(vertx, path, postImport, timetableUserCreation);
+		this(vertx, storage, path, postImport, timetableUserCreation);
 		this.edtUtils = edtUtils;
 	}
 
@@ -96,9 +99,9 @@ public class ImportsLauncher implements Handler<Long> {
 											.put("UAI", matcher.group(1))
 											.put("language", "fr");
 									if (edtUtils != null) {
-										EDTImporter.launchImport(vertx, edtUtils, m, timetableUserCreation);
+										EDTImporter.launchImport(vertx, storage, edtUtils, m, timetableUserCreation);
 									} else {
-										UDTImporter.launchImport(vertx, m, timetableUserCreation);
+										UDTImporter.launchImport(vertx, storage, m, timetableUserCreation);
 									}
 								} else {
 									log.error("UAI not found in filename : " + file);

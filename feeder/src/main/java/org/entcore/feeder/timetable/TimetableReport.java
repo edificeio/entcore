@@ -103,6 +103,7 @@ public class TimetableReport
     public String toString() { return this.view.getString("code"); }
   }
 
+  private String fileID;
   private String UAI;
   private String source;
   private long startTime;
@@ -132,6 +133,7 @@ public class TimetableReport
 
   private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
   private TemplateProcessor templator;
+  private boolean waitFileID = false;
 
   public TimetableReport(Vertx vertx)
   {
@@ -155,6 +157,14 @@ public class TimetableReport
 
   public void persist()
   {
+    if(this.fileID == null)
+    {
+      this.waitFileID = true;
+      return;
+    }
+    else
+      this.waitFileID = false;
+
     this.template(new Handler<String>()
     {
       @Override
@@ -165,7 +175,8 @@ public class TimetableReport
           .put("created", MongoDb.now())
           .put("source", source)
           .put("UAI", UAI)
-          .put("report", report);
+          .put("report", report)
+          .put("fileID", fileID);
 
         MongoDb.getInstance().save("timetableImports", document, new Handler<Message<JsonObject>>()
         {
@@ -275,6 +286,13 @@ public class TimetableReport
   }
 
   //====================================================== SETTERS ======================================================
+
+  public void setFileID(String id)
+  {
+    this.fileID = id;
+    if(this.waitFileID == true)
+      this.persist();
+  }
 
   public void setUAI(String UAI)
   {
