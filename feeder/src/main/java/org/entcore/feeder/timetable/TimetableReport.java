@@ -21,6 +21,7 @@ package org.entcore.feeder.timetable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.LinkedList;
@@ -32,11 +33,73 @@ import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.template.lambdas.I18nLambda;
+import fr.wseduc.webutils.template.lambdas.LocaleDateLambda;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class TimetableReport
 {
+  private static class ReportEntity
+  {
+    protected JsonObject view;
+
+    public JsonObject get() { return this.view; }
+
+    @Override
+    public String toString() { return view.toString(); }
+  }
+
+  public static class User extends ReportEntity
+  {
+    public User(String firstName, String lastName, String birthDate)
+    {
+      if(firstName == null) firstName = "—";
+      if(lastName == null) lastName = "—";
+      if(birthDate == null) birthDate = "—";
+
+      this.view = new JsonObject()
+        .put("firstName", firstName.trim())
+        .put("lastName", lastName.trim().toUpperCase())
+        .put("birthDate", birthDate.trim());
+    }
+  }
+
+  public static class Teacher extends User
+  {
+    public Teacher(String firstName, String lastName, String birthDate)
+    {
+      super(firstName, lastName, birthDate);
+    }
+  }
+
+  public static class Student extends User
+  {
+    public Student(String firstName, String lastName, String birthDate)
+    {
+      super(firstName, lastName, birthDate);
+    }
+  }
+
+  public static class SchoolClass extends ReportEntity
+  {
+    public SchoolClass(String className)
+    {
+      if(className == null) className = "—";
+
+      this.view = new JsonObject().put("name", className);
+    }
+  }
+
+  public static class Subject extends ReportEntity
+  {
+    public Subject(String code)
+    {
+      this.view = new JsonObject().put("code", code);
+    }
+    @Override
+    public String toString() { return this.view.getString("code"); }
+  }
+
   private String source;
   private long startTime;
   private long endTime;
@@ -44,10 +107,10 @@ public class TimetableReport
   private List<Integer> processedWeeks = new LinkedList<Integer>();
 
   private long nbTeachersFound = 0;
-  private List<JsonObject> unknownTeachers = new LinkedList<JsonObject>();
+  private List<Teacher> unknownTeachers = new LinkedList<Teacher>();
 
   private long nbClassesFound = 0;
-  private List<JsonObject> classesToReconciliate = new LinkedList<JsonObject>();
+  private List<SchoolClass> classesToReconciliate = new LinkedList<SchoolClass>();
 
   private List<String> groupsCreated = new LinkedList<String>();
   private List<String> groupsUpdated = new LinkedList<String>();
@@ -57,11 +120,11 @@ public class TimetableReport
   private long nbCoursesDeleted = 0;
   private long nbCoursesIgnored = 0;
 
-  private List<JsonObject> createdSubjects = new LinkedList<JsonObject>();
-  private Map<JsonObject, List<JsonObject>> usersAttachedToSubject = new HashMap<JsonObject, List<JsonObject>>();
+  private List<Subject> createdSubjects = new LinkedList<Subject>();
+  private Map<Subject, List<Teacher>> usersAttachedToSubject = new HashMap<Subject, List<Teacher>>();
 
   private long nbUsersFound = 0;
-  private List<JsonObject> missingUsers = new LinkedList<JsonObject>();
+  private List<User> missingUsers = new LinkedList<User>();
 
   private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
   private TemplateProcessor templator;
@@ -80,6 +143,7 @@ public class TimetableReport
       this.templator = new TemplateProcessor(vertx, "template").escapeHTML(false);
 
       this.templator.setLambda("i18n", new I18nLambda(locale));
+      this.templator.setLambda("datetime", new LocaleDateLambda(locale));
 
       TimetableReport.templateProcessors.put(vertx, this.templator);
     }
@@ -98,6 +162,105 @@ public class TimetableReport
       "Users:    " + nbUsersFound +    " OK; KO: " + missingUsers + "\n";
   }
 
+  public String template()
+  {
+    JsonObject params = new JsonObject();
+
+    JsonArray uas = new JsonArray();
+
+    for(Map.Entry<Subject, List<Teacher>> entry : this.usersAttachedToSubject.entrySet())
+    {
+      JsonObject item = new JsonObject()
+        .put("class", entry.getKey().toString())
+        .put("teachers", this.getTemplateEntities(entry.getValue()));
+      uas.add(item);
+    }
+
+    long elapsed = (endTime - startTime) / 1000;
+    String seconds = Long.toString(elapsed % 60);
+    String minutes = Long.toString((elapsed / 60) % 60);
+    String hours = Long.toString(elapsed / 3600);
+    String runTime =
+      (hours.length() == 1 ? "0" : "") + hours + "h" +
+      (minutes.length() == 1 ? "0" : "") + minutes + "m" +
+      (seconds.length() == 1 ? "0" : "") + seconds + "s";
+
+    params
+      .put("source", this.source)
+      .put("date", startTime)
+      .put("startTime", startTime)
+      .put("endTime", endTime)
+      .put("runTime", runTime)
+      .put("weeks", this.getTemplateWeeks())
+      .put("nbTeachersFound", nbTeachersFound)
+      .put("unknownTeachers", this.getTemplateEntities(this.unknownTeachers))
+      .put("nbClassesFound", nbClassesFound)
+      .put("classesToReconciliate", this.getTemplateEntities(this.classesToReconciliate))
+      .put("groupsCreated", new JsonArray(this.groupsCreated))
+      .put("groupsUpdated", new JsonArray(this.groupsUpdated))
+      .put("groupsDeleted", new JsonArray(this.groupsDeleted))
+      .put("nbCoursesCreated", this.nbCoursesCreated)
+      .put("nbCoursesDeleted", this.nbCoursesDeleted)
+      .put("nbCoursesIgnored", this.nbCoursesIgnored)
+      .put("createdSubjects", this.getTemplateEntities(this.createdSubjects))
+      .put("usersAttachedToSubject", uas)
+      .put("nbUsersFound", this.nbUsersFound)
+      .put("missingUsers", this.getTemplateEntities(this.missingUsers))
+      ;
+
+    this.templator.processTemplate("timetable-report.txt", params, new Handler<String>()
+    {
+      @Override
+      public void handle(String template)
+      {
+        System.out.println();
+        System.out.println(template);
+        System.out.println();
+      }
+    });
+    return "";
+  }
+
+  private JsonArray getTemplateWeeks()
+  {
+    JsonArray weeks = new JsonArray();
+    JsonObject weekRange = null;
+    for(byte i = 0; i < this.processedWeeks.size(); ++i)
+    {
+      byte wk = this.processedWeeks.get(i).byteValue();
+      if(weekRange == null)
+      {
+        weekRange = new JsonObject().put("start", wk);
+        weeks.add(weekRange);
+      }
+      else if(weekRange != null)
+      {
+        byte last = getOrElse(weekRange.getInteger("end"), weekRange.getInteger("start")).byteValue();
+        if(last == wk - 1)
+          weekRange.put("end", wk);
+        else
+        {
+          weekRange = null;
+          --i;
+        }
+      }
+    }
+
+    return weeks;
+  }
+
+  private JsonArray getTemplateEntities(List<? extends ReportEntity> l)
+  {
+    List<JsonObject> resList = new ArrayList<JsonObject>(l.size());
+
+    for(ReportEntity re : l)
+      resList.add(re.get());
+
+    return new JsonArray(resList);
+  }
+
+  //====================================================== SETTERS ======================================================
+
   public void setSource(String source)
   {
     this.source = source;
@@ -112,7 +275,8 @@ public class TimetableReport
   {
     this.endTime = System.currentTimeMillis();
 
-    System.out.println("\n\n" + this.print() + "\n\n");
+    System.out.println(this.print());
+    this.template();
   }
 
   public void addWeek(int week)
@@ -125,7 +289,7 @@ public class TimetableReport
     ++this.nbTeachersFound;
   }
 
-  public void addUnknownTeacher(JsonObject teacher)
+  public void addUnknownTeacher(Teacher teacher)
   {
     this.unknownTeachers.add(teacher);
   }
@@ -135,7 +299,7 @@ public class TimetableReport
     ++this.nbClassesFound;
   }
 
-  public void addClassToReconciliate(JsonObject recClass)
+  public void addClassToReconciliate(SchoolClass recClass)
   {
     this.classesToReconciliate.add(recClass);
   }
@@ -185,18 +349,18 @@ public class TimetableReport
     this.nbCoursesIgnored += nb;
   }
 
-  public void addCreatedSubject(JsonObject subject)
+  public void addCreatedSubject(Subject subject)
   {
     this.createdSubjects.add(subject);
   }
 
-  public void addUserToSubject(JsonObject user, JsonObject subject)
+  public void addUserToSubject(Teacher user, Subject subject)
   {
     if(this.usersAttachedToSubject.containsKey(subject) == false)
-      this.usersAttachedToSubject.put(subject, new LinkedList<JsonObject>());
+      this.usersAttachedToSubject.put(subject, new LinkedList<Teacher>());
     if(user != null)
     {
-      List<JsonObject> teachers = this.usersAttachedToSubject.get(subject);
+      List<Teacher> teachers = this.usersAttachedToSubject.get(subject);
       if(teachers.contains(user) == false)
         teachers.add(user);
     }
@@ -207,7 +371,7 @@ public class TimetableReport
     ++this.nbUsersFound;
   }
 
-  public void addMissingUser(JsonObject user)
+  public void addMissingUser(User user)
   {
     this.missingUsers.add(user);
   }

@@ -1,0 +1,121 @@
+Rapport d'éxecution de l'import {{source}} du {{#datetime}}{{date}}{{/datetime}}
+
+Début: {{#datetime}}{{startTime}}{{/datetime}}
+Fin: {{#datetime}}{{endTime}}{{/datetime}}
+Durée: {{runTime}}
+
+================================================== SEMAINES TRAITÉES ==================================================
+
+{{#weeks}}
+{{#-first}}
+Les semaines suivantes ont été traitées:
+{{/-first}}
+{{#end}}
+Les semaines {{start}} à {{end}}
+{{/end}}
+{{^end}}
+La semaine {{start}}
+{{/end}}
+{{/weeks}}
+{{^weeks}}
+Aucune semaine n'a été traitée; seul l'emploi du temps théorique a été importé.
+{{/weeks}}
+
+===================================================== PROFESSEURS =====================================================
+
+{{nbTeachersFound}} professeurs ont été trouvés.
+
+{{#unknownTeachers}}
+{{#-first}}
+Les enseignants suivants n’ont pas été retrouvés dans votre établissement (les noms et prénoms doivent être identiques).
+Les cours correspondants ne seront pas créés.
+
+{{/-first}}
+  {{lastName}} {{firstName}} né(e) le {{birthDate}}
+{{/unknownTeachers}}
+
+======================================================= CLASSES =======================================================
+
+{{nbClassesFound}} classes ont été trouvées.
+
+{{#classesToReconciliate}}
+{{#-first}}
+Les classes suivantes n’ont pas été retrouvées dans votre établissement.
+Vous pouvez les mettre en correspondance dans l’onglet Réconciliation des classes
+
+{{/-first}}
+  {{name}}
+{{/classesToReconciliate}}
+
+======================================================= GROUPES =======================================================
+
+{{#groupsCreated}}
+{{#-first}}
+Les groupes suivants ont été créés:
+{{/-first}}
+  {{this}}
+{{/groupsCreated}}
+{{^groupsCreated}}
+Aucun groupe n'a été créé.
+{{/groupsCreated}}
+
+{{#groupsUpdated}}
+{{#-first}}
+Les groupes suivants ont été mis à jour:
+{{/-first}}
+  {{this}}
+{{/groupsUpdated}}
+{{^groupsUpdated}}
+Aucun groupe n'a été mis à jour.
+{{/groupsUpdated}}
+
+{{#groupsDeleted}}
+{{#-first}}
+Les groupes suivants ont été supprimés:
+{{/-first}}
+  {{this}}
+{{/groupsDeleted}}
+{{^groupsDeleted}}
+Aucun groupe n'a été supprimé.
+{{/groupsDeleted}}
+
+======================================================== COURS ========================================================
+
+{{nbCoursesCreated}} cours ont été créés.
+{{nbCoursesDeleted}} cours ont été supprimés.
+{{nbCoursesIgnored}} cours ont été ignorés à cause d'une erreur (ex. pas d'enseignant).
+
+======================================================= MATIÈRES ======================================================
+
+{{#createdSubjects}}
+{{#-first}}
+Les matières suivantes ont été créées à partir de leur référence BCN:
+{{/-first}}
+  {{code}}
+{{/createdSubjects}}
+
+{{#usersAttachedToSubject}}
+{{#-first}}
+Liste des professeurs rattachés à chaque matière:
+{{/-first}}
+
+  {{class}}
+{{#teachers}}
+    {{lastName}} {{firstName}} né(e) le {{birthDate}}
+{{/teachers}}
+{{^teachers}}
+    Aucun professeur pour ce cours
+{{/teachers}}
+{{/usersAttachedToSubject}}
+
+======================================================== ELÈVES =======================================================
+
+{{nbUsersFound}} élèves ont été trouvés.
+
+{{#missingUsers}}
+{{#-first}}
+Les élèves suivants n’ont pas été retrouvés dans votre établissement (les noms, prénoms et date de naissance doivent être identiques):
+
+{{/-first}}
+  {{lastName}} {{firstName}} né(e) le {{birthDate}}
+{{/missingUsers}}

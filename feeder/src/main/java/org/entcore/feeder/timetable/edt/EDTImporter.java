@@ -28,6 +28,7 @@ import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
+import org.entcore.feeder.timetable.TimetableReport;
 import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
 import io.vertx.core.AsyncResult;
@@ -89,8 +90,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, JsonObject> subClasses = new HashMap<>();
 	private final Set<String> userImportedPronoteId = new HashSet<>();
 	private final Map<String, String> idpnIdent = new HashMap<>();
-	private final Map<String, JsonObject> teachersById = new HashMap<>();
-	private final Map<String, JsonObject> subjectsById = new HashMap<>();
+	private final Map<String, TimetableReport.Teacher> teachersById = new HashMap<>();
+	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
 
 	public EDTImporter(Vertx vertx, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
 			String mode, boolean authorizeUserCreation) {
@@ -219,8 +220,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 	void addSubject(JsonObject currentEntity) {
 		super.addSubject(currentEntity.getString(IDENT),
 				currentEntity.put("mappingCode", currentEntity.getString("Code")));
-		subjectsById.put(currentEntity.getString(IDENT), currentEntity);
-		ttReport.addUserToSubject(null, currentEntity);
+		TimetableReport.Subject s = new TimetableReport.Subject(currentEntity.getString("Code"));
+		subjectsById.put(currentEntity.getString(IDENT), s);
+		ttReport.addUserToSubject(null, s);
 	}
 
 	void addGroup(JsonObject currentEntity) {
@@ -288,7 +290,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			if(classNameExternalId.containsKey(className) == true)
 				ttReport.classFound();
 			else
-				ttReport.addClassToReconciliate(currentEntity);
+				ttReport.addClassToReconciliate(new TimetableReport.SchoolClass(className));
 		}
 	}
 
@@ -297,6 +299,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 		final String idPronote = structureExternalId + "$" + currentEntity.getString(IDPN);
 		userImportedPronoteId.add(idPronote);
 		final String[] teacherId = teachersMapping.get(idPronote);
+
+		TimetableReport.Teacher teacher = new TimetableReport.Teacher(
+			currentEntity.getString("Prenom"), currentEntity.getString("Nom"), currentEntity.getString("DateNaissance"));
+
 		if (teacherId != null && isNotEmpty(teacherId[0])) {
 			teachers.put(id, teacherId[0]);
 			if (getSource().equals(teacherId[1])) {
@@ -311,9 +317,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 		} else {
 			idpnIdent.put(idPronote, id);
 			findPersEducNat(currentEntity, idPronote, "Teacher");
-			ttReport.addUnknownTeacher(currentEntity);
+			ttReport.addUnknownTeacher(teacher);
 		}
-		teachersById.put(id, currentEntity);
+		teachersById.put(id, teacher);
 	}
 
 	void addPersonnel(JsonObject currentEntity) {
@@ -448,7 +454,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			if(studentsIdStrings.containsKey(idStr) == true)
 				ttReport.userFound();
 			else
-				ttReport.addMissingUser(currentEntity);
+				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
 		}
 	}
 

@@ -727,7 +727,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if (id != null) {
 			params.put("id", id);
 		}
-		ttReport.addCreatedSubject(params);
+		ttReport.addCreatedSubject(new TimetableReport.Subject(code));
 		tx.add(query, params);
 	}
 
