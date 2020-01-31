@@ -26,6 +26,8 @@ import io.vertx.core.Handler;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
@@ -72,6 +74,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private DuplicateUsers duplicateUsers;
 	private PostImport postImport;
 	private final ConcurrentLinkedQueue<Message<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
+	private Storage storage;
 
 	public enum FeederEvent {
 		IMPORT, DELETE_USER, CREATE_USER, MERGE_USER
@@ -83,6 +86,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	@Override
 	public void start() {
 		super.start();
+		storage = new StorageFactory(vertx, config).getStorage();
 		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 		if (node == null) {
 			node = "";
@@ -172,7 +176,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				if (isNotEmpty(edtPath) && isNotEmpty(edtCron)) {
 					try {
 						new CronTrigger(vertx, edtCron).schedule(
-								new ImportsLauncher(vertx, edtPath, postImport, edtUtils,
+								new ImportsLauncher(vertx, storage, edtPath, postImport, edtUtils,
 										config.getBoolean("edt-user-creation", false)));
 					} catch (ParseException e) {
 						logger.error("Error in cron edt", e);
@@ -187,7 +191,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			if (isNotEmpty(udtPath) && isNotEmpty(udtCron)) {
 				try {
 					new CronTrigger(vertx, udtCron).schedule(
-							new ImportsLauncher(vertx, udtPath, postImport, edtUtils,
+							new ImportsLauncher(vertx, storage, udtPath, postImport, edtUtils,
 									config.getBoolean("udt-user-creation", false)));
 				} catch (ParseException e) {
 					logger.error("Error in cron udt", e);
@@ -335,11 +339,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				AbstractTimetableImporter.initStructure(eb, message);
 				break;
 			case "manual-edt":
-				EDTImporter.launchImport(vertx, edtUtils, config.getString("mode", "prod"), message, postImport,
+				EDTImporter.launchImport(vertx, storage, edtUtils, config.getString("mode", "prod"), message, postImport,
 						config.getBoolean("edt-user-creation", false));
 				break;
 			case "manual-udt":
-				UDTImporter.launchImport(vertx, message, postImport,
+				UDTImporter.launchImport(vertx, storage, message, postImport,
 						config.getBoolean("udt-user-creation", false));
 				break;
 			case "reinit-logins" :

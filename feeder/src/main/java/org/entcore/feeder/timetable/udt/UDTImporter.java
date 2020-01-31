@@ -23,6 +23,7 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
@@ -93,8 +94,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Set<String> coursesIds = new HashSet<>();
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
 
-	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
-		super(vertx, uai, path, acceptLanguage, authorizeUserCreation);
+	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation);
 		this.vertx = vertx;
 		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
 		if (udcalLowerCase) {
@@ -743,11 +744,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	public static void launchImport(Vertx vertx, final Message<JsonObject> message, boolean udtUserCreation) {
-		launchImport(vertx, message, null, udtUserCreation);
+	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, boolean udtUserCreation) {
+		launchImport(vertx, storage, message, null, udtUserCreation);
 	}
 
-	public static void launchImport(Vertx vertx, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation) {
+	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String uai = message.body().getString("UAI");
 		final String path = message.body().getString("path");
@@ -765,7 +766,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 			final String parentPath = FileUtils.getParentPath(path);
 			FileUtils.unzip(path, parentPath);
-			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, storage, uai, parentPath + File.separator, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
