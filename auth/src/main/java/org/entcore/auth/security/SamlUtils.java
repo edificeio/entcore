@@ -21,6 +21,7 @@ package org.entcore.auth.security;
 
 import org.opensaml.saml2.core.*;
 import org.opensaml.saml2.core.impl.*;
+import org.opensaml.ws.soap.soap11.Envelope;
 import org.opensaml.xml.Configuration;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.Marshaller;
@@ -97,6 +98,14 @@ public final class SamlUtils {
 	public static String marshallLogoutRequest(LogoutRequest logoutRequest) throws MarshallingException {
 		Marshaller marshaller = Configuration.getMarshallerFactory().getMarshaller(logoutRequest);
 		Element authDOM = marshaller.marshall(logoutRequest);
+		StringWriter rspWrt = new StringWriter();
+		XMLHelper.writeNode(authDOM, rspWrt);
+		return rspWrt.toString();
+	}
+
+	public static String marshallEnvelope(Envelope envelope) throws MarshallingException {
+		Marshaller marshaller = Configuration.getMarshallerFactory().getMarshaller(envelope);
+		Element authDOM = marshaller.marshall(envelope);
 		StringWriter rspWrt = new StringWriter();
 		XMLHelper.writeNode(authDOM, rspWrt);
 		return rspWrt.toString();
