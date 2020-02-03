@@ -20,6 +20,7 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
@@ -36,6 +37,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
+import com.mongodb.QueryBuilder;
+
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.mongodb.MongoDbResult.validResultsHandler;
@@ -46,6 +49,7 @@ public class DefaultTimetableService implements TimetableService {
 	private static final String COURSES = "courses";
 	private final EventBus eb;
 	private final Neo4j neo4j = Neo4j.getInstance();
+	private final MongoDb mongo = MongoDb.getInstance();
 	private static final JsonObject KEYS = new JsonObject().put("_id", 1).put("structureId", 1).put("subjectId", 1)
 			.put("roomLabels", 1).put("equipmentLabels", 1).put("teacherIds", 1).put("personnelIds", 1)
 			.put("classes", 1).put("groups", 1).put("dayOfWeek", 1).put("startDate", 1).put("endDate", 1)
@@ -231,6 +235,96 @@ public class DefaultTimetableService implements TimetableService {
 				}
 			}
 		});
+	}
+
+	private void getStructureUAI(String structureId, Handler<Either<String, String>> handler)
+	{
+		final JsonObject params = new JsonObject().put("id", structureId);
+		StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure {id:{id}}) RETURN s.UAI as UAI");
+
+		neo4j.execute(query.toString(), params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> event)
+			{
+				if(event.isLeft() == true)
+					handler.handle(new Either.Left<String, String>(event.left().getValue()));
+				else
+					handler.handle(new Either.Right<String, String>(event.right().getValue().getString("UAI")));
+			}
+		}));
+	}
+
+	@Override
+	public void listReports(String structureId, Handler<Either<String, JsonArray>> handler)
+	{
+		this.getStructureUAI(structureId, new Handler<Either<String, String>>()
+		{
+			@Override
+			public void handle(Either<String, String> either)
+			{
+				if(either.isLeft() == true)
+					handler.handle(new Either.Left<String,JsonArray>(either.left().getValue()));
+				else
+				{
+					String UAI = either.right().getValue();
+
+					QueryBuilder query = QueryBuilder.start("UAI").is(UAI);
+					JsonObject projection = new JsonObject()
+						.put("_id", 1)
+						.put("created", 1)
+						.put("source", 1);
+
+					mongo.find("timetableImports", MongoQueryBuilder.build(query), null, projection, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> event)
+						{
+							handler.handle(Utils.validResults(event));
+						}
+					});
+				}
+			}
+		});
+	}
+
+	@Override
+	public void getReport(String structureId, String reportId, Handler<Either<String, JsonObject>> handler)
+	{
+		this.getStructureUAI(structureId, new Handler<Either<String, String>>()
+		{
+			@Override
+			public void handle(Either<String, String> either)
+			{
+				if(either.isLeft() == true)
+					handler.handle(new Either.Left<String,JsonObject>(either.left().getValue()));
+				else
+				{
+					String UAI = either.right().getValue();
+
+					QueryBuilder query = QueryBuilder.start().and(
+						QueryBuilder.start("UAI").is(UAI).get(),
+						QueryBuilder.start("_id").is(reportId).get()
+					);
+					JsonObject projection = new JsonObject()
+						.put("_id", 1)
+						.put("created", 1)
+						.put("source", 1)
+						.put("report", 1);
+
+					mongo.findOne("timetableImports", MongoQueryBuilder.build(query), projection, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> event)
+						{
+							handler.handle(Utils.validResult(event));
+						}
+					});
+				}
+			}
+		});
+		
 	}
 
 	@Override

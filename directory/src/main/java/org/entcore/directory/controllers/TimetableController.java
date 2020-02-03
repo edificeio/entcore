@@ -201,6 +201,20 @@ public class TimetableController extends BaseController {
 		});
 	}
 
+	@Get("/timetable/import/:structureId/reports")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listReports(final HttpServerRequest request) {
+		timetableService.listReports(request.params().get("structureId"), arrayResponseHandler(request));
+	}
+
+	@Get("/timetable/import/:structureId/report/:reportId")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getReport(final HttpServerRequest request) {
+		timetableService.getReport(request.params().get("structureId"), request.params().get("reportId"), defaultResponseHandler(request));
+	}
+
 	@BusAddress("timetable")
 	@SuppressWarnings("unchecked")
 	public void getTimetable(final Message<JsonObject> message){
