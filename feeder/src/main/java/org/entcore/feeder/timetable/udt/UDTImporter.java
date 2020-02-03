@@ -106,7 +106,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	@Override
-	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception {
+	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception
+	{
+		final String parentPath = FileUtils.getParentPath(this.basePath);
+		FileUtils.unzip(this.basePath, parentPath);
+		String basePath = parentPath + File.separator;
 		init(new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
@@ -764,9 +768,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai);
 
-			final String parentPath = FileUtils.getParentPath(path);
-			FileUtils.unzip(path, parentPath);
-			new UDTImporter(vertx, storage, uai, parentPath + File.separator, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
