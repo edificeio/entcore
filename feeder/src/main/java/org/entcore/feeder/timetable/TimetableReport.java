@@ -264,6 +264,12 @@ public class TimetableReport
         byte last = getOrElse(weekRange.getInteger("end"), weekRange.getInteger("start")).byteValue();
         if(last == wk - 1)
           weekRange.put("end", wk);
+        else if (last == wk + 1)
+        {
+          if(weekRange.getInteger("end") == null)
+            weekRange.put("end", last);
+          weekRange.put("start", wk);
+        }
         else
         {
           weekRange = null;
