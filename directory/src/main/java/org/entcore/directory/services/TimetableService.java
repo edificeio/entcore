@@ -63,6 +63,10 @@ public interface TimetableService {
 
 	void updateClassesMapping(String structureId, JsonObject mapping, Handler<Either<String,JsonObject>> handler);
 
+	void listReports(String structureId, Handler<Either<String,JsonArray>> handler);
+
+	void getReport(String structureId, String reportId, Handler<Either<String,JsonObject>> handler);
+
 	void importTimetable(String structureId, String path, String domain, String acceptLanguage, boolean uai,
 			Handler<Either<JsonObject,JsonObject>> handler);
 
