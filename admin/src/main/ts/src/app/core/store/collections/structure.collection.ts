@@ -28,7 +28,7 @@ export class StructureCollection extends Collection<StructureModel> {
         });
         const result = this.data.filter(structure => {
             return !structure.parents ||
-                    structure.parents.length <= 1 ||
+                    structure.parents.length === 0 ||
                     structure.parents.every(p => !referenceSet.has(p.id));
         });
         return result;
