@@ -76,6 +76,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		EmailFactory emailFactory = new EmailFactory(this.vertx, config);
 		emailSender = emailFactory.getSender();
 		USERS_LIMIT = config.getInteger("users-loop-limit", 25);
+		super.init(vertx, config);
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
