@@ -30,7 +30,7 @@ export class StructureModel extends Model<StructureModel> {
     UAI?: string;
     externalId?: string;
     name?: string;
-    parents?: [{ id: string, name: string }];
+    parents?: Array<{ id: string, name: string }>;
     children?: StructureModel[];
     users: UserCollection;
     classes: Array<{ id: string, name: string }> = [];
