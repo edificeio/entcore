@@ -133,7 +133,7 @@ public class TimetableReport
 
   private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
   private TemplateProcessor templator;
-  private boolean waitFileID = false;
+  private String waitFileID = null;
 
   public TimetableReport(Vertx vertx)
   {
@@ -155,15 +155,21 @@ public class TimetableReport
     }
   }
 
-  public void persist()
+  public String persist()
   {
+    return this.persist(null);
+  }
+
+  private String persist(String uuid)
+  {
+    final String fuuid = uuid == null ? UUID.randomUUID().toString() : uuid;
     if(this.fileID == null)
     {
-      this.waitFileID = true;
-      return;
+      this.waitFileID = fuuid;
+      return fuuid;
     }
     else
-      this.waitFileID = false;
+      this.waitFileID = null;
 
     this.template(new Handler<String>()
     {
@@ -171,7 +177,7 @@ public class TimetableReport
       public void handle(String report)
       {
         JsonObject document = new JsonObject()
-          .put("_id", UUID.randomUUID().toString())
+          .put("_id", fuuid)
           .put("created", MongoDb.now())
           .put("source", source)
           .put("UAI", UAI)
@@ -183,11 +189,13 @@ public class TimetableReport
           @Override
           public void handle(Message<JsonObject> msg)
           {
-
+            // Nothing to do
           }
         });
       }
     });
+
+    return fuuid;
   }
 
   public void template(Handler<String> handler)
@@ -296,8 +304,8 @@ public class TimetableReport
   public void setFileID(String id)
   {
     this.fileID = id;
-    if(this.waitFileID == true)
-      this.persist();
+    if(this.waitFileID != null)
+      this.persist(this.waitFileID);
   }
 
   public void setUAI(String UAI)
@@ -318,8 +326,6 @@ public class TimetableReport
   public void end()
   {
     this.endTime = System.currentTimeMillis();
-
-    this.persist();
   }
 
   public void addWeek(int week)
