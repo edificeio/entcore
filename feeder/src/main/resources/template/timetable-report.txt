@@ -114,7 +114,7 @@ Liste des professeurs rattachés à chaque matière:
 
 {{#missingUsers}}
 {{#-first}}
-Les élèves suivants n’ont pas été retrouvés dans votre établissement (les noms, prénoms et date de naissance doivent être identiques):
+Les élèves suivants n’ont pas été retrouvés (les noms, prénoms et dates de naissance doivent être identiques):
 
 {{/-first}}
   {{lastName}} {{firstName}} né(e) le {{birthDate}}
