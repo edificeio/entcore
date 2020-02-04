@@ -359,7 +359,7 @@ public class DefaultTimetableService implements TimetableService {
 								if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
 									handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
 								} else {
-									handler.handle(new Either.Right<JsonObject, JsonObject>(r.getJsonObject("ignored")));
+									handler.handle(new Either.Right<JsonObject, JsonObject>(r));
 								}
 							} else {
 								errors.add(event.body().getString("message", ""));

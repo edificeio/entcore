@@ -798,6 +798,7 @@
     "pronote.id": "Identifiant pronote",
     "invalid.epj": "Utilisateur sans identifiant",
     "timetable.import.loading": "Import en cours...",
+    "timetable.import.report.last": "Rapport du dernier import:",
     "attachmentId": "Identifiant SIECLE",
     "default.import": "Alimentation standard (AAF, CSV)",
     "directory.metrics": "Métriques",

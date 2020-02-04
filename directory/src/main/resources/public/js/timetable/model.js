@@ -66,6 +66,26 @@ Structure.prototype.import = function(formData, callback) {
     });
 }
 
+Structure.prototype.getReport = function(reportId, callback)
+{
+    http().get("/directory/timetable/import/" + this.id + "/report/" + reportId)
+    .done(function(data)
+    {
+        if(typeof callback === 'function') {
+            callback(data);
+        } else {
+            notify.info('directory.params.success');
+        }
+    }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+}
+
 model.build = function(){
     this.makeModels([Structure])
 
