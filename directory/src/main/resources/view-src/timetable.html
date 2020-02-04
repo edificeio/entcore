@@ -105,6 +105,12 @@
             </button>
           </fieldset>
         </div>
+        <div class="row" ng-if="previousReportLink">
+          <fieldset>
+            <i18n>timetable.import.report.last</i18n>
+            <pre>[[previousReport]]</pre>
+          </fieldset>
+        </div>
         <div class="row vertical-spacing spinner-bar" ng-if="importing">
             <i class="spinner horizontal-spacing-twice"></i><i18n>timetable.import.loading</i18n>
         </div>

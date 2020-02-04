@@ -2,7 +2,9 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
 	$scope.template = template;
 	$scope.lang = lang;
 	$scope.identity = angular.identity;
-	$scope.structures =  model.structures;
+    $scope.structures =  model.structures;
+
+    $scope.previousReport = null;
 
     $scope.viewStructure = function(structure){
         $scope.structure = structure;
@@ -65,12 +67,19 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
         formData.append("file", importFile[0]);
         structure.import(formData, function(data) {
             $scope.getClassesMapping(structure);
-            if (data.error || data.errors) {
+            if (data.error || (data.errors && Object.keys(data.errors).length > 0))
+            {
                 $scope.displayErrors(data);
                 $scope.$apply();
             } else {
                 notify.info('directory.params.success');
                 $scope.importSuccessful = true;
+                structure.getReport(data["timetableReport"], function(data)
+                {
+                    $scope.previousReport = data["report"];
+                    $scope.$apply();
+                });
+                $scope.$apply();
             }
             $scope.importing = false;
         });
