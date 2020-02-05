@@ -4,10 +4,10 @@
 </div>
 <div class="communication-rules__headers">
     <ode-search-input class="communication-rules__header communication-rules__header--sending"
-        [attr.placeholder]="'search.comm' | translate" (onChange)="filterSenders = toFilterWords($event)">
+        [attr.placeholder]="'search.comm' | translate" (onChange)="filterSenders = toFilterWords($event); getSenders(); getReceivers();">
     </ode-search-input>
     <ode-search-input class="communication-rules__header communication-rules__header--receiving"
-        [attr.placeholder]="'search.comm' | translate" (onChange)="filterReceivers = toFilterWords($event)">
+        [attr.placeholder]="'search.comm' | translate" (onChange)="filterReceivers = toFilterWords($event); getSenders(); getReceivers();">
     </ode-search-input>
 </div>
 <div class="communication-rules__columns">
