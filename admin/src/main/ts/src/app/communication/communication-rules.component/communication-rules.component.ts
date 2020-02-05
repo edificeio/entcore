@@ -190,7 +190,9 @@ export class CommunicationRulesComponent  extends OdeComponent implements OnInit
         const receivers: GroupModel[] = [];
         this._communicationRules.forEach(rule => {
             for (let i = rule.receivers.length; i-- > 0;) {
+                if (this.filterRule(rule.sender, [rule.receivers[i]]) === true) {
                     receivers.push(rule.receivers[i]);
+                }
             }
         });
         this.$receiversCommunicationRules.next(receivers);
