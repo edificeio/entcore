@@ -644,12 +644,15 @@ public class ManualFeeder extends BusModBase {
 		if (userId == null) return;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN DISTINCT p.name as profile ";
+				"RETURN DISTINCT p.name as profile, u.login as login, u.loginAlias as loginAlias ";
 		neo4j.execute(q, new JsonObject().put("userId", userId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				JsonArray res = r.body().getJsonArray("result");
-				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0) {
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
+				{
+					Set<String> oldLogins = new HashSet<String>();
+					String updatedLoginAlias = user.getString("loginAlias");
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
 						String profile = ((JsonObject) o).getString("profile");
@@ -658,11 +661,22 @@ public class ManualFeeder extends BusModBase {
 							sendError(message, "Invalid profile : " + profile);
 							return;
 						}
+
+						// Remove the login alias if a user manually restores their original login
+						if(updatedLoginAlias != null && updatedLoginAlias.equals(((JsonObject) o).getString("login")))
+							user.putNull("loginAlias");
+
 						final String error = v.modifiableValidate(user);
 						if (error != null) {
 							logger.error(error);
 							sendError(message, error);
 							return;
+						}
+						if(updatedLoginAlias != null)
+						{
+							String oldAlias = ((JsonObject) o).getString("loginAlias");
+							if(oldAlias != null && oldAlias.isEmpty() == false)
+								oldLogins.add(oldAlias);
 						}
 					}
 					user.put("checksum", "manual");
@@ -674,6 +688,7 @@ public class ManualFeeder extends BusModBase {
 					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> m) {
+									Validator.removeLogins(oldLogins);
 									message.reply(m.body());
 								}
 							});
