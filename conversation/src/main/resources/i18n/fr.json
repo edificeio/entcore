@@ -155,8 +155,5 @@
     "conversation.copy.action": "Copier",
     "conversation.copy.processing": "Copie en cours...",
     "conversation.copy.finished": "Copie effectuée avec succès!",
-    "conversation.error.send.visible" : "Votre message n'a pas été envoyé car il ne respecte pas vos droits de communication",
-
-    "empty.conversation": "Avec l’application Messagerie, commencez dès maintenant à communiquer avec les membres de votre réseau.",
-    "empty.conversation.title": "Pas l’ombre d’un message en vol..."
+    "conversation.error.send.visible" : "Votre message n'a pas été envoyé car il ne respecte pas vos droits de communication"
 }
