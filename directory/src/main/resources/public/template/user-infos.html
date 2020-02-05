@@ -86,7 +86,7 @@
 <div class="row reduce-block-six" ng-if="displayChildren(currentUser)">
 	<article class="row">
 		<h2 translate content="userBook.profile.children"></h2>
-		<content-divider ng-model="currentUser.childrenStructure" order="structureName">
+		<content-divider ng-model="currentUser.childrenStructure" order="structureName" callback="selectUser">
 			<div>
 				<strong class="cell-ellipsis">[[content.structureName]]</strong>
 				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
@@ -95,7 +95,7 @@
 					</div>
 					<div>
 						<a class="cell-ellipsis small-text block left-text" 
- 						   ng-href="/userbook/annuaire#/[[child.id]]">[[child.displayName]]</a>
+ 						   ng-click="callback(child.id)">[[child.displayName]]</a>
 						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">
 							[[ child.classesNames[0] ]]
 						</span>
@@ -116,7 +116,7 @@
 				</div>
 				<div>
 					<a class="cell-ellipsis small-text block left-text" 
-					   ng-href="/userbook/annuaire#/[[relative.id]]">[[relative.displayName]]</a>
+					   ng-click="selectUser(relative.id)">[[relative.displayName]]</a>
 				</div>
 			</div>
 		</div>

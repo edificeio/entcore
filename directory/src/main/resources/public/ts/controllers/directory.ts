@@ -31,6 +31,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.currentDeletingFavorite = null;
 	$scope.visibleUser = false;
 
+	$scope.currentUser = null;
+	$scope.pastUsers = [];
+
 	$scope.search = {
 		users: '',
 		groups: '',
@@ -499,6 +502,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;
+		$scope.pastUsers = [];
 		template.close('details');
 	};
 
@@ -507,9 +511,15 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.$apply('search');
 		}
 
+		if(typeof user == "string")
+			user = new directory.User({ id: user });
+
 		user.open();
 		user.one('sync', async function(){
 			$scope.currentUser = user;
+
+			if($scope.pastUsers[$scope.pastUsers.length - 1] != user)
+				$scope.pastUsers.push(user);
 			//check visible
 			$scope.visibleUser = await $scope.currentUser.visibleUser();
 
@@ -591,8 +601,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.back = function() {
 		$scope.search.maxLength = 50;
-		$scope.currentUser = null;
-		template.close('details');
+		if($scope.pastUsers[$scope.pastUsers.length - 1] == $scope.currentUser)
+		{
+			$scope.pastUsers.pop();
+			$scope.currentUser = $scope.pastUsers[$scope.pastUsers.length - 1];
+		}
+		else
+			$scope.deselectUser();
 	};
 
 	$scope.backToSearch = function() {
