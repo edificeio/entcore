@@ -110,23 +110,32 @@ public class CsvReport extends Report {
 	}
 
 	public void exportFiles(final Handler<AsyncResult<String>> handler) {
-		final String path = result.getString("path");
+		final String originalPath = result.getString("path");
 		final String structureName = result.getString("structureName");
 		final JsonObject headers = result.getJsonObject(HEADERS);
 		final JsonObject files = result.getJsonObject(FILES);
-		if (files == null || isEmpty(path) || isEmpty(structureName) || headers == null) {
+		if (files == null || isEmpty(originalPath) || isEmpty(structureName) || headers == null) {
 			handler.handle(new DefaultAsyncResult<String>(new ValidationException("missing.arguments")));
 			return;
 		}
 		FileSystem fs = vertx.fileSystem();
 		final String structureExternalId = result.getString("structureExternalId");
 		final String UAI = result.getString("UAI");
-		final String p = (path + File.separator + structureName +
-				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
-				(isNotEmpty(UAI) ? "_" + UAI : ""));
-//				.replaceFirst("tmp", "tmp/test");
+
 		//clean directory if exists
-		FileUtils.deleteImportPath(vertx, path, resDel ->{
+		FileUtils.deleteImportPath(vertx, originalPath, resDel ->{
+			if(resDel.failed()){
+				log.error("[CsvReport] could not clean path before exporting: "+ resDel.cause().getMessage());
+			}
+			//#30406 use another folder
+			final String path = resDel.failed()? originalPath + File.separator + "exported" : originalPath;
+			if(!originalPath.equals(path)){
+				log.info("[CsvReport] change exportDir to: "+ path);
+				result.put("path", path);
+			}
+			final String p = (path + File.separator + structureName +
+					(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
+					(isNotEmpty(UAI) ? "_" + UAI : ""));
 			fs.mkdirs(p, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
