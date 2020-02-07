@@ -814,32 +814,38 @@ public class WorkspaceController extends BaseController {
 					JsonObject thumbnails = createThumbnails ? new JsonObject().put("thumbnails",
 							new JsonObject().put(thumbSize, ""))
 							.put("_id", jo.getString("_id")): new JsonObject();
-					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler -> {
-						if (asyncDefaultResponseHandler.failed()) {
+					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler ->
+					{
+						JsonObject result;
+						boolean failed = asyncDefaultResponseHandler.failed();
+						if (failed == true)
+						{
 							log.error(asyncDefaultResponseHandler.cause());
-							request.response().setStatusCode(404).end();
+							result = jo;
+						}
+						else
+							result = asyncDefaultResponseHandler.result();
+
+						String file;
+						if (failed == false && thumbSize != null && !thumbSize.trim().isEmpty()) {
+							file = DocumentHelper.getThumbnails(result).getString(thumbSize,
+									result.getString("file"));
 						} else {
-							JsonObject result = asyncDefaultResponseHandler.result();
-							String file;
-							if (thumbSize != null && !thumbSize.trim().isEmpty()) {
-								file = DocumentHelper.getThumbnails(result).getString(thumbSize,
-										result.getString("file"));
+							file = result.getString("file");
+						}
+
+						if (file != null && !file.trim().isEmpty()) {
+							boolean inline = inlineDocumentResponse(result, request.params().get("application"));
+							if (inline && ETag.check(request, file)) {
+								notModified(request, file);
 							} else {
-								file = result.getString("file");
+								storage.sendFile(file, result.getString("name"), request, inline,
+										result.getJsonObject("metadata"));
 							}
-							if (file != null && !file.trim().isEmpty()) {
-								boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-								if (inline && ETag.check(request, file)) {
-									notModified(request, file);
-								} else {
-									storage.sendFile(file, result.getString("name"), request, inline,
-											result.getJsonObject("metadata"));
-								}
-								// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-								// 		new JsonObject().put("resource", request.params().get("id")));
-							} else {
-								request.response().setStatusCode(404).end();
-							}
+							// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+							// 		new JsonObject().put("resource", request.params().get("id")));
+						} else {
+							request.response().setStatusCode(404).end();
 						}
 					});
 
