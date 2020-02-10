@@ -34,14 +34,14 @@ public class DefaultDuplicationService implements DuplicationService
     private final ExportService exportService;
     private final ImportService importService;
 
-    public DefaultDuplicationService(Vertx vertx, Storage storage, String importPath)
+    public DefaultDuplicationService(Vertx vertx, Storage storage, String importPath, String blowfishSecret, boolean forceEncryption)
     {
       this.eb = vertx.eventBus();
       this.fs = vertx.fileSystem();
 
       String tmpDir = System.getProperty("java.io.tmpdir");
-      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null, storage, null, null);
-      this.importService = new DefaultImportService(vertx, storage, importPath, "duplicate:import");
+      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null, storage, null, null, blowfishSecret);
+      this.importService = new DefaultImportService(vertx, storage, importPath, "duplicate:import", blowfishSecret, forceEncryption);
     }
 
     @Override
