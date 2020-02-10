@@ -23,10 +23,13 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.security.Blowfish;
+import fr.wseduc.webutils.security.Md5;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.archive.Archive;
+import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -37,6 +40,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.Zip;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -49,6 +53,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 
 import java.io.File;
+import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.zip.Deflater;
 
@@ -67,6 +72,7 @@ public class FileSystemExportService implements ExportService {
 	private final Map<String, Long> userExportInProgress;
 	private final Map<String, UserExport> userExport;
 	private final TimelineHelper timeline;
+	private final String blowfishSecret;
 
 	private static final long DOWNLOAD_READY = -1l;
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
@@ -74,7 +80,8 @@ public class FileSystemExportService implements ExportService {
 
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 			EmailSender notification, Storage storage,
-			Map<String, Long> userExportInProgress, TimelineHelper timeline) {
+			Map<String, Long> userExportInProgress, TimelineHelper timeline,
+			String blowfishSecret) {
 		this.vertx = vertx;
 		this.fs = fs;
 		this.eb = eb;
@@ -85,6 +92,7 @@ public class FileSystemExportService implements ExportService {
 		this.userExportInProgress = userExportInProgress != null ? userExportInProgress : new HashMap<String, Long>();
 		this.userExport = new HashMap<>();
 		this.timeline = timeline;
+		this.blowfishSecret = blowfishSecret;
 	}
 
 	@Override
@@ -253,14 +261,23 @@ public class FileSystemExportService implements ExportService {
 		if (isFinished) {
 			addManifestToExport(exportId, exportDirectory, locale, new Handler<AsyncResult<Void>>() {
 				@Override
-				public void handle(AsyncResult<Void> event) {
-					Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
-							Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>() {
+				public void handle(AsyncResult<Void> event)
+				{
+					signExport(exportId, exportDirectory, new Handler<AsyncResult<Void>>()
+					{
+						@Override
+						public void handle(AsyncResult<Void> signed)
+						{
+							Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
+							Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>()
+							{
 								@Override
-								public void handle(final Message<JsonObject> event) {
-									if (!"ok".equals(event.body().getString("status"))) {
+								public void handle(final Message<JsonObject> event)
+								{
+									if (!"ok".equals(event.body().getString("status")) || signed.failed() == true)
+									{
 										log.error("Zip export " + exportId + " error : "
-												+ event.body().getString("message"));
+												+ (signed.failed() == true ? "Could not sign the archive" : event.body().getString("message")));
 										event.body().put("message", "zip.export.error");
 										userExportInProgress.remove(userId);
 										fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
@@ -333,6 +350,8 @@ public class FileSystemExportService implements ExportService {
 											});
 								}
 							});
+						}
+					});
 				}
 			});
 		}
@@ -367,25 +386,69 @@ public class FileSystemExportService implements ExportService {
 		return v != null && v == DOWNLOAD_IN_PROGRESS;
 	}
 
-	private void addManifestToExport(String exportId, String exportDirectory, String locale, Handler<AsyncResult<Void>> handler) {
+	private void addManifestToExport(String exportId, String exportDirectory, String locale, Handler<AsyncResult<Void>> handler)
+	{
 		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		JsonObject manifest = new JsonObject();
 		Set<String> expectedExport = this.userExport.get(getUserId(exportId)).getExpectedExport();
-		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json -> {
+
+		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json ->
+		{
 			JsonObject i18n = (JsonObject)(json.result().body());
-			versionMap.forEach((k, v) -> {
+			versionMap.forEach((k, v) ->
+			{
 				String[] s = k.split("\\.");
 				// Removing of "-" for scrapbook
 				String app = (s[s.length - 1]).replaceAll("-", "");
-				if (expectedExport.contains(app)) {
+
+				if (expectedExport.contains(app))
+				{
 					String i = i18n.getString(app);
 					manifest.put(k, new JsonObject().put("version",v)
 							.put("folder", StringUtils.stripAccents(i == null ? app : i)));
 				}
 			});
+
 			String path = exportDirectory + File.separator + "Manifest.json";
 			fs.writeFile(path, Buffer.factory.buffer(manifest.encodePrettily()), handler);
 		});
+	}
+
+	private void signExport(String exportId, String exportDirectory, Handler<AsyncResult<Void>> handler)
+	{
+		File directory = new File(exportDirectory);
+		JsonObject signContents = new JsonObject();
+		Buffer signature;
+
+		File[] files = directory.listFiles();
+
+		for (File file : files)
+		{
+			String name = file.getName();
+			try
+			{
+				signContents.put(name, Md5.hashFile(exportDirectory + File.separator + name));
+			}
+			catch(Exception e)
+			{
+				log.error("Error hashing folder " + name + " files for export " + exportId);
+				handler.handle(Future.failedFuture(e));
+				return;
+			}
+		}
+
+		try
+		{
+			signature = Buffer.buffer(Blowfish.encrypt(signContents.toString(), this.blowfishSecret));
+		}
+		catch(GeneralSecurityException e)
+		{
+			log.error("Error signing export " + exportId);
+			handler.handle(Future.failedFuture(e));
+			return;
+		}
+		
+		fs.writeFile(exportDirectory + File.separator + ArchiveController.SIGNATURE_NAME, signature, handler);
 	}
 
 	private String getUserId(String exportId) {

@@ -50,7 +50,10 @@ public class Archive extends BaseServer {
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
-		ImportService importService = new DefaultImportService(vertx, storage, importPath, null);
+		String blowfishSecret = config.getString("blowfish-secret", null);
+		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
+
+		ImportService importService = new DefaultImportService(vertx, storage, importPath, null, blowfishSecret, forceEncryption);
 
 		ArchiveController ac = new ArchiveController(storage, archiveInProgress);
 		ImportController ic = new ImportController(importService, storage, archiveInProgress);

@@ -2,6 +2,8 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.security.Blowfish;
+import fr.wseduc.webutils.security.Md5;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileProps;
@@ -11,6 +13,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
+import org.entcore.archive.controllers.ArchiveController;
+
 import io.vertx.core.buffer.Buffer;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.neo4j.Neo4j;
@@ -21,6 +25,8 @@ import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -58,12 +64,14 @@ public class DefaultImportService implements ImportService {
     private final Storage storage;
     private final String importPath;
     private final String handlerActionName;
+    private final String blowfishSecret;
+    private final boolean forceEncryption;
 
     private final Neo4j neo = Neo4j.getInstance();
 
     private final Map<String, UserImport> userImports;
 
-    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName) {
+    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName, String blowfishSecret, boolean forceEncryption) {
         this.vertx = vertx;
         this.storage = storage;
         this.importPath = importPath;
@@ -71,6 +79,8 @@ public class DefaultImportService implements ImportService {
         this.eb = vertx.eventBus();
         this.userImports = new HashMap<>();
         this.handlerActionName = customHandlerActionName == null ? "import" : customHandlerActionName;
+        this.blowfishSecret = blowfishSecret;
+        this.forceEncryption = forceEncryption;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class DefaultImportService implements ImportService {
                                         if (files.succeeded()) {
                                             if (files.result().size() > 0 &&
                                                     files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
-                                                parseFolders(user, importId, filePath, locale, config, files.result(), handler);
+                                                verifyImport(user, importId, filePath, locale, config, files.result(), handler);
                                             } else {
                                                 deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
                                             }
@@ -190,9 +200,85 @@ public class DefaultImportService implements ImportService {
         }
     }
 
+    private void verifyImport(UserInfos user, String importId, String path, String locale, JsonObject config,
+                              List<String> folders, Handler<Either<String, JsonObject>> handler)
+    {
+      Optional<String> signaturePath = folders.stream().filter(f -> f.endsWith(ArchiveController.SIGNATURE_NAME)).findFirst();
+
+      if(signaturePath.isPresent() == false)
+      {
+        if(forceEncryption == false)
+        {
+            parseFolders(user, importId, path, locale, config, folders, handler);
+            return;
+        }
+        else
+        {
+            deleteAndHandleError(importId, "Archive file not recognized - Missing '" + ArchiveController.SIGNATURE_NAME + "'", handler);
+            return;
+        }
+      }
+
+      fs.readFile(signaturePath.get(), res ->
+      {
+        if(res.failed())
+        {
+          deleteAndHandleError(importId, "Archive file not recognized - Missing '" + ArchiveController.SIGNATURE_NAME + "'", handler);
+          return;
+        }
+
+        JsonObject contentHashes;
+        try
+        {
+          contentHashes = new JsonObject(Blowfish.decrypt(res.result().toString(), this.blowfishSecret));
+        }
+        catch(GeneralSecurityException e)
+        {
+          deleteAndHandleError(importId, "Archive signature could not be validated", handler);
+          return;
+        }
+
+        for(String folder : folders)
+        {
+          String fname = FileUtils.getFilename(folder);
+          if(folder.endsWith(ArchiveController.SIGNATURE_NAME) == false)
+          {
+            String expectation = contentHashes.getString(fname);
+
+            if(expectation == null || StringUtils.isEmpty(expectation) == true)
+            {
+              deleteAndHandleError(importId, "Archive signature does not list the folder " + fname, handler);
+              return;
+            }
+            else
+            {
+              String hash;
+              try
+              {
+                hash = Md5.hashFile(folder);
+              }
+              catch(Exception e)
+              {
+                deleteAndHandleError(importId, "Could not hash the folder " + fname, handler);
+                return;
+              }
+
+              if(hash.equals(expectation) == false)
+              {
+                deleteAndHandleError(importId, "The folder " + fname + " does not match the signature", handler);
+                return;
+              }
+            }
+          }
+        }
+
+        parseFolders(user, importId, path, locale, config, folders, handler);
+      });
+    }
+
     private void parseFolders(UserInfos user, String importId, String path, String locale, JsonObject config,
                               List<String> folders, Handler<Either<String, JsonObject>> handler) {
-        String manifestPath = folders.stream().filter(f -> f.endsWith("Manifest.json")).findFirst().get();
+      String manifestPath = folders.stream().filter(f -> f.endsWith("Manifest.json")).findFirst().get();
         fs.readFile(manifestPath, res -> {
            if (res.failed()) {
                deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
@@ -219,12 +305,10 @@ public class DefaultImportService implements ImportService {
                            if (o instanceof JsonObject) {
                                // case where Manifest contains folder name
 
-                               // TO DO: Allow timelinegenerator import later by deleting this bloc
                                if ("timelinegenerator".equals(appName) &&
                                        StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.7") < 0) {
                                    return;
                                }
-                               //
 
                                // TO DO: Allow pad import later by deleting this bloc
                                if ("collaborativeeditor".equals(appName) &&
@@ -241,12 +325,10 @@ public class DefaultImportService implements ImportService {
                            } else {
                                // case where Manifest doesn't contain folder name
 
-                               // TO DO: Allow timelinegenerator import later by deleting this bloc
                                if ("timelinegenerator".equals(appName) &&
                                        StringUtils.versionComparator.compare((String)o, "1.7") < 0) {
                                    return;
                                }
-                               //
 
                                // TO DO: Allow pad import later by deleting this bloc
                                if ("collaborativeeditor".equals(appName) &&

@@ -29,19 +29,15 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
-import org.entcore.archive.services.impl.UserExport;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageFactory;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -49,18 +45,16 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.cluster.ClusterManager;
-import org.entcore.common.utils.MapFactory;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
 
 public class ArchiveController extends BaseController {
+
+	public static final String SIGNATURE_NAME = "archive.signature";
 
 	private ExportService exportService;
 	private EventStore eventStore;
@@ -80,14 +74,15 @@ public class ArchiveController extends BaseController {
 		super.init(vertx, config, rm, securedActions);
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		String blowfishSecret = config.getString("blowfish-secret", null);
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
-				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config));
+				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
+				blowfishSecret);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");

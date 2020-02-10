@@ -117,16 +117,11 @@ public final class FileUtils {
 		{
 			private final String zip  = zipFilename;
 			private final String dest = destDirname;
-			private final Handler hnd = handler;
+			private final Handler<Either<String, Void>> hnd = handler;
 
 			@Override
 			public void run()
 			{
-				System.out.println();
-				System.out.println();
-				System.out.println("THREAD");
-				System.out.println();
-				System.out.println();
 				try
 				{
 					FileUtils.unzip(zip, dest);
