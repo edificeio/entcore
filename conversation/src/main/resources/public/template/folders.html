@@ -72,10 +72,21 @@
 
             <nav class="vertical" ng-if="conversation.maxFolderDepth">
                 <div ng-include="rootFolderTemplate.template"></div>
-                <a class="classic-link" ng-click="openNewFolderView()" ng-show="conversation.maxFolderDepth && conversation.maxFolderDepth > 0 && currentFolderDepth() < conversation.maxFolderDepth">
+                <a class="classic-link" 
+                    ng-click="openNewFolderView()" 
+                    ng-show="conversation.maxFolderDepth 
+                        && conversation.maxFolderDepth > 0 
+                        && currentFolderDepth() < conversation.maxFolderDepth
+                        && conversation.currentFolder.folderName != 'trash'">
                     <i18n>create.folder</i18n>
                 </a>
             </nav>
+
+            <a class="button zero-desktop" 
+                ng-if="conversation.currentFolder.folderName == 'trash'"
+                ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i18n>new.message</i18n>
+            </a>
 
             <nav class="vertical">
                 <hr class="row" />
