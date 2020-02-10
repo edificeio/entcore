@@ -58,6 +58,11 @@
 			<div class="info fade-in"><i18n>loading</i18n></div>
 		</div>
 		<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0 && conversation.currentFolder.userFolders.all.length === 0">
+			<div class="row">
+				<button class="cell-ellipsis right-magnet zero-mobile" ng-click="template.open('main', 'mail-actions/write-mail')">
+					<i18n>new.message</i18n>
+				</button>
+			</div>
 			<!-- Emptyscreen: no messages -->
 			<div class="emptyscreen">
 				<h2 class="emptyscreen-header">
@@ -67,9 +72,6 @@
 				<p class="emptyscreen-footer">
 					<i18n>empty.conversation</i18n>
 				</p>
-				<button class="cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-					<i18n>new.message</i18n>
-				</button>
 			</div>
 		</div>
 
