@@ -69,33 +69,33 @@
 		<!-- Emptyscreen: no notifications -->
 		<div class="emptyscreen" ng-if="isEmpty() && !switchingFilters">
 			<h2 class="emptyscreen-header">
-				<i18n>empty.timeline.title</i18n>
+				<i18n>empty.timeline.notifications.title</i18n>
 			</h2>
 			<img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg">
 			<p class="emptyscreen-footer">
-				<i18n>empty.timeline</i18n>
+				<i18n>empty.timeline.notifications</i18n>
 			</p>
 		</div>
 
 		<!-- Emptyscreen: no results with filters -->
 		<div class="emptyscreen" ng-if="noResultsWithFilters() && !switchingFilters">
 			<h2 class="emptyscreen-header">
-				<i18n>empty.timeline.noresults.title</i18n>
+				<i18n>empty.timeline.notifications.noresults.title</i18n>
 			</h2>
 			<img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg">
 			<p class="emptyscreen-footer">
-				<i18n>empty.timeline.noresults</i18n>
+				<i18n>empty.timeline.notifications.noresults</i18n>
 			</p>
 		</div>
 
 		<!-- Emptyscreen: no filters selected -->
 		<div class="emptyscreen" ng-if="noFiltersSelected() && !switchingFilters">
 			<h2 class="emptyscreen-header">
-				<i18n>empty.timeline.nofilters.title</i18n>
+				<i18n>empty.timeline.notifications.nofilters.title</i18n>
 			</h2>
 			<img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg">
 			<p class="emptyscreen-footer">
-				<i18n>empty.timeline.nofilters</i18n>
+				<i18n>empty.timeline.notifications.nofilters</i18n>
 			</p>
 		</div>
 
