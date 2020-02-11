@@ -20,6 +20,7 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.security.RSA;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
@@ -32,6 +33,8 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.utils.MapFactory;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -49,14 +52,18 @@ public class Archive extends BaseServer {
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
-		String blowfishSecret = config.getString("blowfish-secret", null);
+		String privateKeyPath = config.getString("archive-private-key", null);
 		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
 
-		ImportService importService = new DefaultImportService(vertx, storage, importPath, null, blowfishSecret, forceEncryption);
 
-		ArchiveController ac = new ArchiveController(storage, archiveInProgress);
+		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
+		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+
+		ImportService importService = new DefaultImportService(vertx, storage, importPath, null, verifyKey, forceEncryption);
+
+		ArchiveController ac = new ArchiveController(storage, archiveInProgress, signKey, forceEncryption);
 		ImportController ic = new ImportController(importService, storage, archiveInProgress);
-		DuplicationController dc = new DuplicationController(vertx, storage, importPath);
+		DuplicationController dc = new DuplicationController(vertx, storage, importPath, signKey, verifyKey, forceEncryption);
 
 		addController(ac);
 		addController(ic);

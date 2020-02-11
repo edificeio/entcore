@@ -23,8 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.security.Blowfish;
-import fr.wseduc.webutils.security.Md5;
+import fr.wseduc.webutils.security.RSA;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -54,6 +53,7 @@ import io.vertx.core.shareddata.LocalMap;
 
 import java.io.File;
 import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
 import java.util.*;
 import java.util.zip.Deflater;
 
@@ -72,7 +72,8 @@ public class FileSystemExportService implements ExportService {
 	private final Map<String, Long> userExportInProgress;
 	private final Map<String, UserExport> userExport;
 	private final TimelineHelper timeline;
-	private final String blowfishSecret;
+	private final PrivateKey signKey;
+	private final boolean forceEncryption;
 
 	private static final long DOWNLOAD_READY = -1l;
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
@@ -81,7 +82,7 @@ public class FileSystemExportService implements ExportService {
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 			EmailSender notification, Storage storage,
 			Map<String, Long> userExportInProgress, TimelineHelper timeline,
-			String blowfishSecret) {
+			PrivateKey signKey, boolean forceEncryption) {
 		this.vertx = vertx;
 		this.fs = fs;
 		this.eb = eb;
@@ -92,7 +93,8 @@ public class FileSystemExportService implements ExportService {
 		this.userExportInProgress = userExportInProgress != null ? userExportInProgress : new HashMap<String, Long>();
 		this.userExport = new HashMap<>();
 		this.timeline = timeline;
-		this.blowfishSecret = blowfishSecret;
+		this.signKey = signKey;
+		this.forceEncryption = forceEncryption;
 	}
 
 	@Override
@@ -415,9 +417,22 @@ public class FileSystemExportService implements ExportService {
 
 	private void signExport(String exportId, String exportDirectory, Handler<AsyncResult<Void>> handler)
 	{
+		if(this.signKey == null)
+		{
+			if(this.forceEncryption == true)
+			{
+				log.error("No signing key for export " + exportId);
+				handler.handle(Future.failedFuture("No signing key"));
+			}
+			else
+			{
+				handler.handle(Future.succeededFuture());
+			}
+			return;
+		}
+
 		File directory = new File(exportDirectory);
 		JsonObject signContents = new JsonObject();
-		Buffer signature;
 
 		File[] files = directory.listFiles();
 
@@ -426,28 +441,17 @@ public class FileSystemExportService implements ExportService {
 			String name = file.getName();
 			try
 			{
-				signContents.put(name, Md5.hashFile(exportDirectory + File.separator + name));
+				signContents.put(name, RSA.signFile(exportDirectory + File.separator + name, signKey));
 			}
 			catch(Exception e)
 			{
-				log.error("Error hashing folder " + name + " files for export " + exportId);
+				log.error("Error signing folder " + name + " files for export " + exportId);
 				handler.handle(Future.failedFuture(e));
 				return;
 			}
 		}
-
-		try
-		{
-			signature = Buffer.buffer(Blowfish.encrypt(signContents.toString(), this.blowfishSecret));
-		}
-		catch(GeneralSecurityException e)
-		{
-			log.error("Error signing export " + exportId);
-			handler.handle(Future.failedFuture(e));
-			return;
-		}
 		
-		fs.writeFile(exportDirectory + File.separator + ArchiveController.SIGNATURE_NAME, signature, handler);
+		fs.writeFile(exportDirectory + File.separator + ArchiveController.SIGNATURE_NAME, signContents.toBuffer(), handler);
 	}
 
 	private String getUserId(String exportId) {
