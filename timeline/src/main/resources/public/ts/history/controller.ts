@@ -21,17 +21,40 @@ export let historyController = ng.controller('HistoryController', ['$scope', 'mo
 			}
 		}
 	}
-
+	$scope.toggleNotificationById=function(id:string, force:boolean){
+		const notif = $scope.notifications.all.find(n=>n._id==id);
+		notif && $scope.toggleNotification(notif,null,force)
+	}
+	$scope.toggleNotification=function(notification,$event, force:boolean=null){
+		$event && $event.stopPropagation();
+		if(force!=null){
+			notification.opened = force;
+		}else{
+			notification.opened = !notification.opened;
+		}
+	}
 	ui.extendSelector.touchEvents('div.notification')
+	const  onBodyClick = (event) => {
+		event.stopPropagation();
+		$('.notification-actions.opened').each((key,value)=>{
+			const id = $(value).closest(".notification").attr('data-notificationid');
+			$scope.toggleNotificationById(id,false);
+		})
+		$scope.$apply();
+	}
 	var applySwipeEvent = function() {
-	    $('div.notification').off('swipe-left')
-		$('div.notification').off('swipe-right')
+	    $('div.notification').off('swipe-left');
+		$('div.notification').off('swipe-right');
+		$("body").off("click",onBodyClick)
 	    $('div.notification').on('swipe-left', function(event) {
-	        $(event.delegateTarget).find('.notification-actions').addClass('opened')
+			const id = $(event.delegateTarget).attr('data-notificationid');
+			$scope.toggleNotificationById(id,true);
 	    })
 		$('div.notification').on('swipe-right', function(event) {
-	        $(event.delegateTarget).find('.notification-actions').removeClass('opened')
-	    })
+			const id = $(event.delegateTarget).attr('data-notificationid');
+			$scope.toggleNotificationById(id,false);
+		})
+		$('body').on('click', onBodyClick);
 	}
 
 	model.on('notifications.change, notificationTypes.change', function(e){

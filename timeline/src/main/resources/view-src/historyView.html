@@ -84,7 +84,7 @@
 						<b><span><i class="sad-face"></i><i18n>timeline.history.empty</i18n></span></b>
 					</div>
 
-					<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
+					<div data-notificationid="[[notification._id]]" data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
 						<article ng-class="{ 'unread': isUnRead(notification) }">
 							<div class="row">
 								<div class="avatar">
@@ -102,7 +102,7 @@
 						</article>
 						<div workflow="timeline.deleteOwnNotification">
 							<div class="notification-actions" ng-class="{'opened': notification.opened}">
-								<div class="opener" ng-click="notification.opened = !notification.opened">
+								<div class="opener" ng-click="toggleNotification(notification,$event)">
 									<i class="left-open"></i>
 								</div>
 								<div class="actions">
