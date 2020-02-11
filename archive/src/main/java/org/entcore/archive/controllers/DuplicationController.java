@@ -18,6 +18,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.buffer.Buffer;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Map;
 
 import org.entcore.archive.services.DuplicationService;
@@ -32,12 +34,18 @@ public class DuplicationController extends BaseController
   private DuplicationService  dupService;
   private Storage             storage;
   private String              importPath;
+  private PrivateKey          signKey;
+  private PublicKey           verifyKey;
+  private boolean             forceEncryption;
 
-  public DuplicationController(Vertx vertx, Storage storage, String importPath)
+  public DuplicationController(Vertx vertx, Storage storage, String importPath, PrivateKey signKey, PublicKey verifyKey, boolean forceEncryption)
   {
     this.eb = vertx.eventBus();
     this.storage = storage;
     this.importPath = importPath;
+    this.signKey = signKey;
+    this.verifyKey = verifyKey;
+    this.forceEncryption = forceEncryption;
   }
 
 	@Override
@@ -46,10 +54,7 @@ public class DuplicationController extends BaseController
 	{
     super.init(vertx, config, rm, securedActions);
 
-		String blowfishSecret = config.getString("blowfish-secret", null);
-    boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
-
-    this.dupService = new DefaultDuplicationService(vertx, storage, importPath, blowfishSecret, forceEncryption);
+    this.dupService = new DefaultDuplicationService(vertx, storage, importPath, signKey, verifyKey, forceEncryption);
   }
 
   @Post("/duplicate")

@@ -22,6 +22,8 @@ import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.user.UserInfos;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Map;
 
 public class DefaultDuplicationService implements DuplicationService
@@ -34,14 +36,14 @@ public class DefaultDuplicationService implements DuplicationService
     private final ExportService exportService;
     private final ImportService importService;
 
-    public DefaultDuplicationService(Vertx vertx, Storage storage, String importPath, String blowfishSecret, boolean forceEncryption)
+    public DefaultDuplicationService(Vertx vertx, Storage storage, String importPath, PrivateKey signKey, PublicKey verifyKey, boolean forceEncryption)
     {
       this.eb = vertx.eventBus();
       this.fs = vertx.fileSystem();
 
       String tmpDir = System.getProperty("java.io.tmpdir");
-      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null, storage, null, null, blowfishSecret);
-      this.importService = new DefaultImportService(vertx, storage, importPath, "duplicate:import", blowfishSecret, forceEncryption);
+      this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null, storage, null, null, signKey, forceEncryption);
+      this.importService = new DefaultImportService(vertx, storage, importPath, "duplicate:import", verifyKey, forceEncryption);
     }
 
     @Override
