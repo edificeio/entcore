@@ -2,8 +2,7 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.security.Blowfish;
-import fr.wseduc.webutils.security.Md5;
+import fr.wseduc.webutils.security.RSA;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileProps;
@@ -27,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -64,14 +65,14 @@ public class DefaultImportService implements ImportService {
     private final Storage storage;
     private final String importPath;
     private final String handlerActionName;
-    private final String blowfishSecret;
+    private final PublicKey verifyKey;
     private final boolean forceEncryption;
 
     private final Neo4j neo = Neo4j.getInstance();
 
     private final Map<String, UserImport> userImports;
 
-    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName, String blowfishSecret, boolean forceEncryption) {
+    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName, PublicKey verifyKey, boolean forceEncryption) {
         this.vertx = vertx;
         this.storage = storage;
         this.importPath = importPath;
@@ -79,7 +80,7 @@ public class DefaultImportService implements ImportService {
         this.eb = vertx.eventBus();
         this.userImports = new HashMap<>();
         this.handlerActionName = customHandlerActionName == null ? "import" : customHandlerActionName;
-        this.blowfishSecret = blowfishSecret;
+        this.verifyKey = verifyKey;
         this.forceEncryption = forceEncryption;
     }
 
@@ -205,18 +206,22 @@ public class DefaultImportService implements ImportService {
     {
       Optional<String> signaturePath = folders.stream().filter(f -> f.endsWith(ArchiveController.SIGNATURE_NAME)).findFirst();
 
+      if(this.verifyKey == null)
+      {
+        if(forceEncryption == false)
+            parseFolders(user, importId, path, locale, config, folders, handler);
+        else
+            deleteAndHandleError(importId, "No verify key", handler);
+        return;
+      }
+
       if(signaturePath.isPresent() == false)
       {
         if(forceEncryption == false)
-        {
             parseFolders(user, importId, path, locale, config, folders, handler);
-            return;
-        }
         else
-        {
             deleteAndHandleError(importId, "Archive file not recognized - Missing '" + ArchiveController.SIGNATURE_NAME + "'", handler);
-            return;
-        }
+        return;
       }
 
       fs.readFile(signaturePath.get(), res ->
@@ -227,45 +232,33 @@ public class DefaultImportService implements ImportService {
           return;
         }
 
-        JsonObject contentHashes;
-        try
-        {
-          contentHashes = new JsonObject(Blowfish.decrypt(res.result().toString(), this.blowfishSecret));
-        }
-        catch(GeneralSecurityException e)
-        {
-          deleteAndHandleError(importId, "Archive signature could not be validated", handler);
-          return;
-        }
+        JsonObject contentHashes = new JsonObject(res.result().toString());
 
         for(String folder : folders)
         {
           String fname = FileUtils.getFilename(folder);
           if(folder.endsWith(ArchiveController.SIGNATURE_NAME) == false)
           {
-            String expectation = contentHashes.getString(fname);
+            String signature = contentHashes.getString(fname);
 
-            if(expectation == null || StringUtils.isEmpty(expectation) == true)
+            if(signature == null || StringUtils.isEmpty(signature) == true)
             {
               deleteAndHandleError(importId, "Archive signature does not list the folder " + fname, handler);
               return;
             }
             else
             {
-              String hash;
               try
               {
-                hash = Md5.hashFile(folder);
+                if(RSA.verifyFile(folder, signature, verifyKey) == false)
+                {
+                  deleteAndHandleError(importId, "The folder " + fname + " does not match the signature", handler);
+                  return;
+                }
               }
               catch(Exception e)
               {
-                deleteAndHandleError(importId, "Could not hash the folder " + fname, handler);
-                return;
-              }
-
-              if(hash.equals(expectation) == false)
-              {
-                deleteAndHandleError(importId, "The folder " + fname + " does not match the signature", handler);
+                deleteAndHandleError(importId, "Could not verify the folder " + fname, handler);
                 return;
               }
             }

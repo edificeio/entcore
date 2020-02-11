@@ -49,6 +49,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
+import java.security.PrivateKey;
 import java.util.*;
 
 
@@ -60,11 +61,16 @@ public class ArchiveController extends BaseController {
 	private EventStore eventStore;
 	private Storage storage;
 	private Map<String, Long> archiveInProgress;
+	private PrivateKey signKey;
+	private boolean forceEncryption;
+
 	private enum ArchiveEvent { ACCESS }
 
-	public ArchiveController(Storage storage, Map<String, Long> archiveInProgress) {
+	public ArchiveController(Storage storage, Map<String, Long> archiveInProgress, PrivateKey signKey, boolean forceEncryption) {
 		this.storage = storage;
 		this.archiveInProgress = archiveInProgress;
+		this.signKey = signKey;
+		this.forceEncryption = forceEncryption;
 	}
 
 	@Override
@@ -74,7 +80,6 @@ public class ArchiveController extends BaseController {
 		super.init(vertx, config, rm, securedActions);
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
-		String blowfishSecret = config.getString("blowfish-secret", null);
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
@@ -82,7 +87,7 @@ public class ArchiveController extends BaseController {
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
-				blowfishSecret);
+				signKey, forceEncryption);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");
