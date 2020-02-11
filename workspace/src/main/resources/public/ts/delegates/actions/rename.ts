@@ -35,7 +35,7 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
     $scope.canRenameFolder = function () {
         const totalFold = $scope.selectedFolders().length
         const totalDoc = $scope.selectedDocuments().length;
-        return totalFold == 1 && totalDoc == 0 && $scope.currentTree.filter != "trash";
+        return totalFold == 1 && totalDoc == 0 && $scope.currentTree.filter != "trash" && $scope.currentTree.filter != "external";
     }
 
     $scope.openRenameView = async function () {
