@@ -326,26 +326,27 @@ public class DefaultSchoolService implements SchoolService {
 		String query =
 			"MATCH (u: User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure) " +
 			"WHERE s.id = {structureId} " +
-			"MATCH (pg)-[:HAS_PROFILE]->(p: Profile) " +
+			"MATCH (pg)-[:HAS_PROFILE]->(p: Profile) WITH distinct u, p " +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class: Class) " +
+			"  WITH distinct u, p, CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes  " +
 			"OPTIONAL MATCH (u)-[d: DUPLICATE]-(duplicate: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(sd: Structure) " +
+			"  WITH distinct u, p, classes, collect(DISTINCT {id: sd.id, name: sd.name}) as structuresDup, duplicate, d " +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct: Structure) " +
+			"  WITH distinct u, p, classes, structuresDup, " +
+			"  CASE WHEN duplicate IS NULL THEN [] ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
+			"  COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +
 			"OPTIONAL MATCH (u)-[:IN]->(fgroup: FunctionalGroup) " +
+    		"  WITH distinct u, p, classes, structuresDup, duplicates, structures, CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups " +
 			"OPTIONAL MATCH (u)-[:IN]->(mgroup: ManualGroup) " +
+			"  WITH distinct u, p, classes, structuresDup, duplicates, structures, functionalGroups, CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups " +
 			"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->()-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-			"WITH u, p, class, fgroup, mgroup, f, rf, struct, duplicate, d, collect(DISTINCT {id: sd.id, name: sd.name}) as structuresDup " +
+			"  WITH distinct u, p, classes, structuresDup, duplicates, structures, functionalGroups, manualGroups, CASE WHEN f IS NULL THEN [] ELSE COLLECT(distinct [f.externalId, rf.scope]) END as functions " +
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
 			"EXTRACT(function IN u.functions | split(function, \"$\")) as aafFunctions," +
-			"CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes," +
-			"CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
-			"CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups, " +
-			"CASE WHEN f IS NULL THEN [] ELSE COLLECT(distinct [f.externalId, rf.scope]) END as functions, " +
-			"CASE WHEN duplicate IS NULL THEN [] " +
-			"ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
-			"COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +
+			" classes, functionalGroups, manualGroups, functions, duplicates, structures " +
 			"ORDER BY lastName, firstName " +
 			"UNION " +
 			"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
