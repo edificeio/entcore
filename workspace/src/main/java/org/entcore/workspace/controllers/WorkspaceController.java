@@ -836,6 +836,8 @@ public class WorkspaceController extends BaseController {
 						if (failed == false && thumbSize != null && !thumbSize.trim().isEmpty()) {
 							file = DocumentHelper.getThumbnails(result).getString(thumbSize,
 									result.getString("file"));
+							if(file == null || file.trim().isEmpty() == true)
+								file = result.getString("file");
 						} else {
 							file = result.getString("file");
 						}
