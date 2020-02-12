@@ -118,11 +118,20 @@ var findVersion = function(){
 		}
 	}
 	else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
-		version = parseInt(userAgent.split('Version/')[1].split('.')[0]);
-		return {
-			browser: 'Safari',
-			version: version,
-			outdated: version < 7
+		if (userAgent.indexOf('CriOS') !== -1) {
+			version = parseInt(userAgent.split('CriOS/')[1].split('.')[0]);
+			return {
+				browser: 'Chrome',
+				version: version,
+				outdated: version < 39
+			}
+		} else {
+			version = parseInt(userAgent.split('Version/')[1].split('.')[0]);
+			return {
+				browser: 'Safari',
+				version: version,
+				outdated: version < 7
+			}
 		}
 	}
 	else if(userAgent.indexOf('Firefox') !== -1){
