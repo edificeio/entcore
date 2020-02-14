@@ -303,12 +303,10 @@ public class DefaultImportService implements ImportService {
                                    return;
                                }
 
-                               // TO DO: Allow pad import later by deleting this bloc
                                if ("collaborativeeditor".equals(appName) &&
-                                       StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.7") <= 0) {
+                                       StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.9") <= 0) {
                                    return;
                                }
-                               //
 
                                JsonObject jo = (JsonObject)o;
                                String folderName = jo.getString("folder");
@@ -323,12 +321,10 @@ public class DefaultImportService implements ImportService {
                                    return;
                                }
 
-                               // TO DO: Allow pad import later by deleting this bloc
                                if ("collaborativeeditor".equals(appName) &&
-                                       StringUtils.versionComparator.compare((String)o, "1.7") <= 0) {
+                                       StringUtils.versionComparator.compare((String)o, "1.9") <= 0) {
                                    return;
                                }
-                               //
 
                                String i = i18n.getString(appName);
                                String translated = StringUtils.stripAccents(i == null ? appName : i);
