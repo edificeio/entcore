@@ -435,7 +435,7 @@ public class Structure {
 				"SET rf.scope = coalesce(rf.scope, []) + s.id " +
 				"WITH DISTINCT s as n, f, u " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
-				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name), fg.filter = f.name " +
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"MERGE fg<-[:IN { source : 'MANUAL'}]-u";
 		JsonObject params =  new JsonObject()
