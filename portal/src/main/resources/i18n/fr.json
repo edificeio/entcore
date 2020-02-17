@@ -579,7 +579,7 @@
   "video.redo": "Refaire",
   "video.start.camera": "Activer la caméra",
   "video.start.record": "Démarrer l'enregistrement",
-  "video.stop.record": "Arrêt",
+  "video.stop.record": "Pause/reprise",
   "video.upload": "Enregistrer",
   "video.embedder.title": "Intégrer une vidéo",
   "video.header.integration": "Intégrer un lien",
