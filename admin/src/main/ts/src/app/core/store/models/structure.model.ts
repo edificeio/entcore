@@ -2,6 +2,7 @@ import {Model} from 'entcore-toolkit';
 import { UserCollection } from '../collections/user.collection';
 import { GroupCollection } from '../collections/group.collection';
 import { ApplicationCollection } from '../collections/application.collection';
+import { SubjectCollection } from '../collections/subject.collection';
 import { ConnectorCollection } from '../collections/connector.collection';
 
 export class StructureModel extends Model<StructureModel> {
@@ -11,6 +12,7 @@ export class StructureModel extends Model<StructureModel> {
         this.users = new UserCollection();
         this.groups = new GroupCollection();
         this.applications = new ApplicationCollection();
+        this.subjects = new SubjectCollection();
         this.connectors = new ConnectorCollection();
     }
 
@@ -19,6 +21,7 @@ export class StructureModel extends Model<StructureModel> {
         this.users.structureId = id;
         this.groups.structureId = id;
         this.applications.structureId = id;
+        this.subjects.structureId = id;
         this.connectors.structureId = id;
         this._id = id;
     }
@@ -36,6 +39,7 @@ export class StructureModel extends Model<StructureModel> {
     classes: Array<{ id: string, name: string }> = [];
     groups: GroupCollection;
     applications: ApplicationCollection;
+    subjects: SubjectCollection;
     connectors: ConnectorCollection;
     sources: string[] = [];
     profiles: { name: string, blocked: any }[] = [];
@@ -60,6 +64,13 @@ export class StructureModel extends Model<StructureModel> {
     syncGroups(force?: boolean) {
         if (this.groups.data.length < 1 || force === true) {
             return this.groups.sync().then(() => Promise.resolve(this.groups));
+        }
+        return Promise.resolve();
+    }
+
+    syncSubjects(force?: boolean) {
+        if (this.subjects.data.length < 1 || force === true) {
+            return this.subjects.sync().then(() => Promise.resolve(this.subjects));
         }
         return Promise.resolve();
     }

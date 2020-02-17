@@ -1,0 +1,73 @@
+<side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion()">
+    <div side-card>
+        <list
+                [model]="subjectsStore.structure?.subjects.data"
+                searchPlaceholder="search.subject"
+                sort="subjectLabel"
+                noResultsLabel="list.results.no.subjects"
+                [isSelected]="isSelected"
+                [inputFilter]="filterByInput"
+                (inputChange)="subjectInputFilter = $event"
+                (onSelect)="selectedSubject = $event;">
+            <ng-template let-item>
+                {{ item.label }}
+            </ng-template>
+        </list>
+    </div>
+
+    <div>
+        <div class="panel-header">
+            <span><s5l>create.subjects</s5l></span>
+        </div>
+
+        <div class="thin">
+            <div class="view">
+                <p>
+                    <s5l>view.subjects.name</s5l>
+                    :
+                </p>
+                <p>
+                    <s5l>view.subjects.code</s5l>
+                    :
+                </p>
+            </div>
+            <div class="action">
+                <button class="create confirm">
+                    <s5l>view.subjects.close</s5l>
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <div side-companion>
+        <div class="panel-header">
+            <span><s5l>create.subjects</s5l></span>
+        </div>
+
+        <div class="thin">
+            <form #createForm="ngForm" (ngSubmit)="createNewSubject()">
+                <form-field label="create.subjects.label">
+                    <input type="text" [(ngModel)]="newSubject.label" name="label"
+                           required pattern=".*\S+.*" #nameInput="ngModel"
+                           (blur)="onSubjectNameBlur(newSubject.label)">
+                    <form-errors [control]="nameInput"></form-errors>
+                </form-field>
+
+                <div class="action">
+                    <button type="button" class="cancel" (click)="cancel()">
+                        <s5l>create.subjects.name</s5l>
+                    </button>
+                    <button class="create confirm"
+                            [disabled]="createForm.pristine || createForm.invalid">
+                        <s5l>create.subjects.submit</s5l>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+    </div>
+</side-layout>

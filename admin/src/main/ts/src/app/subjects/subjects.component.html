@@ -1,0 +1,15 @@
+<div class="flex-header">
+    <h1><i class="fa fa-users"></i>
+        <s5l>Subjects</s5l>
+    </h1>
+</div>
+
+<div class="tabs">
+    <button class="tab" *ngFor="let tab of tabs"
+            [routerLink]="tab.view"
+            routerLinkActive="active">
+        {{ tab.label | translate }}
+    </button>
+</div>
+
+<router-outlet></router-outlet>

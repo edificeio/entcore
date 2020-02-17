@@ -861,5 +861,11 @@
     "alert.by": "par",
     "alert.todo": "Traiter le signalement",
     "alert.notification.delete": "Notification supprimée",
-    "alert.notification.keep": "Notification conservée"
+    "alert.notification.keep": "Notification conservée",
+    "subjects": "Matière",
+    "search.subject": "Rechercher",
+    "create.subjects": "Ajouter une matière",
+    "create.subjects.label": "Nom",
+    "create.subjects.cancel": "Annuler",
+    "create.subjects.submit": "Créer"
 }

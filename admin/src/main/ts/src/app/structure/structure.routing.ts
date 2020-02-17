@@ -13,7 +13,8 @@ export let routes: Routes = [
 			{ path: 'imports-exports', loadChildren: () => import('../imports-exports/imports-exports.module').then(m => m.ImportsExportsModule)},
 			{ path: 'services', loadChildren: () => import('../services/services.module').then(m => m.ServicesModule)},
 			{ path: 'management', loadChildren: () => import('../management/management.module').then(m => m.ManagementModule)},
-			{ path: 'alertes', loadChildren: () => import('../alertes/alertes.module').then(m => m.AlertesModule)}
+			{ path: 'alertes', loadChildren: () => import('../alertes/alertes.module').then(m => m.AlertesModule)},
+			{ path: 'subjects', loadChildren: '../subjects/subjects.module#SubjectsModule' }
 		]
 	}
 ];
