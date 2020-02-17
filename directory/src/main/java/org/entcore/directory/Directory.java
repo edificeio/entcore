@@ -83,7 +83,7 @@ public class Directory extends BaseServer {
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb);
 		GroupService groupService = new DefaultGroupService(eb);
-		SubjectService subjectService = new DefaultSubjectService(eb);
+		SubjectService subjectService = new DefaultSubjectService();
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();

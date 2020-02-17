@@ -6,6 +6,6 @@ import io.vertx.core.json.JsonArray;
 import org.entcore.common.user.UserInfos;
 
 public interface SubjectService {
-    void listAdmin(String structureId, Handler<Either<String, JsonArray>> results);
+    void getSubjects(String structureId, Handler<Either<String, JsonArray>> results);
 
 }
