@@ -640,7 +640,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		params.put("userId", userId);
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
-				"WHERE n.id = {userId} AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
+				"WHERE n.id = {userId}  AND (NOT(HAS(gp.nbUsers)) OR gp.nbUsers > 0) " +
+				"AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
 				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				r;
 		neo4j.execute(query, params, validResultHandler(handler));
