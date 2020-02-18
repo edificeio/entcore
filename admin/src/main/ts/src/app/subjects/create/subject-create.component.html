@@ -1,0 +1,31 @@
+<div class="panel-header">
+    <span><i class="fa fa-file"></i>
+        <s5l>create.subjects</s5l>
+    </span>
+</div>
+<div class="padded">
+    <form #createForm="ngForm" (ngSubmit)="createNewSubject()">
+        <ode-form-field label="create.subjects.label">
+            <input type="text" [(ngModel)]="newSubject.label" name="label"
+                   required pattern=".*\S+.*" #nameInput="ngModel"
+                   (blur)="onSubjectNameBlur(newSubject.label)">
+            <ode-form-errors [control]="nameInput"></ode-form-errors>
+        </ode-form-field>
+        <ode-form-field label="create.subjects.code">
+            <input type="text" [(ngModel)]="newSubject.code" name="code"
+                   required pattern=".*\S+.*" #nameInput="ngModel"
+                   (blur)="onSubjectNameBlur(newSubject.code)">
+            <ode-form-errors [control]="nameInput"></ode-form-errors>
+        </ode-form-field>
+
+        <div class="action">
+            <button type="button" class="cancel" (click)="cancel()">
+                <s5l>create.subjects.cancel</s5l>
+            </button>
+            <button class="create confirm"
+                    [disabled]="createForm.pristine || createForm.invalid">
+                <s5l>create.subjects.submit</s5l>
+            </button>
+        </div>
+    </form>
+</div>
