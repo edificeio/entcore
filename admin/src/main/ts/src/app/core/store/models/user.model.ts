@@ -70,9 +70,8 @@ export class UserModel extends Model<UserModel> {
                         targetStructure.users.data.push(this);
                         targetStructure.removedUsers.data = targetStructure.removedUsers.data
                             .filter(u => u.id !== this.id);
-
-                        this.userDetails.unremoveFromStructure(targetStructure);
                     }
+                    this.userDetails.unremoveFromStructure(targetStructure);
                 }
             });
     }
@@ -82,11 +81,14 @@ export class UserModel extends Model<UserModel> {
             .then(() => {
                 this.structures = this.structures.filter(s => s.id !== structureId);
                 const targetStructure = globalStore.structures.data.find(s => s.id === structureId);
-                if (targetStructure && targetStructure.users.data.length > 0)
+                if (targetStructure)
                 {
-                    targetStructure.users.data = targetStructure.users.data
-                        .filter(u => u.id !== this.id);
-                    targetStructure.removedUsers.data.push(this);
+                    if(targetStructure.users.data.length > 0)
+                    {
+                        targetStructure.users.data = targetStructure.users.data
+                            .filter(u => u.id !== this.id);
+                        targetStructure.removedUsers.data.push(this);
+                    }
                     this.userDetails.removeFromStructure(targetStructure);
                 }
             });
