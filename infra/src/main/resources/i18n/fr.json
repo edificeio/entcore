@@ -19,5 +19,7 @@
     "embed.example": "Exemple",
     "embed.example.tooltip": "URL d'exemple présente dans le message d'information",
     "embed.confirm.deletion": "Veuillez confirmer la suppression définitive de la ressource ",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "embed.video.incompatible":"Votre navigateur n'est pas compatible",
+    "embed.video.incompatible.details": "Afin de pouvoir utiliser la vidéo, vous devez télécharger un navigateur compatible : "
 }
