@@ -303,11 +303,6 @@ public class DefaultImportService implements ImportService {
                                    return;
                                }
 
-                               if ("collaborativeeditor".equals(appName) &&
-                                       StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.9") <= 0) {
-                                   return;
-                               }
-
                                JsonObject jo = (JsonObject)o;
                                String folderName = jo.getString("folder");
                                if (folders.stream().anyMatch(f -> f.endsWith(folderName))) {
@@ -318,11 +313,6 @@ public class DefaultImportService implements ImportService {
 
                                if ("timelinegenerator".equals(appName) &&
                                        StringUtils.versionComparator.compare((String)o, "1.7") < 0) {
-                                   return;
-                               }
-
-                               if ("collaborativeeditor".equals(appName) &&
-                                       StringUtils.versionComparator.compare((String)o, "1.9") <= 0) {
                                    return;
                                }
 
