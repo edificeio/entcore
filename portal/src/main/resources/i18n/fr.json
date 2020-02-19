@@ -598,5 +598,7 @@
   "workspace.publicDocuments": "Documents publics",
   "workspace.sharedDocuments": "Documents partagés",
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
-  "zh_CN": "Mandarin (Chinois)"
+  "zh_CN": "Mandarin (Chinois)",
+  "embed.video.incompatible":"Votre navigateur n'est pas compatible",
+  "embed.video.incompatible.details": "Afin de pouvoir utiliser la vidéo, vous devez télécharger un navigateur compatible : "
 }
