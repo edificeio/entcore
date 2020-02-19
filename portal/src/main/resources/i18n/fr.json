@@ -600,5 +600,7 @@
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "zh_CN": "Mandarin (Chinois)",
   "folderpicker.move.empty.text":"Le déplacement a échoué. Les fichiers ou dossiers sources n'existent plus",
-  "folderpicker.copy.empty.text":"La copie a échoué. Les fichiers ou dossiers sources n'existent plus"
+  "folderpicker.copy.empty.text":"La copie a échoué. Les fichiers ou dossiers sources n'existent plus",
+  "embed.video.incompatible":"Votre navigateur n'est pas compatible",
+  "embed.video.incompatible.details": "Afin de pouvoir utiliser la vidéo, vous devez télécharger un navigateur compatible : "
 }
