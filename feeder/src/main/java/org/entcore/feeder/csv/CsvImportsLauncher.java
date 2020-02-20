@@ -25,6 +25,7 @@ import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
@@ -51,10 +52,12 @@ public class CsvImportsLauncher implements Handler<Long> {
 	private final JsonObject profiles;
 	private final boolean preDelete;
 	private final PostImport postImport;
+	private final long timeout;
 
 	public CsvImportsLauncher(Vertx vertx, String path, JsonObject config, PostImport postImport) {
 		this.vertx = vertx;
 		this.path = path;
+		this.timeout = config.getLong("csv-imports-timeout", 300000L);
 		this.profiles = config.getJsonObject("profiles");
 		this.namePattern = Pattern.compile(config.getString("namePattern"));
 		this.postImport = postImport;
@@ -203,7 +206,8 @@ public class CsvImportsLauncher implements Handler<Long> {
 					.put("structureExternalId", structureExternalId)
 					.put("postImport", false)
 					.put("preDelete", preDelete);
-			vertx.eventBus().send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			vertx.eventBus().send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(timeout),
+					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					log.info(event.body().encodePrettily());
