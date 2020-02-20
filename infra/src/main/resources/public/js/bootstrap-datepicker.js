@@ -285,17 +285,15 @@
 							var year = parseInt(target.text(), 10)||0;
 							this.viewDate.setFullYear(year);
 						}
-						if (this.viewMode !== 0) {
-							this.date = new Date(this.viewDate);
-							this.element.trigger({
-								type: 'changeDate',
-								date: this.date,
-								viewMode: DPGlobal.modes[this.viewMode].clsName
-							});
-						}
+						this.date = new Date(this.viewDate);
 						this.showMode(-1);
 						this.fill();
 						this.set();
+						this.element.trigger({
+							type: 'changeDate',
+							date: this.date,
+							viewMode: DPGlobal.modes[this.viewMode].clsName
+						});
 						break;
 					case 'td':
 						if (target.is('.day') && !target.is('.disabled')){
