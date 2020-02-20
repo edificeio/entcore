@@ -154,6 +154,10 @@
 			"type" : "string",
 			"validator" : "notEmpty"
 		},
+		"attachmentMENAgriId" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
 		"ine" : {
 		  "type" : "string",
 		  "validator" : "notEmpty"
