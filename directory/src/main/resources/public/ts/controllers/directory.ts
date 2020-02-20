@@ -408,6 +408,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.display.searchmobile = true;
 			$scope.currentFavorite = favorite;
 			$scope.currentGroup = null;
+			$scope.deselectUser();
 			template.open('dominosUser', 'dominos-user')
 			template.open('dominosGroup', 'dominos-group')  
 			$scope.display.loading = false;
