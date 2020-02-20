@@ -21,6 +21,7 @@
 	"ENTEleveTransport" : { "attribute" : "transport", "type" : "boolean" },
 	"ENTEleveStatutEleve" : { "attribute" : "status", "type" : "string" },
 	"ENTEleveStructRattachId" : { "attribute" : "attachmentId", "type" : "string" },
+	"ENTEleveStructureRattachIdMEN" : { "attribute" : "attachmentMENAgriId", "type" : "string" },
 	"ENTEleveCodeEnseignements" : { "attribute" : "fieldOfStudy", "type" : "array-string" },
 	"ENTEleveEnseignements" : { "attribute" : "fieldOfStudyLabels", "type" : "array-string" },
 	"ENTPersonAdresse" : { "attribute" : "address", "type" : "siecle-address" },
