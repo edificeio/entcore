@@ -407,8 +407,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			await favorite.getUsersAndGroups();
 			$scope.display.searchmobile = true;
 			$scope.currentFavorite = favorite;
+			$scope.currentGroup = null;
 			template.open('dominosUser', 'dominos-user')
-			template.open('dominosGroup', 'dominos-group')		
+			template.open('dominosGroup', 'dominos-group')  
 			$scope.display.loading = false;
 			$scope.display.loadingmobile = false;
 			if (!noupdate)
