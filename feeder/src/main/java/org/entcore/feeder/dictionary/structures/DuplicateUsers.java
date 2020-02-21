@@ -60,23 +60,29 @@ public class DuplicateUsers {
 			"SET rp.score = rp.score + 1 ";
 	private static final String SIMPLE_MERGE_QUERY =
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-			"OPTIONAL MATCH (u2)-[:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
+			"OPTIONAL MATCH (u2)-[hf:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
+			"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
+			"WHERE afg.name ENDS WITH 'AdminLocal' " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
-			"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId, u2.externalId as u2ExternalId, adml " +
+			"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId, u2.externalId as u2ExternalId, adml, hf.scope AS hfScope, ain.source AS ainSource, afg " +
 			"SET u1.mergedIds = FILTER(oldIdF IN coalesce(u1.mergedIds, []) WHERE oldIdF <> oldId) + oldId, " +
 			"u1.mergedExternalIds = FILTER(u2ExternalIdF IN coalesce(u1.mergedExternalIds, []) WHERE u2ExternalIdF <> u2ExternalId) + u2ExternalId " +
 			"DELETE r, r2, u2 " +
-			"MERGE (u1)-[:HAS_FUNCTION]->(adml) " +
+			"MERGE (u1)-[:HAS_FUNCTION {scope: hfScope}]->(adml) " +
+			"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
 			"WITH u1, IDPN, oldId, u2ExternalId " +
 			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
 			"SET u1.IDPN = IDPN " +
 			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private static final String SWITCH_MERGE_QUERY =
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-			"OPTIONAL MATCH (u2)-[:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
-			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml " +
+			"OPTIONAL MATCH (u2)-[hf:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
+			"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
+			"WHERE afg.name ENDS WITH 'AdminLocal' " +
+			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml, hf.scope AS hfScope ain.source AS ainSource, afg " +
 			"DELETE r, r2, u2 " +
-			"MERGE (u1)-[:HAS_FUNCTION]->(adml) " +
+			"MERGE (u1)-[:HAS_FUNCTION {scope: hfScopes}]->(adml) " +
+			"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
 			"WITH u1, source, externalId, IDPN, oldId, u1.externalId as u1ExternalId " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
 			"u1.mergedIds = FILTER(oldIdF IN coalesce(u1.mergedIds, []) WHERE oldIdF <> oldId) + oldId, " +
@@ -221,7 +227,7 @@ public class DuplicateUsers {
 					"ORDER BY score DESC";
 		} else {
 			if (inSameStructure) {
-				query = "match (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]-(u2:User) WHERE u2-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s) " ;
+				query = "match (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]->(u2:User) WHERE u2-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s) " ;
 			} else {
 				query = "MATCH (u1:User)-[r:DUPLICATE]->(u2:User) ";
 			}
