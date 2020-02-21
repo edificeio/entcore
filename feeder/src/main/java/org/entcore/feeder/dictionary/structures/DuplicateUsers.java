@@ -227,7 +227,7 @@ public class DuplicateUsers {
 					"ORDER BY score DESC";
 		} else {
 			if (inSameStructure) {
-				query = "match (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]->(u2:User) WHERE u2-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s) " ;
+				query = "match (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]-(u2:User) WHERE u2-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s) " ;
 			} else {
 				query = "MATCH (u1:User)-[r:DUPLICATE]->(u2:User) ";
 			}
