@@ -79,7 +79,7 @@ public class DuplicateUsers {
 			"OPTIONAL MATCH (u2)-[hf:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
 			"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
 			"WHERE afg.name ENDS WITH 'AdminLocal' " +
-			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml, hf.scope AS hfScope ain.source AS ainSource, afg " +
+			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml, hf.scope AS hfScope, ain.source AS ainSource, afg " +
 			"DELETE r, r2, u2 " +
 			"MERGE (u1)-[:HAS_FUNCTION {scope: hfScopes}]->(adml) " +
 			"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
