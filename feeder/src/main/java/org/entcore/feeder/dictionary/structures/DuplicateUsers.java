@@ -81,7 +81,7 @@ public class DuplicateUsers {
 			"WHERE afg.name ENDS WITH 'AdminLocal' " +
 			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml, hf.scope AS hfScope, ain.source AS ainSource, afg " +
 			"DELETE r, r2, u2 " +
-			"MERGE (u1)-[:HAS_FUNCTION {scope: hfScopes}]->(adml) " +
+			"MERGE (u1)-[:HAS_FUNCTION {scope: hfScope}]->(adml) " +
 			"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
 			"WITH u1, source, externalId, IDPN, oldId, u1.externalId as u1ExternalId " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
