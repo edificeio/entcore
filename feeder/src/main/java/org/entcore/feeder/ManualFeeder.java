@@ -280,7 +280,8 @@ public class ManualFeeder extends BusModBase {
 				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WITH u, p " +
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
-				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u " +
+				"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
+				"CREATE UNIQUE pg<-[:IN {source: inSource}]-u " +
 				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
 				"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
 				"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
@@ -304,9 +305,11 @@ public class ManualFeeder extends BusModBase {
 					"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 							"WITH u, p " +
 							"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p) " +
-							"MERGE (pg)<-[:IN {source:'MANUAL'}]-(u) " +
+							"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
+							"MERGE (pg)<-[:IN {source: inSource}]-(u) " +
 							"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-							"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
+							"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
+							"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
 							"RETURN DISTINCT u.id as id";
 			statementsBuilder.add(query,params);
 		}
@@ -359,14 +362,17 @@ public class ManualFeeder extends BusModBase {
 		JsonObject params = new JsonObject()
 				.put("structureId", newStructureId != null ? newStructureId : newStructureExternalId)
 				.put("userId", userId != null ? userId : userExternalId);
-		final String matchAndAddStructure = newStructureId != null || newStructureExternalId != null
-		  ? "MATCH (s:Structure { " + (newStructureId != null ? "id" : "externalId") + ": {structureId} }) " +
-				"SET u.removedFromStructures = coalesce(u.removedFromStructs, []) + s.externalId "
+		final String matchStructure = newStructureId != null || newStructureExternalId != null
+		  ? "MATCH (s:Structure { " + (newStructureId != null ? "id" : "externalId") + ": {structureId} }) "
 			: "MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.removedFromStructures ";
+		final String addToRemoved = (newStructureId != null || newStructureExternalId != null)
+			? "WITH u, r, MAX(CASE WHEN r.source <> 'MANUAL' THEN s.externalId ELSE null END) AS sID " +
+			"SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(sID, '')] + coalesce(sID, []) "
+			: "";
 		final String query =
 				"MATCH (u:User { " + (userId != null ? "id" : "externalId") + " : {userId}}) " +
-						matchAndAddStructure +
+						matchStructure +
 						"WITH u, s " +
 						"MATCH u-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
 						"(pg:ProfileGroup)-[:DEPENDS]->s, " +
@@ -374,6 +380,7 @@ public class ManualFeeder extends BusModBase {
 						"CREATE UNIQUE dpg<-[:IN]-u " +
 						"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
 						"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
+						addToRemoved +
 						"DELETE r " +
 						"RETURN DISTINCT u.id as id";
 		final String removeFunctions =
