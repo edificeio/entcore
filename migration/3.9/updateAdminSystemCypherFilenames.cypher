@@ -1,0 +1,1 @@
+MATCH (s:System) WHERE s.name='Admin' AND ANY(x IN s.scripts WHERE x = '003-schema-app-type-index.cypher') SET s.scripts = s.scripts + '003-schema-app-type.cypher';
