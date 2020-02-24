@@ -90,10 +90,9 @@ public abstract class GenericEventStore implements EventStore {
 		String query =
 				"MATCH (n:User {" + attr + ": {login}}) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN distinct n.id as userId,  p.name as type, COLLECT(distinct gp.id) as profilGroupsIds, " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
+				"RETURN distinct n.id as userId,  head(n.profiles) as type, COLLECT(distinct gp.id) as profilGroupsIds, " +
 				"COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
 		Neo4j.getInstance().execute(query, new JsonObject().put("login", value),
 				new Handler<Message<JsonObject>>() {
