@@ -362,6 +362,7 @@ public class ManualFeeder extends BusModBase {
 		JsonObject params = new JsonObject()
 				.put("structureId", newStructureId != null ? newStructureId : newStructureExternalId)
 				.put("userId", userId != null ? userId : userExternalId);
+		final String matchUser = "MATCH (u:User { " + (userId != null ? "id" : "externalId") + " : {userId}}) ";
 		final String matchStructure = newStructureId != null || newStructureExternalId != null
 		  ? "MATCH (s:Structure { " + (newStructureId != null ? "id" : "externalId") + ": {structureId} }) "
 			: "MATCH (s:Structure) " +
@@ -371,9 +372,8 @@ public class ManualFeeder extends BusModBase {
 			"SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(sID, '')] + coalesce(sID, []) "
 			: "";
 		final String query =
-				"MATCH (u:User { " + (userId != null ? "id" : "externalId") + " : {userId}}) " +
+						matchUser +
 						matchStructure +
-						"WITH u, s " +
 						"MATCH u-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
 						"(pg:ProfileGroup)-[:DEPENDS]->s, " +
 						"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
@@ -384,14 +384,18 @@ public class ManualFeeder extends BusModBase {
 						"DELETE r " +
 						"RETURN DISTINCT u.id as id";
 		final String removeFunctions =
-				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->() " +
-						"WHERE {structureId} IN r.scope " +
-						"SET r.scope = FILTER(sId IN r.scope WHERE sId <> {structureId}) " +
+				matchUser +
+				matchStructure +
+				"MATCH u-[r:HAS_FUNCTION]->() " +
+						"WHERE s.id IN r.scope " +
+						"SET r.scope = FILTER(sId IN r.scope WHERE sId <> s.id) " +
 						"WITH r " +
 						"WHERE LENGTH(r.scope) = 0 " +
 						"DELETE r";
 		final String removeFunctionGroups =
-				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure { id : {structureId}})" +
+				matchUser +
+				matchStructure +
+				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->s " +
 						"DELETE r";
 		tx.add(query, params);
 		tx.add(removeFunctions, params);
