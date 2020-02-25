@@ -589,7 +589,8 @@ public class Validator {
 					if (l != null) {
 						final Set<Object> tmp = new HashSet<>(l.getList());
 						if (remove) {
-							for (Object key : logins.keySet()) {
+							final Set<Object> ilks = new HashSet<>(logins.keySet());
+							for (Object key : ilks) {
 								if (!tmp.contains(key)) {
 									logins.remove(key);
 								} else {
