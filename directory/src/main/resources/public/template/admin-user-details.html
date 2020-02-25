@@ -138,7 +138,7 @@
                 <button ng-click="removeUserFromStructure(targetUser, structure, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close"></button>
             </li>
             <style>li > button.close.__hacky_add::after { content: '+' !important; }</style>
-            <li ng-repeat="structure in getStructuresFromExternalIds(targetUser.data.removedFromStructures) | orderBy: 'name'" style="border-color: #ccc;">
+            <li ng-repeat="structure in getStructuresFromExternalIds(targetUser.removedFromStructures) | orderBy: 'name'" style="border-color: #ccc;">
                 <s><a href="[['/directory/admin-console#/structure/'+structure.id]]" target="_blank" style="color: #999;">[[structure.name]]</a></s>
                 <button ng-click="structure.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close __hacky_add"></button>
             </li>
