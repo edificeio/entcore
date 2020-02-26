@@ -13,13 +13,17 @@
 		</div>
 	</nav>
 
-	<div class="row" ng-if="folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0  || state.searching">
-		<a href="#" class="cell flex-row align-center justify-start horizontal-spacing bottom-spacing zero-mobile" ng-click="emptyTrash()">
+	<div class="row" 
+		ng-if="(folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0  || state.searching) && !isLoading()">
+		<a href="#" 
+			class="cell flex-row align-center justify-start horizontal-spacing bottom-spacing zero-mobile" 
+			ng-click="emptyTrash()">
 			<i class="trash small-text"></i>
 			<span class="horizontal-margin small-text"><i18n>empty.trash</i18n></span>
 		</a>
 	</div>
-	<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile-fat-mobile no-margin" ng-if="folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0 || state.searching">
+	<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile-fat-mobile no-margin" 
+		ng-if="(folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0 || state.searching) && !isLoading()">
 		<div class="check-col">
 			<label class="wrapping-checkbox relative">
 				<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
@@ -64,7 +68,7 @@
 				</button>
 			</div>
 			<!-- Emptyscreen: no messages -->
-			<div class="emptyscreen">
+			<div class="emptyscreen" style="margin-top: 0px;">
 				<h2 class="emptyscreen-header">
 					<i18n>empty.trash5</i18n>
 				</h2>
