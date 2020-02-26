@@ -1,3 +1,16 @@
+<style>
+    .align-section-top {
+        position: relative;
+        top: -55px;
+    }
+
+    @media (max-width: 800px) {
+        .align-section-top {
+            top: 5px;
+        }
+    }
+</style>
+
 <!-- Folders - main screen recursive templates -->
 <script type="text/ng-template" id="folder-content">
 	<a ng-click="openUserFolder(folder, obj)"
@@ -98,7 +111,7 @@
 
         </nav>
     </section>
-    <section class="margin-four main-col" style="position: relative; top: -55px;">
+    <section class="margin-four main-col align-section-top">
         <container template="main"></container>
     </section>
 </div>
