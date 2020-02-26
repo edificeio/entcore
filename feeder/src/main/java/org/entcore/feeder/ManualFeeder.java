@@ -273,6 +273,7 @@ public class ManualFeeder extends BusModBase {
 
 	private void addUserInStructure(final Message<JsonObject> message,
 			String userId, String structureId) {
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
 				.put("userId", userId);
@@ -286,10 +287,18 @@ public class ManualFeeder extends BusModBase {
 				"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
 				"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
 				"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+		String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
+		statementsBuilder.add(query, params);
+		statementsBuilder.add(removeDefaultGroup, params);
+		neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					message.reply(event.body().put("result", results.getJsonArray(0)));
+				} else {
+					message.reply(event.body());
+				}
 			}
 		});
 	}
@@ -311,7 +320,9 @@ public class ManualFeeder extends BusModBase {
 							"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
 							"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
 							"RETURN DISTINCT u.id as id";
-			statementsBuilder.add(query,params);
+			String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
+			statementsBuilder.add(query, params);
+			statementsBuilder.add(removeDefaultGroup, params);
 		}
 		neo4j.executeTransaction(statementsBuilder.build(), null, true, res-> {
 				message.reply(res.body());
@@ -397,9 +408,16 @@ public class ManualFeeder extends BusModBase {
 				matchStructure +
 				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->s " +
 						"DELETE r";
+		final String removeDefaultGroup =
+				matchUser +
+				"MATCH (u)-[indpg:IN]-(:DefaultProfileGroup) " +
+				"MATCH (u)-[:IN|COMMUNIQUE]-(pg:ProfileGroup) " +
+				"WHERE NOT (pg:DefaultProfileGroup)" +
+				"DELETE indpg";
 		tx.add(query, params);
 		tx.add(removeFunctions, params);
 		tx.add(removeFunctionGroups, params);
+		tx.add(removeDefaultGroup, params);
 	}
 
 	private void removeUserFromStructure(final Message<JsonObject> message,
