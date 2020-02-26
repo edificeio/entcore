@@ -1,6 +1,6 @@
 <h3 whereami></h3>
 <nav class="twelve bottom-spacing-twice">
-	<div class="" ng-if="!isLoading() && conversation.currentFolder.mails.all.length > 0">
+	<div class="" ng-if="conversation.currentFolder.mails.all.length > 0">
 		<switch-search
 			ng-model="searchField.words"
 			ng-change="search(words)"
@@ -13,7 +13,8 @@
 </nav>
 
 
-<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile-fat-mobile no-margin" ng-if="conversation.currentFolder.mails.all.length > 0 || state.searching">
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile-fat-mobile no-margin" 
+	ng-if="(conversation.currentFolder.mails.all.length > 0 || state.searching) && !isLoading()">
 	<div class="check-col">
 		<label class="wrapping-checkbox relative">
 			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
@@ -45,7 +46,7 @@
 	</div>
 	<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0">
 		<!-- Emptyscreen: no messages -->
-		<div class="emptyscreen">
+		<div class="emptyscreen" style="margin-top: 0px;">
 			<h2 class="emptyscreen-header">
 				<i18n>empty.conversation.title</i18n>
 			</h2>
