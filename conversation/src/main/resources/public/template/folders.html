@@ -25,12 +25,14 @@
 	</ul>
 </script>
 
+<div class="row">
+    <app-title>
+        <h1><a data-reload><i class="conversation"></i><i18n>conversation.title</i18n></a></h1>
+    </app-title>
+</div>
+
 <div class="row rigid-grid">
     <section class="four cell" bottom-scroll="nextPage()">
-        <app-title>
-            <h1><a data-reload><i class="conversation"></i><i18n>conversation.title</i18n></a></h1>
-        </app-title>
-
         <nav class="vertical mobile-navigation top-spacing-4px-1d" side-nav>
             <ul>
                 <li>
@@ -95,9 +97,8 @@
             </nav>
 
         </nav>
-
     </section>
-    <section class="margin-four main-col">
+    <section class="margin-four main-col" style="position: relative; top: -55px;">
         <container template="main"></container>
     </section>
 </div>
