@@ -586,6 +586,7 @@
   "video.header.integration": "Intégrer un lien",
   "video.header.record": "Enregistrer une vidéo",
   "video.header.upload": "Charger un fichier",
+  "video.file.too.large": "Quota de stockage : espace disponible insuffisant",
   "website": "Sites Web",
   "wednesday": "mercredi",
   "welcome": "Bonjour [[username]], bienvenue !",
