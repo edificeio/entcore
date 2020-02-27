@@ -762,8 +762,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 		}
 
-		String query = "MATCH ()<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure) "+
-				"WHERE s.id IN {structuresIds} DELETE a";
+		String query = "MATCH (roleOrWidget)<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure) "+
+				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(roleOrWidget) AND s.id IN {structuresIds} DELETE a";
 
 		JsonObject params = new JsonObject().put("structuresIds", new JsonArray(map.keySet().stream().collect(Collectors.toList())));
 		neo.execute(query, params, done -> {
