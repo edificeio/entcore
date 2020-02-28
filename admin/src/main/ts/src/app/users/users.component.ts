@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
@@ -11,13 +13,21 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
     // Tabs
     tabs = [
         {label: 'users.tabs.mainList', view: 'list'},
-        {label: 'users.tabs.removedList', view: 'relink'},
     ];
 
     constructor(
         injector: Injector
     ) {
-            super(injector);
+        super(injector);
+        this.admcSpecific();
+    }
+
+    async admcSpecific() {
+        const session: Session = await SessionModel.getSession();
+        if(session.isADMC() == true)
+        {
+            this.tabs.push({label: 'users.tabs.removedList', view: 'relink'});
+        }
     }
 }
 
