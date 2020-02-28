@@ -46,7 +46,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     quota?: number;
     storage?: number;
     maxQuota?: number;
-    structures?: Array<String>;
+    structureNodes?: Array<any>;
     removedFromStructures?: Array<String>;
 
     toggleBlock() {
