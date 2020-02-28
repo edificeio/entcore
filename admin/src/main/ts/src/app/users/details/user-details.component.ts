@@ -201,7 +201,7 @@ export class UserDetailsComponent extends OdeComponent implements OnInit, OnDest
         if(withLightbox == true)
         {
             // Only display a lightbox for teachers & personnel
-            if((this.details.type.indexOf("Teacher") > -1 || this.details.type.indexOf("Personnel") > -1) && this.details.structures.length > 0)
+            if((this.details.type.indexOf("Teacher") > -1 || this.details.type.indexOf("Personnel") > -1) && this.details.structureNodes.length > 0)
             {
                 this.showPersEducNatBlockingConfirmation = true;
                 return;
