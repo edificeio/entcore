@@ -70,4 +70,9 @@ export class Session {
 	widgets: Widget[];
     functions: {[key: string]: Function};
 
+    isADMC(): boolean
+    {
+        return this.functions && this.functions.SUPER_ADMIN != null;
+    }
+
 }

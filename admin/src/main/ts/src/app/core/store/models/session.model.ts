@@ -12,6 +12,7 @@ export class SessionModel {
                 http.get('/auth/oauth2/userinfo')
                 .then(result => {
                     SessionModel.session = result.data as Session;
+                    Object.setPrototypeOf(SessionModel.session, new Session());
                     resolve(SessionModel.session);
                 }, e => {
                     console.error(e);

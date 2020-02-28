@@ -108,7 +108,7 @@ export class SmartConnectorComponent extends OdeComponent implements OnInit, OnD
 
     public async setAdmc() {
         const session: Session = await SessionModel.getSession();
-        this.admc = session.functions && session.functions.SUPER_ADMIN != null;
+        this.admc = session.isADMC();
     }
 
     public hasStructureChildren(): boolean {
