@@ -26,6 +26,8 @@ import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.Sha256;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -48,6 +50,8 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OAuthDataHandler extends DataHandler {
+	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
+	private static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	private static final Long OTP_DELAY = 600000L;
 	private final Neo4j neo;
 	private final MongoDb mongo;
@@ -99,13 +103,13 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	@Override
-	public void getUserId(final String username, final String password, final Handler<String> handler) {
+	public void getUserId(final String username, final String password, final Handler<Try<AccessDenied, String>> handler) {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
 					"MATCH (n:User) " +
-					"WHERE n.login={login} AND NOT(HAS(n.activationCode)) " +
-					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
+					"WHERE n.login={login} AND NOT(HAS(n.activationCode)) ";
+					// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
 			if (checkFederatedLogin) {
 				query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
 			}
@@ -113,7 +117,7 @@ public class OAuthDataHandler extends DataHandler {
 					"OPTIONAL MATCH (p:Profile) " +
 					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-					"n.otp as otp, n.otpiat as otpiat";
+					"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
 			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
@@ -130,24 +134,29 @@ public class OAuthDataHandler extends DataHandler {
 				}
 			});
 		} else {
-			handler.handle(null);
+			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 		}
 	}
 
-	private void checkPassword(JsonArray result, String password, String username, Handler<String> handler) {
+	private void checkPassword(JsonArray result, String password, String username, Handler<Try<AccessDenied, String>> handler) {
 		JsonObject r = result.getJsonObject(0);
 
 		if (r != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
+			if (getOrElse(r.getBoolean("blockedUser"), false)) {
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
+				return;
+			}
+
 			String dbPassword = r.getString("otp");
 			if (isNotEmpty(dbPassword) && getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY >
 					System.currentTimeMillis() && BCrypt.checkpw(password, dbPassword)) {
 				removeOTP(username);
-				handler.handle(r.getString("userId"));
+				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 				return;
 			}
 			dbPassword = r.getString("password");
 			if (isEmpty(dbPassword)) {
-				handler.handle(null);
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 				return;
 			}
 			boolean success = false;
@@ -173,12 +182,12 @@ public class OAuthDataHandler extends DataHandler {
 				log.error(e.getMessage(), e);
 			}
 			if (success) {
-				handler.handle(r.getString("userId"));
+				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 			} else {
-				handler.handle(null);
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 			}
 		} else {
-			handler.handle(null);
+			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 		}
 	}
 
@@ -550,15 +559,15 @@ public class OAuthDataHandler extends DataHandler {
 		}
 	}
 
-	private void getUserIdByLoginAlias(String username, String password, Handler<String> handler) {
+	private void getUserIdByLoginAlias(String username, String password, Handler<Try<AccessDenied, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.loginAlias={loginAlias} AND NOT(HAS(n.activationCode)) " +
-				"AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
+				// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat";
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
 		Map<String, Object> params = new HashMap<>();
 		params.put("loginAlias", username);
 		neo.execute(query, params, res -> {
