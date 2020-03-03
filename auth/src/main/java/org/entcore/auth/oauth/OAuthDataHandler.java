@@ -576,7 +576,7 @@ public class OAuthDataHandler extends DataHandler {
 					result != null && result.size() == 1) {
 				checkPassword(result, password, username, handler);
 			} else {
-				handler.handle(null);
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 			}
 		});
 	}
