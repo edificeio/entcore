@@ -71,6 +71,7 @@ import jp.eisbahn.oauth2.server.endpoint.Token;
 import jp.eisbahn.oauth2.server.endpoint.Token.Response;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcherProvider;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.impl.DefaultAccessTokenFetcherProvider;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher;
@@ -355,14 +356,19 @@ public class AuthController extends BaseController {
 				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				final String login = request.formAttributes().get("email");
 				final String password = request.formAttributes().get("password");
-				data.getUserId(login, password, new Handler<String>() {
+				data.getUserId(login, password, new Handler<Try<AccessDenied, String>>() {
 
 					@Override
-					public void handle(final String userId) {
+					public void handle(final Try<AccessDenied, String> tryUserId) {
 						final String c = callBack.toString();
-						if (userId != null && !userId.trim().isEmpty()) {
-							handleGetUserId(login, userId, request, c);
-						} else {
+						try {
+							final String userId = tryUserId.get();
+							if (userId != null && !userId.trim().isEmpty()) {
+								handleGetUserId(login, userId, request, c);
+							} else {
+								throw new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
+							}
+						} catch (AccessDenied e) {
 							// try activation with login
 							userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
 								@Override
@@ -406,7 +412,7 @@ public class AuthController extends BaseController {
 																															+ login);
 																											loginResult(
 																													request,
-																													"auth.error.authenticationFailed",
+																													e.getDescription(),
 																													c);
 																										}
 																									}
@@ -1240,26 +1246,31 @@ public class AuthController extends BaseController {
 						userAuthAccount.resetPassword(login, resetCode, password, resultHandler);
 					} else {
 						DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-						data.getUserId(login, oldPassword, new Handler<String>() {
+						data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
 
 							@Override
-							public void handle(String userId) {
-								if (userId != null && !userId.trim().isEmpty()) {
-									if ("force".equals(forceChange)) {
-										userAuthAccount.changePassword(login, password, reseted -> {
-											if (Boolean.TRUE.equals(reseted)) {
-												trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
-												UserUtils.deleteCacheSession(eb, userId,
-														false, r -> redirect(request, callback));
-											} else {
-												trace.info("Erreur lors du changement forcé du mot de passe de l'utilisateur " + login);
-												error(request, resetCode);
-											}
-										});
+							public void handle(Try<AccessDenied, String> tryUserId) {
+								try {
+									final String userId = tryUserId.get();
+									if (userId != null && !userId.trim().isEmpty()) {
+										if ("force".equals(forceChange)) {
+											userAuthAccount.changePassword(login, password, reseted -> {
+												if (Boolean.TRUE.equals(reseted)) {
+													trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
+													UserUtils.deleteCacheSession(eb, userId,
+															false, r -> redirect(request, callback));
+												} else {
+													trace.info("Erreur lors du changement forcé du mot de passe de l'utilisateur " + login);
+													error(request, resetCode);
+												}
+											});
+										} else {
+											userAuthAccount.changePassword(login, password, resultHandler);
+										}
 									} else {
-										userAuthAccount.changePassword(login, password, resultHandler);
+										error(request, null);
 									}
-								} else {
+								} catch (AccessDenied e) {
 									error(request, null);
 								}
 							}
