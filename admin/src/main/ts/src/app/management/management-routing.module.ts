@@ -7,6 +7,7 @@ import {DuplicateMessageFlashComponent} from './message-flash/form/duplicate-mes
 import {CreateMessageFlashComponent} from './message-flash/form/create-message-flash.component';
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
+import { ImportEDTComponent } from './import-edt/import-edt.component';
 
 export let routes: Routes = [
      {
@@ -51,6 +52,10 @@ export let routes: Routes = [
             {
                 path: 'block-profiles',
                 component: BlockProfilesComponent
+            },
+            {
+                path: 'import-edt',
+                component: ImportEDTComponent
             }
         ]
      }
