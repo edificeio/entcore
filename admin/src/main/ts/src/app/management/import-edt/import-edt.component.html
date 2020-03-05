@@ -1,0 +1,29 @@
+<div>
+  <p>
+    <s5l>management.edt.intro</s5l>
+  </p>
+
+  <div class="container has-shadow">
+    <h2>
+      <s5l>management.edt.reports.header</s5l>
+    </h2>
+    <ul>
+      <li *ngFor="let report of getReports();">
+        <a (click)="showReport(report.id)"><s5l *ngIf="report.manual != true" [s5l-params]="{ date: report.date }">management.edt.reports.auto</s5l></a>
+        <a (click)="showReport(report.id)"><s5l *ngIf="report.manual == true" [s5l-params]="{ date: report.date }">management.edt.reports.manual</s5l></a>
+      </li>
+    </ul>
+    <div class="see-more">
+      <button (click)="seeMore = !seeMore" *ngIf="hasMore()">
+        <s5l *ngIf="seeMore != true">management.edt.reports.more</s5l>
+        <s5l *ngIf="seeMore == true">management.edt.reports.less</s5l>
+      </button>
+    </div>
+  </div>
+
+  <ode-lightbox [show]="shownReport != null" (onClose)="hideReport()">
+    <pre>
+      {{shownReport}}
+    </pre>
+  </ode-lightbox>
+</div>
