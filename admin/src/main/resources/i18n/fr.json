@@ -98,6 +98,14 @@
     "BLOCK": "Blocage",
     "UNBLOCK": "Déblocage",
 
+    "management.edt.tab": "Portage EDT",
+    "management.edt.intro": "Cette section vous permet de changer la source d'alimentation des emplois du temps (Présence, Cahier de textes...)",
+    "management.edt.reports.header": "Derniers rapports de chargement",
+    "management.edt.reports.auto": "Rapport automatique du {{date}}",
+    "management.edt.reports.manual": "Rapport manuel du {{date}}",
+    "management.edt.reports.more": "Voir plus",
+    "management.edt.reports.less": "Voir moins",
+
     "filters": "Filtres",
     "filter": "Filtre",
     "sort.alphabetical": "Trier par nom",

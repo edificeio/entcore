@@ -20,6 +20,7 @@ import {MessageFlashStore} from './message-flash/message-flash.store';
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
+import {ImportEDTComponent} from './import-edt/import-edt.component';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
 
@@ -56,7 +57,8 @@ import { NgxTrumbowygModule } from 'ngx-trumbowyg';
         CreateMessageFlashComponent,
         MessageFlashFormComponent,
         MessageFlashPreviewComponent,
-        BlockProfilesComponent
+        BlockProfilesComponent,
+        ImportEDTComponent,
     ],
     exports: [
         RouterModule
