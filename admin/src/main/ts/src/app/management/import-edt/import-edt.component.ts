@@ -5,6 +5,7 @@ import { routing } from 'src/app/core/services/routing.service';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { ImportEDTReportsService } from './import-edt-reports.service';
 import { ImportTimetableService } from './import-timetable.service';
+import { SelectOption } from 'ngx-ode-ui';
 
 export interface EDTReport
 {
@@ -23,6 +24,13 @@ export enum EDTImportFlux
   NONE="NOP",
   EDT="EDT",
   UDT="UDT",
+}
+
+export interface TimetableClassesMapping
+{
+  unknownClasses: String[],
+  classNames: String[],
+  mapping: object, //Map<String, String>
 }
 
 @Component(
@@ -49,6 +57,10 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   private showFluxChangeWarning: boolean = false;
   private importFile: FileList;
 
+  private unknownClasses: String[] = [];
+  private classNames: SelectOption<String>[] = [];
+  private classesMapping: object = {}; // Map<String, String>
+
   constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService)
   {
     super(injector);
@@ -63,6 +75,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         this.structure = data.structure;
         this.changeFlux = this.structure.timetable as EDTImportFlux;
         this._getReportsFromService();
+        this._getClassesMapping();
       }
     }));
   }
@@ -81,7 +94,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         if(data.update == true)
         {
           this.structure.timetable = this.changeFlux;
-          this.changeDetector.markForCheck();
+          this._getClassesMapping();
         }
       }
     });
@@ -100,8 +113,61 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   {
     this.timetableService.importFile(this.structure.id, this.importFile).then((data) =>
     {
+      this._getReportsFromService();
+      this._getClassesMapping();
     }).catch((err) =>
     {
+    });
+  }
+
+  private _getClassesMapping(): void
+  {
+    this.timetableService.getClassesMapping(this.structure.id).subscribe({
+      next: (data) =>
+      {
+        this.unknownClasses = data.unknownClasses == null ? [] : data.unknownClasses.sort();
+
+        if(data.classNames != null)
+        {
+          this.classNames = new Array<SelectOption<String>>(data.classNames.length);
+
+          data.classNames = data.classNames.sort();
+          for(let i = this.classNames.length; i-- > 0;)
+            this.classNames[i] = { label: data.classNames[i].toString(), value: data.classNames[i], };
+        }
+        else
+          this.classNames = [];
+
+        this.classesMapping = data.mapping == null ? {} : data.mapping;
+
+        this.changeDetector.markForCheck();
+      }
+    });
+  }
+
+  updateClassesMapping(): void
+  {
+    let cm: TimetableClassesMapping = {
+      unknownClasses: null,
+      classNames: null,
+      mapping: null,
+    };
+    cm.unknownClasses = this.unknownClasses;
+
+    cm.classNames = new Array<String>(this.classNames.length);
+    for(let i = this.classNames.length; i-- > 0;)
+      cm.classNames[i] = this.classNames[i].value;
+
+    cm.mapping = {};
+    for(let uk in this.classesMapping)
+      if(this.classesMapping[uk] != null)
+        cm.mapping[uk] = this.classesMapping[uk];
+
+    this.timetableService.updateClassesMapping(this.structure.id, cm).subscribe(
+    {
+      error: (error) =>
+      {
+      }
     });
   }
 
