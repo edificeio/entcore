@@ -113,6 +113,7 @@
     "management.edt.import.title": "Importer",
     "management.edt.import.label": "Fichier d'alimentation",
     "management.edt.import.button": "Importer",
+    "management.edt.correspondance.title": "Correspondance des classes non reconnues",
 
     "filters": "Filtres",
     "filter": "Filtre",
