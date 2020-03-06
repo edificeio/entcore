@@ -271,12 +271,14 @@ public class DefaultTimetableService implements TimetableService {
 					String UAI = either.right().getValue();
 
 					QueryBuilder query = QueryBuilder.start("UAI").is(UAI);
+					JsonObject sort = new JsonObject()
+						.put("created", -1);
 					JsonObject projection = new JsonObject()
 						.put("_id", 1)
 						.put("created", 1)
 						.put("source", 1);
 
-					mongo.find("timetableImports", MongoQueryBuilder.build(query), null, projection, new Handler<Message<JsonObject>>()
+					mongo.find("timetableImports", MongoQueryBuilder.build(query), sort, projection, new Handler<Message<JsonObject>>()
 					{
 						@Override
 						public void handle(Message<JsonObject> event)
