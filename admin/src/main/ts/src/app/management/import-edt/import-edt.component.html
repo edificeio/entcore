@@ -21,9 +21,61 @@
     </div>
   </div>
 
+  <div class="container has-shadow">
+    <h2>
+      {{ structureTitle() }}
+    </h2>
+    <div class="flex-select">
+      <label>
+        <s5l>management.edt.flux.label</s5l>
+      </label>
+      <ode-mono-select
+        class="is-block"
+        placeholder="management.edt.flux.placeholder"
+        [options]="[
+          { value: EDTImportFlux.DEFAULT, label: 'management.edt.flux.default' },
+          { value: EDTImportFlux.NONE, label: 'management.edt.flux.none' },
+          { value: EDTImportFlux.EDT, label: 'EDT' },
+          { value: EDTImportFlux.UDT, label: 'UDT' }
+        ]"
+        [(ngModel)]="changeFlux"
+      ></ode-mono-select>
+    </div>
+    <div class="see-more">
+      <button class="active" (click)="showFluxChangeWarning = true">
+        <s5l>confirm</s5l>
+      </button>
+    </div>
+    <div class="container has-shadow" *ngIf="canImport()">
+      <h3>
+        <s5l>management.edt.import.title</s5l>
+      </h3>
+      <div class="flex-select">
+        <label>
+          <s5l>management.edt.import.label</s5l>
+        </label>
+        <input type="file" (change)="loadFile($event)"/>
+      </div>
+      <div class="see-more">
+        <button class="active" (click)="manualImport()">
+          <s5l>management.edt.import.button</s5l>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <ode-lightbox [show]="shownReport != null" (onClose)="hideReport()">
     <pre>
       {{shownReport}}
     </pre>
   </ode-lightbox>
+
+  <ode-lightbox-confirm lightboxTitle="warning"
+                    [show]="showFluxChangeWarning"
+                    (onCancel)="showFluxChangeWarning = false"
+                    (onConfirm)="updateFluxType(); showFluxChangeWarning = false">
+    <p>
+      <b><s5l>management.edt.flux.warning</s5l></b>
+    </p>
+  </ode-lightbox-confirm>
 </div>

@@ -45,6 +45,7 @@ export class StructureModel extends Model<StructureModel> {
     aafFunctions: Array<Array<Array<string>>> = [];
     levelsOfEducation: number[];
     distributions: string[];
+    timetable: string;
 
     quickSearchUsers(input: string) {
         return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {

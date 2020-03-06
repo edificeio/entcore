@@ -537,6 +537,16 @@ i.group_add {
   background-color: white;
   padding: 10px 30px 40px 30px;
   margin-bottom: 40px;
+
+  & > .container
+  {
+    margin: 25px -30px -40px -30px;
+
+    &.has-shadow
+    {
+      box-shadow: 0 -5px 5px -5px rgba(0, 0, 0, 0.2);
+    }
+  }
 }
 
 .message {

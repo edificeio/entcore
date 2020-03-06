@@ -4,6 +4,7 @@ import { OdeComponent } from 'ngx-ode-core';
 import { routing } from 'src/app/core/services/routing.service';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { ImportEDTReportsService } from './import-edt-reports.service';
+import { ImportTimetableService } from './import-timetable.service';
 
 export interface EDTReport
 {
@@ -14,6 +15,14 @@ export interface EDTReport
   manual: boolean,
   date: string,
   report?: string,
+}
+
+export enum EDTImportFlux
+{
+  DEFAULT="",
+  NONE="NOP",
+  EDT="EDT",
+  UDT="UDT",
 }
 
 @Component(
@@ -27,17 +36,22 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 {
   private static NB_REPORTS_COLLAPSED = 5;
 
+  //Angular hack to access the enum in the HTML
+  private EDTImportFlux =  EDTImportFlux;
+
   private structure: StructureModel;
-  private reportService: ImportEDTReportsService;
   private reportList: EDTReport[] = [];
 
   private seeMore: boolean = false;
   private shownReport: string;
 
-  constructor(injector: Injector, reportService: ImportEDTReportsService)
+  private changeFlux: EDTImportFlux = null;
+  private showFluxChangeWarning: boolean = false;
+  private importFile: FileList;
+
+  constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService)
   {
     super(injector);
-    this.reportService = reportService;
   }
 
   ngOnInit(): void
@@ -47,10 +61,51 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       if (data.structure)
       {
         this.structure = data.structure;
+        this.changeFlux = this.structure.timetable as EDTImportFlux;
         this._getReportsFromService();
       }
     }));
   }
+
+  structureTitle(): String
+  {
+    return this.structure == null ? "" : this.structure.name + " — " + this.structure.UAI;
+  }
+
+  updateFluxType(): void
+  {
+    this.timetableService.setFluxType(this.structure.id, this.changeFlux).subscribe(
+    {
+      next: (data) =>
+      {
+        if(data.update == true)
+        {
+          this.structure.timetable = this.changeFlux;
+          this.changeDetector.markForCheck();
+        }
+      }
+    });
+  }
+  canImport(): boolean
+  {
+    return this.structure.timetable != EDTImportFlux.DEFAULT && this.structure.timetable != EDTImportFlux.NONE;
+  }
+
+  loadFile($event): void
+  {
+    this.importFile = $event.target.files;
+  }
+
+  manualImport(): void
+  {
+    this.timetableService.importFile(this.structure.id, this.importFile).then((data) =>
+    {
+    }).catch((err) =>
+    {
+    });
+  }
+
+  // ============================================ REPORTS ============================================
 
   getReports(): EDTReport[]
   {
