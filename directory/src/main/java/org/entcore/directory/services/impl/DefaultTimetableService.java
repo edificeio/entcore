@@ -276,6 +276,7 @@ public class DefaultTimetableService implements TimetableService {
 					JsonObject projection = new JsonObject()
 						.put("_id", 1)
 						.put("created", 1)
+						.put("manual", 1)
 						.put("source", 1);
 
 					mongo.find("timetableImports", MongoQueryBuilder.build(query), sort, projection, new Handler<Message<JsonObject>>()
@@ -313,6 +314,7 @@ public class DefaultTimetableService implements TimetableService {
 						.put("_id", 1)
 						.put("created", 1)
 						.put("source", 1)
+						.put("manual", 1)
 						.put("report", 1);
 
 					mongo.findOne("timetableImports", MongoQueryBuilder.build(query), projection, new Handler<Message<JsonObject>>()
@@ -352,6 +354,7 @@ public class DefaultTimetableService implements TimetableService {
 							event.right().getValue().getString("timetable").toLowerCase())
 							.put("path", path)
 							.put("UAI", event.right().getValue().getString("UAI"))
+							.put("isManualImport", true)
 							.put("language", acceptLanguage);
 					eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
