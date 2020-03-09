@@ -6,6 +6,7 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { ImportEDTReportsService } from './import-edt-reports.service';
 import { ImportTimetableService } from './import-timetable.service';
 import { SelectOption } from 'ngx-ode-ui';
+import { NotifyService } from 'src/app/core/services/notify.service';
 
 export interface EDTReport
 {
@@ -61,7 +62,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   private classNames: SelectOption<String>[] = [];
   private classesMapping: object = {}; // Map<String, String>
 
-  constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService)
+  constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService, private notify: NotifyService)
   {
     super(injector);
   }
@@ -87,16 +88,24 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   updateFluxType(): void
   {
+    let error = (data) =>
+    {
+      this.notify.error("management.edt.flux.notify.error.content", "management.edt.flux.notify.error.title", data);
+    };
     this.timetableService.setFluxType(this.structure.id, this.changeFlux).subscribe(
     {
       next: (data) =>
       {
         if(data.update == true)
         {
+          this.notify.success("management.edt.flux.notify.success.content", "management.edt.flux.notify.success.title");
           this.structure.timetable = this.changeFlux;
           this._getClassesMapping();
         }
-      }
+        else
+          error(data);
+      },
+      error: error,
     });
   }
   canImport(): boolean
@@ -113,10 +122,21 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   {
     this.timetableService.importFile(this.structure.id, this.importFile).then((data) =>
     {
+      this.notify.success("management.edt.import.notify.success.content", "management.edt.import.notify.success.title");
       this._getReportsFromService();
       this._getClassesMapping();
     }).catch((err) =>
     {
+      for(let i in err.error.errors)
+      {
+        let msg = err.error.errors[i];
+
+        if(Array.isArray(msg) == false)
+          msg = [msg];
+
+        for(let j =  0; j < msg.length; ++j)
+          this.notify.notify("management.edt.import.notify.error.content", "management.edt.import.notify.error.title", msg[j], "error");
+      }
     });
   }
 
@@ -165,8 +185,13 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
     this.timetableService.updateClassesMapping(this.structure.id, cm).subscribe(
     {
+      next: (data) =>
+      {
+        this.notify.success("management.edt.correspondance.notify.success.content", "management.edt.correspondance.notify.success.title");
+      },
       error: (error) =>
       {
+        this.notify.notify("management.edt.correspondance.notify.error.content", "management.edt.correspondance.notify.error.title", error, "error");
       }
     });
   }
