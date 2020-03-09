@@ -1,4 +1,4 @@
-Rapport d'éxecution de l'import {{source}} pour l'établissement UAI {{UAI}} du {{#datetime}}{{date}}{{/datetime}}
+Rapport d'éxecution de l'import {{#manual}}manuel{{/manual}}{{^manual}}automatique{{/manual}} {{source}} pour l'établissement UAI {{UAI}} du {{#datetime}}{{date}}{{/datetime}}
 
 Début: {{#datetime}}{{startTime}}{{/datetime}}
 Fin: {{#datetime}}{{endTime}}{{/datetime}}

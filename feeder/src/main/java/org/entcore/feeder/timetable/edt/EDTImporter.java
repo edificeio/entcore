@@ -96,8 +96,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
 
 	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
-			String mode, boolean authorizeUserCreation) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation);
+			String mode, boolean authorizeUserCreation, boolean isManualImport) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -685,6 +685,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			return;
 		}
 		final String uai = message.body().getString("UAI");
+		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 
 		if (isEmpty(uai) || isEmpty(path) || isEmpty(acceptLanguage)) {
@@ -697,7 +698,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch EDT import : " + uai);
 
-			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {

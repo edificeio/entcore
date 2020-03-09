@@ -168,7 +168,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 	protected final boolean authorizeUserCreation;
 
-	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation)
+	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport)
 	{
 		this.storage = storage;
 		UAI = uai;
@@ -178,6 +178,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getSource());
+		this.ttReport.setManual(isManualImport);
 		this.ttReport.setUAI(UAI);
 
 		storage.writeFsFile(path, new Handler<JsonObject>()

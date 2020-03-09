@@ -106,6 +106,7 @@ public class TimetableReport
   private String fileID;
   private String UAI;
   private String source;
+  private boolean manual = false;
   private long startTime;
   private long endTime;
 
@@ -180,6 +181,7 @@ public class TimetableReport
           .put("_id", fuuid)
           .put("created", MongoDb.now())
           .put("source", source)
+          .put("manual", manual)
           .put("UAI", UAI)
           .put("report", report)
           .put("fileID", fileID);
@@ -224,6 +226,7 @@ public class TimetableReport
     params
       .put("UAI", this.UAI)
       .put("source", this.source)
+      .put("manual", this.manual)
       .put("date", startTime)
       .put("startTime", startTime)
       .put("endTime", endTime)
@@ -316,6 +319,11 @@ public class TimetableReport
   public void setSource(String source)
   {
     this.source = source;
+  }
+
+  public void setManual(boolean manual)
+  {
+    this.manual = manual;
   }
 
   public void start()

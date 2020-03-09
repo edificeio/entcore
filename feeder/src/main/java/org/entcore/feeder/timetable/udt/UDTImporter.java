@@ -94,8 +94,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Set<String> coursesIds = new HashSet<>();
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
 
-	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation);
+	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
 		this.vertx = vertx;
 		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
 		if (udcalLowerCase) {
@@ -755,6 +755,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String uai = message.body().getString("UAI");
+		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 		final String acceptLanguage = message.body().getString("language", "fr");
 
@@ -768,7 +769,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai);
 
-			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
