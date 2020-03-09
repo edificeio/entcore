@@ -60,7 +60,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	$scope.template = template;
 	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
-	
+
 
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){
@@ -333,7 +333,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	}
 
 	$scope.displayPassword = function(account, me) {
-		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
+		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress) || (me.federated && me.hasPw));
 	}
 
 	$scope.displayOTP = function(account, me) {
