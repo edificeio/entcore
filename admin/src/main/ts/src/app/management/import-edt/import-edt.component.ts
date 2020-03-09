@@ -46,21 +46,21 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   private static NB_REPORTS_COLLAPSED = 5;
 
   //Angular hack to access the enum in the HTML
-  private EDTImportFlux =  EDTImportFlux;
+  public EDTImportFlux =  EDTImportFlux;
 
   private structure: StructureModel;
   private reportList: EDTReport[] = [];
 
-  private seeMore: boolean = false;
-  private shownReport: string;
+  public seeMore: boolean = false;
+  public shownReport: string;
 
-  private changeFlux: EDTImportFlux = null;
-  private showFluxChangeWarning: boolean = false;
+  public changeFlux: EDTImportFlux = null;
+  public showFluxChangeWarning: boolean = false;
   private importFile: FileList;
 
-  private unknownClasses: String[] = [];
-  private classNames: SelectOption<String>[] = [];
-  private classesMapping: object = {}; // Map<String, String>
+  public unknownClasses: String[] = [];
+  public classNames: SelectOption<String>[] = [];
+  public classesMapping: object = {}; // Map<String, String>
 
   constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService, private notify: NotifyService)
   {
