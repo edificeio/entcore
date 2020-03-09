@@ -47,18 +47,20 @@ public class ImportsLauncher implements Handler<Long> {
 	private final PostImport postImport;
 	private EDTUtils edtUtils;
 	private final boolean timetableUserCreation;
+	private final boolean isManualImport;
 
-	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, boolean timetableUserCreation) {
+	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, boolean timetableUserCreation, boolean isManualImport) {
 		this.vertx = vertx;
 		this.storage = storage;
 		this.path = path;
 		this.postImport = postImport;
 		this.timetableUserCreation = timetableUserCreation;
+		this.isManualImport = isManualImport;
 	}
 
 	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, EDTUtils edtUtils,
-			boolean timetableUserCreation) {
-		this(vertx, storage, path, postImport, timetableUserCreation);
+			boolean timetableUserCreation, boolean isManualImport) {
+		this(vertx, storage, path, postImport, timetableUserCreation, isManualImport);
 		this.edtUtils = edtUtils;
 	}
 
@@ -97,6 +99,7 @@ public class ImportsLauncher implements Handler<Long> {
 									})
 											.put("path", file)
 											.put("UAI", matcher.group(1))
+											.put("isManualImport", isManualImport)
 											.put("language", "fr");
 									if (edtUtils != null) {
 										EDTImporter.launchImport(vertx, storage, edtUtils, m, timetableUserCreation);
