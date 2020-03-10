@@ -36,6 +36,7 @@ import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.ImportsLauncher;
+import org.entcore.feeder.timetable.TimetableReport;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.export.Exporter;
@@ -109,6 +110,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String deleteCron = config.getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = config.getString("pre-delete-cron", "0 0 3 * * ? *");
 		final String importCron = config.getString("import-cron");
+		final String timetableReportEraseCron = config.getString("timetable-report-erase-cron", "0 0 4 * * ? *");
+		final Long timetableReportEraseAfterSeconds = config.getLong("timetable-report-erase-after-seconds");
 		final JsonObject imports = config.getJsonObject("imports");
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
 		final TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
@@ -145,6 +148,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				new CronTrigger(vertx, importCron).schedule(new ImporterTask(vertx, defaultFeed,
 						config.getBoolean("auto-export", false), config.getLong("auto-export-delay", 1800000l)));
 			}
+
+			new CronTrigger(vertx, timetableReportEraseCron).schedule(new TimetableReport.EraseTask(storage, timetableReportEraseAfterSeconds));
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.close();
