@@ -50,7 +50,9 @@
 									options="filtersOptions.users.structures"
 									title-all="[[lang.translate('directory.allStructures')]]"
 									title="[[lang.translate('directory.structures')]]"
-									check="onCheck(option)">
+									check="onCheck(option)"
+									search-placeholder="directory.search.structure"
+								>
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.users.classes"
@@ -59,20 +61,26 @@
 									title-all="[[lang.translate('directory.allClasses')]]"
 									title="[[lang.translate('directory.classes')]]"
 									title-disabled="[[ getDisabledClassTitle(search.index) ]]"
-									ng-disabled="isMultiStructure() && noStructureSelected(search.index)">
+									search-placeholder="directory.search.class"
+									ng-disabled="isMultiStructure() && noStructureSelected(search.index)"
+								>
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.users.profiles"
 									options="filtersOptions.users.profiles"
 									title-all="[[lang.translate('directory.allProfiles')]]"
-									title="[[lang.translate('directory.profiles')]]">
+									title="[[lang.translate('directory.profiles')]]"
+									disable-search="true"
+								>
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.users.functions"
 									options="filtersOptions.users.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
 									title="[[lang.translate('directory.functions')]]"
-									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)">
+									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)"
+									search-placeholder="directory.search.function"
+									>
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
 								<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
@@ -104,7 +112,9 @@
 									options="filtersOptions.groups.structures"
 									title-all="[[lang.translate('directory.allStructures')]]"
 									title="[[lang.translate('directory.structures')]]"
-									check="onCheck(option)">
+									check="onCheck(option)"
+									search-placeholder="directory.search.structure"
+								>
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.groups.classes"
@@ -113,6 +123,7 @@
 									title-all="[[lang.translate('directory.allClasses')]]"
 									title="[[lang.translate('directory.classes')]]"
 									title-disabled="[[ getDisabledClassTitle(search.index) ]]"
+									search-placeholder="directory.search.class"
 									ng-disabled="!testClassFilterAvailable(filters.groups.types, filters.groups.functions) || (isMultiStructure() && noStructureSelected(search.index))">
 								</multi-comboboxes>
 								<multi-comboboxes 
@@ -120,6 +131,7 @@
 									options="filtersOptions.groups.profiles"
 									title-all="[[lang.translate('directory.allProfiles')]]"
 									title="[[lang.translate('directory.profiles')]]"
+									disable-search="true"
 									ng-disabled="!testProfileFilterAvailable(filters.groups.types, filters.groups.functions)">
 								</multi-comboboxes>
 								<multi-comboboxes 
@@ -127,6 +139,7 @@
 									options="filtersOptions.groups.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
 									title="[[lang.translate('directory.functions')]]"
+									search-placeholder="directory.search.function"
 									ng-disabled="!testFunctionFilterAvailable(filters.groups.profiles, filters.groups.types, filters.groups.classes)">
 								</multi-comboboxes>
 								<multi-comboboxes 
@@ -134,6 +147,7 @@
 									options="filtersOptions.groups.types"
 									title-all="[[lang.translate('directory.allGroupsTypes')]]"
 									title="[[lang.translate('directory.groupsTypes')]]"
+									disable-search="true"
 									ng-disabled="!testGroupTypeFilterAvailable(filters.groups.classes, filters.groups.profiles, filters.groups.functions)">
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
