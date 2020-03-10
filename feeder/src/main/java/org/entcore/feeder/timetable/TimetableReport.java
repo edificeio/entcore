@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.entcore.common.storage.Storage;
+
 import java.util.LinkedList;
 import java.util.UUID;
 
@@ -32,7 +35,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.template.lambdas.I18nLambda;
@@ -42,6 +46,9 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class TimetableReport
 {
+
+  //====================================================== ENTITIES ======================================================
+
   private static class ReportEntity
   {
     protected JsonObject view;
@@ -102,6 +109,68 @@ public class TimetableReport
     @Override
     public String toString() { return this.view.getString("code"); }
   }
+
+  //====================================================== ERASER ======================================================
+
+  public static class EraseTask implements Handler<Long>
+  {
+    private final Storage storage;
+    private final long offset;
+    private final static Logger log = LoggerFactory.getLogger(TimetableReport.EraseTask.class);
+
+    public EraseTask(Storage storage, Long eraseAfterThisManySeconds)
+    {
+      this.storage = storage;
+      this.offset = eraseAfterThisManySeconds != null ? -1 * eraseAfterThisManySeconds.longValue() : -1 * (60 * 60 * 24 * 30 * 3); // Default to three months
+    }
+
+    @Override
+    public void handle(Long l)
+    {
+      JsonObject where = new JsonObject()
+        .put("created", new JsonObject()
+          .put("$lt", MongoDb.offsetFromNow(this.offset))
+        );
+      MongoDb.getInstance().find("timetableImports", where, new Handler<Message<JsonObject>>()
+      {
+        @Override
+        public void handle(Message<JsonObject> msg)
+        {
+          JsonArray results = msg.body().getJsonArray("results");
+          if ("ok".equals(msg.body().getString("status")) && results != null)
+          {
+            for(int i = results.size(); i-- > 0;)
+            {
+              String fileID = results.getJsonObject(i).getString("fileID");
+
+              if(fileID != null)
+              {
+                storage.removeFile(fileID, new Handler<JsonObject>()
+                {
+                  @Override
+                  public void handle(JsonObject res)
+                  {
+                    if("error".equals(res.getString("status")))
+                      log.error("TimetableReport error: A report's file could not be deleted: " + fileID);
+                  }
+                });
+              }
+              else
+                log.error("TimetableReport error: A report is missing its attached file");
+            }
+
+            MongoDb.getInstance().delete("timetableImports", where);
+          }
+          else
+          {
+            log.error("TimetableReport error: Can't fetch reports to erase");
+          }
+        }
+      });
+    }
+  }
+
+  //====================================================== REPORT ======================================================
 
   private String fileID;
   private String UAI;
