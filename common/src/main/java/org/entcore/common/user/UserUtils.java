@@ -371,6 +371,15 @@ public class UserUtils {
 		getSession(eb, request, false, handler);
 	}
 
+	public static Optional<String> getSessionId(final HttpServerRequest request){
+		final String oneSessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+		if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
+			return Optional.ofNullable(oneSessionId);
+		}else{
+			return Optional.empty();
+		}
+	}
+
 	public static void getSession(EventBus eb, final HttpServerRequest request, boolean paused,
 								  final Handler<JsonObject> handler) {
 		if (request instanceof SecureHttpServerRequest &&
