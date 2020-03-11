@@ -50,6 +50,7 @@ public class JsonRequestAdapter implements Request {
 	public Map<String, String> getParameterMap() {
 		Map<String, String> params = new HashMap<>();
 		for (String attr: request.getJsonObject("params").fieldNames()) {
+			//TODO key should not be a string?
 			Object v = request.getJsonObject("params").getValue("attr");
 			if (v instanceof String) {
 				params.put(attr, (String) v);

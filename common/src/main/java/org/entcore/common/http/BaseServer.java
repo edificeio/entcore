@@ -128,10 +128,23 @@ public abstract class BaseServer extends Server {
 	}
 
 	protected void initFilters() {
+		//prepare cache if needed
+		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		final Optional<Object> oauthCache = Optional.ofNullable(server.get("oauthCache"));
+		final Optional<JsonObject> oauthConfigJson = oauthCache.map(e-> new JsonObject((String)e));
+		final Optional<Integer> oauthTtl = oauthConfigJson.map( e -> e.getInteger("ttlSeconds"));
+		//
 		clearFilters();
 		addFilter(new AccessLoggerFilter(accessLogger));
 		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
-				getEventBus(vertx), getPathPrefix(config)), new BasicFilter()));
+				getEventBus(vertx), getPathPrefix(config), ()->{
+					try{
+						if(!oauthConfigJson.get().getBoolean("enabled", false)) return Optional.empty();
+						return Optional.ofNullable(CacheService.create(vertx));
+					}catch(Exception e){
+						return Optional.empty();
+					}
+		}, oauthTtl), new BasicFilter()));
 		addFilter(new TraceFilter(getEventBus(vertx), securedUriBinding));
 	}
 

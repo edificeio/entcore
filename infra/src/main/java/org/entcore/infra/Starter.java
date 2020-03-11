@@ -87,6 +87,10 @@ public class Starter extends BaseServer {
 			if (redisConfig != null) {
 				serverMap.put("redisConfig", redisConfig.encode());
 			}
+			JsonObject oauthCache = config.getJsonObject("oauthCache");
+			if (oauthCache != null) {
+				serverMap.put("oauthCache", oauthCache.encode());
+			}
 			serverMap.put("cache-enabled", config.getBoolean("cache-enabled", false));
 			final String csp = config.getString("content-security-policy");
 			if (isNotEmpty(csp)) {
