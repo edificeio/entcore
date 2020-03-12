@@ -1,6 +1,8 @@
 import { ng, idiom as lang, model, http, template } from 'entcore';
 import { _ } from 'entcore';
 
+import * as directives from '../directives';
+
 const appController = ng.controller('ApplicationController', ['$scope', ($scope) => {
     template.open('main', 'applications');
     $scope.template = template;
@@ -14,24 +16,23 @@ const appController = ng.controller('ApplicationController', ['$scope', ($scope)
         $scope.$apply();
     });
 
-    $scope.addBookmark = function($item){
-        if(_.findWhere(model.me.bookmarkedApps, { name: $item.name }) !== undefined){
-            return;
+    $scope.addBookmark = function(prefix){
+        const correspondingApp = _.findWhere(model.me.apps, { prefix });
+        if (correspondingApp && !_.findWhere(model.me.bookmarkedApps, { prefix })) {
+            model.me.bookmarkedApps.push(correspondingApp);
+            $scope.$apply();
+            http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
         }
-        model.me.bookmarkedApps.push($item);
-        $scope.$apply();
-        http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
     };
 
-    $scope.removeBookmark = function($item){
-        var item = _.findWhere(model.me.bookmarkedApps, { name: $item.name });
-        if(item === undefined){
-            return;
+    $scope.removeBookmark = function(prefix){
+        var correspondingApp = _.findWhere(model.me.bookmarkedApps, { prefix });
+        if (correspondingApp){
+            const itemIndex = model.me.bookmarkedApps.indexOf(correspondingApp);
+            model.me.bookmarkedApps.splice(itemIndex, 1);
+            $scope.$apply();
+            http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
         }
-        var itemIndex = model.me.bookmarkedApps.indexOf(item);
-        model.me.bookmarkedApps.splice(itemIndex, 1);
-        $scope.$apply();
-        http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
     };
 
     $scope.filterBookmark = function(item){
@@ -55,3 +56,7 @@ const appController = ng.controller('ApplicationController', ['$scope', ($scope)
 }]);
 
 ng.controllers.push(appController);
+
+for (let directive in directives) {
+    ng.directives.push(directives[directive]);
+}
