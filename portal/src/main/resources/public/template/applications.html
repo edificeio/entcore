@@ -1,40 +1,45 @@
 <h1 class="application-title"><i class="apps"></i><i18n>portal.header.navigation.myapps</i18n></h1>
+<!-- Bookmarked apps -->
 <div class="row">
-	<nav class="list icons-view bookmarked-apps" drop-item="addBookmark($item);">
+	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)">
 		<div ng-if="bookmarkedApps.length === 0">
 			<i18n>apps.drag</i18n>
 		</div>
-		<div class="list icons-view apps">
-			<div class="element reduce-block-six" drag-item="application" ng-repeat="application in bookmarkedApps | filter: filterBookmark">
+		<div class="list icons-view apps" ng-if="bookmarkedApps.length !== 0">
+			<div class="element reduce-block-six" ng-repeat="application in bookmarkedApps | filter: filterBookmark"
+				ode-drag-value="[[application.prefix]]" ode-drag-target="remove-app-bookmark">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
 						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
 					</a>
+					<legend>
+						<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
+					</legend>
 				</div>
-				<legend>
-					<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
-				</legend>
 			</div>
 		</div>
 	</nav>
 </div>
+<!-- Search apps -->
 <div class="row">
 	<input type="search" ng-model="display.searchText" i18n-placeholder="search" class="twelve cell" autofocus />
 </div>
-<div class="row">
-	<nav class="list icons-view" drop-item="removeBookmark($item)">
+<!-- Other apps -->
+<div class="row" ode-drop-target="remove-app-bookmark" ode-ondrop="removeBookmark($value)">
+	<nav class="list icons-view">
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" drag-item="application" ng-repeat="application in applications | orderBy:order | filter:searchDisplayName">
+			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:order | filter:searchDisplayName"
+				ode-drag-value="[[application.prefix]]" ode-drag-target="add-app-bookmark">
 				<div class="container" tooltip="[[application.displayName]]">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
 						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
 					</a>
+					<legend>
+						<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
+					</legend>
 				</div>
-				<legend>
-					<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
-				</legend>
 			</div>
 		</div>
 	</nav>

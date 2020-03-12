@@ -14,6 +14,14 @@
 	</script>
 	<script type="text/javascript" src="/public/dist/entcore/ng-app.js" id="context"></script>
 	<script type="text/javascript" src="/public/dist/myapps/application.js"></script>
+	<style>
+		.ode-js-drop-hover.ode-js-drop-available[ode-drop-target] {
+			background: burlywood !important;
+		}
+		.ode-js-drop-available[ode-drop-target] {
+			outline: dashed 2px red !important;
+		}
+	</style>
 </head>
 <body ng-controller="ApplicationController">
 	<portal>
