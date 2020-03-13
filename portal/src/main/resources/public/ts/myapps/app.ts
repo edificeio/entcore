@@ -16,17 +16,19 @@ const appController = ng.controller('ApplicationController', ['$scope', ($scope)
         $scope.$apply();
     });
 
-    $scope.addBookmark = function(prefix){
-        const correspondingApp = _.findWhere(model.me.apps, { prefix });
-        if (correspondingApp && !_.findWhere(model.me.bookmarkedApps, { prefix })) {
+    $scope.addBookmark = function (address){
+        const correspondingApp = model.me.apps.find(app => app.address === address);
+        // console.log(correspondingApp);
+        if (correspondingApp && !_.findWhere(model.me.bookmarkedApps, { address })) {
             model.me.bookmarkedApps.push(correspondingApp);
             $scope.$apply();
             http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
         }
     };
 
-    $scope.removeBookmark = function(prefix){
-        var correspondingApp = _.findWhere(model.me.bookmarkedApps, { prefix });
+    $scope.removeBookmark = function (address){
+        const correspondingApp = model.me.bookmarkedApps.find(app => app.address === address);
+        // console.log(correspondingApp);
         if (correspondingApp){
             const itemIndex = model.me.bookmarkedApps.indexOf(correspondingApp);
             model.me.bookmarkedApps.splice(itemIndex, 1);

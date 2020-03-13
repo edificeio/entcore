@@ -7,7 +7,7 @@
 		</div>
 		<div class="list icons-view apps" ng-if="bookmarkedApps.length !== 0">
 			<div class="element reduce-block-six" ng-repeat="application in bookmarkedApps | filter: filterBookmark"
-				ode-drag-value="[[application.prefix]]" ode-drag-target="remove-app-bookmark">
+				ode-drag-value="[[application.address]]" ode-drag-target="remove-app-bookmark">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
@@ -30,7 +30,7 @@
 	<nav class="list icons-view">
 		<div class="list icons-view apps">
 			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:order | filter:searchDisplayName"
-				ode-drag-value="[[application.prefix]]" ode-drag-target="add-app-bookmark">
+				ode-drag-value="[[application.address]]" ode-drag-target="add-app-bookmark">
 				<div class="container" tooltip="[[application.displayName]]">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
