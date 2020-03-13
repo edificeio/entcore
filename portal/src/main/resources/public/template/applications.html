@@ -2,7 +2,7 @@
 <!-- Bookmarked apps -->
 <div class="row">
 	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)">
-		<div ng-if="bookmarkedApps.length === 0">
+		<div ng-if="bookmarkedApps.length === 0" style="padding-top: 50px">
 			<i18n>apps.drag</i18n>
 		</div>
 		<div class="list icons-view apps" ng-if="bookmarkedApps.length !== 0">
