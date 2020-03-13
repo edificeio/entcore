@@ -615,6 +615,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							DocumentHelper.setParent(d, oldIdsToNewIds.get(parentId));
 					}
 
+					// Apply ids change from the collection
+					if(oldIdsToNewIds.size() > 0)
+						applyIdsChange(savePayload, oldIdsToNewIds);
+
 					final int totalDuplicates = nbDuplicates;
 					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
 					{
