@@ -4,28 +4,6 @@ import { polyfill } from "mobile-drag-drop";
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 
-var ua = navigator.userAgent.toLowerCase();
-var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
-if (isAndroid) {
-    polyfill({
-        // use this to make use of the scroll behaviour
-        dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
-        tryFindDraggableTarget: (event: TouchEvent) => {
-            // console.log("android, touch event", event);
-            let target = event.target as HTMLElement;
-            while (target && !target.getAttribute('ode-drag-value')) {
-                target = target.parentElement;
-            }
-            // console.log("android, touch target found", target);
-            return target;
-        },
-        dragImageSetup: (element: HTMLElement) => {
-            // console.log("drag image elem", element);
-            return element;
-        }
-    });
-}
-
 
 /**
  * Native Drag'n'Drop feature
@@ -48,6 +26,37 @@ if (isAndroid) {
  *
  */
 
+let polyfillChecked = false;
+function prepareNodeCopyAsDragImage(srcNode: HTMLElement, dstNode: HTMLElement) {
+    if (srcNode.nodeType === 1) {
+        var cs = getComputedStyle(srcNode);
+        // console.log("srcNode", srcNode.nodeName, cs);
+        for (var i = 0; i < cs.length; i++) {
+            var csName = cs[i];
+            if (!['color'].includes(csName)) {
+                dstNode.style.setProperty(csName, cs.getPropertyValue(csName), cs.getPropertyPriority(csName));
+            }
+        }
+        dstNode.style.removeProperty('color');
+        dstNode.style.pointerEvents = "none";
+        dstNode.removeAttribute("id");
+        // dstNode.removeAttribute("class");
+        dstNode.removeAttribute("draggable");
+        dstNode.removeAttribute("tooltip");
+        if (dstNode.nodeName === "CANVAS") {
+            var canvasSrc = srcNode as HTMLCanvasElement;
+            var canvasDst = dstNode as HTMLCanvasElement;
+            var canvasSrcImgData = canvasSrc.getContext("2d").getImageData(0, 0, canvasSrc.width, canvasSrc.height);
+            canvasDst.getContext("2d").putImageData(canvasSrcImgData, 0, 0);
+        }
+    }
+    if (srcNode.hasChildNodes()) {
+        for (var i = 0; i < srcNode.childNodes.length; i++) {
+            prepareNodeCopyAsDragImage(srcNode.childNodes[i] as HTMLElement, dstNode.childNodes[i] as HTMLElement);
+        }
+    }
+}
+
 export interface OdeDragValueScope {
     odeDragValue: string;
     odeDragTarget?: string;
@@ -61,6 +70,35 @@ export const odeDragTargetDirective = ng.directive('odeDragTarget', () => {
             odeDragTarget: '@'
         },
         link: (scope: OdeDragValueScope, element /* JQuery */, attrs) => {
+            if (!polyfillChecked) {
+                // console.log("Check need of polyfill for drag and drop...");
+                var ua = navigator.userAgent.toLowerCase();
+                // console.log("AUSER_AGENT", ua);
+                var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
+                if (isAndroid) {
+                    // console.log("ANDROID DETECTED, USE DRAG AND DROP POLYFILL")
+                    polyfill({
+                        // use this to make use of the scroll behaviour
+                        dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
+                        tryFindDraggableTarget: (event: TouchEvent) => {
+                            // console.log("android, touch event", event);
+                            let target = event.target as HTMLElement;
+                            while (target && !target.getAttribute('ode-drag-value')) {
+                                target = target.parentElement;
+                            }
+                            // console.log("android, touch target found", target);
+                            return target;
+                        },
+                        dragImageSetup: (sourceNode: HTMLElement) => {
+                            var dragImage = sourceNode.cloneNode(true) as HTMLElement;
+                            prepareNodeCopyAsDragImage(sourceNode, dragImage);
+                            return dragImage;
+                        }
+                    });
+                }
+            }
+            polyfillChecked = true;
+
             const domElement = element.get(0);
             // Apply Drag events
             const applyDragEvents = (el: Element) => {
@@ -136,7 +174,7 @@ export const odeDropTargetDirective = ng.directive('odeDropTarget', () => {
                     const validTargets = scope.odeDropTarget ? (
                         Array.isArray(scope.odeDropTarget) ? scope.odeDropTarget : [scope.odeDropTarget]
                     ) : [];
-                    console.log("validTargets", validTargets);
+                    // console.log("validTargets", validTargets);
                     if (validTargets === [] || expectedTarget === '<all>' || validTargets.includes(expectedTarget)) {
                         // Step 2 a : drop is authorized
                         e.preventDefault(); // We authorize drop action
@@ -145,7 +183,7 @@ export const odeDropTargetDirective = ng.directive('odeDropTarget', () => {
                         scope.odeOndrop({$value: effectiveData});
                     } else {
                         // Step 2 b : drop isn't authorized
-                        console.log("[odeDropTarget] not allowed drop");
+                        // console.log("[odeDropTarget] not allowed drop");
                     }
                     domElement.classList.remove('ode-js-drop-hover');
                 });
