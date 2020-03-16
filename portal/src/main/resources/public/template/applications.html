@@ -1,7 +1,10 @@
-<h1 class="application-title"><i class="apps"></i><i18n>portal.header.navigation.myapps</i18n></h1>
+<h1 class="application-title"><i class="apps"></i>
+	<i18n>portal.header.navigation.myapps</i18n>
+</h1>
 <!-- Bookmarked apps -->
 <div class="row">
-	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)">
+	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)"
+		ode-drop-effect="copy">
 		<div ng-if="bookmarkedApps.length === 0" style="padding-top: 50px">
 			<i18n>apps.drag</i18n>
 		</div>
@@ -14,33 +17,38 @@
 						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
 					</a>
 					<legend>
-						<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
+						<a href="[[application.address]]" target="[[application.target]]" translate
+							content="[[application.displayName]]" draggable="false"></a>
 					</legend>
 				</div>
 			</div>
 		</div>
 	</nav>
 </div>
-<!-- Search apps -->
-<div class="row">
-	<input type="search" ng-model="display.searchText" i18n-placeholder="search" class="apps-search" autofocus />
-</div>
-<!-- Other apps -->
-<div class="row" ode-drop-target="remove-app-bookmark" ode-ondrop="removeBookmark($value)">
-	<nav class="list icons-view">
-		<div class="list icons-view apps">
-			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:order | filter:searchDisplayName"
-				ode-drag-value="[[application.address]]" ode-drag-target="add-app-bookmark">
-				<div class="container" tooltip="[[application.displayName]]">
-					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
-						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
-						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
-					</a>
-					<legend>
-						<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]" draggable="false"></a>
-					</legend>
+<div ode-drop-target="remove-app-bookmark" ode-ondrop="removeBookmark($value)">
+	<!-- Search apps -->
+	<div class="row">
+		<input type="search" ng-model="display.searchText" i18n-placeholder="search" class="apps-search" autofocus />
+	</div>
+	<!-- Other apps -->
+	<div class="row">
+		<nav class="list icons-view">
+			<div class="list icons-view apps">
+				<div class="element reduce-block-six"
+					ng-repeat="application in applications | orderBy:order | filter:searchDisplayName"
+					ode-drag-value="[[application.address]]" ode-drag-target="add-app-bookmark">
+					<div class="container" tooltip="[[application.displayName]]">
+						<a href="[[application.address]]" target="[[application.target]]" draggable="false">
+							<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
+							<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
+						</a>
+						<legend>
+							<a href="[[application.address]]" target="[[application.target]]" translate
+								content="[[application.displayName]]" draggable="false"></a>
+						</legend>
+					</div>
 				</div>
 			</div>
-		</div>
-	</nav>
+		</nav>
+	</div>
 </div>

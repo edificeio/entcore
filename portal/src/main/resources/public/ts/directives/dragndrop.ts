@@ -4,7 +4,6 @@ import { polyfill } from "mobile-drag-drop";
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 
-
 /**
  * Native Drag'n'Drop feature
  *
@@ -24,6 +23,10 @@ import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scro
  *  <div ode-drop-target="someTarget2" ode-ondrop="myFunction($value)">Drop here 2</div>
  *  <div ode-drop-target="['someTarget1', 'someTarget2']" ode-ondrop="myFunction($value)">Drop here 1 or 2</div>
  *
+ *  Optionally specify the drop effect :
+ *
+ *  <div ode-drop-target="copyThis" ode-ondrop="copyElement($value)" ode-drop-effect="copy">Add elements</div>
+ *  // Values can be 'none', 'copy', 'move' or 'link'.
  */
 
 let polyfillChecked = false;
@@ -107,6 +110,7 @@ export const odeDragTargetDirective = ng.directive('odeDragTarget', () => {
                 el.addEventListener('dragstart', function (e: DragEvent) {
                     // console.log("[odeDragValue] dragstart on", e.target);
                     e.dataTransfer.setData('text', (scope.odeDragTarget || "<all>") + "/" + scope.odeDragValue); // IE forces to use `text` as mime type
+                    e.dataTransfer.effectAllowed = 'all';
                     // Find available drop zones
                     var availableDropTargets: NodeListOf<Element>;
                     if (scope.odeDragTarget) { availableDropTargets = document.querySelectorAll(`[ode-drop-target="${scope.odeDragTarget}"]`) }
@@ -132,6 +136,7 @@ export const odeDragTargetDirective = ng.directive('odeDragTarget', () => {
 interface OdeDropTargetScope {
     odeDropTarget?: string;
     odeOndrop?: ({$value: string}) => void;
+    odeDropEffect?: 'none' | 'copy' | 'move' | 'link';
 }
 
 export const odeDropTargetDirective = ng.directive('odeDropTarget', () => {
@@ -139,16 +144,20 @@ export const odeDropTargetDirective = ng.directive('odeDropTarget', () => {
         restrict: 'A',
         scope: {
             odeDropTarget: '@',
-            odeOndrop: '&'
+            odeOndrop: '&',
+            odeDropEffect: '@'
         },
         link: (scope: OdeDropTargetScope, element /* JQuery */, attrs) => {
             const domElement = element.get(0);
             // Apply Drop events
             const applyDropEvents = (el: Element) => {
                 // console.log("[odeDropTarget] setup drop-target for", el);
-                el.addEventListener('dragover', function (e) {
+                el.addEventListener('dragover', function (e: DragEvent) {
                     if (el.classList.contains('ode-js-drop-available')) {
                         e.preventDefault(); // We authorize drop action
+                        if (scope.odeDropEffect) {
+                            e.dataTransfer.dropEffect = scope.odeDropEffect;
+                        }
                         domElement.classList.add('ode-js-drop-hover');
                     }
                 });
