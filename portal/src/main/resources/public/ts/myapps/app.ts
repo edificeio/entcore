@@ -1,8 +1,6 @@
 import { ng, idiom as lang, model, http, template } from 'entcore';
 import { _ } from 'entcore';
 
-import * as directives from '../directives';
-
 const appController = ng.controller('ApplicationController', ['$scope', ($scope) => {
     template.open('main', 'applications');
     $scope.template = template;
@@ -58,7 +56,3 @@ const appController = ng.controller('ApplicationController', ['$scope', ($scope)
 }]);
 
 ng.controllers.push(appController);
-
-for (let directive in directives) {
-    ng.directives.push(directives[directive]);
-}
