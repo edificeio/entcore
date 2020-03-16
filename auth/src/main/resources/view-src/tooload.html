@@ -1,12 +1,69 @@
 <!doctype html>
+<!--
 
-<html>
+ -->
+
+<html style="height: 100%; font-family: Roboto; color: #595959;">
 	<head>
 		<title>{{#i18n}}auth.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	</head>
-	<body>
-        <p>Trop de charge réessayez plus tard.</p>
+	<body style="height: 100%; display: flex; align-items: center; justify-content: center;">
+    <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; max-width: 50vw; display: none;"id="fr">
+        <h2>
+          À situation exceptionnelle, mesures exceptionnelles...
+        </h2>
+        <p style="text-align: justify;">
+          Pour permettre à chacun d’accéder à son réseau éducatif dans de bonnes conditions, nous avons limité le temps des sessions et instauré une logique de quota. Quand le nombre d’utilisateurs maximum est atteint, il vous faut patienter pour y accéder à votre tour.
+        </p>
+        <p style="text-align: justify;">
+          Désolé pour cette contrainte. Revenez et essayez à nouveau d’ici quelques minutes. 
+        </p>
+        <p>
+          Merci de votre compréhension.
+        </p>
+      </div>
+      <div style="display: flex; flex-direction: column; max-width: 50vw; display: none;" id="es">
+        <h2>
+          En circunstancias excepcionales, medidas excepcionales...
+        </h2>
+        <p style="text-align: justify;">
+          Para permitir que todos accedan a su red educativa en buenas condiciones, hemos limitado el tiempo de las sesiones e implementado una lógica de cuotas. Cuando se alcanza el número máximo de usuarios, tendrá que esperar su turno para acceder a él.
+        </p>
+        <p style="text-align: justify;">
+          Perdón por esta restricción. Regrese e intente nuevamente en unos minutos. 
+        </p>
+        <p>
+          Gracias por su comprensión.
+        </p>
+      </div>
+      <div style="display: flex; flex-direction: column; max-width: 50vw; display: none;" id="en">
+        <h2>
+          In exceptional circumstances, exceptional measures...
+        </h2>
+        <p style="text-align: justify;">
+          To allow everyone to access their educational network in good conditions, we have limited the time of the sessions and implemented a quota system. When the maximum number of users is reached, you will have to wait for your turn to access it.
+        </p>
+        <p style="text-align: justify;">
+          Sorry for this constraint. Come back and try again in a few minutes.
+        </p>
+        <p>
+          Thank you for your understanding.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; max-width: 240px;">
+        <img src="{{#static}}img/zen-woman.svg{{/static}}"/>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var languages = [ "fr", "es", "en" ];
+      var lang = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language;
+      lang = lang.trim().substr(0, 2);
+      if(languages.indexOf(lang) == -1)
+        lang = languages[0];
+      document.querySelector("#" + lang).style.display = "block";
+    </script>
 	</body>
 </html>
