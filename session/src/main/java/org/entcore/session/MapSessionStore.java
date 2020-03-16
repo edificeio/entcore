@@ -370,4 +370,9 @@ public class MapSessionStore extends AbstractSessionStore {
         sessions.remove(sessionId);
     }
 
+    @Override
+    public void getSessionsNumber(Handler<AsyncResult<Long>> handler) {
+        handler.handle(Future.succeededFuture(0L));
+    }
+
 }
