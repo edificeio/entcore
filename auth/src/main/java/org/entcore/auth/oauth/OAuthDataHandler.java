@@ -141,8 +141,8 @@ public class OAuthDataHandler extends DataHandler {
 	private void checkPassword(JsonArray result, String password, String username, Handler<Try<AccessDenied, String>> handler) {
 		JsonObject r = result.getJsonObject(0);
 
-		if (r != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
-			if (getOrElse(r.getBoolean("blockedUser"), false)) {
+		if (r != null) {
+			if (getOrElse(r.getBoolean("blockedProfile"), false) || getOrElse(r.getBoolean("blockedUser"), false)) {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
 				return;
 			}
