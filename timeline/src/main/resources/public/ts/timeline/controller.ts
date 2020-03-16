@@ -1,7 +1,7 @@
-import { ng, template, idiom as lang, ui, http, currentLanguage, $, _, moment } from 'entcore';
+import { ng, template, idiom as lang, ui, http, currentLanguage, $, _, moment, skin } from 'entcore';
 import * as timelineControllers from './controller';
 
-export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
+export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', async ($rootScope, $scope, model) => {
 	$scope.closePanel = function(){
 		$rootScope.$broadcast('close-panel');
 	};
@@ -13,9 +13,16 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 	template.open('settings', 'settings');
 	template.open('notifications', 'notifications');
 	template.open('notifspanel', 'notifspanel');
-
+	$scope.me = model.me;
 	$scope.template = template;
 	$scope.lang = lang;
+	$scope.lightmode = (window as any).LIGHT_MODE;
+    $scope.hasWorkflowZimbraExpert = () => {
+       return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth');
+    };
+	await skin.listSkins();
+	$scope.display = {}
+	$scope.display.pickTheme = skin.pickSkin;
 }]);
 
 export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($scope, model) => {

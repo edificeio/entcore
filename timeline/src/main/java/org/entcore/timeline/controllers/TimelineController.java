@@ -100,10 +100,35 @@ public class TimelineController extends BaseController {
 		TimelineLambda.setLambdaTemplateRequest(request, ctx, eventsI18n, lazyEventsI18n);
 	}
 
+	private boolean isLightmode(){
+		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		return publicConf.getBoolean("lightmode", false);
+	}
+
+	private JsonObject lightModeResult(HttpServerRequest request){
+		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		final String messageKey = publicConf.getString("lightmodeI18Key", "lightmode.timeline.notifications.html");
+		final JsonArray list = new JsonArray();
+		final JsonObject res = new JsonObject();
+		final JsonObject first = new JsonObject();
+		first.put("date", new JsonObject().put("$date", System.currentTimeMillis()));
+		first.put("event-type", "");
+		first.put("message", I18n.getInstance().translate(messageKey, getHost(request), I18n.acceptLanguage(request)));
+		first.put("params", new JsonObject());
+		first.put("recipients", new JsonArray());
+		first.put("type", "");
+		first.put("_id", System.currentTimeMillis()+"");
+		list.add(first);
+		res.put("results", list );
+		res.put("number", 1);
+		return res;
+	}
+
 	@Get("/timeline")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
-		renderView(request);
+		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		renderView(request, new JsonObject().put("lightMode",isLightmode()));
 	}
 
 	@Get("/preferencesView")
@@ -115,7 +140,8 @@ public class TimelineController extends BaseController {
 	@Get("/historyView")
 	@SecuredAction(value = "timeline.historyView")
 	public void historyView(HttpServerRequest request) {
-		renderView(request);
+		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		renderView(request, new JsonObject().put("lightMode",isLightmode()));
 	}
 
 	@Get("/i18nNotifications")
@@ -153,6 +179,10 @@ public class TimelineController extends BaseController {
 	@Get("/lastNotifications")
 	@SecuredAction(value = "timeline.events", type = ActionType.AUTHENTICATED)
 	public void lastEvents(final HttpServerRequest request) {
+		if(isLightmode()){
+			renderJson(request, lightModeResult(request));
+			return;
+		}
 		final boolean mine = request.params().contains("mine");
 		final boolean both = request.params().contains("both");
 		final String version = RequestUtils.acceptVersion(request);

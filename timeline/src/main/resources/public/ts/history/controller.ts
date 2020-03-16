@@ -8,6 +8,7 @@ export let historyController = ng.controller('HistoryController', ['$scope', 'mo
 	$scope.me = model.me;
 	$scope.filtered = {};
 	$scope.display = {};
+	$scope.lightmode = (window as any).LIGHT_MODE;
 
 	$scope.actions = {
 		delete: {

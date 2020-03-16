@@ -74,6 +74,9 @@ export const build = function (){
 
     this.preferences = new Timeline.Preferences()
 
+	if((window as any).LIGHT_MODE){
+		return;
+	}
 	this.collection(Timeline.Notification, {
 		page: 0,
 		lastPage: false,

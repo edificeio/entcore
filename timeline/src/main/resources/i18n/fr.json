@@ -183,5 +183,8 @@
     "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services...",
     "panel.user.messagerie":"messagerie",
 
-    "AdminLocal": "Administrateurs locaux"
+    "AdminLocal": "Administrateurs locaux",
+    "lightmode.timeline.notifications.title": "Oups",
+    "lightmode.timeline.notifications": "Suite à nombre important de connexions sur notre plateforme, le fil de nouveautés est momentanément indisponible.",
+    "lightmode.timeline.notifications.html": "<div><h1>Oups</h1><h2>Suite à nombre important de connexions sur notre plateforme, le fil de nouveautés est momentanément indisponible.</h2></div>"
 }
