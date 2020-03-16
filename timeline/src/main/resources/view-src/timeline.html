@@ -7,6 +7,9 @@
 		<script type="text/javascript" src="/timeline/public/dist/entcore/ng-app.js" id="context"></script>
 		<script type="text/javascript" src="/timeline/public/dist/timeline/application.js"></script>
 		<script type="text/ng-template" id="empty"></script>
+		<script type="text/javascript">
+			window.LIGHT_MODE = {{{lightMode}}};
+		</script>
 	</head>
 	<body ng-controller="MainController" ng-click="closePanel()" style="cursor: default;">
 		<portal>

@@ -7,6 +7,9 @@
 		<script type="text/javascript" src="/timeline/public/dist/entcore/ng-app.js" id="context"></script>
 		<script type="text/javascript" src="/timeline/public/dist/history/application.js"></script>
 		<script type="text/ng-template" id="empty"></script>
+		<script type="text/javascript">
+			window.LIGHT_MODE = {{{lightmode}}};
+		</script>
 	</head>
 	<body>
 		<portal>
@@ -16,8 +19,50 @@
                     <a href="/userbook/mon-compte"><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
                 </h1>
             </app-title>
-
-			<div data-ng-controller="HistoryController">
+			<div data-ng-controller="MainController" ng-if="lightmode">
+				<div class="twelve tabs vertical-spacing-twice heading-tabs">
+					<header class="horizontal-spacing-twice">
+						<a href="/userbook/mon-compte#/edit-me">
+							<span><i class="person"></i><i18n>panel.my.profile</i18n></span>
+						</a>
+					</header>
+					<header class="horizontal-spacing-twice" workflow="timeline.externalNotifications" ng-if="me.email && me.email.length">
+						<a href="/timeline/preferencesView">
+							<span><i class="bell"></i><i18n>panel.notifications.set</i18n></span>
+						</a>
+					</header>
+					<header class="horizontal-spacing-twice selected" workflow="timeline.historyView">
+						<a href="/timeline/historyView">
+							<span><i class="history"></i><i18n>panel.user.history</i18n></span>
+						</a>
+					</header>
+					<header class="horizontal-spacing-twice" ng-if="display.pickTheme" workflow="directory.switchTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
+						<a href="/userbook/mon-compte#/themes">
+							<span><i class="desktop"></i><i18n>panel.user.pickTheme</i18n></span>
+						</a>
+					</header>
+					<header class="horizontal-spacing-twice"
+							ng-if="hasWorkflowZimbraExpert()">
+						<a href="/zimbra/preferences">
+							<span><i class="mail-large"></i><i18n>panel.user.messagerie</i18n></span>
+						</a>
+					</header>
+				</div>
+				<div class="twelve cell">
+					<div class="twelve cell">
+						<div class="emptyscreen">
+							<h2 class="emptyscreen-header">
+								<i18n>lightmode.timeline.notifications.title</i18n>
+							</h2>
+							<img class="emptyscreen-image__mini" src="/timeline/public/img/lightmode-timeline.svg">
+							<p class="emptyscreen-footer">
+								<i18n>lightmode.timeline.notifications</i18n>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div data-ng-controller="HistoryController" ng-if="!lightmode">
 	            <div class="twelve tabs vertical-spacing-twice heading-tabs">
 	                <header class="horizontal-spacing-twice">
 	                    <a href="/userbook/mon-compte#/edit-me">
@@ -45,9 +90,7 @@
                             <span><i class="mail-large"></i><i18n>panel.user.messagerie</i18n></span>
                         </a>
                     </header>
-	            </div>
-
-
+				</div>
 	            <div class="twelve cell">
 					<div class="row drop-down-block" ng-class="{slided: display.slide}">
 						<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0"  ng-click="display.slide = !display.slide" >
