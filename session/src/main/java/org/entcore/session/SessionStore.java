@@ -47,4 +47,6 @@ public interface SessionStore {
 
     void dropCacheAttributeByUserId(String userId, String key, Handler<AsyncResult<Void>> handler);
 
+    void getSessionsNumber(Handler<AsyncResult<Long>> handler);
+
 }

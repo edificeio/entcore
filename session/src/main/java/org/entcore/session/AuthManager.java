@@ -101,9 +101,23 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "removeAttribute":
 			doRemoveAttribute(message);
 			break;
+		case "sessionNumber":
+			doSessionNumber(message);
+			break;
 		default:
 			sendError(message, "Invalid action: " + action);
 		}
+	}
+
+	private void doSessionNumber(Message<JsonObject> message) {
+		sessionStore.getSessionsNumber(ar -> {
+			if (ar.succeeded()) {
+				sendOK(message, new JsonObject().put("count", ar.result()));
+			} else {
+				logger.error("Error when get session number", ar.cause());
+				sendError(message, "Error when get session number");
+			}
+		});
 	}
 
 	private void doDropCacheSession(Message<JsonObject> message) {

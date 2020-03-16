@@ -735,5 +735,16 @@ public class UserUtils {
 		return functions.containsKey(DefaultFunctions.SUPER_ADMIN);
 	}
 
+	public static void getSessionsNumber(EventBus eb, final Handler<AsyncResult<Long>> handler) {
+		final JsonObject json = new JsonObject().put("action", "sessionNumber");
+		eb.send(SESSION_ADDRESS, json, ar -> {
+			if (ar.succeeded()) {
+				handler.handle(Future.succeededFuture(((JsonObject) ar.result().body()).getLong("count")));
+			} else {
+				handler.handle(Future.failedFuture(ar.cause()));
+			}
+		});
+	}
+
 }
 
