@@ -83,6 +83,7 @@ public class SamlController extends AbstractFederateController {
 	private boolean softSlo;
 	private boolean federatedAuthenticateError = false;
 	private JsonObject activationThemes;
+	private long sessionsLimit;
 
 	// regex used to find namequalifier in session nameid (Mongo)
 	private String NAME_QUALIFIER_REGEXP = ".*\\sNameQualifier=\"([^\"]*)\".*";
@@ -101,6 +102,8 @@ public class SamlController extends AbstractFederateController {
 		federatedAuthenticateError = config.getBoolean("federated-authenticate-error", false);
 
 		activationThemes = config.getJsonObject("activation-themes", new JsonObject());
+
+		sessionsLimit = config.getLong("sessions-limit", 0L);
 
 		// load nameQualifierRegex (in-case mongoDb NameId format change)
 		String nameQualifierRegex = config.getString("nameQualifierRegex");
@@ -441,6 +444,24 @@ public class SamlController extends AbstractFederateController {
 
 	@Post("/saml/acs")
 	public void acs(final HttpServerRequest request) {
+		if (sessionsLimit > 0L) {
+			UserUtils.getSessionsNumber(eb, ar -> {
+				if (ar.succeeded()) {
+					if (ar.result() > sessionsLimit) {
+						renderView(request, new JsonObject(), "tooload.html", null);
+					} else {
+						acsProcess(request);
+					}
+				} else {
+					renderView(request, new JsonObject(), "tooload.html", null);
+				}
+			});
+		} else {
+			acsProcess(request);
+		}
+	}
+
+	private void acsProcess(final HttpServerRequest request) {
 		validateResponseAndGetAssertion(request, new Handler<Assertion>() {
 			@Override
 			public void handle(final Assertion assertion) {

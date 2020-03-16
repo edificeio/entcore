@@ -329,7 +329,7 @@ public class AuthController extends BaseController {
 										viewLogin(request, null, request.params().get("callBack"));
 									}
 								} else {
-									viewLogin(request, null, request.params().get("callBack"));
+									renderView(request, new JsonObject(), "tooload.html", null);
 								}
 							});
 						} else {
