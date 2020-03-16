@@ -95,6 +95,11 @@ public class Starter extends BaseServer {
 			if (nodePdfGenerator != null) {
 				serverMap.put("node-pdf-generator", nodePdfGenerator.encode());
 			}
+			final String staticHost = config.getString("static-host");
+			if(staticHost != null)
+			{
+				serverMap.put("static-host", staticHost);
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			//initModulesHelpers(node);
 
