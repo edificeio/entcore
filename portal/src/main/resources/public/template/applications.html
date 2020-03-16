@@ -5,7 +5,7 @@
 <div class="row">
 	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)"
 		ode-drop-effect="copy">
-		<div ng-if="bookmarkedApps.length === 0" style="padding-top: 50px">
+		<div ng-if="bookmarkedApps.length === 0" class="vertical-spacing-six">
 			<i18n>apps.drag</i18n>
 		</div>
 		<div class="list icons-view apps" ng-if="bookmarkedApps.length !== 0">
