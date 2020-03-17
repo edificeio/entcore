@@ -52,6 +52,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class OAuthDataHandler extends DataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
 	private static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
+	private static final String AUTH_ERROR_GLOBAL = "auth.error.global";
 	private static final Long OTP_DELAY = 600000L;
 	private final Neo4j neo;
 	private final MongoDb mongo;
@@ -187,7 +188,7 @@ public class OAuthDataHandler extends DataHandler {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 			}
 		} else {
-			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_GLOBAL)));
 		}
 	}
 
