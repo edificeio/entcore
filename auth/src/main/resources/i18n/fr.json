@@ -17,7 +17,7 @@
     "auth.mail": "Courriel",
     "auth.phone": "Téléphone mobile",
     "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect.",
-    "auth.error.blockedUser" : "Votre compte est bloqué.",
+    "auth.error.blockedUser" : "L'accès à votre réseau éducatif est temporairement bloqué pour votre profil d'utilisateur.",
     "auth.forgot.header": "Identifiant ou mot de passe oublié",
     "auth.forgot.send": "Envoyer",
     "auth.forgot.title": "Identifiant ou mot de passe oublié",
