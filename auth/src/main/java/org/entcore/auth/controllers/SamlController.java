@@ -445,11 +445,13 @@ public class SamlController extends AbstractFederateController {
 	@Post("/saml/acs")
 	public void acs(final HttpServerRequest request) {
 		if (sessionsLimit > 0L) {
+			request.pause();
 			UserUtils.getSessionsNumber(eb, ar -> {
 				if (ar.succeeded()) {
 					if (ar.result() > sessionsLimit) {
 						renderView(request, new JsonObject(), "tooload.html", null);
 					} else {
+						request.resume();
 						acsProcess(request);
 					}
 				} else {
