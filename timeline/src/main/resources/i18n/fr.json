@@ -184,7 +184,7 @@
     "panel.user.messagerie":"messagerie",
 
     "AdminLocal": "Administrateurs locaux",
-    "lightmode.timeline.notifications.title": "Oups",
-    "lightmode.timeline.notifications": "Suite à nombre important de connexions sur notre plateforme, le fil de nouveautés est momentanément indisponible.",
-    "lightmode.timeline.notifications.html": "<div><h1>Oups</h1><h2>Suite à un nombre important de connexions sur notre plateforme, le fil de nouveautés est momentanément indisponible.</h2></div>"
+    "lightmode.timeline.notifications.title": "Votre Fil de nouveautés est indisponible…",
+    "lightmode.timeline.notifications": "Face à un pic de connexions sans précédent, votre Fil de nouveautés et certains widgets sont momentanément inaccessibles. L'historique des notifications sera rétabli par la suite. Aussi, pour vous avertir des nouveautés de votre réseau, les notifications externes sont toujours envoyées sur l'adresse mail renseignée dans Mon compte.",
+    "lightmode.timeline.notifications.html": "<div><h1>Votre Fil de nouveautés est indisponible…</h1><h2>Face à un pic de connexions sans précédent, votre Fil de nouveautés et certains widgets sont momentanément inaccessibles. L'historique des notifications sera rétabli par la suite. Aussi, pour vous avertir des nouveautés de votre réseau, les notifications externes sont toujours envoyées sur l'adresse mail renseignée dans Mon compte.</h2></div>"
 }

@@ -111,9 +111,11 @@ public class TimelineController extends BaseController {
 		final JsonArray list = new JsonArray();
 		final JsonObject res = new JsonObject();
 		final JsonObject first = new JsonObject();
+		final String msg = I18n.getInstance().translate(messageKey, getHost(request), I18n.acceptLanguage(request));
 		first.put("date", new JsonObject().put("$date", System.currentTimeMillis()));
 		first.put("event-type", "");
-		first.put("message", I18n.getInstance().translate(messageKey, getHost(request), I18n.acceptLanguage(request)));
+		first.put("message", msg);
+		first.put("preview", new JsonObject().put("text", msg).put("images", new JsonArray()));
 		first.put("params", new JsonObject());
 		first.put("recipients", new JsonArray());
 		first.put("type", "");

@@ -1,0 +1,5 @@
+{
+    "lightmode.timeline.notifications.title": "Su suministro de noticias no está disponible...",
+    "lightmode.timeline.notifications": "Debido a un pico sin precedentes en las conexiones, su suministro de noticias y ciertos widgets son temporalmente inaccesibles. El historial de notificaciones se restaurará más tarde. Además, para notificarle las noticias de su red, las notificaciones externas siempre se envían a la dirección de correo electrónico ingresada en Mi cuenta.",
+    "lightmode.timeline.notifications.html": "<div><h1>Su suministro de noticias no está disponible...</h1><h2>Debido a un pico sin precedentes en las conexiones, su suministro de noticias y ciertos widgets son temporalmente inaccesibles. El historial de notificaciones se restaurará más tarde. Además, para notificarle las noticias de su red, las notificaciones externas siempre se envían a la dirección de correo electrónico ingresada en Mi cuenta.</h2></div>"
+}
