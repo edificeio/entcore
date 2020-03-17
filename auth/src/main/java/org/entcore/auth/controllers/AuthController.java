@@ -116,6 +116,7 @@ public class AuthController extends BaseController {
 	private JsonArray authorizedHostsLogin;
 	private ClientCredentialFetcher clientCredentialFetcher;
 	private long sessionsLimit;
+	private JsonArray ipAllowedByPassLimit;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -154,6 +155,8 @@ public class AuthController extends BaseController {
 			smsProvider = (String) server.get("smsProvider");
 		slo = config.getBoolean("slo", false);
 		sessionsLimit = config.getLong("sessions-limit", 0L);
+		ipAllowedByPassLimit = getOrElse(config.getJsonArray("ip-allowed-by-pass-limit"), new JsonArray());
+
 //		if (server != null) {
 //			Boolean cluster = (Boolean) server.get("cluster");
 //			if (Boolean.TRUE.equals(cluster)) {
@@ -321,7 +324,7 @@ public class AuthController extends BaseController {
 				@Override
 				public void handle(UserInfos user) {
 					if (user == null || !config.getBoolean("auto-redirect", true)) {
-						if (sessionsLimit > 0L) {
+						if (sessionsLimit > 0L && !ipAllowedByPassLimit.contains(getIp(request))) {
 							UserUtils.getSessionsNumber(eb, ar -> {
 								if (ar.succeeded()) {
 									if (ar.result() > sessionsLimit) {
