@@ -214,7 +214,13 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results)
+	{
+		if(page < 0)
+		{
+			results.handle(new Either.Right<String, JsonArray>(new JsonArray()));
+			return;
+		}
 		int skip = page * LIST_LIMIT;
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
