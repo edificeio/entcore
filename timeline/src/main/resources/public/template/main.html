@@ -4,11 +4,6 @@
 			<div ng-include="template.containers.widgets"></div>
 		</div>
 		<div class="widgets-friend">
-			<app-title>
-				<h1 data-reload class="application-title">
-					<i18n>timeline.title</i18n>
-				</h1>
-			</app-title>
 			<div data-ng-controller="FlashMessages" class="twelve cell">
 				<div class="flashmsg" ng-repeat="message in messages.all" ng-class="message.color" ng-style="{ 'background-color': message.customColor }">
 					<i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
