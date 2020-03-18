@@ -106,10 +106,9 @@ public abstract class BaseServer extends Server {
 		}
 
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-enabled", false);
+		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-filter", false);
 		if(Boolean.TRUE.equals(cacheEnabled)){
-			final String redisConfig = (String)server.get("redisConfig");
-			final CacheService cacheService = new RedisCacheService(vertx, new JsonObject(redisConfig));
+			final CacheService cacheService = CacheService.createFromConfig(vertx, server);
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
 		}
 

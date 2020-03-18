@@ -56,43 +56,50 @@
 		</div>
 
 	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() !== notificationTypes.selection().length">
-		<b><span><i18n>filters.unselected</i18n></span></b>
+		<b ng-if="!isCache()"><span><i18n>filters.unselected</i18n></span></b>
+		<b ng-if="isCache() && showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+		<b ng-if="isCache() && !showSeeMoreOnEmpty()"><span><i></i><i18n>filters.unselected</i18n></span></b>
 	</div>
 
 	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length && notifications.lastPage">
-		<b><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
+		<b ng-if="!isCache()"><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
+		<b ng-if="isCache() && showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+		<b ng-if="isCache() && !showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty</i18n></span></b>
 	</div>
-
-		<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]">
-			<article ng-class="{ 'unread': isUnRead(notification) }">
-				<div class="row">
-					<div class="avatar">
-						<i class="system-avatar" ng-if="!notification.sender"></i>
-						<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
-						<i class="sticker app type [[notification.type.toLowerCase()]]"></i>
-					</div>
-					<div class="content horizontal-spacing">
-						<p class="inline" bind-html="notification.message"></p>
-					</div>
+	<!--NOTIFICATIONS-->
+	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]">
+		<article ng-class="{ 'unread': isUnRead(notification) }">
+			<div class="row">
+				<div class="avatar">
+					<i class="system-avatar" ng-if="!notification.sender"></i>
+					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+					<i class="sticker app type [[notification.type.toLowerCase()]]"></i>
 				</div>
-				<div class="notification-date">
-					<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
+				<div class="content horizontal-spacing">
+					<p class="inline" bind-html="notification.message"></p>
 				</div>
-			</article>
-			<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions(notification)">
-				<div class="opener" ng-click="notification.opened = !notification.opened">
-					<i class="left-open"></i>
-				</div>
-				<div class="actions">
-					<div ng-repeat="(name, action) in actions" ng-show="!action.condition || action.condition(notification)" class="action [[ name ]]">
-						<i class="[[name]]"></i>
-						<a ng-click="action.action(notification)" ng-disabled="notification[action.doneProperty]">
-							[[ notification[action.doneProperty] ? lang.translate(action.doneLabel) : lang.translate(action.label) ]]
-						</a>
-					</div>
+			</div>
+			<div class="notification-date">
+				<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
+			</div>
+		</article>
+		<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions(notification)">
+			<div class="opener" ng-click="notification.opened = !notification.opened">
+				<i class="left-open"></i>
+			</div>
+			<div class="actions">
+				<div ng-repeat="(name, action) in actions" ng-show="!action.condition || action.condition(notification)" class="action [[ name ]]">
+					<i class="[[name]]"></i>
+					<a ng-click="action.action(notification)" ng-disabled="notification[action.doneProperty]">
+						[[ notification[action.doneProperty] ? lang.translate(action.doneLabel) : lang.translate(action.label) ]]
+					</a>
 				</div>
 			</div>
 		</div>
+	</div>
+	<!--SHOW MORE -->
+	<div ng-if="showSeeMore()" style="text-align: center;"><a ng-click="loadPage()"><i18n>timeline.seeold</i18n></a></div>
+	<div ng-if="showSeeMoreOnEmpty()" style="justify-content: center;display:flex;"><button ng-click="forceLoadPage()"><i18n>timeline.historyold</i18n></button></div>
 		<lightbox show="display.confirmReport" on-close="display.confirmReport = false">
 			<h2><i18n>timeline.confirm.report</i18n></h2>
 			<p>

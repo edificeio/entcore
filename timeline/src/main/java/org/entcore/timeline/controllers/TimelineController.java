@@ -33,6 +33,7 @@ import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -44,6 +45,7 @@ import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
@@ -86,11 +88,16 @@ public class TimelineController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		store = new DefaultTimelineEventStore();
 		timelineHelper = new TimelineHelper(vertx, eb, config);
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
+		store = new DefaultTimelineEventStore();
+		if(config.getBoolean("cache", false)){
+			final CacheService cacheService = CacheService.create(vertx);
+			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
+			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
+		}
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -130,7 +137,8 @@ public class TimelineController extends BaseController {
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
 		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
-		renderView(request, new JsonObject().put("lightMode",isLightmode()));
+		final boolean cache = config.getBoolean("cache", false);
+		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
 	}
 
 	@Get("/preferencesView")
@@ -205,10 +213,10 @@ public class TimelineController extends BaseController {
 							List<String> types = request.params().getAll("type");
 							int offset = 0;
 							try {
-								offset = 25 * Integer.parseInt(page);
+								offset = PAGELIMIT * Integer.parseInt(page);
 							} catch (NumberFormatException e) {}
 
-							store.get(user, types, offset, 25, notifs.right().getValue(), mine, both, version, new Handler<JsonObject>() {
+							store.get(user, types, offset, PAGELIMIT, notifs.right().getValue(), mine, both, version, new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
 									if (res != null && "ok".equals(res.getString("status"))) {
 										if ("2.0".equals(version)) {
@@ -760,7 +768,7 @@ public class TimelineController extends BaseController {
 			u.setUserId(json.getString("recipient"));
 			u.setExternalId(json.getString("externalId"));
 			store.get(u, null, json.getInteger("offset", 0),
-					json.getInteger("limit", 25), null, false, false, "", handler);
+					json.getInteger("limit", PAGELIMIT), null, false, false, "", handler);
 			break;
 		case "delete":
 			store.delete(json.getString("resource"), handler);

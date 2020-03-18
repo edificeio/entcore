@@ -134,6 +134,32 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		model.notifications.sync();
 	};
 
+	$scope.isCache = () => (window as any).TIMELINE_CACHE;
+
+	$scope.showSeeMore = () => {
+		if($scope.notifications.loading){
+			return false;
+		}
+		return (window as any).TIMELINE_CACHE && model.notifications.page==1 && !model.notifications.lastPage;
+	}
+
+	$scope.showSeeMoreOnEmpty = () => {
+		try{
+			if($scope.notifications.loading){
+				return false;
+			}
+			return (window as any).TIMELINE_CACHE && model.notifications.page==0 && $scope.notifications.all.length === 0 && $scope.notifications.lastPage;
+		} catch(e){
+			return false;
+		}
+	}
+
+	$scope.forceLoadPage = () =>{
+		$scope.notifications.lastPage = false;
+		model.notifications.page++
+		$scope.loadPage();
+	}
+
 	$scope.unactivesFilters = function(){
 		var unactives = model.notificationTypes.length() - model.notificationTypes.selection().length;
 		return unactives;
