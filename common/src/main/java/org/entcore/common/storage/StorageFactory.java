@@ -88,7 +88,11 @@ public class StorageFactory {
 				e.printStackTrace();
 			}
 		} else if (fs != null) {
-			storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false));
+			if (fs.containsKey("paths")) {
+				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false));
+			} else {
+				storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false));
+			}
 			JsonObject antivirus = fs.getJsonObject("antivirus");
 			if (antivirus != null) {
 				final String h = antivirus.getString("host");

@@ -30,6 +30,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -47,24 +48,39 @@ import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class FileStorage implements Storage {
 
 	private static final Logger log = LoggerFactory.getLogger(FileStorage.class);
-	private final String basePath;
+	private final List<String> basePaths;
+	private final int lastBucketIdx;
+	private static final Pattern RANGE = Pattern.compile("^bytes=(\\d+)-(\\d*)$");
 	private final FileSystem fs;
 	private final boolean flat;
 	private AntivirusClient antivirus;
 	private FileValidator validator;
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat) {
-		this.basePath = (basePath != null && !basePath.endsWith("/")) ? basePath + "/" : basePath;
+		this(vertx, new JsonArray().add(basePath), flat);
+	}
+
+	public FileStorage(Vertx vertx, JsonArray bP, boolean flat) {
 		this.flat = flat;
 		this.fs = vertx.fileSystem();
+		this.basePaths = new ArrayList<>();
+		for (Object o: bP) {
+			if (!(o instanceof String)) continue;
+			final String basePath = (String) o;
+			this.basePaths.add(((!basePath.endsWith("/")) ? basePath + "/" : basePath));
+		}
+		this.lastBucketIdx = this.basePaths.size() - 1;
 	}
 
 	@Override
@@ -90,7 +106,7 @@ public class FileStorage implements Storage {
 		final JsonObject res = new JsonObject();
 		if (uploadPath == null) {
 			try {
-				path = getPath(id);
+				path = getWritePath(id);
 			} catch (FileNotFoundException e) {
 				handler.handle(res.put("status", "error").put("message", "invalid.path"));
 				log.warn(e.getMessage(), e);
@@ -132,7 +148,7 @@ public class FileStorage implements Storage {
 								handler.handle(res.put("status", "error")
 										.put("message", "file.too.large"));
 								try {
-									fs.delete(getPath(id), new Handler<AsyncResult<Void>>() {
+									fs.delete(getWritePath(id), new Handler<AsyncResult<Void>>() {
 										@Override
 										public void handle(AsyncResult<Void> event) {
 											if (event.failed()) {
@@ -213,7 +229,7 @@ public class FileStorage implements Storage {
 	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
 							final Handler<JsonObject> handler) {
 		try {
-			writeBuffer(getPath(id), id, buff, contentType, filename, handler);
+			writeBuffer(getWritePath(id), id, buff, contentType, filename, handler);
 		} catch (FileNotFoundException e) {
 			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
 			log.warn(e.getMessage(), e);
@@ -254,7 +270,7 @@ public class FileStorage implements Storage {
 	@Override
 	public void writeFsFile(final String id, final String filename, final Handler<JsonObject> handler) {
 		try {
-			final String path = getPath(id);
+			final String path = getWritePath(id);
 			mkdirsIfNotExists(id, path, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
@@ -275,61 +291,64 @@ public class FileStorage implements Storage {
 
 	@Override
 	public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
-		try {
-			String path = StringUtils.substringBeforeLast(getPath(name), File.separator);
-			fs.readDir(path, String.format("(.*)%s", name), event -> {
-				if (event.succeeded()) {
-					JsonArray json = event.result().stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-					handler.handle(new DefaultAsyncResult<>(json));
-				} else {
-					handler.handle(new DefaultAsyncResult<>(event.cause()));
-					//dont need to log if dir does not exists => no file founded
-					//log.error(event.cause().getMessage(), event.cause());
-				}
-			});
-		} catch (FileNotFoundException e) {
-			handler.handle(new DefaultAsyncResult<>(e));
-			//log.warn(e.getMessage(), e);
-		}
+		getReadPath(name, ar -> {
+			if (ar.succeeded()) {
+				String path = StringUtils.substringBeforeLast(ar.result(), File.separator);
+				fs.readDir(path, String.format("(.*)%s", name), event -> {
+					if (event.succeeded()) {
+						JsonArray json = event.result().stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+						handler.handle(new DefaultAsyncResult<>(json));
+					} else {
+						handler.handle(new DefaultAsyncResult<>(event.cause()));
+					}
+				});
+			} else {
+				handler.handle(new DefaultAsyncResult<>(ar.cause()));
+			}
+		});
 	}
 
 	@Override
 	public void fileStats(String id, Handler<AsyncResult<FileStats>> handler) {
-		try {
-			fs.props(getPath(id), res -> {
-				if (res.succeeded()) {
-					FileProps props = res.result();
-					handler.handle(new DefaultAsyncResult<>(
-							new FileStats(props.creationTime(), props.lastModifiedTime(), props.size())));
-				} else {
-					handler.handle(new DefaultAsyncResult<>(res.cause()));
-					//log.error(res.cause().getMessage(), res.cause());
-				}
-			});
-		} catch (FileNotFoundException e) {
-			handler.handle(new DefaultAsyncResult<>(e));
-			log.warn(e.getMessage(), e);
-		}
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				fs.props(ar.result(), res -> {
+					if (res.succeeded()) {
+						FileProps props = res.result();
+						handler.handle(new DefaultAsyncResult<>(
+								new FileStats(props.creationTime(), props.lastModifiedTime(), props.size())));
+					} else {
+						handler.handle(new DefaultAsyncResult<>(res.cause()));
+						//log.error(res.cause().getMessage(), res.cause());
+					}
+				});
+			} else {
+				handler.handle(new DefaultAsyncResult<>(ar.cause()));
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
 	}
 
 	@Override
 	public void readFile(String id, final Handler<Buffer> handler) {
-		try {
-			fs.readFile(getPath(id), new Handler<AsyncResult<Buffer>>() {
-				@Override
-				public void handle(AsyncResult<Buffer> event) {
-					if (event.succeeded()) {
-						handler.handle(event.result());
-					} else {
-						handler.handle(null);
-						log.error(event.cause().getMessage(), event.cause());
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				fs.readFile(ar.result(), new Handler<AsyncResult<Buffer>>() {
+					@Override
+					public void handle(AsyncResult<Buffer> event) {
+						if (event.succeeded()) {
+							handler.handle(event.result());
+						} else {
+							handler.handle(null);
+							log.error(event.cause().getMessage(), event.cause());
+						}
 					}
-				}
-			});
-		} catch (FileNotFoundException e) {
-			handler.handle(null);
-			log.warn(e.getMessage(), e);
-		}
+				});
+			} else {
+				handler.handle(null);
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
 	}
 
 	@Override
@@ -341,54 +360,58 @@ public class FileStorage implements Storage {
 	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline,
 			JsonObject metadata, Handler<AsyncResult<Void>> resultHandler) {
 		final HttpServerResponse resp = request.response();
-		try {
-			final String path = getPath(id);
-			if (!inline) {
-				String name = FileUtils.getNameWithExtension(downloadName, metadata);
-				resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
-			}
-			ETag.addHeader(resp, id);
-			if (metadata != null && metadata.getString("content-type") != null) {
-				resp.putHeader("Content-Type", metadata.getString("content-type"));
-			}
-			if (resultHandler != null) {
-				resp.sendFile(path, resultHandler);
+		getReadPath(id, ar2 -> {
+			if (ar2.succeeded()) {
+				final String path = ar2.result();
+				if (!inline) {
+					String name = FileUtils.getNameWithExtension(downloadName, metadata);
+					resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+				}
+				ETag.addHeader(resp, id);
+				if (metadata != null && metadata.getString("content-type") != null) {
+					resp.putHeader("Content-Type", metadata.getString("content-type"));
+				}
+				if (resultHandler != null) {
+					resp.sendFile(path, resultHandler);
+				} else {
+					resp.sendFile(path, ar -> {
+						if (ar.failed() && !request.response().ended()) {
+							Renders.notFound(request);
+						}
+					});
+				}
 			} else {
-				resp.sendFile(path, ar -> {
-					if (ar.failed() && !request.response().ended()) {
-						Renders.notFound(request);
-					}
-				});
+				resp.setStatusCode(404).setStatusMessage("Not Found").end();
+				if (resultHandler != null) {
+					resultHandler.handle(new DefaultAsyncResult<>((Void) null));
+				}
+				log.warn(ar2.cause().getMessage(), ar2.cause());
 			}
-		} catch (FileNotFoundException e) {
-			resp.setStatusCode(404).setStatusMessage("Not Found").end();
-			if (resultHandler != null) {
-				resultHandler.handle(new DefaultAsyncResult<>((Void) null));
-			}
-			log.warn(e.getMessage(), e);
-		}
+		});
 	}
 
 	@Override
 	public void removeFile(String id, final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
-		try {
-			final String path = getPath(id);
-			fs.delete(path, new Handler<AsyncResult<Void>>() {
-				@Override
-				public void handle(AsyncResult<Void> event) {
-					if (event.succeeded()) {
-						res.put("status", "ok");
-					} else {
-						res.put("status", "error").put("message", event.cause().getMessage());
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				final String path =	ar.result();
+				fs.delete(path, new Handler<AsyncResult<Void>>() {
+					@Override
+					public void handle(AsyncResult<Void> event) {
+						if (event.succeeded()) {
+							res.put("status", "ok");
+						} else {
+							res.put("status", "error").put("message", event.cause().getMessage());
+						}
+						handler.handle(res);
 					}
-					handler.handle(res);
-				}
-			});
-		} catch (FileNotFoundException e) {
-			handler.handle(res.put("status", "error").put("message", "invalid.path"));
-			log.warn(e.getMessage(), e);
-		}
+				});
+			} else {
+				handler.handle(res.put("status", "error").put("message", "invalid.path"));
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
 	}
 
 	@Override
@@ -401,24 +424,26 @@ public class FileStorage implements Storage {
 				decrementRemove(count, errors, handler, res);
 				continue;
 			}
-			try {
-				final String path = getPath(o.toString());
-				fs.delete(path, new Handler<AsyncResult<Void>>() {
-					@Override
-					public void handle(AsyncResult<Void> event) {
-						if (event.failed()) {
-							errors.add(new JsonObject().put("id", o.toString())
-									.put("message", event.cause().getMessage()));
+			getReadPath(o.toString(), ar -> {
+				if (ar.succeeded()) {
+					final String path = ar.result();
+					fs.delete(path, new Handler<AsyncResult<Void>>() {
+						@Override
+						public void handle(AsyncResult<Void> event) {
+							if (event.failed()) {
+								errors.add(new JsonObject().put("id", o.toString())
+										.put("message", event.cause().getMessage()));
+							}
+							decrementRemove(count, errors, handler, res);
 						}
-						decrementRemove(count, errors, handler, res);
-					}
-				});
-			} catch (FileNotFoundException e) {
-				errors.add(new JsonObject().put("id", o.toString())
-						.put("message", "invalid.path"));
-				decrementRemove(count, errors, handler, res);
-				log.warn(e.getMessage(), e);
-			}
+					});
+				} else {
+					errors.add(new JsonObject().put("id", o.toString())
+							.put("message", "invalid.path"));
+					decrementRemove(count, errors, handler, res);
+					log.warn(ar.cause().getMessage(), ar.cause());
+				}
+			});
 		}
 	}
 
@@ -437,7 +462,7 @@ public class FileStorage implements Storage {
 	public void copyFile(final String id, final Handler<JsonObject> handler) {
 		try {
 			final String newId = UUID.randomUUID().toString();
-			final String path = getPath(newId);
+			final String path = getWritePath(newId);
 			mkdirsIfNotExists(newId, path, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
@@ -457,17 +482,15 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public void copyFileId(String id, final String to, final Handler<JsonObject> handler)
-	{
-		try
-		{
-			copyFilePath(getPath(id), to, null, handler);
-		}
-		catch (FileNotFoundException e)
-		{
-			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
-			log.warn(e.getMessage(), e);
-		}
+	public void copyFileId(String id, final String to, final Handler<JsonObject> handler) {
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				copyFilePath(ar.result(), to, null, handler);
+			} else {
+				handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
 	}
 
 	@Override
@@ -475,17 +498,15 @@ public class FileStorage implements Storage {
 		copyFilePath(path, to, null, handler);
 	}
 
-	private void copyFileId(String id, final String to, final String newId, final Handler<JsonObject> handler)
-	{
-		try
-		{
-			copyFilePath(getPath(id), to, newId, handler);
-		}
-		catch (FileNotFoundException e)
-		{
-			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
-			log.warn(e.getMessage(), e);
-		}
+	private void copyFileId(String id, final String to, final String newId, final Handler<JsonObject> handler) {
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				copyFilePath(ar.result(), to, newId, handler);
+			} else {
+				handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
 	}
 
 	private void copyFilePath(String path, final String to, final String newId, final Handler<JsonObject> handler)
@@ -566,12 +587,12 @@ public class FileStorage implements Storage {
 
 	@Override
 	public String getBucket() {
-		return basePath;
+		return basePaths.get(lastBucketIdx);
 	}
 
 	@Override
 	public void stats(final Handler<AsyncResult<BucketStats>> handler) {
-		fs.fsProps(basePath, new Handler<AsyncResult<FileSystemProps>>() {
+		fs.fsProps(getBucket(), new Handler<AsyncResult<FileSystemProps>>() {
 			@Override
 			public void handle(AsyncResult<FileSystemProps> event) {
 				if (event.succeeded()) {
@@ -586,10 +607,14 @@ public class FileStorage implements Storage {
 		});
 	}
 
-	private String getPath(String file) throws FileNotFoundException {
+	private String getWritePath(String file) throws FileNotFoundException {
+		return getFilePath(file, getBucket());
+	}
+
+	private String getFilePath(String file, final String bucket) throws FileNotFoundException {
 		if (isNotEmpty(file)) {
 			if (flat) {
-				return basePath + file;
+				return bucket + file;
 			} else {
 				final int startIdx = file.lastIndexOf(File.separatorChar) + 1;
 				final int extIdx = file.lastIndexOf('.');
@@ -599,12 +624,44 @@ public class FileStorage implements Storage {
 					if (l < 4) {
 						filename = "0000".substring(0, 4 - l) + filename;
 					}
-					return basePath + filename.substring(l - 2) + File.separator + filename.substring(l - 4, l - 2) +
+					return bucket + filename.substring(l - 2) + File.separator + filename.substring(l - 4, l - 2) +
 							File.separator + filename;
 				}
 			}
 		}
 		throw new FileNotFoundException("Invalid file : " + file);
+	}
+
+	private void getReadPath(String file, Handler<AsyncResult<String>> handler) {
+		if (lastBucketIdx == 0) {
+			try {
+				final String path = getWritePath(file);
+				handler.handle(Future.succeededFuture(path));
+			} catch (FileNotFoundException e) {
+				handler.handle(Future.failedFuture(e));
+			}
+		} else {
+			getReadPath(file, 0, handler);
+		}
+	}
+
+	private void getReadPath(final String file, final int idx, final Handler<AsyncResult<String>> handler) {
+		final String p;
+		try {
+			p = getFilePath(file, basePaths.get(idx));
+		} catch (FileNotFoundException e) {
+			handler.handle(Future.failedFuture(e));
+			return;
+		}
+		fs.exists(p, ar -> {
+			if (ar.succeeded() && Boolean.TRUE.equals(ar.result())) {
+				handler.handle(Future.succeededFuture(p));
+			} else if (idx < lastBucketIdx) {
+				getReadPath(file, idx + 1, handler);
+			} else {
+				handler.handle(Future.failedFuture(new FileNotFoundException("Not found file : " + file)));
+			}
+		});
 	}
 
 	public void setAntivirus(AntivirusClient antivirus) {
