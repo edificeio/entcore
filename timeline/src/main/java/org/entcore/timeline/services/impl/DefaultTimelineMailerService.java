@@ -138,7 +138,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 		for(Object userObj : userList){
 			final JsonObject userPref = ((JsonObject) userObj);
-			final String userDomain = userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+			final String userDomain = userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN) == null ? I18n.DEFAULT_DOMAIN : userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN);
 			final String userScheme = userPref.getString("lastScheme", "http");
 			String mutableLanguage = "fr";
 			try {
