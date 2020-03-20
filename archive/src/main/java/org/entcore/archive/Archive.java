@@ -48,6 +48,7 @@ public class Archive extends BaseServer {
 
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
+		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
 		ImportService importService = new DefaultImportService(vertx, storage, importPath, null);
 
@@ -63,9 +64,10 @@ public class Archive extends BaseServer {
 		if (purgeArchivesCron != null) {
 			try {
 				new CronTrigger(vertx, purgeArchivesCron).schedule(
-						new DeleteOldArchives(
+						new DeleteOldArchives(vertx,
 								new StorageFactory(vertx, config).getStorage(),
 								config.getInteger("deleteDelay", 24),
+								exportPath,
 								importService
 						));
 			} catch (ParseException e) {

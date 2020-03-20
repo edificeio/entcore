@@ -101,48 +101,57 @@ public class FileSystemExportService implements ExportService {
 					long now = System.currentTimeMillis();
 					final String exportId = now + "_" +user.getUserId();
 
-					userExportInProgress.put(user.getUserId(), now);
-					userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList()), exportId));
+					MongoDb.getInstance().save(
+							Archive.ARCHIVES, new JsonObject().put("file_id", exportId)
+									.put("date", MongoDb.now()), res -> {
+								if ("ok".equals(res.body().getString("status"))) {
+									userExportInProgress.put(user.getUserId(), now);
+									userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList()), exportId));
 
-					final String exportDirectory = exportPath + File.separator + exportId;
+									final String exportDirectory = exportPath + File.separator + exportId;
 
-					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>()
-					{
-						@Override
-						public void handle(AsyncResult<Void> event)
-						{
-							if (event.succeeded())
-							{
-								final Set<String> g = (user.getGroupsIds() != null) ? new
-									HashSet<>(user.getGroupsIds()) : new HashSet<String>();
-								User.getOldGroups(user.getUserId(), new Handler<JsonArray>()
-								{
-									@Override
-									public void handle(JsonArray objects)
+									fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>()
 									{
-										g.addAll(objects.getList());
-										JsonObject j = new JsonObject()
-												.put("action", handlerActionName)
-												.put("exportId", exportId)
-												.put("userId", user.getUserId())
-												.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
-												.put("path", exportDirectory)
-												.put("locale", locale)
-												.put("host", request == null || request.headers() == null ? "" : Renders.getScheme(request) + "://" + request.headers().get("Host"))
-												.put("apps", apps)
-												.put("resourcesIds", resourcesIds);
-										eb.publish("user.repository", j);
-										handler.handle(new Either.Right<String, String>(exportId));
-									}
-								});
-							}
-							else
-							{
-								log.error("Create export directory error.", event.cause());
-								handler.handle(new Either.Left<String, String>("export.directory.create.error"));
-							}
-						}
-					});
+										@Override
+										public void handle(AsyncResult<Void> event)
+										{
+											if (event.succeeded())
+											{
+												final Set<String> g = (user.getGroupsIds() != null) ? new
+														HashSet<>(user.getGroupsIds()) : new HashSet<String>();
+												User.getOldGroups(user.getUserId(), new Handler<JsonArray>()
+												{
+													@Override
+													public void handle(JsonArray objects)
+													{
+														g.addAll(objects.getList());
+														JsonObject j = new JsonObject()
+																.put("action", handlerActionName)
+																.put("exportId", exportId)
+																.put("userId", user.getUserId())
+																.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
+																.put("path", exportDirectory)
+																.put("locale", locale)
+																.put("host", request == null || request.headers() == null ? "" : Renders.getScheme(request) + "://" + request.headers().get("Host"))
+																.put("apps", apps)
+																.put("resourcesIds", resourcesIds);
+														eb.publish("user.repository", j);
+														handler.handle(new Either.Right<String, String>(exportId));
+													}
+												});
+											}
+											else
+											{
+												log.error("Create export directory error.", event.cause());
+												handler.handle(new Either.Left<String, String>("export.directory.create.error"));
+											}
+										}
+									});
+								} else {
+									log.error("Cannot create mongo document in archives");
+									handler.handle(new Either.Left<String, String>("export.directory.create.error"));
+								}
+							});
 				}
 				else
 				{
@@ -282,15 +291,7 @@ public class FileSystemExportService implements ExportService {
 												publish(event);
 											} else {
 												userExportInProgress.put(userId,DOWNLOAD_READY);
-												MongoDb.getInstance().save(
-														Archive.ARCHIVES, new JsonObject().put("file_id", exportId)
-																.put("date", MongoDb.now()),
-														new Handler<Message<JsonObject>>() {
-															@Override
-															public void handle(Message<JsonObject> res) {
-																publish(event);
-															}
-														});
+												publish(event);
 											}
 											deleteTempZip(exportId);
 										}

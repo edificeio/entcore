@@ -21,6 +21,10 @@ package org.entcore.archive.services.impl;
 
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
@@ -28,21 +32,30 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.StringUtils;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 
 public class DeleteOldArchives implements Handler<Long> {
 
 	private final MongoDb mongo = MongoDb.getInstance();
+	private final Vertx vertx;
 	private final Storage storage;
 	private final int delay;
 	private ImportService importService;
+	private String exportPath;
 
-	public DeleteOldArchives(Storage storage, int delay, ImportService importService) {
+	private static final Logger log = LoggerFactory.getLogger(DeleteOldArchives.class);
+
+
+	public DeleteOldArchives(Vertx vertx, Storage storage, int delay, String exportPath, ImportService importService) {
 		this.storage = storage;
+		this.vertx = vertx;
 		this.delay = delay;
 		this.importService = importService;
+		this.exportPath = exportPath;
 	}
 
 	@Override
@@ -64,7 +77,30 @@ public class DeleteOldArchives implements Handler<Long> {
 						if (!(object instanceof JsonObject)) continue;
 						JsonObject jo = (JsonObject) object;
 						if (jo.containsKey("file_id")) {
-							ids.add(jo.getString("file_id"));
+							final String exportId = jo.getString("file_id");
+							ids.add(exportId);
+							if (!StringUtils.isEmpty(exportId) && !StringUtils.isEmpty(exportPath) &&
+									exportId.matches("[0-9]+_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+								final String path = exportPath + File.separator + exportId;
+								vertx.fileSystem().deleteRecursive(path, true, new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error("Error deleting directory : " + path, event.cause());
+										}
+									}
+								});
+								final String zipPath = path + ".zip";
+								vertx.fileSystem().delete(zipPath, new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error("Error deleting temp zip export " + zipPath, event.cause());
+										}
+									}
+								});
+							}
+
 						} else if (jo.containsKey("import_id")) {
 							importService.deleteArchive(jo.getString("import_id"));
 						}
