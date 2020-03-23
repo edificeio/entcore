@@ -175,6 +175,13 @@ public class StructureController extends BaseController {
 		structureService.removeParent(structureId, parentStructureId, defaultResponseHandler(request));
 	}
 
+	@Get("/structure/:structureId/children")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listChildren(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		structureService.listChildren(structureId, arrayResponseHandler(request));
+	}
+
 	@Get("/structures")
 	@SecuredAction("structure.list.all")
 	public void listStructures(final HttpServerRequest request) {

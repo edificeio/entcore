@@ -48,6 +48,8 @@ public interface SchoolService {
 
 	void removeParent(String structureId, String parentStructureId, Handler<Either<String,JsonObject>> handler);
 
+	void listChildren(String structureId, Handler<Either<String, JsonArray>> results);
+
 	void list(JsonArray fields, Handler<Either<String, JsonArray>> results);
 
 	void update(String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
