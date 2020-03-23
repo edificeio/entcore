@@ -94,7 +94,7 @@ public class TimelineController extends BaseController {
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
 		store = new DefaultTimelineEventStore();
 		if(config.getBoolean("cache", false)){
-			final CacheService cacheService = CacheService.create(vertx);
+			final CacheService cacheService = CacheService.create(vertx, config);
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
 		}

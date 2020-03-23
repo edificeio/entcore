@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.redis.Redis;
 import org.entcore.common.user.UserInfos;
 
 import java.util.List;
@@ -13,16 +14,25 @@ import java.util.Optional;
 
 public interface CacheService {
 
-
-
     static CacheService create(Vertx vertx){
-        final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-        return createFromConfig(vertx, server);
+        if(Redis.getClient() !=  null){
+            return new RedisCacheService(Redis.getClient());
+        } else{
+            throw new IllegalStateException("CacheService.create : could not create cache because it is not initialized");
+        }
     }
 
-    static CacheService createFromConfig(Vertx vertx, final LocalMap<Object, Object> server){
-        final String redisConfig = (String)server.get("redisConfig");
-        return new RedisCacheService(vertx, new JsonObject(redisConfig));
+    static CacheService create(Vertx vertx, JsonObject config){
+        if(Redis.getClient() !=  null){
+            final Integer db = config.getInteger("redis-db");
+            if(db != null){
+                return new RedisCacheService(Redis.createClientForDb(vertx, db));
+            }else{
+                return new RedisCacheService(Redis.getClient());
+            }
+        } else{
+            throw new IllegalStateException("CacheService.create : could not create cache because it is not initialized");
+        }
     }
 
     void upsert(String key, String value, Integer ttl, Handler<AsyncResult<Void>> handler);

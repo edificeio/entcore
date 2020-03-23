@@ -108,7 +108,7 @@ public abstract class BaseServer extends Server {
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-filter", false);
 		if(Boolean.TRUE.equals(cacheEnabled)){
-			final CacheService cacheService = CacheService.createFromConfig(vertx, server);
+			final CacheService cacheService = CacheService.create(vertx);
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
 		}
 
@@ -197,10 +197,17 @@ public abstract class BaseServer extends Server {
 				ElasticSearch.getInstance().init(vertx, new JsonObject(elasticsearchConfig));
 			}
 		}
-		final String redisConfig = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
-		if (redisConfig != null) {
-			Redis.getInstance().init(vertx, new JsonObject(redisConfig));
+		if (config.getBoolean("redis", true)) {
+			if (config.getJsonObject("redisConfig") != null) {
+				Redis.getInstance().init(vertx, config.getJsonObject("redisConfig"));
+			}else{
+				final String redisConf = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
+				if(redisConf!=null){
+					Redis.getInstance().init(vertx, new JsonObject(redisConf));
+				}
+			}
 		}
+		//
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
 		validator.setEventBus(getEventBus(vertx));

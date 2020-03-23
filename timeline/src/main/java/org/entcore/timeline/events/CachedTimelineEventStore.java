@@ -26,6 +26,9 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     private final int pageSize;
     private JsonObject externalNotificationsCache;
 
+    private static String getKey(String userId){
+        return "timeline:" + userId;
+    }
     public CachedTimelineEventStore(TimelineEventStore original, CacheService cacheService, int pageSize, TimelineConfigService configService, Map<String, String> registeredNotifications) {
         this.original = original;
         this.pageSize = pageSize;
@@ -107,7 +110,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         final JsonObject recipientJson = (JsonObject) recipient;
                         final Future<Void> future = Future.future();
                         futures.add(future);
-                        final String key = recipientJson.getString("userId");
+                        final String key = getKey(recipientJson.getString("userId"));
                         cacheService.prependToList(key, copy.encode(), res -> {
                             if (res.succeeded()) {
                                 if (res.result().intValue() > this.pageSize) {
@@ -144,7 +147,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
 
     private Future<List<JsonObject>> getListFiltered(String userId, List<String> types){
         Future<List<JsonObject>> future = Future.future();
-        cacheService.getList(userId, res -> {
+        cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
                 final Set<String> uniqIds = new HashSet<>();
