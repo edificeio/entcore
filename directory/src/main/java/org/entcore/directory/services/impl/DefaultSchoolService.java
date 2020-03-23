@@ -176,6 +176,21 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
+	public void listChildren(String structureId, Handler<Either<String, JsonArray>> results) {
+		final String query = "MATCH (Structure {id: {structureId}})<-[r:HAS_ATTACHMENT*1..]-(s:Structure) RETURN COLLECT(s.id) AS children";
+		JsonObject params = new JsonObject().put("structureId", structureId);
+		neo.execute(query.toString(), params, validUniqueResultHandler(handler -> {
+			if (handler.isRight()) {
+				JsonArray children = handler.right().getValue().getJsonArray("children");
+				results.handle(new Either.Right<>(children != null ? children : new JsonArray()));
+			} else {
+				results.handle(new Either.Left<>(handler.left().getValue()));
+			}
+		}));
+	}
+
+
+	@Override
 	public void list(JsonArray fields, Handler<Either<String, JsonArray>> results) {
 		if (fields == null || fields.size() == 0) {
 			fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("name").add("UAI");
