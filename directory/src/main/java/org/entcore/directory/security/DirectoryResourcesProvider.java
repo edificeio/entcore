@@ -123,6 +123,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					isAdminOfStructureOrClass4(request, user, handler);
 					break;
 				case "metrics":
+				case "listChildren":
 					isAdminOfStructure(request, user, handler);
 				case "classAdminMassMail" :
 					isClassTeacherForUserIds(request, user, handler);
