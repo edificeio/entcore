@@ -43,7 +43,8 @@ public class Redis {
     public void init(Vertx vertx, JsonObject redisConfig) {
         this.redisOptions = new RedisOptions()
                 .setHost(redisConfig.getString("host"))
-                .setPort(redisConfig.getInteger("port"));
+                .setPort(redisConfig.getInteger("port"))
+                .setSelect(redisConfig.getInteger("select", 0));
         this.redisClient = RedisClient.create(vertx, redisOptions);
     }
 
@@ -57,6 +58,17 @@ public class Redis {
 
     public static RedisClient getClient() {
         return getInstance().getRedisClient();
+    }
+
+    public static RedisClient createClientForDb(Vertx vertx, Integer db) {
+        if(db.equals(getInstance().redisOptions.getSelect())){
+            return getInstance().getRedisClient();
+        }
+        final RedisOptions options = getInstance().getRedisOptions();
+        return RedisClient.create(vertx, new RedisOptions()
+                                                .setHost(options.getHost())
+                                                .setPort(options.getPort())
+                                                .setSelect(db));
     }
 
 }
