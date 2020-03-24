@@ -143,6 +143,12 @@ public class RedisCacheService implements CacheService {
         });
     }
 
+    public void removeFromList(String key, String value, Handler<AsyncResult<Long>> handler){
+        redis.lrem(key, 0l, value, res -> {
+            handler.handle(new DefaultAsyncResult(res.succeeded() ? res.result() : res.cause()));
+        });
+    }
+
     public void getListLength(String key, Handler<AsyncResult<Long>> handler){
         redis.llen(key, handler);
     }

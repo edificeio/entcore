@@ -47,6 +47,8 @@ public interface CacheService {
 
     void getList(String key, Handler<AsyncResult<List<String>>> handler);
 
+    void removeFromList(String key, String value, Handler<AsyncResult<Long>> handler);
+
     void prependToList(String key, String value, Handler<AsyncResult<Long>> handler);
 
     void removeLastFromList(String key, Handler<AsyncResult<String>> handler);
