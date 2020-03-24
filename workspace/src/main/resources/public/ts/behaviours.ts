@@ -151,7 +151,7 @@ Behaviours.register('workspace', {
 				var blobDocument = xhr.response;
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
-				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + MediaLibrary.thumbnails, formData).done(function (data) {
+				http().postFile('/workspace/document?' + visibility + '=true&application=media-library', formData).done(function (data) {
 					http().putJson('/workspace/rename/' + data._id, {
 						legend: file.legend,
 						alt: file.alt,

@@ -43,17 +43,15 @@ public interface WorkspaceService extends FolderManager {
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
-			final List<String> thumbnails, final JsonObject doc, final JsonObject uploaded,
-			final Handler<AsyncResult<JsonObject>> handler);
+			final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler);
 
-	public void updateDocument(final String id, final float quality, final String name, final List<String> thumbnails,
+	public void updateDocument(final String id, final float quality, final String name,
 			final JsonObject uploaded, UserInfos user, final Handler<Message<JsonObject>> handler);
 
 	public void addAfterUpload(final JsonObject uploaded, final JsonObject doc, String name, String application,
-			final List<String> thumbs, final String ownerId, final String ownerName,
-			final Handler<AsyncResult<JsonObject>> handler);
+			final String ownerId, final String ownerName, final Handler<AsyncResult<JsonObject>> handler);
 
-	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> thumbnails,
+	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded,
 			final UserInfos user, final Handler<Message<JsonObject>> handler);
 
 	public void documentProperties(final String id, final Handler<JsonObject> handler);
@@ -74,8 +72,7 @@ public interface WorkspaceService extends FolderManager {
 
 	public Future<JsonObject> getRevision(final String revisionId);
 
-	public void deleteRevision(final String documentId, final String revisionId, final List<String> thumbs,
-			final Handler<Either<String, JsonObject>> handler);
+	public void deleteRevision(final String documentId, final String revisionId, final Handler<Either<String, JsonObject>> handler);
 
 	public void emptySize(final String userId, final Handler<Long> emptySizeHandler);
 

@@ -567,7 +567,7 @@ directory.User.prototype.saveAccount = function(cb){
 	}.bind(this));
 };
 
-directory.User.prototype.thumbs = "thumbnail=290x290&thumbnail=82x82&thumbnail=48x48&thumbnail=100x100";
+directory.User.prototype.thumbs = "";
 directory.User.prototype.moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 
 directory.User.prototype.loadUserbook = async function(){

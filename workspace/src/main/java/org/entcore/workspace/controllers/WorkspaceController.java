@@ -94,7 +94,6 @@ public class WorkspaceController extends BaseController {
 				final JsonObject doc = new JsonObject();
 				float quality = checkQuality(request.params().get("quality"));
 				String name = request.params().get("name");
-				List<String> thumbnail = request.params().getAll("thumbnail");
 				String application = request.params().get("application");
 				String protectedContent = request.params().get("protected");
 				String publicContent = request.params().get("public");
@@ -115,7 +114,7 @@ public class WorkspaceController extends BaseController {
 						request.resume();
 						storage.writeUploadFile(request, emptySize, uploaded -> {
 							if ("ok".equals(uploaded.getString("status"))) {
-								workspaceService.addDocument(userInfos, quality, name, application, thumbnail, doc,
+								workspaceService.addDocument(userInfos, quality, name, application, doc,
 										uploaded, asyncDefaultResponseHandler(request, 201));
 							} else {
 								badRequest(request, uploaded.getString("message"));
@@ -140,13 +139,9 @@ public class WorkspaceController extends BaseController {
 		}
 		String name = message.body().getString("name");
 		String application = message.body().getString("application");
-		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
-		List<String> thumbs = new ArrayList<>();
-		for (int i = 0; i < t.size(); i++) {
-			thumbs.add(t.getString(i));
-		}
+
 		// TODO workspaceService.addDocument?
-		workspaceService.addAfterUpload(uploaded, doc, name, application, thumbs, ownerId, ownerName, m -> {
+		workspaceService.addAfterUpload(uploaded, doc, name, application, ownerId, ownerName, m -> {
 			if (m.succeeded()) {
 				message.reply(m.result().put("status", "ok"));
 			} else {
@@ -525,8 +520,7 @@ public class WorkspaceController extends BaseController {
 	public void deleteRevision(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		final String revisionId = request.params().get("revisionId");
-		final List<String> thumbs = request.params().getAll("thumbnail");
-		workspaceService.deleteRevision(id, revisionId, thumbs, defaultResponseHandler(request));
+		workspaceService.deleteRevision(id, revisionId, defaultResponseHandler(request));
 	}
 
 	@Get("/document/archive/:ids")
@@ -1454,7 +1448,6 @@ public class WorkspaceController extends BaseController {
 			if (user != null) {
 				float quality = checkQuality(request.params().get("quality"));
 				String name = request.params().get("name");
-				List<String> thumbnail = request.params().getAll("thumbnail");
 				request.pause();
 				workspaceService.findById(documentId, event -> {
 					if (!"ok".equals(event.getString("status"))) {
@@ -1467,7 +1460,7 @@ public class WorkspaceController extends BaseController {
 							if ("ok".equals(uploaded.getString("status"))) {
 								uploaded.put("alt", request.params().get("alt"));
 								uploaded.put("legend", request.params().get("legend"));
-								workspaceService.updateDocument(documentId, quality, name, thumbnail, uploaded, user,
+								workspaceService.updateDocument(documentId, quality, name, uploaded, user,
 										res -> {
 											if (res == null) {
 												request.response().setStatusCode(404).end();
@@ -1502,7 +1495,7 @@ public class WorkspaceController extends BaseController {
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
 		}
-		workspaceService.updateAfterUpload(id, name, uploaded, thumbs, null, new Handler<Message<JsonObject>>() {
+		workspaceService.updateAfterUpload(id, name, uploaded, null, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				if (m != null) {

@@ -632,7 +632,7 @@ object TeacherScenario {
     .headers(headers_46))
     .pause(106)
     .exec(http("upload blog image")
-    .post("""/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=classe-2.jpg""")
+    .post("""/workspace/document?application=blog-newblog&protected=true&name=classe-2.jpg""")
     .headers(headers_186)
     .body(RawFileBody("TeacherSimulation_request_186.txt"))
     .check(status.is(201), jsonPath("$._id").find.saveAs("newBlogThumb")))

@@ -113,7 +113,6 @@ export class ServicesService {
         queryParams.push('public=true');
         queryParams.push('application=admin');
         queryParams.push('quality=0.7');
-        queryParams.push('thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381');
         return this.httpClient.post<WorkspaceDocument>(`/workspace/document?${queryParams.join('&')}`, formData);
     }
 }

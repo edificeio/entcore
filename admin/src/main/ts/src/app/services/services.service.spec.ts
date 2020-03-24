@@ -153,7 +153,6 @@ describe('ServicesService', () => {
             params.push('public=true');
             params.push('application=admin');
             params.push('quality=0.7');
-            params.push('thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381');
             const expectedParams = params.join('&');
 
             servicesService.uploadPublicImage(file).subscribe();
