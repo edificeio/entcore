@@ -1521,24 +1521,8 @@ public class WorkspaceController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					if (user.getAttribute("storage") != null && user.getAttribute("quota") != null) {
 						renderView(request, context);
 						eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
-						return;
-					}
-					workspaceService.getQuotaAndUsage(user.getUserId(), new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> r) {
-							if (r.isRight()) {
-								JsonObject j = r.right().getValue();
-								for (String attr : j.fieldNames()) {
-									UserUtils.addSessionAttribute(eb, user.getUserId(), attr, j.getLong(attr), null);
-								}
-							}
-							renderView(request, context);
-							eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
-						}
-					});
 				} else {
 					unauthorized(request);
 				}
