@@ -255,7 +255,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 									}
 								});
 					} else {
-						sendError(message, "Session not found. 4");
+						message.reply(new JsonObject().put("status", "error").put("message", "Session not found. 4"));
 					}
 				});
 			}
