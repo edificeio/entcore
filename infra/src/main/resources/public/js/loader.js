@@ -13,7 +13,7 @@ window.entcore = {
     appPrefix: appPrefix,
 	infraPrefix: infraPrefix,
 	MediaLibrary: {
-		thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=381x381&thumbnail=1600x0"
+		thumbnails: ""
 	}
 };
 
