@@ -169,6 +169,21 @@ public class CachedTimelineEventStore implements TimelineEventStore {
         return future;
     }
 
+    private Future<List<JsonObject>> getListUnfiltered(String userId){
+        Future<List<JsonObject>> future = Future.future();
+        cacheService.getList(getKey(userId), res -> {
+            if (res.succeeded()) {
+                final List<String> all = res.result();
+                final Set<String> uniqIds = new HashSet<>();
+                final List<JsonObject> allJson = all.stream().map(json -> new JsonObject(json)).collect(Collectors.toList());
+                future.complete(allJson);
+            } else {
+                future.fail(res.cause());
+            }
+        });
+        return future;
+    }
+
     @Override
     public void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter, boolean mine, boolean both, String version, Handler<JsonObject> result) {
         //offset 0 and not mobile not mine
@@ -230,6 +245,17 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     @Override
     public void discard(String id, String recipient, Handler<Either<String, JsonObject>> result) {
         original.discard(id, recipient, result);
+        getListUnfiltered(recipient).setHandler(res->{
+           if(res.succeeded()){
+               final List<JsonObject> jsons = res.result();
+               for(int i = 0 ; i < jsons.size(); i ++){
+                   final JsonObject current = jsons.get(i);
+                   if(id.equals(current.getString("_id"))){
+                       cacheService.removeFromList(getKey(recipient), current.encode(), resR->{});
+                   }
+               }
+           }
+        });
     }
 
     @Override
