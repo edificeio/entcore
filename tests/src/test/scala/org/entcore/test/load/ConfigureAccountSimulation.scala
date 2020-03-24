@@ -570,7 +570,7 @@ class ConfigureAccountSimulation extends Simulation {
     )
     .pause(179 milliseconds)
     .exec(http("upload avatar")
-    .post("""/workspace/document?application=userbook&protected=true&thumbnail=290x290&thumbnail=82x82&thumbnail=48x48""")
+    .post("""/workspace/document?application=userbook&protected=true""")
     .headers(headers_125)
     .body(RawFileBody("ConfigureAccountSimulation_request_125.txt"))
     .check(status.is(201), jsonPath("$._id").find.saveAs("avatar")))
