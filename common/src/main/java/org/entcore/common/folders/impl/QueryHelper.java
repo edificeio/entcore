@@ -54,6 +54,11 @@ class QueryHelper {
 		private boolean onlyDeleted;
 		private Integer skip;
 		private Integer limit;
+		private List<String> parentIdsFilter = new ArrayList<>();
+
+		public boolean hasParentIdFilter(){
+			return parentIdsFilter.size() > 0;
+		}
 
 		public static DocumentQueryBuilder fromElementQuery(ElementQuery query, Optional<UserInfos> user) {
 			DocumentQueryBuilder builder = new DocumentQueryBuilder();
@@ -452,11 +457,13 @@ class QueryHelper {
 
 		public DocumentQueryBuilder withParent(String id) {
 			builder.and("eParent").is(id);
+			parentIdsFilter.add(id);
 			return this;
 		}
 
 		public DocumentQueryBuilder withParent(Collection<String> id) {
 			builder.and("eParent").in(id);
+			parentIdsFilter.addAll(id);
 			return this;
 		}
 
@@ -574,7 +581,8 @@ class QueryHelper {
 		});
 	}
 
-	Future<JsonArray> listWithParents(DocumentQueryBuilder query) {
+	@Deprecated
+	Future<JsonArray> listHierarchical_OLD(DocumentQueryBuilder query) {
 
 		Future<JsonArray> future = Future.future();
 		// match all (folders and file)
@@ -626,6 +634,13 @@ class QueryHelper {
 			}
 		});
 		return future;
+	}
+
+	Future<JsonArray> listHierarchical(DocumentQueryBuilder query) {
+		if(query.hasParentIdFilter()){
+			return listHierarchical_OLD(query);
+		}
+		return findAll(query);
 	}
 
 	Future<JsonObject> findById(String id) {
