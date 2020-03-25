@@ -233,6 +233,24 @@ public class AuthController extends BaseController {
 
 					@Override
 					public void handle(Response response) {
+						if (sessionsLimit > 0L && !ipAllowedByPassLimit.contains(getIp(request))) {
+							UserUtils.getSessionsNumber(eb, ar -> {
+								if (ar.succeeded()) {
+									if (ar.result() > sessionsLimit) {
+										renderJson(request, new JsonObject().put("error","quota_overflow"), 509);
+									} else {
+										this.oauthTokenHandle(response);
+									}
+								} else {
+									renderJson(request, new JsonObject().put("error","quota_overflow"), 509);
+								}
+							});
+						} else {
+							this.oauthTokenHandle(response);
+						}
+					}
+
+					private void oauthTokenHandle(Response response) {
 						if (response.getCode() == 200 && ("password".equals(req.getParameter("grant_type")) ||
 								"refresh_token".equals(req.getParameter("grant_type")))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
@@ -243,7 +261,7 @@ public class AuthController extends BaseController {
 								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
 									if (authInfo != null) {
 										eventStore.createAndStoreEventByUserId(
-											AuthEvent.LOGIN.name(), authInfo.getUserId(), clientCredential.getClientId());
+												AuthEvent.LOGIN.name(), authInfo.getUserId(), clientCredential.getClientId());
 									}
 								});
 							}
