@@ -502,7 +502,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		DocumentQueryBuilder builder = DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user));
 		// query
 		if (query.getHierarchical() != null && query.getHierarchical()) {
-			queryHelper.listWithParents(builder).setHandler(handler);
+			queryHelper.listHierarchical(builder).setHandler(handler);
 		} else {
 			if(query.isDirectShared()){
 				DocumentQueryBuilder pBuilder = new DocumentQueryBuilder().filterByInheritShareAndOwner(user).withFileType(FolderManager.FOLDER_TYPE).withProjection("_id");
@@ -533,7 +533,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	@Override
 	public void listFoldersRecursively(UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
-		Future<JsonArray> future = queryHelper.listWithParents(//
+		Future<JsonArray> future = queryHelper.listHierarchical(//
 				queryHelper.queryBuilder().filterBySharedAndOwner(user).withExcludeDeleted());
 		future.setHandler(handler);
 	}
