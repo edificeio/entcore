@@ -4,9 +4,18 @@
 
 
 <div class="small-text">
-	<div class="flex-row">
+	<div ng-if="hasWorkflowMessagerie()" class="flex-row">
 		<div class="action-item">
 			<a class="flex-row twelve" ng-href="/conversation/conversation#/write-mail/[[currentUser.id]]/User">
+				<i class="block cell no-margin centered-text icon-force-size send-mail"></i>
+				<span class="cell medium-block-container"><i18n>userBook.class.write-message</i18n></span>
+			</a>
+		</div>
+		<div></div>
+	</div>
+	<div ng-if="hasWorkflowZimbra()" class="flex-row">
+		<div class="action-item">
+			<a class="flex-row twelve" ng-href="/zimbra/writeto?id=[[currentUser.id]]&name=[[getEncodedString(currentUser.displayName)]]&type=User">
 				<i class="block cell no-margin centered-text icon-force-size send-mail"></i>
 				<span class="cell medium-block-container"><i18n>userBook.class.write-message</i18n></span>
 			</a>

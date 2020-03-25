@@ -851,4 +851,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.isMoodDefault = function(mood) {
 		return mood === "default";
 	};
+
+	$scope.hasWorkflowZimbra = function() {
+		return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|view');
+	}
+
+	$scope.hasWorkflowMessagerie = function() {
+		return model.me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|view');
+	}
+
+	$scope.getEncodedString = function(string) {
+		return encodeURIComponent(string)
+	}
 }]);
