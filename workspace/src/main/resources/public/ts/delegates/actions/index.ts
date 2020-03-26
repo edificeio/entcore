@@ -18,6 +18,7 @@ export interface ActionDelegateScope extends RenameDelegateScope, CreateDelegate
     //edit image
     canEditImage(): boolean
     editImage()
+    refreshImage(img: models.Element)
     //base
     canDownload();
     downloadFile()
@@ -43,6 +44,10 @@ export function ActionDelegate($scope: ActionDelegateScope) {
     $scope.editImage = function () {
         $scope.display.editImage = true;
         $scope.display.editedImage = $scope.selectedDocuments()[0];
+    }
+    $scope.refreshImage = function (img: models.Element) {
+        workspaceService.onChange.next({ action: "document-change", elements: [img] });
+        $scope.safeApply();
     }
     /**
      * Download
