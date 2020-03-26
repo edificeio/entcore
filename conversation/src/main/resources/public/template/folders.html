@@ -63,7 +63,7 @@
             <lightbox show="lightbox.show" on-close="lightbox.show = false">
                 <container template="lightbox"></container>
             </lightbox>
-            <lightbox show="copyLightbox.show" on-close="copyLightbox.show = false">
+            <lightbox show="copyLightbox.show" on-close="copyLightbox.show = false" ng-if="copyLightbox.show">
                     <folder-picker folder-props="copyProps"></folder-picker>
                 </lightbox>
             <nav class="vertical row" ng-if="conversation.maxFolderDepth">
