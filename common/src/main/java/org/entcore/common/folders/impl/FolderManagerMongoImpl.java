@@ -25,6 +25,7 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.mongodb.MongoDbResult;
 
@@ -67,6 +68,15 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	protected final Storage storage;
+
+	private static void logTime(StopWatch watch, String prefix){
+		try{
+			final long second = watch.elapsedTimeSeconds();
+			if(second > 1){
+				log.warn(prefix+ " : "+ second + " seconds");
+			}
+		} catch(Exception e){}
+	}
 
 	protected final Vertx				vertx;
 	protected final FileSystem	fileSystem;
@@ -352,7 +362,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 		return queryHelper.deleteByIds((ids)).compose(res -> {
 			Future<List<JsonObject>> future = Future.future();
 			List<String> listOfFilesIds = StorageHelper.getListOfFileIds(files);
+			final StopWatch timeToDel = new StopWatch();
 			this.storage.removeFiles(new JsonArray(listOfFilesIds), resDelete -> {
+				logTime(timeToDel, "Delete files");
 				if (isOk(resDelete)) {
 					future.complete(files);
 				} else {
@@ -799,8 +811,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 	@Override
 	public void importFile(String filePath, String oldFileId, String userId, Handler<JsonObject> handler)
 	{
-
+		final StopWatch writeFile = new StopWatch();
 		Handler<JsonObject> addFileSize = json -> {
+			logTime(writeFile , "Write file");
 			fileSystem.props(filePath, props -> {
 				if (props.succeeded()) {
 					json.put("metadata", new JsonObject().put("size", props.result().size()));
@@ -813,12 +826,14 @@ public class FolderManagerMongoImpl implements FolderManager {
 			this.storage.writeFsFile(filePath, addFileSize);
 		else
 		{
+			final StopWatch fileStat = new StopWatch();
 			// Check whether the file already exists
 			this.storage.fileStats(oldFileId, new Handler<AsyncResult<FileStats>>()
 			{
 				@Override
 				public void handle(AsyncResult<FileStats> res)
 				{
+					logTime(fileStat, "File stats");
 					// If the file already exists, duplicate it with a new id, else keep the old id
 					if(res.succeeded() == true)
 						storage.writeFsFile(filePath, addFileSize);
