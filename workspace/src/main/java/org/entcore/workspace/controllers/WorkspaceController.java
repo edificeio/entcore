@@ -105,8 +105,11 @@ public class WorkspaceController extends BaseController {
 				}
 				doc.put("eParent", parentId);
 				request.pause();
-				workspaceService.canWriteOn(Optional.ofNullable(parentId),true, userInfos, resRights->{
-					if (resRights.failed() || !resRights.result()) {
+				final Optional<String> parentIdOpt = Optional.ofNullable(parentId);
+				final boolean hasParent = parentIdOpt.isPresent();
+				workspaceService.canWriteOn(parentIdOpt, userInfos, resRights->{
+					final boolean hasFoundParent = resRights.succeeded() && resRights.result().isPresent();
+					if (resRights.failed() || (hasParent && !hasFoundParent)) {
 						badRequest(request, "workspace.upload.forbidden");
 						return;
 					}
@@ -114,7 +117,7 @@ public class WorkspaceController extends BaseController {
 						request.resume();
 						storage.writeUploadFile(request, emptySize, uploaded -> {
 							if ("ok".equals(uploaded.getString("status"))) {
-								workspaceService.addDocument(userInfos, quality, name, application, doc,
+								workspaceService.addDocumentWithParent(resRights.result(),userInfos, quality, name, application, doc,
 										uploaded, asyncDefaultResponseHandler(request, 201));
 							} else {
 								badRequest(request, uploaded.getString("message"));

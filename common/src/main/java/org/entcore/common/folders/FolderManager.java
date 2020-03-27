@@ -49,7 +49,7 @@ public interface FolderManager {
 	void findByQuery(ElementQuery query, UserInfos user, Handler<AsyncResult<JsonArray>> handler);
 
 	/**
-	 * 
+	 *
 	 * @param parentId  the folder containing the file
 	 * @param doc       the file object
 	 * @param ownerId   id of user saving the file
@@ -57,7 +57,17 @@ public interface FolderManager {
 	 * @param handler   the handler that emit the file saved
 	 */
 	void addFile(Optional<String> parentId, JsonObject doc, String ownerId, String ownerName,
-			Handler<AsyncResult<JsonObject>> handler);
+				 Handler<AsyncResult<JsonObject>> handler);
+	/**
+	 *
+	 * @param parent the folder containing the file
+	 * @param doc       the file object
+	 * @param ownerId   id of user saving the file
+	 * @param ownerName name of user saving the file
+	 * @param handler   the handler that emit the file saved
+	 */
+	void addFileWithParent(Optional<JsonObject> parent, JsonObject doc, String ownerId, String ownerName,
+				 Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * 

@@ -43,7 +43,10 @@ public interface WorkspaceService extends FolderManager {
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
-			final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler);
+							final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler);
+
+	void addDocumentWithParent(Optional<JsonObject> parent, final UserInfos user, final float quality, final String name, final String application,
+							final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler);
 
 	public void updateDocument(final String id, final float quality, final String name,
 			final JsonObject uploaded, UserInfos user, final Handler<Message<JsonObject>> handler);
@@ -61,7 +64,7 @@ public interface WorkspaceService extends FolderManager {
 
 	public void hasRightsOn(final Collection<String> elementIds, Boolean onEmpty, UserInfos user, final Handler<AsyncResult<Boolean>> handler);
 
-	public void canWriteOn(final Optional<String> elementId, Boolean onAbsent, UserInfos user, final Handler<AsyncResult<Boolean>> handler);
+	void canWriteOn(final Optional<String> elementId, UserInfos user, final Handler<AsyncResult<Optional<JsonObject>>> handler);
 
 	public void deleteComment(final String id, final String comment, final Handler<JsonObject> handler);
 
