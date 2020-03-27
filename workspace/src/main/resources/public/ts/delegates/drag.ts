@@ -3,8 +3,8 @@ import { models, workspaceService } from "../services";
 
 export interface DragDelegateScope {
     //from others
-    trees: models.Tree[]
-    currentTree: models.Tree
+    trees: models.ElementTree[]
+    currentTree: models.ElementTree;
     isDraggingElement: boolean
     openedFolder: models.FolderContext
     onInit(cab: () => void);
@@ -99,6 +99,7 @@ export function DragDelegate($scope: DragDelegateScope) {
             if (!targetItem) {
                 return false;
             }
+            const originalTargetItem = targetItem;
             if (draggingItems.length == 0)
                 return false
             //cannot drag on shared or protected tree
@@ -109,6 +110,10 @@ export function DragDelegate($scope: DragDelegateScope) {
             //get real folder
             if (!isTree) {
                 targetItem = workspaceService.findFolderInTrees($scope.trees, targetItem._id);
+            }
+            //if target not found in tree => search in opependFolder
+            if (!targetItem) {
+                targetItem = workspaceService.findFolderInTree($scope.openedFolder.folder, originalTargetItem._id);
             }
             //check after search
             if (!targetItem) {

@@ -4,7 +4,7 @@ import { models, workspaceService } from "../services";
 
 export interface CommentDelegateScope {
     //from others
-    currentTree: models.Tree;
+    currentTree: models.ElementTree;
     selectedItems(): models.Element[]
     onInit(cab: () => void);
     safeApply()
