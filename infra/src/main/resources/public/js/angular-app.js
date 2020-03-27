@@ -1096,12 +1096,14 @@ module.directive('imageSelect', function($compile) {
         template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
             '<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
             '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+			'<div ng-if="userSelecting">' +
             '<media-library ' +
             'visibility="selectedFile.visibility"' +
             'ng-change="updateDocument()" ' +
             'ng-model="selectedFile.file" ' +
             'file-format="\'img\'">' +
             '</media-library>' +
+			'</div>' +
             '</lightbox>' +
             '</div>',
         link: function(scope, element, attributes) {
