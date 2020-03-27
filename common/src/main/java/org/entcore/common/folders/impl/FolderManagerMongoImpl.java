@@ -116,6 +116,19 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
+	public void addFileWithParent(Optional<JsonObject> parentOpt, JsonObject doc, String owner, String ownerName,
+								  Handler<AsyncResult<JsonObject>> handler) {
+		this.inheritShareComputer.computeFromParent(doc, false, parentOpt).compose(parent -> {
+			if (parentOpt.isPresent()) {
+				doc.put("eParent", DocumentHelper.getId(parentOpt.get()));
+			}
+			DocumentHelper.initFile(doc, owner, ownerName);
+			//
+			return queryHelper.insert(doc);
+		}).setHandler(handler);
+	}
+
+	@Override
 	public void copy(String sourceId, Optional<String> destFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
 		assertDestinationOnMoveOrCopy(sourceId, destFolderId).compose(ok -> {

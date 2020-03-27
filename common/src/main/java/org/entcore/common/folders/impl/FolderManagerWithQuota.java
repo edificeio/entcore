@@ -53,8 +53,14 @@ public class FolderManagerWithQuota implements FolderManager {
 
 	@Override
 	public void addFile(Optional<String> parentId, JsonObject doc, String ownerId, String ownerName,
-			Handler<AsyncResult<JsonObject>> handler) {
+						Handler<AsyncResult<JsonObject>> handler) {
 		this.folderManager.addFile(parentId, doc, ownerId, ownerName, handler);
+	}
+
+	@Override
+	public void addFileWithParent(Optional<JsonObject> parent, JsonObject doc, String ownerId, String ownerName,
+						Handler<AsyncResult<JsonObject>> handler) {
+		this.folderManager.addFileWithParent(parent, doc, ownerId, ownerName, handler);
 	}
 
 	public Future<Long> computFreeSpace(final UserInfos userInfos) {

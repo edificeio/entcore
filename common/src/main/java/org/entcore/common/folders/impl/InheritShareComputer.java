@@ -98,7 +98,7 @@ class InheritShareComputer {
 	}
 
 	public Future<InheritShareResult> computeFromParentId(JsonObject root, boolean recursive,
-			Optional<String> parentRootId) {
+														  Optional<String> parentRootId) {
 		// get parent inheritshared
 		Future<Optional<JsonObject>> rootParentFuture = this.rootParent(parentRootId);
 		// get children recursively
@@ -111,6 +111,19 @@ class InheritShareComputer {
 			mergeRecursive(root, childrens);
 			// return result
 			return new InheritShareResult(rootParentFuture.result(), root, childrens);
+		});
+	}
+
+	public Future<InheritShareResult> computeFromParent(JsonObject root, boolean recursive,
+														  Optional<JsonObject> parentRoot) {
+		// get children recursively
+		return this.childrens(root, recursive).map(childrens -> {
+			// merge root (dont reset root's share=> root shares are setted by user)
+			mergeShared(parentRoot, root, false);
+			// merge children
+			mergeRecursive(root, childrens);
+			// return result
+			return new InheritShareResult(parentRoot, root, childrens);
 		});
 	}
 
