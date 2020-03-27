@@ -12,11 +12,12 @@ export interface TreeDelegateScope {
     rolledFolders: models.Node[];
     safeApply(a?)
     closeViewFile()
+    applySort();
     //
     wrapperTrees: models.Node[]
-    trees: models.Tree[]
+    trees: models.ElementTree[]
     quota: Quota
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     currentFolderName(): string;
     onTreeInit(cb: () => void);
     isHighlightTree(folder: models.Element): boolean
@@ -33,7 +34,7 @@ export interface TreeDelegateScope {
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
-    getTreeByFilter(filter: models.TREE_NAME): models.Tree;
+    getTreeByFilter(filter: models.TREE_NAME): models.ElementTree;
     removeHighlightTree(els: { folder: models.Node, count: number }[])
     setHighlightTree(els: { folder: models.Node, count: number }[]);
     firstVisibleAscendant(folder: models.Node): models.Node;
@@ -44,14 +45,18 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     const currentTreeVoid = {};
     $scope.currentTree = currentTreeVoid as any;
     const refreshAll = function () {
-        refreshPromise = workspaceService.fetchTrees({
+        refreshPromise = workspaceService.fetchTrees(workspaceService.isLazyMode()?{
+            filter: "all",
+            hierarchical: false,
+            onlyRoot: true
+        }:{
             filter: "all",
             hierarchical: true
         });
         refreshPromise.then(trees => {
             trees.forEach(tree => {
                 const current = $scope.trees.find(t => t.filter == tree.filter);
-                current.children = tree.children;
+                current.setChildren(tree.children);
             })
             if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
                 $scope.openFolderById($scope.openedFolder.folder._id)
@@ -103,14 +108,20 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                                 //add to dest folder
                                 const founded = workspaceService.findFolderInTrees($scope.trees, event.dest._id);
                                 if (founded) {
-                                    founded.children.push(el);
+                                    founded.addChild(el);
+                                }else {
+                                    //when tree is not loaded search in opened folder
+                                    const founded = workspaceService.findFolderInTree($scope.openedFolder.folder, event.dest._id);
+                                    if(founded){
+                                        founded.addChild(el);
+                                    }
                                 }
                             } else if (event.treeDest) {
                                 const tree = $scope.trees.find(tree => tree.filter == event.treeDest);
-                                tree.children.push(el);
+                                tree.addChild(el);
                             } else {
                                 //add to current tree
-                                $scope.currentTree.children.push(el);
+                                $scope.currentTree.addChild(el);
                             }
                         })
                     }
@@ -118,9 +129,8 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                 case "update":
                     if (folders) {
                         folders.forEach(el => {
-                            const founded = workspaceService.findFolderInTrees($scope.trees, el._id);
-                            if (founded)
-                                Object.assign(founded, el)
+                            const founded = workspaceService.updateInTree($scope.trees, el);
+                            $scope.openedFolder.folder.updateChild(el)
                         })
                     }
                     break;
@@ -135,13 +145,16 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                     }
                     break;
                 case "tree-change":
+                    for(const tree of $scope.trees){
+                        workspaceService.resetAllCache(tree, "folder");
+                    }
                     if (folders && folders.length) {
                         //if any folder => refresh all trees
                         refreshAll();
                     }
                     break;
                 case "empty":
-                    $scope.getTreeByFilter(event.treeSource).children = []
+                    $scope.getTreeByFilter(event.treeSource).clearChildren()
                     break;
             }
             quota.refresh();
@@ -168,15 +181,19 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         $scope.setCurrentFolder($scope.currentTree as models.Element, true);
     }
     $scope.canExpendTree = function (folder) {
+        if(workspaceService.isLazyMode() && folder._id){
+            return folder.children.length > 0 || (folder as models.Element).cacheChildren.isEmpty;
+        }
         return folder.children.length > 0;
     }
     $scope.isOpenedFolder = function (folder) {
+        if(folder === $scope.wrapperTrees[0]) return true;
         if ($scope.openedFolder.folder === folder) {
             return true;
         }
         return workspaceService.findFolderInTreeByRefOrId(folder, $scope.openedFolder.folder);
     }
-    $scope.openOrCloseFolder = function (event, folder) {
+    $scope.openOrCloseFolder = async function (event, folder) {
         event.stopPropagation();
         const index = $scope.rolledFolders.indexOf(folder, 0);
         if (index > -1) {
@@ -184,6 +201,11 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }
         else {
             $scope.rolledFolders.push(folder);
+        }
+        if(workspaceService.isLazyMode() && folder._id){
+            await workspaceService.fetchChildren(folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+            $scope.applySort();
+            $scope.safeApply()
         }
     }
     $scope.isRolledFolder = function (folder) {
@@ -254,7 +276,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         })
         //change current tree if needed
         if (founded && founded !== $scope.currentTree) {
-            $scope.currentTree = founded;
+            $scope.currentTree = founded as models.ElementTree;
         }
         $scope.setCurrentFolder(folder as models.Element, true);
         $scope.rollFoldersRecursively();
@@ -268,6 +290,16 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             $scope.openFolder(founded)
             return true;
         }
+        if(workspaceService.isLazyMode()){
+            const folder = await workspaceService.fetchFolderById(folderId);
+            if(folder){
+                $scope.openFolder(folder)
+                return true;
+            }else{
+                $scope.setCurrentTreeRoute("shared")
+                return false;
+            }
+        }
         return false;
     }
     $scope.openFolderRouteById = async function (folderId) {
@@ -276,6 +308,10 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         const founded = workspaceService.findFolderInTrees($scope.trees, folderId);
         if (founded) {
             $scope.openFolderRoute(founded)
+        }
+        if(workspaceService.isLazyMode()){
+            const folder = await workspaceService.fetchFolderById(folderId);
+            $scope.openFolderRoute(folder)
         }
         $scope.safeApply();
     }

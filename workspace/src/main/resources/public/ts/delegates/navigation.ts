@@ -48,8 +48,8 @@ export interface NavigationDelegateScope {
     onReloadContent:Subject<() => void>
     reloadingContent: boolean;
     // from others 
-    currentTree: models.Tree;
-    trees: models.Tree[]
+    currentTree: models.ElementTree;
+    trees: models.ElementTree[]
     safeApply(a?)
     $watch(a: any, f: Function)
     onInit(cab: () => void);
@@ -93,6 +93,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
                     })
                     break;
                 case "tree-change":
+                    for(const tree of $scope.trees){
+                        workspaceService.resetAllCache(tree, "document");
+                    }
                     $scope.reloadFolderContent();
                     break;
                 case "delete":
@@ -245,12 +248,11 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         //fetch only documents in contents
         let content: models.Element[] = null;
         if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
-            const parentId = $scope.openedFolder.folder._id;
-            content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, parentId, hierarchical: false });
+            content = await workspaceService.fetchChildren($scope.openedFolder.folder, { filter: "all", hierarchical: false });
         } else if($scope.currentTree.filter=="shared") {
-            content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
+            content = await workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
         } else {
-            content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false });
+            content = await workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false });
         }
         //if revision has changed => a most recent content is loading
         if(currentRevision == contentRevision){

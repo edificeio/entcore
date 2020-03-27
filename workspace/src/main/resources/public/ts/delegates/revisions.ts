@@ -7,7 +7,7 @@ export interface RevisionDelegateScope {
     safeApply()
     selectedDocuments(): models.Element[];
     selectedFolders(): models.Element[];
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     //revisions
     deletingRevision:models.Revision;
     isDeletingRevision(r:models.Revision):boolean
