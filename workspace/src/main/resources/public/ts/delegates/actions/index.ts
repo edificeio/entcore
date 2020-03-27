@@ -9,7 +9,7 @@ import { ActionTrashScope, ActionTrashDelegate } from "./trash";
 export interface ActionDelegateScope extends RenameDelegateScope, CreateDelegateScope, ShareDelegateScope, ActionCopyDelegateScope, ActionTrashScope {
     //from others
     display: { nbFiles: number, importFiles?: boolean, editedImage?: models.Element, editImage?: boolean }
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     openedFolder: models.FolderContext
     selectedFolders(): models.Element[]
     selectedDocuments(): models.Element[]

@@ -16,7 +16,7 @@ export interface ShareDelegateScope {
     onValidateShare(data: SharePayload, resource: models.Element, actions: ShareAction[]): Promise<any>
     onShareFeed(data: any, resource: models.Element, actions: ShareAction[])
     //from others
-    currentTree: models.Tree;
+    currentTree: models.ElementTree;
     display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
     isSearchResult(): boolean;
     selectedItems(): models.Element[]

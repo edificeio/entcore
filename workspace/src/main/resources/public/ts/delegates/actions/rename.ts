@@ -6,7 +6,7 @@ const RENAME_RIGHTS = ["org-entcore-workspace-controllers-WorkspaceController|re
 
 export interface RenameDelegateScope {
     //from others
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     selectedFolders(): models.Element[]
     selectedDocuments(): models.Element[]
     selectedItems(): models.Element[]

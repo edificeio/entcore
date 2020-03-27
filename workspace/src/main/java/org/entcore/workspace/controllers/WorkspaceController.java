@@ -562,6 +562,7 @@ public class WorkspaceController extends BaseController {
 		final String parentId = getOrElse(request.params().get("parentId"), request.params().get("folder"), false);
 		final String ancestorId = request.params().get("ancestorId");
 		final String hierarchical = request.params().get("hierarchical");
+		final String onlyRoot = request.params().get("onlyRoot");
 		final String filter = getOrElse(request.params().get("filter"), "owner", false);
 		final String application = getOrElse(request.params().get("application"), null, false);
 		final String search = request.params().get("search");
@@ -602,7 +603,7 @@ public class WorkspaceController extends BaseController {
 			query.setTrash(null);
 			query.setShared(true);
 			query.setApplication(null);
-			query.setNoParent(null);
+			query.setNoParent(onlyRoot!=null && "true".equals(onlyRoot)? true : null);
 			break;
 		case "owner":
 			query.setHasBeenShared(false);
@@ -933,6 +934,8 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("application");
 				query.getProjection().add("trasher");
 				query.getProjection().add("protected");
+				query.getProjection().add("ancestors");
+				query.getProjection().add("externalId");
 				final String includeall = request.params().get("includeall");
 				if (includeall != null && "true".equals(includeall)) {
 					query.setType(null);
@@ -1519,6 +1522,9 @@ public class WorkspaceController extends BaseController {
 	public void view(final HttpServerRequest request) {
 		final JsonObject context = new JsonObject();
 		context.put("enableLool", config.getBoolean("enable-lool", false));
+		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
+		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
+		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {

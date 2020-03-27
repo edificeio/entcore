@@ -547,5 +547,7 @@
   "workspace.publicDocuments": "Documents publics",
   "workspace.sharedDocuments": "Documents partagés",
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
-  "zh_CN": "Mandarin (Chinois)"
+  "zh_CN": "Mandarin (Chinois)",
+  "folderpicker.move.empty.text":"Le déplacement a échoué. Les fichiers ou dossiers sources n'existent plus",
+  "folderpicker.copy.empty.text":"La copie a échoué. Les fichiers ou dossiers sources n'existent plus"
 }

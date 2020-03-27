@@ -19,7 +19,7 @@ export interface SearchDelegateScope {
     showOpenLocation(): boolean
     openLocation();
     //from others
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     openedFolder: models.FolderContext
     onReloadContent: Subject<() => void>
     openFolderById(id: string):Promise<boolean>

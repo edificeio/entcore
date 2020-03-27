@@ -162,7 +162,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		}
 		return true
 	}
-	$scope.trees = [{
+	const shouldCache = workspaceService.isLazyMode();
+	$scope.trees = [new models.ElementTree(shouldCache,{
 		name: lang.translate('documents'),
 		filter: 'owner',
 		hierarchical: true,
@@ -176,7 +177,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
-	}, {
+	}), new models.ElementTree(shouldCache,{
 		name: lang.translate('shared_tree'),
 		filter: 'shared',
 		hierarchical: true,
@@ -184,6 +185,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		buttons: [
 			{
 				text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() {
+					if($scope.currentTree.filter == "shared" && $scope.currentTree===$scope.openedFolder.folder){
+						return false;
+					}
 					let isFolder = ($scope.openedFolder.folder instanceof models.Element);
 					return isFolder && !$scope.openedFolder.folder.canWriteOnFolder
 				}
@@ -196,7 +200,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
-	}, {
+	}),new models.ElementTree(shouldCache,{
 		name: lang.translate('externalDocs'),
 		filter: 'external',
 		get hidden() {
@@ -214,7 +218,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				}
 			}
 		]
-	}, {
+	}), new models.ElementTree(shouldCache,{
 		name: lang.translate('appDocuments'),
 		filter: 'protected',
 		hidden: false,
@@ -227,7 +231,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
-	}, {
+	}), new models.ElementTree(shouldCache,{
 		name: lang.translate('trash'),
 		hidden: false,
 		buttons: [
@@ -240,7 +244,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.trash.restore'), action: $scope.restore, right: "manager" },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.deleteConfirm, right: "manager" }
 		]
-	}];
+	})];
 	$scope.display = {
 		nbFiles: 50
 	};

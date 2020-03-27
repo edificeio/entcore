@@ -26,7 +26,7 @@ export interface CreateDelegateScope {
     onCancelShareNewFilesDelete();
     canShowOwner(): boolean;
     //from others
-    currentTree: models.Tree
+    currentTree: models.ElementTree;
     openedFolder: models.FolderContext
     setHighlighted(els: models.Element[])
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
@@ -53,6 +53,9 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
      * Share
      */
     const needAtLeastOneShared = function () {
+        if($scope.currentTree.filter == "shared" && $scope.openedFolder.folder === $scope.currentTree){
+            return true;
+        }
         return $scope.currentTree.filter == "shared" && $scope.openedFolder.folder && !$scope.openedFolder.folder.isShared
     }
     $scope.onSubmitSharedNewFolder = function (event) {

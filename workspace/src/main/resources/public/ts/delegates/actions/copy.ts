@@ -19,8 +19,8 @@ export interface ActionCopyDelegateScope {
     isCopyStateFinished(): boolean
     isCopying: boolean
     //from others
-    currentTree: models.Tree;
-    trees: models.Tree[]
+    currentTree: models.ElementTree;
+    trees: models.ElementTree[]
     selectedItems(): models.Element[]
     safeApply(a?)
     setHighlightTree(els: { folder: models.Node, count: number }[]);
