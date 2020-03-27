@@ -83,16 +83,19 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	@Override
-	public void canWriteOn(final Optional<String> elementId, Boolean onAbsent, UserInfos user, final Handler<AsyncResult<Boolean>> handler){
+	public void canWriteOn(final Optional<String> elementId, UserInfos user, final Handler<AsyncResult<Optional<JsonObject>>> handler){
 		if(elementId.isPresent()){
 			final ElementQuery query = new ElementQuery(true);
 			query.setId(elementId.get());
 			query.setActionExistsInInheritedShares(WorkspaceController.WRITE_ACTION);
-			this.countByQuery(query, user, res -> {
-				handler.handle(new DefaultAsyncResult<>(res.succeeded() && res.result()==1));
+			query.setLimit(1);
+			this.findByQuery(query, user, res -> {
+				final Optional<JsonObject> resOpt = res.succeeded() && res.result().size() == 1?
+						Optional.ofNullable(res.result().getJsonObject(0)): Optional.empty();
+				handler.handle(new DefaultAsyncResult<>(resOpt));
 			});
 		}else{
-			handler.handle(new DefaultAsyncResult<>(onAbsent));
+			handler.handle(new DefaultAsyncResult<>(Optional.empty()));
 		}
 	}
 
@@ -128,7 +131,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
-			final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler) {
+							final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler) {
 		compressImage(uploaded, quality, new Handler<Integer>() {
 			@Override
 			public void handle(Integer size) {
@@ -137,6 +140,22 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					meta.put("size", size);
 				}
 				addAfterUpload(uploaded, doc, name, application, user.getUserId(), user.getUsername(),
+						handler);
+			}
+		});
+
+	}
+
+	public void addDocumentWithParent(Optional<JsonObject> parent, final UserInfos user, final float quality, final String name, final String application,
+							final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler) {
+		compressImage(uploaded, quality, new Handler<Integer>() {
+			@Override
+			public void handle(Integer size) {
+				JsonObject meta = uploaded.getJsonObject("metadata");
+				if (size != null && meta != null) {
+					meta.put("size", size);
+				}
+				addAfterUploadWithParent(parent, uploaded, doc, name, application, user.getUserId(), user.getUsername(),
 						handler);
 			}
 		});
@@ -197,6 +216,33 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		}));
 	}
 
+	public void addAfterUploadWithParent(final Optional<JsonObject> parent, final JsonObject uploaded, final JsonObject doc, String name, String application,
+										 final String ownerId, final String ownerName, final Handler<AsyncResult<JsonObject>> handler){
+		doc.put("name", getOrElse(name, uploaded.getJsonObject("metadata").getString("filename"), false));
+		doc.put("metadata", uploaded.getJsonObject("metadata"));
+		doc.put("file", uploaded.getString("_id"));
+		doc.put("fileDate", MongoDb.formatDate(new Date()));
+		doc.put("application", getOrElse(application, WorkspaceController.MEDIALIB_APP));
+		addFileWithParent(parent, doc, ownerId, ownerName, res ->
+		{
+			if (res.succeeded()) {
+				incrementStorage(doc);
+
+				if (handler != null) {
+					handler.handle(res);
+				}
+
+				revisionDao.create(res.result().getString("_id"), uploaded.getString("_id"),
+						doc.getString("name"), doc.getString("owner"), doc.getString("owner"),
+						doc.getString("ownerName"), doc.getJsonObject("metadata"), new JsonObject());
+			}
+			else if (handler != null)
+			{
+				handler.handle(res);
+			}
+		});
+	}
+
 	public void addAfterUpload(final JsonObject uploaded, final JsonObject doc, String name, String application,
 			final String ownerId, final String ownerName, final Handler<AsyncResult<JsonObject>> handler) {
 		doc.put("name", getOrElse(name, uploaded.getJsonObject("metadata").getString("filename"), false));
@@ -204,7 +250,6 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		doc.put("file", uploaded.getString("_id"));
 		doc.put("fileDate", MongoDb.formatDate(new Date()));
 		doc.put("application", getOrElse(application, WorkspaceController.MEDIALIB_APP));
-		log.debug(doc.encodePrettily());
 
 		addFile(Optional.ofNullable(doc.getString("eParent")), doc, ownerId, ownerName, res ->
 		{
