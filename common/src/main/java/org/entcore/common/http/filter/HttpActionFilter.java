@@ -94,8 +94,8 @@ public class HttpActionFilter extends AbstractActionFilter {
 					@Override
 					public void handle(Buffer body) {
 						request.resume();
-						JsonObject session = new JsonObject(body.toString());
 						if (response.statusCode() == 200) {
+							JsonObject session = new JsonObject(body.toString());
 							((SecureHttpServerRequest) request).setSession(session);
 							userIsAuthorized(request, session, handler);
 						} else {
