@@ -421,9 +421,9 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
-	public void createThumbnailIfNeeded(JsonObject uploadedDoc, JsonObject mongoDoc, Handler<AsyncResult<JsonObject>> handler)
+	public void createThumbnailIfNeeded(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler)
 	{
-		this.folderManager.createThumbnailIfNeeded(uploadedDoc, mongoDoc, handler);
+		this.folderManager.createThumbnailIfNeeded(document, thumbnails, handler);
 	}
 
 	@Override
