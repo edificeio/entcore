@@ -164,6 +164,15 @@ public class WorkspaceHelper {
 		storage.readFile(id, handler);
 	}
 
+	public void createThumbnails(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<Message<JsonObject>>> handler)
+	{
+		JsonObject m = new JsonObject()
+			.put("action", "createThumbnails")
+			.put("document", document)
+			.put("thumbnails", thumbnails);
+		eb.send(WORKSPACE_ADDRESS, m, handler);
+	}
+
 	public void readDocument(String documentId, final Handler<Document> handler) {
 		getDocument(documentId, new Handler<AsyncResult<Message<JsonObject>>>() {
 			@Override
