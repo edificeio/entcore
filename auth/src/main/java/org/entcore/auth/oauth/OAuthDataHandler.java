@@ -52,6 +52,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class OAuthDataHandler extends DataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
 	private static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
+	private static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
 	private static final String AUTH_ERROR_GLOBAL = "auth.error.global";
 	private static final Long OTP_DELAY = 600000L;
 	private final Neo4j neo;
@@ -143,7 +144,11 @@ public class OAuthDataHandler extends DataHandler {
 		JsonObject r = result.getJsonObject(0);
 
 		if (r != null) {
-			if (getOrElse(r.getBoolean("blockedProfile"), false) || getOrElse(r.getBoolean("blockedUser"), false)) {
+			if (getOrElse(r.getBoolean("blockedProfile"), false)) {
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_PROFILETYPE)));
+				return;
+			}
+			if (getOrElse(r.getBoolean("blockedUser"), false)) {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
 				return;
 			}
