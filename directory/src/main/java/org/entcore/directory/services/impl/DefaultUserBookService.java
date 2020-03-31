@@ -129,40 +129,47 @@ public class DefaultUserBookService implements UserBookService {
 			}
 			Future<Boolean> futureCopy = Future.future();
 			this.wsHelper.getDocument(pictureId.get(), resDoc -> {
-				if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status"))) {
-					JsonObject document = resDoc.result().body().getJsonObject("result");
-					String fileId = document.getString("file");
-					// Extensions are not used by storage
-					String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
-					//
-					JsonObject thumbnails = document.getJsonObject("thumbnails", new JsonObject());
-					Map<String, String> filenamesByIds = new HashMap<>();
-					filenamesByIds.put(fileId, defaultFilename);
+				if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status")))
+				{
+					JsonObject baseDocument = resDoc.result().body().getJsonObject("result");
+					this.wsHelper.createThumbnails(baseDocument, UserBookService.AVATAR_THUMBNAILS, resDocWithThumbs -> {
+						if (resDocWithThumbs.succeeded() && "ok".equals(resDocWithThumbs.result().body().getString("status")))
+						{
+							JsonObject document = resDocWithThumbs.result().body().getJsonObject("result");
+							String fileId = document.getString("file");
+							// Extensions are not used by storage
+							String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
+							//
+							JsonObject thumbnails = document.getJsonObject("thumbnails", new JsonObject());
+							Map<String, String> filenamesByIds = new HashMap<>();
+							filenamesByIds.put(fileId, defaultFilename);
 
-					for (String size : thumbnails.fieldNames()) {
-						filenamesByIds.put(thumbnails.getString(size),
-								avatarFileNameFromUserId(userId, Optional.of(size)));
-					}
-					// TODO avoid buffer to improve performances and avoid cache every time
-					List<Future> futures = new ArrayList<>();
-					for (Entry<String, String> entry : filenamesByIds.entrySet()) {
-						String cFileId = entry.getKey();
-						String cFilename = entry.getValue();
-						Future<JsonObject> future = Future.future();
-						futures.add(future);
-						this.wsHelper.readFile(cFileId, buffer -> {
-							if (buffer != null) {
-								this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
-										cFilename, wRes -> {
-											future.complete(wRes);
-										});
-							} else {
-								future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
+							for (String size : thumbnails.fieldNames()) {
+								filenamesByIds.put(thumbnails.getString(size),
+										avatarFileNameFromUserId(userId, Optional.of(size)));
 							}
-						});
-					}
-					//
-					CompositeFuture.all(futures).setHandler(finishRes -> futureCopy.complete(finishRes.succeeded()));
+							// TODO avoid buffer to improve performances and avoid cache every time
+							List<Future> futures = new ArrayList<>();
+							for (Entry<String, String> entry : filenamesByIds.entrySet()) {
+								String cFileId = entry.getKey();
+								String cFilename = entry.getValue();
+								Future<JsonObject> future = Future.future();
+								futures.add(future);
+								this.wsHelper.readFile(cFileId, buffer -> {
+									if (buffer != null) {
+										this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
+												cFilename, wRes -> {
+													future.complete(wRes);
+												});
+									} else {
+										future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
+									}
+								});
+							}
+							//
+							CompositeFuture.all(futures).setHandler(finishRes -> futureCopy.complete(finishRes.succeeded()));
+						}
+					});
 				}
 			});
 			return futureCopy;

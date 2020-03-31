@@ -209,7 +209,6 @@ public class FolderImporter
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
 
-		FolderImporter self = this;
 		JsonObject importParams = new JsonObject()
 																	.put("action", "importDocument")
 																	.put("oldFileId", fileId)
@@ -236,44 +235,8 @@ public class FolderImporter
 
 					context.addFileLink(fileId, storageId);
 					DocumentHelper.setFileId(document, storageId);
-
-					JsonObject thumbnailsObj = DocumentHelper.setThumbnails(new JsonObject(), DocumentHelper.getThumbnails(document));
-					JsonObject params = new JsonObject()
-																.put("action", "createThumbnails")
-																.put("fileDocument", writtenFile)
-																.put("thumbnails", thumbnailsObj);
-
-					self.eb.send("org.entcore.workspace", params, new Handler<AsyncResult<Message<JsonObject>>>()
-					{
-						@Override
-						public void handle(AsyncResult<Message<JsonObject>> thumbMessage)
-						{
-							if(thumbMessage.succeeded() == false)
-							{
-								String error = thumbMessage.cause().getMessage();
-								context.addError(docId, fileId, "Failed to generate thumbnails", error);
-								promise.fail(new RuntimeException(thumbMessage.cause()));
-							}
-							else
-							{
-								JsonObject body = thumbMessage.result().body();
-					
-								if(body.getString("status").equals("ok") == true)
-								{
-									DocumentHelper.mergeMetadata(body, document);
-
-									DocumentHelper.setThumbnails(document, DocumentHelper.getThumbnails(body.getJsonObject("result")));
-									promise.complete();
-								}
-								else
-								{
-									String error = body.getString("message");
-									context.addError(docId, fileId, "Failed to generate thumbnails", error);
-									promise.fail(new RuntimeException(error));
-								}
-							}
-						}
-					});
+					DocumentHelper.setThumbnails(document, new JsonObject());
+					promise.complete();
 				}
 				else
 				{

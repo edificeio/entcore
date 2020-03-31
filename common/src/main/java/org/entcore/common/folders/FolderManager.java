@@ -91,10 +91,11 @@ public interface FolderManager {
 	/**
 		* Create the file's thumbnails if applicable
 		*
-		* @param doc			the document to update
-		* @param handler	the handler that emits the saved file
+		* @param document		the document to update
+		* @param thumbnails	the thumbnails object
+		* @param handler		the handler that emits the saved file
 		*/
-	public void createThumbnailIfNeeded(JsonObject uploadedFile, JsonObject mongoDocument, Handler<AsyncResult<JsonObject>> handler);
+	public void createThumbnailIfNeeded(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * Create an external folder that will be displayed at the root of tree (edumedia for example)

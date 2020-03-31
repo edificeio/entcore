@@ -814,9 +814,7 @@ public class WorkspaceController extends BaseController {
 				if ("ok".equals(status) && jo != null) {
 					boolean createThumbnails = thumbSize != null && (jo.getJsonObject("thumbnails") == null ||
 							StringUtils.isEmpty(jo.getJsonObject("thumbnails").getString(thumbSize)));
-					JsonObject thumbnails = createThumbnails ? new JsonObject().put("thumbnails",
-							new JsonObject().put(thumbSize, ""))
-							.put("_id", jo.getString("_id")): new JsonObject();
+					JsonObject thumbnails = createThumbnails ? new JsonObject().put(thumbSize, "") : new JsonObject();
 					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler ->
 					{
 						JsonObject result;
@@ -1554,14 +1552,14 @@ public class WorkspaceController extends BaseController {
 
 	private void createThumbnails(final Message<JsonObject> message)
 	{
-		JsonObject fileDocument = message.body().getJsonObject("fileDocument");
+		JsonObject document = message.body().getJsonObject("document");
 		JsonObject requestedThumbnails = message.body().getJsonObject("thumbnails");
 
-		if(fileDocument == null || requestedThumbnails == null)
+		if(document == null || requestedThumbnails == null)
 			message.reply(new JsonObject().put("status", "error").put("message", "missing.attribute"));
 		else
 		{
-			this.folderManager.createThumbnailIfNeeded(fileDocument, requestedThumbnails, new Handler<AsyncResult<JsonObject>>()
+			this.folderManager.createThumbnailIfNeeded(document, requestedThumbnails, new Handler<AsyncResult<JsonObject>>()
 			{
 				@Override
 				public void handle(AsyncResult<JsonObject> thumbnails)

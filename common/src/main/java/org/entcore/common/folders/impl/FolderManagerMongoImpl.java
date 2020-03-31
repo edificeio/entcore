@@ -858,7 +858,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
-	public void createThumbnailIfNeeded(JsonObject uploadedDoc, JsonObject mongoDocument, Handler<AsyncResult<JsonObject>> handler)
+	public void createThumbnailIfNeeded(JsonObject document, JsonObject thumbs, Handler<AsyncResult<JsonObject>> handler)
 	{
 		Future<JsonObject> future = Future.future();
 
@@ -870,11 +870,10 @@ public class FolderManagerMongoImpl implements FolderManager {
 			return;
 		}
 
-		String fileId = DocumentHelper.getFileId(uploadedDoc);
-		String documentId = DocumentHelper.getId(mongoDocument);
-		JsonObject thumbs = DocumentHelper.getThumbnails(mongoDocument);
+		String fileId = DocumentHelper.getFileId(document);
+		String documentId = DocumentHelper.getId(document);
 
-		if (fileId != null && thumbs != null && !fileId.trim().isEmpty() && !thumbs.isEmpty() && DocumentHelper.isImage(uploadedDoc) == true)
+		if (fileId != null && thumbs != null && !fileId.trim().isEmpty() && !thumbs.isEmpty() && DocumentHelper.isImage(document) == true)
 		{
 			Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
 			JsonArray outputs = new JsonArray();
@@ -927,7 +926,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 							if ("ok".equals(event.body().getString("status")) && thumbnails != null)
 							{
-								JsonObject oldThumbnails = uploadedDoc.getJsonObject("thumbnails");
+								JsonObject oldThumbnails = document.getJsonObject("thumbnails");
 								JsonObject mongoUpdate = new JsonObject().put("$set",
 										new JsonObject().put("thumbnails", oldThumbnails == null ? thumbnails : oldThumbnails.mergeIn(thumbnails, true)));
 
@@ -942,7 +941,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 											if (result.succeeded() == false)
 												future.fail(result.cause());
 											else
-												future.complete(DocumentHelper.setThumbnails(uploadedDoc, thumbnails));
+												future.complete(DocumentHelper.setThumbnails(document, thumbnails));
 
 											handler.handle(future);
 										}
@@ -950,7 +949,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 								}
 								else
 								{
-									future.complete(DocumentHelper.setThumbnails(uploadedDoc, thumbnails));
+									future.complete(DocumentHelper.setThumbnails(document, thumbnails));
 									handler.handle(future);
 								}
 								return;
@@ -970,7 +969,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		}
 		else
 		{
-			future.complete(uploadedDoc);
+			future.complete(document);
 			handler.handle(future);
 		}
 	}

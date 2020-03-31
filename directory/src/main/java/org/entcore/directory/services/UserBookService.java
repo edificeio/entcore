@@ -36,6 +36,7 @@ public interface UserBookService {
 	String PUBLIC = "PUBLIC";
 	String PRIVE = "PRIVE";
 	List<String> UPDATE_USERBOOK_FIELDS = Arrays.asList("health", "mood", "picture", "motto");
+	JsonObject AVATAR_THUMBNAILS = new JsonObject().put("48x48", "").put("100x100", "").put("120x120", "").put("290x290", "").put("381x381", "");
 
 	void update(String userId, JsonObject userBook, Handler<Either<String, JsonObject>> result);
 
