@@ -29,6 +29,7 @@ import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,8 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.DateUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
@@ -319,6 +322,16 @@ public class UserController extends BaseController {
 							@Override
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
+									JsonArray users = r.right().getValue();
+									for(int i = 0; i < users.size(); i++) {
+										JsonObject user = users.getJsonObject(i);
+										if (!StringUtils.isEmpty(user.getString("lastLogin"))) {
+											try {
+												String formated = DateUtils.format(DateUtils.parse(user.getString("lastLogin"), "yyyy-MM-dd'T'HH:mm:ss.SSSX"), "dd-MM-yyyy HH:mm");
+												user.put("lastLogin", formated);
+											} catch (ParseException pe) { /* Shouldn't prevent the export from going on */ }
+										}
+									}
 									processTemplate(request, new JsonObject().put("list", r.right().getValue()).put(profile,true),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
 											@Override
 											public void handle(final String export) {
