@@ -40,7 +40,9 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -189,7 +191,29 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
 
-    @Override
+	@Override
+	public void getClasses(String id, Handler<Either<String, JsonObject>> handler) {
+		final StringBuilder query = new StringBuilder();
+		query.append("MATCH (user:User) ");
+		query.append("WHERE user.id = {userId} ");
+		query.append("OPTIONAL MATCH (user)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(clazz:Class)-[:BELONGS]->(struct:Structure) ");
+		query.append("WITH DISTINCT struct, COLLECT(DISTINCT {name: clazz.name, id: clazz.id}) as classes ");
+		query.append("WITH COLLECT(DISTINCT {name: struct.name, id: struct.id, classes: classes}) as schools ");
+        query.append("RETURN DISTINCT schools");
+        final Map<String, Object> params = new HashMap<>();
+        params.put("userId", id);
+        neo.execute(query.toString(), params, validUniqueResultHandler(res-> {
+            if (res.isRight()) {
+                final JsonObject results = res.right().getValue();
+                handler.handle(new Either.Right<>(results));
+            } else {
+                handler.handle(new Either.Left<>(res.left().getValue()));
+            }
+        }));
+	}
+
+
+	@Override
     public void getGroups(String id, Handler<Either<String, JsonArray>> results) {
         String query = ""
 				+ "MATCH (g:Group)<-[:IN]-(u:User { id: {id} }) WHERE exists(g.id) "
