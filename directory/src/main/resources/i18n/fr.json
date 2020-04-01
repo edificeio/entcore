@@ -197,6 +197,7 @@
     "directory.admin.header": "Annuaire",
     "directory.admin.id": "Id",
     "directory.admin.importTitle": "Import",
+    "directory.admin.last.login": "Dernière connexion",
     "directory.admin.lastname": "Nom",
     "directory.admin.link.class": "Lier à une classe",
     "directory.admin.link.school": "Lier à une école",
