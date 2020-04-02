@@ -604,9 +604,21 @@
   "zh_CN": "Mandarin (Chinois)",
   "embed.video.incompatible": "Votre navigateur n'est pas compatible",
   "embed.video.incompatible.details": "Afin de pouvoir utiliser la vidéo, vous devez télécharger un navigateur compatible : ",
-  "embed.video.incompatible.devices": "L'enregistrement vidéo n'est pas compatible avec iPhone et iPad.",
+  "embed.video.incompatible.devices": "Oups, l’outil de captation vidéo n’est pas compatible pour iPhone et iPad.",
+  "embed.video.incompatible.devices.footer": "Tournez-vous vers un autre appareil pour utiliser cet outil.",
   "embed.video.play": "Lire la vidéo",
   "embed.video.redo": "Refaire l'enregistrement de la vidéo",
   "embed.video.stop": "Arrêter l'enregistrement",
-  "embed.video.save": "Sauvegarder la vidéo l'espace documentaire"
+  "embed.video.save": "Sauvegarder la vidéo l'espace documentaire",
+  "embed.start": "Démarrer l'enregistrement",
+  "embed.start.mini": "Démarrer",
+  "embed.resume": "Reprendre",
+  "embed.stop": "Arrêter",
+  "embed.play": "Lire",
+  "embed.pause": "Pause",
+  "embed.redo": "Refaire",
+  "embed.save": "Sauvegarder",
+  "embed.suspend": "Suspendre",
+  "embed.audio.title": "Dictaphone",
+  "embed.audio.tagline": "Faites nous entendre votre plus belle voix !"
 }
