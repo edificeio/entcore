@@ -197,7 +197,6 @@ public class DefaultUserService implements UserService {
         query.append("MATCH (user:User {id: {userId} }) ");
         query.append("OPTIONAL MATCH (user)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(clazz:Class)-[:BELONGS]->(struct1:Structure) ");
         query.append("OPTIONAL MATCH (user)-[:IN]->(:Group)-[:DEPENDS]->(struct2:Structure) ");
-        query.append("WHERE struct2.id <> struct1.id ");
         query.append("WITH struct1, struct2, COLLECT(DISTINCT {name: clazz.name, id: clazz.id}) as classes ");
         query.append("WITH COLLECT(DISTINCT {name: struct1.name, id: struct1.id, classes: classes}) as schools1,");
         query.append("COLLECT(DISTINCT {name: struct2.name, id: struct2.id}) as schools2 ");
