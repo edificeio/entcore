@@ -843,7 +843,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		return model.me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|view');
 	}
 
-	$scope.getEncodedString = function(string) {
-		return encodeURIComponent(string)
+	$scope.getTarget = function(target, type) {
+		return {...target, type}
 	}
 }]);
