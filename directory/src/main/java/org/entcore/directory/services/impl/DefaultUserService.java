@@ -191,15 +191,17 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
 
-	@Override
-	public void getClasses(String id, Handler<Either<String, JsonObject>> handler) {
-		final StringBuilder query = new StringBuilder();
-		query.append("MATCH (user:User) ");
-		query.append("WHERE user.id = {userId} ");
-		query.append("OPTIONAL MATCH (user)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(clazz:Class)-[:BELONGS]->(struct:Structure) ");
-		query.append("WITH DISTINCT struct, COLLECT(DISTINCT {name: clazz.name, id: clazz.id}) as classes ");
-		query.append("WITH COLLECT(DISTINCT {name: struct.name, id: struct.id, classes: classes}) as schools ");
-        query.append("RETURN DISTINCT schools");
+    @Override
+    public void getClasses(String id, Handler<Either<String, JsonObject>> handler) {
+        final StringBuilder query = new StringBuilder();
+        query.append("MATCH (user:User {id: {userId} }) ");
+        query.append("OPTIONAL MATCH (user)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(clazz:Class)-[:BELONGS]->(struct1:Structure) ");
+        query.append("OPTIONAL MATCH (user)-[:IN]->(:Group)-[:DEPENDS]->(struct2:Structure) ");
+        query.append("WHERE struct2.id <> struct1.id ");
+        query.append("WITH struct1, struct2, COLLECT(DISTINCT {name: clazz.name, id: clazz.id}) as classes ");
+        query.append("WITH COLLECT(DISTINCT {name: struct1.name, id: struct1.id, classes: classes}) as schools1,");
+        query.append("COLLECT(DISTINCT {name: struct2.name, id: struct2.id}) as schools2 ");
+        query.append("RETURN (schools1 + schools2) AS schools");
         final Map<String, Object> params = new HashMap<>();
         params.put("userId", id);
         neo.execute(query.toString(), params, validUniqueResultHandler(res-> {
