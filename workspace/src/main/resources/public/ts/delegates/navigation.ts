@@ -246,17 +246,18 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         //on refresh folder content => reset search
         $scope.onReloadContent.next();
         //fetch only documents in contents
-        let content: models.Element[] = null;
+        let content: Promise<models.Element[]> = null;
         if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
-            content = await workspaceService.fetchChildren($scope.openedFolder.folder, { filter: "all", hierarchical: false });
+            content = workspaceService.fetchChildren($scope.openedFolder.folder, { filter: "all", hierarchical: false });
         } else if($scope.currentTree.filter=="shared") {
-            content = await workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
+            content = workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
         } else {
-            content = await workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false });
+            content = workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false });
         }
+        $scope.safeApply();//refresh spinner
         //if revision has changed => a most recent content is loading
         if(currentRevision == contentRevision){
-            $scope.openedFolder.setDocuments(content);
+            $scope.openedFolder.setDocuments(await content);
             $scope.reloadingContent = false;
             $scope.safeApply();
         }
