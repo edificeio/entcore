@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
+import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.InheritShareComputer.InheritShareResult;
 import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.common.user.UserInfos;
@@ -29,9 +30,11 @@ class QueryHelper {
 	final static long MAX_DEPTH = 10;
 	protected final MongoDb mongo = MongoDb.getInstance();
 	private final String collection;
+	private final boolean useOldChildrenQuery;
 
-	public QueryHelper(String collection) {
+	public QueryHelper(String collection, boolean useOldChildrenQuery) {
 		this.collection = collection;
+		this.useOldChildrenQuery = useOldChildrenQuery;
 	}
 
 	static JsonObject toJson(QueryBuilder queryBuilder) {
@@ -55,6 +58,18 @@ class QueryHelper {
 		private Integer skip;
 		private Integer limit;
 		private List<String> parentIdsFilter = new ArrayList<>();
+		public DocumentQueryBuilder copy() {
+			final DocumentQueryBuilder copy = new DocumentQueryBuilder();
+			copy.builder.get().putAll(this.builder.get().toMap());
+			copy.excludeDeleted = this.excludeDeleted;
+			copy.mongoSorts = this.mongoSorts;
+			copy.mongoProjections = this.mongoProjections;
+			copy.onlyDeleted = this.onlyDeleted;
+			copy.skip = this.skip;
+			copy.limit = this.limit;
+			copy.parentIdsFilter = this.parentIdsFilter;
+			return copy;
+		}
 
 		public boolean hasParentIdFilter(){
 			return parentIdsFilter.size() > 0;
@@ -216,6 +231,7 @@ class QueryHelper {
 		}
 
 		public DocumentQueryBuilder withProjections(Set<String> projection) {
+			if(projection == null || projection.isEmpty()) return this;
 			mongoProjections = new JsonObject();
 			for (String p : projection) {
 				mongoProjections.put(p, 1);
@@ -531,7 +547,8 @@ class QueryHelper {
 		return new DocumentQueryBuilder();
 	}
 
-	Future<List<String>> getChildrenIdsRecursively(DocumentQueryBuilder parentFilter,
+	@Deprecated
+	protected Future<List<String>> getChildrenIdsRecursively(DocumentQueryBuilder parentFilter,
 			Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
 		JsonObject projection = new JsonObject().put("_id", 1).put("children", "$children._id");
 		@SuppressWarnings("unchecked")
@@ -568,8 +585,87 @@ class QueryHelper {
 		return future;
 	}
 
-	Future<List<JsonObject>> getChildrenRecursively(DocumentQueryBuilder parentFilter,
-			Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
+	protected Future<Set<String>> getChildrenFoldersIds(DocumentQueryBuilder parentFilter,
+														Optional<DocumentQueryBuilder> queryChildren, boolean includeParents){
+		if(!includeParents){
+			parentFilter.withFileType(FolderManager.FOLDER_TYPE);
+			//if we want parents in result, root element could be documents (download for example)
+		}
+		final JsonObject projection = new JsonObject().put("_id", 1).put("children", "$children._id");
+		final DocumentQueryBuilder queryChildrenBuild = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FOLDER_TYPE);
+		final Optional<JsonObject> queryChildrenOpt = Optional.of(new JsonObject(queryChildrenBuild.build().get().toMap()));
+		AggregationsBuilder agg = AggregationsBuilder.startWithCollection(this.collection)//
+				.withMatch(parentFilter.build())//
+				.withGraphLookup("$_id", "_id", "eParent", "children", Optional.of(MAX_DEPTH), Optional.empty(), queryChildrenOpt)//
+				.withProjection(projection)//
+				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
+		JsonObject command = agg.getCommand();
+		Future<Set<String>> future = Future.future();
+		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
+			JsonObject body = message.body();
+			if (isOk(body)) {
+				JsonArray results = (body.getJsonObject("result", new JsonObject())
+						.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch"));
+				final Set<String> returned = new HashSet<>();
+				for (int i = 0; i < results.size(); i++) {
+					JsonObject result = results.getJsonObject(i);
+					if (includeParents) {
+						returned.add(result.getString("_id"));
+					}
+					JsonArray children = result.getJsonArray("children", new JsonArray());
+					for (int j = 0; j < children.size(); j++) {
+						String child = children.getString(j);
+						returned.add(child);
+					}
+				}
+				future.complete(returned);
+			} else {
+				future.fail(toErrorStr(body));
+			}
+		});
+		return future;
+	}
+
+	protected Future<List<String>> getChildrenIdsRecursively_NEW(DocumentQueryBuilder parentFilter,
+												   Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
+		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy()), includeParents).compose(folderIds->{
+			if(folderIds.isEmpty()){
+				return Future.succeededFuture(new ArrayList<>());
+			}
+			final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(folderIds);
+			return findAllAsList(childQuery.withProjection("_id")).map(all->{
+				final List<String> allIds = new ArrayList<>(folderIds);
+				for(Object doc : all){
+					final JsonObject jsonDoc = (JsonObject)doc;
+					allIds.add(jsonDoc.getString("_id"));
+				}
+				return allIds;
+			});
+		});
+	}
+
+	protected Future<List<JsonObject>> getChildrenRecursively_NEW(DocumentQueryBuilder parentFilter,
+													Optional<DocumentQueryBuilder> queryChildren, boolean includeParents, Set<String> projection) {
+		// impossible de charger les objets sous forme d arbre => stackoverflow ->
+		// charger ids
+		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy()), includeParents).compose(folderIds->{
+			if(folderIds.isEmpty()){
+				return Future.succeededFuture(new ArrayList<>());
+			}
+			final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(folderIds);
+			return CompositeFuture.all(findAllAsList(queryBuilder().withId(folderIds).withProjections(projection)), findAllAsList(childQuery.withProjections(projection))).map(all->{
+				final List<JsonObject> allIds = new ArrayList<>();
+				for(Object ids : all.list()){
+					allIds.addAll((List<JsonObject>)ids);
+				}
+				return allIds;
+			});
+		});
+	}
+
+	@Deprecated
+	protected Future<List<JsonObject>> getChildrenRecursively_OLD(DocumentQueryBuilder parentFilter,
+													Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
 		// impossible de charger les objets sous forme d arbre => stackoverflow ->
 		// charger ids
 		return this.getChildrenIdsRecursively(parentFilter, queryChildren, includeParents).compose(ids -> {
@@ -581,8 +677,23 @@ class QueryHelper {
 		});
 	}
 
+
+	Future<List<JsonObject>> getChildrenRecursively(DocumentQueryBuilder parentFilter,
+													Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
+		return getChildrenRecursively(parentFilter, queryChildren, includeParents, null);
+	}
+
+	Future<List<JsonObject>> getChildrenRecursively(DocumentQueryBuilder parentFilter,
+				Optional<DocumentQueryBuilder> queryChildren, boolean includeParents, Set<String> projection) {
+		if(useOldChildrenQuery){
+			return getChildrenRecursively_OLD(parentFilter, queryChildren, includeParents);
+		}else{
+			return getChildrenRecursively_NEW(parentFilter, queryChildren, includeParents, projection);
+		}
+	}
+
 	@Deprecated
-	Future<JsonArray> listHierarchical_OLD(DocumentQueryBuilder query) {
+	protected Future<JsonArray> listHierarchical_OLD(DocumentQueryBuilder query) {
 
 		Future<JsonArray> future = Future.future();
 		// match all (folders and file)
@@ -824,6 +935,9 @@ class QueryHelper {
 	}
 
 	Future<Void> updateAll(Set<String> id, MongoUpdateBuilder set) {
+		if (id.isEmpty()) {
+			return Future.succeededFuture();
+		}
 		Future<Void> future = Future.future();
 		String now = MongoDb.formatDate(new Date());
 		set.set("modified", now);

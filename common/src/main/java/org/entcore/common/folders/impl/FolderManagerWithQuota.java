@@ -1,12 +1,6 @@
 package org.entcore.common.folders.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.entcore.common.folders.ElementQuery;
@@ -37,13 +31,13 @@ public class FolderManagerWithQuota implements FolderManager {
 	protected final int quotaThreshold;
 
 	public FolderManagerWithQuota(String collection, int quotaTreshold, QuotaService quotaService,
-			FolderManager folderManager, EventBus bus) {
+			FolderManager folderManager, EventBus bus, boolean useOldQueryChildren) {
 		super();
 		this.eventBus = bus;
 		this.quotaThreshold = quotaTreshold;
 		this.quotaService = quotaService;
 		this.folderManager = folderManager;
-		this.queryHelper = new QueryHelper(collection);
+		this.queryHelper = new QueryHelper(collection, useOldQueryChildren);
 	}
 
 	@Override
@@ -131,7 +125,10 @@ public class FolderManagerWithQuota implements FolderManager {
 			DocumentQueryBuilder parentFilter = queryHelper.queryBuilder().withId(ids);
 			DocumentQueryBuilder childrenFilter = queryHelper.queryBuilder().withFileType(FILE_TYPE)
 					.withExcludeDeleted();
-			return queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childrenFilter), true)
+			final Set<String> projections = new HashSet<>();
+			projections.add("_id");
+			projections.add("metadata");
+			return queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childrenFilter), true,projections)
 					.map(founded -> {
 						return DocumentHelper.getFileSize(founded);
 					});

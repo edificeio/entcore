@@ -45,19 +45,17 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     const currentTreeVoid = {};
     $scope.currentTree = currentTreeVoid as any;
     const refreshAll = function () {
-        refreshPromise = workspaceService.fetchTrees(workspaceService.isLazyMode()?{
-            filter: "all",
-            hierarchical: false,
-            onlyRoot: true
-        }:{
+        refreshPromise = workspaceService.fetchTrees({
             filter: "all",
             hierarchical: true
         });
         refreshPromise.then(trees => {
-            trees.forEach(tree => {
-                const current = $scope.trees.find(t => t.filter == tree.filter);
-                current.setChildren(tree.children);
-            })
+            if(!workspaceService.isLazyMode()){//lazy mode dont fetch tree
+                trees.forEach(tree => {
+                    const current = $scope.trees.find(t => t.filter == tree.filter);
+                    current.setChildren(tree.children);
+                })
+            }
             if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
                 $scope.openFolderById($scope.openedFolder.folder._id)
             } else {
@@ -181,7 +179,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         $scope.setCurrentFolder($scope.currentTree as models.Element, true);
     }
     $scope.canExpendTree = function (folder) {
-        if(workspaceService.isLazyMode() && folder._id){
+        if(workspaceService.isLazyMode()){
             return folder.children.length > 0 || (folder as models.Element).cacheChildren.isEmpty;
         }
         return folder.children.length > 0;
@@ -202,8 +200,13 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         else {
             $scope.rolledFolders.push(folder);
         }
-        if(workspaceService.isLazyMode() && folder._id){
-            await workspaceService.fetchChildren(folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+        if(workspaceService.isLazyMode()){
+            if(folder instanceof models.ElementTree){
+                const temp = folder as models.ElementTree;
+                await workspaceService.fetchChildrenForRoot(temp, { filter: temp.filter, hierarchical: false }, null, {onlyFolders:true})
+            }else{
+                await workspaceService.fetchChildren(folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+            }
             $scope.applySort();
             $scope.safeApply()
         }

@@ -27,7 +27,7 @@
 			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)"
 			   help-box-step="[[folder.helpbox]]">
-			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> <span class="workspace-menu-label no-style">[[folder.name]]<i class="loading" ng-if="folder.isChildrenLoading"></i></span>
+			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> <span class="workspace-menu-label no-style">[[folder.name]]<i class="loading" ng-if="folder.isChildrenOrDocumentLoading"></i></span>
 			</a>
 			<!--MUST BE AFTER a.droptarget-->
 			<span ng-class="{'highlight-no-droppable':cannotDropSelectionOnElement(folder)}" class="highlight-title highlight-title-border">

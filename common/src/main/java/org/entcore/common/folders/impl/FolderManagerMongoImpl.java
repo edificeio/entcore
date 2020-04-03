@@ -89,7 +89,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	protected final String imageResizerAddress;
 
-	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress)
+	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery)
 	{
 		this.storage = sto;
 		this.vertx = vertx;
@@ -97,7 +97,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.eb = eb;
 		this.shareService = shareService;
 		this.imageResizerAddress = imageResizerAddress;
-		this.queryHelper = new QueryHelper(collection);
+		this.queryHelper = new QueryHelper(collection, useOldChildrenQuery);
 		this.inheritShareComputer = new InheritShareComputer(queryHelper);
 	}
 
@@ -686,7 +686,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		DocumentQueryBuilder parentFilter = queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withId(roots);
 		queryHelper.getChildrenRecursively(parentFilter, Optional.empty(), true).compose(rows -> {
 			if (rows.isEmpty()) {
-				return Future.succeededFuture();
+				return Future.succeededFuture(new JsonArray());
 			}
 			List<JsonObject> all = rows.stream().map(o -> (JsonObject) o).collect(Collectors.toList());
 			return setDeleteFlag(user, roots, all, deleted);

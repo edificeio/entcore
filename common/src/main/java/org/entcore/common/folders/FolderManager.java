@@ -19,17 +19,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public interface FolderManager {
-	static final String FOLDER_TYPE = "folder";
-	static final String FILE_TYPE = "file";
+	String FOLDER_TYPE = "folder";
+	String FILE_TYPE = "file";
 
-	public static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress) {
-		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress);
+	static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress, boolean useOldQueryChildren) {
+		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress, useOldQueryChildren);
 	}
 
-	public static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
-			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold) {
+	static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
+			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold, boolean useOldQueryChildren) {
 		return new FolderManagerWithQuota(collection, quotaTreshold, quota,
-				mongoManager(collection, sto, vertx, shareService, imageResizerAddress), vertx.eventBus());
+				mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren), vertx.eventBus(),useOldQueryChildren);
 	}
 
 	/**
