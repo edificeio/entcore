@@ -525,16 +525,30 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	@Override
 	public void findByQuery(ElementQuery query, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
-		DocumentQueryBuilder builder = DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user));
+		final DocumentQueryBuilder builder = DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user));
 		// query
 		if (query.getHierarchical() != null && query.getHierarchical()) {
 			queryHelper.listHierarchical(builder).setHandler(handler);
 		} else {
 			if(query.isDirectShared()){
-				DocumentQueryBuilder pBuilder = new DocumentQueryBuilder().filterByInheritShareAndOwner(user).withFileType(FolderManager.FOLDER_TYPE).withProjection("_id");
-				queryHelper.findAllAsList(pBuilder).compose(folders->{
-					Set<String> eParents = folders.stream().map(f->(JsonObject)f).map(f->f.getString("_id")).collect(Collectors.toSet());
-					return queryHelper.findAll(builder.withEparentNotIn(eParents));
+				queryHelper.findAllAsList(builder).compose(elementShared->{
+					final Set<String> parentIdsOfShared = elementShared.stream().map(f -> (JsonObject) f)
+							.map(f -> DocumentHelper.getParent(f)).filter(f -> !StringUtils.isEmpty(f))
+							.collect(Collectors.toSet());
+					if(parentIdsOfShared.isEmpty()){
+						return Future.succeededFuture(new JsonArray(elementShared));
+					}
+					final DocumentQueryBuilder queryParents = queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withFileType(FolderManager.FOLDER_TYPE).withId(parentIdsOfShared).withProjection("_id");
+					return queryHelper.findAllAsList(queryParents).map(visibleFolders ->{
+						final JsonArray rootShared = new JsonArray();
+						final Set<String> folderIdsSet = visibleFolders.stream().map(s-> DocumentHelper.getId(s)).collect(Collectors.toSet());
+						for(final JsonObject doc : elementShared){
+							if(!folderIdsSet.contains(DocumentHelper.getParent(doc))){
+								rootShared.add(doc);
+							}
+						}
+						return rootShared;
+					});
 				}).setHandler(handler);
 			}else{
 				queryHelper.findAll(builder).setHandler(handler);
