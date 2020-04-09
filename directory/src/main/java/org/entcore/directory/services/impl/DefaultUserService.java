@@ -181,7 +181,7 @@ public class DefaultUserService implements UserService {
 			if (event.isRight()) {
 				final JsonObject r = event.right().getValue();
 				filterAttributes.add("password").add("resetCode").add("lastNameSearchField").add("firstNameSearchField")
-						.add("displayNameSearchField").add("checksum");
+						.add("displayNameSearchField").add("checksum").add("emailSearchField");
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
