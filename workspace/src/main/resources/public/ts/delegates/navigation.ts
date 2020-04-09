@@ -109,6 +109,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
                     break;
                 case "empty":
                 case "document-change":
+                    workspaceService.resetAllCache($scope.openedFolder.folder, "document");
                     $scope.reloadFolderContent();
                     break;
             }
