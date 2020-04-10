@@ -585,12 +585,21 @@ class QueryHelper {
 		return future;
 	}
 
-	protected Future<Set<String>> getChildrenFoldersIds(DocumentQueryBuilder parentFilter,
-														Optional<DocumentQueryBuilder> queryChildren, boolean includeParents){
-		if(!includeParents){
-			parentFilter.withFileType(FolderManager.FOLDER_TYPE);
-			//if we want parents in result, root element could be documents (download for example)
+	private class FolderSubtreeIds{
+		final Set<String> rootIds = new HashSet<String>();
+		final Set<String> childrenIds = new HashSet<String>();
+		boolean isEmptyRoots(){ return this.rootIds.isEmpty(); }
+		boolean isEmptyChildrens(){ return this.childrenIds.isEmpty(); }
+		boolean isEmpty(){ return this.isEmptyRoots() && this.isEmptyChildrens(); }
+		Set<String> getAllFolderIds(){
+			final Set<String> all = new HashSet<String>(this.rootIds);
+			all.addAll(this.childrenIds);
+			return all;
 		}
+	}
+
+	protected Future<FolderSubtreeIds> getChildrenFoldersIds(DocumentQueryBuilder parentFilter,
+														Optional<DocumentQueryBuilder> queryChildren){
 		final JsonObject projection = new JsonObject().put("_id", 1).put("children", "$children._id");
 		final DocumentQueryBuilder queryChildrenBuild = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FOLDER_TYPE);
 		final Optional<JsonObject> queryChildrenOpt = Optional.of(new JsonObject(queryChildrenBuild.build().get().toMap()));
@@ -600,22 +609,20 @@ class QueryHelper {
 				.withProjection(projection)//
 				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
 		JsonObject command = agg.getCommand();
-		Future<Set<String>> future = Future.future();
+		Future<FolderSubtreeIds> future = Future.future();
 		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				JsonArray results = (body.getJsonObject("result", new JsonObject())
 						.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch"));
-				final Set<String> returned = new HashSet<>();
+				final FolderSubtreeIds returned = new FolderSubtreeIds();
 				for (int i = 0; i < results.size(); i++) {
 					JsonObject result = results.getJsonObject(i);
-					if (includeParents) {
-						returned.add(result.getString("_id"));
-					}
+					returned.rootIds.add(result.getString("_id"));
 					JsonArray children = result.getJsonArray("children", new JsonArray());
 					for (int j = 0; j < children.size(); j++) {
 						String child = children.getString(j);
-						returned.add(child);
+						returned.childrenIds.add(child);
 					}
 				}
 				future.complete(returned);
@@ -628,19 +635,24 @@ class QueryHelper {
 
 	protected Future<List<String>> getChildrenIdsRecursively_NEW(DocumentQueryBuilder parentFilter,
 												   Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
-		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy()), includeParents).compose(folderIds->{
-			if(folderIds.isEmpty()){
+		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy())).compose(treeResult->{
+			if(treeResult.isEmpty()){
 				return Future.succeededFuture(new ArrayList<>());
+			} else {
+				final Set<String> folderIds = treeResult.getAllFolderIds();
+				final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(folderIds);
+				return findAllAsList(childQuery.withProjection("_id")).map(all->{
+					final List<String> allIds = new ArrayList<>(folderIds);
+					for(Object doc : all){
+						final JsonObject jsonDoc = (JsonObject)doc;
+						allIds.add(jsonDoc.getString("_id"));
+					}
+					if(!includeParents){
+						allIds.removeAll(treeResult.rootIds);
+					}
+					return allIds;
+				});
 			}
-			final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(folderIds);
-			return findAllAsList(childQuery.withProjection("_id")).map(all->{
-				final List<String> allIds = new ArrayList<>(folderIds);
-				for(Object doc : all){
-					final JsonObject jsonDoc = (JsonObject)doc;
-					allIds.add(jsonDoc.getString("_id"));
-				}
-				return allIds;
-			});
 		});
 	}
 
@@ -648,18 +660,33 @@ class QueryHelper {
 													Optional<DocumentQueryBuilder> queryChildren, boolean includeParents, Set<String> projection) {
 		// impossible de charger les objets sous forme d arbre => stackoverflow ->
 		// charger ids
-		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy()), includeParents).compose(folderIds->{
-			if(folderIds.isEmpty()){
+		return getChildrenFoldersIds(parentFilter.copy(), queryChildren.map(e->e.copy())).compose(treeResult->{
+			if(treeResult.isEmpty()){
 				return Future.succeededFuture(new ArrayList<>());
-			}
-			final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(folderIds);
-			return CompositeFuture.all(findAllAsList(queryBuilder().withId(folderIds).withProjections(projection)), findAllAsList(childQuery.withProjections(projection))).map(all->{
-				final List<JsonObject> allIds = new ArrayList<>();
-				for(Object ids : all.list()){
-					allIds.addAll((List<JsonObject>)ids);
+			} else {
+				final List<Future> futures = new ArrayList<Future>();
+				{//fetch folder tree
+					final Set<String> ids = includeParents? treeResult.getAllFolderIds() : treeResult.childrenIds;
+					if(ids.size() > 0){
+						final DocumentQueryBuilder queryParent = queryBuilder().withId(ids).withProjections(projection);
+						futures.add(findAllAsList(queryParent));
+					}
 				}
-				return allIds;
-			});
+				{//fetch document tree
+					final Set<String> parentIds = treeResult.getAllFolderIds();
+					if(parentIds.size() > 0){
+						final DocumentQueryBuilder childQuery = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FILE_TYPE).withParent(parentIds);
+						futures.add(findAllAsList(childQuery.withProjections(projection)));
+					}
+				}
+				return CompositeFuture.all(futures).map(all->{
+					final List<JsonObject> allIds = new ArrayList<>();
+					for(Object ids : all.list()){
+						allIds.addAll((List<JsonObject>)ids);
+					}
+					return allIds;
+				});
+			}
 		});
 	}
 
