@@ -343,8 +343,8 @@ export class Mail implements Selectable {
         try {
             const response = await http.post(path, data);
             const result = response.data;
-            Conversation.instance.folders['outbox'].mails.refresh();
-            Conversation.instance.folders['draft'].mails.refresh();
+            // Conversation.instance.folders['outbox'].mails.refresh();
+            // Conversation.instance.folders['draft'].mails.refresh();
 
             if (parseInt(result.sent) > 0) {
                 this.state = "SENT";
