@@ -400,7 +400,8 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	public void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
+	public Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
+		final Future<JsonObject> futureValidateShares = Future.future();
 		shareValidation(resourceId, userId, share, res -> {
 			if (res.isRight()) {
 				final JsonObject query = new JsonObject().put("_id", resourceId);
@@ -419,10 +420,13 @@ public class MongoDbShareService extends GenericShareService {
 						handler.handle(new Either.Left<>(mongoRes.body().getString("message")));
 					}
 				});
+				futureValidateShares.complete(res.right().getValue());
 			} else {
 				handler.handle(res);
+				futureValidateShares.fail(res.left().getValue());
 			}
 		});
+		return futureValidateShares;
 	}
 
 	private void removeShare(String resourceId, final String shareId, List<String> removeActions, boolean isGroup,
