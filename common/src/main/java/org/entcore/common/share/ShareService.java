@@ -25,6 +25,7 @@ import java.util.Set;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
@@ -53,7 +54,7 @@ public interface ShareService {
 
 	//static void removeShareMetadata(JsonObject data);
 
-	void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler);
 
 	default void findUserIdsForShare(String resourceId, String userId,
 							 Handler<AsyncResult<Set<String>>> h){
