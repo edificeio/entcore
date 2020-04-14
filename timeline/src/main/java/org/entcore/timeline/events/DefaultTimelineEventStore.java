@@ -73,47 +73,23 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
     public void get(final UserInfos user, List<String> types, int offset, int limit, JsonObject restrictionFilter,
                     boolean mine, boolean both, String version, final Handler<JsonObject> result) {
         final String recipient = user.getUserId();
-        final String externalId = user.getExternalId();
         if (recipient != null && !recipient.trim().isEmpty()) {
             final JsonObject query = new JsonObject()
                     .put("deleted", new JsonObject()
                             .put("$exists", false))
                     .put("date", new JsonObject().put("$lt", MongoDb.now()));
-            if (externalId == null || externalId.trim().isEmpty()) {
-                if (mine) { query.put("sender", recipient); }
-                else if (both) {
-                    query.put("$and", new JsonArray()
-                            .add(new JsonObject().put(
-                                    "$or", new JsonArray()
-                                            .add(new JsonObject().put("sender", recipient))
-                                            .add(new JsonObject().put("recipients.userId", recipient))
-                            ))
-                            .add(new JsonObject().put(
-                                    "recipients", new JsonObject()
-                                            .put("$exists", true)
-                                            .put("$ne", new JsonArray())
-                            ))
-                    );
-                } else { query.put("recipients.userId", recipient); }
-            } else {
-                final JsonObject recipientJson = new JsonObject()
-                        .put("$in", new fr.wseduc.webutils.collections.JsonArray().add(recipient).add(externalId));
-                if (mine) { query.put("sender", recipientJson); }
-                else if (both) {
-                    query.put("$and", new JsonArray()
-                            .add(new JsonObject().put(
-                                    "$or", new JsonArray()
-                                            .add(new JsonObject().put("sender", recipientJson))
-                                            .add(new JsonObject().put("recipients.userId", recipientJson))
-                            ))
-                            .add(new JsonObject().put(
-                                    "recipients", new JsonObject()
-                                            .put("$exists", true)
-                                            .put("$ne", new JsonArray())
-                            ))
-                    );
-                } else { query.put("recipients.userId", recipientJson); }
-            }
+            //query sended / received / both
+            if (mine) { query.put("sender", recipient); }
+            else if (both) {
+                query.put("$and", new JsonArray()
+                        .add(new JsonObject().put(
+                                "$or", new JsonArray()
+                                        .add(new JsonObject().put("sender", recipient))
+                                        .add(new JsonObject().put("recipients.userId", recipient))
+                        ))
+                );
+            } else { query.put("recipients.userId", recipient); }
+            //
             query.put("reportAction.action", new JsonObject().put("$ne", "DELETE"));
             if (types != null && !types.isEmpty()) {
                 if (types.size() == 1) {
