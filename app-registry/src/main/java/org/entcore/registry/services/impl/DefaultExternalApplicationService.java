@@ -217,45 +217,47 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
-	public void massAuthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+	public void massAuthorize(String structureId, String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
+		String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
+		String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
+		String whereClauseAdml = "fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) ";
+		String whereClauseProfiles = "p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) ";
 		String query = "";
+
 		if (profiles.contains("AdminLocal")) {
 			profiles = profiles.stream()
 					.filter(profile -> !"AdminLocal".equals(profile))
 					.collect(Collectors.toList());
 			if (profiles.size() == 0) {
 				// Only ADML
-				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-						"AND fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) " +
+				query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE " + whereClause + " AND " + whereClauseAdml +
 						"CREATE UNIQUE (fg)-[:AUTHORIZED]->(r) ";
 			} else {
 				// Profiles + ADML
-				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
-						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-						"WITH r, s " +
-						"OPTIONAL MATCH (s)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-						"WHERE p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
+				query = "MATCH " + matchRole + ", " + matchStructures +
+						"WHERE " + whereClause +
+						"WITH r, subStructure " +
+						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE " + whereClauseProfiles +
 						"MERGE (pg)-[:AUTHORIZED]->(r) " +
-						"WITH r, s " +
-						"OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) " +
+						"WITH r, subStructure " +
+						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE " + whereClauseAdml +
 						"MERGE (fg)-[:AUTHORIZED]->(r)";
 
 			}
 		} else {
 			// only Profiles (no ADML)
-			query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-					"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-					"AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
+			query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE " + whereClause + " AND " + whereClauseProfiles +
 					"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
 		}
 
 		JsonObject params = new JsonObject();
 		params.put("appId", appId);
+		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
 			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 		}
@@ -263,7 +265,14 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
-	public void massUnauthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+	public void massUnauthorize(String structureId, String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
+		String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
+		String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
+		String whereClauseAdml = "fg.name ENDS WITH 'AdminLocal' ";
+		String whereClauseProfiles = "p.name IN {profiles} ";
+		String deleteAuth = "DELETE auth";
+
 		String query = "";
 		if (profiles.contains("AdminLocal")) {
 			profiles = profiles.stream()
@@ -271,40 +280,36 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					.collect(Collectors.toList());
 			if (profiles.size() == 0) {
 				// Only ADML
-				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-						"AND fg.name ENDS WITH 'AdminLocal' " +
+				query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"WHERE " + whereClause + " AND " + whereClauseAdml +
 						"MATCH (r)<-[auth:AUTHORIZED]-(fg) " +
-						"DELETE auth ";;
+						deleteAuth;
 			} else {
 				// Profiles + ADML
-				query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-						"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure) " +
-						"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-						"WITH r, s " +
-						"OPTIONAL MATCH (s)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (pg)-[auth:AUTHORIZED]->(r) " +
-						"WHERE p.name IN {profiles} " +
+				query = "MATCH " + matchRole + ", " + matchStructures +
+						"WHERE " + whereClause +
+						"WITH r, subStructure " +
+						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (pg)-[auth:AUTHORIZED]->(r) " +
+						"WHERE " + whereClauseProfiles +
 						"DELETE auth " +
-						"WITH r, s " +
-						"OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(fg:FunctionGroup), (fg)-[auth:AUTHORIZED]->(r) " +
-						"WHERE fg.name ENDS WITH 'AdminLocal' " +
-						"DELETE auth";
+						"WITH r, subStructure " +
+						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(fg:FunctionGroup), (fg)-[auth:AUTHORIZED]->(r) " +
+						"WHERE " + whereClauseAdml +
+						deleteAuth;
 
 			}
 		} else {
 			// only Profiles (no ADML)
-			query = "MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-					"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
-					"AND p.name IN {profiles} " +
+			query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE " + whereClause + " AND " + whereClauseProfiles +
 					"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +
-					"DELETE auth ";
+					deleteAuth;
 		}
 
 
 		JsonObject params = new JsonObject();
 		params.put("appId", appId);
+		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
 			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 		}

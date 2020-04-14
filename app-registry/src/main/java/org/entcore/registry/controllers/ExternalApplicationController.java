@@ -153,25 +153,31 @@ public class ExternalApplicationController extends BaseController {
 		externalAppService.toggleLock(structureId, defaultResponseHandler(request));
 	}
 
-	@Put("/application/external/:id/authorize")
+	@Put("/structure/:structureId/application/external/:applicationId/authorize")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
 	public void authorizeProfiles(final HttpServerRequest request) {
-		String applicationId = request.params().get("id");
+		String structureId = request.params().get("structureId");
+		String applicationId = request.params().get("applicationId");
 		List<String> profiles = request.params().getAll("profile");
 
-		if(profiles.isEmpty() || applicationId == null || applicationId.trim().isEmpty()){
+		if(profiles.isEmpty()
+				|| structureId == null
+				|| structureId.trim().isEmpty()
+				|| applicationId == null
+				|| applicationId.trim().isEmpty()){
 			badRequest(request);
 			return;
 		}
 
-		externalAppService.massAuthorize(applicationId, profiles, defaultResponseHandler(request));
+		externalAppService.massAuthorize(structureId, applicationId, profiles, defaultResponseHandler(request));
 	}
 
-	@Delete("/application/external/:id/authorize")
+	@Delete("/structure/:structureId/application/external/:id/authorize")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
 	public void unauthorizeProfiles(final HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
 		String applicationId = request.params().get("id");
 		List<String> profiles = request.params().getAll("profile");
 
@@ -180,7 +186,7 @@ public class ExternalApplicationController extends BaseController {
 			return;
 		}
 
-		externalAppService.massUnauthorize(applicationId, profiles, defaultResponseHandler(request, 204));
+		externalAppService.massUnauthorize(structureId, applicationId, profiles, defaultResponseHandler(request, 204));
 	}
 
 	@BusAddress("external-application")

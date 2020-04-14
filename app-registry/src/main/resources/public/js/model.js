@@ -169,23 +169,23 @@ ExternalApplication.prototype.save = function(structureId){
 ExternalApplication.prototype.delete = function(){
     return http().delete('/appregistry/application/external/' + this.data.id)
 }
-ExternalApplication.prototype.massAuthorize = function(profiles){
+ExternalApplication.prototype.massAuthorize = function(structureId, profiles){
     var profilesParams = ""
     profiles.forEach(function(p){
         if(profilesParams)
             profilesParams += "&profile=" + p
         else profilesParams += "?profile=" + p
     })
-    return http().put('/appregistry/application/external/' + this.data.id + '/authorize' + profilesParams)
+    return http().put('/appregistry/structure/' + structureId + '/application/external/' + this.data.id + '/authorize' + profilesParams)
 }
-ExternalApplication.prototype.massUnauthorize = function(profiles){
+ExternalApplication.prototype.massUnauthorize = function(structureId, profiles){
     var profilesParams = ""
     profiles.forEach(function(p){
         if(profilesParams)
             profilesParams += "&profile=" + p
         else profilesParams += "?profile=" + p
     })
-    return http().delete('/appregistry/application/external/' + this.data.id + '/authorize' + profilesParams)
+    return http().delete('/appregistry/structure/' + structureId + '/application/external/' + this.data.id + '/authorize' + profilesParams)
 }
 
 //////// WIDGETS ////////

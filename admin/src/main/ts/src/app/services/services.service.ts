@@ -66,7 +66,7 @@ export class ServicesService {
         return this.httpClient.get<CasType[]>('/appregistry/cas-types');
     }
 
-    public massAssignConnector(connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
+    public massAssignConnector(structureId: string, connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
         let profilesParams = '';
 
         profiles.forEach(p => {
@@ -77,10 +77,10 @@ export class ServicesService {
             }
         });
 
-        return this.httpClient.put<void>(`/appregistry/application/external/${connector.id}/authorize${profilesParams}`, {});
+        return this.httpClient.put<void>(`/appregistry/structure/${structureId}/application/external/${connector.id}/authorize${profilesParams}`, {});
     }
 
-    public massUnassignConnector(connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
+    public massUnassignConnector(structureId: string, connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
         let profilesParams = '';
 
         profiles.forEach(p => {
@@ -91,7 +91,7 @@ export class ServicesService {
             }
         });
 
-        return this.httpClient.delete<void>(`/appregistry/application/external/${connector.id}/authorize${profilesParams}`, {});
+        return this.httpClient.delete<void>(`/appregistry/structure/${structureId}/application/external/${connector.id}/authorize${profilesParams}`, {});
     }
 
     public getExportConnectorUrl(exportFormat: ExportFormat, profile: string, structureId: string): string {
