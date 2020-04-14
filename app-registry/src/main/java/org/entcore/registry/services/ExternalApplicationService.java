@@ -34,7 +34,7 @@ public interface ExternalApplicationService {
 	void deleteExternalApplication(String applicationId, Handler<Either<String, JsonObject>> handler);
 	void createExternalApplication(String structureId, JsonObject application, Handler<Either<String, JsonObject>> handler);
 	void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler);
-	void massAuthorize(String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
-	void massUnauthorize(String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
+	void massAuthorize(String structureId, String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
+	void massUnauthorize(String structureId, String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 
 }

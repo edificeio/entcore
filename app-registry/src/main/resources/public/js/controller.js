@@ -448,7 +448,7 @@ function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
     }
 
     $scope.massLinkExternalApp = function(app, profiles){
-        var request = app.massAuthorize(_.map(profiles, function(p){ return p.name }))
+        var request = app.massAuthorize($scope.school.id, _.map(profiles, function(p){ return p.name }))
         request.done(function(){
             notify.info('appregistry.mass.link.notify.ok')
         }).error(function(){
@@ -457,7 +457,7 @@ function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
         return request
     }
     $scope.massUnlinkExternalApp = function(app, profiles){
-        var request = app.massUnauthorize(_.map(profiles, function(p){ return p.name }))
+        var request = app.massUnauthorize($scope.school.id, _.map(profiles, function(p){ return p.name }))
         request.done(function(){
             notify.info('appregistry.mass.unlink.notify.ok')
         }).error(function(){

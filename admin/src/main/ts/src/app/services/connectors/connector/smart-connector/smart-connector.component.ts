@@ -309,7 +309,7 @@ export class SmartConnectorComponent extends OdeComponent implements OnInit, OnD
 
     public onAddMassAssignment(profiles: Array<Profile>): void {
         this.spinnerService.perform('portal-content',
-            this.servicesService.massAssignConnector(this.servicesStore.connector, profiles)
+            this.servicesService.massAssignConnector(this.servicesStore.structure.id, this.servicesStore.connector, profiles)
               .pipe(
 
                 tap(() => {
@@ -340,7 +340,7 @@ export class SmartConnectorComponent extends OdeComponent implements OnInit, OnD
 
     public onRemoveMassAssignment(profiles: Array<Profile>): void {
         this.spinnerService.perform('portal-content',
-            this.servicesService.massUnassignConnector(this.servicesStore.connector, profiles)
+            this.servicesService.massUnassignConnector(this.servicesStore.structure.id, this.servicesStore.connector, profiles)
               .pipe(
                 tap(() => {
                   this.servicesStore.connector
