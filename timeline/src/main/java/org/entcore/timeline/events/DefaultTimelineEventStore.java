@@ -40,10 +40,18 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
     private static final String TIMELINE_COLLECTION = "timeline";
 
-    private MongoDb mongo = MongoDb.getInstance();
+    protected MongoDb mongo = MongoDb.getInstance();
 
-    private final DateFormat mongoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX", Locale.getDefault());
+    protected final DateFormat mongoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX", Locale.getDefault());
+    protected final String timelineCollection;
+    public DefaultTimelineEventStore(){
+        this(TIMELINE_COLLECTION);
+    }
 
+    public DefaultTimelineEventStore(String collection){
+        this.timelineCollection = collection;
+    }
+    
     @Override
     public void add(JsonObject event, final Handler<JsonObject> result) {
         JsonObject doc = validAndGet(event);
@@ -52,7 +60,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                 doc.put("date", MongoDb.now());
             }
             doc.put("created", doc.getJsonObject("date"));
-            mongo.save(TIMELINE_COLLECTION, doc, resultHandler(result));
+            mongo.save(timelineCollection, doc, resultHandler(result));
         } else {
             result.handle(invalidArguments());
         }
@@ -63,7 +71,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
         if (resource != null && !resource.trim().isEmpty()) {
             JsonObject query = new JsonObject()
                     .put("resource", resource);
-            mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
+            mongo.delete(timelineCollection, query, resultHandler(result));
         } else {
             result.handle(invalidArguments());
         }
@@ -138,7 +146,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                 keys.put("preview", 1);
             }
 
-            mongo.find(TIMELINE_COLLECTION, query, sort, keys,
+            mongo.find(timelineCollection, query, sort, keys,
                     offset, limit, 100, new Handler<Message<JsonObject>>() {
                         @Override
                         public void handle(Message<JsonObject> message) {
@@ -155,7 +163,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
         if (resource != null && !resource.trim().isEmpty()) {
             JsonObject query = new JsonObject()
                     .put("sub-resource", resource);
-            mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
+            mongo.delete(timelineCollection, query, resultHandler(result));
         } else {
             result.handle(invalidArguments());
         }
@@ -163,7 +171,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
     @Override
     public void listTypes(final Handler<JsonArray> result) {
-        mongo.distinct(TIMELINE_COLLECTION, "type", new Handler<Message<JsonObject>>() {
+        mongo.distinct(timelineCollection, "type", new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
                 if ("ok".equals(event.body().getString("status"))) {
@@ -175,7 +183,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
         });
     }
 
-    private JsonObject validAndGet(JsonObject json) {
+    static JsonObject validAndGet(JsonObject json) {
         if (json != null) {
             JsonObject e = json.copy();
             for (String attr: json.fieldNames()) {
@@ -190,13 +198,13 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
         return null;
     }
 
-    private JsonObject invalidArguments() {
+    static JsonObject invalidArguments() {
         return new JsonObject().put("status", "error")
                 .put("message", "Invalid arguments.");
     }
 
 
-    private Handler<Message<JsonObject>> resultHandler(final Handler<JsonObject> result) {
+    static Handler<Message<JsonObject>> resultHandler(final Handler<JsonObject> result) {
         return new Handler<Message<JsonObject>>() {
 
             @Override
@@ -220,7 +228,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                     .put("recipients", new JsonObject().put("$elemMatch",
                             new JsonObject().put("userId", recipient).put("unread", 1)
                     ));
-            mongo.update(TIMELINE_COLLECTION, q, new JsonObject().put("$set",
+            mongo.update(timelineCollection, q, new JsonObject().put("$set",
                     new JsonObject().put("recipients.$.unread", 0)), false, true);
         }
     }
@@ -235,7 +243,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                 .put("recipients", new fr.wseduc.webutils.collections.JsonArray())
                 .put("deleted", 1));
 
-        mongo.update(TIMELINE_COLLECTION, matcher, objNew, MongoDbResult.validActionResultHandler(result));
+        mongo.update(timelineCollection, matcher, objNew, MongoDbResult.validActionResultHandler(result));
     }
 
     @Override
@@ -248,7 +256,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                         .put("recipients", new JsonObject()
                                 .put("userId", recipient)));
 
-        mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
+        mongo.update(timelineCollection, criteria, objNew, MongoDbResult.validActionResultHandler(result));
     }
 
     @Override
@@ -270,7 +278,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                                 .put("lastName", user.getLastName())
                                 .put("date", now)));
 
-        mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
+        mongo.update(timelineCollection, criteria, objNew, MongoDbResult.validActionResultHandler(result));
     }
 
     @Override
@@ -290,7 +298,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
             sort.put("reportAction.date", -1);
         }
 
-        mongo.find(TIMELINE_COLLECTION, matcher, sort, keys, offset, limit, 100, MongoDbResult.validResultsHandler(result));
+        mongo.find(timelineCollection, matcher, sort, keys, offset, limit, 100, MongoDbResult.validResultsHandler(result));
     }
 
     @Override
@@ -316,7 +324,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
             objSet.put("recipients", new fr.wseduc.webutils.collections.JsonArray());
         }
 
-        mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
+        mongo.update(timelineCollection, criteria, objNew, MongoDbResult.validActionResultHandler(result));
     }
 
     @Override
@@ -326,7 +334,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
                 .put("event-type", "NOTIFY-REPORT")
                 .put("resource", resourceId);
 
-        mongo.delete(TIMELINE_COLLECTION, matcher, MongoDbResult.validActionResultHandler(result));
+        mongo.delete(timelineCollection, matcher, MongoDbResult.validActionResultHandler(result));
     }
 
 }

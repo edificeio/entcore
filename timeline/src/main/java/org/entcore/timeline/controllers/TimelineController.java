@@ -47,6 +47,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
+import org.entcore.timeline.events.MobileTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -97,6 +98,9 @@ public class TimelineController extends BaseController {
 			final CacheService cacheService = CacheService.create(vertx, config);
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
+		}
+		if(config.getBoolean("isolate-mobile", false)){
+			store = new MobileTimelineEventStore(store);
 		}
 	}
 
