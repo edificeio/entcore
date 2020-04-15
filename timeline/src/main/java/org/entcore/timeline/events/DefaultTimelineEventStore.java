@@ -183,7 +183,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
         });
     }
 
-    static JsonObject validAndGet(JsonObject json) {
+    protected JsonObject validAndGet(JsonObject json) {
         if (json != null) {
             JsonObject e = json.copy();
             for (String attr: json.fieldNames()) {
