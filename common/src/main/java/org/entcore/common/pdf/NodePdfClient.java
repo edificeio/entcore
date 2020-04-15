@@ -59,7 +59,9 @@ public class NodePdfClient implements PdfGenerator {
 		this.clientId = conf.getString("pdf-connector-id");
 		final URI uri = new URI(conf.getString("url"));
 		final HttpClientOptions options = new HttpClientOptions()
-				.setMaxPoolSize(conf.getInteger("pdf-pool", 16)).setKeepAlive(false).setConnectTimeout(45000)
+				.setMaxPoolSize(conf.getInteger("pdf-pool", 16))
+				.setKeepAlive(conf.getBoolean("pdf-keepalive", true))
+				.setConnectTimeout(conf.getInteger("pdf-timeout", 45000))
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
 	}

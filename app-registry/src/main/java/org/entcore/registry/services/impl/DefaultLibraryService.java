@@ -46,9 +46,9 @@ public class DefaultLibraryService implements LibraryService {
     public DefaultLibraryService(Vertx vertx, JsonObject config) throws Exception {
         this.config = config;
         this.http = vertx.createHttpClient(new HttpClientOptions()
-                                .setKeepAlive(false)
+                                .setKeepAlive(config.getBoolean("library-keepalive", true))
                                 .setMaxPoolSize(config.getInteger("library-pool", 16))
-                                .setConnectTimeout(45000));
+                                .setConnectTimeout(config.getInteger("library-timeout", 45000)));
         this.pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
         this.eb = vertx.eventBus();
         this.storage = new StorageFactory(vertx, config).getStorage();

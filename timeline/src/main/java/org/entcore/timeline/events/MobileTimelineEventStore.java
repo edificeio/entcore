@@ -20,11 +20,26 @@ public class MobileTimelineEventStore extends DefaultTimelineEventStore {
     }
 
     @Override
+    protected JsonObject validAndGet(JsonObject event){
+        final JsonObject res = super.validAndGet(event);
+        if(res != null && event.containsKey("_id")){
+            res.put("_id", event.getString("_id"));
+        }
+        return res;
+    }
+
+    @Override
     public void add(final JsonObject event, final Handler<JsonObject> originalResult) {
         if (event.containsKey("preview")) {
-            super.add(event, (res) -> {
-                this.original.add(event, originalResult);
+            this.original.add(event, resOriginal->{
+                if(resOriginal != null){
+                    event.put("_id", resOriginal.getString("_id"));
+                }
+                super.add(event, (res) -> {
+                    originalResult.handle(resOriginal);                    
+                });
             });
+            
         } else {
             this.original.add(event, originalResult);
         }

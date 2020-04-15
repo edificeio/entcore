@@ -40,3 +40,63 @@ db.timeline.find({ preview: { $exists: true } }).forEach(function (event) {
 });
 save();
 endMeasure("end")
+
+db.timelineMobile.createIndex({
+    "reporters.userId": 1
+}, {
+    "name": "reporters.userId_1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "reporters.date": -1
+}, {
+    "name": "reporters.date_-1",
+    "background": true
+});
+
+db.timelineMobile.createIndex({
+    "reportAction": 1
+}, {
+    "name": "reportAction_1",
+    "background": true
+})
+db.timelineMobile.createIndex({
+    "reportAction.date": -1
+}, {
+    "name": "reportAction.date_-1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "sender": 1
+}, {
+    "name": "sender_1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "type": 1
+}, {
+    "name": "type_1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "recipients.userId": 1,
+    "created": -1
+}, {
+    "name": "recipients.userId_1_created_-1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "date": 1,
+    "sender": 1,
+    "created": -1
+}, {
+    "name": "date_1_sender_1_created_-1",
+    "background": true
+});
+db.timelineMobile.createIndex({
+    "sender": 1,
+    "created": -1
+}, {
+    "name": "sender_1_created_-1",
+    "background": true
+});
