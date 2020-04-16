@@ -58,6 +58,7 @@ public class SqlConversationService implements ConversationService{
 	private final String attachmentTable;
 	private final String userMessageTable;
 	private final String userMessageAttachmentTable;
+	private final boolean optimizedThreadList;
 
 	public SqlConversationService(Vertx vertx, String schema) {
 		this.eb = Server.getEventBus(vertx);
@@ -68,6 +69,7 @@ public class SqlConversationService implements ConversationService{
 		attachmentTable = schema + ".attachments";
 		userMessageTable = schema + ".usermessages";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
+		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", true);
 	}
 
 	@Override
@@ -271,8 +273,22 @@ public class SqlConversationService implements ConversationService{
 		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc, cci ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
-		values.add(user.getUserId());
-		String query = " WITH threads AS ( " +
+		final String query;
+		if (optimizedThreadList) {
+			query =
+				"SELECT m.thread_id as id, conversation.last(m.date ORDER BY m.date) as date, conversation.last(subject ORDER BY m.date) as subject, " +
+				"conversation.last(\"displayNames\" ORDER BY m.date) as \"displayNames\", conversation.last(\"to\" ORDER BY m.date) as \"to\", " +
+				"conversation.last(\"from\" ORDER BY m.date) as \"from\", conversation.last(cc ORDER BY m.date) as cc, " +
+				"conversation.last(cci ORDER BY m.date) as cci, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
+				"FROM conversation.usermessages um " +
+				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
+				"WHERE  um.user_id = ? and um.trashed = false AND m.state = 'SENT' " +
+				"GROUP BY m.thread_id " +
+				"ORDER BY date DESC " +
+				"LIMIT " + nbThread + " OFFSET " + skip;
+		} else {
+			query =
+				" WITH threads AS ( " +
 				" SELECT * from (SELECT  DISTINCT ON (m.thread_id) thread_id AS "+messagesFields+ " FROM " + userMessageTable + " um " +
 				" JOIN "+messageTable+" m ON um.message_id = m.id " +
 				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false ORDER BY m.thread_id, m.date DESC) a "+
@@ -282,7 +298,8 @@ public class SqlConversationService implements ConversationService{
 				"FROM threads, conversation.usermessages um JOIN conversation.messages m ON um.message_id = m.id and um.user_id= ? " +
 				"WHERE  um.trashed = false AND m.thread_id=threads.id GROUP BY m.thread_id) c ON threads.id = c.thread_id " +
 				"ORDER BY date DESC";
-
+			values.add(user.getUserId());
+		}
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "cci", "ccName", "displayNames"));
 	}
 
