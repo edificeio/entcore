@@ -84,7 +84,9 @@ public class Neo4jConversationService {
 		return message != null && (
 				(message.containsKey("from") && !message.getString("from").trim().isEmpty()) ||
 				(message.containsKey("to") && message.getJsonArray("to").size() > 0) ||
-				(message.containsKey("cc") && message.getJsonArray("cc").size() > 0));
+				(message.containsKey("cc") && message.getJsonArray("cc").size() > 0) ||
+				(message.containsKey("cci") && message.getJsonArray("cci").size() > 0)
+		);
 	}
 
 	public void findInactives(final JsonObject message, long size, final Handler<JsonObject> handler){
