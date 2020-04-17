@@ -105,7 +105,8 @@ public class SqlConversationService implements ConversationService{
 		// 2 - Link message to the user
 		builder.insert(userMessageTable, new JsonObject()
 			.put("user_id", user.getUserId())
-			.put("message_id", message.getString("id")));
+			.put("message_id", message.getString("id"))
+			.put("is_sender", true));
 
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 	}
@@ -194,12 +195,17 @@ public class SqlConversationService implements ConversationService{
 
 				for(Object toObj : ids){
 					if(toObj.equals(user.getUserId()))
+					{
+						String updt = "UPDATE " + userMessageTable + " SET is_receiver = true WHERE user_id = ? AND message_id = ?";
+						builder.prepared(updt, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(draftId));
 						continue;
+					}
 
 					builder.insert(userMessageTable, new JsonObject()
 						.put("user_id", toObj.toString())
 						.put("message_id", draftId)
 						.put("total_quota", totalQuota)
+						.put("is_receiver", true)
 					);
 					for(Object attachmentId : attachmentIds){
 						builder.insert(userMessageAttachmentTable, new JsonObject()
@@ -506,10 +512,7 @@ public class SqlConversationService implements ConversationService{
 		query += addCompleteFolderCondition(values, restrain, unread, folder, user);
 
 		if(restrain != null && unread){
-			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
-			values.add(user.getUserId());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
+			query += " AND (um.is_receiver = TRUE) ";
 		}
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
@@ -1055,23 +1058,18 @@ public class SqlConversationService implements ConversationService{
 		String additionalWhere = "";
 		switch(folder.toUpperCase()){
 			case "INBOX":
-				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state = ? AND um.trashed = false";
+				additionalWhere = "AND (um.is_receiver = TRUE) AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
-				values.add(userId);
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
 				values.add("SENT");
 				break;
 			case "OUTBOX":
-				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
+				additionalWhere = "AND um.is_sender = TRUE AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
-				values.add(userId);
 				values.add("SENT");
 				break;
 			case "DRAFT":
-				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
+				additionalWhere = "AND um.is_sender = TRUE AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
-				values.add(userId);
 				values.add("DRAFT");
 				break;
 			case "TRASH":
