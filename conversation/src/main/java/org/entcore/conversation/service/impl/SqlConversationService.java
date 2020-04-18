@@ -413,7 +413,20 @@ public class SqlConversationService implements ConversationService{
 			query.deleteCharAt(query.length() - 1);
 		query.append(")");
 
-		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
+		final String deleteUserThreads =
+			"DELETE FROM conversation.userthreads " +
+			"WHERE user_id = ? AND thread_id NOT IN (" +
+				"SELECT DISTINCT m.thread_id " +
+				"FROM conversation.usermessages um " +
+				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
+				"WHERE user_id = ? AND trashed = false " +
+			")";
+		final JsonArray values2 = new JsonArray().add(user.getUserId()).add(user.getUserId());
+
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+		builder.prepared(query.toString(), values);
+		builder.prepared(deleteUserThreads, values2);
+		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 	}
 
 	@Override
@@ -429,7 +442,15 @@ public class SqlConversationService implements ConversationService{
 		query.append(" AND um.user_id = ? AND um.trashed = false AND um.message_id = m.id ");
 		values.add(user.getUserId());
 
-		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
+		final String deleteUserThreads =
+			"DELETE FROM conversation.userthreads " +
+			"WHERE thread_id IN " + Sql.listPrepared(threadIds.toArray()) + " AND user_id = ? ";
+		final JsonArray values2 = new JsonArray(threadIds).add(user.getUserId());
+
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+		builder.prepared(query.toString(), values);
+		builder.prepared(deleteUserThreads, values2);
+		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 
 	}
 
@@ -449,7 +470,19 @@ public class SqlConversationService implements ConversationService{
 
 		query.append(generateInVars(messagesId, values));
 
-		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
+		final String insertUserThread =
+				"INSERT INTO conversation.userthreads ( " +
+				"SELECT um.user_id as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
+				"FROM conversation.usermessages um " +
+				"JOIN conversation.messages m on um.message_id = m.id " +
+				"WHERE um.message_id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ? AND um.trashed = false AND m.state = 'SENT' " +
+				"GROUP BY user_id, m.thread_id) ON CONFLICT (user_id,thread_id) DO NOTHING";
+		JsonArray values2 = new JsonArray(messagesId).add(user.getUserId());
+
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+		builder.prepared(query.toString(), values);
+		builder.prepared(insertUserThread, values2);
+		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 	}
 
 	@Override
