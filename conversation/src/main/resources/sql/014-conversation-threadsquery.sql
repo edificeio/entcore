@@ -8,6 +8,3 @@ CREATE AGGREGATE conversation.LAST (
         basetype = anyelement,
         stype    = anyelement
 );
-
-CREATE INDEX messages_id_brin_idx ON conversation.messages USING BRIN (id);
-CREATE INDEX usermessages_user_id_brin_idx ON conversation.usermessages USING BRIN (user_id);
