@@ -46,6 +46,13 @@ public class DeleteOrphan implements Handler<Long> {
 			"(select m.id from conversation.messages m " +
 			"left join conversation.usermessages um on um.message_id = m.id " +
 			"where um.user_id is NULL);";
+
+	private static final String DELETE_ORPHAN_THREAD =
+			"delete from conversation.threads where id IN " +
+			"(select t.id from conversation.threads t " +
+			"left join conversation.userthreads ut on ut.thread_id = t.id " +
+			"where ut.user_id is NULL);";
+
 	private final long timeout;
 
 	private final Storage storage;
@@ -60,9 +67,10 @@ public class DeleteOrphan implements Handler<Long> {
 		final Sql sql = Sql.getInstance();
 		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		builder.raw(DELETE_ORPHAN_MESSAGE);
+		builder.raw(DELETE_ORPHAN_THREAD);
 		builder.raw(SELECT_ORPHAN_ATTACHMENT);
 		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout),
-				SqlResult.validResultHandler(1, new Handler<Either<String, JsonArray>>() {
+				SqlResult.validResultHandler(2, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> res) {
 				if (res.isRight()) {
