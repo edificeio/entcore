@@ -1,1 +1,1 @@
-Le contenu du fichier {{name}} a été remplacé. Car, il connait un virus {{virus}}.
+Le contenu du fichier {{name}} a été remplacé. Car, il contenait un virus {{virus}}.
