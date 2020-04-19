@@ -127,7 +127,11 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 			render.processTemplate(request, "text/infectedFile.txt", params, new Handler<String>() {
 				@Override
 				public void handle(String content) {
-					storage.writeBuffer(i.getPath(), i.getId(), Buffer.buffer(content), "text/plain", i.getName() + ".txt", new Handler<JsonObject>() {
+					String c = content;
+					if (c == null || c.trim().isEmpty()) {
+						c = "Le contenu du fichier a été remplacé. Car, il contenait un virus.";
+					}
+					storage.writeBuffer(i.getPath(), i.getId(), Buffer.buffer(c), "text/plain", i.getName() + ".txt", new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
 							if (timeline != null && i.getOwner() != null) {
