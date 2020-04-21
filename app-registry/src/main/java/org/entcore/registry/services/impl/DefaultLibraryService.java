@@ -8,6 +8,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -39,14 +40,15 @@ public class DefaultLibraryService implements LibraryService {
     private final HttpClient http;
     private final JsonObject config;
     private final PdfGenerator pdfGenerator;
-    private final FileSystem fileSystem;
     private final EventBus eb;
     private final Storage storage;
 
     public DefaultLibraryService(Vertx vertx, JsonObject config) throws Exception {
         this.config = config;
-        this.fileSystem = vertx.fileSystem();
-        this.http = vertx.createHttpClient();
+        this.http = vertx.createHttpClient(new HttpClientOptions()
+                                .setKeepAlive(false)
+                                .setMaxPoolSize(config.getInteger("library-pool", 16))
+                                .setConnectTimeout(45000));
         this.pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
         this.eb = vertx.eventBus();
         this.storage = new StorageFactory(vertx, config).getStorage();
@@ -62,6 +64,7 @@ public class DefaultLibraryService implements LibraryService {
                 .put("resourcesIds",new JsonArray().add(resourceId))
                 .put("force", true)
                 .put("synchroniseReply",true);
+        log.info("[getArchive] Start archinving ressource: " + resourceId);
         eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(30000l), response -> {
             if (response.succeeded()) {
                 JsonObject body = (JsonObject) response.result().body();
@@ -70,33 +73,41 @@ public class DefaultLibraryService implements LibraryService {
                     archiveInfo.complete(new JsonObject()
                             .put("exportId",body.getString("exportId"))
                             .put("exportPath",body.getString("exportPath")));
+                    log.info("[getArchive] End archinving ressource: " + resourceId);
                 } else {
+                    log.error("[getArchive] Archive generation status nok for ressource: "+resourceId);
                     archiveInfo.fail("archive.export.start failed");
                 }
             } else {
+                log.error("[getArchive] Archive generation failed for ressource: "+resourceId);
                 archiveInfo.fail(response.cause());
             }
         });
         return archiveInfo.compose(jo -> {
             log.debug("archive.export storage.readFile " + jo.getString("exportPath"));
             Future<Buffer> archive = Future.future();
+            log.info("[getArchive] Start reading archive for ressource: " + resourceId);
             this.storage.readFile(jo.getString("exportPath"), buffer -> archive.complete(buffer));
             return archive;
         }).compose(buffer -> {
             Future<Buffer> bufferFuture = Future.future();
+            log.info("[getArchive] Start deleting archive for ressource: " + resourceId);
             eb.send("entcore.export", new JsonObject()
                     .put("action", "delete")
                     .put("exportId", archiveInfo.result().getString("exportId")), new DeliveryOptions().setSendTimeout(5000l), response -> {
                 if (response.succeeded()) {
                     JsonObject body = (JsonObject) response.result().body();
                     if ("ok".equals(body.getString("status"))){
+                        log.info("[getArchive] End deleting archive for ressource: " + resourceId);
                         log.debug("archive.export.delete " + archiveInfo.result().getString("exportPath"));
                         bufferFuture.complete(buffer);
                     } else {
                         bufferFuture.fail("archive.export.delete failed");
+                        log.error("[getArchive] Failed deleting archive for ressource: " + resourceId+" - "+body.getString("message"));
                     }
                 } else {
                     bufferFuture.fail(response.cause());
+                    log.error("[getArchive] Failed deleting archive for ressource: " + resourceId, response.cause());
                 }
             });
             return  bufferFuture;
@@ -105,6 +116,7 @@ public class DefaultLibraryService implements LibraryService {
 
     @Override
     public Future<JsonObject> publish(UserInfos user, String locale, MultiMap form, Buffer cover, Buffer teacherAvatar) {
+        log.info("[publish] Start publishing ressource: "+form.get("resourceId"));
         final boolean isLibraryEnabled = config.getBoolean(CONFIG_LIBRARY_ENABLED, false);
         final String libraryApiUrl = config.getString(CONFIG_LIBRARY_API_URL);
         final String libraryToken = config.getString(CONFIG_LIBRARY_TOKEN);
@@ -120,36 +132,46 @@ public class DefaultLibraryService implements LibraryService {
         }
         Future<Buffer> archive = getArchive(user, locale, form.get("application"), form.get("resourceId"));
         return archive.compose(resArchive -> generatePdf(user, form)).compose(resPdf -> {
-            final Buffer exportPdf = resPdf.getContent();
             final Future<JsonObject> future = Future.future();
-            final String boundary = UUID.randomUUID().toString();
-            final Buffer multipartBody = createMultipartBody(form, cover, teacherAvatar, exportPdf, archive.result(), boundary);
-            HttpClientRequest request = http.postAbs(libraryApiUrl.concat(RESSOURCE_ENDPOINT));
-            request.handler(response -> {
-                if (response.statusCode() == 200 || response.statusCode() == 201) {
-                    response.bodyHandler(body -> {
-                        future.complete(generateJsonResponse(true, REASON.OK, MESSAGE.OK).put("details", new JsonObject(body)));
-                    });
-                    response.exceptionHandler(e -> {
-                        future.fail(e);
-                        log.error("Ressource publication succeed but get exception : " + response.statusCode(), e);
-                    });
-                } else {
-                    if (response.statusCode() == 401) {
-                        future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.WRONG_TOKEN));
+            try{
+                log.info("[publish] Post data to library for ressource: " + form.get("resourceId"));
+                final Buffer exportPdf = resPdf.getContent();
+                final String boundary = UUID.randomUUID().toString();
+                final Buffer multipartBody = createMultipartBody(form, cover, teacherAvatar, exportPdf, archive.result(), boundary);
+                HttpClientRequest request = http.postAbs(libraryApiUrl.concat(RESSOURCE_ENDPOINT));
+                request.exceptionHandler(res->{
+                    log.error("[publish] Library publish failed handler for: "+form.get("resourceId"), res);
+                });
+                request.handler(response -> {
+                    log.info("[publish] Post data finished for ressource: " + form.get("resourceId")+ " - with code: "+response.statusCode());
+                    if (response.statusCode() == 200 || response.statusCode() == 201) {
+                        response.bodyHandler(body -> {
+                            future.complete(generateJsonResponse(true, REASON.OK, MESSAGE.OK).put("details", new JsonObject(body)));
+                        });
+                        response.exceptionHandler(e -> {
+                            future.fail(e);
+                            log.error("[publish] Ressource publication succeed but get exception : " + response.statusCode(), e);
+                        });
                     } else {
-                        future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.LIBRARY_KO));
+                        if (response.statusCode() == 401) {
+                            future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.WRONG_TOKEN));
+                        } else {
+                            future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.LIBRARY_KO));
+                        }
+                        response.bodyHandler(body -> {
+                            log.error("[publish] Ressource publication failed : " + response.statusCode() + " - " + body);
+                        });
                     }
-                    response.bodyHandler(body -> {
-                        log.error("Ressource publication failed : " + response.statusCode() + " - " + body);
-                    });
-                }
-            });
-            request.setChunked(true);
-            request.putHeader("Authorization", "Bearer ".concat(libraryToken));
-            request.putHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-            request.putHeader("Content-Length", String.valueOf(multipartBody.length()));
-            request.end(multipartBody);
+                });
+                request.setChunked(true);
+                request.putHeader("Authorization", "Bearer ".concat(libraryToken));
+                request.putHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+                request.putHeader("Content-Length", String.valueOf(multipartBody.length()));
+                request.end(multipartBody);
+            }catch(Exception e){
+                log.error("[publish] An error occured while publishing", e);
+                future.fail(e);
+            }
             return future;
         });
     }
@@ -163,15 +185,23 @@ public class DefaultLibraryService implements LibraryService {
     }
 
     private Future<Pdf> generatePdf(UserInfos user, MultiMap form) {
+        log.info("[generatePdf] Start generating pdf for ressource: " + form.get("resourceId"));
         final String pdfUri = form.get("pdfUri");
         form.remove("pdfUri");
         Future<Pdf> future = Future.future();
         if (StringUtils.isEmpty(pdfUri)) {
             future.fail("Pdf URI should not be empty");
+            log.error("[generatePdf] Pdf generation failed for URI: " +pdfUri);
         } else {
             this.pdfGenerator.generatePdfFromUrl(user, "pdfExport.pdf", pdfUri, future.completer());
         }
-        return future;
+        return future.setHandler(res->{
+            if(res.failed()){
+                log.error("[generatePdf] Pdf generation failed for resource: " +form.get("resourceId"), res.cause());
+            }else{
+                log.info("[generatePdf] Pdf generation succeed for resource: " +form.get("resourceId"));
+            }
+        });
     }
 
     private Buffer createMultipartBody(MultiMap form, Buffer cover, Buffer teacherAvatar, Buffer exportPdf, Buffer archive, String boundary) {
