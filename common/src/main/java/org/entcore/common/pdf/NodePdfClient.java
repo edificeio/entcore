@@ -59,6 +59,7 @@ public class NodePdfClient implements PdfGenerator {
 		this.clientId = conf.getString("pdf-connector-id");
 		final URI uri = new URI(conf.getString("url"));
 		final HttpClientOptions options = new HttpClientOptions()
+				.setMaxPoolSize(conf.getInteger("pdf-pool", 16)).setKeepAlive(false).setConnectTimeout(45000)
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
 	}
@@ -73,6 +74,9 @@ public class NodePdfClient implements PdfGenerator {
 		final String boundary = UUID.randomUUID().toString();
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
+		req.exceptionHandler(res->{
+			log.error("[generatePdfFromTemplate] Failed to generatepdf from template: "+template, res);
+		});
 		req.end(multipartBody(name, token, template, boundary));
 	}
 
@@ -83,6 +87,9 @@ public class NodePdfClient implements PdfGenerator {
 
 	private void generatePdfFromUrl(String name, String url, String token, Handler<AsyncResult<Pdf>> handler) {
 		final HttpClientRequest req = client.post("/print/pdf", responseHandler(handler));
+		req.exceptionHandler(res->{
+			log.error("[generatePdfFromUrl] Failed to generate pdf from url: " + url, res);
+		});
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type", "application/json");
 		JsonObject j = new JsonObject().put("url", url).put("name", name);
@@ -98,7 +105,7 @@ public class NodePdfClient implements PdfGenerator {
 			final String token = createToken(user);
 			generatePdfFromTemplate(name, template, token, handler);
 		} catch (Exception e) {
-			log.error("Error creating when send generate pdf from template.", e);
+			log.error("[generatePdfFromTemplate] Error creating when send generate pdf from template.", e);
 			handler.handle(new DefaultAsyncResult<>(e));
 		}
 	}
@@ -109,7 +116,7 @@ public class NodePdfClient implements PdfGenerator {
 			final String token = createToken(user);
 			generatePdfFromUrl(name, url, token, handler);
 		} catch (Exception e) {
-			log.error("Error creating when send generate pdf from url.", e);
+			log.error("[generatePdfFromUrl] Error creating when send generate pdf from url.", e);
 			handler.handle(new DefaultAsyncResult<>(e));
 		}
 	}
@@ -165,7 +172,7 @@ public class NodePdfClient implements PdfGenerator {
 					handler.handle(new DefaultAsyncResult<>(pdf));
 				});
 			} else {
-				log.error("Invalid status code when receive pdf response.");
+				log.error("[responseHandler] Invalid status code when receive pdf response with status: "+ res.statusCode());
 				handler.handle(new DefaultAsyncResult<>(new PdfException("invalid.pdf.response")));
 			}
 		};
@@ -215,6 +222,9 @@ public class NodePdfClient implements PdfGenerator {
 		final HttpClientRequest req = client.post("/convert/pdf?kind="+kind.name(), responseHandler(handler));
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
+		req.exceptionHandler(res->{
+			log.error("[convertToPdfFromBuffer] Http request Failed to convertToPdf: "+kind, res);
+		});
 		req.end(buffer);
 	}
 

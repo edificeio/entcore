@@ -15,6 +15,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.impl.DefaultImportService;
 import org.entcore.common.storage.Storage;
@@ -25,6 +28,7 @@ import java.io.File;
 import java.util.Map;
 
 public class ImportController extends BaseController {
+    private static final Logger log = LoggerFactory.getLogger(ImportController.class);
 
     private ImportService importService;
     private Storage storage;
@@ -42,10 +46,12 @@ public class ImportController extends BaseController {
         UserUtils.getUserInfos(eb, request, user -> {
             if (importService.isUserAlreadyImporting(user.getUserId())) {
                 renderError(request);
+                log.error("[upload] User is already importing " + user.getUsername());
             } else {
                 importService.uploadArchive(request, user, handler -> {
                     if (handler.isLeft()) {
                         badRequest(request, handler.left().getValue());
+                        log.error("[upload] User import failed " + user.getUsername()+" - "+handler.left().getValue());
                     } else {
                         renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
                     }
@@ -62,6 +68,7 @@ public class ImportController extends BaseController {
             importService.analyzeArchive(user, importId, I18n.acceptLanguage(request), config, handler -> {
                 if (handler.isLeft()) {
                     renderError(request, new JsonObject().put("error", handler.left().getValue()));
+                    log.error("[analyze] Analyze import failed " + user.getUsername()+" - "+handler.left().getValue());
                 } else {
                     renderJson(request, handler.right().getValue());
                 }
@@ -101,6 +108,7 @@ public class ImportController extends BaseController {
                     } else {
                         event.reply(new JsonObject().put("status", "error"));
                         renderError(request, event.body());
+                        log.error("[launch] Launch import failed " + user.getUsername()+" - "+event.body().getString("message"));
                     }
                     consumer.unregister();
                 };
