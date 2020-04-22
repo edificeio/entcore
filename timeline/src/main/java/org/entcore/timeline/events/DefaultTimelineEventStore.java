@@ -38,7 +38,7 @@ import java.util.Locale;
 
 public class DefaultTimelineEventStore implements TimelineEventStore {
 
-    private static final String TIMELINE_COLLECTION = "timeline";
+    public static final String TIMELINE_COLLECTION = "timeline";
 
     protected MongoDb mongo = MongoDb.getInstance();
 
