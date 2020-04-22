@@ -1,0 +1,1 @@
+db.timeline.createIndex({reportedStructures:1},{background:true})
