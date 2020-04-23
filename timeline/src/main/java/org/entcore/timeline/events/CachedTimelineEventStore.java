@@ -155,11 +155,17 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             if (res.succeeded()) {
                 final List<String> all = res.result();
                 final Set<String> uniqIds = new HashSet<>();
+                final long now = System.currentTimeMillis();
                 final List<JsonObject> allJson = all.stream().map(json -> new JsonObject(json)).filter(json -> {
                     final String id = json.getString("_id");
                     final boolean alreadyAdded = uniqIds.contains(id);
                     if(alreadyAdded) return false;
                     uniqIds.add(id);
+                    //date filter
+                    final long date = json.getJsonObject("date", new JsonObject()).getLong("$date", now);
+                    if(date > now){
+                        return false;
+                    }
                     //
                     if (types != null && types.size() > 0) {
                         final String type = json.getString("type", "");
