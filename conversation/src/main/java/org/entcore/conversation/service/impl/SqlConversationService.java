@@ -502,15 +502,6 @@ public class SqlConversationService implements ConversationService{
 			"DELETE FROM " + userMessageTable + " um " +
 			"WHERE um.user_id = ? AND um.trashed = true";
 
-		String deleteUserThreads =
-				"DELETE FROM conversation.userthreads " +
-				"WHERE user_id = ? AND thread_id NOT IN (" +
-					"SELECT DISTINCT m.thread_id " +
-					"FROM conversation.usermessages um " +
-					"LEFT JOIN conversation.messages m on um.message_id = m.id " +
-					"WHERE user_id = ?" +
-				")";
-
 		if (!deleteAll) {
 			getTotalQuota += " AND um.message_id IN ";
 			getTotalQuota += (generateInVars(messagesId, values2));
@@ -520,7 +511,6 @@ public class SqlConversationService implements ConversationService{
 
 		builder.prepared(getTotalQuota, values2);
 		builder.prepared(deleteUserMessages, values3);
-		builder.prepared(deleteUserThreads, values3.copy().add(user.getUserId()));
 
 		sql.transaction(builder.build(), SqlResult.validResultsHandler(result));
 	}
