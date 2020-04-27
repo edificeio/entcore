@@ -37,6 +37,26 @@ case $i in
 esac
 done
 
+#try jenkins branch name => then local git branch name => then jenkins params
+echo "[buildNode] Get branch name from jenkins env..."
+BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+if [ "$BRANCH_NAME" = "" ]; then
+  echo "[buildNode] Get branch name from git..."
+  BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+fi
+if [ ! -z "$FRONT_TAG" ]; then
+  echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
+  BRANCH_NAME="$FRONT_TAG"
+fi
+if [ "$BRANCH_NAME" = "" ]; then
+  echo "[buildNode] Branch name should not be empty!"
+  exit -1
+fi
+
+echo "======================"
+echo "BRANCH_NAME = $BRANCH_NAME"
+echo "======================"
+
 clean () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
 }
@@ -82,10 +102,10 @@ buildNode () {
 buildAdminNode() {
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm --no-bin-links install && npm update ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm run build-docker-prod"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install && npm update ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm run build-docker-prod"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
   esac
 }
 
