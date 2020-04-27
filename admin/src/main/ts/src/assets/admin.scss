@@ -888,7 +888,7 @@ i.opener {
   &::after{
     content: '\f105';
     display: inline-block;
-    margin-right: 15px;
+    margin-right: 10px;
     transition: transform 0.25s;
   }
   &.opened {
@@ -1034,15 +1034,25 @@ ode-side-panel {
 
 /* Item tree component */
 ode-item-tree {
+  ode-item-tree {
+    ul {
+      padding-left: 30px;
+    }
+  }
   ul {
+    margin: 0;
     li {
       padding: 0px;
       > a {
+        font-size: 0.9em;
         color: white;
-        padding: 15px 10px 15px 20px;
+        padding: 12px 10px 10px 13px;
         display: block;
         text-decoration: none;
         transition: all 0.25s;
+        background-color: rgba(255,255,255,.09);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
         &:hover {
           background-color: $main-light;
           color: white;
@@ -1051,7 +1061,7 @@ ode-item-tree {
       &.root {
         > a {
           font-weight: bolder;
-          border-bottom: 1px solid $shadow-light;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         }
       }
       &.selected > a {
@@ -1412,22 +1422,25 @@ ode-portal {
     padding: 15px 0;
     box-sizing: border-box;
     height: 50px;
-    box-shadow: 0px 0px 20px $shadow-light;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.26);
     span {
       font-size: 1.6em;
     }
   }
   ode-side-panel {
     > div {
-      left: -400px !important;
-      width: 400px !important;
+      left: -500px !important;
+      width: 500px !important;
       top: 50px !important;
       height: calc(100% - 50px);
-      box-shadow: 1px 1px 25px $shadow-light;
+      box-shadow: 2px 0 5px rgba(90, 69, 69, 0.26);
       box-sizing: border-box;
+      padding-bottom: 30px;
     }
     input[type="search"] {
       color: white;
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
       &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4);}
       &::placeholder{color:rgba(250,250,250,0.4);}
       &:-ms-input-placeholder{color:rgba(250,250,250,0.4);}
