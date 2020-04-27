@@ -35,6 +35,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.services.LibraryService;
 import org.entcore.registry.services.impl.DefaultLibraryService;
 
@@ -106,26 +107,6 @@ public class LibraryController extends BaseController {
         return futureUser;
     }
 
-    private Future<String> getMainStructureName(final String userId) {
-        Future<String> future = Future.future();
-        JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
-        eb.send("directory", new JsonObject().put("action", "getMainStructure")
-                .put("userId", userId).put("structures-to-exclude", structuresToExclude), handler -> {
-            String mainStructureName = "";
-            if (handler.succeeded()) {
-                JsonObject body = ((JsonObject)handler.result().body());
-                if ("ok".equals(body.getString("status"))) {
-                    String result = body.getJsonObject("result").getString("name");
-                    if (result != null) {
-                        mainStructureName = result;
-                    }
-                }
-            }
-            future.complete(mainStructureName);
-        });
-        return future;
-    }
-
     private Future<MultiMap> getAttributes(HttpServerRequest request, Future<UserInfos> futureUser) {
         MultiMap form = request.formAttributes();
         form.add("platformURL", Renders.getHost(request));
@@ -135,16 +116,9 @@ public class LibraryController extends BaseController {
             futureUser.setHandler(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
-                    Future<String> mainStructureName = getMainStructureName(user.getUserId());
-                    mainStructureName.setHandler(result -> {
-                        String mainStructure = result.result();
-                        log.info("[Library] Main structure identified as " + mainStructure + " for " + user.getLogin());
-                        form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
-                                .add("teacherSchool", mainStructure)
-                                .add("teacherId", user.getUserId());
-                        future.complete(form);
-                    });
-
+                    form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
+                        .add("teacherId", user.getUserId());
+                    future.complete(form);
                 } else {
                     future.fail(resuser.cause());
                 }

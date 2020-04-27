@@ -54,6 +54,7 @@
   "bpr.form.publication.keywords": "Mots-clés (5 max)",
   "bpr.form.publication.keywords.separate": "Séparés par une virgule",
   "bpr.form.publication.keywords.placeholder": "Exemple : CM2, français, théatre",
+  "bpr.form.publication.structure": "Établissement de rattachement",
   "bpr.form.publication.language": "Langue",
   "bpr.form.publication.licence.image.alt": "Logo Creative Commons BY",
   "bpr.form.publication.licence.text": "En cliquant sur \"Publier\" :",
