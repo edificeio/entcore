@@ -787,6 +787,7 @@
     "services.mass-assignment.unassign-success.content": "La dés-attribution des rôles a été effectuée avec succès.",
     "services.mass-assignment.unassign-error.title": "Une erreur est survenue",
     "services.mass-assignment.unassign-error.content": "Une erreur est survenue pendant la dés-attribution des rôles.",
+    "ux.multiselect.select-all": "Tout sélectionner",
     "ux.multiselect.deselect-all": "Tout désélectionner",
     "users.with.mail": "Utilisateur avec courriel",
     "users.without.mail": "Utilisateur sans courriel",
