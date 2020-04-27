@@ -170,7 +170,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	@Override
 	protected boolean customValidation(SecureHttpServerRequest request) {
 		final String scope = request.getAttribute("scope");
-		createStatsEvent(request);
+		// createStatsEvent(request);
 		return isNotEmpty(scope) &&
 				(prefixPattern.matcher(scope).find() ||
 						request.path().contains("/auth/internal/userinfo") ||
