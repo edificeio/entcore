@@ -33,8 +33,11 @@ import java.util.Set;
 public class StudentImportProcessing extends BaseImportProcessing {
 
 	protected Set<String> resp = new HashSet<>();
+	protected final boolean importPersonInCharge;
+
 	protected StudentImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
+		importPersonInCharge = vertx.getOrCreateContext().config().getBoolean("import-person-in-charge", false);
 	}
 
 	@Override
@@ -71,7 +74,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 			for (Object o : relative) {
 				if (!(o instanceof String)) continue;
 				String [] r = ((String) o).split("\\$");
-				if (r.length == 6 && !"0".equals(r[3])) {
+				if (r.length == 6 && ("1".equals(r[3]) || ("2".equals(r[3]) && importPersonInCharge))) {
 					res.add(r[0]);
 				}
 			}
