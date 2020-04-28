@@ -15,6 +15,8 @@
 	"ENTEleveNiveau" : { "attribute" : "level", "type" : "string" },
 	"ENTEleveCycle" : { "attribute" : "sector", "type" : "string" },
 	"ENTEleveTypeClasse" : { "attribute" : "classType", "type" : "string" },
+	"ENTEleveDateEntreeClasses" : { "attribute" : "startDateClasses", "type" : "array-string" },
+	"ENTEleveDateSortieClasses" : { "attribute" : "endDateClasses", "type" : "array-string" },
 	"ENTEleveRestaurantScolaire" : { "attribute" : "schoolCanteen", "type" : "boolean" },
 	"ENTEleveTransport" : { "attribute" : "transport", "type" : "boolean" },
 	"ENTEleveGarderieMatin" : { "attribute" : "morningChildcare", "type" : "boolean" },
