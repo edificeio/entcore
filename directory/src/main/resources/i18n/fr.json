@@ -852,7 +852,7 @@
     "directory.blocked.label": "Bloqué",
     "directory.resetted.label": "Code temporaire: [[resetCode]]",
     "directory.otp.title": "Connexion à l'application mobile",
-    "directory.otp.content": "Vous pouvez utiliser les informations de connexion indiquées si dessous pour vous connectez à l'application mobile :",
+    "directory.otp.content": "Vous pouvez utiliser les informations de connexion indiquées ci-dessous pour vous connecter à l'application mobile :",
     "directory.otp.login": "Identifiant : [[login]] / Mot de passe : [[otp]]",
     "directory.otp.copy": "Copier le mot de passe",
     "directory.otp.info" : "Le mot de passe est à usage unique et restera valide pendant 10 minutes.",
