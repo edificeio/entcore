@@ -567,7 +567,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private Future<Void> updateMongoCourses(JsonObject baseQuery) {
 		Future<Void> future = Future.future();
 		mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
-				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")),
+				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")).put("$unset", new JsonObject().put("deleted", "")),
 				false, true, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
