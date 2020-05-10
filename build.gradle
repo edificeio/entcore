@@ -42,6 +42,7 @@ subprojects {
 
   sourceSets {
     main { compileClasspath += configurations.provided }
+    test { runtimeClasspath += configurations.compileOnly }
   }
 
   configurations.all {
