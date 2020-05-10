@@ -24,6 +24,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
@@ -125,6 +126,9 @@ public abstract class BaseServer extends Server {
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
+
+		final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+		Renders.getAllowedHosts().addAll(skins.keySet());
 	}
 
 	protected void initFilters() {
