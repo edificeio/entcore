@@ -177,7 +177,7 @@ public class TimetableController extends BaseController {
 			@Override
 			public void handle(final HttpServerFileUpload upload) {
 				final String filename = path + File.separator + upload.filename();
-				upload.endHandler(new Handler<Void>() {
+				upload.streamToFileSystem(filename).endHandler(new Handler<Void>() {
 					@Override
 					public void handle(Void event) {
 						timetableService.importTimetable(request.params().get("structureId"), filename,
@@ -186,7 +186,6 @@ public class TimetableController extends BaseController {
 								reportResponseHandler(vertx, path, request));
 					}
 				});
-				upload.streamToFileSystem(filename);
 			}
 		});
 		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
