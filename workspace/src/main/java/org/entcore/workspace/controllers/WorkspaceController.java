@@ -813,7 +813,7 @@ public class WorkspaceController extends BaseController {
 				JsonObject jo = res.getJsonObject("result");
 				String thumbSize = request.params().get("thumbnail");
 				if ("ok".equals(status) && jo != null) {
-					boolean createThumbnails = thumbSize != null && (jo.getJsonObject("thumbnails") == null ||
+					boolean createThumbnails = !StringUtils.isEmpty(thumbSize) && (jo.getJsonObject("thumbnails") == null ||
 							StringUtils.isEmpty(jo.getJsonObject("thumbnails").getString(thumbSize)));
 					JsonObject thumbnails = createThumbnails ? new JsonObject().put(thumbSize, "") : new JsonObject();
 					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler ->
