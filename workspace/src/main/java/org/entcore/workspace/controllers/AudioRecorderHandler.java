@@ -95,6 +95,7 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 				final Map<String, String> queries = parseQueries(ws.query());
 				final String path = ws.path();
 				final String id = path.replaceFirst("/audio/", "");
+				log.info("[Dictaphone] - Pausing n°: " + id);
 				eb.send(AudioRecorderWorker.class.getSimpleName(),
 						new JsonObject().put("action", "open").put("id", id).put("sampleRate", queries.getOrDefault("sampleRate", "44100")), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					@Override
@@ -113,6 +114,7 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 													public void handle(AsyncResult<Message<JsonObject>> ar) {
 														if (ar.failed() || !"ok".equals(ar.result().body().getString("status"))) {
 															ws.writeTextMessage("audio.chunk.error");
+															log.error("[Dictaphone] - Error: " + ar.result().body().getString("message"));
 														}
 													}
 												});
@@ -135,8 +137,10 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 								}
 							});
 							ws.resume();
+							log.info("[Dictaphone] - Resuming n°: " + id);
 						} else {
 							ws.writeTextMessage(m.body().getString("message"));
+							log.error("[Dictaphone] - Error: " + m.body().getString("message"));
 						}
 					}
 				}));
@@ -159,8 +163,10 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 							ws.writeTextMessage("ok");
 						} else {
 							ws.writeTextMessage(event.body().getString("message"));
+							log.error("[Dictaphone] - Error: " + event.body().getString("message"));
 						}
 						ws.close();
+						log.info("[Dictaphone] - Closing n°: " + id);
 					}
 				}));
 	}
@@ -177,8 +183,10 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 								ws.writeTextMessage("ok");
 							} else {
 								ws.writeTextMessage(event.body().getString("message"));
+								log.error("[Dictaphone] - Error: " + event.body().getString("message"));
 							}
 							ws.close();
+							log.info("[Dictaphone] - Closing n°: " + id);
 						}
 					}
 				}));
@@ -196,6 +204,7 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 								ws.writeTextMessage("ok");
 							} else {
 								ws.writeTextMessage(event.body().getString("message"));
+								log.error("[Dictaphone] - Error: " + event.body().getString("message"));
 							}
 						}
 					}
