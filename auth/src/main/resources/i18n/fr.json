@@ -19,6 +19,7 @@
     "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect.",
     "auth.error.blockedUser" : "L'administrateur de votre établissement a bloqué votre accès à votre réseau éducatif. Veuillez le contacter.",
     "auth.error.blockedProfileType": "L'accès à votre réseau éducatif est temporairement bloqué pour votre profil d'utilisateur.",
+    "auth.error.ban": "Vous avez effectué trop de tentatives de connexion.",
     "auth.error.global": "Votre réseau éducatif est momentanément indisponible, notre équipe fait le maximum pour résoudre ces perturbations le plus rapidement possible.",
     "auth.forgot.header": "Identifiant ou mot de passe oublié",
     "auth.forgot.send": "Envoyer",

@@ -60,6 +60,7 @@ import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.redis.Redis;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.validation.StringValidation;
 
@@ -137,8 +138,8 @@ public class AuthController extends BaseController {
 				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
 				: null;
 		checkFederatedLogin = config.getBoolean("check-federated-login", false);
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,
-				checkFederatedLogin);
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), Redis.getClient(),
+				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L));
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
