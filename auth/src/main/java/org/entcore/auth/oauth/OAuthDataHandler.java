@@ -33,12 +33,15 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.redis.Redis;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.redis.RedisClient;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
@@ -54,23 +57,32 @@ public class OAuthDataHandler extends DataHandler {
 	private static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	private static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
 	private static final String AUTH_ERROR_GLOBAL = "auth.error.global";
+	private static final String AUTH_ERROR_BAN = "auth.error.ban";
+	private static final String LOGIN_BAN_KEY = "logban:";
 	private static final Long OTP_DELAY = 600000L;
 	private final Neo4j neo;
 	private final MongoDb mongo;
+	private final RedisClient redisClient;
 	private final OpenIdConnectService openIdConnectService;
 	private final boolean checkFederatedLogin;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
 	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
+	private final int pwMaxRetry;
+	private final long pwBanDelay;
 
-	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService,
-			boolean checkFederatedLogin) {
+	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
+			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
+			int pwMaxRetry, long pwBanDelay) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
 		this.checkFederatedLogin = checkFederatedLogin;
+		this.redisClient = redisClient;
+		this.pwMaxRetry = pwMaxRetry;
+		this.pwBanDelay = pwBanDelay;
 	}
 
 	@Override
@@ -108,35 +120,80 @@ public class OAuthDataHandler extends DataHandler {
 	public void getUserId(final String username, final String password, final Handler<Try<AccessDenied, String>> handler) {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
-			String query =
-					"MATCH (n:User) " +
-					"WHERE n.login={login} AND NOT(HAS(n.activationCode)) ";
-					// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
-			if (checkFederatedLogin) {
-				query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
-			}
-			query +=
-					"OPTIONAL MATCH (p:Profile) " +
-					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
-					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-					"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
-			Map<String, Object> params = new HashMap<>();
-			params.put("login", username);
-			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
-
-				@Override
-				public void handle(Message<JsonObject> res) {
-					JsonArray result = res.body().getJsonArray("result");
-					if ("ok".equals(res.body().getString("status")) &&
-							result != null && result.size() == 1) {
-						checkPassword(result, password, username, handler);
+			if (redisClient != null) {
+				redisClient.lindex(LOGIN_BAN_KEY + username, pwMaxRetry - 1, ar -> {
+					if (ar.succeeded() && isNotEmpty(ar.result())) {
+						try {
+							if (System.currentTimeMillis() > (Long.parseLong(ar.result()) + pwBanDelay)) {
+								getUserIdNeo4j(username, password, handler);
+							} else {
+								handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BAN)));
+							}
+						} catch (NumberFormatException e) {
+							log.error("Erreur parse ban delay", e);
+							getUserIdNeo4j(username, password, handler);
+						}
 					} else {
-						getUserIdByLoginAlias(username, password, handler);
+						getUserIdNeo4j(username, password, handler);
 					}
-				}
-			});
+				});
+			} else {
+				getUserIdNeo4j(username, password, handler);
+			}
 		} else {
 			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+		}
+	}
+
+	private void getUserIdNeo4j(final String username, final String password,
+			final Handler<Try<AccessDenied, String>> handler) {
+		String query =
+				"MATCH (n:User) " +
+				"WHERE n.login={login} AND NOT(HAS(n.activationCode)) ";
+				// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
+		if (checkFederatedLogin) {
+			query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
+		}
+		query +=
+				"OPTIONAL MATCH (p:Profile) " +
+				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
+		Map<String, Object> params = new HashMap<>();
+		params.put("login", username);
+		neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonArray result = res.body().getJsonArray("result");
+				if ("ok".equals(res.body().getString("status")) &&
+						result != null && result.size() == 1) {
+					checkPassword(result, password, username, handler);
+				} else {
+					getUserIdByLoginAlias(username, password, handler);
+				}
+			}
+		});
+	}
+
+	private void incrBanAuthentication(String username) {
+		if (redisClient != null) {
+			redisClient.lpush(LOGIN_BAN_KEY + username, Long.toString(System.currentTimeMillis()), ar -> {
+				if (ar.succeeded()) {
+					redisClient.ltrim(LOGIN_BAN_KEY + username, 0, pwMaxRetry, ar2 -> {
+						if (ar2.failed()) {
+							log.error("Error when trim ban list : " + username, ar2.cause());
+						}
+					});
+					redisClient.pexpire(LOGIN_BAN_KEY + username, pwBanDelay, ar3 -> {
+						if (ar3.failed()) {
+							log.error("Error when set expire : " + username, ar3.cause());
+						}
+					});
+				} else {
+					log.error("Error when increment try authentication : " + username, ar.cause());
+				}
+			});
 		}
 	}
 
@@ -145,10 +202,12 @@ public class OAuthDataHandler extends DataHandler {
 
 		if (r != null) {
 			if (getOrElse(r.getBoolean("blockedProfile"), false)) {
+				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_PROFILETYPE)));
 				return;
 			}
 			if (getOrElse(r.getBoolean("blockedUser"), false)) {
+				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
 				return;
 			}
@@ -157,11 +216,13 @@ public class OAuthDataHandler extends DataHandler {
 			if (isNotEmpty(dbPassword) && getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY >
 					System.currentTimeMillis() && BCrypt.checkpw(password, dbPassword)) {
 				removeOTP(username);
+				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 				return;
 			}
 			dbPassword = r.getString("password");
 			if (isEmpty(dbPassword)) {
+				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 				return;
 			}
@@ -190,6 +251,7 @@ public class OAuthDataHandler extends DataHandler {
 			if (success) {
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 			} else {
+				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 			}
 		} else {

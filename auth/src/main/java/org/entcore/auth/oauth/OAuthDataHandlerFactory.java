@@ -20,6 +20,7 @@
 package org.entcore.auth.oauth;
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.redis.RedisClient;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -30,19 +31,26 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 
 	private final Neo4j neo;
 	private final MongoDb mongo;
+	private final RedisClient redisClient;
 	private final OpenIdConnectService openIdConnectService;
 	private final boolean checkFederatedLogin;
+	private final int pwMaxRetry;
+	private final long pwBanDelay;
 
-	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService, boolean cfl) {
+	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, RedisClient redisClient,
+			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay) {
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
 		this.checkFederatedLogin = cfl;
+		this.redisClient = redisClient;
+		this.pwMaxRetry = pwMaxRetry;
+		this.pwBanDelay = pwBanDelay;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
-		return new OAuthDataHandler(request, neo, mongo, openIdConnectService, checkFederatedLogin);
+		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin, pwMaxRetry, pwBanDelay);
 	}
 
 }
