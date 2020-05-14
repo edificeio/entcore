@@ -119,7 +119,10 @@ export const build = function (){
 			http().get('/timeline/lastNotifications', params).done(function(response){
 				that.loading = false;
 				if(response.results.length > 0){
-					that.addRange(response.results);
+					//#36034, add only non existing notification (avoid duplicate)
+					const ids = that.all.map(e=>e._id);
+					const toAdd = response.results.filter(e=>ids.indexOf(e._id)==-1);
+					that.addRange(toAdd);
 					that.page++;
 				} else {
 					that.lastPage = true;
