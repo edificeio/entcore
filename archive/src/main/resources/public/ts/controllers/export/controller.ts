@@ -51,9 +51,13 @@ export let exportController = ng.controller('ExportController', ['$scope', ($sco
 					$scope.loadingSpinner = false;
 					$scope.$apply();
 				})
-				.catch(function()
+				.catch(function(error)
 				{
-					notify.error('archive.error');
+					if(error.response != null && error.response.status == 404)
+						notify.error('archive.error.404');
+					else
+						notify.error('archive.error');
+
 					setTimeout(function()
 					{
 						window.location.reload();
