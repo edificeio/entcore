@@ -78,7 +78,7 @@
 		</div>
 
 		<!-- Emptyscreen: no results with filters -->
-		<div class="emptyscreen" ng-if="noResultsWithFilters() && !switchingFilters">
+		<div class="emptyscreen" ng-if="noResultsWithFilters() && !switchingFilters && !isCache()">
 			<h2 class="emptyscreen-header">
 				<i18n>empty.timeline.notifications.noresults.title</i18n>
 			</h2>
