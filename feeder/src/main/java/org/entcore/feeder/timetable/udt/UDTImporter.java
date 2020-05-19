@@ -363,10 +363,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void addGroup(JsonObject currentEntity) {
 		final String id = currentEntity.getString("code_div") + currentEntity.getString(CODE);
 		groups.put(id, currentEntity);
-		String name = currentEntity.getString("code_div") + " Gr " + currentEntity.getString(CODE);
-		if (isEmpty(name)) {
-			name = id;
-		}
+		final String name = getOrElse(currentEntity.getString("code_sts"), id, false);
 		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
 		currentEntity.put("idgpe", currentEntity.remove("id"));
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
@@ -482,7 +479,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				log.warn("addEleve : unknown.group.mapping");
 				return;
 			}
-			final String name = group.getString("code_div") + " Gr " + group.getString(CODE);
+			final String name = getOrElse(group.getString("code_sts"), group.getString("code_div") + group.getString(CODE), false);
 			txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
 					.put("firstName", eleve.getString("prenom", "").toLowerCase())
 					.put("lastName", eleve.getString("nom", "").toLowerCase())
@@ -725,7 +722,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 			} else {
 				String gName = entity.getString("gpe");
 				if (isNotEmpty(gName)) {
-					groups.add(entity.getString("div") + " Gr " + gName);
+					JsonObject g = this.groups.get(entity.getString("div") + gName);
+					if (g != null) {
+						groups.add(getOrElse(g.getString("code_sts"), entity.getString("div") + gName, false));
+					} else {
+						groups.add(entity.getString("div") + gName);
+					}
 				}
 			}
 		}
