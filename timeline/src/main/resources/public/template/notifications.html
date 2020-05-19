@@ -89,7 +89,7 @@
 		</div>
 
 		<!-- Emptyscreen: no filters selected -->
-		<div class="emptyscreen" ng-if="noFiltersSelected() && !switchingFilters">
+		<div class="emptyscreen" ng-if="noFiltersSelected() && !switchingFilters && !isCache()">
 			<h2 class="emptyscreen-header">
 				<i18n>empty.timeline.notifications.nofilters.title</i18n>
 			</h2>
