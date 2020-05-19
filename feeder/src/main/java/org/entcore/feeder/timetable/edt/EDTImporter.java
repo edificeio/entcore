@@ -653,6 +653,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 				}
 			}
 		}
+		if (c.getJsonArray("groups") != null && !c.getJsonArray("groups").isEmpty()) {
+			c.put("classes", new JsonArray());
+		}
 		try {
 			c.put("_id", JsonUtil.checksum(c));
 		} catch (NoSuchAlgorithmException e) {
