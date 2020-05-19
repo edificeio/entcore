@@ -730,6 +730,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 					}
 				}
 			}
+			if (!groups.isEmpty()) {
+				c.put("classes", new JsonArray());
+			}
 		}
 		try {
 			final String check = JsonUtil.checksum(c);
