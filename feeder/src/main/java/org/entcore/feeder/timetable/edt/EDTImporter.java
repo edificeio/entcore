@@ -313,9 +313,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 					updateUser(user.put(IDPN, idPronote));
 					ttReport.teacherFound();
 				} catch (ValidationException e) {
+					ttReport.addUnknownTeacher(teacher);
 					report.addError("update.user.error");
 				}
-			}
+			} else
+			  ttReport.addUnknownTeacher(teacher);
 		} else {
 			idpnIdent.put(idPronote, id);
 			findPersEducNat(currentEntity, idPronote, "Teacher");
