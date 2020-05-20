@@ -589,17 +589,21 @@ public class UDTImporter extends AbstractTimetableImporter {
 					if (start == null) {
 						start = j.getString("fic");
 						current = val;
-					} else if ((++current) != val || count == c.size()) {
-						if (count == c.size()) {
-							persistCourse(generateCourse(start, j.getString("fic"),
-									previous, startPeriodWeek, endPeriodWeek, theoretical));
-						} else {
+					}
+					else
+					{
+						boolean follows = (++current) == val;
+						if (follows == false) {
 							persistCourse(generateCourse(start, previous.getString("fic"),
-									previous, startPeriodWeek, endPeriodWeek, theoretical));
+								previous, startPeriodWeek, endPeriodWeek, theoretical));
+							start = j.getString("fic");
+							current = val;
 						}
 
-						start = j.getString("fic");
-						current = val;
+						if (count == c.size()) {
+							persistCourse(generateCourse(start, j.getString("fic"),
+								j, startPeriodWeek, endPeriodWeek, theoretical));
+						}
 					}
 					previous = j;
 				}
