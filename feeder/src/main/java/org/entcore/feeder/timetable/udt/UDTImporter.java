@@ -47,6 +47,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -89,7 +90,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, JsonObject> eleves = new HashMap<>();
 	private Map<String, String> codeGepDiv = new HashMap<>();
 	private Set<String> usedGroupInCourses = new HashSet<>();
-	private final boolean udcalLowerCase;
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
@@ -97,12 +97,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport) {
 		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
 		this.vertx = vertx;
-		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
-		if (udcalLowerCase) {
-			filenameWeekPatter = Pattern.compile("udcal_[0-9]{2}_([0-9]{2})\\.xml$");
-		} else {
-			filenameWeekPatter = Pattern.compile("UDCal_[0-9]{2}_([0-9]{2})\\.xml$");
-		}
+		filenameWeekPatter = Pattern.compile("(UDCal|udcal)_[0-9]{2}_([0-9]{2})\\.xml$");
 	}
 
 	@Override
@@ -135,7 +130,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_11.xml"); // Fiches-T
 					parse(basePath + "UDCal_12.xml"); // Lignes de Fiches-T
 					generateCourses(startDateWeek1.getWeekOfWeekyear(), true);
-					final String UCal12Filter = udcalLowerCase ? "udcal_12_[0-9]+.xml" : "UDCal_12_[0-9]+.xml";
+					final String UCal12Filter = "(UDCal|udcal)_12_[0-9]+.xml";
 					vertx.fileSystem().readDir(basePath, UCal12Filter, new Handler<AsyncResult<List<String>>>() {
 						@Override
 						public void handle(AsyncResult<List<String>> event) {
@@ -144,7 +139,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 									for (String p : event.result()) {
 										Matcher m = filenameWeekPatter.matcher(p);
 										if (m.find()) {
-											final int weekNumber = Integer.parseInt(m.group(1));
+											final int weekNumber = Integer.parseInt(m.group(2));
 											if (periods.containsKey(weekNumber)) {
 												ttReport.addWeek(weekNumber);
 												parse(p);
@@ -173,11 +168,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 		});
 	}
 
-	private void parse(String filePath) throws Exception {
-		if (udcalLowerCase) {
-			filePath = filePath.toLowerCase();
+	private void parse(String filePath) throws Exception
+	{
+		InputSource in;
+		try {
+			in = new InputSource(new FileInputStream(filePath));
 		}
-		InputSource in = new InputSource(new FileInputStream(filePath));
+		catch(FileNotFoundException e)
+		{
+			in = new InputSource(new FileInputStream(filePath.toLowerCase()));
+		}
 		UDTHandler sh = new UDTHandler(this);
 		XMLReader xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(sh);
