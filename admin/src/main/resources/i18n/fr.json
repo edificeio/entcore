@@ -729,6 +729,7 @@
     "services.connector.export.type.esidoc": "Export e-sidoc",
     "services.connector.export.type.cerise.teacher": "Export Cerise enseignant",
     "services.connector.export.type.cerise.student": "Export Cerise élève",
+    "services.connector.export.type.chamilo": "Export Chamilo",
     "services.connector.export.type.sacoche": "Export Sacoche",
     "services.connector.export.type.gepi": "Export Gepi",
     "services.connector.export.type.proeps.student": "Export ProEPS élève",
