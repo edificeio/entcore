@@ -277,7 +277,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 		final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
 		final String ocn = currentEntity.getString("Nom");
 		final String className = (classesMapping != null && ocn != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
+		final String classExternalId = classNameExternalId.get(className);
 		currentEntity.put("className", className);
+		currentEntity.put("classExternalId", classExternalId);
 		if (pcs != null) {
 			for (Object o : pcs) {
 				if (o instanceof JsonObject) {
@@ -289,7 +291,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		if (className != null) {
 			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
 
-			if(classNameExternalId.containsKey(className) == true)
+			if(classExternalId != null)
 				ttReport.classFound();
 			else
 				ttReport.addClassToReconciliate(new TimetableReport.SchoolClass(className));
@@ -594,13 +596,17 @@ public class EDTImporter extends AbstractTimetableImporter {
 						break;
 					case "Classe":
 						JsonArray classesArray = c.getJsonArray("classes");
+						JsonArray classesIdsArray = c.getJsonArray("classesIds");
 						if (classesArray == null) {
 							classesArray = new fr.wseduc.webutils.collections.JsonArray();
+							classesIdsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("classes", classesArray);
+							c.put("classesExternalIds", classesIdsArray);
 						}
 						JsonObject ci = classes.get(ident);
 						if (ci != null) {
 							classesArray.add(ci.getString("className"));
+							classesIdsArray.add(ci.getString("classExternalId"));
 						}
 						break;
 					case "Groupe":
@@ -653,6 +659,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 		if (c.getJsonArray("groups") != null && !c.getJsonArray("groups").isEmpty()) {
 			c.put("classes", new JsonArray());
+			c.put("classesIds", new JsonArray());
 		}
 		try {
 			c.put("_id", JsonUtil.checksum(c));
