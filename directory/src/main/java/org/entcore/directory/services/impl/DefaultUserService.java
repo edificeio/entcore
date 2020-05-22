@@ -311,7 +311,8 @@ public class DefaultUserService implements UserService {
 			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 			"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 			"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
-			"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) ";
+			"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+			"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) ";
 		if (expectedProfiles != null && expectedProfiles.size() > 0) {
 			filterProfile += "AND p.name IN {expectedProfiles} ";
 			params.put("expectedProfiles", expectedProfiles);
@@ -381,8 +382,11 @@ public class DefaultUserService implements UserService {
 				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName, attachmentId : child.attachmentId, childExternalId : child.externalId, displayName : child.displayName }) END as children, " +
 				"HEAD(COLLECT(distinct parent.externalId)) as parent1ExternalId, " + // Hack for GEPI export
 				"HEAD(TAIL(COLLECT(distinct parent.externalId))) as parent2ExternalId, " + // Hack for GEPI export
-				"COUNT(distinct class.id) > 0 as hasClass " + // Hack for Esidoc export
+				"COUNT(distinct class.id) > 0 as hasClass, " + // Hack for Esidoc export
+				"CASE WHEN p.name = 'Teacher' THEN 'PROFS' ELSE 'ELEVES' END as chamiloProfile, " + // Hack for chamilo export
+				"CASE WHEN p.name = 'Teacher' THEN collect(distinct {name: sub.label}) ELSE collect(distinct {name: class.name}) END as allClassesSubject " + // Hack for chamilo export
 				"ORDER BY type DESC, displayName ASC ";
+
 		neo.execute(query, params, validResultHandler(results));
 	}
 
