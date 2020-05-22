@@ -347,12 +347,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 			codeGepDiv.put(id, codeGep);
 		}
 		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(id), id, false) : id;
+		final String classExternalId = classNameExternalId.get(className);
 		currentEntity.put("className", className);
+		currentEntity.put("classExternalId", classExternalId);
 
 		// The class won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
 
-		if(classNameExternalId.containsKey(className) == true)
+		if(classExternalId != null)
 			ttReport.classFound();
 		else
 			ttReport.addClassToReconciliate(
@@ -704,6 +706,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final JsonObject cId = classes.get(entity.getString("div"));
 		if (cId != null && isNotEmpty(cId.getString("className"))) {
 			c.put("classes", new fr.wseduc.webutils.collections.JsonArray().add(cId.getString("className")));
+			c.put("classesExternalIds", new fr.wseduc.webutils.collections.JsonArray().add(cId.getString("classExternalId")));
 		}
 
 		JsonArray groups;

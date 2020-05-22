@@ -52,7 +52,7 @@ public class DefaultTimetableService implements TimetableService {
 	private final MongoDb mongo = MongoDb.getInstance();
 	private static final JsonObject KEYS = new JsonObject().put("_id", 1).put("structureId", 1).put("subjectId", 1)
 			.put("roomLabels", 1).put("equipmentLabels", 1).put("teacherIds", 1).put("personnelIds", 1)
-			.put("classes", 1).put("groups", 1).put("dayOfWeek", 1).put("startDate", 1).put("endDate", 1)
+			.put("classes", 1).put("classesExternalIds", 1).put("groups", 1).put("dayOfWeek", 1).put("startDate", 1).put("endDate", 1)
 			.put("subjectId", 1).put("roomLabels", 1);
 	private static final String START_DATE_PATTERN = "T00:00Z";
 	private static final String END_DATE_PATTERN = "T23.59Z";
