@@ -531,12 +531,13 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 		final Long cancelWeek = (currentEntity.getString("SemainesAnnulation") != null) ?
 				Long.valueOf(currentEntity.getString("SemainesAnnulation")) : null;
-		BitSet lastWeek = new BitSet(weeks.size());
-		int startCourseWeek = 0;
-		for (int i = 1; i < 53; i++) {
+
+		for (int i = 1; i < 53; i++)
+		{
 			final BitSet currentWeek = new BitSet(weeks.size());
 			boolean enabledCurrentWeek = false;
-			for (int j = 0; j < weeks.size(); j++) {
+			for (int j = 0; j < weeks.size(); j++)
+			{
 				if (cancelWeek != null && ((1L << i) & cancelWeek) != 0) {
 					currentWeek.set(j, false);
 				} else {
@@ -545,22 +546,17 @@ public class EDTImporter extends AbstractTimetableImporter {
 				}
 				enabledCurrentWeek = enabledCurrentWeek | currentWeek.get(j);
 			}
-			if (!currentWeek.equals(lastWeek)) {
-				if (startCourseWeek > 0) {
-					persistCourse(generateCourse(startCourseWeek, i - 1, lastWeek, items, currentEntity));
-				}
-				startCourseWeek = enabledCurrentWeek ? i : 0;
-				lastWeek = currentWeek;
-			}
+			if(enabledCurrentWeek)
+				persistCourse(generateCourse(i - 1, currentWeek, items, currentEntity));
 		}
 	}
 
-	private JsonObject generateCourse(int startCourseWeek, int endCourseWeek, BitSet enabledItems, List<JsonObject> items, JsonObject entity) {
+	private JsonObject generateCourse(int courseWeek, BitSet enabledItems, List<JsonObject> items, JsonObject entity) {
 		final int day = Integer.parseInt(entity.getString("Jour"));
 		final int startPlace = Integer.parseInt(entity.getString("NumeroPlaceDebut"));
 		final int placesNumber = Integer.parseInt(entity.getString("NombrePlaces"));
-		DateTime startDate = startDateWeek1.plusWeeks(startCourseWeek - 1).plusDays(day - 1);
-		DateTime endDate = startDate.plusWeeks(endCourseWeek - startCourseWeek);
+		DateTime startDate = startDateWeek1.plusWeeks(courseWeek - 1).plusDays(day - 1);
+		DateTime endDate = startDate.plusWeeks(0); // Force a copy of startDate
 		startDate = startDate.plusSeconds(slots.get(entity.getString("NumeroPlaceDebut")).getStart());
 		endDate = endDate.plusSeconds(slots.get(String.valueOf((startPlace + placesNumber - 1))).getEnd());
 		final JsonObject c = new JsonObject()
