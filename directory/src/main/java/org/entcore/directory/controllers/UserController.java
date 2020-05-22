@@ -315,6 +315,13 @@ public class UserController extends BaseController {
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
 					final String format = request.params().get("format");
 					Handler<Either<String, JsonArray>> handler;
+
+					//hack Chamilo
+					if ("Chamilo".equals(exportType)) {
+						types.clear();
+						types.add("Teacher").add("Student");
+					}
+
 					if(format == null){
 						handler = arrayResponseHandler(request);
 					} else {

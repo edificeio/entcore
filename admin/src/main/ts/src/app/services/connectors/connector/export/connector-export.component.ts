@@ -54,7 +54,7 @@ export class ConnectorExportComponent extends OdeComponent {
             value: 'Chamilo',
             label: 'services.connector.export.type.chamilo',
             format: 'csv',
-            profiles: ['Teacher','Student']
+            profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
         },
         {
             value: 'Sacoche',
