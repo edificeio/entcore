@@ -187,7 +187,7 @@ public class TimetableReport
   private long nbClassesFound = 0;
   private List<SchoolClass> classesToReconciliate = new LinkedList<SchoolClass>();
 
-  private List<String> groupsCreated = new LinkedList<String>();
+  private Map<String, Boolean> groupsCreated = new HashMap<String, Boolean>();
   private List<String> groupsUpdated = new LinkedList<String>();
   private List<String> groupsDeleted = new LinkedList<String>();
 
@@ -305,7 +305,7 @@ public class TimetableReport
       .put("unknownTeachers", this.getTemplateEntities(this.unknownTeachers))
       .put("nbClassesFound", nbClassesFound)
       .put("classesToReconciliate", this.getTemplateEntities(this.classesToReconciliate))
-      .put("groupsCreated", new JsonArray(this.groupsCreated))
+      .put("groupsCreated", new JsonArray(this.boolMapToList(groupsCreated)))
       .put("groupsUpdated", new JsonArray(this.groupsUpdated))
       .put("groupsDeleted", new JsonArray(this.groupsDeleted))
       .put("nbCoursesCreated", this.nbCoursesCreated)
@@ -371,6 +371,17 @@ public class TimetableReport
     return new JsonArray(resList);
   }
 
+  private List<String> boolMapToList(Map<String, Boolean> map)
+  {
+    List<String> list = new LinkedList<String>();
+
+    for(Map.Entry<String, Boolean> e : map.entrySet())
+      if(e.getValue().booleanValue() == true)
+        list.add(e.getKey());
+
+    return list;
+  }
+
   //====================================================== SETTERS ======================================================
 
   public void setFileID(String id)
@@ -430,9 +441,15 @@ public class TimetableReport
     this.classesToReconciliate.add(recClass);
   }
 
-  public void groupCreated(String group)
+  public void temporaryGroupCreated(String group)
   {
-    this.groupsCreated.add(group);
+    this.groupsCreated.put(group, new Boolean(false));
+  }
+
+  public void validateGroupCreated(String group)
+  {
+    if(this.groupsCreated.containsKey(group))
+      this.groupsCreated.put(group, new Boolean(true));
   }
 
   public void groupUpdated(String group)

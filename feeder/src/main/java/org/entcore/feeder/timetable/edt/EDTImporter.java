@@ -249,7 +249,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 		else
 		{
-			ttReport.groupCreated(name);
+			ttReport.temporaryGroupCreated(name);
 		}
 	}
 
@@ -313,6 +313,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 				try {
 					final JsonObject user = persEducNat.applyMapping(currentEntity.copy());
 					updateUser(user.put(IDPN, idPronote));
+					foundTeachers.put(teacherId[0], new Boolean(true));
 					ttReport.teacherFound();
 				} catch (ValidationException e) {
 					ttReport.addUnknownTeacher(teacher);
@@ -451,15 +452,17 @@ public class EDTImporter extends AbstractTimetableImporter {
 		if (isNotEmpty(sconetId)) {
 			final JsonArray classes = currentEntity.getJsonArray("Classe");
 			final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
-			studentToGroups(sconetId, classes, this.classes);
-			studentToGroups(sconetId, pcs, this.subClasses);
 
 			String date = StringValidation.convertDate(currentEntity.getString("DateNaissance", ""));
 			String idStr = currentEntity.getString("Prenom", "") + "$" + currentEntity.getString("Nom", "") + "$" + date;
 
 			if(studentsIdStrings.containsKey(idStr) == true)
+			{
 				ttReport.userFound();
-			else
+				studentToGroups(sconetId, classes, this.classes);
+				studentToGroups(sconetId, pcs, this.subClasses);
+			}
+				else
 				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
 		}
 	}
@@ -487,6 +490,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 											.put("inDate", DateTime.parse(inDate).getMillis())
 											.put("outDate", DateTime.parse(outDate).getMillis())
 											.put("now", importTimestamp));
+									ttReport.validateGroupCreated(name);
 								}
 							}
 						}
