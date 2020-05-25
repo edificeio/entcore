@@ -237,19 +237,23 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 		final String name = currentEntity.getString("Nom");
 		String externalId = structureExternalId + "$" + name;
-		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
-				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", externalId)
-				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 
-		if(functionalGroupExternalId.containsKey(externalId) == true)
+		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
+
+		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
-			functionalGroupExternalIdCopy.remove(externalId);
-			ttReport.groupUpdated(name);
+			txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+					.put("externalId", externalId)
+					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+
+			ttReport.temporaryGroupCreated(name);
 		}
 		else
 		{
-			ttReport.temporaryGroupCreated(name);
+			functionalGroupExternalIdCopy.remove(externalId);
+			ttReport.groupUpdated(name);
 		}
 	}
 
