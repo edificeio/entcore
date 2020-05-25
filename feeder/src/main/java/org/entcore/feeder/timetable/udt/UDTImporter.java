@@ -371,50 +371,68 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("idgpe", currentEntity.remove("id"));
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
 		final String externalId = structureExternalId + "$" + name;
-		txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
-				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", externalId)
-				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 
-		if(functionalGroupExternalId.containsKey(externalId) == true)
+		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
+
+		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
-			functionalGroupExternalIdCopy.remove(externalId);
-			ttReport.groupUpdated(getOrElse(currentEntity.getString("code_sts"), name, false));
+			txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
+					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+					.put("externalId", externalId)
+					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+
+			ttReport.temporaryGroupCreated(name);
 		}
 		else
-			ttReport.temporaryGroupCreated(getOrElse(currentEntity.getString("code_sts"), name, false));
+		{
+			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) " + set, currentEntity.put("externalId", externalId));
+
+			functionalGroupExternalIdCopy.remove(externalId);
+			ttReport.groupUpdated(name);
+		}
 	}
 
 	// Origine: Regroupements
-	void addGroup2(JsonObject currentEntity) {
+	void addGroup2(JsonObject currentEntity)
+	{
 		final String codeGroup = currentEntity.getString("code_gpe");
 		final String name = currentEntity.getString("nom");
-		if (isNotEmpty(codeGroup)) {
+
+		if (isNotEmpty(codeGroup))
+		{
 			final String groupId = currentEntity.getString("code_div") + codeGroup;
 			JsonObject group = groups.get(groupId);
+
 			if (group == null) {
 				log.warn("addGroup2 : unknown.group.mapping");
 				return;
 			}
+
 			JsonArray groups = group.getJsonArray("groups");
 			if (groups == null) {
 				groups = new fr.wseduc.webutils.collections.JsonArray();
 				group.put("groups", groups);
 			}
 			groups.add(name);
+
 			JsonArray aggClasses = aggregateRgmtCourses.get(name);
 			if (aggClasses == null) {
 				aggClasses = new JsonArray();
 				aggregateRgmtCourses.put(name, aggClasses);
 			}
 			aggClasses.add(currentEntity.getString("code_div"));
-		} else {
+		}
+		else
+		{
 			final String classId = currentEntity.getString("code_div");
 			JsonObject classe = classes.get(classId);
+
 			if (classe == null) {
 				log.warn("addGroup2 : unknown.class.mapping");
 				return;
 			}
+
 			JsonArray groups = classe.getJsonArray("groups");
 			if (groups == null) {
 				groups = new fr.wseduc.webutils.collections.JsonArray();
@@ -422,22 +440,32 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			groups.add(name);
 		}
+
 		regroup.put(currentEntity.getString(CODE), name);
 		final String externalId = structureExternalId + "$" + name;
-		txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
-				.put("structureExternalId", structureExternalId)
-				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-				.put("externalId", externalId)
-				.put("id", UUID.randomUUID().toString()).put("source", getSource())
-				.put("idrgpmt", currentEntity.getString("id")));
 
-		if(functionalGroupExternalId.containsKey(externalId) == true)
+		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
+
+		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
+			txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
+					.put("structureExternalId", structureExternalId)
+					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+					.put("externalId", externalId)
+					.put("id", UUID.randomUUID().toString()).put("source", getSource())
+					.put("idrgpmt", currentEntity.getString("id")));
+
+			ttReport.temporaryGroupCreated(name);
+		}
+		else
+		{
+			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) SET fg.idrgpmt = {idrgpmt}",
+				currentEntity.put("externalId", externalId).put("idrgpmt", currentEntity.getString("id")));
+
 			functionalGroupExternalIdCopy.remove(externalId);
 			ttReport.groupUpdated(name);
 		}
-		else
-			ttReport.temporaryGroupCreated(name);
 	}
 
 	private void persistUsedGroups() {
