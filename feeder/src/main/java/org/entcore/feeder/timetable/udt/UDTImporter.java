@@ -299,6 +299,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				if (getSource().equals(teacherId[1]) && authorizeUserCreation) {
 					updateUser(p);
 				}
+				foundTeachers.put(teacherId[0], new Boolean(true));
 				this.ttReport.teacherFound();
 			} else {
 				final String userId = UUID.randomUUID().toString();
@@ -381,7 +382,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			ttReport.groupUpdated(getOrElse(currentEntity.getString("code_sts"), name, false));
 		}
 		else
-			ttReport.groupCreated(getOrElse(currentEntity.getString("code_sts"), name, false));
+			ttReport.temporaryGroupCreated(getOrElse(currentEntity.getString("code_sts"), name, false));
 	}
 
 	// Origine: Regroupements
@@ -436,7 +437,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			ttReport.groupUpdated(name);
 		}
 		else
-			ttReport.groupCreated(name);
+			ttReport.temporaryGroupCreated(name);
 	}
 
 	private void persistUsedGroups() {
@@ -474,6 +475,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		final String codeGroup = currentEntity.getString("gpe");
 		final String codeDiv = currentEntity.getString("code_div");
+
+		String date = StringValidation.convertDate(currentEntity.getString("naissance", ""));
+		String idStr = currentEntity.getString("prenom", "") + "$" + currentEntity.getString("nom", "") + "$" + date;
+
+		// If the student is missing, don't try to link them to groups
+		if(studentsIdStrings.containsKey(idStr) == false)
+			return;
+
 		JsonArray groups;
 		if (isNotEmpty(codeGroup)) {
 			JsonObject group = this.groups.get(codeDiv + codeGroup);
@@ -494,6 +503,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("now", importTimestamp));
 			groups = group.getJsonArray("groups");
 
+			ttReport.validateGroupCreated(name);
 		} else {
 			JsonObject classe = classes.get(codeDiv);
 			if (classe == null) {
@@ -514,6 +524,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 						.put("inDate", importTimestamp)
 						.put("outDate", endStudents)
 						.put("now", importTimestamp));
+
+				ttReport.validateGroupCreated(o2.toString());
 			}
 		}
 	}

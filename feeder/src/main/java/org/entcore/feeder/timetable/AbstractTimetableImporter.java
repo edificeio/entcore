@@ -145,6 +145,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, String[]> teachersMapping = new HashMap<>();
 	protected final Map<String, String[]> teachersCleanNameMapping = new HashMap<>();
 	protected final Map<String, String> teachers = new HashMap<>();
+	protected final Map<String, Boolean> foundTeachers = new HashMap<>();
 	protected final Map<String, String> subjectsMapping = new HashMap<>();
 	protected final Map<String, String> subjectsBCNMapping = new HashMap<>();
 	protected final Map<String, String> subjects = new HashMap<>();
@@ -503,6 +504,15 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				final JsonArray g = new fr.wseduc.webutils.collections.JsonArray();
 				for (Object o : groups) {
 					g.add(structureExternalId + "$" + o.toString());
+
+					for(String id : ids)
+					{
+						if(foundTeachers.containsKey(id))
+						{
+							ttReport.validateGroupCreated(o.toString());
+							break;
+						}
+					}
 				}
 				for (String id : ids) {
 					txXDT.add(PERSEDUCNAT_TO_GROUPS, new JsonObject()
