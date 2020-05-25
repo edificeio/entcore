@@ -120,11 +120,23 @@ public class ElasticSearch {
 	}
 
 	public void search(String type, JsonObject query, Handler<AsyncResult<JsonObject>> handler) {
-		postInternal(defaultIndex + "/" + type + "/_search", 200, query, handler);
+		this.postInternal(this.defaultIndex + "/" + type + "/_search", 200, query, handler);
 	}
 
 	public void post(String type, JsonObject object, Handler<AsyncResult<JsonObject>> handler) {
-		postInternal(defaultIndex + "/" + type, 201, object, handler);
+		this.postInternal(this.defaultIndex + "/" + type, 201, object, handler);
+	}
+
+	public void create(String type, JsonObject object, Integer id, Handler<AsyncResult<JsonObject>> handler) {
+		this.postInternal(this.defaultIndex + "/" + type + "/" + id, 201, object, handler);
+	}
+
+	public void delete(String type, JsonObject object, Handler<AsyncResult<JsonObject>> handler) {
+		this.postInternal(this.defaultIndex + "/" + type + "/_delete_by_query", 201, object, handler);
+	}
+
+	public void update(String type, JsonObject object, Integer id, Handler<AsyncResult<JsonObject>> handler) {
+		this.postInternal(this.defaultIndex + "/" + type + "/" + id + "/_update", 201, object, handler);
 	}
 
 	private void postInternal(String path, int expectedStatus, JsonObject payload, Handler<AsyncResult<JsonObject>> handler) {
