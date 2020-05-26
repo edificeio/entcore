@@ -19,6 +19,7 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
         $scope.importing = false;
         $scope.errors = {};
         $scope.getClassesMapping(structure);
+        $scope.getGroupsMapping(structure);
     };
 
     $scope.getClassesMapping = function(structure) {
@@ -26,10 +27,23 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
             if (data && data.classNames) {
                 data.classNames.sort();
             }
-            if (data && !data.mapping) {
-                data.mapping = {};
+            if (data && !data.classesMapping) {
+                data.classesMapping = {};
             }
             $scope.cm = data;
+            $scope.$apply();
+        });
+    };
+
+    $scope.getGroupsMapping = function(structure) {
+        structure.groupsMapping(function(data) {
+            if (data && data.groupNames) {
+                data.groupNames.sort();
+            }
+            if (data && !data.groupsMapping) {
+                data.groupsMapping = {};
+            }
+            $scope.gm = data;
             $scope.$apply();
         });
     };
@@ -57,6 +71,10 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
 
     $scope.updateClassesMapping = function(structure, cm) {
         structure.updateClassesMapping(cm);
+    };
+
+    $scope.updateGroupsMapping = function(structure, gm) {
+        structure.updateGroupsMapping(gm);
     };
 
     $scope.import = function(structure, importFile) {
