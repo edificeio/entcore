@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -150,6 +151,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected String structureExternalId;
 	protected String structureId;
 	protected JsonObject classesMapping;
+	protected JsonObject groupsMapping;
 	protected DateTime startDateWeek1;
 	protected int slotDuration; // seconds
 	protected Map<String, Slot> slots = new HashMap<>();
@@ -167,6 +169,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, String> classNameExternalId = new HashMap<>();
 	protected final Map<String, String> functionalGroupExternalId = new HashMap<>();
 	protected final Map<String, String> functionalGroupExternalIdCopy = new HashMap<>();
+	protected final Map<String, String> functionalGroupNames = new HashMap<>();
 	protected final Map<String, String> studentsIdStrings = new HashMap<>();
 	protected String academyPrefix = "";
 
@@ -221,14 +224,14 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"u.lastName as lastName, u.firstName as firstName";
 		final String classesMappingQuery =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:MAPPING]-(cm:ClassesMapping) " +
-				"return cm.mapping as mapping ";
+				"return cm.classesMapping as classesMapping, cm.groupsMapping AS groupsMapping ";
 		final String subjectsMappingQuery = "MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:TimetableSubject) return sub.code as code, sub.id as id";
 		final String classesNameExternalIdQuery =
 				"MATCH (:Structure {UAI : {UAI}})<-[:BELONGS]-(c:Class) RETURN c.externalId as externalId, c.name as name";
 		final String subjectsBCNMappingQuery =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject) RETURN sub.code as code, sub.id as id";
 		final String functionalGroupsExternalIdQuery =
-				"MATCH (s:Structure {UAI : {UAI}})<-[:DEPENDS]-(fg:FunctionalGroup:Group {source: {source}}) RETURN fg.externalId AS externalId, fg.name AS name";
+				"MATCH (s:Structure {UAI : {UAI}})<-[:DEPENDS]-(fg:FunctionalGroup:Group) RETURN fg.externalId AS externalId, fg.name AS name";
 		final String getStudents =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE head(u.profiles) = 'Student' " +
@@ -240,7 +243,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		tx.add(subjectsMappingQuery, new JsonObject().put("UAI", UAI));
 		tx.add(classesNameExternalIdQuery, new JsonObject().put("UAI", UAI));
 		tx.add(subjectsBCNMappingQuery, new JsonObject().put("UAI", UAI));
-		tx.add(functionalGroupsExternalIdQuery, new JsonObject().put("UAI", UAI).put("source", getSource()));
+		tx.add(functionalGroupsExternalIdQuery, new JsonObject().put("UAI", UAI));
 		tx.add(getStudents, new JsonObject().put("UAI", UAI));
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
@@ -279,14 +282,21 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							try {
 								final JsonObject cmn = cm.getJsonObject(0);
 								log.info(cmn.encode());
-								if (isNotEmpty(cmn.getString("mapping"))) {
-									classesMapping = new JsonObject(cmn.getString("mapping"));
+								if (isNotEmpty(cmn.getString("classesMapping"))) {
+									classesMapping = new JsonObject(cmn.getString("classesMapping"));
 									log.info("classMapping : " + classesMapping.encodePrettily());
 								} else {
 									classesMapping = new JsonObject();
 								}
+								if (isNotEmpty(cmn.getString("groupsMapping"))) {
+									groupsMapping = new JsonObject(cmn.getString("groupsMapping"));
+									log.info("groupMapping : " + groupsMapping.encodePrettily());
+								} else {
+									groupsMapping = new JsonObject();
+								}
 							} catch (Exception ecm) {
 								classesMapping = new JsonObject();
+								groupsMapping = new JsonObject();
 								log.error(ecm.getMessage(), ecm);
 							}
 						}
@@ -327,7 +337,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							for (Object o : functionalGroupsExternalIds) {
 								if (o instanceof JsonObject) {
 									final  JsonObject fgnei = (JsonObject) o;
-									functionalGroupExternalId.put(fgnei.getString("externalId"), fgnei.getString("name"));
+									String name = fgnei.getString("name");
+									String externalId = fgnei.getString("externalId");
+									functionalGroupExternalId.put(externalId, name);
+									functionalGroupNames.put(name, externalId);
 								}
 							}
 							functionalGroupExternalIdCopy.putAll(functionalGroupExternalId);
@@ -500,6 +513,16 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		return a;
 	}
 
+	protected final String getMappedGroupName(String groupName)
+	{
+		return (groupsMapping != null) ? getOrElse(groupsMapping.getString(groupName), groupName, false) : groupName;
+	}
+
+	protected final String getMappedGroupExternalId(String groupName)
+	{
+		return getOrElse(functionalGroupNames.get(this.getMappedGroupName(groupName)), structureExternalId + "$" + groupName, false);
+	}
+
 	private void persEducNatToGroups(JsonObject object) {
 		final JsonArray groups = object.getJsonArray("groups");
 		if (groups != null) {
@@ -515,7 +538,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			if (!ids.isEmpty()) {
 				final JsonArray g = new fr.wseduc.webutils.collections.JsonArray();
 				for (Object o : groups) {
-					g.add(structureExternalId + "$" + o.toString());
+					g.add(this.getMappedGroupExternalId(o.toString()));
 
 					for(String id : ids)
 					{

@@ -82,6 +82,26 @@
         </button>
       </div>
     </div>
+    <div class="container has-shadow" *ngIf="canImport() && unknownGroups.length > 0">
+      <h3>
+        <s5l>management.edt.correspondance.group.title</s5l>
+      </h3>
+      <div class="flex-select" *ngFor="let ukGroup of unknownGroups;">
+        <label>
+          {{ ukGroup }}
+        </label>
+        <ode-mono-select
+          class="is-block"
+          [options]="groupNames"
+          [(ngModel)]="groupsMapping[ukGroup]"
+        ></ode-mono-select>
+      </div>
+      <div class="see-more">
+        <button class="active" (click)="updateGroupsMapping()">
+          <s5l>confirm</s5l>
+        </button>
+      </div>
+    </div>
   </div>
 
   <ode-lightbox [show]="shownReport != null" (onClose)="hideReport()">

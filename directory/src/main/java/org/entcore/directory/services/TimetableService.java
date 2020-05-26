@@ -63,6 +63,10 @@ public interface TimetableService {
 
 	void updateClassesMapping(String structureId, JsonObject mapping, Handler<Either<String,JsonObject>> handler);
 
+	void groupsMapping(String structureId, Handler<Either<String,JsonObject>> handler);
+
+	void updateGroupsMapping(String structureId, JsonObject mapping, Handler<Either<String,JsonObject>> handler);
+
 	void listReports(String structureId, Handler<Either<String,JsonArray>> handler);
 
 	void getReport(String structureId, String reportId, Handler<Either<String,JsonObject>> handler);

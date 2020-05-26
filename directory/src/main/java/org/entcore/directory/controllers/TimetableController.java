@@ -158,6 +158,25 @@ public class TimetableController extends BaseController {
 		});
 	}
 
+	@Get("/timetable/groups/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void groupsMapping(final HttpServerRequest request) {
+		timetableService.groupsMapping(request.params().get("structureId"), defaultResponseHandler(request));
+	}
+
+	@Put("/timetable/groups/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void updateGroupsMapping(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject mapping) {
+				timetableService.updateGroupsMapping(request.params().get("structureId"), mapping, defaultResponseHandler(request));
+			}
+		});
+	}
+
 	@Post("/timetable/import/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

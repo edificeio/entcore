@@ -363,30 +363,34 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	// Origine: Groupe
-	void addGroup(JsonObject currentEntity) {
+	void addGroup(JsonObject currentEntity)
+	{
 		final String id = currentEntity.getString("code_div") + currentEntity.getString(CODE);
 		groups.put(id, currentEntity);
+
 		final String name = getOrElse(currentEntity.getString("code_sts"), id, false);
+		final String mappedName = this.getMappedGroupName(name);
+		final String externalId = this.getMappedGroupExternalId(name);
+
+		currentEntity.put("externalId", externalId);
 		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
 		currentEntity.put("idgpe", currentEntity.remove("id"));
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
-		final String externalId = structureExternalId + "$" + name;
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", mappedName));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
 			txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-					.put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 
 			ttReport.temporaryGroupCreated(name);
 		}
 		else
 		{
-			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) " + set, currentEntity.put("externalId", externalId));
+			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) " + set, currentEntity);
 
 			functionalGroupExternalIdCopy.remove(externalId);
 			ttReport.groupUpdated(name);
@@ -442,7 +446,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 
 		regroup.put(currentEntity.getString(CODE), name);
-		final String externalId = structureExternalId + "$" + name;
+		final String externalId = this.getMappedGroupExternalId(name);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
@@ -523,7 +527,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("firstName", eleve.getString("prenom", "").toLowerCase())
 					.put("lastName", eleve.getString("nom", "").toLowerCase())
 					.put("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
-					.put("externalId", structureExternalId + "$" + name)
+					.put("externalId", this.getMappedGroupExternalId(name))
 					.put("structureExternalId", structureExternalId)
 					.put("source", UDT)
 					.put("inDate", importTimestamp)
@@ -546,7 +550,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 						.put("firstName", eleve.getString("prenom", "").toLowerCase())
 						.put("lastName", eleve.getString("nom", "").toLowerCase())
 						.put("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
-						.put("externalId", structureExternalId + "$" + o2.toString())
+						.put("externalId", this.getMappedGroupExternalId(o2.toString()))
 						.put("structureExternalId", structureExternalId)
 						.put("source", UDT)
 						.put("inDate", importTimestamp)

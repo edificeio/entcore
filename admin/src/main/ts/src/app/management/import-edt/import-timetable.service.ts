@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
-import { TimetableClassesMapping } from './import-edt.component';
+import { TimetableClassesMapping, TimetableGroupsMapping } from './import-edt.component';
 
 @Injectable({
   providedIn: 'root',
@@ -40,5 +40,15 @@ export class ImportTimetableService
   updateClassesMapping(structureId: String, cm: TimetableClassesMapping): Observable<any>
   {
     return this.httpClient.put(`/directory/timetable/classes/${structureId}`, cm);
+  }
+
+  getGroupsMapping(structureId: String): Observable<TimetableGroupsMapping>
+  {
+    return this.httpClient.get<TimetableGroupsMapping>(`/directory/timetable/groups/${structureId}`);
+  }
+
+  updateGroupsMapping(structureId: String, gm: TimetableGroupsMapping): Observable<any>
+  {
+    return this.httpClient.put(`/directory/timetable/groups/${structureId}`, gm);
   }
 }
