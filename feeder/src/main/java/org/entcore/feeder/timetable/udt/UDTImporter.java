@@ -353,7 +353,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("classExternalId", classExternalId);
 
 		// The class won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
+		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("className", className));
 
 		if(classExternalId != null)
 			ttReport.classFound();
@@ -378,7 +378,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", mappedName));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", mappedName));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
@@ -449,7 +449,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String externalId = this.getMappedGroupExternalId(name);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", name));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{

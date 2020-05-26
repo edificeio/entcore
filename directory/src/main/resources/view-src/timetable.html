@@ -87,11 +87,24 @@
             <legend><i18n>timetable.classes.mapping</i18n></legend>
             <div class="row" style="margin:1px;" ng-repeat="item in cm.unknownClasses">
               <label class="six cell">[[item]]</label>
-              <select ng-model="cm.mapping[item]" ng-options="cn for cn in cm.classNames">
+              <select ng-model="cm.classesMapping[item]" ng-options="cn for cn in cm.classNames">
               </select>
             </div>
             <button type="button" class="right-magnet" ng-click="updateClassesMapping(structure, cm)">
               <i18n>timetable.update.cm</i18n>
+            </button>
+          </fieldset>
+        </div>
+        <div class="row" ng-if="gm.unknownGroups.length > 0">
+          <fieldset>
+            <legend><i18n>timetable.groups.mapping</i18n></legend>
+            <div class="row" style="margin:1px;" ng-repeat="item in gm.unknownGroups">
+              <label class="six cell">[[item]]</label>
+              <select ng-model="gm.groupsMapping[item]" ng-options="gn for gn in gm.groupNames">
+              </select>
+            </div>
+            <button type="button" class="right-magnet" ng-click="updateGroupsMapping(structure, gm)">
+              <i18n>timetable.update.gm</i18n>
             </button>
           </fieldset>
         </div>
