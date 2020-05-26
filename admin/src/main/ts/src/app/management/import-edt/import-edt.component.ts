@@ -31,7 +31,13 @@ export interface TimetableClassesMapping
 {
   unknownClasses: String[],
   classNames: String[],
-  mapping: object, //Map<String, String>
+  classesMapping: object, //Map<String, String>
+}
+export interface TimetableGroupsMapping
+{
+  unknownGroups: String[],
+  groupNames: String[],
+  groupsMapping: object, //Map<String, String>
 }
 
 @Component(
@@ -62,6 +68,10 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   public classNames: SelectOption<String>[] = [];
   public classesMapping: object = {}; // Map<String, String>
 
+  public unknownGroups: String[] = [];
+  public groupNames: SelectOption<String>[] = [];
+  public groupsMapping: object = {}; // Map<String, String>
+
   constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService, private notify: NotifyService)
   {
     super(injector);
@@ -77,6 +87,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         this.changeFlux = this.structure.timetable as EDTImportFlux;
         this._getReportsFromService();
         this._getClassesMapping();
+        this._getGroupsMapping();
       }
     }));
   }
@@ -125,6 +136,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       this.notify.success("management.edt.import.notify.success.content", "management.edt.import.notify.success.title");
       this._getReportsFromService();
       this._getClassesMapping();
+      this._getGroupsMapping();
     }).catch((err) =>
     {
       for(let i in err.error.errors)
@@ -158,7 +170,32 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         else
           this.classNames = [];
 
-        this.classesMapping = data.mapping == null ? {} : data.mapping;
+        this.classesMapping = data.classesMapping == null ? {} : data.classesMapping;
+
+        this.changeDetector.markForCheck();
+      }
+    });
+  }
+
+  private _getGroupsMapping(): void
+  {
+    this.timetableService.getGroupsMapping(this.structure.id).subscribe({
+      next: (data) =>
+      {
+        this.unknownGroups = data.unknownGroups == null ? [] : data.unknownGroups.sort();
+
+        if(data.groupNames != null)
+        {
+          this.groupNames = new Array<SelectOption<String>>(data.groupNames.length);
+
+          data.groupNames = data.groupNames.sort();
+          for(let i = this.groupNames.length; i-- > 0;)
+            this.groupNames[i] = { label: data.groupNames[i].toString(), value: data.groupNames[i], };
+        }
+        else
+          this.groupNames = [];
+
+        this.groupsMapping = data.groupsMapping == null ? {} : data.groupsMapping;
 
         this.changeDetector.markForCheck();
       }
@@ -170,7 +207,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     let cm: TimetableClassesMapping = {
       unknownClasses: null,
       classNames: null,
-      mapping: null,
+      classesMapping: null,
     };
     cm.unknownClasses = this.unknownClasses;
 
@@ -178,10 +215,10 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     for(let i = this.classNames.length; i-- > 0;)
       cm.classNames[i] = this.classNames[i].value;
 
-    cm.mapping = {};
+    cm.classesMapping = {};
     for(let uk in this.classesMapping)
       if(this.classesMapping[uk] != null)
-        cm.mapping[uk] = this.classesMapping[uk];
+        cm.classesMapping[uk] = this.classesMapping[uk];
 
     this.timetableService.updateClassesMapping(this.structure.id, cm).subscribe(
     {
@@ -192,6 +229,37 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       error: (error) =>
       {
         this.notify.notify("management.edt.correspondance.notify.error.content", "management.edt.correspondance.notify.error.title", error, "error");
+      }
+    });
+  }
+
+  updateGroupsMapping(): void
+  {
+    let gm: TimetableGroupsMapping = {
+      unknownGroups: null,
+      groupNames: null,
+      groupsMapping: null,
+    };
+    gm.unknownGroups = this.unknownGroups;
+
+    gm.groupNames = new Array<String>(this.classNames.length);
+    for(let i = this.classNames.length; i-- > 0;)
+      gm.groupNames[i] = this.classNames[i].value;
+
+    gm.groupsMapping = {};
+    for(let uk in this.groupsMapping)
+      if(this.groupsMapping[uk] != null)
+        gm.groupsMapping[uk] = this.groupsMapping[uk];
+
+    this.timetableService.updateGroupsMapping(this.structure.id, gm).subscribe(
+    {
+      next: (data) =>
+      {
+        this.notify.success("management.edt.correspondance.group.notify.success.content", "management.edt.correspondance.group.notify.success.title");
+      },
+      error: (error) =>
+      {
+        this.notify.notify("management.edt.correspondance.group.notify.error.content", "management.edt.correspondance.group.notify.error.title", error, "error");
       }
     });
   }
