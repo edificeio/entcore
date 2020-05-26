@@ -236,7 +236,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		classInGroups(id, pcs, this.subClasses);
 
 		final String name = currentEntity.getString("Nom");
-		String externalId = structureExternalId + "$" + name;
+		final String externalId = this.getMappedGroupExternalId(name);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("groupExternalId", externalId).put("groupName", name));
@@ -489,7 +489,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 									String name = group.getString("Nom");
 									txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
 											.put("idSconet", sconetId)
-											.put("externalId", structureExternalId + "$" + name)
+											.put("externalId", this.getMappedGroupExternalId(name))
 											.put("source", EDT)
 											.put("inDate", DateTime.parse(inDate).getMillis())
 											.put("outDate", DateTime.parse(outDate).getMillis())

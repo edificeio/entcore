@@ -186,16 +186,16 @@ public class DefaultTimetableService implements TimetableService {
 		final String query =
 				"MATCH (s:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
-				"return cm.mapping as mapping, cm.unknownClasses as unknownClasses, collect(c.name) as classNames ";
+				"return cm.classesMapping as classesMapping, cm.unknownClasses as unknownClasses, collect(c.name) as classNames ";
 		final JsonObject params = new JsonObject().put("id", structureId);
 		neo4j.execute(query, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight() && event.right().getValue() != null &&
-						event.right().getValue().getString("mapping") != null) {
+						event.right().getValue().getString("classesMapping") != null) {
 					try {
-						event.right().getValue().put("mapping",
-								new JsonObject(event.right().getValue().getString("mapping")));
+						event.right().getValue().put("classesMapping",
+								new JsonObject(event.right().getValue().getString("classesMapping")));
 					} catch (Exception e) {
 						handler.handle(new Either.Left<String, JsonObject>(e.getMessage()));
 					}
@@ -219,16 +219,72 @@ public class DefaultTimetableService implements TimetableService {
 						return;
 					}
 					final JsonArray uc = cm.getJsonArray("unknownClasses");
-					final JsonObject m = mapping.getJsonObject("mapping");
+					final JsonObject m = mapping.getJsonObject("classesMapping");
 					for (String attr : m.copy().fieldNames()) {
 						if (!uc.contains(attr)) {
 							m.remove(attr);
 						}
 					}
-					mapping.put("mapping", m.encode());
+					mapping.put("classesMapping", m.encode());
 					final String query =
 							"MATCH (:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
-									"SET cm.mapping = {mapping} ";
+									"SET cm.classesMapping = {classesMapping} ";
+					neo4j.execute(query, mapping.put("id", structureId), validEmptyHandler(handler));
+				} else {
+					handler.handle(event);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void groupsMapping(String structureId, final Handler<Either<String, JsonObject>> handler) {
+		final String query =
+				"MATCH (s:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
+				"OPTIONAL MATCH s<-[:DEPENDS]-(g:Group) " +
+				"return cm.groupsMapping as groupsMapping, cm.unknownGroups as unknownGroups, collect(g.name) as groupNames ";
+		final JsonObject params = new JsonObject().put("id", structureId);
+		neo4j.execute(query, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight() && event.right().getValue() != null &&
+						event.right().getValue().getString("groupsMapping") != null) {
+					try {
+						event.right().getValue().put("groupsMapping",
+								new JsonObject(event.right().getValue().getString("groupsMapping")));
+					} catch (Exception e) {
+						handler.handle(new Either.Left<String, JsonObject>(e.getMessage()));
+					}
+				}
+				handler.handle(event);
+			}
+		}));
+	}
+
+	@Override
+	public void updateGroupsMapping(final String structureId, final JsonObject mapping,
+			final Handler<Either<String, JsonObject>> handler) {
+
+		groupsMapping(structureId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					final JsonObject cm = event.right().getValue();
+					if (cm == null || cm.getJsonArray("unknownGroups") == null) {
+						handler.handle(new Either.Left<String, JsonObject>("missing.groups.mapping"));
+						return;
+					}
+					final JsonArray uc = cm.getJsonArray("unknownGroups");
+					final JsonObject m = mapping.getJsonObject("groupsMapping");
+					for (String attr : m.copy().fieldNames()) {
+						if (!uc.contains(attr)) {
+							m.remove(attr);
+						}
+					}
+					mapping.put("groupsMapping", m.encode());
+					final String query =
+							"MATCH (:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
+									"SET cm.groupsMapping = {groupsMapping} ";
 					neo4j.execute(query, mapping.put("id", structureId), validEmptyHandler(handler));
 				} else {
 					handler.handle(event);
