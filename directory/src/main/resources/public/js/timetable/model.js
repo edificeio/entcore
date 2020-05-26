@@ -18,6 +18,22 @@ Structure.prototype.classesMapping = function(callback) {
     });
 };
 
+Structure.prototype.groupsMapping = function(callback) {
+    http().get("/directory/timetable/groups/" + this.id)
+    .done(function(data) {
+        if(typeof callback === 'function') {
+            callback(data);
+        }
+    }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
 Structure.prototype.init = function(callback) {
     http().putJson("/directory/timetable/init/" + this.id, { "type" : this.timetable })
     .done(function(data) {
@@ -32,6 +48,24 @@ Structure.prototype.init = function(callback) {
 
 Structure.prototype.updateClassesMapping = function(cm, callback) {
     http().putJson("/directory/timetable/classes/" + this.id, cm)
+    .done(function(data) {
+        if(typeof callback === 'function') {
+            callback(data);
+        } else {
+            notify.info('directory.params.success');
+        }
+    }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
+Structure.prototype.updateGroupsMapping = function(gm, callback) {
+    http().putJson("/directory/timetable/groups/" + this.id, gm)
     .done(function(data) {
         if(typeof callback === 'function') {
             callback(data);
