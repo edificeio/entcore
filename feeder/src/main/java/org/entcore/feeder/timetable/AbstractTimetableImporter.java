@@ -86,7 +86,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WITH count(*) AS exists " +
 			"MATCH (s:Structure {UAI : {UAI}}) " +
 			"WHERE exists = 0 " +
-			"MERGE (cm:ClassesMapping { UAI : {UAI}}) " +
+			"MERGE (cm:ClassesMapping { UAI : {UAI}, source: {source} }) " +
 			"SET cm.unknownClasses = coalesce(FILTER(cn IN cm.unknownClasses WHERE cn <> {className}), []) + {className} " +
 			"MERGE (s)<-[:MAPPING]-(cm) ";
 	protected static final String UNKNOWN_GROUPS =
@@ -95,7 +95,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WITH count(*) AS exists " +
 			"MATCH (s:Structure {UAI : {UAI}}) " +
 			"WHERE exists = 0 " +
-			"MERGE (cm:ClassesMapping { UAI : {UAI}}) " +
+			"MERGE (cm:ClassesMapping { UAI : {UAI}, source: {source} }) " +
 			"SET cm.unknownGroups = coalesce(FILTER(gn IN cm.unknownGroups WHERE gn <> {groupName}), []) + {groupName} " +
 			"MERGE (s)<-[:MAPPING]-(cm) ";
 	protected static final String CREATE_GROUPS =
@@ -123,7 +123,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:FunctionalGroup {source:{source}})<-[:IN]-(:User) " +
 			"WITH COLLECT(distinct g.id) as usedFunctionalGroup, COLLECT(DISTINCT g.name) as usedFunctionalGroupNames " +
 			"MATCH (:Structure {externalId : {structureExternalId}})<-[:MAPPING]-(cm:ClassesMapping) " +
-			"SET cm.unknownGroups = coalesce(FILTER(gn IN cm.unknownGroups WHERE gn IN usedFunctionalGroupNames), []) " +
+			"SET cm.unknownGroups = coalesce(FILTER(gn IN cm.unknownGroups WHERE gn IN usedFunctionalGroupNames OR gn IN {mappedGroups}), []) " +
 			"WITH usedFunctionalGroup " +
 			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:FunctionalGroup {source:{source}}) " +
 			"WHERE NOT(g.id IN usedFunctionalGroup) " +
@@ -644,14 +644,17 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		return future;
 	}
 
-	protected void commit(final Handler<AsyncResult<Report>> handler) {
+	protected void commit(final Handler<AsyncResult<Report>> handler)
+	{
 		final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId)
 				.put("source", getSource()).put("now", importTimestamp);
+
+		JsonArray mappedGroups = groupsMapping != null ? new JsonArray(new ArrayList<String>(groupsMapping.getMap().keySet())) : new JsonArray();
 		persistBulKCourses();
 		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(subjects.values()))));
 		txXDT.add(UNLINK_SUBJECT, params);
 		txXDT.add(UNLINK_GROUP, params);
-		txXDT.add(DELETE_GROUPS, params);
+		txXDT.add(DELETE_GROUPS, params.put("mappedGroups", mappedGroups));
 		txXDT.add(UNSET_OLD_GROUPS, params);
 		txXDT.add(SET_GROUPS, params);
 		Importer.markMissingUsers(structureExternalId, getSource(), userImportedExternalId, txXDT, new Handler<Void>() {
