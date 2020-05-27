@@ -237,6 +237,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 		final String name = currentEntity.getString("Nom");
 		final String externalId = this.getMappedGroupExternalId(name);
+		currentEntity.put("externalId", externalId);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", name));
@@ -245,7 +246,6 @@ public class EDTImporter extends AbstractTimetableImporter {
 		{
 			txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-					.put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 
 			ttReport.temporaryGroupCreated(name);
@@ -619,13 +619,17 @@ public class EDTImporter extends AbstractTimetableImporter {
 						break;
 					case "Groupe":
 						JsonArray groupsArray = c.getJsonArray("groups");
+						JsonArray groupsExternalIds = c.getJsonArray("groupsExternalIds");
 						if (groupsArray == null) {
 							groupsArray = new fr.wseduc.webutils.collections.JsonArray();
+							groupsExternalIds = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("groups", groupsArray);
+							c.put("groupsExternalIds", groupsExternalIds);
 						}
 						JsonObject g = groups.get(ident);
 						if (g != null) {
 							groupsArray.add(g.getString("Nom"));
+							groupsExternalIds.add(g.getString("externalId"));
 						}
 						break;
 					case "Materiel":
