@@ -79,7 +79,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private long endStudents;
 	private Map<String, Set<String>> coens = new HashMap<>();
 	private Map<String, JsonObject> fichesT = new HashMap<>();
-	private Map<String, String> regroup = new HashMap<>();
+	private Map<String, JsonObject> regroup = new HashMap<>();
 	private Map<String, List<JsonObject>> lfts = new HashMap<>();
 	private HashMap<Integer, Integer> periods = new HashMap<>(); // key : start, value : end period
 	private int maxYearWeek;
@@ -376,6 +376,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
 		currentEntity.put("idgpe", currentEntity.remove("id"));
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
+		currentEntity.put("name", mappedName);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", mappedName));
@@ -401,7 +402,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void addGroup2(JsonObject currentEntity)
 	{
 		final String codeGroup = currentEntity.getString("code_gpe");
-		final String name = currentEntity.getString("nom");
+		final String name = this.getMappedGroupName(currentEntity.getString("nom"));
+		final String externalId = this.getMappedGroupExternalId(name);
 
 		if (isNotEmpty(codeGroup))
 		{
@@ -445,8 +447,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			groups.add(name);
 		}
 
-		regroup.put(currentEntity.getString(CODE), name);
-		final String externalId = this.getMappedGroupExternalId(name);
+		regroup.put(currentEntity.getString(CODE), new JsonObject().put("name", name).put("externalId", externalId));
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", name));
@@ -754,12 +755,17 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 
 		JsonArray groups;
+		JsonArray groupsExternalIds;
 		if (isNotEmpty(entity.getString("rgpmt")) || isNotEmpty(entity.getString("gpe"))) {
 			groups = new fr.wseduc.webutils.collections.JsonArray();
+			groupsExternalIds = new fr.wseduc.webutils.collections.JsonArray();
 			c.put("groups", groups);
-			String name = regroup.get(entity.getString("rgpmt"));
-			if (isNotEmpty(name)) {
+			c.put("groupsExternalIds", groupsExternalIds);
+			JsonObject regp = regroup.get(entity.getString("rgpmt"));
+			if (regp != null) {
+				String name = regp.getString("name");
 				groups.add(name);
+				groupsExternalIds.add(regp.getString("externalId"));
 				final JsonArray aggClasses = aggregateRgmtCourses.get(name);
 				if (aggClasses != null && !aggClasses.isEmpty()) {
 					final TreeSet<String> cclasses = new TreeSet<>();
@@ -775,9 +781,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 				if (isNotEmpty(gName)) {
 					JsonObject g = this.groups.get(entity.getString("div") + gName);
 					if (g != null) {
-						groups.add(getOrElse(g.getString("code_sts"), entity.getString("div") + gName, false));
+						groups.add(g.getString("name"));
+						groupsExternalIds.add(g.getString("externalId"));
 					} else {
 						groups.add(entity.getString("div") + gName);
+						groupsExternalIds.add((String)null);
 					}
 				}
 			}
