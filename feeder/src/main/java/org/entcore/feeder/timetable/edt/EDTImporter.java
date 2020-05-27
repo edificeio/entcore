@@ -604,17 +604,17 @@ public class EDTImporter extends AbstractTimetableImporter {
 						break;
 					case "Classe":
 						JsonArray classesArray = c.getJsonArray("classes");
-						JsonArray classesIdsArray = c.getJsonArray("classesIds");
+						JsonArray classesExternalIdsArray = c.getJsonArray("classesExternalIds");
 						if (classesArray == null) {
 							classesArray = new fr.wseduc.webutils.collections.JsonArray();
-							classesIdsArray = new fr.wseduc.webutils.collections.JsonArray();
+							classesExternalIdsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("classes", classesArray);
-							c.put("classesExternalIds", classesIdsArray);
+							c.put("classesExternalIds", classesExternalIdsArray);
 						}
 						JsonObject ci = classes.get(ident);
 						if (ci != null) {
 							classesArray.add(ci.getString("className"));
-							classesIdsArray.add(ci.getString("classExternalId"));
+							classesExternalIdsArray.add(ci.getString("classExternalId"));
 						}
 						break;
 					case "Groupe":
@@ -667,7 +667,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 		if (c.getJsonArray("groups") != null && !c.getJsonArray("groups").isEmpty()) {
 			c.put("classes", new JsonArray());
-			c.put("classesIds", new JsonArray());
+			c.put("classesExternalIds", new JsonArray());
 		}
 		try {
 			c.put("_id", JsonUtil.checksum(c));

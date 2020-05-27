@@ -242,7 +242,7 @@ public class DefaultTimetableService implements TimetableService {
 		final String query =
 				"MATCH (s:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
 				"OPTIONAL MATCH s<-[:DEPENDS]-(g:Group:FunctionalGroup) " +
-				"WHERE g.source <> cm.source " +
+				"WHERE NOT(EXISTS(g.source)) OR g.source <> cm.source " +
 				"RETURN cm.groupsMapping AS groupsMapping, cm.unknownGroups AS unknownGroups, collect(g.name) AS groupNames";
 		final JsonObject params = new JsonObject().put("id", structureId);
 		neo4j.execute(query, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
