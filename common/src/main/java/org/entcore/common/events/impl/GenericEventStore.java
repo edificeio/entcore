@@ -27,6 +27,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -42,6 +43,7 @@ public abstract class GenericEventStore implements EventStore {
 
 	protected String module;
 	protected EventBus eventBus;
+	protected Vertx vertx;
 	protected JsonArray userBlacklist;
 	protected static final Logger logger = LoggerFactory.getLogger(GenericEventStore.class);
 
@@ -182,6 +184,10 @@ public abstract class GenericEventStore implements EventStore {
 
 	public void setModule(String module) {
 		this.module = module;
+	}
+
+	public void setVertx(Vertx vertx) {
+		this.vertx = vertx;
 	}
 
 }
