@@ -30,6 +30,7 @@ public class ElasticSearchEventStoreFactory extends EventStoreFactory {
 		ElasticSearchEventStore eventStore = new ElasticSearchEventStore();
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
+		eventStore.setVertx(vertx);
 		return eventStore;
 	}
 

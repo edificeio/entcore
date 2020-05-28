@@ -30,6 +30,7 @@ public class BusEventStoreFactory extends EventStoreFactory {
 		BusEventStore eventStore = new BusEventStore();
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
+		eventStore.setVertx(vertx);
 		return eventStore;
 	}
 
