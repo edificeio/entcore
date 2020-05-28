@@ -28,6 +28,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -195,6 +196,39 @@ public class Sql {
 		} catch (NumberFormatException e) {
 			return id;
 		}
+	}
+
+	public static String escapeField(String str) {
+		return "\"" + str.replace("\"", "\"\"") + "\"";
+	}
+
+	public static String escapeValue(Object v) {
+		if (v == null) {
+			return "NULL";
+		} else if (v instanceof Integer || v instanceof Boolean) {
+			return v.toString();
+		} else {
+			return "'" + v.toString().replace("'", "''") + "'";
+		}
+	}
+
+	public static String insertQuery(String table, JsonObject json) {
+		final Set<String> fields = json.fieldNames();
+		if (table == null || table.isEmpty() || fields == null || fields.isEmpty()) {
+			return null;
+		}
+		final StringBuilder sb = new StringBuilder("INSERT INTO ")
+				.append(table)
+				.append(" (");
+		final StringBuilder sb2 = new StringBuilder();
+		for (String o : fields) {
+			sb.append(escapeField(o)).append(",");
+			sb2.append(escapeValue(json.getValue(o))).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb2.deleteCharAt(sb2.length()-1);
+		sb.append(") VALUES (").append(sb2.toString()).append(")");
+		return sb.toString();
 	}
 
 }

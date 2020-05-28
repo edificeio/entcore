@@ -23,13 +23,13 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.json.JsonObject;
 
 public class MongoDbEventStore extends GenericEventStore {
 
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private static final String COLLECTION = "events";
+	private PostgresqlEventStore postgresqlEventStore;
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
@@ -44,6 +44,14 @@ public class MongoDbEventStore extends GenericEventStore {
 				}
 			}
 		});
+		if (postgresqlEventStore != null) {
+			postgresqlEventStore.storeEvent(event.copy(), ar -> {
+			});
+		}
+	}
+
+	public void setPostgresqlEventStore(PostgresqlEventStore postgresqlEventStore) {
+		this.postgresqlEventStore = postgresqlEventStore;
 	}
 
 }

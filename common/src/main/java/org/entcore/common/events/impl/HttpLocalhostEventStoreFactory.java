@@ -38,6 +38,7 @@ public class HttpLocalhostEventStoreFactory extends EventStoreFactory {
 		HttpLocalhostEventStore eventStore = new HttpLocalhostEventStore(httpClient);
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
+		eventStore.setVertx(vertx);
 		return eventStore;
 	}
 
