@@ -42,6 +42,7 @@ subprojects {
 
   sourceSets {
     main { compileClasspath += configurations.provided }
+    test { runtimeClasspath += configurations.compileOnly }
   }
 
   configurations.all {
@@ -192,6 +193,7 @@ project(':common') {
     compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
     compile "io.vertx:vertx-redis-client:$vertxVersion"
+    compile "io.reactiverse:reactive-pg-client:$reactivePgVersion"
   }
 }
 

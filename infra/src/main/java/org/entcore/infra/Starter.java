@@ -96,6 +96,10 @@ public class Starter extends BaseServer {
 			if (nodePdfGenerator != null) {
 				serverMap.put("node-pdf-generator", nodePdfGenerator.encode());
 			}
+			JsonObject eventStoreConfig = config.getJsonObject("event-store");
+			if (eventStoreConfig != null) {
+				serverMap.put("event-store", eventStoreConfig.encode());
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			//initModulesHelpers(node);
 
