@@ -265,10 +265,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							structureExternalId = a.getJsonObject(0).getString("externalId");
 							structure.add(structureExternalId);
 							structureId = a.getJsonObject(0).getString("id");
-							if (!getSource().equals(a.getJsonObject(0).getString("timetable"))) {
-								handler.handle(new DefaultAsyncResult<Void>(new TransactionException("different.timetable.type")));
-								return;
-							}
+							//if (!getSource().equals(a.getJsonObject(0).getString("timetable"))) {
+							//	handler.handle(new DefaultAsyncResult<Void>(new TransactionException("different.timetable.type")));
+							//	return;
+							//}
 							final Matcher m = academyPrefixPatter.matcher(structureExternalId);
 							if (m.find()) {
 								academyPrefix = m.group(1);
@@ -923,15 +923,28 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
-	public static void initStructure(final EventBus eb, final Message<JsonObject> message) {
+	public static void initStructure(final EventBus eb, final Message<JsonObject> message)
+	{
 		final JsonObject conf = message.body().getJsonObject("conf");
 		if (conf == null) {
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.conf"));
 			return;
 		}
+
+		final String type = conf.getString("type");
+		final boolean isDefault = type != null && type.equals("");
+		final String condition = isDefault == true ? "HAS(s.timetable) AND s.timetable <> {type}" : "(NOT(HAS(s.timetable)) OR s.timetable <> {type}";
 		final String query =
 				"MATCH (s:Structure {id:{structureId}}) " +
-				"RETURN (NOT(HAS(s.timetable)) OR s.timetable <> {type}) as update ";
+				"WITH " + condition + " as update, s " +
+				"SET s.timetable = {typeUpdate} " +
+				"RETURN update";
+
+		if(conf.getString("type") == null)
+			conf.putNull("typeUpdate");
+		else
+			conf.put("typeUpdate", conf.getString("type"));
+
 		TransactionManager.getNeo4jHelper().execute(query, conf, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(final Message<JsonObject> event) {
@@ -942,13 +955,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						TransactionHelper tx = TransactionManager.getTransaction();
 						final String q1 =
 								"MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(fg:FunctionalGroup) " +
-								"WHERE NOT(HAS(s.timetable)) OR s.timetable <> {type} " +
+								"WHERE " + condition + " " +
 								"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
 								"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
 						final String q2 =
 								"MATCH (s:Structure {id: {structureId}}) " +
-								"WHERE NOT(HAS(s.timetable)) OR s.timetable <> {type} " +
-								"SET s.timetable = {typeUpdate} " +
+								"WHERE " + condition + " " +
 								"WITH s " +
 								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup)" +
 								"OPTIONAL MATCH s<-[:SUBJECT]-(sub:TimetableSubject) " +
@@ -959,8 +971,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
 								"DETACH DELETE cm";
 						tx.add(q1, conf);
-						tx.add(q2, (isEmpty(conf.getString("type")) ?
-								conf.putNull("typeUpdate") : conf.put("typeUpdate", conf.getString("type"))));
+						tx.add(q2, conf);
 						tx.add(q3, conf);
 						tx.commit(new Handler<Message<JsonObject>>() {
 							@Override
