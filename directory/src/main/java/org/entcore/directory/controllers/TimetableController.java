@@ -181,6 +181,19 @@ public class TimetableController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetable(final HttpServerRequest request) {
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, false);
+	}
+
+	@Post("/timetable/import/:timetableType/:structureId")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void importSpecificTimetable(final HttpServerRequest request)
+	{
+		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), false);
+	}
+
+	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI)
+	{
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
 		final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
@@ -199,9 +212,9 @@ public class TimetableController extends BaseController {
 				upload.endHandler(new Handler<Void>() {
 					@Override
 					public void handle(Void event) {
-						timetableService.importTimetable(request.params().get("structureId"), filename,
+						timetableService.importTimetable(structureIdentifier, filename,
 								getHost(request), I18n.acceptLanguage(request),
-								"uai".equals(request.params().get("structAttr")),
+								identifierIsUAI, timetableType,
 								reportResponseHandler(vertx, path, request));
 					}
 				});
