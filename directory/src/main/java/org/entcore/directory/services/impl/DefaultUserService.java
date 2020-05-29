@@ -185,6 +185,33 @@ public class DefaultUserService implements UserService {
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
+
+				//put administrative attachment first in structureNodes
+				final JsonArray jaAdm = r.getJsonArray("administrativeStructures");
+				if (jaAdm != null && !jaAdm.isEmpty()) {
+					final JsonObject jAdm = jaAdm.getJsonObject(0);
+					if (jAdm!=null) {
+						final String idAdm = StringUtils.trimToBlank(jAdm.getString("id"));
+						if (r.getJsonArray("structureNodes") != null && !r.getJsonArray("structureNodes").isEmpty()) {
+							final JsonArray newJaStruct = new JsonArray();
+							for (Object o : r.getJsonArray("structureNodes")) {
+								if (o == null || !(o instanceof JsonObject)) continue;
+								if (idAdm.equals(((JsonObject) o).getString("id", ""))) {
+									newJaStruct.add((JsonObject) o);
+									break;
+								}
+							}
+							for (Object o : r.getJsonArray("structureNodes")) {
+								if (o == null || !(o instanceof JsonObject)) continue;
+								if (!idAdm.equals(((JsonObject) o).getString("id", ""))) {
+									newJaStruct.add((JsonObject) o);
+								}
+							}
+
+							r.put("structureNodes", newJaStruct);
+						}
+					}
+				}
 			}
 			result.handle(event);
 		};
