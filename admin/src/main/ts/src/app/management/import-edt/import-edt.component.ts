@@ -62,6 +62,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   public changeFlux: EDTImportFlux = null;
   public showFluxChangeWarning: boolean = false;
+  public onetimeImport: EDTImportFlux = null;
   private importFile: FileList;
 
   public unknownClasses: String[] = [];
@@ -99,6 +100,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   updateFluxType(): void
   {
+    let oldTimetable = this.structure.timetable;
     let error = (data) =>
     {
       this.notify.error("management.edt.flux.notify.error.content", "management.edt.flux.notify.error.title", data);
@@ -107,7 +109,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     {
       next: (data) =>
       {
-        if(data.update == true)
+        if(data.update == true || (oldTimetable == this.changeFlux || (oldTimetable == null && this.changeFlux == EDTImportFlux.DEFAULT)))
         {
           this.notify.success("management.edt.flux.notify.success.content", "management.edt.flux.notify.success.title");
           this.structure.timetable = this.changeFlux;
@@ -119,9 +121,15 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       error: error,
     });
   }
+
   canImport(): boolean
   {
-    return this.structure.timetable != EDTImportFlux.DEFAULT && this.structure.timetable != EDTImportFlux.NONE;
+    return this.structure.timetable != EDTImportFlux.DEFAULT && this.structure.timetable != EDTImportFlux.NONE && this.structure.timetable != null;
+  }
+
+  canOnetimeImport(): boolean
+  {
+    return this.structure.timetable == EDTImportFlux.DEFAULT;
   }
 
   loadFile($event): void
@@ -129,9 +137,9 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     this.importFile = $event.target.files;
   }
 
-  manualImport(): void
+  manualImport(importType: EDTImportFlux): void
   {
-    this.timetableService.importFile(this.structure.id, this.importFile).then((data) =>
+    this.timetableService.importFile(this.structure.id, importType, this.importFile).then((data) =>
     {
       this.notify.success("management.edt.import.notify.success.content", "management.edt.import.notify.success.title");
       this._getReportsFromService();

@@ -62,7 +62,38 @@
         </button>
       </div>
     </div>
-    <div class="container has-shadow" *ngIf="canImport() && unknownClasses.length > 0">
+    <div class="container has-shadow" *ngIf="canOnetimeImport()">
+      <h3>
+        <s5l>management.edt.import.onetime.title</s5l>
+      </h3>
+      <p><s5l>management.edt.import.onetime.body</s5l></p>
+      <div class="flex-select">
+        <label>
+          <s5l>management.edt.import.onetime.type</s5l>
+        </label>
+        <ode-mono-select
+          class="is-block"
+          placeholder="management.edt.import.onetime.placeholder"
+          [options]="[
+            { value: EDTImportFlux.EDT, label: 'EDT' },
+            { value: EDTImportFlux.UDT, label: 'UDT' }
+          ]"
+          [(ngModel)]="onetimeImport"
+        ></ode-mono-select>
+      </div>
+      <div class="flex-select">
+        <label>
+          <s5l>management.edt.import.label</s5l>
+        </label>
+        <input type="file" (change)="loadFile($event)"/>
+      </div>
+      <div class="see-more">
+        <button class="active" (click)="manualImport(onetimeImport)">
+          <s5l>management.edt.import.button</s5l>
+        </button>
+      </div>
+    </div>
+    <div class="container has-shadow" *ngIf="unknownClasses.length > 0">
       <h3>
         <s5l>management.edt.correspondance.title</s5l>
       </h3>
@@ -82,7 +113,7 @@
         </button>
       </div>
     </div>
-    <div class="container has-shadow" *ngIf="canImport() && unknownGroups.length > 0">
+    <div class="container has-shadow" *ngIf="unknownGroups.length > 0">
       <h3>
         <s5l>management.edt.correspondance.group.title</s5l>
       </h3>

@@ -71,7 +71,7 @@ public interface TimetableService {
 
 	void getReport(String structureId, String reportId, Handler<Either<String,JsonObject>> handler);
 
-	void importTimetable(String structureId, String path, String domain, String acceptLanguage, boolean uai,
+	void importTimetable(String structureId, String path, String domain, String acceptLanguage, boolean uai, String timetableType,
 			Handler<Either<JsonObject,JsonObject>> handler);
 
 }

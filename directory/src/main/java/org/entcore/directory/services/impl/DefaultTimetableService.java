@@ -390,7 +390,7 @@ public class DefaultTimetableService implements TimetableService {
 
 	@Override
 	public void importTimetable(String structureId, final String path, final String domain,
-			final String acceptLanguage, boolean uai, final Handler<Either<JsonObject, JsonObject>> handler) {
+			final String acceptLanguage, boolean uai, String timetableType, final Handler<Either<JsonObject, JsonObject>> handler) {
 		final String  structureAttr = uai ? "UAI" : "id";
 		final String query = "MATCH (s:Structure {" + structureAttr + ":{id}}) RETURN s.UAI as UAI, s.timetable as timetable";
 		neo4j.execute(query, new JsonObject().put("id", structureId),
@@ -399,42 +399,51 @@ public class DefaultTimetableService implements TimetableService {
 			public void handle(Either<String, JsonObject> event) {
 				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 				final JsonObject ge = new JsonObject().put("error.global", errors);
-				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")) &&
-						TIMETABLE_TYPES.contains(event.right().getValue().getString("timetable"))) {
-					if (!("EDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.xml")) &&
-							!("UDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.zip"))) {
+				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")))
+				{
+					String ttType = timetableType;
+					if(ttType == null)
+						ttType = event.right().getValue().getString("timetable");
+
+					if (!("EDT".equals(ttType) && !path.endsWith("\\.xml")) &&
+							!("UDT".equals(ttType) && !path.endsWith("\\.zip"))) {
 						errors.add(I18n.getInstance().translate("invalid.import.format", domain, acceptLanguage));
 						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						return;
 					}
-					JsonObject action = new JsonObject().put("action", "manual-" +
-							event.right().getValue().getString("timetable").toLowerCase())
-							.put("path", path)
-							.put("UAI", event.right().getValue().getString("UAI"))
-							.put("isManualImport", true)
-							.put("language", acceptLanguage);
-					eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
-								JsonObject r = event.body().getJsonObject("result", new JsonObject());
-								if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
-									handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
-								} else {
-									handler.handle(new Either.Right<JsonObject, JsonObject>(r));
-								}
-							} else {
-								errors.add(event.body().getString("message", ""));
-								handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
-							}
-						}
-					}));
+					callFeederImport(event.right().getValue().getString("UAI"), ttType, path, acceptLanguage, handler);
 				} else {
 					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
 					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 				}
 			}
 		}));
+	}
+
+	private void callFeederImport(String UAI, String timetableType, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
+	{
+		JsonObject action = new JsonObject().put("action", "manual-" + timetableType.toLowerCase())
+				.put("path", path)
+				.put("UAI", UAI)
+				.put("isManualImport", true)
+				.put("language", acceptLanguage);
+		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					JsonObject r = event.body().getJsonObject("result", new JsonObject());
+					if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
+						handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
+					} else {
+						handler.handle(new Either.Right<JsonObject, JsonObject>(r));
+					}
+				} else {
+					JsonObject ge = new JsonObject().put("error.global", new JsonArray().add(event.body().getString("message", "")));
+					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
+				}
+			}
+		}));
+
 	}
 
 }
