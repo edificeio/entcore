@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
-import { TimetableClassesMapping, TimetableGroupsMapping } from './import-edt.component';
+import { TimetableClassesMapping, TimetableGroupsMapping, EDTImportFlux } from './import-edt.component';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +18,7 @@ export class ImportTimetableService
     });
   }
 
-  importFile(structureId: String, file: FileList): Promise<any>
+  importFile(structureId: String, importType: EDTImportFlux, file: FileList): Promise<any>
   {
     if(file.length != 1)
       throw "There must be exactly one timetable import file";
@@ -26,9 +26,11 @@ export class ImportTimetableService
     let form: FormData = new FormData();
     form.append("file", file[0]);
 
+    let type = importType != null ? `${importType}/` : "";
+
     return this.spinner.perform(
       'portal-content',
-      this.httpClient.post(`/directory/timetable/import/${structureId}`, form).toPromise()
+      this.httpClient.post(`/directory/timetable/import/${type}${structureId}`, form).toPromise()
     );
   }
 
