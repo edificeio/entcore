@@ -933,10 +933,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 		final String type = conf.getString("type");
 		final boolean isDefault = type != null && type.equals("");
-		final String condition = isDefault == true ? "HAS(s.timetable) AND s.timetable <> {type}" : "(NOT(HAS(s.timetable)) OR s.timetable <> {type}";
+		final String condition = isDefault == true ? "(HAS(s.timetable) AND s.timetable <> {type})" : "(NOT(EXISTS(s.timetable)) OR s.timetable <> {type})";
 		final String query =
 				"MATCH (s:Structure {id:{structureId}}) " +
-				"WITH " + condition + " as update, s " +
+				"WITH " + condition + " AS update, s " +
 				"SET s.timetable = {typeUpdate} " +
 				"RETURN update";
 
