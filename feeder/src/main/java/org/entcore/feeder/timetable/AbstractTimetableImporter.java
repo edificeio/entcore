@@ -908,6 +908,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 		try {
 			final TransactionHelper tx = TransactionManager.getTransaction();
+			tx.add("MATCH (:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject) WHERE sub.source <> 'MANUAL' DETACH DELETE sub", params);
+			tx.add("MATCH (:Structure" + filter + ")<-[:SUBJECT]-(sub:TimetableSubject) DETACH DELETE sub", params);
 			tx.add("MATCH (:Structure" + filter + ")<-[:MAPPING]-(cm:ClassesMapping) DETACH DELETE cm", params);
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
