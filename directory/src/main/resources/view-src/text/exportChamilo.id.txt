@@ -1,4 +1,4 @@
-"NOMMA";"PRENOM";"NOMLOGMI";"MDP";"MAIL";"SGR";"GR"
+NOMMA;PRENOM;NOMLOGMI;MDP;MAIL;SGR;GR
 {{#list}}
-"{{lastName}}";"{{firstName}}";"{{originalLogin}}";"";"{{email}}";"{{chamiloProfile}}";"{{#allClassesSubject}}{{#-first}}{{name}}{{/-first}}{{/allClassesSubject}}"
+{{lastName}};{{firstName}};{{originalLogin}};;{{email}};{{#allClassesSubject}}{{#-first}}{{name}}{{/-first}}{{/allClassesSubject}};{{chamiloProfile}}
 {{/list}}
