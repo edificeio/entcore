@@ -196,7 +196,7 @@ public class CsvFeeder implements Feed {
 	}
 
 	@Override
-	public String getSource() {
+	public String getFeederSource() {
 		return "CSV";
 	}
 
@@ -606,7 +606,7 @@ public class CsvFeeder implements Feed {
 				case "Relative":
 					importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
 					importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
-					importer.addRelativeProperties(getSource());
+					importer.addRelativeProperties(getFeederSource());
 					break;
 				case "Student":
 					if (importer.getReport() != null && importer.getReport().isNotReverseFilesOrder()) {

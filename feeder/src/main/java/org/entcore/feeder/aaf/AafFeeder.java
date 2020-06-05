@@ -122,7 +122,7 @@ public class AafFeeder implements Feed {
 	}
 
 	@Override
-	public String getSource() {
+	public String getFeederSource() {
 		return "AAF";
 	}
 
