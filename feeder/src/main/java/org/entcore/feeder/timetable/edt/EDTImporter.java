@@ -240,13 +240,13 @@ public class EDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("externalId", externalId);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", name));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
 			txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
 
 			ttReport.temporaryGroupCreated(name);
 		}
@@ -293,7 +293,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 			}
 		}
 		if (className != null) {
-			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("className", className));
+			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("className", className));
 
 			if(classExternalId != null)
 				ttReport.classFound();
@@ -313,7 +313,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 		if (teacherId != null && isNotEmpty(teacherId[0])) {
 			teachers.put(id, teacherId[0]);
-			if (getSource().equals(teacherId[1])) {
+			if (getTimetableSource().equals(teacherId[1])) {
 				try {
 					final JsonObject user = persEducNat.applyMapping(currentEntity.copy());
 					updateUser(user.put(IDPN, idPronote));
@@ -433,7 +433,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					if (isNotEmpty(id) && isNotEmpty(idPronote) && isNotEmpty(profile)) {
 						notFoundPersEducNat.remove(idPronote);
 						if ("Teacher".equals(profile)) {
-							teachersMapping.put(idPronote, new String[]{id, getSource()});
+							teachersMapping.put(idPronote, new String[]{id, getTimetableSource()});
 							final String ident = idpnIdent.get(idPronote);
 							if (isNotEmpty(ident)) {
 								teachers.put(ident, id);
@@ -682,7 +682,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 	}
 
 	@Override
-	protected String getSource() {
+	protected String getTimetableSource() {
 		return EDT;
 	}
 

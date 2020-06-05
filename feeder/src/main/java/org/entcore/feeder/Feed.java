@@ -30,6 +30,6 @@ public interface Feed {
 
 	void launch(Importer importer, String path, JsonObject mappings, Handler<Message<JsonObject>> handler) throws Exception;
 
-	String getSource();
+	String getFeederSource();
 
 }

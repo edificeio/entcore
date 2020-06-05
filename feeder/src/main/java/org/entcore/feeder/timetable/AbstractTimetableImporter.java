@@ -193,7 +193,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		this.authorizeUserCreation = authorizeUserCreation;
 
 		this.ttReport = new TimetableReport(vertx);
-		this.ttReport.setSource(this.getSource());
+		this.ttReport.setSource(this.getTimetableSource());
 		this.ttReport.setManual(isManualImport);
 		this.ttReport.setUAI(UAI);
 
@@ -355,8 +355,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							}
 						}
 						txXDT = TransactionManager.getTransaction();
-						persEducNat = new PersEducNat(txXDT, report, getSource());
-						persEducNat.setMapping("dictionary/mapping/" + getSource().toLowerCase() + "/PersEducNat.json");
+						persEducNat = new PersEducNat(txXDT, report, getTimetableSource());
+						persEducNat.setMapping("dictionary/mapping/" + getTimetableSource().toLowerCase() + "/PersEducNat.json");
 						handler.handle(new DefaultAsyncResult<>((Void) null));
 					} catch (Exception e) {
 						handler.handle(new DefaultAsyncResult<Void>(e));
@@ -376,7 +376,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			subjectId = UUID.randomUUID().toString();
 			txXDT.add(CREATE_SUBJECT, currentEntity.put("structureExternalId", structureExternalId)
 					.put("externalId", externalId).put("id", subjectId)
-					.put("source", getSource()).put("now", importTimestamp));
+					.put("source", getTimetableSource()).put("now", importTimestamp));
 		}
 		subjects.put(id, subjectId);
 		final String bcnCode = bcnSubjects.getString(code);
@@ -449,7 +449,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			final JsonObject params = new JsonObject()
 					.put("structureExternalId", structureExternalId)
 					.put("classes", classes)
-					.put("source", getSource())
+					.put("source", getTimetableSource())
 					.put("outDate", DateTime.now().plusDays(1).getMillis())
 					.put("now", importTimestamp);
 			final JsonArray teacherIds = object.getJsonArray("teacherIds");
@@ -483,7 +483,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 					.put("teacherIds", teacherIds)
 					.put("classes", getExternalIdClasses(object.getJsonArray("classes")))
 					.put("groups", getExternalIdGroups(object.getJsonArray("groups")))
-					.put("source", getSource()).put("now", importTimestamp);
+					.put("source", getTimetableSource()).put("now", importTimestamp);
 			txXDT.add(LINK_SUBJECT, params);
 		}
 	}
@@ -553,7 +553,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 					txXDT.add(PERSEDUCNAT_TO_GROUPS, new JsonObject()
 							.put("groups", g)
 							.put("id", id)
-							.put("source", getSource())
+							.put("source", getTimetableSource())
 							.put("outDate", DateTime.now().plusDays(1).getMillis())
 							.put("now", importTimestamp));
 				}
@@ -647,7 +647,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected void commit(final Handler<AsyncResult<Report>> handler)
 	{
 		final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId)
-				.put("source", getSource()).put("now", importTimestamp);
+				.put("source", getTimetableSource()).put("now", importTimestamp);
 
 		JsonArray mappedGroups = groupsMapping != null ? new JsonArray(new ArrayList<String>(groupsMapping.getMap().keySet())) : new JsonArray();
 		persistBulKCourses();
@@ -657,10 +657,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		txXDT.add(DELETE_GROUPS, params.put("mappedGroups", mappedGroups));
 		txXDT.add(UNSET_OLD_GROUPS, params);
 		txXDT.add(SET_GROUPS, params);
-		Importer.markMissingUsers(structureExternalId, getSource(), userImportedExternalId, txXDT, new Handler<Void>() {
+		Importer.markMissingUsers(structureExternalId, getTimetableSource(), userImportedExternalId, txXDT, new Handler<Void>() {
 			@Override
 			public void handle(Void event) {
-				Importer.restorePreDeletedUsers(getSource(), txXDT);
+				Importer.restorePreDeletedUsers(getTimetableSource(), txXDT);
 				txXDT.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
@@ -780,7 +780,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			log.info("Timetable create BCN subject : " + code);
 		}
 		String query;
-		final JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getSource());
+		final JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getTimetableSource());
 		if (bcnSubject) {
 			final JsonObject bcnObject = bcnSubjectsLong.getJsonObject(code.substring(academyPrefix.length()));
 			if (bcnObject != null) {
@@ -819,7 +819,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"ON CREATE SET r.source = {source}, r.classes = {classes}, r.groups = {groups} " +
 				"SET r.timetableClasses = {classes}, r.timetableGroups = {groups}, r.lastUpdated = {now} ";
 		final JsonObject p = new JsonObject().put("UAI", UAI).put("codeBCN", code)
-				.put("now", importTimestamp).put("source", getSource());
+				.put("now", importTimestamp).put("source", getTimetableSource());
 		for (Object o : teaches) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray j = (JsonArray) o;
@@ -835,7 +835,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		tx.add(query, new JsonObject().put("UAI", UAI));
 	}
 
-	protected abstract String getSource();
+	protected abstract String getTimetableSource();
 
 	protected abstract String getTeacherMappingAttribute();
 
