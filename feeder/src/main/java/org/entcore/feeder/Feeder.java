@@ -679,7 +679,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
 			final long start = System.currentTimeMillis();
-			importer.init(neo4j, feed.getSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
+			importer.init(neo4j, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
 					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
@@ -701,7 +701,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
 									if (executePostImport) {
-										postImport.execute(feed.getSource());
+										postImport.execute(feed.getFeederSource());
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
@@ -718,7 +718,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);
 								report.setStartTime(start);
-								report.sendEmails(vertx, config,feed.getSource());
+								report.sendEmails(vertx, config,feed.getFeederSource());
 								logger.info("Elapsed time " + (endTime - start) + " ms.");
 								importer.clear();
 								checkEventQueue();

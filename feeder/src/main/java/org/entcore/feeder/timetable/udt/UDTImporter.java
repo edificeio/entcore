@@ -267,7 +267,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	@Override
-	protected String getSource() {
+	protected String getTimetableSource() {
 		return UDT;
 	}
 
@@ -296,7 +296,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			if (teacherId != null && isNotEmpty(teacherId[0])) {
 				teachers.put(id, teacherId[0]);
-				if (getSource().equals(teacherId[1]) && authorizeUserCreation) {
+				if (getTimetableSource().equals(teacherId[1]) && authorizeUserCreation) {
 					updateUser(p);
 				}
 				foundTeachers.put(teacherId[0], new Boolean(true));
@@ -353,7 +353,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("classExternalId", classExternalId);
 
 		// The class won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("className", className));
+		txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("className", className));
 
 		if(classExternalId != null)
 			ttReport.classFound();
@@ -379,13 +379,13 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("name", mappedName);
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", mappedName));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", mappedName));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
 			txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
-					.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
 
 			ttReport.temporaryGroupCreated(name);
 		}
@@ -450,7 +450,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		regroup.put(currentEntity.getString(CODE), new JsonObject().put("name", name).put("externalId", externalId));
 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getSource()).put("groupExternalId", externalId).put("groupName", name));
+		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
@@ -458,7 +458,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
 					.put("externalId", externalId)
-					.put("id", UUID.randomUUID().toString()).put("source", getSource())
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource())
 					.put("idrgpmt", currentEntity.getString("id")));
 
 			ttReport.temporaryGroupCreated(name);
@@ -577,7 +577,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			teacherId = teachersMapping.get(externalId);
 		}
 		if (teacherId == null || isEmpty(teacherId[0])) {
-			teacherId = new String[]{this.teachers.get(currentEntity.getString("prof")), getSource()};
+			teacherId = new String[]{this.teachers.get(currentEntity.getString("prof")), getTimetableSource()};
 		}
 		if (teacherId != null && isNotEmpty(teacherId[0])) {
 			teachers.add(teacherId[0]);
