@@ -264,7 +264,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
 
     private replaceItalicTags(html: string): string {
         if (html) {
-            return html.replace(/<i>/g, '<em>').replace(/<\/i[^>]*>/g, '</em>');
+            return html.replace(/<i[^>]*?>/g, '<em>').replace(/<\/i[^>]*?>/g, '</em>');
         }
         return;
     }
