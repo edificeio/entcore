@@ -142,24 +142,26 @@ export class CommunicationRulesComponent  extends OdeComponent implements OnInit
         return filter === null || filter === '' ? null : standardise(filter).split(/\s+/);
     }
 
-    public filterRule(sender: GroupModel, receivers: GroupModel[]): boolean {
-        if (!!sender === false) {
-            return false;
-        }
-
-        const name = standardise(this.groupNameService.getGroupName(sender));
-
+    public filterRule(sender: GroupModel, receivers: GroupModel[]): boolean
+    {
         const senderWords = this.filterSenders;
         const receiveWords = this.filterReceivers;
         let included = null;
 
-        if (senderWords != null) {
-            for (let i = senderWords.length; i-- > 0;) {
-                if (name.indexOf(senderWords[i]) === -1) {
-                    included = false;
-                    break;
+        if (senderWords != null)
+        {
+            if(sender != null)
+            {
+                const name = standardise(this.groupNameService.getGroupName(sender));
+                for (let i = senderWords.length; i-- > 0;) {
+                    if (name.indexOf(senderWords[i]) === -1) {
+                        included = false;
+                        break;
+                    }
                 }
             }
+            else
+                included = false;
         }
 
         if (included == null && receiveWords != null) {
