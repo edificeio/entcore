@@ -33,10 +33,19 @@ public interface EventStore {
 
 	void createAndStoreEvent(String eventType, UserInfos user);
 
+	@Deprecated
 	void createAndStoreEvent(String eventType, String login);
 
+	void createAndStoreEvent(String eventType, String login, HttpServerRequest request);
+
+	@Deprecated
 	void createAndStoreEvent(String eventType, String login, String clientId);
 
+	void createAndStoreEvent(String eventType, String login, String clientId, HttpServerRequest request);
+
+	@Deprecated
 	void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId);
+
+	void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId, HttpServerRequest request);
 
 }

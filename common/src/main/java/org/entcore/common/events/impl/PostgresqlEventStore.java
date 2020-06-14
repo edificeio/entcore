@@ -110,6 +110,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
+		final String ua = (String) event.remove("ua");
 		final String eventType = (String) event.remove("event-type");
 		final String userId = (String) event.remove("userId");
 		final String profile = (String) event.remove("profil");
@@ -137,7 +138,10 @@ public class PostgresqlEventStore extends GenericEventStore {
 		e.put("id", UUID.randomUUID().toString());
 		e.put("event_type", eventType);
 		e.put("date", d.toString());
-		e.put("platform", platform);
+		e.put("platform_id", platform);
+		if (isNotEmpty(ua)) {
+			e.put("ua", ua);
+		}
 		if (isNotEmpty(userId)) {
 			e.put("user_id", userId);
 		}

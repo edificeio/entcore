@@ -38,7 +38,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
-
 public abstract class GenericEventStore implements EventStore {
 
 	protected String module;
@@ -75,29 +74,42 @@ public abstract class GenericEventStore implements EventStore {
 
 	@Override
 	public void createAndStoreEvent(final String eventType, final String login) {
-		createAndStoreEvent(eventType, login, null);
+		createAndStoreEvent(eventType, login, (String) null);
 	}
 
 	@Override
 	public void createAndStoreEvent(final String eventType, final String login, final String clientId) {
-		createAndStoreEvent(eventType, "login", login, clientId);
+		createAndStoreEvent(eventType, "login", login, clientId, null);
 	}
 
 	@Override
 	public void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId) {
-		createAndStoreEvent(eventType, "id", userId, clientId);
+		createAndStoreEvent(eventType, "id", userId, clientId, null);
 	}
 
-	private void createAndStoreEvent(final String eventType, final String attr, final String value, final String clientId) {
-		String query =
-				"MATCH (n:User {" + attr + ": {login}}) " +
-				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
-				"OPTIONAL MATCH gp-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
-				"RETURN distinct n.id as userId,  head(n.profiles) as type, COLLECT(distinct gp.id) as profilGroupsIds, " +
-				"COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
-		Neo4j.getInstance().execute(query, new JsonObject().put("login", value),
-				new Handler<Message<JsonObject>>() {
+	@Override
+	public void createAndStoreEvent(String eventType, String login, HttpServerRequest request) {
+		createAndStoreEvent(eventType, login, (String) null, request);
+	}
+
+	@Override
+	public void createAndStoreEvent(String eventType, String login, String clientId, HttpServerRequest request) {
+		createAndStoreEvent(eventType, "login", login, clientId, request);
+	}
+
+	@Override
+	public void createAndStoreEventByUserId(String eventType, String userId, String clientId,
+			HttpServerRequest request) {
+		createAndStoreEvent(eventType, "id", userId, clientId, request);
+	}
+
+	private void createAndStoreEvent(final String eventType, final String attr, final String value,
+			final String clientId, final HttpServerRequest request) {
+		String query = "MATCH (n:User {" + attr + ": {login}}) " + "OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) "
+				+ "OPTIONAL MATCH gp-[:DEPENDS]->(s:Structure) " + "OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) "
+				+ "RETURN distinct n.id as userId,  head(n.profiles) as type, COLLECT(distinct gp.id) as profilGroupsIds, "
+				+ "COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
+		Neo4j.getInstance().execute(query, new JsonObject().put("login", value), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				JsonArray res = event.body().getJsonArray("result");
@@ -107,8 +119,7 @@ public abstract class GenericEventStore implements EventStore {
 						customAttributes = new JsonObject();
 						customAttributes.put("override-module", clientId);
 					}
-					execute(UserUtils.sessionToUserInfos(
-							res.getJsonObject(0)), eventType, null, customAttributes);
+					execute(UserUtils.sessionToUserInfos(res.getJsonObject(0)), eventType, request, customAttributes);
 				} else {
 					logger.error("Error : user " + value + " not found.");
 				}
@@ -117,8 +128,7 @@ public abstract class GenericEventStore implements EventStore {
 		});
 	}
 
-	private void execute(UserInfos user, String eventType, HttpServerRequest request,
-			JsonObject customAttributes) {
+	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
 			storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
 				@Override
@@ -137,8 +147,7 @@ public abstract class GenericEventStore implements EventStore {
 		if (customAttributes != null && customAttributes.size() > 0) {
 			event.mergeIn(customAttributes);
 		}
-		event.put("event-type", eventType)
-				.put("module", getOrElse(event.remove("override-module"), module, false))
+		event.put("event-type", eventType).put("module", getOrElse(event.remove("override-module"), module, false))
 				.put("date", System.currentTimeMillis());
 		if (user != null) {
 			event.put("userId", user.getUserId());
@@ -156,8 +165,12 @@ public abstract class GenericEventStore implements EventStore {
 			}
 		}
 		if (request != null) {
-			event.put("referer", request.headers().get("Referer"));
-			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+			// event.put("referer", request.headers().get("Referer"));
+			// event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+			final String ua = request.headers().get("User-Agent");
+			if (ua != null) {
+				event.put("ua", ua);
+			}
 		}
 		return event;
 	}
