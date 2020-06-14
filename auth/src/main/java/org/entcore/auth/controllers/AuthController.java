@@ -232,13 +232,13 @@ public class AuthController extends BaseController {
 								"refresh_token".equals(req.getParameter("grant_type")))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
 							if ("password".equals(req.getParameter("grant_type"))) {
-								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId());
+								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId(), request);
 							} else if ("refresh_token".equals(req.getParameter("grant_type"))) {
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
 									if (authInfo != null) {
 										eventStore.createAndStoreEventByUserId(
-											AuthEvent.LOGIN.name(), authInfo.getUserId(), clientCredential.getClientId());
+											AuthEvent.LOGIN.name(), authInfo.getUserId(), clientCredential.getClientId(), request);
 									}
 								});
 							}
@@ -445,7 +445,7 @@ public class AuthController extends BaseController {
 						}
 					}
 				});
-		eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
+		eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, request);
 		createSession(userId, request, callback);
 	}
 
@@ -798,7 +798,7 @@ public class AuthController extends BaseController {
 	private void handleActivation(String login, HttpServerRequest request, Either<String, String> activated) {
 		final String userId = activated.right().getValue();
 		trace.info("Activation du compte utilisateur " + login);
-		eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
+		eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login, request);
 		if (config.getBoolean("activationAutoLogin", false)) {
 			trace.info("Connexion de l'utilisateur " + login);
 			userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
@@ -810,7 +810,7 @@ public class AuthController extends BaseController {
 							}
 						}
 					});
-			eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
+			eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, request);
 			createSession(userId, request, getScheme(request) + "://" + getHost(request));
 		} else {
 			redirect(request, "/auth/login");
