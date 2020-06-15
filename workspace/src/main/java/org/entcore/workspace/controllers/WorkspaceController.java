@@ -296,17 +296,22 @@ public class WorkspaceController extends BaseController {
 								return futureFindResource;
 							}
 							final String elementIdFinal = elementId;
-							workspaceService.findById(elementId,
-									new JsonObject().put("_id", 1).put("name", 1).put("eType", 1), event -> {
-										if ("ok".equals(event.getString("status"))
-												&& event.getJsonObject("result") != null) {
-											futureFindResource.complete(event.getJsonObject("result"));
-										} else {
-											log.error("Unable to send timeline notification : missing name on resource "
-													+ elementIdFinal);
-											futureFindResource.fail("missing name or resource" + elementIdFinal);
-										}
-									});
+							final ElementQuery notifiedEltQuery = new ElementQuery(true);
+							notifiedEltQuery.setTrash(false);
+							notifiedEltQuery.setShared(true);
+							notifiedEltQuery.setId(elementIdFinal);
+							notifiedEltQuery.addProjection("_id");
+							notifiedEltQuery.addProjection("name");
+							notifiedEltQuery.addProjection("eType");
+							workspaceService.findByQuery(notifiedEltQuery, user, event -> {
+								if (event.succeeded() && event.result().size()==1) {
+									futureFindResource.complete(event.result().getJsonObject(0));
+								} else {
+									log.error("Unable to send timeline notification : missing name on resource "
+											+ elementIdFinal);
+									futureFindResource.fail("missing name or resource" + elementIdFinal);
+								}
+							});
 							return futureFindResource;
 						}).setHandler(ev -> {
 							if (ev.succeeded()) {
