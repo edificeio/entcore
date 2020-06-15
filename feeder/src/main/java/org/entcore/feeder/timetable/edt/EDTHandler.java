@@ -31,17 +31,19 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class EDTHandler extends DefaultHandler {
 
+	public enum Mode { PERS_EDUC_NAT_ONLY, ALL_BUT_PERS_EDUC_NAT, ALL };
+
 	private static final Logger log = LoggerFactory.getLogger(EDTHandler.class);
 	private String currentTag = "";
 	private String currentEntityType = "";
 	private JsonObject currentEntity;
 	private final EDTReader edtImporter;
 	private boolean firstCours = true;
-	private final boolean persEducNatOnly;
+	private final Mode persEducNatOnly;
 
-	public EDTHandler(EDTReader edtImporter, boolean persEducNatOnly) {
+	public EDTHandler(EDTReader edtImporter, Mode mode) {
 		this.edtImporter = edtImporter;
-		this.persEducNatOnly = persEducNatOnly;
+		this.persEducNatOnly = mode;
 	}
 
 	@Override
@@ -58,7 +60,7 @@ public class EDTHandler extends DefaultHandler {
 			return;
 		}
 
-		if (persEducNatOnly) {
+		if (persEducNatOnly == Mode.PERS_EDUC_NAT_ONLY) {
 			switch (localName) {
 				case "Professeur":
 				case "Personnel":
@@ -78,16 +80,20 @@ public class EDTHandler extends DefaultHandler {
 						currentEntity = o;
 					}
 					break;
+				case "Professeur":
+				case "Personnel":
+					if(persEducNatOnly == Mode.ALL_BUT_PERS_EDUC_NAT)
+						break;
 				case "Matiere":
 				case "Eleve":
-//				case "Professeur":
-//				case "Personnel":
+				case "Responsable":
 				case "Classe":
 				case "Groupe":
 				case "Salle":
 				case "Materiel":
 				case "GrilleHoraire":
 				case "AnneeScolaire":
+				case "Ressource":
 					currentEntityType = localName;
 					currentEntity = o;
 					break;
@@ -112,7 +118,7 @@ public class EDTHandler extends DefaultHandler {
 //			if (currentEntity.containsKey("SemainesAnnulation")) {
 //				log.info(currentEntity.encode());
 //			}
-			if (persEducNatOnly) {
+			if (persEducNatOnly == Mode.PERS_EDUC_NAT_ONLY) {
 				switch (localName) {
 					case "Professeur":
 						edtImporter.addProfesseur(currentEntity);
@@ -135,9 +141,19 @@ public class EDTHandler extends DefaultHandler {
 					case "Eleve":
 						edtImporter.addEleve(currentEntity);
 						break;
-//					case "Professeur":
-//						edtImporter.addProfesseur(currentEntity);
-//						break;
+					case "Responsable":
+						edtImporter.addResponsable(currentEntity);
+						break;
+					case "Professeur":
+						if(persEducNatOnly == Mode.ALL_BUT_PERS_EDUC_NAT)
+							break;
+						edtImporter.addProfesseur(currentEntity);
+						break;
+					case "Personnel":
+						if(persEducNatOnly == Mode.ALL_BUT_PERS_EDUC_NAT)
+							break;
+						edtImporter.addPersonnel(currentEntity);
+						break;
 					case "Classe":
 						edtImporter.addClasse(currentEntity);
 						break;
@@ -150,9 +166,6 @@ public class EDTHandler extends DefaultHandler {
 					case "Materiel":
 						edtImporter.addEquipment(currentEntity);
 						break;
-//					case "Personnel":
-//						edtImporter.addPersonnel(currentEntity);
-//						break;
 					case "GrilleHoraire":
 						edtImporter.initSchedule(currentEntity);
 						break;
