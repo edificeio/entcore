@@ -19,6 +19,8 @@
 
 package org.entcore.auth.oauth;
 
+import org.entcore.auth.services.SafeRedirectionService;
+
 import io.vertx.core.http.HttpServerRequest;
 
 public class OAuthAuthorizationResponse {
@@ -29,7 +31,7 @@ public class OAuthAuthorizationResponse {
 		if (state != null && !state.trim().isEmpty()) {
 			params += "&state=" + state;
 		}
-		redirect(request, redirectUri, params);
+		doRedirect(request, redirectUri, params);
 	}
 
 	public static void invalidRequest(HttpServerRequest request, String redirectUri, String state) {
@@ -65,21 +67,20 @@ public class OAuthAuthorizationResponse {
 		if (state != null && !state.trim().isEmpty()) {
 			params += "&state=" + state;
 		}
-		redirect(request, redirectUri, params);
+		doRedirect(request, redirectUri, params);
 	}
 
-	private static void redirect(HttpServerRequest request, String redirectUri, String params) {
+	private static void doRedirect(HttpServerRequest request, String redirectUri, String params) {
+		final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 //		String p;
 //		try {
 //			p = URLEncoder.encode(params, "UTF-8");
 //		} catch (UnsupportedEncodingException e) {
 //			p = params;
 //		}
-		request.response().setStatusCode(302);
 		final String redirectUrl = (redirectUri != null && redirectUri.contains("?")) ?
 				redirectUri + "&" + params : redirectUri + "?" + params;
-		request.response().putHeader("Location", redirectUrl);
-		request.response().end();
+		redirectionService.redirect(request, redirectUrl, "");
 	}
 
 }

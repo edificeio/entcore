@@ -3,10 +3,12 @@ package org.entcore.test;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 import fr.wseduc.webutils.security.ActionType;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.http.response.JsonHttpResponse;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.validation.StringValidation;
 
@@ -19,6 +21,10 @@ public class HttpTestHelper {
 
     public HttpTestHelper(TestHelper h) {
         helper = h;
+    }
+
+    public HttpServerRequest get(String url) {
+        return get(url, new JsonObject());
     }
 
     public HttpServerRequest get(String url, JsonObject params) {
@@ -35,7 +41,7 @@ public class HttpTestHelper {
         json.put("query", uri.getQuery());
         json.put("uri", uri.toString());
         json.put("params", params);
-        return new JsonHttpServerRequest(json);
+        return new TestHttpServerRequest(json);
     }
 
     public Binding binding(HttpMethod httpMethod, Class<?> clazz, String method) {
@@ -51,7 +57,8 @@ public class HttpTestHelper {
         final Random random = new Random();
 
         for (Object o : required) {
-            if (!(o instanceof String)) continue;
+            if (!(o instanceof String))
+                continue;
             final String attr = (String) o;
             final String type = properties.getJsonObject(attr).getString("type");
             switch (type) {
@@ -70,7 +77,25 @@ public class HttpTestHelper {
     }
 
     public UserInfos sessionUser() {
-                
+
         return helper.directory().generateUser("a1234");
+    }
+
+    static class TestHttpServerRequest extends JsonHttpServerRequest {
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+
+        public TestHttpServerRequest(JsonObject object) {
+            super(object, new TestHttpServerResponse());
+        }
+
+        @Override
+        public MultiMap headers() {
+            return headers;
+        }
+
+    }
+
+    static class TestHttpServerResponse extends JsonHttpResponse {
+
     }
 }

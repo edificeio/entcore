@@ -31,6 +31,7 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.FederationService;
+import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
 import org.entcore.auth.services.impl.FederationServiceImpl;
@@ -83,6 +84,7 @@ public class SamlController extends AbstractFederateController {
 	private boolean softSlo;
 	private boolean federatedAuthenticateError = false;
 	private JsonObject activationThemes;
+	final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
 	// regex used to find namequalifier in session nameid (Mongo)
 	private String NAME_QUALIFIER_REGEXP = ".*\\sNameQualifier=\"([^\"]*)\".*";
@@ -201,7 +203,7 @@ public class SamlController extends AbstractFederateController {
 					if (isNotEmpty(callBack)) {
 						CookieHelper.getInstance().setSigned("callback", callBack, 900, request);
 					}
-					redirect(request, authnRequest, "");
+					redirectionService.redirect(request, authnRequest, "");
 				} else {
 					badRequest(request, "empty.authn.request");
 				}
@@ -279,7 +281,7 @@ public class SamlController extends AbstractFederateController {
 					log.error("SAMLResponse (required) : " + samlResponse);
 					log.error("destination (required)  : " + destination);
 					log.error("error (must be null)    : " + error);
-                    redirect(request, "");
+                    redirectionService.redirect(request, "");
                 }
 
             }
@@ -296,7 +298,7 @@ public class SamlController extends AbstractFederateController {
             ssoRedirect(SAMLAuthnRequest, relayState, request);
         } catch (Exception e) {
             log.error("ssoRedirect decode base64 and inflate xml FAILED ", e);
-            redirect(request, "");
+            redirectionService.redirect(request, "");
 
         }
 
@@ -347,7 +349,7 @@ public class SamlController extends AbstractFederateController {
                     ssoRedirect(xmlStr, relayState, request);
 				} catch (Exception e) {
 					log.error("ssoRedirect decode base64 xml FAILED ", e);
-					redirect(request, "");
+					redirectionService.redirect(request, "");
 				}
 
 		}});
@@ -396,7 +398,7 @@ public class SamlController extends AbstractFederateController {
 			log.info(SAMLAuthnRequest);
 			log.info("END SAMLAuthnRequest ------------------------------");
 			log.info("relayState:" + relayState);
-			redirect(request,"");
+			redirectionService.redirect(request,"");
 			log.error("Can't generate SAML response from provider ", e);
 
 		}
@@ -435,7 +437,7 @@ public class SamlController extends AbstractFederateController {
 			context.put("notLoggedIn", true);
 			renderView(request, context, "login.html", null);
 		}else{
-			redirect(request, LOGIN_PAGE);
+			redirectionService.redirect(request, LOGIN_PAGE);
 		}
 	}
 
@@ -458,7 +460,7 @@ public class SamlController extends AbstractFederateController {
 								log.debug("SessionIndex : " + sessionIndex);
 							}
 							if (nameIdFromAssertion == null || sessionIndex == null || nameIdFromAssertion.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
-								redirect(request, LOGIN_PAGE);
+								redirectionService.redirect(request, LOGIN_PAGE);
 								return;
 							}
 
@@ -492,7 +494,7 @@ public class SamlController extends AbstractFederateController {
 										// no NameID and same userId : user already connected through IDP ENT
 										if((nameID == null || nameID.trim().isEmpty())
 												&& userIdAssertion != null && userIdAssertion.equals(userId)) {
-											redirect(request, "/");
+											redirectionService.redirect(request, "/");
 										} else {
 											endAcs(request, event, sessionIndex, nameIdFromAssertion, assertion);
 										}
@@ -532,10 +534,10 @@ public class SamlController extends AbstractFederateController {
 				renderView(request, params, "selectFederatedUser.html", null);
 			} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
 				log.error("Error signing federated users.", e);
-				redirect(request, LOGIN_PAGE);
+				redirectionService.redirect(request, LOGIN_PAGE);
 			}
 		} else {
-			redirect(request, LOGIN_PAGE);
+			redirectionService.redirect(request, LOGIN_PAGE);
 		}
 	}
 
@@ -574,14 +576,14 @@ public class SamlController extends AbstractFederateController {
 					if(confSoftSlo != null) {
 						String redirectIDP = confSoftSlo.getString(nameQualifier);
 						if(redirectIDP != null) {
-							redirect(request, redirectIDP, "");
+							redirectionService.redirect(request, redirectIDP, "");
 						} else {
 							log.error("Error loading soft-slo-redirect for IDP : " + nameQualifier);
-							redirect(request, LOGIN_PAGE);
+							redirectionService.redirect(request, LOGIN_PAGE);
 						}
 					} else {
 						log.error("Error loading soft-slo-redirect properties.");
-						redirect(request, LOGIN_PAGE);
+						redirectionService.redirect(request, LOGIN_PAGE);
 					}
 				}
 			} else {
@@ -630,11 +632,11 @@ public class SamlController extends AbstractFederateController {
 						authenticate(j, sessionIndex, nameId, activationThemes, request);
 					} else {
 						log.error("Invalid signature for federated user.");
-						redirect(request, LOGIN_PAGE);
+						redirectionService.redirect(request, LOGIN_PAGE);
 					}
 				} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
 					log.error("Error validating signature of federated user.", e);
-					redirect(request, LOGIN_PAGE);
+					redirectionService.redirect(request, LOGIN_PAGE);
 				}
 			}
 		});
@@ -680,10 +682,10 @@ public class SamlController extends AbstractFederateController {
 									handler.handle(SamlUtils.unmarshallAssertion(assertion));
 								} catch (Exception e) {
 									log.error(e.getMessage(), e);
-									redirect(request, LOGIN_PAGE);
+									redirectionService.redirect(request, LOGIN_PAGE);
 								}
 							} else {
-								redirect(request, LOGIN_PAGE);
+								redirectionService.redirect(request, LOGIN_PAGE);
 							}
 						}
 					}));
@@ -697,21 +699,21 @@ public class SamlController extends AbstractFederateController {
 								try {
 									Response response = SamlUtils.unmarshallResponse(samlResponse);
 									if (response.getAssertions() == null || response.getAssertions().size() != 1) {
-										redirect(request, LOGIN_PAGE);
+										redirectionService.redirect(request, LOGIN_PAGE);
 										return;
 									}
 									handler.handle(response.getAssertions().get(0));
 								} catch (Exception e) {
 									log.error(e.getMessage(), e);
-									redirect(request, LOGIN_PAGE);
+									redirectionService.redirect(request, LOGIN_PAGE);
 								}
 							} else {
-								redirect(request, LOGIN_PAGE);
+								redirectionService.redirect(request, LOGIN_PAGE);
 							}
 						}
 					}));
 				} else {
-					redirect(request, LOGIN_PAGE);
+					redirectionService.redirect(request, LOGIN_PAGE);
 				}
 			}
 		});

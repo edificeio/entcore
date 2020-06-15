@@ -56,6 +56,7 @@ import jp.eisbahn.oauth2.server.async.Handler;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
@@ -115,6 +116,7 @@ public class AuthController extends BaseController {
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
 	private ClientCredentialFetcher clientCredentialFetcher;
+	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -313,7 +315,7 @@ public class AuthController extends BaseController {
 	public void login(final HttpServerRequest request) {
 		final String host = getHost(request);
 		if (authorizedHostsLogin != null && isNotEmpty(host) && !authorizedHostsLogin.contains(host)) {
-			redirect(request, pathPrefix + "/openid/login");
+			redirectionService.redirect(request, pathPrefix + "/openid/login");
 		} else {
 			UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 				@Override
@@ -325,7 +327,7 @@ public class AuthController extends BaseController {
 						if (isEmpty(callBack)) {
 							callBack = getScheme(request) + "://" + host;
 						}
-						redirect(request, callBack, "");
+						redirectionService.redirect(request, callBack, "");
 					}
 				}
 			});
@@ -467,7 +469,7 @@ public class AuthController extends BaseController {
 	}
 
 	private void handleMatchResetCode(String login, String password, HttpServerRequest request) {
-		redirect(request, "/auth/reset/" + password + "?login=" + login);
+		redirectionService.redirect(request, "/auth/reset/" + password + "?login=" + login);
 	}
 
 	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
@@ -478,7 +480,7 @@ public class AuthController extends BaseController {
 						long timeout = rememberMe ? 3600l * 24 * 365 : config.getLong("cookie_timeout", Long.MIN_VALUE);
 						CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 						CookieHelper.set("authenticated", "true", timeout, request);
-						redirect(request,
+						redirectionService.redirect(request,
 								callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?")
 										? callBack.replaceFirst("/auth/login", "")
 										: callBack,
@@ -499,9 +501,9 @@ public class AuthController extends BaseController {
 					if (event != null && Boolean.TRUE.equals(event.getFederated())
 							&& !request.params().contains("SAMLRequest")) {
 						if (config.containsKey("openid-federate")) {
-							redirect(request, "/auth/openid/slo?callback=" + c);
+							redirectionService.redirect(request, "/auth/openid/slo?callback=" + c);
 						} else {
-							redirect(request, "/auth/saml/slo?callback=" + c);
+							redirectionService.redirect(request, "/auth/saml/slo?callback=" + c);
 						}
 					} else {
 						String c1 = c;
@@ -522,6 +524,7 @@ public class AuthController extends BaseController {
 	}
 
 	public static void logoutCallback(final HttpServerRequest request, String c, JsonObject config, EventBus eb) {
+		final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		final StringBuilder callback = new StringBuilder();
 		if (c != null && !c.trim().isEmpty()) {
@@ -547,11 +550,11 @@ public class AuthController extends BaseController {
 						CookieHelper.set("oneSessionId", "", 0l, request);
 						CookieHelper.set("authenticated", "", 0l, request);
 					}
-					redirect(request, callback.toString(), "");
+					redirectionService.redirect(request, callback.toString(), "");
 				}
 			});
 		} else {
-			redirect(request, callback.toString(), "");
+			redirectionService.redirect(request, callback.toString(), "");
 		}
 	}
 
@@ -813,7 +816,7 @@ public class AuthController extends BaseController {
 			eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, request);
 			createSession(userId, request, getScheme(request) + "://" + getHost(request));
 		} else {
-			redirect(request, "/auth/login");
+			redirectionService.redirect(request, "/auth/login");
 		}
 	}
 
@@ -1234,7 +1237,7 @@ public class AuthController extends BaseController {
 						public void handle(Boolean reseted) {
 							if (Boolean.TRUE.equals(reseted)) {
 								trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-								redirect(request, callback);
+								redirectionService.redirect(request, callback);
 							} else {
 								trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
 										+ login);
@@ -1258,7 +1261,7 @@ public class AuthController extends BaseController {
 												if (Boolean.TRUE.equals(reseted)) {
 													trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
 													UserUtils.deleteCacheSession(eb, userId,
-															false, r -> redirect(request, callback));
+															false, r -> redirectionService.redirect(request, callback));
 												} else {
 													trace.info("Erreur lors du changement forcé du mot de passe de l'utilisateur " + login);
 													error(request, resetCode);
