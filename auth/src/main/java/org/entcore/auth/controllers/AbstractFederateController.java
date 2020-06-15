@@ -24,6 +24,8 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+
+import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.user.UserInfos;
@@ -42,6 +44,7 @@ public abstract class AbstractFederateController extends BaseController {
 	private UserAuthAccount userAuthAccount;
 	private EventStore eventStore;
 	protected String signKey;
+	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
 	protected void authenticate(JsonObject res, String sessionIndex, String nameId, JsonObject activationThemes, HttpServerRequest request) {
 		final String userId = res.getString("id");
@@ -67,7 +70,7 @@ public abstract class AbstractFederateController extends BaseController {
 			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
 			createSession(userId, sessionIndex, nameId, request);
 		} else {
-			redirect(request, LOGIN_PAGE);
+			redirectionService.redirect(request, LOGIN_PAGE);
 		}
 	}
 
@@ -83,12 +86,12 @@ public abstract class AbstractFederateController extends BaseController {
 					CookieHelper.set("authenticated", "true", timeout, request);
 					final String callback = CookieHelper.getInstance().getSigned("callback", request);
 					if (isNotEmpty(callback)) {
-						redirect(request, callback, "");
+						redirectionService.redirect(request, callback, "");
 					} else {
-						redirect(request, "/");
+						redirectionService.redirect(request, "/");
 					}
 				} else {
-					redirect(request, LOGIN_PAGE);
+					redirectionService.redirect(request, LOGIN_PAGE);
 				}
 			}
 		});

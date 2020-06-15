@@ -28,6 +28,7 @@ import org.entcore.auth.controllers.OpenIdConnectController;
 import org.entcore.auth.controllers.SamlController;
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.auth.security.SamlValidator;
+import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
@@ -56,7 +57,7 @@ public class Auth extends BaseServer {
 
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-
+		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
 		AuthController authController = new AuthController();
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
@@ -76,11 +77,12 @@ public class Auth extends BaseServer {
 							SamlController samlController = new SamlController();
 							JsonObject conf = config;
 
-							vertx.deployVerticle(SamlValidator.class, new DeploymentOptions().setConfig(conf).setWorker(true));
+							vertx.deployVerticle(SamlValidator.class,
+									new DeploymentOptions().setConfig(conf).setWorker(true));
 							samlController.setEventStore(eventStore);
 							samlController.setUserAuthAccount(userAuthAccount);
-							samlController.setServiceProviderFactory(new DefaultServiceProviderFactory(
-									config.getJsonObject("saml-services-providers")));
+							samlController.setServiceProviderFactory(
+									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")));
 							samlController.setSignKey((String) vertx.sharedData().getLocalMap("server").get("signKey"));
 							samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
 							samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
