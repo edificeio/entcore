@@ -39,14 +39,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
-import javax.xml.bind.JAXBException;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -56,7 +49,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL_PROFILE_EXTERNAL_ID;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
 
-public class EDTImporter extends AbstractTimetableImporter {
+public class EDTImporter extends AbstractTimetableImporter implements EDTReader {
 
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
@@ -102,21 +95,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 		this.mode = mode;
 	}
 
-	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception {
-		final String content;
-		if ("dev".equals(mode)) {
-			String c;
-			try {
-				c = edtUtils.decryptExport(basePath);
-			} catch (JAXBException e) {
-				log.warn("Decrypt failed : " + basePath, e);
-				c = new String(Files.readAllBytes(Paths.get(basePath)));
-			}
-			content = c;
-		} else {
-			content = edtUtils.decryptExport(basePath);
-		}
+	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception
+	{
+		final String content = edtUtils.getContent(basePath, mode);
 		log.debug(content);
+		EDTReader self = this;
 		init(new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
@@ -125,9 +108,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 						txXDT.setAutoSend(false);
 						txXDT.add(CLEAN_IDPN, new JsonObject().put("UAI", UAI));
 						txXDT.add(CLEAN_IDPN_OTHER_STRUCTURE, new JsonObject().put("structureExternalId", structureExternalId));
-						parse(content, true);
+						edtUtils.parseContent(content, self, true);
 						if (txXDT.isEmpty()) {
-							parse(content, false);
+							edtUtils.parseContent(content, self, false);
 						} else {
 							matchAndCreatePersEducNat(new Handler<AsyncResult<Void>>() {
 								@Override
@@ -135,7 +118,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 									if (event.succeeded()) {
 										try {
 											txXDT = TransactionManager.getTransaction();
-											parse(content, false);
+											edtUtils.parseContent(content, self, false);
 											userExternalId(new Handler<Void>(){
 												@Override
 												public void handle(Void v) {
@@ -185,22 +168,14 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	private void parse(String content, boolean persEducNatOnly) throws Exception {
-		InputSource in = new InputSource(new StringReader(content));
-		EDTHandler sh = new EDTHandler(this, persEducNatOnly);
-		XMLReader xr = XMLReaderFactory.createXMLReader();
-		xr.setContentHandler(sh);
-		xr.parse(in);
-	}
-
-	void initSchoolYear(JsonObject schoolYear) {
+	public void initSchoolYear(JsonObject schoolYear) {
 		startDateWeek1 = DateTime.parse(schoolYear.getString("DatePremierJourSemaine1"));
 		byte week1 = (byte) startDateWeek1.getWeekOfWeekyear();
 		for(byte i = 0; i < 52; ++i)
 			ttReport.addWeek(((week1 + i) % 52) + 1);
 	}
 
-	void initSchedule(JsonObject currentEntity) {
+	public void initSchedule(JsonObject currentEntity) {
 		slotDuration = Integer.parseInt(currentEntity.getString("DureePlace")) * 60;
 		for (Object o : currentEntity.getJsonArray("Place")) {
 			if (o instanceof JsonObject) {
@@ -211,15 +186,15 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	void addRoom(JsonObject currentEntity) {
+	public void addRoom(JsonObject currentEntity) {
 		rooms.put(currentEntity.getString(IDENT), currentEntity.getString("Nom"));
 	}
 
-	void addEquipment(JsonObject currentEntity) {
+	public void addEquipment(JsonObject currentEntity) {
 		equipments.put(currentEntity.getString(IDENT), currentEntity.getString("Nom"));
 	}
 
-	void addSubject(JsonObject currentEntity) {
+	public void addSubject(JsonObject currentEntity) {
 		super.addSubject(currentEntity.getString(IDENT),
 				currentEntity.put("mappingCode", currentEntity.getString("Code")));
 		TimetableReport.Subject s = new TimetableReport.Subject(currentEntity.getString("Code"));
@@ -227,7 +202,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		ttReport.addUserToSubject(null, s);
 	}
 
-	void addGroup(JsonObject currentEntity) {
+	public void addGroup(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		groups.put(id, currentEntity);
 		final JsonArray classes = currentEntity.getJsonArray("Classe");
@@ -275,7 +250,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	void addClasse(JsonObject currentEntity) {
+	public void addClasse(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		classes.put(id, currentEntity);
 		final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
@@ -302,7 +277,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	void addProfesseur(JsonObject currentEntity) {
+	public void addProfesseur(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		final String idPronote = structureExternalId + "$" + currentEntity.getString(IDPN);
 		userImportedPronoteId.add(idPronote);
@@ -333,7 +308,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		teachersById.put(id, teacher);
 	}
 
-	void addPersonnel(JsonObject currentEntity) {
+	public void addPersonnel(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		try {
 			final String idPronote =  structureExternalId + "$" + Md5.hash(currentEntity.getString("Nom") + currentEntity.getString("Prenom"));
@@ -451,7 +426,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 	}
 
-	void addEleve(JsonObject currentEntity) {
+	public void addEleve(JsonObject currentEntity) {
 		final String sconetId = currentEntity.getString("IDSconet");
 		if (isNotEmpty(sconetId)) {
 			final JsonArray classes = currentEntity.getJsonArray("Classe");
@@ -469,6 +444,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 				else
 				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
 		}
+	}
+
+	public void addResponsable(JsonObject currentEntity)
+	{
+		// Nothing to do
 	}
 
 	private void studentToGroups(String sconetId, JsonArray classes, Map<String, JsonObject> ref) {
@@ -504,7 +484,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	void addCourse(JsonObject currentEntity) {
+	public void addCourse(JsonObject currentEntity) {
 		final List<Long> weeks = new ArrayList<>();
 		final List<JsonObject> items = new ArrayList<>();
 

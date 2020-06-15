@@ -37,6 +37,7 @@ import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.ImportsLauncher;
 import org.entcore.feeder.timetable.TimetableReport;
+import org.entcore.feeder.timetable.edt.EDTFeeder;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.export.Exporter;
@@ -176,6 +177,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			if (isNotEmpty(pronotePrivateKey)) {
 				edtUtils = new EDTUtils(vertx, pronotePrivateKey,
 						config.getString("pronote-partner-name", "NEO-Open"));
+
+				feeds.put("PRONOTE", new EDTFeeder(edtUtils, config.getString("mode", "prod")));
 				final String edtPath = edt.getString("path");
 				final String edtCron = edt.getString("cron");
 				if (isNotEmpty(edtPath) && isNotEmpty(edtCron)) {
@@ -462,6 +465,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "AAF":
 			case "AAF1D":
+			case "PRONOTE":
 				final Report report = new Report(acceptLanguage);
 				if (handler != null) {
 					handler.handle(report);

@@ -19,18 +19,21 @@
 
 package org.entcore.feeder.timetable.edt;
 
-
 import fr.wseduc.webutils.data.XML;
 import fr.wseduc.webutils.data.ZLib;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.Sha256;
 import org.entcore.feeder.exceptions.ValidationException;
+import org.entcore.feeder.utils.Hash;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.spi.BufferFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -46,6 +49,15 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+import java.io.StringReader;
+
+import javax.xml.bind.JAXBException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
@@ -75,7 +87,39 @@ public class EDTUtils {
 		});
 	}
 
-	public String decryptExport(String encryptedExport) throws Exception {
+	public String getContent(String basePath, String mode) throws Exception
+	{
+		String content;
+		if ("dev".equals(mode)) {
+			String c;
+			try {
+				c = this.decryptExport(basePath);
+			} catch (JAXBException e) {
+				log.warn("Decrypt failed : " + basePath, e);
+				c = new String(Files.readAllBytes(Paths.get(basePath)));
+			}
+			content = c;
+		} else {
+			content = this.decryptExport(basePath);
+		}
+		return content;
+	}
+
+	public void parseContent(String content, EDTReader reader) throws Exception
+	{
+		parseContent(content, reader, false);
+	}
+
+	public void parseContent(String content, EDTReader reader, boolean persEducNatOnly) throws Exception
+	{
+		InputSource in = new InputSource(new StringReader(content));
+		EDTHandler sh = new EDTHandler(reader, persEducNatOnly);
+		XMLReader xr = XMLReaderFactory.createXMLReader();
+		xr.setContentHandler(sh);
+		xr.parse(in);
+	}
+
+	private String decryptExport(String encryptedExport) throws Exception {
 		final JAXBContext jaxbContext = JAXBContext.newInstance(EDTEncryptedExport.class);
 		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		final EDTEncryptedExport edtEncryptedExport = (EDTEncryptedExport) unmarshaller.unmarshal(new File(encryptedExport));

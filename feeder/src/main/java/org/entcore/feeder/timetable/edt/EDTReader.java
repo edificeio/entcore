@@ -1,4 +1,5 @@
-/* Copyright © "Open Digital Education", 2014
+/*
+ * Copyright © "Open Digital Education", 2016
  *
  * This program is published by "Open Digital Education".
  * You must indicate the name of the software and the company in any production /contribution
@@ -14,24 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with the software.
  * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
 
- *
  */
 
-package org.entcore.feeder;
+package org.entcore.feeder.timetable.edt;
 
-import org.entcore.feeder.dictionary.structures.Importer;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
-public interface Feed {
-
-	void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception;
-
-	void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception;
-
-	void launch(Importer importer, String path, JsonObject mappings, Handler<Message<JsonObject>> handler) throws Exception;
-
-	String getFeederSource();
-
+public interface EDTReader
+{
+  abstract void addProfesseur(JsonObject currentEntity);
+  abstract void addPersonnel(JsonObject currentEntity);
+  abstract void addCourse(JsonObject currentEntity);
+  abstract void addSubject(JsonObject currentEntity);
+  abstract void addEleve(JsonObject currentEntity);
+  abstract void addResponsable(JsonObject currentEntity);
+  abstract void addClasse(JsonObject currentEntity);
+  abstract void addGroup(JsonObject currentEntity);
+  abstract void addRoom(JsonObject currentEntity);
+  abstract void addEquipment(JsonObject currentEntity);
+  abstract void initSchedule(JsonObject currentEntity);
+  abstract void initSchoolYear(JsonObject currentEntity);
 }

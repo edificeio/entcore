@@ -71,6 +71,11 @@ public class CsvFeeder implements Feed {
 	}
 
 	@Override
+	public void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void launch(final Importer importer, final String path, final JsonObject mappings,
 			final Handler<Message<JsonObject>> handler) throws Exception {
 		columnsMapper = new ProfileColumnsMapper(mappings);

@@ -35,11 +35,11 @@ public class EDTHandler extends DefaultHandler {
 	private String currentTag = "";
 	private String currentEntityType = "";
 	private JsonObject currentEntity;
-	private final EDTImporter edtImporter;
+	private final EDTReader edtImporter;
 	private boolean firstCours = true;
 	private final boolean persEducNatOnly;
 
-	public EDTHandler(EDTImporter edtImporter, boolean persEducNatOnly) {
+	public EDTHandler(EDTReader edtImporter, boolean persEducNatOnly) {
 		this.edtImporter = edtImporter;
 		this.persEducNatOnly = persEducNatOnly;
 	}
