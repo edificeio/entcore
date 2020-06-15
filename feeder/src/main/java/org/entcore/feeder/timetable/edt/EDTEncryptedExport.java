@@ -117,7 +117,7 @@ public class EDTEncryptedExport {
 	@XmlElement(name = "UAI")
 	protected String uai;
 	@XmlElement(name = "NOMETABLISSEMENT")
-	protected Object nometablissement;
+	protected String nometablissement;
 	@XmlElement(name = "CODEPOSTALVILLE")
 	protected Object codepostalville;
 
@@ -292,10 +292,10 @@ public class EDTEncryptedExport {
 	 *
 	 * @return
 	 *     possible object is
-	 *     {@link Object }
+	 *     {@link String }
 	 *
 	 */
-	public Object getNOMETABLISSEMENT() {
+	public String getNOMETABLISSEMENT() {
 		return nometablissement;
 	}
 
@@ -304,10 +304,10 @@ public class EDTEncryptedExport {
 	 *
 	 * @param value
 	 *     allowed object is
-	 *     {@link Object }
+	 *     {@link String }
 	 *
 	 */
-	public void setNOMETABLISSEMENT(Object value) {
+	public void setNOMETABLISSEMENT(String value) {
 		this.nometablissement = value;
 	}
 

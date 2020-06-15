@@ -87,30 +87,30 @@ public class EDTUtils {
 		});
 	}
 
-	public String getContent(String basePath, String mode) throws Exception
+	public String getContent(String basePath, String mode, JsonObject structureInfos) throws Exception
 	{
 		String content;
 		if ("dev".equals(mode)) {
 			String c;
 			try {
-				c = this.decryptExport(basePath);
+				c = this.decryptExport(basePath, structureInfos);
 			} catch (JAXBException e) {
 				log.warn("Decrypt failed : " + basePath, e);
 				c = new String(Files.readAllBytes(Paths.get(basePath)));
 			}
 			content = c;
 		} else {
-			content = this.decryptExport(basePath);
+			content = this.decryptExport(basePath, structureInfos);
 		}
 		return content;
 	}
 
 	public void parseContent(String content, EDTReader reader) throws Exception
 	{
-		parseContent(content, reader, false);
+		parseContent(content, reader, EDTHandler.Mode.ALL);
 	}
 
-	public void parseContent(String content, EDTReader reader, boolean persEducNatOnly) throws Exception
+	public void parseContent(String content, EDTReader reader, EDTHandler.Mode persEducNatOnly) throws Exception
 	{
 		InputSource in = new InputSource(new StringReader(content));
 		EDTHandler sh = new EDTHandler(reader, persEducNatOnly);
@@ -119,10 +119,18 @@ public class EDTUtils {
 		xr.parse(in);
 	}
 
-	private String decryptExport(String encryptedExport) throws Exception {
+	private String decryptExport(String encryptedExport, JsonObject structureInfos) throws Exception {
 		final JAXBContext jaxbContext = JAXBContext.newInstance(EDTEncryptedExport.class);
 		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		final EDTEncryptedExport edtEncryptedExport = (EDTEncryptedExport) unmarshaller.unmarshal(new File(encryptedExport));
+
+		if(structureInfos != null)
+		{
+			String name = edtEncryptedExport.getNOMETABLISSEMENT();
+			structureInfos.put("UAI", edtEncryptedExport.getUAI());
+			structureInfos.put("name", name);
+			structureInfos.put("externalId", Hash.sha1(name.getBytes("UTF-8")));
+		}
 
 		String encryptedKey = null;
 		for (EDTEncryptedExport.CLES.PARTENAIRE p : edtEncryptedExport.getCLES().getPARTENAIRE()) {
