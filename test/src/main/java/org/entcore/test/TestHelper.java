@@ -7,11 +7,15 @@ public class TestHelper {
     private final DatabaseTestHelper database = new DatabaseTestHelper(vertx);
     private final ShareTestHelper share = new ShareTestHelper(vertx);
     private final HttpTestHelper http = new HttpTestHelper(this);
+    private final PortalTestHelper portal = new PortalTestHelper(this);
     private final FileTestHelper file = new FileTestHelper();
     private final DirectoryTestHelper directory = new DirectoryTestHelper(vertx);
-    public Vertx vertx(){
+    private final AppRegistryTestHelper registry = new AppRegistryTestHelper(this);
+
+    public Vertx vertx() {
         return this.vertx;
     }
+
     public static TestHelper helper() {
         return new TestHelper();
     }
@@ -24,12 +28,20 @@ public class TestHelper {
         return directory;
     }
 
-    public ShareTestHelper share() {
-        return share;
-    }
-
     public HttpTestHelper http() {
         return http;
+    }
+
+    public PortalTestHelper portal() {
+        return portal;
+    }
+
+    public AppRegistryTestHelper registry() {
+        return registry;
+    }
+
+    public ShareTestHelper share() {
+        return share;
     }
 
     public FileTestHelper file() {

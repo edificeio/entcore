@@ -30,14 +30,20 @@ import io.vertx.core.http.HttpServerResponse;
 public class JsonHttpResponse implements HttpServerResponse {
 
 	private Handler<String> endHandler;
+	private String statusMessage;
+	private MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+	private MultiMap trailers = MultiMap.caseInsensitiveMultiMap();
 
+	public JsonHttpResponse() {
+		this(s->{});
+	}
 	public JsonHttpResponse(Handler<String> handler) {
 		this.endHandler = handler;
 	}
 
 	@Override
 	public HttpServerResponse setWriteQueueMaxSize(int i) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -62,11 +68,12 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public String getStatusMessage() {
-		return null;
+		return statusMessage;
 	}
 
 	@Override
 	public HttpServerResponse setStatusMessage(String s) {
+		statusMessage = s;
 		return this;
 	}
 
@@ -82,82 +89,93 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public MultiMap headers() {
-		return null;
+		return headers;
 	}
 
 	@Override
 	public HttpServerResponse putHeader(String s, String s2) {
-		return null;
+		headers.add(s, s2);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putHeader(CharSequence charSequence, CharSequence charSequence2) {
-		return null;
+		headers.add(charSequence, charSequence2);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putHeader(String s, Iterable<String> strings) {
-		return null;
+		headers.add(s, strings);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putHeader(CharSequence charSequence, Iterable<CharSequence> charSequences) {
-		return null;
+		headers.add(charSequence, charSequences);
+		return this;
 	}
 
 	@Override
 	public MultiMap trailers() {
-		return null;
+		return trailers;
 	}
 
 	@Override
 	public HttpServerResponse putTrailer(String s, String s2) {
-		return null;
+		trailers.add(s, s2);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putTrailer(CharSequence charSequence, CharSequence charSequence2) {
-		return null;
+		trailers.add(charSequence, charSequence2);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putTrailer(String s, Iterable<String> strings) {
-		return null;
+		trailers.add(s, strings);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse putTrailer(CharSequence charSequence, Iterable<CharSequence> charSequences) {
-		return null;
+		trailers.add(charSequence, charSequences);
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse closeHandler(Handler<Void> voidHandler) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse endHandler(Handler<Void> handler) {
-		return null;
+		this.endHandler = (s) -> {
+			handler.handle(null);
+		};
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse write(Buffer buffer) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse write(String s, String s2) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse write(String s) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse writeContinue() {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -182,32 +200,33 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public HttpServerResponse sendFile(String s) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse sendFile(String filename, long offset) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse sendFile(String filename, long offset, long length) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse sendFile(String s, Handler<AsyncResult<Void>> asyncResultHandler) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse sendFile(String filename, long offset, Handler<AsyncResult<Void>> resultHandler) {
-		return null;
+		return this;
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String filename, long offset, long length, Handler<AsyncResult<Void>> resultHandler) {
-		return null;
+	public HttpServerResponse sendFile(String filename, long offset, long length,
+			Handler<AsyncResult<Void>> resultHandler) {
+		return this;
 	}
 
 	@Override
@@ -232,12 +251,12 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public HttpServerResponse headersEndHandler(Handler<Void> handler) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public HttpServerResponse bodyEndHandler(Handler<Void> handler) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -251,12 +270,14 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse push(HttpMethod method, String path, MultiMap headers, Handler<AsyncResult<HttpServerResponse>> handler) {
+	public HttpServerResponse push(HttpMethod method, String path, MultiMap headers,
+			Handler<AsyncResult<HttpServerResponse>> handler) {
 		return push(method, null, path, headers, handler);
 	}
 
 	@Override
-	public HttpServerResponse push(io.vertx.core.http.HttpMethod method, String host, String path, Handler<AsyncResult<HttpServerResponse>> handler) {
+	public HttpServerResponse push(io.vertx.core.http.HttpMethod method, String host, String path,
+			Handler<AsyncResult<HttpServerResponse>> handler) {
 		return push(method, path, handler);
 	}
 
@@ -266,7 +287,8 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse push(HttpMethod method, String host, String path, MultiMap headers, Handler<AsyncResult<HttpServerResponse>> handler) {
+	public HttpServerResponse push(HttpMethod method, String host, String path, MultiMap headers,
+			Handler<AsyncResult<HttpServerResponse>> handler) {
 		return this;
 	}
 
@@ -286,6 +308,6 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public HttpServerResponse exceptionHandler(Handler<Throwable> throwableHandler) {
-		return null;
+		return this;
 	}
 }
