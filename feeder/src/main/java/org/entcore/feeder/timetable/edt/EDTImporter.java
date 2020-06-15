@@ -97,7 +97,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 
 	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception
 	{
-		final String content = edtUtils.getContent(basePath, mode);
+		final String content = edtUtils.getContent(basePath, mode, null);
 		log.debug(content);
 		EDTReader self = this;
 		init(new Handler<AsyncResult<Void>>() {
@@ -108,9 +108,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						txXDT.setAutoSend(false);
 						txXDT.add(CLEAN_IDPN, new JsonObject().put("UAI", UAI));
 						txXDT.add(CLEAN_IDPN_OTHER_STRUCTURE, new JsonObject().put("structureExternalId", structureExternalId));
-						edtUtils.parseContent(content, self, true);
+						edtUtils.parseContent(content, self, EDTHandler.Mode.PERS_EDUC_NAT_ONLY);
 						if (txXDT.isEmpty()) {
-							edtUtils.parseContent(content, self, false);
+							edtUtils.parseContent(content, self, EDTHandler.Mode.ALL_BUT_PERS_EDUC_NAT);
 						} else {
 							matchAndCreatePersEducNat(new Handler<AsyncResult<Void>>() {
 								@Override
@@ -118,7 +118,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 									if (event.succeeded()) {
 										try {
 											txXDT = TransactionManager.getTransaction();
-											edtUtils.parseContent(content, self, false);
+											edtUtils.parseContent(content, self, EDTHandler.Mode.ALL_BUT_PERS_EDUC_NAT);
 											userExternalId(new Handler<Void>(){
 												@Override
 												public void handle(Void v) {
