@@ -181,7 +181,7 @@ public class TimetableController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetable(final HttpServerRequest request) {
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, false);
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"));
 	}
 
 	@Post("/timetable/import/:timetableType/:structureId")
