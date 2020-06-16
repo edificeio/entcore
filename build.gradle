@@ -66,6 +66,9 @@ subprojects {
     testCompile "io.vertx:vertx-unit:$vertxVersion"
     testCompile "io.vertx:vertx-codegen:$vertxVersion"
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.testcontainers:testcontainers:1.12.3"
+    testCompile "org.testcontainers:postgresql:1.12.3"
+    testCompile "fr.wseduc:mod-postgresql:1.0.1:fat"
   }
 
   test {
@@ -222,6 +225,7 @@ project(':auth') {
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    testCompile project(':test')
   }
 }
 
@@ -316,6 +320,19 @@ project(':session') {
   }
 }
 
+project(':test') {
+  //test has compile deps but is used as testCompile
+  dependencies {
+    compile project(':common')
+    compile "io.vertx:vertx-unit:$vertxVersion"
+    compile "org.testcontainers:neo4j:$testContainerVersion"
+    compile "org.testcontainers:postgresql:$testContainerVersion"
+    compile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
+    compile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+    configurations.compile.exclude(group: 'io.gatling', module: 'gatling-app')
+    configurations.compile.exclude(group: 'io.gatling', module: 'gatling-recorder')
+  }
+}
 
 project(':tests') {
   apply plugin: 'scala'
