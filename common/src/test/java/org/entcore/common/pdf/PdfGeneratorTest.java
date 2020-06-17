@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(VertxUnitRunner.class)
+//@RunWith(VertxUnitRunner.class)
 public class PdfGeneratorTest {
 
 	private static final String IP_ENT = "172.17.0.6";
@@ -55,7 +55,7 @@ public class PdfGeneratorTest {
 	private PdfFactory pdfFactory;
 	private UserInfos user;
 
-	@Before
+	//@Before
 	public void setUp(TestContext context) {
 		Vertx vertx = Vertx.vertx();
 		final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
@@ -70,7 +70,7 @@ public class PdfGeneratorTest {
 		this.vertx = vertx;
 	}
 
-	@Test
+	//@Test
 	public void testMultiple(TestContext context) throws Exception {
 		Async async = context.async();
 		PdfGenerator pdfGenerator = pdfFactory.getPdfGenerator();
