@@ -30,12 +30,17 @@ import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.events.impl.PostgresqlEventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-import fr.wseduc.webutils.collections.JsonArray;
-import fr.wseduc.webutils.collections.JsonObject;
+import io.reactiverse.pgclient.PgClient;
+import io.reactiverse.pgclient.PgConnectOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -43,16 +48,42 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class PostgresqlEventStoreTest {
+    @ClassRule
+    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer("postgres:9.5");
 
-    private static final String eventStoreTestConfig =
-            "{ \"platform\": \"6449e6ea-1d6b-49b8-9245-46c88b167178\", \"postgresql\": { \"user\":\"web-education\", \"password\":\"We_1234\",\"host\":\"localhost\",\"port\": 5433,\"database\":\"ong\"}}";
+    private static final JsonObject eventStoreTestConfigJson = new JsonObject().put("platform",
+            "6449e6ea-1d6b-49b8-9245-46c88b167178");
     private Vertx vertx;
 
+    @BeforeClass
+    public static void beforeAll(TestContext context) {
+        final JsonObject postresql = new JsonObject().put("database", postgreSQLContainer.getDatabaseName())
+                .put("port", postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
+                .put("host", postgreSQLContainer.getContainerIpAddress())
+                .put("password", postgreSQLContainer.getPassword()).put("user", postgreSQLContainer.getUsername());
+        eventStoreTestConfigJson.put("postgresql", postresql);
+        final Async async = context.async();
+        final PgConnectOptions options = new PgConnectOptions().setPort(postresql.getInteger("port", 5432))
+                .setHost(postresql.getString("host")).setDatabase(postresql.getString("database"))
+                .setUser(postresql.getString("user")).setPassword(postresql.getString("password"));
+        PgClient.connect(Vertx.vertx(), options, res -> {
+            context.assertTrue(res.succeeded());
+            res.result().query("CREATE SCHEMA events", resSch -> {
+                context.assertTrue(resSch.succeeded());
+                res.result().query("CREATE TABLE events.login_events(id VARCHAR(36) PRIMARY KEY)", resSql -> {
+                    context.assertTrue(resSql.succeeded());
+                    async.complete();
+                });
+            });
+        });
+    }
+
     @Before
-	public void setUp(TestContext context) {
-		Vertx vertx = Vertx.vertx();
+    public void setUp(TestContext context) {
+
+        Vertx vertx = Vertx.vertx();
         final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-        serverMap.put("event-store", eventStoreTestConfig);
+        serverMap.put("event-store", eventStoreTestConfigJson.encode());
         this.vertx = vertx;
         vertx.eventBus().localConsumer("event.blacklist", ar -> {
             ar.reply(new JsonArray());
@@ -60,7 +91,7 @@ public class PostgresqlEventStoreTest {
     }
 
     @Test
-	public void testKnownEvents(TestContext context) {
+    public void testKnownEvents(TestContext context) {
         Async async = context.async();
         final PostgresqlEventStoreFactory postgresqlEventStoreFactory = new PostgresqlEventStoreFactory();
         postgresqlEventStoreFactory.setVertx(vertx);
@@ -76,7 +107,7 @@ public class PostgresqlEventStoreTest {
     }
 
     @Test
-	public void testInsertEvents(TestContext context) {
+    public void testInsertEvents(TestContext context) {
         Async async = context.async();
         final PostgresqlEventStoreFactory postgresqlEventStoreFactory = new PostgresqlEventStoreFactory();
         postgresqlEventStoreFactory.setVertx(vertx);
@@ -95,7 +126,7 @@ public class PostgresqlEventStoreTest {
     }
 
     @Test
-	public void testInsertUnknownEvents(TestContext context) {
+    public void testInsertUnknownEvents(TestContext context) {
         Async async = context.async();
         final PostgresqlEventStoreFactory postgresqlEventStoreFactory = new PostgresqlEventStoreFactory();
         postgresqlEventStoreFactory.setVertx(vertx);
