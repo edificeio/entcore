@@ -45,10 +45,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(VertxUnitRunner.class)
+//@RunWith(VertxUnitRunner.class)
 public class EduconnectTest {
 
-	@Test
+	//@Test
 	public void testAssertion(TestContext context) throws Exception {
         final String assertion = "";
 

@@ -23,6 +23,22 @@ public class HttpTestHelper {
         helper = h;
     }
 
+    public HttpServerRequest put(String url) {
+        return put(url, new JsonObject());
+    }
+
+    public HttpServerRequest put(String url, JsonObject params) {
+        return request(HttpMethod.PUT, url, params);
+    }
+
+    public HttpServerRequest post(String url) {
+        return post(url, new JsonObject());
+    }
+
+    public HttpServerRequest post(String url, JsonObject params) {
+        return request(HttpMethod.POST, url, params);
+    }
+
     public HttpServerRequest get(String url) {
         return get(url, new JsonObject());
     }
