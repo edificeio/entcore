@@ -35,17 +35,27 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.communication.services.CommunicationService;
+import org.entcore.test.TestHelper;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.Neo4jContainer;
 
 import java.util.*;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
-@RunWith(VertxUnitRunner.class)
+//@RunWith(VertxUnitRunner.class)
 public class OptimComTest {
-
+	private static final TestHelper test = TestHelper.helper();
+	@ClassRule
+    public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
+    //@BeforeClass
+    public static void setUpAll(TestContext context) throws Exception {
+        test.database().initNeo4j(context, neo4jContainer);
+    }
 	private static final String USERS_QUERY =
 			"MATCH (u:User) " +
 			"WHERE HAS(u.password) AND NOT(HAS(u.deleteDate)) " +
@@ -62,26 +72,25 @@ public class OptimComTest {
 	private final Map<String, JsonObject> defaultResults = new HashMap<>();
 	private final Map<String, JsonObject> xpResults = new HashMap<>();
 
-	@Before
+	//@Before
 	public void setUp(TestContext context) {
-		vertx = Vertx.vertx();
+		vertx = test.vertx();
 		defaultComService = new DefaultCommunicationService();
 		xpComService = new XpCommunicationService();
-		Neo4j.getInstance().init(vertx, new JsonObject().put("server-uri", "http://localhost:7474/db/data/"));
 	}
 
-	@Test
+	//@Test
 	public void testXpComRules(TestContext context) {
 		testComRules(context, xpComService, xpResults);
 	}
 
-	@Test
+	//@Test
 	public void testWait(TestContext context) {
 		final Async async = context.async();
 		vertx.setTimer(30000L, h -> async.complete());
 	}
 
-	@Test
+	//@Test
 	public void testDefaultComRules(TestContext context) {
 		testComRules(context, defaultComService, defaultResults);
 	}
