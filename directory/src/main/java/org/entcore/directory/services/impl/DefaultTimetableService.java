@@ -420,6 +420,62 @@ public class DefaultTimetableService implements TimetableService {
 		}));
 	}
 
+	@Override
+	public void feederPronote(String structureId, final String path, final String domain,
+		final String acceptLanguage, boolean uai, final Handler<Either<JsonObject, JsonObject>> handler)
+	{
+		final String  structureAttr = uai ? "UAI" : "id";
+		final String query = "MATCH (s:Structure {" + structureAttr + ":{id}}) RETURN s.externalId AS externalId";
+		neo4j.execute(query, new JsonObject().put("id", structureId),
+				validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> event)
+			{
+				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonObject ge = new JsonObject().put("error.global", errors);
+
+				if (event.isRight() && isNotEmpty(event.right().getValue().getString("externalId")))
+				{
+					String externalId = event.right().getValue().getString("externalId");
+
+					eb.send("entcore.feeder",
+						new JsonObject()
+							.put("action", "import")
+							.put("feeder", "PRONOTE")
+							.put("structureExternalId", externalId)
+							.put("path", path),
+						fr.wseduc.webutils.Utils.handlerToAsyncHandler(new Handler<Message<JsonObject>>()
+						{
+							@Override
+							public void handle(Message<JsonObject> event)
+							{
+								if ("ok".equals(event.body().getString("status")))
+								{
+									JsonObject r = event.body().getJsonObject("result", new JsonObject());
+									if (r.getJsonObject("errors", new JsonObject()).size() > 0)
+										handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
+									else
+										handler.handle(new Either.Right<JsonObject, JsonObject>(r));
+								}
+								else
+								{
+									errors.add(event.body().getString("message", ""));
+									handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
+								}
+							}
+						}
+					));
+				}
+				else
+				{
+					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
+					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
+				}
+			}
+		}));
+	}
+
 	private void callFeederImport(String UAI, String timetableType, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
 	{
 		JsonObject action = new JsonObject().put("action", "manual-" + timetableType.toLowerCase())

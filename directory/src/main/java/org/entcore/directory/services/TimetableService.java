@@ -74,4 +74,7 @@ public interface TimetableService {
 	void importTimetable(String structureId, String path, String domain, String acceptLanguage, boolean uai, String timetableType,
 			Handler<Either<JsonObject,JsonObject>> handler);
 
+	void feederPronote(String structureId, final String path, final String domain,
+			final String acceptLanguage, boolean uai, final Handler<Either<JsonObject, JsonObject>> handler);
+
 }
