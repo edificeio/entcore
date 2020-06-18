@@ -181,7 +181,7 @@ public class TimetableController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetable(final HttpServerRequest request) {
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"));
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"), false);
 	}
 
 	@Post("/timetable/import/:timetableType/:structureId")
@@ -189,10 +189,10 @@ public class TimetableController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importSpecificTimetable(final HttpServerRequest request)
 	{
-		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), false);
+		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), false, false);
 	}
 
-	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI)
+	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport)
 	{
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
@@ -211,11 +211,22 @@ public class TimetableController extends BaseController {
 				final String filename = path + File.separator + upload.filename();
 				upload.endHandler(new Handler<Void>() {
 					@Override
-					public void handle(Void event) {
-						timetableService.importTimetable(structureIdentifier, filename,
-								getHost(request), I18n.acceptLanguage(request),
-								identifierIsUAI, timetableType,
-								reportResponseHandler(vertx, path, request));
+					public void handle(Void event)
+					{
+						if(feederImport != true)
+						{
+							timetableService.importTimetable(structureIdentifier, filename,
+									getHost(request), I18n.acceptLanguage(request),
+									identifierIsUAI, timetableType,
+									reportResponseHandler(vertx, path, request));
+						}
+						else
+						{
+							timetableService.feederPronote(structureIdentifier, filename,
+									getHost(request), I18n.acceptLanguage(request),
+									identifierIsUAI,
+									reportResponseHandler(vertx, path, request));
+						}
 					}
 				});
 				upload.streamToFileSystem(filename);
@@ -231,6 +242,14 @@ public class TimetableController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Post("/timetable/feeder/pronote/:structureId")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void launchPronoteImport(final HttpServerRequest request)
+	{
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"), true);
 	}
 
 	@Get("/timetable/import/:structureId/reports")
