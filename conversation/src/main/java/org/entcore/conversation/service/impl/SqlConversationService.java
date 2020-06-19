@@ -744,6 +744,10 @@ public class SqlConversationService implements ConversationService{
 		return msg.contains("violates unique constraint") || msg.contains("rompt la contrainte unique");
 	}
 
+	private boolean isDuplicateError(String msg){
+		return msg.contains("violates unique constraint") || msg.contains("rompt la contrainte unique");
+	}
+
 
 	@Override
 	public void createFolder(final String folderName, final String parentFolderId, final UserInfos user,
