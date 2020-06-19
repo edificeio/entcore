@@ -1,4 +1,4 @@
-﻿import { notify, toFormData, _ } from 'entcore';
+﻿import { notify, toFormData, _,idiom } from 'entcore';
 import { Conversation } from './conversation';
 import { Mail, Mails } from './mail';
 import { quota } from './quota';
@@ -352,15 +352,26 @@ export class UserFolder extends Folder {
                 name: this.name,
                 parentId: this.parentFolderId
             }
-
-        return await http.post('folder', json);
+        try{
+            return await http.post('folder', json);
+        }catch(e){
+            if(e.response.data && e.response.data.error){
+                notify.error(idiom.translate(e.response.data.error))
+            }
+        }
     }
 
     async update() {
         var json = {
             name: this.name
         }
-        return await http.put('folder/' + this.id, json)
+        try{
+            return await http.put('folder/' + this.id, json)
+        }catch(e){
+            if(e.response.data && e.response.data.error){
+                notify.error(idiom.translate(e.response.data.error))
+            }
+        }
     }
 
     async trash() {
