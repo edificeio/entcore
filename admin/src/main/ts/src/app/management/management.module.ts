@@ -23,6 +23,10 @@ import {BlockProfilesService} from './block-profile/block-profiles.service';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
+import {CalendarComponent} from "./calendar/calendar.component";
+import {MatRadioModule} from "@angular/material/radio";
+import {MatDividerModule} from "@angular/material/divider";
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 @NgModule({
     imports: [
@@ -46,7 +50,10 @@ import { NgxTrumbowygModule } from 'ngx-trumbowyg';
                 ['link'],
                 ['viewHTML']
             ]
-        })
+        }),
+        MatRadioModule,
+        MatDividerModule,
+        FlexLayoutModule
     ],
     declarations: [
         ManagementRootComponent,
@@ -59,6 +66,7 @@ import { NgxTrumbowygModule } from 'ngx-trumbowyg';
         MessageFlashPreviewComponent,
         BlockProfilesComponent,
         ImportEDTComponent,
+        CalendarComponent
     ],
     exports: [
         RouterModule

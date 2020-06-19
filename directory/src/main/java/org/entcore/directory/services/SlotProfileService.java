@@ -18,4 +18,6 @@ public interface SlotProfileService {
     void deleteSlotFromSlotProfile(String idSlotProfile, String idSlot, Handler<Either<String, JsonObject>> handler);
 
     void updateSlotProfile(String idSlotProfile, String name, Handler<Either<String, JsonObject>> handler);
+
+    void deleteSlotProfile(String idSlotProfile, Handler<Either<String, JsonObject>> handler);
 }

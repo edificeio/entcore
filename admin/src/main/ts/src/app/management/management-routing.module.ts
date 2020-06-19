@@ -8,6 +8,7 @@ import {CreateMessageFlashComponent} from './message-flash/form/create-message-f
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
+import {CalendarComponent} from "./calendar/calendar.component";
 
 export let routes: Routes = [
      {
@@ -56,6 +57,10 @@ export let routes: Routes = [
             {
                 path: 'import-edt',
                 component: ImportEDTComponent
+            },
+            {
+                path: 'calendar',
+                component: CalendarComponent
             }
         ]
      }

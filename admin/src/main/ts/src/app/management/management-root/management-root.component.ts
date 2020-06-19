@@ -17,6 +17,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
     tabs = [
         { label: 'management.message.flash', view: 'message-flash/list', active: 'message-flash'},
         { label: 'management.block.profile.tab', view: 'block-profiles', active: 'block-profiles'},
+        { label: 'management.calendar', view: 'calendar', active: 'calendar'}
     ];
 
     edt_tab = { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'};
