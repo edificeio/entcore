@@ -97,6 +97,25 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     }
 
+    @Delete("/slotprofiles/:idSlotProfile")
+    @ApiDoc("Delete a slot profile")
+    @IgnoreCsrf
+    @SecuredAction(value = "directory.slot.manage")
+    public void deleteSlotProfile(final HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+            @Override
+            public void handle(final UserInfos user) {
+                if (user != null) {
+                    final String idSlotProfile = request.params().get("idSlotProfile");
+                    slotProfileService.deleteSlotProfile(idSlotProfile, notEmptyResponseHandler(request));
+                } else {
+                    log.debug("User not found in session.");
+                    unauthorized(request);
+                }
+            }
+        });
+    }
+
     private Handler<Either<String, JsonArray>> getCreateOrUpdateSlotProfileHandler(final JsonObject slotProfile, final HttpServerRequest request, final boolean isCreation) {
         return new Handler<Either<String, JsonArray>>() {
             @Override
