@@ -1,0 +1,13 @@
+$accent:                  rgb(255, 131, 82);
+
+.calendar-modify-grid-button {height: fit-content;}
+.calendar-grid-empty-img {margin-top: 75px; margin-left: auto; margin-right: auto; width: 25%;}
+.calendar-grid-option-list {display: flex; flex-direction: column; flex-wrap: wrap; max-height: 100px;}
+.calendar-grid-name-input{width: 450px;}
+.calendar-slot-item {border: 1px solid #eaedf2; line-height: 1.5em; padding: 10px 20px; margin: 10px 0; font-size: 1.0em;}
+.calendar-slot-value {color: black; margin-left: 10px;}
+.calendar-slot-input {width: 50%; margin-left: 10px;}
+.calendar-slot-input-time {margin-left: 10px; border: 1px solid #ccc; font-family: "Open Sans",sans-serif; font-size: 1em;}
+
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {background-color: $accent!important;}
+::ng-deep.mat-radio-button.mat-accent .mat-radio-outer-circle {border-color:$accent!important;}

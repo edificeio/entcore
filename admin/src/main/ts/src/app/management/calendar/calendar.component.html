@@ -1,0 +1,193 @@
+<!--Component header-->
+<div class="is-size-5 has-vertical-padding-10 has-left-padding-10 panel-section-header">
+    <s5l>management.calendar.header</s5l>
+</div>
+
+
+<div class="container">
+    <button type="button" class="has-top-margin-10" (click)="showAddGridForm()">
+        <s5l>management.calendar.create.grid</s5l>
+        <i class="material-icons">add_circle</i>
+    </button>
+
+    <h2><s5l>management.calendar.created.grid</s5l></h2>
+
+    <!--Placeholder if the grid list is empty-->
+    <div *ngIf="isGridEmpty() && !gridFormActivated else calendarBody">
+        <div *ngIf="viewLoaded">
+            <h3><s5l>management.calendar.grid.empty</s5l></h3>
+            <img src="/admin/public/img/computer-book-orange.svg" class="calendar-grid-empty-img is-block">
+        </div>
+    </div>
+
+    <!--Component main body-->
+    <ng-template #calendarBody>
+        <div id="grid-buttons">
+            <mat-radio-group class="calendar-grid-option-list is-size-6 has-vertical-margin-10"
+                             [(ngModel)]="selectedGrid">
+                <mat-radio-button class="has-bottom-margin-10" *ngFor="let grid of grids" [value]="grid"
+                                  [ngClass]="{'has-accent-color' : selectedGrid === grid}">
+                    {{grid.name}}
+                </mat-radio-button>
+            </mat-radio-group>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="is-display-flex has-align-items-center"
+             *ngIf="!gridFormActivated && !isGridEmpty() && isGridSelected()">
+            <h2 class="has-accent-color">{{selectedGrid.name}}</h2>
+            <button type="button" (click)="showEditGridForm()" class="calendar-modify-grid-button has-left-margin-40">
+                <s5l>management.calendar.modify</s5l>
+                <i class="material-icons">create</i>
+            </button>
+            <button type="button" (click)="showConfirmation = true"
+                    class="calendar-modify-grid-button has-left-margin-10">
+                <s5l>management.calendar.delete</s5l>
+                <i class="material-icons">delete</i>
+            </button>
+
+            <!--Popup for grid deletion-->
+            <ode-lightbox-confirm
+                    [show]="showConfirmation"
+                    [lightboxTitle]="'management.calendar.grid.delete.confirm.title'"
+                    (onConfirm)="deleteGrid()"
+                    (onCancel)="showConfirmation = false">
+                <s5l [s5l-params]="{name: selectedGrid.name}">management.calendar.grid.delete.confirm.content</s5l>
+            </ode-lightbox-confirm>
+
+            <!--Popup for slot deletion-->
+            <ode-lightbox-confirm
+                    [show]="showConfirmationSlot"
+                    [lightboxTitle]="'management.calendar.slot.delete.confirm.title'"
+                    (onConfirm)="deleteSlot(slotToRemove)"
+                    (onCancel)="showConfirmationSlot = false">
+                <s5l>management.calendar.slot.delete.confirm.content</s5l>
+            </ode-lightbox-confirm>
+        </div>
+        <div *ngIf="gridFormActivated">
+            <form (ngSubmit)="gridForm.valid" #gridForm="ngForm">
+                <div class="form-group is-size-4 has-top-margin-10 is-display-flex">
+                    <input *ngIf="isGridSelected()" type="text" class="form-control calendar-grid-name-input"
+                           id="gridNameInputEdit"
+                           [(ngModel)]="selectedGrid.name" name="gridName">
+                    <input *ngIf="!isGridSelected()" type="text" class="form-control calendar-grid-name-input"
+                           id="gridNameInput"
+                           placeholder="Saisir nom de la grille" [(ngModel)]="selectedGrid.name" name="gridName">
+                    <div class="is-pulled-right has-left-margin-40">
+                        <button type="button" (click)="hideEditGridForm()">
+                            <s5l>management.calendar.cancel</s5l>
+                            <i class="material-icons">cancel</i>
+                        </button>
+                        <button type="button" (click)="saveGrid(gridForm)">
+                            <s5l>management.calendar.save</s5l>
+                            <i class="material-icons">save</i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="calendar-slot-list" *ngIf="isGridSelected()">
+            <button type="button" (click)="showSlotInputForm()">
+                <s5l>management.calendar.add.time.slot</s5l>
+                <i class="material-icons">add_circle</i>
+            </button>
+            <div class="calendar-slot-item" *ngFor="let slot of selectedGrid.slots | orderBy:'startHour'">
+                <div class="is-display-flex has-align-items-center" *ngIf="slot!=selectedSlot" fxLayout="row">
+                    <div fxFlex="35" class="is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.name</s5l>
+                        <div class="calendar-slot-value">{{slot.name}}</div>
+                    </div>
+                    <div fxFlex="20" class="is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.startHour</s5l>
+                        <div class="calendar-slot-value">{{slot.startHour}}</div>
+                    </div>
+                    <div fxFlex="20" class="is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.endHour</s5l>
+                        <div class="calendar-slot-value">{{slot.endHour}}</div>
+                    </div>
+                    <div fxFlex="25">
+                        <div class="is-pulled-right is-display-flex">
+                            <button type="button" (click)="selectSlot(slot)">
+                                <s5l>management.calendar.modify</s5l>
+                                <i class="material-icons">create</i>
+                            </button>
+                            <button type="button" (click)="showConfirmationSlot = true; slotToRemove = slot" class="has-left-margin-5">
+                                <s5l>management.calendar.delete</s5l>
+                                <i class="material-icons">delete</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!--Form for editing the selected slot-->
+                <form *ngIf="slot==selectedSlot" (ngSubmit)="slotFormEdit.valid" #slotFormEdit="ngForm">
+                    <div fxLayout="row" class="is-display-flex has-align-items-center">
+                        <div fxFlex="35" class="form-group is-display-flex has-align-items-center">
+                            <s5l>management.calendar.slot.name</s5l>
+                            <input type="text" class="form-control calendar-slot-input" id="slotNameEdit"
+                                   [(ngModel)]="selectedSlot.name" name="name">
+                        </div>
+                        <div fxFlex="20" class="form-group is-display-flex has-align-items-center">
+                            <s5l>management.calendar.slot.startHour</s5l>
+                            <input type="time" class="form-control calendar-slot-input-time" id="slotStartHourEdit"
+                                   [(ngModel)]="selectedSlot.startHour" name="startHour">
+                        </div>
+                        <div fxFlex="20" class="form-group is-display-flex has-align-items-center">
+                            <s5l>management.calendar.slot.endHour</s5l>
+                            <input type="time" class="form-control calendar-slot-input-time" id="slotEndHourEdit"
+                                   [(ngModel)]="selectedSlot.endHour" name="endHour">
+                        </div>
+                        <div fxFlex="25">
+                            <div class="is-pulled-right is-display-flex">
+                                <button type="button" (click)="selectSlot(null)">
+                                    <s5l>management.calendar.cancel</s5l>
+                                    <i class="material-icons">cancel</i>
+                                </button>
+                                <button type="button" (click)="editSlot(slot, slotFormEdit)" class="has-left-margin-5">
+                                    <s5l>management.calendar.save</s5l>
+                                    <i class="material-icons">save</i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!--Form for adding a new slot to the selected grid-->
+            <form (ngSubmit)="slotForm.valid" #slotForm="ngForm">
+                <div *ngIf="slotInputDisplay" class="calendar-slot-item is-display-flex has-align-items-center">
+                    <div fxFlex="35" class="form-group is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.name</s5l>
+                        <input type="text" class="form-control calendar-slot-input" id="slotName"
+                               [(ngModel)]="slotModel.name" name="name">
+                    </div>
+                    <div fxFlex="20" class="form-group is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.startHour</s5l>
+                        <input type="time" class="form-control calendar-slot-input-time" id="slotStartHour"
+                               [(ngModel)]="slotModel.startHour" name="startHour">
+                    </div>
+                    <div fxFlex="20" class="form-group is-display-flex has-align-items-center">
+                        <s5l>management.calendar.slot.endHour</s5l>
+                        <input type="time" class="form-control calendar-slot-input-time" id="slotEndHour"
+                               [(ngModel)]="slotModel.endHour" name="endHour">
+                    </div>
+                    <div fxFlex="25">
+                        <div class="is-pulled-right is-display-flex">
+                            <button type="button" (click)="hideSlotInputForm()">
+                                <s5l>management.calendar.cancel</s5l>
+                                <i class="material-icons">cancel</i>
+                            </button>
+                            <button type="button" (click)="addSlot(slotForm)" class="has-left-margin-5">
+                                <s5l>management.calendar.save</s5l>
+                                <i class="material-icons">save</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </ng-template>
+</div>

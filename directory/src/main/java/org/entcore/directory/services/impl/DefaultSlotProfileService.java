@@ -100,4 +100,11 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
         modifier.set("modified", MongoDb.now());
         mongo.update(this.collection, MongoQueryBuilder.build(query), modifier.build(), validActionResultHandler(handler));
     }
+
+    @Override
+    public void deleteSlotProfile(String idSlotProfile, Handler<Either<String, JsonObject>> handler) {
+        // Query
+        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        mongo.delete(this.collection, MongoQueryBuilder.build(query), validActionResultHandler(handler));
+    }
 }
