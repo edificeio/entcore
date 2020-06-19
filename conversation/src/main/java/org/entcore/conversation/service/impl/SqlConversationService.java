@@ -45,6 +45,7 @@ import io.vertx.core.json.JsonObject;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.Either.Right;
 
 public class SqlConversationService implements ConversationService{
 
@@ -605,16 +606,33 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
 	}
 
+	private boolean isDuplicateError(String msg){
+		return msg.contains("violates unique constraint") || msg.contains("rompt la contrainte unique");
+	}
+
 
 	@Override
 	public void createFolder(final String folderName, final String parentFolderId, final UserInfos user,
-			final Handler<Either<String, JsonObject>> result) {
-		if (validationParamsError(user, result, folderName))
+			final Handler<Either<String, JsonObject>> resultOriginal) {
+		if (validationParamsError(user, resultOriginal, folderName))
 			return;
-
+		final String id = UUID.randomUUID().toString();
+		final Handler<Either<String, JsonObject>> result = res->{
+			if(res.isLeft()){
+				if(isDuplicateError(res.left().getValue())){
+					resultOriginal.handle(new Either.Left<String,JsonObject>("conversation.error.duplicate.folder"));
+				}else{
+					resultOriginal.handle(res.left());
+				}
+			}else{
+				Right<String,JsonObject> right = res.right();
+				right.getValue().put("id", id);
+				resultOriginal.handle(right);
+			}
+		};
 		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		final JsonObject messageObj = new JsonObject()
-			.put("id", UUID.randomUUID().toString())
+			.put("id", id)
 			.put("name", folderName)
 			.put("user_id", user.getUserId());
 
@@ -626,12 +644,12 @@ public class SqlConversationService implements ConversationService{
 			sql.prepared(depthQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
 				public void handle(Either<String, JsonObject> event) {
 					if(event.isLeft()){
-						result.handle(event);
+						resultOriginal.handle(event);
 						return;
 					}
 					int parentDepth = event.right().getValue().getInteger("depth");
 					if(parentDepth >= maxFolderDepth){
-						result.handle(new Either.Left<String, JsonObject>("error.max.folder.depth"));
+						resultOriginal.handle(new Either.Left<String, JsonObject>("error.max.folder.depth"));
 						return;
 					}
 
@@ -651,12 +669,22 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		if (validationParamsError(user, result, data.getString("name")))
+	public void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> resultOriginal) {
+		if (validationParamsError(user, resultOriginal, data.getString("name")))
 			return;
-
+		final Handler<Either<String, JsonObject>> result = res->{
+			if(res.isLeft()){
+				if(isDuplicateError(res.left().getValue())){
+					resultOriginal.handle(new Either.Left<String,JsonObject>("conversation.error.duplicate.folder"));
+				}else{
+					resultOriginal.handle(res.left());
+				}
+			}else{
+				resultOriginal.handle(res.right());
+			}
+		};
 		String query = "UPDATE " + folderTable + " AS f " +
-			"SET name = ? " +
+			"SET name = ?, skip_uniq=FALSE " +
 			"WHERE f.id = ? AND f.user_id = ?";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
