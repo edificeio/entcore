@@ -75,7 +75,7 @@ public class DefaultGroupService implements GroupService {
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			results.handle(new Either.Left<String, JsonArray>("forbidden"));
 			return;
-		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL) && !userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {

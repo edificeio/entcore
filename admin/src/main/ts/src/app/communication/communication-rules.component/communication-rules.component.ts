@@ -343,7 +343,7 @@ export function uniqueGroups(groups: GroupModel[]): GroupModel[] {
 }
 
 export function sortGroups(groups: GroupModel[], getGroupNameFn: (GroupModel) => string, activeStructureId: string): GroupModel[] {
-    const alphabeticallySortedGroups = groups.sort((a, b) => getGroupNameFn(a).localeCompare(getGroupNameFn(b)));
+    const alphabeticallySortedGroups = groups.filter(g => g != null).sort((a, b) => getGroupNameFn(a).localeCompare(getGroupNameFn(b)));
 
     const countByStructure = alphabeticallySortedGroups
         .map(g => getStructureIdOfGroup(g))
