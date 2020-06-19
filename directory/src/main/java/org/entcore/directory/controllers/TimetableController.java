@@ -181,7 +181,9 @@ public class TimetableController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetable(final HttpServerRequest request) {
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"), false);
+		String structAttr = request.params().get("structAttr");
+		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false);
 	}
 
 	@Post("/timetable/import/:timetableType/:structureId")
@@ -249,7 +251,9 @@ public class TimetableController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void launchPronoteImport(final HttpServerRequest request)
 	{
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, request.params().get("structAttr").toLowerCase().equals("uai"), true);
+		String structAttr = request.params().get("structAttr");
+		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, true);
 	}
 
 	@Get("/timetable/import/:structureId/reports")
