@@ -2,7 +2,7 @@
 
  -->
 
-<article class="list-view no-margin-bottom height-minus210-mobile-1d" drop-files="newFile.files" on-drop="setFilesName();" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}" ng-if="openedFolder.all.length">
+<article class="list-view no-margin-bottom height-minus210-mobile-1d" drop-files="newFile.files" on-drop="setFilesName();" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}" ng-if="openedFolder.all.length" on-bottom-scroll="documentListSorted.increment()">
 	<dropzone-overlay on-import="onImportFiles($event)"  reset-scroll="true" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<p ng-if="openedFolder.folder.isChildrenOrDocumentLoading" class="top-spacing-four flex-row align-start justify-center centered-text"><i18n>workspace.loading</i18n>&nbsp;<i class="loading"></i></p>
 	<table class="list-view sticky-header darkgrey primary-hover">
@@ -77,7 +77,7 @@
 					<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 				</td>
 			</tr>
-			<tr data-ng-repeat="document in openedFolder.sortedDocuments" ng-class="{ overline: true, checked: document.selected }"
+			<tr data-ng-repeat="document in documentListSorted.documents" ng-class="{ overline: true, checked: document.selected }"
 			 dragend="dragEnd(document, $originalEvent)" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 				<td class="icon"><input type="checkbox" data-ng-model="document.selected" ng-change="setAll()" ng-click="onSelectItem($event,document)" /></td>
 				<td class="icon zero-mobile">
