@@ -444,6 +444,7 @@ public class Structure {
 				"MATCH (s:Structure { id : {structureId}})-[:HAS_ATTACHMENT*1..]->(ps:Structure)" +
 				"<-[:DEPENDS]-(fg:FunctionGroup {name : ps.name + '-AdminLocal'})<-[:IN]-(u:User)" +
 				"-[rf:HAS_FUNCTION]-(f:Function {name : 'AdminLocal'}) " +
+				"WHERE NOT (s.id in rf.scope) " +
 				"SET rf.scope = coalesce(rf.scope, []) + s.id " +
 				"WITH DISTINCT s as n, f, u " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
