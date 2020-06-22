@@ -191,7 +191,9 @@ public class TimetableController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importSpecificTimetable(final HttpServerRequest request)
 	{
-		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), false, false);
+		String structAttr = request.params().get("structAttr");
+		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), isUAI, false);
 	}
 
 	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport)
