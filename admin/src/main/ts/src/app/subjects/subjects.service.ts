@@ -16,7 +16,7 @@ export class SubjectsService {
         return this.httpClient.delete<void>(`/directory/subject/${subject.id}`)
             .do(() => {
                 this.subjectsStore.structure.subjects.data.splice(
-                    this.subjectsStore.structure.subjects.data.findIndex(s => s.id === s.id)
+                    this.subjectsStore.structure.subjects.data.findIndex(s => s.id === subject.id)
                     , 1);
             });
     }
@@ -27,7 +27,7 @@ export class SubjectsService {
             code: subject.code
         })
             .do(() => {
-                let sub: SubjectModel = this.subjectsStore.structure.subjects.data.find(s => s.id === s.id);
+                let sub: SubjectModel = this.subjectsStore.structure.subjects.data.find(s => s.id === subject.id);
                 if (sub) {
                     sub.label = subject.label;
                     sub.code = subject.code;

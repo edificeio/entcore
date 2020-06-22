@@ -923,7 +923,7 @@
     "create.subjects.code": "Code",
     "create.subjects.cancel": "Annuler",
     "create.subjects.submit": "Créer",
-    "subject.delete.confirm.content": "Veuillez confirmer la suppression définitive de la maitère.",
+    "subject.delete.confirm.content": "Veuillez confirmer la suppression définitive de la matière.",
     "subject.delete.confirm.title": "Confirmation requise",
     "subject.rename.button": "Renommer",
     "subject.delete.button": "Supprimer",
@@ -935,10 +935,12 @@
     "subject.rename.notify.error.title": "Erreur lors du renommage",
     "subject.rename.notify.error.content": "La matière n'a pas pu être renommée.",
     "notify.subject.create.title": "Création effectuée",
-    "notify.subject.create.content": "La matière {{subject}} a bien été créé.",
+    "notify.subject.create.content": "La matière {{subject}} a bien été créée.",
     "subject.delete.notify.error.title": "Erreur lors de la suppression",
     "subject.delete.notify.error.content": "La matière {{subject}} n'a pas pu être supprimée.",
     "notify.subject.create.error.title": "Erreur lors de la création",
-    "notify.subject.create.error.content": "La matière {{subject}} n'a pas pu être créé.",
-    "list.results.no.subjects": "Aucune matière"
+    "notify.subject.create.error.content": "La matière {{subject}} n'a pas pu être créée.",
+    "list.results.no.subjects": "Aucune matière",
+    "duplicate.add.subject.label": "Vous ne pouvez pas avoir deux fois le même libellé de matière",
+    "duplicate.add.subject.code": "Vous ne pouvez pas avoir deux fois le même code de matière"
 }

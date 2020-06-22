@@ -1,11 +1,10 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Data, NavigationEnd, Router} from '@angular/router';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Data, Router} from '@angular/router';
 import {Subscription} from 'rxjs/Subscription';
 import {routing} from '../core/services/routing.service';
 import {SpinnerService} from 'ngx-ode-ui';
 import {CommunicationRulesService} from '../communication/communication-rules.service';
 import {SubjectsStore} from "./subjects.store";
-import {StructureModel} from '../core/store/models/structure.model';
 import {SubjectModel} from '../core/store/models/subject.model';
 
 @Component({

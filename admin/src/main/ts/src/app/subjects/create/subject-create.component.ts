@@ -38,9 +38,6 @@ export class SubjectCreate {
 
     ngOnInit(): void {
         console.log("log ngOnInit create");
-        // Watch selected structure
-
-
     }
 
     createNewSubject() {
@@ -76,7 +73,7 @@ export class SubjectCreate {
         this.location.back();
     }
 
-    onSubjectNameBlur(label: string): void {
+    onSubjectBlur(): void {
     }
 
     closePanel() {
@@ -85,5 +82,23 @@ export class SubjectCreate {
 
     showCompanion(): boolean {
         return true;
+    }
+
+    checkDuplicate(label : string, code : string): boolean {
+        return this.checkDuplicateLabel(label) || this.checkDuplicateCode(code);
+    }
+    checkDuplicateLabel(label : string): boolean {
+        if(label)
+            return this.subjectsStore.structure.subjects.data
+                .find(sub => sub.label.toLowerCase().trim() === label.toLowerCase().trim()) !== undefined;
+        else
+            return false;
+    }
+    checkDuplicateCode(code : string): boolean {
+        if(code)
+            return this.subjectsStore.structure.subjects.data
+                .find(sub => sub.code.toLowerCase().trim() === code.toLowerCase().trim()) !== undefined;
+        else
+            return false;
     }
 }

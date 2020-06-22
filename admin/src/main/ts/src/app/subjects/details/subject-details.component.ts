@@ -6,7 +6,6 @@ import {trim, SpinnerService} from 'ngx-ode-ui';
 import {ActivatedRoute, Router} from "@angular/router";
 import {SubjectModel} from "../../core/store/models/subject.model";
 import {Observable, Subject, Subscription} from "rxjs";
-import {map, tap, takeUntil} from 'rxjs/operators';
 import {SubjectsService} from "../subjects.service";
 import "rxjs-compat/add/operator/first";
 import "rxjs-compat/add/operator/filter";
@@ -28,7 +27,7 @@ export class SubjectDetails implements OnInit, OnDestroy {
 
     public renameSubscription: Subscription;
     public renameButtonClicked: Subject<{}> = new Subject();
-    public renameLightboxDisplayed: boolean = false;
+    public renameDisplayed: boolean = false;
     public renameConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
     public subjectNewLabel: string;
     public subjectNewCode: string;
@@ -45,6 +44,7 @@ export class SubjectDetails implements OnInit, OnDestroy {
 
 
     ngOnInit(): void {
+        console.log("log ngOnInit details");
         this.activatedRoute.params.subscribe(params => {
             this.subjectsStore.subject = null;
             let id = params["subjectId"];
@@ -53,7 +53,6 @@ export class SubjectDetails implements OnInit, OnDestroy {
             this.subjectNewCode = this.subject.code;
             this.cdRef.markForCheck();
         });
-        ;
 
         this.deleteSubscription = this.deleteButtonClicked
             .mergeMap((subject: SubjectModel) => this.deleteSubject(subject))
@@ -92,10 +91,10 @@ export class SubjectDetails implements OnInit, OnDestroy {
     }
 
     public renameSubject(): Observable<void> {
-        this.renameLightboxDisplayed = true;
+        this.renameDisplayed = true;
         return this.renameConfirmationClicked.asObservable()
             .first()
-            .do(() => this.renameLightboxDisplayed = false)
+            .do(() => this.renameDisplayed = false)
             .filter(choice => choice === 'confirm')
             .mergeMap(() => this.subjectsService.update({
                 id: this.subjectsStore.subject.id,
@@ -105,6 +104,7 @@ export class SubjectDetails implements OnInit, OnDestroy {
             .do(() => {
                 this.notifyService.success('subject.rename.notify.success.content'
                     , 'subject.rename.notify.success.title');
+                this.cdRef.markForCheck();
             }, (error: HttpErrorResponse) => {
                 this.notifyService.error('subject.rename.notify.error.content'
                     , 'subject.rename.notify.error.title');
@@ -113,5 +113,23 @@ export class SubjectDetails implements OnInit, OnDestroy {
 
     public onBlurSubjectFields(key: string, stg: string): void {
         this[key] = trim(stg);
+    }
+
+    checkDuplicate(label : string, code : string): boolean {
+        return this.checkDuplicateLabel(label) || this.checkDuplicateCode(code);
+    }
+    checkDuplicateLabel(label : string): boolean {
+        if(label && this.subject.label.toLowerCase().trim() !== label.toLowerCase().trim())
+            return this.subjectsStore.structure.subjects.data
+                .find(sub => sub.label.toLowerCase().trim() === label.toLowerCase().trim()) !== undefined;
+        else
+            return false;
+    }
+    checkDuplicateCode(code : string): boolean {
+        if(code && this.subject.code.toLowerCase().trim() !== code.toLowerCase().trim())
+            return this.subjectsStore.structure.subjects.data
+                .find(sub => sub.code.toLowerCase().trim() === code.toLowerCase().trim()) !== undefined;
+        else
+            return false;
     }
 }
