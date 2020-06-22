@@ -1,5 +1,6 @@
 package org.entcore.test;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.StartupUtils;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.security.SecuredAction;
@@ -8,6 +9,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import org.entcore.common.share.ShareService;
+import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
 
 import java.net.URL;
@@ -43,6 +45,28 @@ public class ShareTestHelper {
                 final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
                 final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
                 return new SqlShareService(schema, table, vertx.eventBus(), mapActions, null);
+            } finally {
+                FileResolver.getInstance().setBasePath(oldValue);
+            }
+        } catch (Exception e) {
+            context.fail(e);
+            throw e;
+        }
+    }
+
+    public ShareService createMongoShareService(TestContext context, String collection) throws Exception {
+        try {
+            // delegate IDE build to gradle in order to have annotation processor running
+            // before tests
+            final URL uri = getClass().getClassLoader().getResource("securedaction");
+            final String parent = Paths.get(uri.toURI()).getParent().toAbsolutePath().toString();
+            final String oldValue = FileResolver.absolutePath("");
+            try {
+
+                FileResolver.getInstance().setBasePath(parent);
+                final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
+                final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
+                return new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), collection, mapActions, null);
             } finally {
                 FileResolver.getInstance().setBasePath(oldValue);
             }

@@ -1,5 +1,15 @@
 package org.entcore.test;
 
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.DB;
+import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.containers.Neo4jContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.vertx.mods.MongoPersistor;
+
+import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -7,12 +17,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.sql.DB;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
-import org.testcontainers.containers.Neo4jContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class DatabaseTestHelper {
     private final Vertx vertx;
@@ -21,7 +25,7 @@ public class DatabaseTestHelper {
         this.vertx = v;
     }
 
-    public Async initPostgreSQL(TestContext context, PostgreSQLContainer postgreSQLContainer, String schema) {
+    public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "sql.persistor")
                 .put("url", postgreSQLContainer.getJdbcUrl()).put("username", postgreSQLContainer.getUsername())
@@ -43,24 +47,49 @@ public class DatabaseTestHelper {
         return async;
     }
 
-    public void initNeo4j(TestContext context, Neo4jContainer neo4jContainer) {
+    public Async initMongo(TestContext context, MongoDBContainer mongoDBContainer) {
+        final Async async = context.async();
+        final JsonObject postgresConfig = new JsonObject().put("address", "wse.mongodb.persistor")
+                .put("db_name", "test").put("host", mongoDBContainer.getContainerIpAddress())
+                .put("use_mongo_types", true).put("pool_size", 10).put("port", mongoDBContainer.getMappedPort(27017));
+
+        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
+                .setInstances(1).setMultiThreaded(true);
+
+        vertx.deployVerticle(MongoPersistor.class.getName(), deploymentOptions, ar -> {
+            if (ar.succeeded()) {
+                MongoDb mongo = MongoDb.getInstance();
+                mongo.init(vertx.eventBus(), "wse.mongodb.persistor");
+                async.complete();
+            } else {
+                context.fail();
+            }
+        });
+        return async;
+    }
+
+    public void initNeo4j(TestContext context, Neo4jContainer<?> neo4jContainer) {
         final String base = neo4jContainer.getHttpUrl() + "/db/data/";
         final JsonObject config = new JsonObject().put("server-uri", base).put("poolSize", 1);
         final Neo4j neo4j = Neo4j.getInstance();
         neo4j.init(vertx, config);
     }
 
-    public PostgreSQLContainer createPostgreSQLContainer() {
+    public PostgreSQLContainer<?> createPostgreSQLContainer() {
         return new PostgreSQLContainer("postgres:9.5");
     }
 
-    public PostgreSQLContainer createPostgreSQL96Container() {
+    public PostgreSQLContainer<?> createPostgreSQL96Container() {
         return new PostgreSQLContainer("postgres:9.6");
     }
 
-    public Neo4jContainer createNeo4jContainer() {
+    public Neo4jContainer<?> createNeo4jContainer() {
         return new Neo4jContainer("neo4j:3.1").withoutAuthentication()//
                 .withNeo4jConfig("cypher.default_language_version", "2.3");
+    }
+
+    public MongoDBContainer createMongoContainer() {
+        return new MongoDBContainer("mongo:3.6.17");
     }
 
     public Future<JsonObject> executeSqlWithUniqueResult(String query, JsonArray values) {
