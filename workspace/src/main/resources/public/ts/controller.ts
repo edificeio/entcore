@@ -32,6 +32,8 @@ import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
 declare var ENABLE_LOOL: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope {
 	ENABLE_LOOL: boolean;
+	documentList:models.DocumentsListModel;
+	documentListSorted:models.DocumentsListModel;
 	//new
 	lightboxDelegateClose: () => boolean
 	newFile: { chosenFiles: any[] }
@@ -55,7 +57,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	createDocumentCursor(onUpdate: CursorUpdate, params: DocumentCursorParams): void
 	//selection
 }
-export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route) => {
+export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route','$filter', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route, $filter) => {
 	let _currentCursor: DocumentCursor = null;
 	$scope.lightboxDelegateClose = () => false;
 	$scope.setLightboxDelegateClose = function (f) {
@@ -163,6 +165,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		return true
 	}
 	const shouldCache = workspaceService.isLazyMode();
+	$scope.documentList = new models.DocumentsListModel($filter).watch($scope,{documents:'openedFolder.documents'});
+	$scope.documentListSorted = new models.DocumentsListModel($filter).watch($scope,{documents:'openedFolder.sortedDocuments'});
 	$scope.trees = [new models.ElementTree(shouldCache,{
 		name: lang.translate('documents'),
 		filter: 'owner',
