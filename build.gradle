@@ -67,8 +67,10 @@ subprojects {
     testCompile "io.vertx:vertx-codegen:$vertxVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.testcontainers:testcontainers:$testContainerVersion"
+    testCompile "org.testcontainers:mongodb:$testContainerVersion"
     testCompile "org.testcontainers:postgresql:$testContainerVersion"
     testCompile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
+    testCompile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"
   }
 
   test {
@@ -269,6 +271,7 @@ project(':workspace') {
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
     compile "com.sun.jna:jna:$jnaVersion"
     compile "net.sf:lamejb:$lamejbVersion"
+    testCompile project(':test')
   }
 }
 
@@ -328,8 +331,10 @@ project(':test') {
     compileOnly project(':common')
     compile "io.vertx:vertx-unit:$vertxVersion"
     compile "org.testcontainers:neo4j:$testContainerVersion"
+    compile "org.testcontainers:mongodb:$testContainerVersion"
     compile "org.testcontainers:postgresql:$testContainerVersion"
     compile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
+    compile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"
     compile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-app')
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-recorder')
