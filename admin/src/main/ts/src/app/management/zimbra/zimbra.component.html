@@ -1,0 +1,19 @@
+<div class="panel-section-header">
+      <span><s5l>management.zimbra.panel.content</s5l></span>
+    </div>
+    <div class="container">
+        <div class="flashmsg red">
+            <i class=" fa fa-exclamation-triangle" tabindex="0" style="color: white;"></i>
+            <span style="color: white;"><s5l>management.zimbra.warning.content</s5l></span>
+        </div>
+
+        <ul class="zimbra-group-list">
+            <li *ngFor="let group of groups; let i= index">
+                <div class="checkbox__item">
+                    <input id="group-checkbox-{{i}}" type="checkbox" [(ngModel)]="checkboxes[i]" (change)="updatePermission(i)">
+                    <label for="group-checkbox-{{i}}" [ngClass]="{'is-bold' : this.checkboxes[i]}">{{ group.name }} </label>
+                </div>
+            </li>
+        </ul>
+
+    </div>

@@ -20,6 +20,7 @@ import {MessageFlashStore} from './message-flash/message-flash.store';
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
+import {ZimbraComponent} from './zimbra/zimbra.component';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
@@ -27,6 +28,7 @@ import {CalendarComponent} from "./calendar/calendar.component";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatDividerModule} from "@angular/material/divider";
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {ZimbraService} from "./zimbra/zimbra.service";
 
 @NgModule({
     imports: [
@@ -56,6 +58,7 @@ import {FlexLayoutModule} from "@angular/flex-layout";
         FlexLayoutModule
     ],
     declarations: [
+        ZimbraComponent,
         ManagementRootComponent,
         MessageFlashComponent,
         MessageFlashListComponent,
@@ -75,6 +78,7 @@ import {FlexLayoutModule} from "@angular/flex-layout";
         MessageFlashStore,
         MessageFlashResolver,
         BlockProfilesService,
+        ZimbraService,
         {
             provide: MatPaginatorIntl,
             useFactory: (bundlesService) => new MatPaginatorIntlService(bundlesService),
