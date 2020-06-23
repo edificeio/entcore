@@ -285,6 +285,7 @@
     "directory.deleteDate": "Supprimer la date",
     "directory.deleteFavorite": "Supprimer le favori",
     "directory.deleteLocalAdmin": "Supprimer (toutes structures)",
+    "directory.delete.lock.group": "Groupe verrouillé",
     "directory.directlink": "Lien direct",
     "directory.export": "Exporter",
     "directory.exportClass": "Exporter la classe",

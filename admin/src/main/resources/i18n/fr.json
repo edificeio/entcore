@@ -386,6 +386,7 @@
     "group.manage.users.button.add": "Ajouter au groupe les utilisateurs sélectionnés en orange",
     "group.manage.users.button.remove": "Retirer du groupe les utilisateurs sélectionnés en bleu",
     "group.delete.button": "Supprimer",
+    "group.delete.button.lock": "Groupe verouillé",
     "group.delete.confirm.content": "Veuillez confirmer la suppression définitive du groupe <strong>{{groupName}}</strong>.",
     "group.delete.confirm.title": "Confirmation requise",
     "group.delete.notify.success.title": "Suppression effectuée",

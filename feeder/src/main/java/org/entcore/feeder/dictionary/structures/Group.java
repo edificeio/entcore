@@ -83,6 +83,7 @@ public class Group {
 	public static void manualDelete(String id, TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (g:ManualGroup {id : {id}}) " +
+				"WHERE NOT(EXISTS(g.lockDelete)) OR g.lockDelete <> true " +
 				"OPTIONAL MATCH g-[r]-() " +
 				"DELETE g, r";
 		transactionHelper.add(query, new JsonObject().put("id", id));
