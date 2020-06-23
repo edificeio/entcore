@@ -16,6 +16,7 @@ export class GroupModel extends Model<GroupModel> {
     structures?: { id: string, name: string }[];
     filter?: string;
     structureId?: string;
+    lockDelete?:boolean;
     users: UserModel[];
     internalCommunicationRule?: InternalCommunicationRule;
 
