@@ -379,7 +379,7 @@ public class ManualFeeder extends BusModBase {
 			: "MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.removedFromStructures ";
 		final String addToRemoved = (newStructureId != null || newStructureExternalId != null)
-			? "WITH u, r, MAX(CASE WHEN coalesce(r.source, '') <> 'MANUAL' THEN s.externalId ELSE null END) AS sID " +
+			? "WITH u, r, MAX(CASE WHEN type(r) = 'IN' AND coalesce(r.source, '') <> 'MANUAL' THEN s.externalId ELSE null END) AS sID " +
 			"SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(sID, '')] + coalesce(sID, []) "
 			: "";
 		final String query =
