@@ -19,6 +19,7 @@ export class GroupModel extends Model<GroupModel> {
     lockDelete?:boolean;
     users: UserModel[];
     internalCommunicationRule?: InternalCommunicationRule;
+    roles?: string[];
 
     constructor() {
         super({

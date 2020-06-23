@@ -95,6 +95,19 @@
     "management.block.profile.traces.table.header.action": "Type d'action",
     "management.block.profile.traces.table.header.profile": "Profil",
     "management.block.profile.traces.table.header.displayName": "Nom d'affichage",
+
+    "management.zimbra.warning.content": "Attention, lorsque vous ouvrez des droits vers l'extérieur, les règles de communication définies par l'établissement ne sont plus appliquées dans la messagerie pour les utilisateurs contenus dans les groupes sélectionnés.",
+    "management.zimbra.panel.content": "Ouverture de la messagerie vers l'exterieur",
+    "management.zimbra.tab": "Messagerie",
+    "management.zimbra.permission.give.success.title" : "Droit accordé avec succès",
+    "management.zimbra.permission.give.success.content" : "Le droit d'accès a été accordé au groupe {{group}}",
+    "management.zimbra.permission.delete.success.title" : "Droit retiré avec succès",
+    "management.zimbra.permission.delete.success.content" : "Le droit d'accès a été retiré au groupe {{group}}",
+    "management.zimbra.permission.give.error.title" : "Une erreur est survenue",
+    "management.zimbra.permission.give.error.content" : "Le droit d'accès n'a pas pu être accordé",
+    "management.zimbra.permission.delete.error.title" : "Une erreur est survenue",
+    "management.zimbra.permission.delete.error.content" : "Le droit d'accès n'a pas pu être retiré au groupe",
+
     "BLOCK": "Blocage",
     "UNBLOCK": "Déblocage",
 
