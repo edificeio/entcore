@@ -78,8 +78,8 @@ export class SubjectDetails implements OnInit, OnDestroy {
             .filter(choice => choice === 'confirm')
             .mergeMap(() => this.subjectsService.delete(subject))
             .do(() => {
-                this.notifyService.success('subject.rename.notify.success.content'
-                    , 'subject.rename.notify.success.title');
+                this.notifyService.success('subject.delete.notify.success.content'
+                    , 'subject.delete.notify.success.title');
                 this.router.navigate(['../..'], {relativeTo: this.activatedRoute, replaceUrl: false});
                 this.cdRef.markForCheck();
             }, (error: HttpErrorResponse) => {
