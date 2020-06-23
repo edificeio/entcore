@@ -132,7 +132,8 @@
         <hr class="separator">
         <div class="button-horizontal-bar">
             <button ng-click="updateGroup(groupSelected)">[[lang.translate("directory.save")]]</button>
-            <button ng-click="deleteGroup(groupSelected)">[[lang.translate("directory.delete")]]</button>
+            <button ng-click="deleteGroup(groupSelected)" ng-if="groupSelected.lockDelete != true">[[lang.translate("directory.delete")]]</button>
+            <button disabled="true" ng-if="groupSelected.lockDelete == true">[[lang.translate("directory.delete.lock.group")]]</button>
         </div>
         <hr class="separator">
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
