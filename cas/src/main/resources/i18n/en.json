@@ -28,5 +28,7 @@
   "MSELRegisteredService.name" : "MSEL",
   "MSELRegisteredService.description" : "MSEL",
   "DefaultRegisteredService.name" : "Default",
-  "DefaultRegisteredService.description" : "Default cas service"
+  "DefaultRegisteredService.description" : "Default cas service",
+  "PearltreesRegisteredService.name" : "Pearltrees",
+  "PearltreesRegisteredService.description" : "Pearltrees"
 }

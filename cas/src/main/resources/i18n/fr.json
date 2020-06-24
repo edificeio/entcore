@@ -38,5 +38,7 @@
   "UuidRegisteredService.name" : "Moodle",
   "UuidRegisteredService.description" : "Renvoie uniquement l'identifiant interne au client CAS.",
   "UaiRegisteredService.name" : "UAI",
-  "UaiRegisteredService.description" : "Renvoie uniquement la liste des UAI au client CAS."
+  "UaiRegisteredService.description" : "Renvoie uniquement la liste des UAI au client CAS.",
+  "PearltreesRegisteredService.name" : "Pearltrees",
+  "PearltreesRegisteredService.description" : "Service CAS spécifique <a href='https://www.pearltrees.com/' target='_blank'>Pearltrees</a>, service web de partage de contenu numérique."
 }
