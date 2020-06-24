@@ -455,13 +455,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
+	public void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		final String query =
 				"MATCH (n:User {id : {id}}) " +
 				"WHERE HAS(n.login) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
-				"OPTIONAL MATCH (gp)-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH (gp:ProfileGroup)-[:DEPENDS]->(sa:Structure) " +
+				"OPTIONAL MATCH (gp:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
@@ -472,7 +471,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, " +
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
 				"COLLECT(distinct [s.id, s.name, s.UAI, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"COLLECT(distinct [sa.id, sa.name, sa.UAI]) as attachStructures, " +
 				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
 				"REDUCE(acc=[], pRed IN COLLECT(COALESCE(s.optionEnabled, [])) | pRed+acc ) as optionEnabled";
 		final String query2 =
@@ -637,23 +635,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						}
 					}
 					j.remove("structures");
-					final List<String> attachStrutIds = new ArrayList<>();
-					final List<String> attachStrutNames = new ArrayList<>();
-					final Set<String> attachUai = new HashSet<>();
-					for (Object o : getOrElse(j.getJsonArray("attachStructures"), new fr.wseduc.webutils.collections.JsonArray())) {
-						if (!(o instanceof JsonArray)) continue;
-						final JsonArray s = (JsonArray) o;
-						if (s.getString(0) != null) {
-							attachStrutIds.add(s.getString(0));
-							attachStrutNames.add(StringUtils.trimToBlank(s.getString(1)));
-							if (!StringUtils.isEmpty(s.getString(2)))
-								attachUai.add(s.getString(2));
-						}
-					}
-					j.remove("attachStructures");
-					j.put("attachStructureIds", new fr.wseduc.webutils.collections.JsonArray(attachStrutIds));
-					j.put("attachStructureNames", new fr.wseduc.webutils.collections.JsonArray(attachStrutNames));
-					j.put("attachUai", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(attachUai)));
 					j.put("structures", new fr.wseduc.webutils.collections.JsonArray(structureIds));
 					j.put("structureNames", new fr.wseduc.webutils.collections.JsonArray(structureNames));
 					j.put("uai", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(uai)));

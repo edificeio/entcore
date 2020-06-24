@@ -46,8 +46,6 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 	public JsonObject getInfo(JsonObject info, String clientId) {
 		final JsonObject filteredInfos = getCommonFilteredInfos(info, clientId);
 		filteredInfos.remove("realClassesNames");
-		filteredInfos.remove("attachStructureIds");
-		filteredInfos.remove("attachStructureNames");
 
 		if (clientId != null && !clientId.trim().isEmpty()) {
 			filteredInfos.remove("classes");
@@ -70,15 +68,14 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 		if (clientId != null && !clientId.trim().isEmpty()) {
 			JsonArray classNames = filteredInfos.getJsonArray("classNames");
 			filteredInfos.remove("classNames");
-			JsonArray attachStructureNames = filteredInfos.getJsonArray("attachStructureNames");
+			JsonArray structureNames = filteredInfos.getJsonArray("structureNames");
 			filteredInfos.remove("structureNames");
-			filteredInfos.put("uai", filteredInfos.getJsonArray("attachUai"));
 			filteredInfos.remove("federated");
 			if (classNames != null && classNames.size() > 0) {
 				filteredInfos.put("classId", classNames.getString(0));
 			}
-			if (attachStructureNames != null && attachStructureNames.size() > 0) {
-				filteredInfos.put("schoolName", attachStructureNames.getString(0));
+			if (structureNames != null && structureNames.size() > 0) {
+				filteredInfos.put("schoolName", structureNames.getString(0));
 			}
 			filteredInfos.remove("functions");
 			filteredInfos.remove("groupsIds");
@@ -98,7 +95,6 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 				filteredInfos.put("authorizedActions", authorizedActions);
 			}
 		}
-		filteredInfos.remove("attachUai");
 
 		return filteredInfos;
 	}
