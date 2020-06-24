@@ -308,6 +308,7 @@ project(':timeline') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
+    testCompile project(':test')
   }
 }
 
@@ -322,6 +323,7 @@ project(':session') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    testCompile project(':test')
   }
 }
 
