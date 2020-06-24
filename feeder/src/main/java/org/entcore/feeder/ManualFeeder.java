@@ -1089,12 +1089,18 @@ public class ManualFeeder extends BusModBase {
 		} else {
 			String query;
 			JsonObject params = s.copy().put("structureId", structureId);
-			if (s.getString("name") != null) {
-				query = "MATCH (s:`Structure` { id : {structureId}})<-[:DEPENDS]-(g:Group) " +
+			if (s.getString("name") != null)
+			{
+				query = "MATCH (s:`Structure` { id : {structureId}}) " +
+						"SET s.manualName = ({name} <> s.name), s.name = {name} " +
+						"WITH s " +
+						"MATCH (s)<-[:DEPENDS]-(g:Group) " +
 						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'SCOLARITE'] " +
 						"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
 				params.put("sanitizeName", Validator.sanitize(s.getString("name")));
-			}else{
+			}
+			else
+			{
 				query = "MATCH (s:`Structure` { id : {structureId}}) SET";
 
 			}
