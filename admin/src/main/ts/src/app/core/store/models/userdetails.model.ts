@@ -220,6 +220,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     unremoveFromStructure(struct: StructureModel)
     {
+        if(this.removedFromStructures == null)
+            this.removedFromStructures = [];
         this.removedFromStructures = this.removedFromStructures.filter(s => s != struct.externalId);
     }
 
