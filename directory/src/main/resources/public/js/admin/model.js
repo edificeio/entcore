@@ -742,6 +742,15 @@ Structure.prototype.getDescendants = function(unique)
     return this._getDescendants(unique, []);
 }
 
+Structure.prototype.resetManualName = function()
+{
+    http().put("structure/" + this.id + "/resetName")
+        .done(function()
+        {
+            notify.info(lang.translate("directory.notify.structureNameReset"))
+        });
+}
+
 Structure.prototype.toString = function(){
     return this.name;
 }
