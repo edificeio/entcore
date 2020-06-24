@@ -619,7 +619,11 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						if ("ok".equals(event.body().getString("status"))) {
 							mongoDb.update(COURSES, baseQuery.copy()
 									.put("deleted", new JsonObject().put("$exists", false))
-									.put("modified", new JsonObject().put("$ne", importTimestamp)),
+									.put("modified", new JsonObject().put("$ne", importTimestamp))
+									.put("$or", new JsonArray()
+										.add(new JsonObject().put("manual", new JsonObject().put("$exists", false)))
+										.add(new JsonObject().put("manual", false))
+									),
 							new JsonObject().put("$set", new JsonObject().put("deleted", importTimestamp)),
 							false, true, new Handler<Message<JsonObject>>() {
 								@Override
