@@ -78,4 +78,6 @@ public interface SchoolService {
 
 	void massDistributionEducationMobileApp(JsonArray data, Handler<Either<String, JsonObject>> handler);
 
+	void resetName(String string, Handler<Either<String, JsonObject>> defaultResponseHandler);
+
 }

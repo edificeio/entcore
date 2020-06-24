@@ -91,14 +91,16 @@ public class Structure {
 				"MATCH (s:Structure { externalId : {externalId}}) " +
 				"WITH s " +
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
-				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId", "created");
+				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId", "created", "name");
 		getTransaction().add(query, struct);
 
-		if (this.struct.getString("name") != null && !this.struct.getString("name").equals(struct.getString("name"))) {
+		String currName = this.struct.getString("name");
+		Boolean manualName = this.struct.getBoolean("manualName");
+		if (currName != null && !currName.equals(struct.getString("name")) && Boolean.TRUE.equals(manualName) == false) {
 			String updateGroupsStructureName =
 					"MATCH (s:Structure { externalId : {externalId}})<-[:DEPENDS]-(g:Group) " +
 					"WHERE s.checksum = {checksum} and has(g.structureName) " +
-					"SET g.structureName = {name} ";
+					"SET s.name = {name}, g.structureName = {name} ";
 			getTransaction().add(updateGroupsStructureName, struct);
 			String updateGroupsName =
 					"MATCH (s:Structure { externalId : {externalId}})<-[:DEPENDS]-(g:Group) " +

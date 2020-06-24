@@ -37,7 +37,12 @@
         </div>
         <div class="twelve cell padding-top-5">
             <strong class="four cell">[[lang.translate("directory.name")]]</strong>
-            <input class="eight cell" type="text" ng-model="structure.name"/>
+            <input class="eight cell" type="text" ng-model="structure.name" ng-if="structure.manualName != true"/>
+            <input class="four cell" type="text" ng-model="structure.name" ng-if="structure.manualName == true"/>
+            <span class="one cell" ng-if="structure.manualName == true">&nbsp;</span>
+            <button class="three cell" ng-click="structure.resetManualName()" class="text-flow" ng-if="structure.manualName == true">
+                [[lang.translate("directory.manualName.reset")]]
+            </button>
         </div>
         <div class="twelve cell padding-top-5" ng-if="isCentralAdmin()">
             <strong class="four cell">[[lang.translate("directory.has.app")]] :</strong>

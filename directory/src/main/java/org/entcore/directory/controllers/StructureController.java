@@ -657,6 +657,13 @@ public class StructureController extends BaseController {
 		});
 	}
 
+	@Put("/structure/:id/resetName")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void resetStructureName(HttpServerRequest request)
+	{
+		structureService.resetName(request.params().get("id"), defaultResponseHandler(request));
+	}
+
 	public void setMassMailService(MassMailService massMailService) {
 		this.massMailService = massMailService;
 	}

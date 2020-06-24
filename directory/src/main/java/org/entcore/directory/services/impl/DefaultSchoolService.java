@@ -118,7 +118,7 @@ public class DefaultSchoolService implements SchoolService {
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
 				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, " +
-				"s.hasApp as hasApp, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, " +
+				"s.hasApp as hasApp, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, result -> {
@@ -471,5 +471,13 @@ public class DefaultSchoolService implements SchoolService {
 		});
 
 		neo.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void resetName(String structureId, Handler<Either<String, JsonObject>> handler)
+	{
+		String query = "MATCH (s:Structure {id:{structureId}}) SET s.manualName = false";
+		JsonObject params = new JsonObject().put("structureId", structureId);
+		neo.execute(query, params, validEmptyHandler(handler));
 	}
 }
