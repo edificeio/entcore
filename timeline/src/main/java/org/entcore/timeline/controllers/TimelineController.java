@@ -48,6 +48,7 @@ import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.MobileTimelineEventStore;
+import org.entcore.timeline.events.SplitTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -89,6 +90,11 @@ public class TimelineController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
+		store = new DefaultTimelineEventStore();
+		final Integer maxRecipientLength = config.getInteger("maxRecipientLength");
+		if(maxRecipientLength != null){
+			store = new SplitTimelineEventStore(store, maxRecipientLength);
+		}
 		timelineHelper = new TimelineHelper(vertx, eb, config);
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
@@ -140,7 +146,6 @@ public class TimelineController extends BaseController {
 	@Get("/timeline")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
-		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
 		final boolean cache = config.getBoolean("cache", false);
 		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
 	}

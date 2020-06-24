@@ -58,6 +58,83 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    public Future<String> createManualGroup(String name) {
+        String id = UUID.randomUUID().toString();
+        return createGroup(id, name, "ManualGroup").map(id);
+    }
+
+    public Future<String> createProfileGroup(String name) {
+        String id = UUID.randomUUID().toString();
+        return createGroup(id, name, "ProfileGroup").map(id);
+    }
+
+    public Future<String> createStructure(String name, String UAI) {
+        return createStructure(name, UAI, "");
+    }
+
+    public Future<String> createStructure(String name, String UAI, String externalId) {
+        return createStructure(name, UAI, externalId, "AAF");
+    }
+
+    public Future<String> createStructure(String name, String UAI, String externalId, String source) {
+        final String id = UUID.randomUUID().toString();
+        final Future<String> async = Future.future();
+        final JsonObject props = new JsonObject().put("name", name).put("UAI", UAI).put("externalId", externalId)
+                .put("id", id).put("source", source);
+        final JsonObject params = new JsonObject().put("props", props);
+        final String query = "CREATE (u:Structure {props}) RETURN u";
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete(id);
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async;
+    }
+
+    public Future<Void> attachUserToGroup(String userId, String groupId) {
+        final Future<Void> async = Future.future();
+        final String query = "MATCH (u:User{id:{userId}}) WITH u MATCH (g:Group {id:{groupId}}) MERGE (u)-[i:IN]->(g) RETURN u,i,g";
+        final JsonObject params = new JsonObject().put("userId", userId).put("groupId", groupId);
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async;
+    }
+
+    public Future<Void> enableAppForStruct(String id) {
+        final Future<Void> async = Future.future();
+        final String query = "MATCH (s:Structure {id:{structureId}}) SET s.hasApp=TRUE RETURN s";
+        final JsonObject params = new JsonObject().put("structureId", id);
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async;
+    }
+
+    public Future<Void> attachGroupToStruct(String groupId, String structureId) {
+        final Future<Void> async = Future.future();
+        final String query = "MATCH (g:Group{id:{groupId}}), (s:Structure {id:{structureId}}) MERGE (g)-[d:DEPENDS]->(s) RETURN g,d,s";
+        final JsonObject params = new JsonObject().put("groupId", groupId).put("structureId", structureId);
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async;
+    }
+
     public Future<String> createActiveUser(String login, String password, String email) {
         return createActiveUser(login, null, password, email);
     }
@@ -107,9 +184,15 @@ public class DirectoryTestHelper {
     }
 
     public Future<Void> createGroup(String id, String name) {
+        return createGroup(id, name, null);
+    }
+
+    public Future<Void> createGroup(String id, String name, String type) {
         final Future<Void> async = Future.future();
-        final JsonObject params = new JsonObject().put("id", id).put("name", name);
-        final String query = "CREATE (u:Group:Visible {id : {id}, name: {name} }) RETURN u";
+        final String safeType = type == null ? "" : ":" + type;
+        final JsonObject params = new JsonObject().put("id", id).put("name", name).put("filter", name)
+                .put("displayNameSearchField", name.toLowerCase()).put("users", "BOTH");
+        final String query = String.format("CREATE (u:Group:Visible%s {id : {id}, name: {name} }) RETURN u", safeType);
         Neo4j.getInstance().execute(query, params, message -> {
             if ("ok".equals(message.body().getString("status"))) {
                 async.complete();

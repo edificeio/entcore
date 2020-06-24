@@ -1,5 +1,8 @@
 package org.entcore.test;
 
+import com.mongodb.QueryBuilder;
+
+import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
@@ -10,6 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.vertx.mods.MongoPersistor;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -73,6 +77,8 @@ public class DatabaseTestHelper {
         final JsonObject config = new JsonObject().put("server-uri", base).put("poolSize", 1);
         final Neo4j neo4j = Neo4j.getInstance();
         neo4j.init(vertx, config);
+        vertx.sharedData().getLocalMap("server").put("neo4jConfig", config.encode());
+
     }
 
     public PostgreSQLContainer<?> createPostgreSQLContainer() {
@@ -104,5 +110,24 @@ public class DatabaseTestHelper {
         }));
         return future;
 
+    }
+
+    public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
+        QueryBuilder builder = QueryBuilder.start("_id").is(id);
+        final MongoDb mongo = MongoDb.getInstance();
+        final Future<JsonObject> future = Future.future();
+        mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(message -> {
+            future.complete(message.right().getValue());
+        }));
+        return future;
+    }
+
+    public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
+        final MongoDb mongo = MongoDb.getInstance();
+        final Future<JsonObject> future = Future.future();
+        mongo.find(collection, query, MongoDbResult.validResultHandler(message -> {
+            future.complete(message.right().getValue());
+        }));
+        return future;
     }
 }

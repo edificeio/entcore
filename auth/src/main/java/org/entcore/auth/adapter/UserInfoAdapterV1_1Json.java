@@ -26,11 +26,7 @@ public class UserInfoAdapterV1_1Json extends UserInfoAdapterV1_0Json implements 
 	@Override
 	public JsonObject getInfo(JsonObject info, String clientId) {
 		final JsonObject filteredInfos = super.getCommonFilteredInfos(info, clientId);
-		filteredInfos.put("structureIds", filteredInfos.getJsonArray("attachStructureIds"));
-		filteredInfos.put("structureNames", filteredInfos.getJsonArray("attachStructureNames"));
-		filteredInfos.remove("attachStructureIds");
-		filteredInfos.remove("attachStructureNames");
-
+		filteredInfos.put("structureIds", info.getJsonArray("structures"));
 		return filteredInfos;
 	}
 

@@ -1,6 +1,7 @@
 package org.entcore.test;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.shareddata.LocalMap;
 
 public class TestHelper {
     protected final Vertx vertx = Vertx.vertx();
@@ -46,5 +47,12 @@ public class TestHelper {
 
     public FileTestHelper file() {
         return file;
+    }
+
+    public TestHelper initSharedData() {
+        final LocalMap<Object, Object> map = vertx.sharedData().getLocalMap("cluster");
+        map.put("node", false);
+        map.put("node", "");
+        return this;
     }
 }
