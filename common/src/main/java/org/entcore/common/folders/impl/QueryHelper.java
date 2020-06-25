@@ -483,6 +483,11 @@ class QueryHelper {
 			return this;
 		}
 
+		public DocumentQueryBuilder withIdNotEq(String id) {
+			builder.and("_id").notEquals(id);
+			return this;
+		}
+
 		public DocumentQueryBuilder withId(String id) {
 			builder.and("_id").is(id);
 			return this;
@@ -527,6 +532,16 @@ class QueryHelper {
 
 		public DocumentQueryBuilder withNameMatch(final String pattern) {
 			builder.and("name").regex(Pattern.compile("^" + pattern + "(_|$)"));
+			return this;
+		}
+
+		public DocumentQueryBuilder withNameStarts(final String pattern) {
+			builder.and("name").regex(Pattern.compile("^" + pattern));
+			return this;
+		}
+
+		public DocumentQueryBuilder withNameEq(final String name) {
+			builder.and("name").is(name);
 			return this;
 		}
 

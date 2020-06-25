@@ -56,7 +56,11 @@ public class FolderManagerWithQuota implements FolderManager {
 						Handler<AsyncResult<JsonObject>> handler) {
 		this.folderManager.addFileWithParent(parent, doc, ownerId, ownerName, handler);
 	}
-
+	
+	public void setAllowDuplicate(boolean allowDuplicate){
+		this.folderManager.setAllowDuplicate(allowDuplicate);
+	}
+	
 	public Future<Long> computFreeSpace(final UserInfos userInfos) {
 		Future<Long> future = Future.future();
 //		try {

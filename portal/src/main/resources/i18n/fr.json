@@ -626,5 +626,8 @@
   "embed.save": "Sauvegarder",
   "embed.suspend": "Suspendre",
   "embed.audio.title": "Dictaphone",
-  "embed.audio.tagline": "Faites nous entendre votre plus belle voix !"
+  "embed.audio.tagline": "Faites nous entendre votre plus belle voix !",
+  "folders.errors.duplicate": "La mise à jour a échoué car un élément du même nom existe déjà",
+  "folders.errors.duplicate.folder": "Le dossier n'a pas été crée car un élement du même nom existe déjà",
+  "folders.errors.duplicate.file": "Le fichier n'a pas été importé car un élement du même nom existe déjà"
 }
