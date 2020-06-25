@@ -21,7 +21,7 @@ import io.vertx.core.json.JsonObject;
 public interface FolderManager {
 	String FOLDER_TYPE = "folder";
 	String FILE_TYPE = "file";
-
+	void setAllowDuplicate(boolean allowDuplicate);
 	static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress, boolean useOldQueryChildren) {
 		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress, useOldQueryChildren);
 	}

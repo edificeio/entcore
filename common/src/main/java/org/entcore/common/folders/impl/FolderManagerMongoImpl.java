@@ -2,6 +2,7 @@ package org.entcore.common.folders.impl;
 
 import static org.entcore.common.folders.impl.QueryHelper.isOk;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -15,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.vertx.core.json.Json;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -25,9 +25,9 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.mongodb.MongoDbResult;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
@@ -43,7 +43,6 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -88,6 +87,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 	protected final InheritShareComputer inheritShareComputer;
 
 	protected final String imageResizerAddress;
+	protected boolean allowDuplicate = false;
 
 	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery)
 	{
@@ -101,17 +101,57 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.inheritShareComputer = new InheritShareComputer(queryHelper);
 	}
 
+	public void setAllowDuplicate(boolean allowDuplicate) {
+		this.allowDuplicate = allowDuplicate;
+	}
+
+	protected Future<Boolean> isDuplicate(Optional<String> parentId, JsonObject file, String type){
+		final String name = DocumentHelper.getName(file);
+		final String id = DocumentHelper.getId(file);
+		return isDuplicate(parentId, id,name, type);
+	}
+	
+	protected Future<Boolean> isDuplicate(Optional<String> parentId, String id, String name, String type){
+		if(allowDuplicate) return Future.succeededFuture(false);
+		if(parentId.isPresent()) {
+			DocumentQueryBuilder builder = queryHelper.queryBuilder().withParent(parentId.get()).withNameEq(name).withFileType(type);
+			if(id != null){
+				builder.withIdNotEq(id);
+			}
+			return queryHelper.countAll(builder).map(e -> e > 0);
+		} else {
+			return Future.succeededFuture(false);
+		}
+	}
+
+	protected Future<JsonObject> renameFileOnDuplicate(Optional<String> parentId, JsonObject file){
+		final String name = DocumentHelper.getName(file);
+		return isDuplicate(parentId, file, FILE_TYPE).compose(isDuplicate->{
+			if(isDuplicate){
+				final Optional<String> extension = FileUtils.getFileExtension(name);
+				final String withoutExt = FileUtils.stripExtension(name);
+				return queryHelper.countAll(queryHelper.queryBuilder().withParent(parentId.get()).withNameStarts(withoutExt).withFileType(FILE_TYPE)).map(count->{
+					final String ext = extension.map(e -> "."+e).orElse("");
+					DocumentHelper.setName(file, withoutExt + "_" + count+ext);
+					return file;
+				});
+			} else {
+				return Future.succeededFuture(file);
+			}
+		});
+	}
+
 	@Override
 	public void addFile(Optional<String> parentId, JsonObject doc, String ower, String ownerName,
 			Handler<AsyncResult<JsonObject>> handler) {
 		this.inheritShareComputer.computeFromParentId(doc, false, parentId).compose(parent -> {
-			String now = MongoDb.formatDate(new Date());
 			if (parentId.isPresent()) {
 				doc.put("eParent", parentId.get());
 			}
 			DocumentHelper.initFile(doc, ower, ownerName);
-			//
-			return queryHelper.insert(doc);
+			return renameFileOnDuplicate(parentId, doc);
+		}).compose(aDoc->{ 
+			return queryHelper.insert(aDoc);
 		}).setHandler(handler);
 	}
 
@@ -124,7 +164,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 			}
 			DocumentHelper.initFile(doc, owner, ownerName);
 			//
-			return queryHelper.insert(doc);
+			return renameFileOnDuplicate(parentOpt.map(e -> DocumentHelper.getId(e)), doc).compose(aDoc->{
+				return queryHelper.insert(aDoc);
+			});
 		}).setHandler(handler);
 	}
 
@@ -297,7 +339,6 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	@Override
 	public void countByQuery(ElementQuery query, UserInfos user, Handler<AsyncResult<Integer>> handler) {
-		// TODO hierarchical count?
 		queryHelper.countAll(DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user)))
 				.setHandler(handler);
 	}
@@ -321,7 +362,15 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void createFolder(String destinationFolderId, UserInfos user, JsonObject folder,
 			Handler<AsyncResult<JsonObject>> handler) {
 		folder.put("eParent", destinationFolderId);
-		this.createFolder(folder, user, handler);
+		isDuplicate(Optional.ofNullable(destinationFolderId), folder, FOLDER_TYPE).compose(isDuplicate->{
+			final Future<JsonObject> future = Future.future();
+			if(isDuplicate){
+				future.fail("folders.errors.duplicate.folder");
+			}else{
+				this.createFolder(folder, user, future.completer());
+			}
+			return future;
+		}).setHandler(handler);
 	}
 
 	@Override
@@ -672,12 +721,19 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void rename(String id, String newName, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
 		this.info(id, user, msg -> {
 			if (msg.succeeded()) {
-				String nameSearch = newName != null ? DocumentHelper.prepareNameForSearch(newName) : "";
-				JsonObject doc = msg.result();
-				doc.put("name", newName);// need for result
-				doc.put("nameSearch", nameSearch);
-				MongoUpdateBuilder set = new MongoUpdateBuilder().set("name", newName).set("nameSearch", nameSearch);
-				queryHelper.update(id, set).map(doc).setHandler(handler);
+				final String type = DocumentHelper.getType(msg.result());
+				final String parent = DocumentHelper.getParent(msg.result());
+				isDuplicate(Optional.ofNullable(parent),id, newName, type).compose(isDuplicate->{
+					if(isDuplicate){
+						return Future.failedFuture("folders.errors.duplicate");
+					}
+					String nameSearch = newName != null ? DocumentHelper.prepareNameForSearch(newName) : "";
+					JsonObject doc = msg.result();
+					doc.put("name", newName);// need for result
+					doc.put("nameSearch", nameSearch);
+					MongoUpdateBuilder set = new MongoUpdateBuilder().set("name", newName).set("nameSearch", nameSearch);
+					return queryHelper.update(id, set).map(doc);
+				}).setHandler(handler);
 			} else {
 				handler.handle(toError(msg.cause()));
 			}
