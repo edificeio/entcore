@@ -103,6 +103,11 @@ public abstract class GenericEventStore implements EventStore {
 		createAndStoreEvent(eventType, "id", userId, clientId, request);
 	}
 
+	@Override
+	public void storeCustomEvent(String baseEventType, JsonObject payload) {
+
+	}
+
 	private void createAndStoreEvent(final String eventType, final String attr, final String value,
 			final String clientId, final HttpServerRequest request) {
 		String query = "MATCH (n:User {" + attr + ": {login}}) " + "OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) "

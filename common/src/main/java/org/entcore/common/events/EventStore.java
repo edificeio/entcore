@@ -48,4 +48,6 @@ public interface EventStore {
 
 	void createAndStoreEventByUserId(final String eventType, final String userId, final String clientId, HttpServerRequest request);
 
+	void storeCustomEvent(String baseEventType, JsonObject payload);
+
 }

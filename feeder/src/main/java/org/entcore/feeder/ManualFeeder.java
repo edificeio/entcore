@@ -27,6 +27,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.dictionary.structures.*;
+import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
@@ -673,6 +674,7 @@ public class ManualFeeder extends BusModBase {
 				{
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
+					final JsonArray deletedAlias = new JsonArray();
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
 						String profile = ((JsonObject) o).getString("profile");
@@ -695,8 +697,10 @@ public class ManualFeeder extends BusModBase {
 						if(updatedLoginAlias != null)
 						{
 							String oldAlias = ((JsonObject) o).getString("loginAlias");
-							if(oldAlias != null && oldAlias.isEmpty() == false)
+							if(oldAlias != null && oldAlias.isEmpty() == false) {
 								oldLogins.add(oldAlias);
+								deletedAlias.add(new JsonObject().put("type", profile).put("login", oldAlias).put("id", userId));
+							}
 						}
 					}
 					user.put("checksum", "manual");
@@ -709,6 +713,7 @@ public class ManualFeeder extends BusModBase {
 								@Override
 								public void handle(Message<JsonObject> m) {
 									Validator.removeLogins(oldLogins);
+									DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
 									message.reply(m.body());
 								}
 							});

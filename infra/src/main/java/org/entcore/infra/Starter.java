@@ -134,7 +134,7 @@ public class Starter extends BaseServer {
 			log.error(ex.getMessage());
 		}
 		JsonObject eventConfig = config.getJsonObject("eventConfig", new JsonObject());
-		EventStoreService eventStoreService = new MongoDbEventStore();
+		EventStoreService eventStoreService = new MongoDbEventStore(vertx);
 		EventStoreController eventStoreController = new EventStoreController(eventConfig);
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);

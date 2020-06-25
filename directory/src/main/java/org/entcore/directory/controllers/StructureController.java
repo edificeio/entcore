@@ -629,6 +629,7 @@ public class StructureController extends BaseController {
 							request.response().setStatusCode(204);
 							request.response().end();
 							JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
+							eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
 							for (Object userId : usersId) {
 								UserUtils.deletePermanentSession(eb, (String) userId, null, false, new Handler<Boolean>() {
 									@Override

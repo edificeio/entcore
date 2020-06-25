@@ -23,16 +23,34 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.http.HttpServerRequest;
+
+import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.EventStoreService;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 public class MongoDbEventStore implements EventStoreService {
 
 	private MongoDb mongoDb = MongoDb.getInstance();
+	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
+
+	public MongoDbEventStore(Vertx vertx) {
+		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
+		if (eventStoreConf != null) {
+			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+			if (eventStoreConfig.containsKey("postgresql")) {
+				pgEventStore =  new PostgresqlEventStore();
+				pgEventStore.setEventBus(vertx.eventBus());
+				pgEventStore.setModule("infra");
+				pgEventStore.setVertx(vertx);
+				pgEventStore.init();
+			}
+		}
+	}
 
 	@Override
 	public void store(JsonObject event, final Handler<Either<String, Void>> handler) {
@@ -47,6 +65,10 @@ public class MongoDbEventStore implements EventStoreService {
 				}
 			}
 		});
+		if (pgEventStore != null) {
+			pgEventStore.store(event.copy(), ar -> {
+			});
+		}
 	}
 
 	@Override
@@ -76,6 +98,13 @@ public class MongoDbEventStore implements EventStoreService {
 			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
 		}
 		store(event, handler);
+	}
+
+	@Override
+	public void storeCustomEvent(String baseEventType, JsonObject payload) {
+		if (pgEventStore != null) {
+			pgEventStore.storeCustomEvent(baseEventType, payload);
+		}
 	}
 
 }

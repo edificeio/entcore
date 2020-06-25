@@ -141,7 +141,8 @@ public class AuthController extends BaseController {
 				: null;
 		checkFederatedLogin = config.getBoolean("check-federated-login", false);
 		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), Redis.getClient(),
-				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L));
+				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
+				config.getString("password-event-min-date"), eventStore);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -670,6 +671,14 @@ public class AuthController extends BaseController {
 			return;
 		}
 		validToken(message);
+	}
+
+	@BusAddress("auth.store.lock.event")
+	public void storeLockEvent(final Message<JsonObject> message) {
+		if (message.body() != null) {
+			userAuthAccount.storeLockEvent(message.body().getJsonArray("ids"), message.body().getBoolean("block"));
+		}
+		message.reply(new JsonObject());
 	}
 
 	private void validToken(final Message<JsonObject> message) {

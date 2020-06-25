@@ -61,7 +61,7 @@ public class User {
 			"OPTIONAL MATCH (s:Structure) " +
 			"WHERE s.externalId IN u.structures " +
 			"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-			"u.deleteDate as deleteDate, u.birthDate as birthDate," +
+			"u.deleteDate as deleteDate, u.birthDate as birthDate, u.login as login, u.loginAlias as loginAlias " +
 			"u.externalId as externalId, u.displayName as displayName, " +
 			"HEAD(u.profiles) as type, " +
 			"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
@@ -157,6 +157,25 @@ public class User {
 					.put("old-users", r));
 			eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
 					(UserInfos) null, new JsonObject().put("old-users", cleanDeleteEvent(r)));
+			storeDeleteUserEvent(eventStore, r);
+		}
+
+		public static void storeDeleteUserEvent(EventStore eventStore, JsonArray r) {
+			if (Vertx.currentContext().config().getBoolean("store-delete-user-event", false)) {
+				for (Object o : r) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject j = (JsonObject) o;
+					final JsonObject event = new JsonObject()
+						.put("event_type", "DELETED")
+						.put("login", j.getString("login"))
+						.put("user_id", j.getString("id"))
+						.put("profile", j.getString("type"));
+					eventStore.storeCustomEvent("auth", event);
+					if (isNotEmpty(j.getString("loginAlias"))) {
+						eventStore.storeCustomEvent("auth", event.copy().put("login", j.getString("loginAlias")));
+					}
+				}
+			}
 		}
 
 		private static JsonArray cleanDeleteEvent(JsonArray r) {

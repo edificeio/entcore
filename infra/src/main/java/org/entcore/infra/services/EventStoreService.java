@@ -32,4 +32,6 @@ public interface EventStoreService {
 
 	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 
+	void storeCustomEvent(String baseEventType, JsonObject payload);
+
 }

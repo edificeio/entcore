@@ -55,8 +55,8 @@ public class Auth extends BaseServer {
 		super.start();
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
 
-		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
+		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
 		AuthController authController = new AuthController();
 		authController.setEventStore(eventStore);
