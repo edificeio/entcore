@@ -110,6 +110,10 @@ public class PostgresqlEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
+		store(event, handler);
+	}
+
+	public void store(final JsonObject event, final Handler<Either<String, Void>> handler) {
 		final String ua = (String) event.remove("ua");
 		final String eventType = (String) event.remove("event-type");
 		final String userId = (String) event.remove("userId");
@@ -148,6 +152,10 @@ public class PostgresqlEventStore extends GenericEventStore {
 		if (isNotEmpty(profile)) {
 			e.put("profile", profile);
 		}
+		insertEvent(e, tableName, handler);
+	}
+
+	private void insertEvent(final JsonObject e, final String tableName, final Handler<Either<String, Void>> handler) {
 		final String query = Sql.insertQuery(tableName, e);
 		pgClient.query(query, ar -> {
 			if (ar.succeeded()) {
@@ -156,6 +164,19 @@ public class PostgresqlEventStore extends GenericEventStore {
 				logger.error("Error persisting events on postgresql : " + e.encode(), ar.cause());
 				handler.handle(new Either.Left<String, Void>(
 							"Error : " + ar.cause().getMessage() + ", Event : " + e.encode()));
+			}
+		});
+	}
+
+	@Override
+	public void storeCustomEvent(String baseEventType, JsonObject payload) {
+		final String tableName = "events." + baseEventType.toLowerCase() + "_events";
+		payload.put("id", UUID.randomUUID().toString());
+		payload.put("date", LocalDateTime.now().toString());
+		payload.put("platform_id", platform);
+		insertEvent(payload, tableName, either -> {
+			if (either.isLeft()) {
+				logger.error("Error adding custom event : " + payload.encode() + " - " + either.left().getValue());
 			}
 		});
 	}

@@ -19,6 +19,7 @@
 
 package org.entcore.auth.users;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +28,13 @@ import fr.wseduc.webutils.Either;
 
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.security.NTLM;
 
 import org.entcore.auth.pojo.SendPasswordDestination;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.StatementsBuilder;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -41,6 +43,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserUtils;
@@ -56,6 +61,8 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
+	private static final Logger log = LoggerFactory.getLogger(DefaultUserAuthAccount.class);
+
 	private final Neo neo;
 	private final Vertx vertx;
 	private final JsonObject config;
@@ -66,8 +73,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private String smsProvider;
 	private final String smsAddress;
 	private final JsonArray allowActivateDuplicateProfiles;
+	private final EventStore eventStore;
+	private final boolean storePasswordEventEnabled;
 
-	public DefaultUserAuthAccount(Vertx vertx, JsonObject config) {
+	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
@@ -83,8 +92,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		} else {
 			smsAddress = "entcore.sms";
 		}
-		this.allowActivateDuplicateProfiles = getOrElse(
-				config.getJsonArray("allow-activate-duplicate"), new JsonArray().add("Relative"));
+		this.allowActivateDuplicateProfiles = getOrElse(config.getJsonArray("allow-activate-duplicate"),
+				new JsonArray().add("Relative"));
+		this.eventStore = eventStore;
+		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 	}
 
 	@Override
@@ -151,6 +162,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
+					storePasswordEvent(login, password, res.body().getJsonObject("result").getJsonObject("0").getString("id"),
+							res.body().getJsonObject("result").getJsonObject("0").getString("profile"));
 					handler.handle(new Either.Right<String, String>(
 							res.body().getJsonObject("result").getJsonObject("0").getString("id")));
 				} else {
@@ -179,7 +192,26 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			}
 		});
 	}
-	
+
+	private void storePasswordEvent(final String login, final String password, String userId, String profile) {
+		if (storePasswordEventEnabled) {
+			try {
+				final JsonObject j = new JsonObject();
+				eventStore.storeCustomEvent("auth", j.put("event_type", "PASSWORD")
+						.put("login", login)
+						.put("password", NTLM.ntHash(password)));
+				if (isNotEmpty(userId)) {
+					j.put("user_id", userId);
+				}
+				if (isNotEmpty(profile)) {
+					j.put("profile", profile);
+				}
+			} catch (NoSuchAlgorithmException ex) {
+				log.error("Error sending PASSWORD Event account", ex);
+			}
+		}
+	}
+
 	@Override
 	@SuppressWarnings("deprecation")
 	public void revalidateCgu(String userId, Handler<Boolean> handler) {
@@ -488,7 +520,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE n.login={login} AND n.resetCode = {resetCode} " +
 				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
-				"RETURN n.password as pw";
+				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
@@ -496,7 +528,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			params.put("today", new Date().getTime());
 			params.put("delay", codeDelay);
 		}
-		updatePassword(handler, query, password, params);
+		updatePassword(handler, query, password, login, params);
 	}
 
 	@Override
@@ -505,10 +537,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"SET n.password = {password}, n.changePw = null " +
-				"RETURN n.password as pw";
+				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
-		updatePassword(handler, query, password, params);
+		updatePassword(handler, query, password, login, params);
 	}
 
 	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {
@@ -626,6 +658,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
+				storeLockEvent(new JsonArray().add(id), block);
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
@@ -640,11 +673,40 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
+				storeLockEvent(ids, block);
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
 			}
 		});
+	}
+
+	public void storeLockEvent(JsonArray ids, boolean block) {
+		if (storePasswordEventEnabled && ids != null && !ids.isEmpty()) {
+			final String query =
+					"MATCH (u:User) WHERE u.id IN {ids} AND u.blocked = {block} RETURN u.id as id, u.login as login, u.profile as profile ";
+			final JsonObject params = new JsonObject().put("ids", ids).put("block", block);
+			neo.execute(query, params, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> r) {
+					final JsonArray res = r.body().getJsonArray("result");
+					final String eventType = block ? "LOCKED" : "UNLOCKED";
+					if ("ok".equals(r.body().getString("status")) && res != null) {
+						for (Object o : res) {
+							if (!(o instanceof JsonObject)) continue;
+							final JsonObject item = (JsonObject) o;
+							eventStore.storeCustomEvent("auth", new JsonObject()
+									.put("event_type", eventType)
+									.put("login", item.getString("login"))
+									.put("user_id", item.getString("id"))
+									.put("profile", item.getString("profile")));
+						}
+					} else {
+						log.error("Error sending " + eventType + " Event account : " + r.body().getString("message"));
+					}
+				}
+			});
+		}
 	}
 
 	@Override
@@ -688,7 +750,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
-	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
+	private void updatePassword(final Handler<Boolean> handler, String query, String password, String login, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		params.put("password", pw);
 		neo.send(query, params, res -> {
@@ -697,13 +759,19 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					&& r.getJsonObject("0") != null
 					&& pw.equals(r.getJsonObject("0").getString("pw"));
 			if (updated) {
+				storePasswordEvent(login, password, r.getJsonObject("0").getString("id"), r.getJsonObject("0").getString("profile"));
 				handler.handle(true);
 			} else {
 				neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
 					JsonObject r2 = event.body().getJsonObject("result");
-					handler.handle("ok".equals(event.body().getString("status"))
+					if ("ok".equals(event.body().getString("status"))
 							&& r2.getJsonObject("0") != null
-							&& pw.equals(r2.getJsonObject("0").getString("pw")));
+							&& pw.equals(r2.getJsonObject("0").getString("pw"))) {
+						storePasswordEvent(login, password, r2.getJsonObject("0").getString("id"), r2.getJsonObject("0").getString("profile"));
+						handler.handle(true);
+					} else {
+						handler.handle(false);
+					}
 				});
 			}
 		});

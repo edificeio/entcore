@@ -115,6 +115,11 @@ public class EventStoreController extends BaseController {
 		}
 	}
 
+	@BusAddress("event.store.custom")
+	public void eventStoreCustom(final Message<JsonObject> message) {
+		eventStoreService.storeCustomEvent(message.body().getString("base-event-type"), message.body().getJsonObject("payload"));
+	}
+
 	@BusAddress("event.blacklist")
 	public void getBlacklist(final Message<Void> message) {
 		message.reply(this.userBlackList);

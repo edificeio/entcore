@@ -50,6 +50,13 @@ public class MongoDbEventStore extends GenericEventStore {
 		}
 	}
 
+	@Override
+	public void storeCustomEvent(String baseEventType, JsonObject payload) {
+		if (postgresqlEventStore != null) {
+			postgresqlEventStore.storeCustomEvent(baseEventType, payload);
+		}
+	}
+
 	public void setPostgresqlEventStore(PostgresqlEventStore postgresqlEventStore) {
 		this.postgresqlEventStore = postgresqlEventStore;
 	}

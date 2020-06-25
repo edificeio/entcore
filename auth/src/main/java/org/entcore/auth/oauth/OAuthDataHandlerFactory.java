@@ -25,6 +25,7 @@ import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
 import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 
 public class OAuthDataHandlerFactory implements DataHandlerFactory {
@@ -36,9 +37,12 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final boolean checkFederatedLogin;
 	private final int pwMaxRetry;
 	private final long pwBanDelay;
+	private final EventStore eventStore;
+	private final String passwordEventMinDate;
 
 	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, RedisClient redisClient,
-			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay) {
+			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay,
+			String passwordEventMinDate, EventStore eventStore) {
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
@@ -46,11 +50,14 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 		this.redisClient = redisClient;
 		this.pwMaxRetry = pwMaxRetry;
 		this.pwBanDelay = pwBanDelay;
+		this.eventStore = eventStore;
+		this.passwordEventMinDate = passwordEventMinDate;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
-		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin, pwMaxRetry, pwBanDelay);
+		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
+				pwMaxRetry, pwBanDelay, passwordEventMinDate, eventStore);
 	}
 
 }

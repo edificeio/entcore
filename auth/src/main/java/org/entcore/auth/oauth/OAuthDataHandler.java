@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.Md5;
+import fr.wseduc.webutils.security.NTLM;
 import fr.wseduc.webutils.security.Sha256;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -32,6 +33,7 @@ import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.redis.Redis;
 
@@ -65,6 +67,8 @@ public class OAuthDataHandler extends DataHandler {
 	private final RedisClient redisClient;
 	private final OpenIdConnectService openIdConnectService;
 	private final boolean checkFederatedLogin;
+	private final String passwordEventMinDate;
+	private final EventStore eventStore;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
@@ -74,7 +78,7 @@ public class OAuthDataHandler extends DataHandler {
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
-			int pwMaxRetry, long pwBanDelay) {
+			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, EventStore eventStore) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
@@ -83,6 +87,8 @@ public class OAuthDataHandler extends DataHandler {
 		this.redisClient = redisClient;
 		this.pwMaxRetry = pwMaxRetry;
 		this.pwBanDelay = pwBanDelay;
+		this.passwordEventMinDate = passwordEventMinDate;
+		this.eventStore = eventStore;
 	}
 
 	@Override
@@ -158,7 +164,7 @@ public class OAuthDataHandler extends DataHandler {
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", username);
 		neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
@@ -249,6 +255,19 @@ public class OAuthDataHandler extends DataHandler {
 				log.error(e.getMessage(), e);
 			}
 			if (success) {
+				if (passwordEventMinDate != null) {
+					final String ll = r.getString("lastLogin");
+					if (ll == null || passwordEventMinDate.compareTo(ll) > 0) {
+						try {
+							eventStore.storeCustomEvent("auth",
+									new JsonObject().put("event_type", "PASSWORD").put("user_id", r.getString("userId"))
+											.put("profile", r.getString("profile")).put("login", username)
+											.put("password", NTLM.ntHash(password)));
+						} catch (NoSuchAlgorithmException ex) {
+							log.error("Error sending PASSWORD Event", ex);
+						}
+					}
+				}
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 			} else {
 				incrBanAuthentication(username);

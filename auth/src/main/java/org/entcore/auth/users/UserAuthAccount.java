@@ -90,4 +90,6 @@ public interface UserAuthAccount {
 
 	void generateOTP(String id, Handler<Either<String, JsonObject>> handler);
 
+	void storeLockEvent(JsonArray ids, boolean block);
+
 }
