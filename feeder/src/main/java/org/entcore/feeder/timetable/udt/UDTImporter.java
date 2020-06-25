@@ -93,6 +93,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
+	private JsonArray parsedWeeks = new JsonArray();
 
 	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport) {
 		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
@@ -143,6 +144,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 											if (periods.containsKey(weekNumber)) {
 												ttReport.addWeek(weekNumber);
 												parse(p);
+												parsedWeeks.add(weekNumber);
 												generateCourses(weekNumber, false);
 											} else {
 												log.warn("Ignore week : " + weekNumber);
@@ -679,6 +681,18 @@ public class UDTImporter extends AbstractTimetableImporter {
 			p.put(startPeriod, endPeriod);
 		}
 		return p;
+	}
+
+	@Override
+	protected JsonObject getDeletionQuery(JsonObject baseQuery)
+	{
+		JsonObject defaultQuery = super.getDeletionQuery(baseQuery);
+
+		JsonObject includeTheoreticals = new JsonObject().put("periodWeek", new JsonObject().put("$exists", false));
+		JsonObject includeCurrentWeeks = new JsonObject().put("periodWeek", new JsonObject().put("$in", this.parsedWeeks));
+
+		JsonObject saveOtherWeeks = new JsonObject().put("$or", new JsonArray().add(includeTheoreticals).add(includeCurrentWeeks));
+		return new JsonObject().put("$and", new JsonArray().add(defaultQuery).add(saveOtherWeeks));
 	}
 
 	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, int endPeriodWeek, boolean theoretical) {
