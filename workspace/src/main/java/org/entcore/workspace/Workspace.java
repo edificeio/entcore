@@ -107,7 +107,7 @@ public class Workspace extends BaseServer {
 				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService, useOldQueryChildren);
 
 		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
-
+		workspaceService.setAllowDuplicate(config.getBoolean("allowDuplicate", false));
 		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance(), folderManagerWithQuota);
 		addController(workspaceController);
 		//

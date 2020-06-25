@@ -154,7 +154,7 @@ public final class FileUtils {
 	}
 
 	public static Optional<String> getFileExtension(String name) {
-		String ext = StringUtils.substringAfter(name, ".");
+		String ext = StringUtils.substringAfterLast(name, ".");
 		return Optional.ofNullable(StringUtils.isEmpty(ext) ? null : ext);
 	}
 
