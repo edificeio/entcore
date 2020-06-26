@@ -279,6 +279,7 @@ export class UserFolder extends Folder {
     name: string;
     parentFolderId: string;
     parentFolder: UserFolder;
+    syncUserFoldersPending = false;
     userFolders: Selection<UserFolder> = new Selection<UserFolder>([]);
 
     async removeMailsFromFolder(){
@@ -316,14 +317,23 @@ export class UserFolder extends Folder {
     }
 
     async syncUserFolders(){
-        const response = await http.get('folders/list?parentId=' + this.id);
-        await this.countUnread();
-        this.userFolders.all.splice(0, this.userFolders.colLength);
-        for(let f of response.data){
-            const folder: UserFolder = Mix.castAs(UserFolder, f);
-            folder.parentFolder = this;
-            this.userFolders.push(folder);
-            await folder.syncUserFolders();
+        //avoid multiple parallel sync
+        if(this.syncUserFoldersPending){
+            return;
+        }
+        try{
+            this.syncUserFoldersPending = true;
+            const response = await http.get('folders/list?parentId=' + this.id);
+            await this.countUnread();
+            this.userFolders.all.splice(0, this.userFolders.colLength);
+            for(let f of response.data){
+                const folder: UserFolder = Mix.castAs(UserFolder, f);
+                folder.parentFolder = this;
+                this.userFolders.push(folder);
+                await folder.syncUserFolders();
+            }
+        }finally{
+            this.syncUserFoldersPending = false;
         }
     }
 
