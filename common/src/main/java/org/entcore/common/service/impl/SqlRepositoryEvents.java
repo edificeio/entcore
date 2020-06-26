@@ -63,7 +63,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                             JsonArray fields = ja.getJsonObject(0).getJsonArray("fields");
                             JsonArray rows = ja.getJsonObject(0).getJsonArray("results");
 
-                            JsonArray tableFieldsToNull = fieldsToNull.get(tableName);
+                            JsonArray tableFieldsToNull = fieldsToNull == null ? null : fieldsToNull.get(tableName);
 
                             if(tableFieldsToNull != null)
                             {
