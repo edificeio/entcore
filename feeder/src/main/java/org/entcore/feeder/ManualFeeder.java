@@ -699,7 +699,12 @@ public class ManualFeeder extends BusModBase {
 							String oldAlias = ((JsonObject) o).getString("loginAlias");
 							if(oldAlias != null && oldAlias.isEmpty() == false) {
 								oldLogins.add(oldAlias);
-								deletedAlias.add(new JsonObject().put("type", profile).put("login", oldAlias).put("id", userId));
+								deletedAlias.add(new JsonObject().put("event-type", "DELETED_ALIAS").put("type", profile)
+										.put("loginAlias", oldAlias).put("id", userId));
+								if (!updatedLoginAlias.equals(((JsonObject) o).getString("login"))) {
+									deletedAlias.add(new JsonObject().put("event-type", "ADDED_ALIAS").put("type", profile)
+										.put("loginAlias", updatedLoginAlias).put("id", userId));
+								}
 							}
 						}
 					}

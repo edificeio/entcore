@@ -130,7 +130,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE (blockedProfile IS NULL OR blockedProfile = false) " +
 				"FOREACH (duplicate IN CASE duplicates WHEN 0 THEN [1] ELSE [] END | " +
 				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
-				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate ";
+				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate, " +
+				"n.login as login, n.loginAlias as loginAlias ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -162,7 +163,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
-					storePasswordEvent(login, password, res.body().getJsonObject("result").getJsonObject("0").getString("id"),
+					storePasswordEvent(res.body().getJsonObject("result").getJsonObject("0").getString("login"),
+							res.body().getJsonObject("result").getJsonObject("0").getString("loginAlias"),
+							password,
+							res.body().getJsonObject("result").getJsonObject("0").getString("id"),
 							res.body().getJsonObject("result").getJsonObject("0").getString("profile"));
 					handler.handle(new Either.Right<String, String>(
 							res.body().getJsonObject("result").getJsonObject("0").getString("id")));
@@ -193,19 +197,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
-	private void storePasswordEvent(final String login, final String password, String userId, String profile) {
+	private void storePasswordEvent(final String login, final String loginAlias, final String password, String userId, String profile) {
 		if (storePasswordEventEnabled) {
 			try {
-				final JsonObject j = new JsonObject();
-				eventStore.storeCustomEvent("auth", j.put("event_type", "PASSWORD")
+				final JsonObject j = new JsonObject()
+						.put("event_type", "PASSWORD")
 						.put("login", login)
-						.put("password", NTLM.ntHash(password)));
+						.put("password", NTLM.ntHash(password));
 				if (isNotEmpty(userId)) {
 					j.put("user_id", userId);
 				}
 				if (isNotEmpty(profile)) {
 					j.put("profile", profile);
 				}
+				if (isNotEmpty(loginAlias)) {
+					j.put("login_alias", loginAlias);
+				}
+				eventStore.storeCustomEvent("auth", j);
 			} catch (NoSuchAlgorithmException ex) {
 				log.error("Error sending PASSWORD Event account", ex);
 			}
@@ -520,7 +528,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE n.login={login} AND n.resetCode = {resetCode} " +
 				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
-				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id ";
+				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
+				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
@@ -537,7 +546,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"SET n.password = {password}, n.changePw = null " +
-				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id ";
+				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
+				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(handler, query, password, login, params);
@@ -681,10 +691,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
+	@Override
 	public void storeLockEvent(JsonArray ids, boolean block) {
 		if (storePasswordEventEnabled && ids != null && !ids.isEmpty()) {
 			final String query =
-					"MATCH (u:User) WHERE u.id IN {ids} AND u.blocked = {block} RETURN u.id as id, u.login as login, u.profile as profile ";
+					"MATCH (u:User) WHERE u.id IN {ids} AND u.blocked = {block} " +
+					"RETURN u.id as id, u.login as login, u.loginAlias as loginAlias, head(u.profiles) as profile ";
 			final JsonObject params = new JsonObject().put("ids", ids).put("block", block);
 			neo.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
@@ -695,11 +707,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						for (Object o : res) {
 							if (!(o instanceof JsonObject)) continue;
 							final JsonObject item = (JsonObject) o;
-							eventStore.storeCustomEvent("auth", new JsonObject()
-									.put("event_type", eventType)
-									.put("login", item.getString("login"))
-									.put("user_id", item.getString("id"))
-									.put("profile", item.getString("profile")));
+							final JsonObject pEvent = new JsonObject()
+							.put("event_type", eventType)
+							.put("login", item.getString("login"))
+							.put("user_id", item.getString("id"))
+							.put("profile", item.getString("profile"));
+							if (isNotEmpty(item.getString("loginAlias"))) {
+								pEvent.put("login_alias", item.getString("loginAlias"));
+							}
+							eventStore.storeCustomEvent("auth", pEvent);
 						}
 					} else {
 						log.error("Error sending " + eventType + " Event account : " + r.body().getString("message"));
@@ -759,7 +775,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					&& r.getJsonObject("0") != null
 					&& pw.equals(r.getJsonObject("0").getString("pw"));
 			if (updated) {
-				storePasswordEvent(login, password, r.getJsonObject("0").getString("id"), r.getJsonObject("0").getString("profile"));
+				storePasswordEvent(r.getJsonObject("0").getString("login"), r.getJsonObject("0").getString("loginAlias"),
+						password, r.getJsonObject("0").getString("id"), r.getJsonObject("0").getString("profile"));
 				handler.handle(true);
 			} else {
 				neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
@@ -767,7 +784,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					if ("ok".equals(event.body().getString("status"))
 							&& r2.getJsonObject("0") != null
 							&& pw.equals(r2.getJsonObject("0").getString("pw"))) {
-						storePasswordEvent(login, password, r2.getJsonObject("0").getString("id"), r2.getJsonObject("0").getString("profile"));
+						storePasswordEvent(r2.getJsonObject("0").getString("login"), r2.getJsonObject("0").getString("loginAlias"),
+								password, r2.getJsonObject("0").getString("id"), r2.getJsonObject("0").getString("profile"));
 						handler.handle(true);
 					} else {
 						handler.handle(false);
