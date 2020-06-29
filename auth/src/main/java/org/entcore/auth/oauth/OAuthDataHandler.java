@@ -164,7 +164,8 @@ public class OAuthDataHandler extends DataHandler {
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile";
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile, " +
+				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", username);
 		neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
@@ -259,10 +260,14 @@ public class OAuthDataHandler extends DataHandler {
 					final String ll = r.getString("lastLogin");
 					if (ll == null || passwordEventMinDate.compareTo(ll) > 0) {
 						try {
-							eventStore.storeCustomEvent("auth",
-									new JsonObject().put("event_type", "PASSWORD").put("user_id", r.getString("userId"))
-											.put("profile", r.getString("profile")).put("login", username)
-											.put("password", NTLM.ntHash(password)));
+							final JsonObject pEvent = new JsonObject()
+							.put("event_type", "PASSWORD").put("user_id", r.getString("userId"))
+							.put("profile", r.getString("profile")).put("login", r.getString("login"))
+							.put("password", NTLM.ntHash(password));
+							if (isNotEmpty(r.getString("loginAlias"))) {
+								pEvent.put("login_alias", r.getString("loginAlias"));
+							}
+							eventStore.storeCustomEvent("auth", pEvent);
 						} catch (NoSuchAlgorithmException ex) {
 							log.error("Error sending PASSWORD Event", ex);
 						}

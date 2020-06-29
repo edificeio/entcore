@@ -67,7 +67,7 @@ public class User {
 			"OPTIONAL MATCH (s:Structure) " +
 			"WHERE s.externalId IN u.structures " +
 			"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-			"u.deleteDate as deleteDate, u.birthDate as birthDate, u.login as login, u.loginAlias as loginAlias " +
+			"u.deleteDate as deleteDate, u.birthDate as birthDate, u.login as login, u.loginAlias as loginAlias, " +
 			"u.externalId as externalId, u.displayName as displayName, " +
 			"HEAD(u.profiles) as type, " +
 			"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
@@ -172,14 +172,16 @@ public class User {
 					if (!(o instanceof JsonObject)) continue;
 					final JsonObject j = (JsonObject) o;
 					final JsonObject event = new JsonObject()
-						.put("event_type", "DELETED")
-						.put("login", j.getString("login"))
+						.put("event_type", j.getString("event-type", "DELETED"))
 						.put("user_id", j.getString("id"))
 						.put("profile", j.getString("type"));
-					eventStore.storeCustomEvent("auth", event);
-					if (isNotEmpty(j.getString("loginAlias"))) {
-						eventStore.storeCustomEvent("auth", event.copy().put("login", j.getString("loginAlias")));
+					if (isNotEmpty(j.getString("login"))) {
+						event.put("login", j.getString("login"));
 					}
+					if (isNotEmpty(j.getString("loginAlias"))) {
+						event.put("login_alias", j.getString("loginAlias"));
+					}
+					eventStore.storeCustomEvent("auth", event);
 				}
 			}
 		}
