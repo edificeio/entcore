@@ -114,6 +114,10 @@ public class PostgresqlEventStore extends GenericEventStore {
 	}
 
 	public void store(final JsonObject event, final Handler<Either<String, Void>> handler) {
+		if (knownEvents == null) {
+			logger.error("Knows events is null : " + event.encode());
+			return;
+		}
 		final String ua = (String) event.remove("ua");
 		final String eventType = (String) event.remove("event-type");
 		final String userId = (String) event.remove("userId");
