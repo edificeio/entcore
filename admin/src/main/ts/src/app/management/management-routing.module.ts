@@ -11,6 +11,10 @@ import { ZimbraComponent } from './zimbra/zimbra.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
 import {ZimbraGuardService} from './zimbra/zimbra-guard.service';
 import {CalendarComponent} from "./calendar/calendar.component";
+import { SubjectsComponent} from "./subjects/subjects.component";
+import {SubjectsResolver} from "./subjects/subjects.resolver";
+import {SubjectCreate} from "./subjects/create/subject-create.component";
+import {SubjectDetails} from "./subjects/details/subject-details.component";
 
 export let routes: Routes = [
      {
@@ -68,6 +72,23 @@ export let routes: Routes = [
             {
                 path: 'calendar',
                 component: CalendarComponent
+            },
+            {
+                path: 'subjects',
+                component: SubjectsComponent,
+                resolve: {
+                    subjectLit: SubjectsResolver
+                },
+                children: [
+                    {
+                        path: 'create',
+                        component: SubjectCreate
+                    },
+                    {
+                        path: ':subjectId/details',
+                        component: SubjectDetails
+                    },
+                ]
             }
         ]
      }
