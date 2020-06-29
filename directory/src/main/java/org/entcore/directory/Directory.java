@@ -83,6 +83,7 @@ public class Directory extends BaseServer {
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb);
 		GroupService groupService = new DefaultGroupService(eb);
+		SubjectService subjectService = new DefaultSubjectService();
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
@@ -148,6 +149,10 @@ public class Directory extends BaseServer {
         SlotProfileController slotProfileController = new SlotProfileController(SLOTPROFILE_COLLECTION);
         slotProfileController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
         addController(slotProfileController);
+
+		SubjectController subjectController = new SubjectController();
+		subjectController.setSubjectService(subjectService);
+		addController(subjectController);
 
         addController(new CalendarController());
 
