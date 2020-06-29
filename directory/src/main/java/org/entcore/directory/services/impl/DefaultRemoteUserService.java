@@ -24,6 +24,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -45,7 +46,12 @@ public class DefaultRemoteUserService implements RemoteUserService {
 	private static final Logger log = LoggerFactory.getLogger(DefaultRemoteUserService.class);
 	private MongoDb mongo = MongoDb.getInstance();
 	private RemoteClient remoteClient;
+	private EmailSender emailSender;
 
+	public DefaultRemoteUserService(EmailSender emailSender)
+	{
+		this.emailSender = emailSender;
+	}
 
 	@Override
 	public void oldPlatformsSync(String level, String excludeLevel, String profile, Handler<Either<String, JsonObject>> handler) {
