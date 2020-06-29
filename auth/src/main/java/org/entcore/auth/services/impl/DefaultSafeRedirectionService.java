@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
@@ -143,7 +144,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
             logger.warn("Trying to redirect but whitelist is not loaded yet : " + host + path);
         }
         onReady.setHandler(ready -> {
-            if (host == null) {
+            if (StringUtils.isEmpty(host)) {
                 // missing host => ent host
                 Renders.redirect(request, path);
             } else {
