@@ -22,8 +22,12 @@ package org.entcore.feeder.dictionary.structures;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.email.EmailSender;
+
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.notification.TimelineHelper;
@@ -32,9 +36,11 @@ import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.Vertx;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -814,10 +820,12 @@ public class User {
 		MongoDb.getInstance().find(OLD_PLATFORM_USERS, new JsonObject(), null, keys, m -> {
 			if ("ok".equals(m.body().getString("status"))) {
 				final JsonArray res = m.body().getJsonArray("results");
+				EmailSender emailSender = new EmailFactory(vertx).getSender();
+				HttpServerRequest forged = new JsonHttpServerRequest(new JsonObject());
 				if (res != null) {
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
-						tryActivateUser(vertx, (JsonObject) o);
+						tryActivateUser(vertx, emailSender, forged, (JsonObject) o);
 					}
 				}
 			} else {
@@ -826,12 +834,16 @@ public class User {
 		});
 	}
 
-	private static void tryActivateUser(Vertx vertx, JsonObject j) {
+	private static void tryActivateUser(Vertx vertx, EmailSender emailSender, HttpServerRequest forged, JsonObject j)
+	{
+		JsonObject oldLogin = new JsonObject();
 		j.copy().fieldNames().forEach(s -> {
 			if (isEmpty(j.getString(s))) {
 				j.remove(s);
 			} else if (("login".equals(s) || "loginAlias".equals(s)) &&
-					Validator.validLoginAlias(s, j.getString(s), "loginAlias", "fr", I18n.getInstance()) != null) {
+					Validator.validLoginAlias(s, j.getString(s), "loginAlias", "fr", I18n.getInstance()) != null)
+			{
+				oldLogin.put(s, j.getString(s));
 				j.remove(s);
 			}
 		});
@@ -855,7 +867,7 @@ public class User {
 				"UNWIND users as u " +
 				"SET u.activationCode = null, " + Neo4jUtils.nodeSetPropertiesFromJson(
 						"u", j, "ine", "profile", "lastName", "firstName", "_id") +
-				"RETURN u.id as userId,  head(u.profiles) as profile";
+				"RETURN u.id as userId,  head(u.profiles) as profile, u.login AS login";
 		Neo4j.getInstance().execute(query, j, r -> {
 			if ("ok".equals(r.body().getString("status"))) {
 				final JsonArray res = r.body().getJsonArray("result");
@@ -864,6 +876,33 @@ public class User {
 					log.info("Activate user " + u.encode() + " : " + j.encode());
 					Server.getEventBus(vertx).publish("activation.ack", u);
 					MongoDb.getInstance().delete(OLD_PLATFORM_USERS, new JsonObject().put("_id", j.getString("_id")));
+
+					String login = u.getString("login");
+					boolean updatedLogin = login.equals(oldLogin.getString("login")) == false && login.equals(oldLogin.getString("loginAlias")) == false;
+
+					if(updatedLogin == true)
+					{
+						String email = j.getString("email");
+						if(isNotEmpty(email))
+						{
+							log.info("Update user " + u.encode() + " login");
+
+							JsonObject params = new JsonObject().put("name", j.getString("displayName", "")).put("login", login);
+							emailSender.sendEmail(forged, email, null, null,
+									"remote.user.update.login.mail", "email/update-user-login.html", params, true,
+									new Handler<AsyncResult<Message<JsonObject>>>()
+									{
+										@Override
+										public void handle(AsyncResult<Message<JsonObject>> ar) {
+											if (ar.succeeded() == false) {
+												log.error("Failed to send email to updated user login: " + u.encode());
+											}
+										}
+									});
+						}
+						else
+							log.error("No email address to contact updated user login: " + u.encode());
+					}
 				}
 			} else {
 				log.error("Error setting user attributes from old platform : " + r.body().getString("message"));
