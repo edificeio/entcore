@@ -20,10 +20,11 @@
 	   dropcondition="dropCondition(folder)"
        on-dragover   ="openUserFolderOnDragover(folder, obj)"
        class="folder-list-item">
-		<i class="arrow" ng-if="folder.userFolders.all.length"></i>
+		<i class="arrow" ng-if="folder.canOpen"></i>
         <span class="link-name">[[folder.name]]</span> <span ng-if="folder.nbUnread" class="badge">[[folder.nbUnread]]</span>
 		<i class="trash" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
-		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
+        <i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
+        <i class="loading" ng-if="folder.isLoading"></i>
 	</a>
 	<ul ng-class="{ selected: conversation.currentFolder.id === folder.id, closed: isClosedFolder(folder) }"
 		ng-if="isOpenedFolder(folder)">

@@ -279,9 +279,11 @@ export class UserFolder extends Folder {
     name: string;
     parentFolderId: string;
     parentFolder: UserFolder;
-    syncUserFoldersPending = false;
+    mailLoadingState : "idle"|"loading"|"loaded"="idle";
+    syncUserFoldersState : "idle" | "loading" | "loaded" = "idle";
     userFolders: Selection<UserFolder> = new Selection<UserFolder>([]);
-
+    get canOpen() { return this.syncUserFoldersState != "loaded" || this.userFolders.all.length; }
+    get isLoading(){ return this.mailLoadingState =="loading" || this.syncUserFoldersState=="loading" }
     async removeMailsFromFolder(){
         for(let mail of this.mails.selection.selected){
             await mail.removeFromFolder();
@@ -294,17 +296,25 @@ export class UserFolder extends Folder {
         this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
-    async open(){
+    async open(onSync?:()=>void){
         this.mails.full = false;
         this.pageNumber = 0;
         this.searchText = null;
         this.filter = false;
         Conversation.instance.currentFolder = this;
-        await this.sync();
+        const promise = this.sync();
+        onSync && onSync();
+        await promise;
     }
 
     async sync(){
-        await this.mails.sync({ searchText: this.searchText});
+        if(this.mailLoadingState == "loading") return;
+        try{
+            this.mailLoadingState="loading";
+            await this.mails.sync({ searchText: this.searchText});
+        }finally{
+            this.mailLoadingState = "loaded";
+        }
         await this.syncUserFolders();
     }
 
@@ -318,22 +328,20 @@ export class UserFolder extends Folder {
 
     async syncUserFolders(){
         //avoid multiple parallel sync
-        if(this.syncUserFoldersPending){
+        if(this.syncUserFoldersState == "loading"){
             return;
         }
         try{
-            this.syncUserFoldersPending = true;
-            const response = await http.get('folders/list?parentId=' + this.id);
-            await this.countUnread();
+            this.syncUserFoldersState = "loading";
+            const response = await http.get('userfolders/list?unread=true&parentId=' + this.id);
             this.userFolders.all.splice(0, this.userFolders.colLength);
             for(let f of response.data){
                 const folder: UserFolder = Mix.castAs(UserFolder, f);
                 folder.parentFolder = this;
                 this.userFolders.push(folder);
-                await folder.syncUserFolders();
             }
         }finally{
-            this.syncUserFoldersPending = false;
+            this.syncUserFoldersState = "loaded";
         }
     }
 
@@ -406,12 +414,9 @@ export class UserFolders{
     }
 
     async sync(){
-        const response = await http.get('folders/list');
+        const response = await http.get('userfolders/list?unread=true');
         const data = response.data;
         this.all = Mix.castArrayAs(UserFolder, data);
-        this.forEach(function (item) {
-            item.syncUserFolders()
-        });
     }
 
     async countUnread() {

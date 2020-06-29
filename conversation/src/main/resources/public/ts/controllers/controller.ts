@@ -194,7 +194,9 @@ export let conversationController = ng.controller('ConversationController', [
             obj.template = 'folder-content';
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
-            await folder.open();
+            await folder.open(()=>{
+                $scope.$apply();
+            });
             $scope.$apply();
             $scope.updateWherami();
         };

@@ -1227,4 +1227,9 @@ public class DefaultConversationService implements ConversationService {
 		return " ";
 	}
 
+	@Override
+	public void listUserFolders(Optional<String> parentId, UserInfos user, Boolean unread, Handler<Either<String, JsonArray>> result) {
+
+	}
+
 }

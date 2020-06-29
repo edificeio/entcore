@@ -24,6 +24,7 @@ import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.entcore.common.sql.Sql;
@@ -848,6 +849,40 @@ public class SqlConversationService implements ConversationService{
 		}
 
 		sql.prepared(query, values, SqlResult.validResultHandler(result));
+	}
+
+	@Override
+	public void listUserFolders(Optional<String>  parentId, UserInfos user, Boolean unread, Handler<Either<String, JsonArray>> result) {
+		if(validationError(user, result))
+		return;
+		final JsonArray subValues = new JsonArray();
+		final StringBuilder subQuery = new StringBuilder();
+		subQuery.append("SELECT count(*) as count,um.folder_id  FROM ").append(userMessageTable).append(" um ");
+		subQuery.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id) ");
+		subQuery.append(" WHERE um.user_id = ?  AND m.state='SENT' ");
+		subQuery.append(" AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ");
+		subValues.add(user.getUserId());
+		subValues.add(user.getUserId());
+		subValues.add(new JsonArray().add(user.getUserId()).toString());
+		subValues.add(new JsonArray().add(user.getUserId()).toString());
+		if(unread != null && unread){
+			subQuery.append(" AND um.unread = ").append(unread ? " TRUE " : " FALSE ");
+		}
+		subQuery.append(" GROUP BY um.folder_id ");
+		//values SENT
+		final JsonArray values = subValues.copy();
+		final StringBuilder query = new StringBuilder();
+		query.append("SELECT f.*, COALESCE(sub.count,0) as \"nbUnread\" FROM ").append(folderTable).append(" AS f ");
+		query.append("LEFT JOIN (").append(subQuery).append(") AS sub ON (f.id=sub.folder_id) ");
+		query.append("WHERE f.user_id = ? AND f.trashed IS FALSE ");
+		values.add(user.getUserId());
+		if(parentId.isPresent()){
+			query.append(" AND f.parent_id = ? ");
+			values.add(parentId.get());
+		}else{
+			query.append(" AND f.parent_id IS NULL ");
+		}
+		sql.prepared(query.toString(), values, SqlResult.validResultHandler(result));
 	}
 
 	@Override
