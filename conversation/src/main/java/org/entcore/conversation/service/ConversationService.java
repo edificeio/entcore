@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public interface ConversationService {
 
@@ -89,6 +90,7 @@ public interface ConversationService {
 	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result);
+	void listUserFolders(Optional<String> parentId, UserInfos user, Boolean unread, Handler<Either<String, JsonArray>> result);
 	void listTrashedFolders(UserInfos user, Handler<Either<String, JsonArray>> result);
 	void moveToFolder(List<String> messageIds, String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void backToSystemFolder(List<String> messageIds, UserInfos user,Handler<Either<String, JsonObject>> result);

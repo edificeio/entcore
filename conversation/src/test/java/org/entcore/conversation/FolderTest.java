@@ -22,6 +22,10 @@
 
 package org.entcore.conversation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Config;
 import org.entcore.conversation.service.ConversationService;
@@ -33,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -52,6 +58,11 @@ public class FolderTest {
         Config.getInstance().setConfig(new JsonObject());
         conversationService = new SqlConversationService(test.vertx(), schema);
         test.database().initPostgreSQL(context, pgContainer, schema);
+    }
+
+    private JsonObject message(String to) {
+        return new JsonObject().put("from", "send@test.com").put("to", new JsonArray().add(to)).put("allUsers",
+                new JsonArray().add(to));
     }
 
     private JsonArray folderByName(JsonArray folders, String name) {
@@ -226,6 +237,90 @@ public class FolderTest {
                             });
                         });
                     });
+        });
+    }
+
+    @Test
+    public void testConversationServiceShouldListRootFolders(TestContext context) {
+        final Async async = context.async();
+        final UserInfos from = test.http().sessionUser();
+        final UserInfos dest = test.directory().generateUser("user2");
+        conversationService.createFolder("folder8", null, dest, res1 -> {
+            context.assertTrue(res1.isRight());
+            final String folderId = res1.right().getValue().getString("id");
+            conversationService.createFolder("folder9", null, dest, res2 -> {
+                context.assertTrue(res2.isRight());
+                send(context, message(dest.getUserId()), from, res3 -> {
+                    context.assertTrue(res3.isRight());
+                    send(context, message(dest.getUserId()), from, res4 -> {
+                        context.assertTrue(res4.isRight());
+                        final List<String> mesdIds = new ArrayList<>();
+                        mesdIds.add(res3.right().getValue().getString("id"));
+                        mesdIds.add(res4.right().getValue().getString("id"));
+                        conversationService.moveToFolder(mesdIds, folderId, dest, res5 -> {
+                            context.assertTrue(res5.isRight());
+                            conversationService.listUserFolders(Optional.empty(), dest, true, res6 -> {
+                                context.assertTrue(res6.isRight());
+                                final JsonArray res = res6.right().getValue();
+                                context.assertEquals(2, res.size());
+                                context.assertEquals(2, res.getJsonObject(0).getInteger("nbUnread"));
+                                context.assertEquals(0, res.getJsonObject(1).getInteger("nbUnread"));
+                                async.complete();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    private void send(TestContext context, JsonObject msg, UserInfos from, Handler<Either<String, JsonObject>> result) {
+        final JsonArray allUsers = msg.getJsonArray("allUsers");
+        msg.remove("allUsers");
+        conversationService.saveDraft(null, null, msg, from, res1 -> {
+            context.assertTrue(res1.isRight());
+            final String id = msg.getString("id");
+            msg.put("allUsers", allUsers);
+            conversationService.send(null, id, msg, from, result);
+        });
+    }
+
+    @Test
+    public void testConversationServiceShouldListChildFolders(TestContext context) {
+        final Async async = context.async();
+        final UserInfos from = test.http().sessionUser();
+        final UserInfos dest = test.directory().generateUser("user2");
+        conversationService.createFolder("folder10", null, dest, res0 -> {
+            context.assertTrue(res0.isRight());
+            final String rootId = res0.right().getValue().getString("id");
+            conversationService.createFolder("folder11", rootId, dest, res1 -> {
+                context.assertTrue(res1.isRight());
+                final String folderId = res1.right().getValue().getString("id");
+                conversationService.createFolder("folder12", rootId, dest, res2 -> {
+                    context.assertTrue(res2.isRight());
+                    send(context, message(dest.getUserId()), from, res3 -> {
+                        context.assertTrue(res3.isRight());
+                        send(context, message(dest.getUserId()), from, res4 -> {
+                            context.assertTrue(res4.isRight());
+                            final List<String> mesdIds = new ArrayList<>();
+                            mesdIds.add(res3.right().getValue().getString("id"));
+                            mesdIds.add(res4.right().getValue().getString("id"));
+                            conversationService.moveToFolder(mesdIds, folderId, dest, res5 -> {
+                                context.assertTrue(res5.isRight());
+                                conversationService.listUserFolders(Optional.of(rootId), dest, true, res6 -> {
+                                    context.assertTrue(res6.isRight());
+                                    final JsonArray res = res6.right().getValue();
+                                    System.out.println(res.encodePrettily());
+                                    context.assertEquals(2, res.size());
+                                    context.assertEquals(2, res.getJsonObject(0).getInteger("nbUnread"));
+                                    context.assertEquals(0, res.getJsonObject(1).getInteger("nbUnread"));
+                                    async.complete();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
         });
     }
 }

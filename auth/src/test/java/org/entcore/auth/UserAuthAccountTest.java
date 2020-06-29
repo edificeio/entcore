@@ -2,6 +2,8 @@ package org.entcore.auth;
 
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -23,7 +25,8 @@ public class UserAuthAccountTest {
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     static final JsonObject authAccountConfig = new JsonObject().put("emailConfig",
             new JsonObject().put("email", "ne-pas-repondre@cg77.fr").put("host", "http://localhost:8090"));
-    static UserAuthAccount authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig);
+    static EventStore eStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
+    static UserAuthAccount authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig,eStore);
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {

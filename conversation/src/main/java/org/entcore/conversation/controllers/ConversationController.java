@@ -1016,6 +1016,21 @@ public class ConversationController extends BaseController {
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
 	}
 
+	@Get("userfolders/list")
+	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
+	public void listUserFolders(final HttpServerRequest request){
+		final String parentId = request.params().get("parentId");
+		final String unread = request.params().get("unread");
+		final Boolean b = unread != null && !unread.isEmpty()? Boolean.valueOf(unread) : null;
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null){
+				unauthorized(request);
+				return;
+			}
+			conversationService.listUserFolders(Optional.ofNullable(parentId), user, b, arrayResponseHandler(request));
+		});
+	}
+
 	//Create a new folder at root level or inside a user folder.
 	@Post("folder")
 	@SecuredAction(value = "conversation.folder.create", type = ActionType.AUTHENTICATED)
