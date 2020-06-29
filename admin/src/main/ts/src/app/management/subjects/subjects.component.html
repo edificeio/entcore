@@ -1,0 +1,31 @@
+<div class="flex-header">
+    <h1><i class="fa fa-file"></i>
+        <s5l>{{ 'subjects' | translate}}</s5l>
+    </h1>
+    <button [routerLink]="['create']"
+            [class.hidden]="router.isActive('/admin/' + subjectsStore.structure?.id + '/management/subjects/create', true)">
+        <s5l>create.subjects</s5l>
+        <i class="fa fa-plus-circle is-size-5"></i>
+    </button>
+</div>
+<ode-side-layout (closeCompanion)="closeCompanion()"
+[showCompanion]="!router.isActive('/admin/' + subjectsStore.structure?.id + '/management/subjects', true)">
+<div side-card>
+    <ode-list
+            [model]="subjectsStore.structure?.subjects.data"
+            searchPlaceholder="search.subject"
+            sort="label"
+            noResultsLabel="list.results.no.subjects"
+            [isSelected]="isSelected"
+            [inputFilter]="filterByInput"
+            (inputChange)="subjectInputFilter = $event"
+            (onSelect)="openUserDetail($event)">>
+        <ng-template let-item>
+            {{ item.label }}
+        </ng-template>
+    </ode-list>
+</div>
+<div side-companion>
+    <router-outlet></router-outlet>
+</div>
+</ode-side-layout>

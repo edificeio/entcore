@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "structureId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "code",
+    "structureId"
+  ]
+}

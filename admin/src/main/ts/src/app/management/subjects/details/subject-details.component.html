@@ -1,0 +1,80 @@
+<div *ngIf="!renameDisplayed">
+    <div class="panel-header is-display-flex has-space-between">
+        <div>
+            <span>
+                {{ 'subjects' | translate }}
+            </span>
+        </div>
+        <div *ngIf="subject?.source === 'MANUAL'">
+            <button type="button"
+                    class="lct-subject-update-button"
+                    (click)="renameButtonClicked.next()">
+                <s5l>subject.rename.button</s5l>
+                <i class="fa fa-pencil is-size-5"></i>
+            </button>
+            <button type="button"
+                    class="lct-subject-delete-button"
+                    (click)="deleteButtonClicked.next(subjectsStore.subject)">
+                <s5l>subject.delete.button</s5l>
+                <i class="fa fa-trash is-size-5"></i>
+            </button>
+        </div>
+    </div>
+    <div class="padded">
+        <p><strong>{{ 'create.subjects.label' | translate }} :</strong></p>
+        <p><span class="display-name">{{ subject?.label }}</span></p>
+        <p><strong>{{ 'create.subjects.code' | translate }} :</strong></p>
+        <p><span class="display-name">{{ subject?.code }}</span></p>
+    </div>
+
+    <ode-lightbox-confirm lightboxTitle="subject.delete.confirm.title"
+                          [show]="deleteConfirmationDisplayed"
+                          (onCancel)="deleteConfirmationClicked.next('cancel')"
+                          (onConfirm)="deleteConfirmationClicked.next('confirm')">
+        <p><span [innerHTML]="'subject.delete.confirm.content' | translate"></span></p>
+        <p><i><span [innerHTML]="'subject.delete.warning.content' | translate"></span></i></p>
+    </ode-lightbox-confirm>
+</div>
+<div *ngIf="renameDisplayed">
+    <div class="panel-header is-display-flex has-space-between">
+        <div>
+            <span>
+                {{ 'subject.update.lightbox.title' | translate }}
+            </span>
+        </div>
+    </div>
+    <div class="padded">
+        <form #renameForm="ngForm" (ngSubmit)="renameConfirmationClicked.next('confirm')">
+            <ode-form-field label="create.subjects.label">
+                <input type="text" [(ngModel)]="subjectNewLabel" name="subjectNewLabel" maxlength="40"
+                       required pattern=".*\S+.*" #subjectNewLabelInput="ngModel"
+                       (blur)="onBlurSubjectFields('subjectNewLabel', subjectNewLabel)">
+                <ode-form-errors [control]="subjectNewLabelInput"></ode-form-errors>
+                <div class="error-tech" *ngIf="checkDuplicateLabel(subjectNewLabel)">
+                    <s5l>duplicate.add.subject.label</s5l>
+                </div>
+            </ode-form-field>
+            <ode-form-field label="create.subjects.code">
+                <input type="text" [(ngModel)]="subjectNewCode" name="subjectNewCode" minlength="6" maxlength="6"
+                       required pattern="^[0-9]*$" #subjectNewCodeInput="ngModel"
+                       (blur)="onBlurSubjectFields('subjectNewCode', subjectNewCode)">
+                <ode-form-errors [control]="subjectNewCodeInput"></ode-form-errors>
+                <div class="error-tech" *ngIf="checkDuplicateCode(subjectNewCode)">
+                    <s5l>duplicate.add.subject.code</s5l>
+                </div>
+                <div class="error-tech" *ngIf="checkLettersCode(subjectNewCode)">
+                    <s5l>letters.add.subject.code</s5l>
+                </div>
+            </ode-form-field>
+            <div class="action">
+                <button type="button" class="cancel" (click)="renameConfirmationClicked.next('cancel')">
+                    <s5l>cancel</s5l>
+                </button>
+                <button class="create confirm"
+                        [disabled]="renameForm.pristine || renameForm.invalid || checkDuplicate(subjectNewLabel,subjectNewCode)">
+                    <s5l>confirm</s5l>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

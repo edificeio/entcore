@@ -1853,6 +1853,67 @@ ode-group-create {
   }
 }
 
+/* Subjects component */
+subjects-root {
+  div.flex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    button {
+      border-color: $accent;
+      background-color: $accent;
+      color: white;
+      padding: 10px 10px;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        border-color: $accent-dark;
+        background-color: $accent-dark;
+      }
+
+      &.hidden {
+        display: none;
+      }
+    }
+  }
+
+  form-field label {
+    flex: 0 0 auto !important;
+  }
+
+  div.action {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      margin: 20px 0 0 5px;
+      min-width: 80px;
+      font-size: 1em;
+      text-align: center;
+
+      &.create:not([disabled]) {
+        background-color: $accent;
+        color: white;
+      }
+
+      &.create:not([disabled]):hover {
+        background-color: $accent-dark;
+      }
+
+      &.cancel {
+        background-color: $button-bg;
+        color: $accent;
+
+        &:hover {
+          background-color: $button-bg-hover;
+        }
+      }
+    }
+  }
+}
+
 /* Services */
 ode-services-root {
   div.flex-header {

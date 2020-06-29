@@ -22,8 +22,14 @@ import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import {ZimbraComponent} from './zimbra/zimbra.component';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
+import {SubjectsComponent} from "./subjects/subjects.component";
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
+import {SubjectCreate} from "./subjects/create/subject-create.component";
+import {SubjectDetails} from "./subjects/details/subject-details.component";
+import {SubjectsResolver} from "./subjects/subjects.resolver";
+import {SubjectsStore} from "./subjects/subjects.store";
+import {SubjectsService} from "./subjects/subjects.service";
 import {CalendarComponent} from "./calendar/calendar.component";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatDividerModule} from "@angular/material/divider";
@@ -69,6 +75,9 @@ import {ZimbraService} from "./zimbra/zimbra.service";
         MessageFlashPreviewComponent,
         BlockProfilesComponent,
         ImportEDTComponent,
+        SubjectsComponent,
+        SubjectCreate,
+        SubjectDetails,
         CalendarComponent
     ],
     exports: [
@@ -83,7 +92,10 @@ import {ZimbraService} from "./zimbra/zimbra.service";
             provide: MatPaginatorIntl,
             useFactory: (bundlesService) => new MatPaginatorIntlService(bundlesService),
             deps: [BundlesService]
-        }
+        },
+        SubjectsResolver,
+        SubjectsStore,
+        SubjectsService
     ]
 })
 export class ManagementModule {}

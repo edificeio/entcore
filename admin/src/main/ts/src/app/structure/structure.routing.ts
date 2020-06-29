@@ -14,6 +14,6 @@ export let routes: Routes = [
 			{ path: 'services', loadChildren: () => import('../services/services.module').then(m => m.ServicesModule)},
 			{ path: 'management', loadChildren: () => import('../management/management.module').then(m => m.ManagementModule)},
 			{ path: 'alertes', loadChildren: () => import('../alertes/alertes.module').then(m => m.AlertesModule)}
-		]
+			]
 	}
 ];

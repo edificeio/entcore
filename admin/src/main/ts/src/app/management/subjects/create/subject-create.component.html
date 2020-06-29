@@ -1,0 +1,39 @@
+<div class="panel-header">
+    <span><i class="fa fa-file"></i>
+        <s5l>create.subjects</s5l>
+    </span>
+</div>
+<div class="padded">
+    <form #createForm="ngForm" (ngSubmit)="createNewSubject()">
+        <ode-form-field label="create.subjects.label">
+            <input type="text" [(ngModel)]="newSubject.label" name="label" maxlength="40"
+                   required pattern=".*\S+.*" #subjectNewLabelInput="ngModel"
+                   (blur)="onSubjectBlur()">
+            <ode-form-errors [control]="subjectNewLabelInput"></ode-form-errors>
+            <div class="error-tech" *ngIf="checkDuplicateLabel(newSubject.label)">
+                <s5l>duplicate.add.subject.label</s5l>
+            </div>
+        </ode-form-field>
+        <ode-form-field label="create.subjects.code">
+            <input type="text" [(ngModel)]="newSubject.code" name="code" minlength="6" maxlength="6"
+                   required pattern="^[0-9]*$" #subjectNewCodeInput="ngModel"
+                   (blur)="onSubjectBlur()">
+            <ode-form-errors [control]="subjectNewCodeInput"></ode-form-errors>
+            <div class="error-tech" *ngIf="checkDuplicateCode(newSubject.code)">
+                <s5l>duplicate.add.subject.code</s5l>
+            </div>
+            <div class="error-tech" *ngIf="checkLettersCode(newSubject.code)">
+                <s5l>letters.add.subject.code</s5l>
+            </div>
+        </ode-form-field>
+        <div class="action">
+            <button type="button" class="cancel" (click)="cancel()">
+                <s5l>create.subjects.cancel</s5l>
+            </button>
+            <button class="create confirm"
+                    [disabled]="createForm.pristine || createForm.invalid || checkDuplicate(newSubject.label,newSubject.code)">
+                <s5l>create.subjects.submit</s5l>
+            </button>
+        </div>
+    </form>
+</div>
