@@ -8,8 +8,9 @@
 		 ng-init="obj = { template: '' }"
 		 ng-class="{ selected: destination.folder.id === folder.id, opened: isOpenedFolderRelativeTo(destination.folder, folder) }"
 		 class="folder-list-item">
-		<i class="arrow" ng-if="folder.userFolders.all.length"></i>
+		<i class="arrow" ng-if="folder.canOpen"></i>
  		[[folder.name]]
+		 <i class="loading" ng-if="folder.isLoading"></i>
  	</a>
  	<ul ng-class="{ selected: destination.folder.id === folder.id, closed: !isOpenedFolderRelativeTo(destination.folder,folder) }"
 		 ng-if="isOpenedFolderRelativeTo(destination.folder,folder)">

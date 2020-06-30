@@ -597,9 +597,11 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('lightbox', 'move-mail')
         }
 
-        $scope.moveToFolderClick = async (folder, obj) => {
+        $scope.moveToFolderClick = async (folder:UserFolder, obj) => {
             obj.template = ''
-
+            const future = folder.sync();
+            $scope.$apply();
+            await future;
             if (folder.userFolders.all.length > 0) {
                 $timeout(function () {
                     obj.template = 'move-folders-content'
@@ -656,7 +658,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.$apply();
         }
         $scope.isOpenedFolderRelativeTo = (relativeFolder: UserFolder, folder: UserFolder) => {
-            return relativeFolder.id === folder.id || $scope.isParentOf(folder, relativeFolder);
+            return (relativeFolder && relativeFolder.id === folder.id) || $scope.isParentOf(folder, relativeFolder);
         }
         $scope.isOpenedFolder = (folder: UserFolder) => {
             return $scope.isOpenedFolderRelativeTo($scope.conversation.currentFolder, folder);
