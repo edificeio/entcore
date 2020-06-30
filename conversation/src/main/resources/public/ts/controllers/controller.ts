@@ -795,10 +795,14 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.removeTrashMessages = async () => {
-            $scope.lightbox.show = false;
-            await Conversation.instance.folders.trash.removeAll();
-            await $scope.refreshFolders();
-            await Conversation.instance.folders.trash.countUnread();
+            try{
+                $scope.lightbox.show = false;
+                await Conversation.instance.folders.trash.removeAll();
+                await $scope.refreshFolders();
+                await Conversation.instance.folders.trash.countUnread();
+            }finally{
+                $scope.$apply();
+            }
         }
 
         $scope.updateWherami = () => {
