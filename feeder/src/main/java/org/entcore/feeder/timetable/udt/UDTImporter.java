@@ -511,8 +511,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String codeGroup = currentEntity.getString("gpe");
 		final String codeDiv = currentEntity.getString("code_div");
 
-		String date = StringValidation.convertDate(currentEntity.getString("naissance", ""));
-		String idStr = currentEntity.getString("prenom", "") + "$" + currentEntity.getString("nom", "") + "$" + date;
+		String date = StringValidation.convertDate(eleve.getString("naissance", ""));
+		String idStr = eleve.getString("prenom", "") + "$" + eleve.getString("nom", "") + "$" + date;
 
 		// If the student is missing, don't try to link them to groups
 		if(studentsIdStrings.containsKey(idStr) == false)
