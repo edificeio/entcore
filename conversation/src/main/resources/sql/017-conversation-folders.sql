@@ -1,0 +1,1 @@
+CREATE INDEX idx_folders_userparent ON conversation.folders ("user_id","parent_id");
