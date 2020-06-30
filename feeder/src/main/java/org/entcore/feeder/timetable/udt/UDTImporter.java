@@ -386,7 +386,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if(functionalGroupExternalId.containsKey(externalId) == false)
 		{
 			txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
-					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
 
 			ttReport.temporaryGroupCreated(name);
