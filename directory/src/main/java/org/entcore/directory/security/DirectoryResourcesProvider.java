@@ -39,11 +39,26 @@ import static org.entcore.common.user.DefaultFunctions.*;
 public class DirectoryResourcesProvider implements ResourcesProvider {
 
 	private final Neo4j neo = Neo4j.getInstance();
-
+	private static class HandlerWrapper{
+		final Handler<Boolean> originalHandler;
+		final Handler<Boolean> handler; 
+		boolean resume = true;
+		public HandlerWrapper(final HttpServerRequest request, Handler<Boolean> aHandler){
+			originalHandler = aHandler;
+			handler = (res) -> {
+				if(resume){
+					request.resume();
+				}
+				originalHandler.handle(res);
+			};
+		}
+	}
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,
-			UserInfos user, Handler<Boolean> handler) {
-
+			UserInfos user, Handler<Boolean> originalHandler) {
+		request.pause();
+		final HandlerWrapper handlerWrapper = new HandlerWrapper(request, originalHandler);
+		final Handler<Boolean> handler = handlerWrapper.handler;
 		//Super-admin "hack"
 		if(user.getFunctions().containsKey(SUPER_ADMIN)) {
 			handler.handle(true);
@@ -85,7 +100,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "updateAvatar" :
 				case "getUserBook" :
 				case "updateUserBook" :
-				case "update" :
+				case "update" :				
+					//do not resume because we dont know if controller will be called now in the event loop
+					handlerWrapper.resume = false;
 					isUserOrTeacherOf(request, user, handler);
 					break;
 				case "listAdmin" :
@@ -223,11 +240,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	}
 
 	private static void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
-		request.pause();
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
-				request.resume();
 				JsonArray res = r.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
@@ -411,11 +426,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				.put("id", request.params().get("groupId"))
 				.put("userId", request.params().get("userId"))
 				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
-				request.resume();
 				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
 						res.size() == 1 && ( res.getJsonObject(0)).getBoolean("exists", false)) {
@@ -463,11 +476,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
 				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
-				request.resume();
 				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
 						res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)) {
@@ -491,11 +502,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	private void isClassTeacherForUserId(final HttpServerRequest request, UserInfos user,
 										 final Handler<Boolean> handler) {
 		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
-			request.resume();
 			handler.handle(true);
 			return;
 		}
-		request.pause();
 		String userId = request.params().get("userId");
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(false);
@@ -513,7 +522,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				JsonArray res = r.body().getJsonArray("result");
-				request.resume();
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
 								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
@@ -525,14 +533,12 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	private void isClassTeacherForUserIds(final HttpServerRequest request, UserInfos user,
 										  final Handler<Boolean> handler) {
 		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
-			request.resume();
 			handler.handle(true);
 			return;
 		}
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject json) {
-				request.pause();
 				JsonArray userIds = json.getJsonArray("ids");
 				if (userIds == null || userIds.isEmpty()) {
 					handler.handle(false);
@@ -550,7 +556,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					@Override
 					public void handle(Message<JsonObject> r) {
 						JsonArray res = r.body().getJsonArray("result");
-						request.resume();
 						handler.handle(
 								"ok".equals(r.body().getString("status")) &&
 										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
@@ -577,11 +582,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
 				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
-				request.resume();
 				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
 						res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)) {
