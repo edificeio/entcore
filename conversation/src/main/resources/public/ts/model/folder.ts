@@ -326,7 +326,10 @@ export class UserFolder extends Folder {
         this.mails.selection.deselectAll();
     }
 
-    async syncUserFolders(){
+    async syncUserFolders(ifNotLoaded = false){
+        if(ifNotLoaded && this.syncUserFoldersState=="loaded"){
+            return;
+        }
         //avoid multiple parallel sync
         if(this.syncUserFoldersState == "loading"){
             return;
