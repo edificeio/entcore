@@ -55,11 +55,14 @@
             </ode-form-field>
             <ode-form-field label="create.subjects.code">
                 <input type="text" [(ngModel)]="subjectNewCode" name="subjectNewCode" minlength="6" maxlength="6"
-                       required pattern=".*\S+.*" #subjectNewCodeInput="ngModel"
+                       required pattern="^[0-9]*$" #subjectNewCodeInput="ngModel"
                        (blur)="onBlurSubjectFields('subjectNewCode', subjectNewCode)">
                 <ode-form-errors [control]="subjectNewCodeInput"></ode-form-errors>
                 <div class="error-tech" *ngIf="checkDuplicateCode(subjectNewCode)">
                     <s5l>duplicate.add.subject.code</s5l>
+                </div>
+                <div class="error-tech" *ngIf="checkLettersCode(subjectNewCode)">
+                    <s5l>letters.add.subject.code</s5l>
                 </div>
             </ode-form-field>
             <div class="action">

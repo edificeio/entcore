@@ -944,5 +944,6 @@
     "notify.subject.create.error.content": "La matière {{subject}} n'a pas pu être créée.",
     "list.results.no.subjects": "Aucune matière",
     "duplicate.add.subject.label": "Vous ne pouvez pas avoir deux fois le même libellé de matière",
-    "duplicate.add.subject.code": "Vous ne pouvez pas avoir deux fois le même code de matière"
+    "duplicate.add.subject.code": "Vous ne pouvez pas avoir deux fois le même code de matière",
+    "letters.add.subject.code": "Vous ne pouvez pas avoir de lettres dans le code de la matière"
 }

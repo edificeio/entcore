@@ -101,4 +101,12 @@ export class SubjectCreate {
         else
             return false;
     }
+    checkLettersCode(code : string): boolean {
+        if(code){
+            let isnum = /^\d+$/.test(code);
+            return !isnum;
+        }
+        else
+            return false;
+    }
 }
