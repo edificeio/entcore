@@ -195,7 +195,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
             await folder.open(()=>{
-                $scope.$apply();
+                $scope.safeApply();
             });
             $scope.$apply();
             $scope.updateWherami();
@@ -597,10 +597,21 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('lightbox', 'move-mail')
         }
 
+        $scope.safeApply = function (fn) {
+            const phase = this.$root.$$phase;
+            if (phase == '$apply' || phase == '$digest') {
+                if (fn && (typeof (fn) === 'function')) {
+                    fn();
+                }
+            } else {
+                this.$apply(fn);
+            }
+        };
+
         $scope.moveToFolderClick = async (folder:UserFolder, obj) => {
             obj.template = ''
-            const future = folder.sync();
-            $scope.$apply();
+            const future = folder.syncUserFolders(true);
+            $scope.safeApply();
             await future;
             if (folder.userFolders.all.length > 0) {
                 $timeout(function () {
