@@ -25,11 +25,14 @@ public class UserAuthAccountTest {
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     static final JsonObject authAccountConfig = new JsonObject().put("emailConfig",
             new JsonObject().put("email", "ne-pas-repondre@cg77.fr").put("host", "http://localhost:8090"));
-    static EventStore eStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-    static UserAuthAccount authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig,eStore);
+    static EventStore eStore;
+    static UserAuthAccount authAccount;
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
+        EventStoreFactory.getFactory().setVertx(test.vertx());
+        eStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
+        authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig, eStore);
         test.database().initNeo4j(context, neo4jContainer);
     }
 
