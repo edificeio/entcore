@@ -125,7 +125,7 @@ public class DatabaseTestHelper {
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
         final Future<JsonObject> future = Future.future();
-        mongo.find(collection, query, MongoDbResult.validResultHandler(message -> {
+        mongo.findOne(collection, query, MongoDbResult.validResultHandler(message -> {
             future.complete(message.right().getValue());
         }));
         return future;

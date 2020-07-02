@@ -977,12 +977,18 @@ class QueryHelper {
 	}
 
 	Future<Void> updateAll(Set<String> id, MongoUpdateBuilder set) {
+		return updateAll(id, set, true);
+	}
+	
+	Future<Void> updateAll(Set<String> id, MongoUpdateBuilder set, boolean setModified) {
 		if (id.isEmpty()) {
 			return Future.succeededFuture();
 		}
 		Future<Void> future = Future.future();
 		String now = MongoDb.formatDate(new Date());
-		set.set("modified", now);
+		if(setModified){
+			set.set("modified", now);
+		}
 		JsonObject query = toJson(QueryBuilder.start("_id").in(id));
 		JsonObject setJson = set.build();
 		mongo.update(collection, query, setJson, false, true, message -> {
@@ -1010,10 +1016,8 @@ class QueryHelper {
 
 	Future<Void> bulkUpdateShares(InheritShareResult res) {
 		JsonArray operations = new JsonArray();
-		String now = MongoDb.formatDate(new Date());
 		res.getAll().stream().map(o -> (JsonObject) o).forEach(row -> {
 			JsonObject set = new MongoUpdateBuilder()//
-					.set("modified", now)//
 					.set("isShared", row.getJsonArray("inheritedShares", new JsonArray()).size() > 0)//
 					.set("ancestors", row.getJsonArray("ancestors", new JsonArray()))//
 					.set("inheritedShares", row.getJsonArray("inheritedShares", new JsonArray()))//
@@ -1094,7 +1098,7 @@ class QueryHelper {
 		if (ids.isEmpty()) {
 			return Future.succeededFuture();
 		}
-		return updateAll(ids, new MongoUpdateBuilder().rename("eParent", "eParentOld"));
+		return updateAll(ids, new MongoUpdateBuilder().rename("eParent", "eParentOld"), false);
 	}
 
 	public Future<Void> restoreParentLink(RestoreParentDirection dir, Collection<JsonObject> all) {
