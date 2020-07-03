@@ -31,7 +31,8 @@
                           [show]="deleteConfirmationDisplayed"
                           (onCancel)="deleteConfirmationClicked.next('cancel')"
                           (onConfirm)="deleteConfirmationClicked.next('confirm')">
-        <span [innerHTML]="'subject.delete.confirm.content' | translate"></span>
+        <p><span [innerHTML]="'subject.delete.confirm.content' | translate"></span></p>
+        <p><i><span [innerHTML]="'subject.delete.warning.content' | translate"></span></i></p>
     </ode-lightbox-confirm>
 </div>
 <div *ngIf="renameDisplayed">

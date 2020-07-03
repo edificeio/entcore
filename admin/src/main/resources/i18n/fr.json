@@ -924,6 +924,7 @@
     "create.subjects.cancel": "Annuler",
     "create.subjects.submit": "Créer",
     "subject.delete.confirm.content": "Veuillez confirmer la suppression définitive de la matière.",
+    "subject.delete.warning.content": "Avant de supprimer une matière, assurez-vous qu'elle n'est pas utilisée dans une application de la plateforme.",
     "subject.delete.confirm.title": "Confirmation requise",
     "subject.rename.button": "Renommer",
     "subject.delete.button": "Supprimer",
