@@ -86,6 +86,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       {
         this.structure = data.structure;
         this.changeFlux = this.structure.timetable as EDTImportFlux;
+        this.onetimeImport = this.structure.punctualTimetable as EDTImportFlux;
         this._getReportsFromService();
         this._getClassesMapping();
         this._getGroupsMapping();
