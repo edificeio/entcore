@@ -111,7 +111,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 				public void handle(AsyncResult<Buffer> buf) {
 					try {
 						final Integer sampleRate = sampleRates.getOrDefault(id,44100);
-						storage.writeBuffer(id, toMp3(toWav(buf.result(),sampleRate)), "audio/mp3", name, new Handler<JsonObject>() {
+						storage.writeBuffer(id, toMp3(toWav(buf.result(),sampleRate), sampleRate), "audio/mp3", name, new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject f) {
 								if ("ok".equals(f.getString("status"))) {
@@ -227,10 +227,10 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	}
 
 
-	private static Buffer toMp3(Buffer wav) {
+	private static Buffer toMp3(Buffer wav, Integer sampleRate) {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final ByteArrayInputStream bais = new ByteArrayInputStream(wav.getBytes());
-		final LamejbConfig config = new LamejbConfig(44100, 64, LamejbConfig.MpegMode.STEREO, true);
+		final LamejbConfig config = new LamejbConfig(sampleRate, 64, LamejbConfig.MpegMode.STEREO, true);
 		if (Platform.isWindows()) {
 			LamejbCodecFactory codecFactory = new BladeCodecFactory();
 			LamejbCodec codec = codecFactory.createCodec();
