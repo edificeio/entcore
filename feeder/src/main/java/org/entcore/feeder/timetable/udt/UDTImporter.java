@@ -95,8 +95,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
 	private JsonArray parsedWeeks = new JsonArray();
 
-	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
+	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
+											boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups);
 		this.vertx = vertx;
 		filenameWeekPatter = Pattern.compile("(UDCal|udcal)_[0-9]{2}_([0-9]{2})\\.xml$");
 	}
@@ -153,8 +154,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 									}
 									persistUsedGroups();
 
-									for(String group : functionalGroupExternalIdCopy.values())
-										ttReport.groupDeleted(group);
+									if(authorizeUpdateGroups == true)
+										for(String group : functionalGroupExternalIdCopy.values())
+											ttReport.groupDeleted(group);
 
 									commit(handler);
 								} catch (Exception e) {
@@ -383,20 +385,23 @@ public class UDTImporter extends AbstractTimetableImporter {
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", mappedName));
 
-		if(functionalGroupExternalId.containsKey(externalId) == false)
+		if(authorizeUpdateGroups == true)
 		{
-			txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
+			if(functionalGroupExternalId.containsKey(externalId) == false)
+			{
+				txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
 
-			ttReport.temporaryGroupCreated(name);
-		}
-		else
-		{
-			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) " + set, currentEntity);
+				ttReport.temporaryGroupCreated(name);
+			}
+			else
+			{
+				txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) " + set, currentEntity);
 
-			functionalGroupExternalIdCopy.remove(externalId);
-			ttReport.groupUpdated(name);
+				functionalGroupExternalIdCopy.remove(externalId);
+				ttReport.groupUpdated(name);
+			}
 		}
 	}
 
@@ -454,24 +459,27 @@ public class UDTImporter extends AbstractTimetableImporter {
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 
-		if(functionalGroupExternalId.containsKey(externalId) == false)
+		if(authorizeUpdateGroups == true)
 		{
-			txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
+			if(functionalGroupExternalId.containsKey(externalId) == false)
+			{
+				txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
 					.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
 					.put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource())
 					.put("idrgpmt", currentEntity.getString("id")));
 
-			ttReport.temporaryGroupCreated(name);
-		}
-		else
-		{
-			txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) SET fg.idrgpmt = {idrgpmt}",
-				currentEntity.put("externalId", externalId).put("idrgpmt", currentEntity.getString("id")));
+				ttReport.temporaryGroupCreated(name);
+			}
+			else
+			{
+				txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) SET fg.idrgpmt = {idrgpmt}",
+					currentEntity.put("externalId", externalId).put("idrgpmt", currentEntity.getString("id")));
 
-			functionalGroupExternalIdCopy.remove(externalId);
-			ttReport.groupUpdated(name);
+				functionalGroupExternalIdCopy.remove(externalId);
+				ttReport.groupUpdated(name);
+			}
 		}
 	}
 
@@ -495,7 +503,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	// Origine: Appartenance des élèves dans les groupes
 	void addEleve(JsonObject currentEntity) {
-		if("0".equals(currentEntity.getString("theorique"))) {
+		if("0".equals(currentEntity.getString("theorique")) || authorizeUpdateGroups == false) {
 			return;
 		}
 		final String ele = currentEntity.getString("ele");
@@ -834,6 +842,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String uai = message.body().getString("UAI");
+		final boolean updateGroups = message.body().getBoolean("updateGroups", true);
 		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 		final String acceptLanguage = message.body().getString("language", "fr");
@@ -848,7 +857,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai);
 
-			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {

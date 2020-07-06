@@ -183,14 +183,17 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected Set<String> userImportedExternalId = new HashSet<>();
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 	protected final boolean authorizeUserCreation;
+	protected final boolean authorizeUpdateGroups;
 
-	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage, boolean authorizeUserCreation, boolean isManualImport)
+	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
+																				boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups)
 	{
 		this.storage = storage;
 		UAI = uai;
 		this.basePath = path;
 		this.report = new Report(acceptLanguage);
 		this.authorizeUserCreation = authorizeUserCreation;
+		this.authorizeUpdateGroups = authorizeUpdateGroups;
 
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getTimetableSource());
@@ -525,7 +528,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	private void persEducNatToGroups(JsonObject object) {
 		final JsonArray groups = object.getJsonArray("groups");
-		if (groups != null) {
+		if (groups != null && authorizeUpdateGroups == true) {
 			final JsonArray teacherIds = object.getJsonArray("teacherIds");
 			final List<String> ids = new ArrayList<>();
 			if (teacherIds != null) {
@@ -662,8 +665,11 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		persistBulKCourses();
 		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(subjects.values()))));
 		txXDT.add(UNLINK_SUBJECT, params);
-		txXDT.add(UNLINK_GROUP, params);
-		txXDT.add(DELETE_GROUPS, params.put("mappedGroups", mappedGroups));
+		if(authorizeUpdateGroups == true)
+		{
+			txXDT.add(UNLINK_GROUP, params);
+			txXDT.add(DELETE_GROUPS, params.put("mappedGroups", mappedGroups));
+		}
 		txXDT.add(UNSET_OLD_GROUPS, params);
 		txXDT.add(SET_GROUPS, params);
 		Importer.markMissingUsers(structureExternalId, getTimetableSource(), userImportedExternalId, txXDT, new Handler<Void>() {

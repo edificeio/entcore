@@ -89,8 +89,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
 
 	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
-			String mode, boolean authorizeUserCreation, boolean isManualImport) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport);
+			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -122,8 +122,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 											userExternalId(new Handler<Void>(){
 												@Override
 												public void handle(Void v) {
-													for(String group : functionalGroupExternalIdCopy.values())
-														ttReport.groupDeleted(group);
+													if(authorizeUpdateGroups == true)
+														for(String group : functionalGroupExternalIdCopy.values())
+															ttReport.groupDeleted(group);
 													commit(handler);
 												}
 											});
@@ -217,18 +218,21 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 
-		if(functionalGroupExternalId.containsKey(externalId) == false)
+		if(authorizeUpdateGroups == true)
 		{
-			txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+			if(functionalGroupExternalId.containsKey(externalId) == false)
+			{
+				txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
 
-			ttReport.temporaryGroupCreated(name);
-		}
-		else
-		{
-			functionalGroupExternalIdCopy.remove(externalId);
-			ttReport.groupUpdated(name);
+				ttReport.temporaryGroupCreated(name);
+			}
+			else
+			{
+				functionalGroupExternalIdCopy.remove(externalId);
+				ttReport.groupUpdated(name);
+			}
 		}
 	}
 
@@ -452,7 +456,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	}
 
 	private void studentToGroups(String numeroNational, JsonArray classes, Map<String, JsonObject> ref) {
-		if (classes != null) {
+		if (classes != null && authorizeUpdateGroups == true) {
 			for (Object o : classes) {
 				if (o instanceof JsonObject) {
 					final String inDate = ((JsonObject) o).getString("DateEntree");
@@ -685,6 +689,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			return;
 		}
 		final String uai = message.body().getString("UAI");
+		final boolean updateGroups = message.body().getBoolean("updateGroups", true);
 		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 
@@ -698,7 +703,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			final long start = System.currentTimeMillis();
 			log.info("Launch EDT import : " + uai);
 
-			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport, updateGroups).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {
