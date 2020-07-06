@@ -412,7 +412,7 @@ public class DefaultTimetableService implements TimetableService {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						return;
 					}
-					callFeederImport(event.right().getValue().getString("UAI"), ttType, path, acceptLanguage, handler);
+					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null, path, acceptLanguage, handler);
 				} else {
 					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
 					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
@@ -477,12 +477,13 @@ public class DefaultTimetableService implements TimetableService {
 		}));
 	}
 
-	private void callFeederImport(String UAI, String timetableType, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
+	private void callTimetableImport(String UAI, String timetableType, boolean isPunctual, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
 	{
 		JsonObject action = new JsonObject().put("action", "manual-" + timetableType.toLowerCase())
 				.put("path", path)
 				.put("UAI", UAI)
 				.put("isManualImport", true)
+				.put("updateGroups", isPunctual == false)
 				.put("language", acceptLanguage);
 		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
