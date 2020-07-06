@@ -53,17 +53,22 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
         }
     }
 
-    private Optional<String> extractHost(String address) {
+    static URI parseUri(String address) {
+        address = address.replaceAll("\\s", "").replaceAll("\\\\", "");
+        return URI.create(StringUtils.substringBeforeLast(address, "?"));
+    }
+
+    public static Optional<String> extractHost(String address) {
         try {
             if (address.startsWith("http:") || address.startsWith("https:")) {
                 // uri with scheme
-                return Optional.ofNullable(URI.create(address).getHost());
+                return Optional.ofNullable(parseUri(address).getHost());
             } else if (address.startsWith("/")) {
                 // path only
                 return Optional.empty();
             } else {
                 // uri without scheme
-                return Optional.ofNullable(URI.create("https://" + address).getHost());
+                return Optional.ofNullable(parseUri("https://" + address).getHost());
             }
         } catch (Exception e) {
             logger.warn("Cannot parse host : " + address);

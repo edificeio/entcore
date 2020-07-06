@@ -32,6 +32,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.auth.services.impl.DefaultSafeRedirectionService;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -121,7 +122,7 @@ public class SafeRedirectionTest {
         final HttpServerRequest request = getRequest();
         request.response().endHandler(end -> {
             final String location = request.response().headers().get("Location");
-            //webutils seems to concat enthost with host without scheme??
+            // webutils seems to concat enthost with host without scheme??
             context.assertEquals("http://entcore.orgconnecteur2.com/custompath", location);
             async.complete();
         });
@@ -152,4 +153,17 @@ public class SafeRedirectionTest {
         redirectionService.redirect(request, "https://hacker.com.com", "/custompath");
     }
 
+    @Test
+    public void testAuthServiceShouldExtractHost(TestContext context) {
+        context.assertEquals("docs.google.com", DefaultSafeRedirectionService.extractHost(
+                "https://docs.google.com/spreadsheets/d/1C3F0y6J\nzZ7Y3duvO3UieuzXE-4VzNjMNpyzQFzTNWX0/edit? usp=sharing")
+                .get());
+        context.assertEquals("sacoche.ac-AMIENS.fr",
+                DefaultSafeRedirectionService.extractHost("http://sacoche.ac-AMIENS.fr/?sso&uai=<0600030G>").get());
+        context.assertEquals("www.kiosque-edu.com",
+                DefaultSafeRedirectionService.extractHost("https://www.kiosque-edu.com/FrontOffice/AccesENT\\").get());
+        context.assertEquals("www.facebook.com", DefaultSafeRedirectionService.extractHost(
+                "https://www.facebook.com/pg/Le-LHIL-Lyc%C3%A9e-H%C3%B4telier-International-de-Lille-1646472718941717/posts/?ref=page_internal")
+                .get());
+    }
 }
