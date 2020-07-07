@@ -651,15 +651,17 @@ public class UDTImporter extends AbstractTimetableImporter {
 					{
 						boolean follows = (++current) == val;
 						if (follows == false) {
-							persistCourse(generateCourse(start, previous.getString("fic"),
-								previous, startPeriodWeek, endPeriodWeek, theoretical));
+							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
+								persistCourse(generateCourse(start, previous.getString("fic"),
+									previous, week, theoretical));
 							start = j.getString("fic");
 							current = val;
 						}
 
 						if (count == c.size()) {
-							persistCourse(generateCourse(start, j.getString("fic"),
-								j, startPeriodWeek, endPeriodWeek, theoretical));
+							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
+								persistCourse(generateCourse(start, j.getString("fic"),
+									j, week, theoretical));
 						}
 					}
 					previous = j;
@@ -703,7 +705,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return new JsonObject().put("$and", new JsonArray().add(defaultQuery).add(saveOtherWeeks));
 	}
 
-	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, int endPeriodWeek, boolean theoretical) {
+	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, boolean theoretical) {
 		JsonObject ficheTStart = fichesT.get(start);
 		JsonObject ficheTEnd = fichesT.get(end);
 		if (ficheTStart == null || ficheTEnd == null) {
@@ -721,19 +723,24 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final int day = Integer.parseInt(ficheTStart.getString("jour"));
 		final int cpw = (periodWeek < startDateWeek1.getWeekOfWeekyear()) ? periodWeek + maxYearWeek : periodWeek;
 		DateTime startDate = startDateWeek1.plusWeeks(cpw - startDateWeek1.getWeekOfWeekyear()).plusDays(day - 1);
+		boolean startWasHoliday = false;
 		while (holidays.contains(startDate)) {
 			startDate = startDate.plusWeeks(1);
+			startWasHoliday = true;
 		}
 		startDate = startDate.plusSeconds(slotStart.getStart());
 		//final int epw = periods.get(periodWeek);
-		final int cepw = (endPeriodWeek < startDateWeek1.getWeekOfWeekyear()) ? endPeriodWeek + maxYearWeek : endPeriodWeek;
+		final int cepw = (periodWeek < startDateWeek1.getWeekOfWeekyear()) ? periodWeek + maxYearWeek : periodWeek;
 		DateTime endDate = startDateWeek1.plusWeeks(cepw - startDateWeek1.getWeekOfWeekyear()).plusDays(day - 1);
+		boolean endWasHoliday = false;
 		while (holidays.contains(endDate)) {
 			endDate = endDate.minusWeeks(1);
+			endWasHoliday = true;
 		}
 		endDate = endDate.plusSeconds(slotEnd.getEnd());
 		if (endDate.isBefore(startDate)) {
-			log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1 + ", endPeriodOfWeek : " + endPeriodWeek);
+			if(startWasHoliday == false || endWasHoliday == false)
+				log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1);
 			return null;
 		}
 		final Set<String> ce = coens.get(start);
