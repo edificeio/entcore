@@ -355,6 +355,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				}
 			}
 		});
+		//#36079 ,when using multipart instead of body tojson request is not resumed
+		request.resume();
 	}
 
 	private void isAdminOfStructureOrClass4(final HttpServerRequest request, UserInfos user,
