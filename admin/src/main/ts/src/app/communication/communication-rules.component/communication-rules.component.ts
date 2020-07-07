@@ -184,7 +184,8 @@ export class CommunicationRulesComponent  extends OdeComponent implements OnInit
     public getSenders(): void {
         const senders = this._communicationRules
             .filter(rule => this.filterRule(rule.sender, rule.receivers))
-            .map(rule => rule.sender);
+            .map(rule => rule.sender)
+            .filter(sender => sender != null);
         this.$sendersCommunicationRules.next(senders);
     }
 
