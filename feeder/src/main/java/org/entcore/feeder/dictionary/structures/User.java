@@ -635,7 +635,7 @@ public class User {
 
 	public static void removeGroup(String userId, String groupId, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(f:Group {id : {groupId}}) " +
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(f:Group {id : {groupId}}) " +
 				"WHERE 'ManualGroup' IN labels(f) OR 'FunctionalGroup' IN labels(f) " +
 				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> f.externalId) " +
 				"DELETE r ";
