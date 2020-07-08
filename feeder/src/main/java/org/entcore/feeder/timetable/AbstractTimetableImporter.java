@@ -757,6 +757,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							} else if (c == null) {
 								code = mappingCode;
 								if (!subjectsExists.contains(code)) {
+									subjectsExists.add(code);
 									createSubject(code, false, tx2);
 								}
 							}
