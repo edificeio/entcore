@@ -637,6 +637,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			for (List<JsonObject> c : lfts.values()) {
 				Collections.sort(c, new LftComparator());
 				String start = null;
+				String startCode = null;
 				int current = 0;
 				JsonObject previous = null;
 				int count = 0;
@@ -645,6 +646,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					count++;
 					if (start == null) {
 						start = j.getString("fic");
+						startCode = j.getString(CODE);
 						current = val;
 					}
 					else
@@ -652,15 +654,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 						boolean follows = (++current) == val;
 						if (follows == false) {
 							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
-								persistCourse(generateCourse(start, previous.getString("fic"),
+								persistCourse(generateCourse(start, previous.getString("fic"), startCode,
 									previous, week, theoretical));
 							start = j.getString("fic");
+							startCode = j.getString(CODE);
 							current = val;
 						}
 
 						if (count == c.size()) {
 							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
-								persistCourse(generateCourse(start, j.getString("fic"),
+								persistCourse(generateCourse(start, j.getString("fic"), startCode,
 									j, week, theoretical));
 						}
 					}
@@ -705,7 +708,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return new JsonObject().put("$and", new JsonArray().add(defaultQuery).add(saveOtherWeeks));
 	}
 
-	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, boolean theoretical) {
+	private JsonObject generateCourse(String start, String end, String startCode, JsonObject entity, int periodWeek, boolean theoretical) {
 		JsonObject ficheTStart = fichesT.get(start);
 		JsonObject ficheTEnd = fichesT.get(end);
 		if (ficheTStart == null || ficheTEnd == null) {
@@ -743,7 +746,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1);
 			return null;
 		}
-		final Set<String> ce = coens.get(start);
+		final Set<String> ce = coens.get(startCode);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {
 			teacherIds = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ce));
