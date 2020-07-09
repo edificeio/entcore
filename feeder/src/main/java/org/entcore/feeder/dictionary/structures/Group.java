@@ -104,11 +104,12 @@ public class Group {
 				.put("userIds", userIds);
 		
 		transactionHelper.add(query, params);
+		User.countUsersInGroups(groupId, null, transactionHelper);
 	}
 	
 	public static void removeUsers(String groupId, JsonArray userIds, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User)-[r:IN|COMMUNIQUE]->(g:Group) " +
+				"MATCH (u:User)-[r:IN|COMMUNIQUE]-(g:Group) " +
 				"WHERE g.id = {groupId} AND u.id IN {userIds} " +
 				"AND ('ManualGroup' IN labels(g) OR 'FunctionalGroup' IN labels(g)) " +
 				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> g.externalId) " +
@@ -119,6 +120,7 @@ public class Group {
 				.put("userIds", userIds);
 		
 		transactionHelper.add(query, params);
+		User.countUsersInGroups(groupId, null, transactionHelper);
 	}
 
 	public static void updateEmail(String groupId, String emailInternal, TransactionHelper transactionHelper)
