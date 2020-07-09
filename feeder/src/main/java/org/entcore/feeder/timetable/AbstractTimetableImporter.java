@@ -973,12 +973,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						TransactionHelper tx = TransactionManager.getTransaction();
 						final String q1 =
 								"MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(fg:FunctionalGroup) " +
-								"WHERE " + condition + " " +
 								"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
 								"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
 						final String q2 =
 								"MATCH (s:Structure {id: {structureId}}) " +
-								"WHERE " + condition + " " +
 								"WITH s " +
 								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup)" +
 								"OPTIONAL MATCH s<-[:SUBJECT]-(sub:TimetableSubject) " +
