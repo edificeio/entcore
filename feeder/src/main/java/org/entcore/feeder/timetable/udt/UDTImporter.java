@@ -78,6 +78,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private int year;
 	private long endStudents;
 	private Map<String, Set<String>> coens = new HashMap<>();
+	private Map<String, Set<String>> coensUDT = new HashMap<>();
 	private Map<String, JsonObject> fichesT = new HashMap<>();
 	private Map<String, JsonObject> regroup = new HashMap<>();
 	private Map<String, List<JsonObject>> lfts = new HashMap<>();
@@ -93,6 +94,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, JsonArray> aggregateRgmtCourses = new HashMap<>();
 	private Set<String> coursesIds = new HashSet<>();
 	private Map<String, List<TimetableReport.Teacher>> teachersBySubject = new HashMap<String, List<TimetableReport.Teacher>>();
+	private Map<String, TimetableReport.Teacher> ttTeachersById = new HashMap<String, TimetableReport.Teacher>();
+	private Map<String, TimetableReport.Subject> ttSubjects = new HashMap<String, TimetableReport.Subject>();
 	private JsonArray parsedWeeks = new JsonArray();
 
 	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
@@ -281,7 +284,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			if (isEmpty(currentEntity.getString("code_matppl"))) {
 				// Ignore prof without subject.
 				// Often this case corresponds to personnel.
-				return;
+				//return;
 			}
 			final String id = currentEntity.getString(CODE);
 			String externalId = currentEntity.getString("epj");
@@ -293,6 +296,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 				externalId = JsonUtil.checksum(p, JsonUtil.HashAlgorithm.MD5);
 			}
 			p.put("externalId", externalId);
+
+			TimetableReport.Teacher ttTeacher = new TimetableReport.Teacher(firstName, lastName, p.getString("birthDate"));
+			ttTeachersById.put(id, ttTeacher);
+
 			userImportedExternalId.add(externalId);
 			String[] teacherId = teachersMapping.get(externalId);
 			if (teacherId == null) {
@@ -313,8 +320,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 				}
 				teachers.put(id, userId);
-				TimetableReport.Teacher teacher = new TimetableReport.Teacher(firstName, lastName, p.getString("birthDate"));
-				this.ttReport.addUnknownTeacher(teacher);
+				this.ttReport.addUnknownTeacher(ttTeacher);
 			}
 			List<TimetableReport.Teacher> colleagues = teachersBySubject.get(currentEntity.getString("code_matppl"));
 			if(colleagues == null)
@@ -322,7 +328,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				colleagues = new ArrayList<TimetableReport.Teacher>();
 				teachersBySubject.put(currentEntity.getString("code_matppl"), colleagues);
 			}
-			colleagues.add(new TimetableReport.Teacher(firstName, lastName, p.getString("birthDate")));
+			colleagues.add(ttTeacher);
 		} catch (Exception e) {
 			report.addError(e.getMessage());
 		}
@@ -335,12 +341,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 													.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false));
 		super.addSubject(code, subject);
 
+		TimetableReport.Subject ttSubject = new TimetableReport.Subject(code);
+		this.ttSubjects.put(code, ttSubject);
 		List<TimetableReport.Teacher> teachers = teachersBySubject.get(code);
 		if(teachers == null)
-			ttReport.addUserToSubject(null, new TimetableReport.Subject(code));
+			ttReport.addUserToSubject(null, ttSubject);
 		else
 			for(TimetableReport.Teacher t : teachers)
-				ttReport.addUserToSubject(t, new TimetableReport.Subject(code));
+				ttReport.addUserToSubject(t, ttSubject);
 	}
 
 	// Origine: Divisions
@@ -577,9 +585,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void addCoens(JsonObject currentEntity) {
 		final String clf = currentEntity.getString("lignefic");
 		Set<String> teachers = coens.get(clf);
+		Set<String> teachersWithUDTIds = coensUDT.get(clf);
 		if (teachers == null) {
 			teachers = new HashSet<>();
+			teachersWithUDTIds = new HashSet<>();
 			coens.put(clf, teachers);
+			coensUDT.put(clf, teachers);
 		}
 		final String externalId = currentEntity.getString("epj");
 		String[] teacherId = null;
@@ -591,6 +602,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		if (teacherId != null && isNotEmpty(teacherId[0])) {
 			teachers.add(teacherId[0]);
+			teachersWithUDTIds.add(currentEntity.getString("prof"));
 		}
 	}
 
@@ -746,6 +758,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 				log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1);
 			return null;
 		}
+
+		String subject = entity.getString("mat");
+		TimetableReport.Subject ttSubject = ttSubjects.get(subject);
 		final Set<String> ce = coens.get(startCode);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {
@@ -756,7 +771,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String pId = teachers.get(entity.getString("prof"));
 		if (isNotEmpty(pId)) {
 			teacherIds.add(pId);
+			ttReport.addUserToSubject(ttTeachersById.get(entity.getString("prof")), ttSubject);
 		}
+		Set<String> ceUDT = coensUDT.get(startCode);
+		if(ceUDT != null)
+			for(String prof : ceUDT)
+				ttReport.addUserToSubject(ttTeachersById.get(prof), ttSubject);
 
 		final JsonObject c = new JsonObject()
 				.put("structureId", structureId)
@@ -768,14 +788,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (!theoretical) {
 			c.put("periodWeek", periodWeek);
 		}
-		final String sId = subjects.get(entity.getString("mat"));
+		final String sId = subjects.get(subject);
 		if (isNotEmpty(sId)) {
 			c.put("timetableSubjectId", sId);
 		}
-		final String sBCNId = subjectsBCN.get(entity.getString("mat"));
+		final String sBCNId = subjectsBCN.get(subject);
 		if (isNotEmpty(sBCNId)) {
 			c.put("subjectId", sBCNId);
 		}
+
 		final String rId = rooms.get(entity.getString("salle"));
 		if (isNotEmpty(rId)) {
 			c.put("roomLabels", new fr.wseduc.webutils.collections.JsonArray().add(rId));
