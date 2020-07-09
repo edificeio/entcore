@@ -41,6 +41,10 @@ public abstract class AbstractFilter implements ResourcesProvider {
 		this.label = label;
 	}
 
+	protected String getRoleId(HttpServerRequest resourceRequest){
+		return resourceRequest.params().get("id");
+	}
+
 	@Override
 	public void authorize(HttpServerRequest resourceRequest, Binding binding,
 			UserInfos user, Handler<Boolean> handler) {
@@ -58,7 +62,7 @@ public abstract class AbstractFilter implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		String roleId = resourceRequest.params().get("id");
+		final String roleId = getRoleId(resourceRequest);
 		JsonObject params = new JsonObject();
 		params.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 		if (roleId != null && !roleId.trim().isEmpty()) {
