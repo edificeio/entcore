@@ -19,10 +19,22 @@
 
 package org.entcore.registry.filters;
 
+import org.entcore.common.utils.StringUtils;
+
+import io.vertx.core.http.HttpServerRequest;
+
 public class ApplicationFilter extends AbstractFilter {
 
 	public ApplicationFilter() {
 		super("Application");
+	}
+
+	protected String getRoleId(HttpServerRequest resourceRequest){
+		final String roleId = resourceRequest.params().get("applicationId");
+		if(StringUtils.isEmpty(roleId)){
+			return super.getRoleId(resourceRequest);
+		}
+		return roleId;
 	}
 
 }
