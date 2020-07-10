@@ -1,9 +1,11 @@
 package org.entcore.common.utils;
 
 import fr.wseduc.webutils.collections.JsonArray;
+import io.vertx.core.json.JsonObject;
 
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +43,11 @@ public class HtmlUtils {
     }
     private static Set<String> htmlEntitiesKeys = htmlEntities.keySet();
     private static final Pattern imageSrcPattern = Pattern.compile("<img src=\"([^\"]+)");
+    private static final Pattern audioSrcPattern = Pattern.compile("<audio src=\"([^\"]+)");
+    private static final Pattern videoSrcPattern = Pattern.compile("<video src=\"([^\"]+)");
+    private static final Pattern iframeSrcPattern = Pattern.compile("<iframe src=\"([^\"]+)");
+    private static final Pattern attachmentsPattern = Pattern.compile("<div class=\"attachments\">\\s*(<a([\\s\\S]+)<\\/a>\\s*)+<\\/div>");
+    private static final Pattern attachmentLinkPattern = Pattern.compile("<a href=\"([^\"]+)\".*>\\s*<div class=\"download\"><\\/div>(.+)<\\/a>");
     private static final Pattern plainTextPattern = Pattern.compile(">([^</]+)");
     private static final Pattern htmlEntityPattern = Pattern.compile("&.*?;");
 
@@ -104,6 +111,71 @@ public class HtmlUtils {
 
     public static String formatSpaces(String content){
         return trimToBlank(content).replaceAll("\\u200b","").replaceAll("[ ,\\t]{2,}"," ").replaceAll("[\\s]{2,}","\n");
+    }
+
+    public static JsonArray extractMedias(String htmlContent) {
+        return extractMedias(htmlContent, 0);
+    }
+
+    public static JsonArray extractMedias(String htmlContent, int limitEach){
+        TreeMap<Integer, JsonObject> medias = new TreeMap();
+        // 1. Images
+        int nbFound = 0;
+        Matcher matcher = imageSrcPattern.matcher(htmlContent);
+        while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            medias.put(matcher.start(1), new JsonObject()
+                    .put("type", "image")
+                    .put("src", matcher.group(1))
+            );
+            nbFound++;
+        }
+        // 2. Sounds
+        nbFound = 0;
+        matcher = audioSrcPattern.matcher(htmlContent);
+        while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            medias.put(matcher.start(1), new JsonObject()
+                    .put("type", "audio")
+                    .put("src", matcher.group(1))
+            );
+            nbFound++;
+        }
+        // 3. Videos
+        nbFound = 0;
+        matcher = videoSrcPattern.matcher(htmlContent);
+        while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            medias.put(matcher.start(1), new JsonObject()
+                    .put("type", "video")
+                    .put("src", matcher.group(1))
+            );
+            nbFound++;
+        }
+        // 4. Iframes
+        nbFound = 0;
+        matcher = iframeSrcPattern.matcher(htmlContent);
+        while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            medias.put(matcher.start(1), new JsonObject()
+                    .put("type", "iframe")
+                    .put("src", matcher.group(1))
+            );
+            nbFound++;
+        }
+        // 5. Attachments
+        nbFound = 0;
+        matcher = attachmentsPattern.matcher(htmlContent);
+        while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            int start = matcher.start(1);
+            String attachmentBlockContent = matcher.group(1);
+            matcher = attachmentLinkPattern.matcher(attachmentBlockContent);
+            while ((limitEach == 0 || nbFound < limitEach) && matcher.find())
+            medias.put(matcher.start(1) + start, new JsonObject()
+                    .put("type", "attachment")
+                    .put("src", matcher.group(1))
+                    .put("name", matcher.group(2))
+            );
+            nbFound++;
+        }
+        // 6. Compute Json Array in order
+        return new JsonArray(new ArrayList(medias.values()));
     }
 
 }
