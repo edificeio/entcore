@@ -121,7 +121,7 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		}
 	});
 
-	lang.addBundle('/timeline/i18nNotifications', function(){
+	lang.addBundle('/timeline/i18nNotifications?mergeall=true', function(){
 		$scope.notifications = model.notifications;
 		$scope.$apply('notifications');
 	});

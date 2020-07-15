@@ -86,6 +86,7 @@ public class TimelineController extends BaseController {
 	private JsonArray eventTypes; // cache to improve perfs
 	private boolean refreshTypesCache;
 	private NotificationHelper notificationHelper;
+	protected I18n i18n = I18n.getInstance();
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -172,8 +173,14 @@ public class TimelineController extends BaseController {
 		if (i18n == null) {
 			i18n = eventsI18n.get("fr");
 		}
-		renderJson(request, new JsonObject(
-				"{" + i18n.substring(0, i18n.length() - 1) + "}"));
+		final JsonObject i18Notif = new JsonObject(
+			"{" + i18n.substring(0, i18n.length() - 1) + "}");
+		if("true".equals(request.params().get("mergeall"))){
+			final JsonObject original = this.i18n.load(request);
+			renderJson(request, i18Notif.mergeIn(original));
+		}else{
+			renderJson(request, i18Notif);
+		}
 	}
 
 	@Get("/registeredNotifications")
