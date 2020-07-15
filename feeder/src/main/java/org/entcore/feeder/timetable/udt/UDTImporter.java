@@ -390,9 +390,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
 		currentEntity.put("name", mappedName);
 
-		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", mappedName));
-
 		if(authorizeUpdateGroups == true)
 		{
 			if(functionalGroupExternalId.containsKey(externalId) == false)
@@ -410,6 +407,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 				functionalGroupExternalIdCopy.remove(externalId);
 				ttReport.groupUpdated(name);
 			}
+		}
+		else
+		{
+			// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+			txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", mappedName));
 		}
 	}
 
@@ -464,9 +466,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 		regroup.put(currentEntity.getString(CODE), new JsonObject().put("name", name).put("externalId", externalId));
 
-		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
-
 		if(authorizeUpdateGroups == true)
 		{
 			if(functionalGroupExternalId.containsKey(externalId) == false)
@@ -488,6 +487,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 				functionalGroupExternalIdCopy.remove(externalId);
 				ttReport.groupUpdated(name);
 			}
+		}
+		else
+		{
+			// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+			txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 		}
 	}
 

@@ -115,6 +115,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
           this.notify.success("management.edt.flux.notify.success.content", "management.edt.flux.notify.success.title");
           this.structure.timetable = this.changeFlux;
           this._getClassesMapping();
+          this._getGroupsMapping();
         }
         else
           error(data);
