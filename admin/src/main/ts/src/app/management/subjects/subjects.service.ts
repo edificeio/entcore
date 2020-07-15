@@ -3,7 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
 import "rxjs/add/operator/do";
 import {SubjectsStore} from "./subjects.store";
-import {SubjectModel} from "../core/store/models/subject.model";
+import {SubjectModel} from "../../core/store/models/subject.model";
 
 @Injectable()
 export class SubjectsService {

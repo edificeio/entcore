@@ -1,11 +1,11 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot} from '@angular/router';
 
-import {routing} from '../../core/services/routing.service';
-import {NotifyService} from '../../core/services/notify.service';
+import {routing} from '../../../core/services/routing.service';
+import {NotifyService} from '../../../core/services/notify.service';
 import {SpinnerService} from 'ngx-ode-ui';
-import {globalStore, GlobalStore} from '../../core/store/global.store';
-import {SubjectModel} from '../../core/store/models/subject.model';
+import {globalStore, GlobalStore} from '../../../core/store/global.store';
+import {SubjectModel} from '../../../core/store/models/subject.model';
 
 @Injectable()
 export class SubjectDetailsResolver implements Resolve<SubjectModel> {

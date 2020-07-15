@@ -1,10 +1,10 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from "@angular/core";
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {SubjectsStore} from "../subjects.store";
-import {NotifyService} from '../../core/services/notify.service';
+import {NotifyService} from '../../../core/services/notify.service';
 import {trim, SpinnerService} from 'ngx-ode-ui';
 import {ActivatedRoute, Router} from "@angular/router";
-import {SubjectModel} from "../../core/store/models/subject.model";
+import {SubjectModel} from "../../../core/store/models/subject.model";
 import {Observable, Subject, Subscription} from "rxjs";
 import {SubjectsService} from "../subjects.service";
 import "rxjs-compat/add/operator/first";

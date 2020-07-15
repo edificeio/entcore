@@ -4,8 +4,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 
 import {SubjectsStore} from '../subjects.store';
-import {SubjectModel} from '../../core/store/models/subject.model';
-import {NotifyService} from '../../core/services/notify.service';
+import {SubjectModel} from '../../../core/store/models/subject.model';
+import {NotifyService} from '../../../core/services/notify.service';
 import {SpinnerService} from 'ngx-ode-ui';
 
 

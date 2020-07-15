@@ -21,8 +21,14 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
+import {SubjectsComponent} from "./subjects/subjects.component";
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
+import {SubjectCreate} from "./subjects/create/subject-create.component";
+import {SubjectDetails} from "./subjects/details/subject-details.component";
+import {SubjectsResolver} from "./subjects/subjects.resolver";
+import {SubjectsStore} from "./subjects/subjects.store";
+import {SubjectsService} from "./subjects/subjects.service";
 
 @NgModule({
     imports: [
@@ -59,6 +65,9 @@ import { NgxTrumbowygModule } from 'ngx-trumbowyg';
         MessageFlashPreviewComponent,
         BlockProfilesComponent,
         ImportEDTComponent,
+        SubjectsComponent,
+        SubjectCreate,
+        SubjectDetails
     ],
     exports: [
         RouterModule
@@ -71,7 +80,10 @@ import { NgxTrumbowygModule } from 'ngx-trumbowyg';
             provide: MatPaginatorIntl,
             useFactory: (bundlesService) => new MatPaginatorIntlService(bundlesService),
             deps: [BundlesService]
-        }
+        },
+        SubjectsResolver,
+        SubjectsStore,
+        SubjectsService
     ]
 })
 export class ManagementModule {}

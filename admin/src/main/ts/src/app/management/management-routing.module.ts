@@ -8,6 +8,10 @@ import {CreateMessageFlashComponent} from './message-flash/form/create-message-f
 import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
+import { SubjectsComponent} from "./subjects/subjects.component";
+import {SubjectsResolver} from "./subjects/subjects.resolver";
+import {SubjectCreate} from "./subjects/create/subject-create.component";
+import {SubjectDetails} from "./subjects/details/subject-details.component";
 
 export let routes: Routes = [
      {
@@ -56,6 +60,23 @@ export let routes: Routes = [
             {
                 path: 'import-edt',
                 component: ImportEDTComponent
+            },
+            {
+                path: 'subjects',
+                component: SubjectsComponent,
+                resolve: {
+                    subjectLit: SubjectsResolver
+                },
+                children: [
+                    {
+                        path: 'create',
+                        component: SubjectCreate
+                    },
+                    {
+                        path: ':subjectId/details',
+                        component: SubjectDetails
+                    },
+                ]
             }
         ]
      }
