@@ -443,7 +443,8 @@ public class TimetableReport
 
   public void temporaryGroupCreated(String group)
   {
-    this.groupsCreated.put(group, new Boolean(false));
+    if(this.groupsCreated.containsKey(group) == false)
+      this.groupsCreated.put(group, new Boolean(false));
   }
 
   public void validateGroupCreated(String group)
@@ -454,7 +455,8 @@ public class TimetableReport
 
   public void groupUpdated(String group)
   {
-    this.groupsUpdated.add(group);
+    if(this.groupsUpdated.contains(group) == false)
+      this.groupsUpdated.add(group);
   }
 
   public void groupDeleted(String group)
