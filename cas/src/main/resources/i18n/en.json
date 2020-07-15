@@ -30,5 +30,7 @@
   "DefaultRegisteredService.name" : "Default",
   "DefaultRegisteredService.description" : "Default cas service",
   "PearltreesRegisteredService.name" : "Pearltrees",
-  "PearltreesRegisteredService.description" : "Pearltrees"
+  "PearltreesRegisteredService.description" : "Pearltrees",
+  "ExplorateurDeMetiersRegisteredService.name" : "Explorateur de Métiers",
+  "ExplorateurDeMetiersRegisteredService.description" : "Explorateur de Métiers"
 }
