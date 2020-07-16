@@ -3,6 +3,8 @@ import { Data, NavigationEnd } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { routing } from '../../core/services/routing.service';
 import { StructureModel } from '../../core/store/models/structure.model';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 
 @Component({
     selector: 'ode-management-root',
@@ -15,13 +17,31 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
     tabs = [
         { label: 'management.message.flash', view: 'message-flash/list', active: 'message-flash'},
         { label: 'management.block.profile.tab', view: 'block-profiles', active: 'block-profiles'},
-        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'},
     ];
+
+    edt_tab = { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'};
 
     private structure: StructureModel;
 
     constructor(injector: Injector) {
         super(injector);
+    }
+
+    async admcSpecific() {
+        const session: Session = await SessionModel.getSession();
+        if(session.isADMC() == true || this.structure.adminEDT == true)
+        {
+            for(let i = this.tabs.length; i-- > 0;)
+                if(this.tabs[i] == this.edt_tab)
+                    return;
+            this.tabs.push(this.edt_tab);
+        }
+        else
+        {
+            for(let i = this.tabs.length; i-- > 0;)
+                if(this.tabs[i] == this.edt_tab)
+                    this.tabs.splice(i, 1);
+        }
     }
 
     ngOnInit(): void {
@@ -30,6 +50,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
+                this.admcSpecific();
                 this.changeDetector.markForCheck();
             }
         }));
