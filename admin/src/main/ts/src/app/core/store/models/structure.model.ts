@@ -47,6 +47,7 @@ export class StructureModel extends Model<StructureModel> {
     distributions: string[];
     timetable: string;
     punctualTimetable?: string;
+    adminEDT?: boolean;
 
     quickSearchUsers(input: string) {
         return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {
