@@ -53,20 +53,38 @@
 				</div>
 			</div>
 		</div>
-
-		<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() !== notificationTypes.selection().length">
-			<b ng-if="!isCache()"><span><i18n>filters.unselected</i18n></span></b>
-			<b ng-if="isCache() && showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
-			<b ng-if="isCache() && !showSeeMoreOnEmpty()"><span><i></i><i18n>filters.unselected</i18n></span></b>
+		<!--EMPTY BUT NOT ALL FILTERS SELECTED-->
+		<div ng-if="notifications.all.length === 0 && notificationTypes.length() !== notificationTypes.selection().length">
+			<div class="emptyscreen" ng-if="isCache() && !showSeeMoreOnEmpty()">
+				<h2 class="emptyscreen-header">
+					<i18n>empty.timeline.notifications.noresults.title</i18n>
+				</h2>
+				<img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg">
+				<p class="emptyscreen-footer">
+					<i18n>empty.timeline.notifications.noresults</i18n>
+				</p>
+			</div>
+			<div class="info tuto" ng-if="isCache() && showSeeMoreOnEmpty()">
+				<b ><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+			</div>
 		</div>
-
-		<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length && notifications.lastPage">
-			<b ng-if="!isCache()"><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
-			<b ng-if="isCache() && showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
-			<b ng-if="isCache() && !showSeeMoreOnEmpty()"><span><i></i><i18n>timeline.empty</i18n></span></b>
+		<!--EMPTY BUT ALL FILTERS SELECTED-->
+		<div ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length && notifications.lastPage">
+			<div class="emptyscreen" ng-if="isCache() && !showSeeMoreOnEmpty()">
+				<h2 class="emptyscreen-header">
+					<i18n>empty.timeline.notifications.title</i18n>
+				</h2>
+				<img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg">
+				<p class="emptyscreen-footer">
+					<i18n>empty.timeline.notifications</i18n>
+				</p>
+			</div>
+			<div class="info tuto" ng-if="isCache() && showSeeMoreOnEmpty()">
+				<b ><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+			</div>
 		</div>
 		<!-- Emptyscreen: no notifications -->
-		<div class="emptyscreen" ng-if="isEmpty() && !switchingFilters">
+		<div class="emptyscreen" ng-if="isEmpty() && !switchingFilters && !isCache()">
 			<h2 class="emptyscreen-header">
 				<i18n>empty.timeline.notifications.title</i18n>
 			</h2>
