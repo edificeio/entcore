@@ -123,6 +123,7 @@ public class NotificationUtils {
         if(text.length() > 146)
             text = text.substring(0, 146) + "...";
         preview.put("text", text);
+        preview.put("images", HtmlUtils.getAllImagesSrc(htmlContent)); // retro-compatibility for ode-mobile-framework < 1.2
         preview.put("medias", HtmlUtils.extractMedias(htmlContent));
         return preview;
     }
