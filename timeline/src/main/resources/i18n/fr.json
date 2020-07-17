@@ -196,5 +196,13 @@
     "empty.timeline.noresults.title": "Qui a éteint la lumière ?",
     "empty.timeline.noresults": "Il n’y a aucun résultat. Cochez de nouveaux filtres pour faire apparaître vos notifications.",
     "empty.timeline.nofilters.title": "Qui a éteint la lumière ?",
-    "empty.timeline.nofilters": "Oups, vous avez décoché tous les filtres... Sélectionnez vos rubriques préférées pour accéder aux notifications les plus importantes !"
+    "empty.timeline.nofilters": "Oups, vous avez décoché tous les filtres... Sélectionnez vos rubriques préférées pour accéder aux notifications les plus importantes !",
+    "autumn": "Automne",
+    "nenuphar": "Nénuphar",
+    "winder": "Hiver",
+    "Galaxy": "Galaxie",
+    "spring": "Printemps",
+    "forest": "Forêt",
+    "sea": "Océan",
+    "summer": "Été"
 }
