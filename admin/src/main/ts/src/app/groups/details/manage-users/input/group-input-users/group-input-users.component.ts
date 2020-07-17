@@ -1,4 +1,4 @@
-import { Component, Injector, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Injector, Input, OnDestroy, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 import { OrderPipe, SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
@@ -16,7 +16,7 @@ import { GroupsStore } from '../../../../groups.store';
     styleUrls: ['./group-input-users.component.scss'],
     providers: [UserListService]
 })
-export class GroupInputUsersComponent extends OdeComponent implements OnInit, OnDestroy {
+export class GroupInputUsersComponent extends OdeComponent implements OnInit, OnDestroy, OnChanges {
     @Input() model: UserModel[] = [];
     @Output() selectUsers: EventEmitter<UserModel[]> = new EventEmitter();
 
@@ -56,6 +56,15 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
         this.subscriptions.add(this.listFilters.$updateSubject.subscribe(() => {
             this.changeDetector.markForCheck();
         }));
+    }
+
+    ngOnChanges(changes:SimpleChanges){
+        super.ngOnChanges(changes);
+        if(changes['model']){
+            if(this.structure){
+                this.structureChange(this.structure);
+            }
+        }
     }
 
     selectUser(u: UserModel): void {
