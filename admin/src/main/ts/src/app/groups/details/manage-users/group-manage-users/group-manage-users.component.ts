@@ -58,7 +58,7 @@ export class GroupManageUsersComponent extends OdeComponent implements OnInit {
             this.groupsStore.group.addUsers(this.inputUsersSelected)
                 .then(() => {
                     this.groupsStore.group.users = this.groupsStore.group.users.concat(this.inputUsersSelected);
-                    this.inputUsers = this.inputUsers.filter(u => this.inputUsersSelected.indexOf(u) === -1);
+                    this.inputUsers = this.inputUsers.filter(u => this.inputUsersSelected.filter(sel=>sel.id==u.id).length==0);
                     this.inputUsersSelected = [];
                     this.groupInputUsersComponent.selectedUsers = [];
                     this.notifyService.success('notify.group.manage.users.added.content');
