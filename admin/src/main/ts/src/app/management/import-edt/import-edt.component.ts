@@ -114,6 +114,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         {
           this.notify.success("management.edt.flux.notify.success.content", "management.edt.flux.notify.success.title");
           this.structure.timetable = this.changeFlux;
+          this.structure.syncGroups(true);
           this._getClassesMapping();
           this._getGroupsMapping();
         }
@@ -145,6 +146,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     {
       this.notify.success("management.edt.import.notify.success.content", "management.edt.import.notify.success.title");
       this._getReportsFromService();
+      this.structure.syncGroups(true);
       this._getClassesMapping();
       this._getGroupsMapping();
     }).catch((err) =>
