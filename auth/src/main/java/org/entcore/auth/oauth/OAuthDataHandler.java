@@ -659,7 +659,8 @@ public class OAuthDataHandler extends DataHandler {
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser";
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile, " +
+				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("loginAlias", username);
 		neo.execute(query, params, res -> {
