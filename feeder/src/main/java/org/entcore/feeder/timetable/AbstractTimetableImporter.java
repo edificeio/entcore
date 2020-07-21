@@ -963,6 +963,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"MATCH (s:Structure {id:{structureId}}) " +
 				"WITH " + condition + " AS update, s " +
 				"SET s.timetable = {typeUpdate} " +
+				"REMOVE s.punctualTimetable " +
 				"RETURN update";
 
 		if(conf.getString("type") == null)

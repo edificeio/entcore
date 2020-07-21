@@ -50,6 +50,23 @@
       <h3>
         <s5l>management.edt.import.title</s5l>
       </h3>
+      <div class="flex-select" *ngIf="canChooseImportMode()">
+        <label>
+          <s5l>management.edt.import.mode.label</s5l>
+        </label>
+        <ode-mono-select
+          class="is-block"
+          placeholder="management.edt.import.mode.default"
+          [options]="[
+            { value: changeFlux, label: 'management.edt.import.mode.onetime' }
+          ]"
+          [(ngModel)]="onetimeImport"
+        ></ode-mono-select>
+      <ode-message-sticker
+        type="info"
+        [messages]="['management.edt.import.mode.onetime.explain']"
+      ></ode-message-sticker>
+      </div>
       <div class="flex-select">
         <label>
           <s5l>management.edt.import.label</s5l>
@@ -57,7 +74,7 @@
         <input type="file" (change)="loadFile($event)"/>
       </div>
       <div class="see-more">
-        <button class="active" (click)="manualImport(null)">
+        <button class="active" (click)="manualImport(onetimeImport)">
           <s5l>management.edt.import.button</s5l>
         </button>
       </div>
