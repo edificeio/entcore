@@ -863,6 +863,13 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return null;
 	}
 
+	@Override
+	protected void removeUselessGroups(JsonObject baseParams)
+	{
+		super.removeUselessGroups(baseParams);
+		txXDT.add(get_DELETE_GROUPS("WHERE HEAD(u.profiles) = 'Teacher' "), baseParams);
+	}
+
 	private class LftComparator implements Comparator<JsonObject> {
 		@Override
 		public int compare(JsonObject o1, JsonObject o2) {
