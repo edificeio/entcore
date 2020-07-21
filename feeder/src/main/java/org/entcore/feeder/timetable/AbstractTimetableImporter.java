@@ -119,15 +119,17 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WHERE r.source = {source} AND (r.outDate < {now} OR r.lastUpdated < {now}) " +
 			"OPTIONAL MATCH fg-[rc:COMMUNIQUE]-u " +
 			"DELETE r, rc";
-	private static final String DELETE_GROUPS =
-			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:FunctionalGroup {source:{source}})<-[:IN]-(:User) " +
+	private static final String DELETE_GROUPS_1 =
+			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:FunctionalGroup {source:{source}})<-[:IN]-(u:User) ";
+	private static final String DELETE_GROUPS_2 =
 			"WITH COLLECT(distinct g.id) as usedFunctionalGroup, COLLECT(DISTINCT g.name) as usedFunctionalGroupNames " +
-			"MATCH (:Structure {externalId : {structureExternalId}})<-[:MAPPING]-(cm:ClassesMapping) " +
+			"OPTIONAL MATCH (:Structure {externalId : {structureExternalId}})<-[:MAPPING]-(cm:ClassesMapping) " +
 			"SET cm.unknownGroups = coalesce(FILTER(gn IN cm.unknownGroups WHERE gn IN usedFunctionalGroupNames OR gn IN {mappedGroups}), []) " +
 			"WITH usedFunctionalGroup " +
 			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:FunctionalGroup {source:{source}}) " +
 			"WHERE NOT(g.id IN usedFunctionalGroup) " +
 			"DETACH DELETE g ";
+	protected static String get_DELETE_GROUPS(String where) { return DELETE_GROUPS_1 + (where != null ? where : "") + DELETE_GROUPS_2; }
 	// prevent difference between relationships and properties
 	private static final String UNSET_OLD_GROUPS =
 			"MATCH (:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
@@ -656,6 +658,11 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		return future;
 	}
 
+	protected void removeUselessGroups(JsonObject baseParams)
+	{
+		txXDT.add(get_DELETE_GROUPS(null), baseParams);
+	}
+
 	protected void commit(final Handler<AsyncResult<Report>> handler)
 	{
 		final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId)
@@ -668,7 +675,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if(authorizeUpdateGroups == true)
 		{
 			txXDT.add(UNLINK_GROUP, params);
-			txXDT.add(DELETE_GROUPS, params.put("mappedGroups", mappedGroups));
+			this.removeUselessGroups(params.put("mappedGroups", mappedGroups));
 		}
 		txXDT.add(UNSET_OLD_GROUPS, params);
 		txXDT.add(SET_GROUPS, params);
