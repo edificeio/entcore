@@ -59,9 +59,9 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   public seeMore: boolean = false;
   public shownReport: string;
+  public showFluxChangeWarning: boolean = false;
 
   public changeFlux: EDTImportFlux = null;
-  public showFluxChangeWarning: boolean = false;
   public onetimeImport: EDTImportFlux = null;
   private importFile: FileList;
 
@@ -128,6 +128,11 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   canImport(): boolean
   {
     return this.structure.timetable != EDTImportFlux.DEFAULT && this.structure.timetable != EDTImportFlux.NONE && this.structure.timetable != null;
+  }
+
+  canChooseImportMode(): boolean
+  {
+    return this.structure.timetable == EDTImportFlux.EDT || this.structure.timetable == EDTImportFlux.UDT;
   }
 
   canOnetimeImport(): boolean
