@@ -24,25 +24,36 @@ import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.registry.services.ExternalApplicationService;
 import io.vertx.core.Handler;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
 
 public class DefaultExternalApplicationService implements ExternalApplicationService {
-
+	static Logger logger = LoggerFactory.getLogger(DefaultExternalApplicationService.class);
+	private final int batchSize;
 	private final Neo4j neo = Neo4j.getInstance();
-
+	public DefaultExternalApplicationService(){
+		this(1000);
+	}
+	public DefaultExternalApplicationService(int aBatchSize){
+		this.batchSize = aBatchSize;
+	}
 	@Override
 	public void listExternalApps(String structureId, final Handler<Either<String, JsonArray>> handler) {
 		String filter = "";
@@ -218,60 +229,116 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 	@Override
 	public void massAuthorize(String structureId, String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
-		String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
-		String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
-		String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
-		String whereClauseAdml = "fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) ";
-		String whereClauseProfiles = "p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) ";
+		final String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
+		final String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
+		final String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
+		final String queryAdml = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
+		"WHERE " + whereClause + " AND fg.name ENDS WITH 'AdminLocal' AND NOT((fg)-[:AUTHORIZED]->(r)) " +
+		"RETURN DISTINCT id(fg) as pgId, id(r) as rId ";
+		final String queryProfile = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+		"WHERE " + whereClause + " AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
+		"RETURN DISTINCT id(pg) as pgId, id(r) as rId ";
 		String query = "";
-
 		if (profiles.contains("AdminLocal")) {
 			profiles = profiles.stream()
 					.filter(profile -> !"AdminLocal".equals(profile))
 					.collect(Collectors.toList());
 			if (profiles.size() == 0) {
 				// Only ADML
-				query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE " + whereClause + " AND " + whereClauseAdml +
-						"CREATE UNIQUE (fg)-[:AUTHORIZED]->(r) ";
+				query = queryAdml;
 			} else {
 				// Profiles + ADML
-				query = "MATCH " + matchRole + ", " + matchStructures +
-						"WHERE " + whereClause +
-						"WITH r, subStructure " +
-						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-						"WHERE " + whereClauseProfiles +
-						"MERGE (pg)-[:AUTHORIZED]->(r) " +
-						"WITH r, subStructure " +
-						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE " + whereClauseAdml +
-						"MERGE (fg)-[:AUTHORIZED]->(r)";
+				query = queryAdml + " UNION ALL " + queryProfile;
 
 			}
 		} else {
 			// only Profiles (no ADML)
-			query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE " + whereClause + " AND " + whereClauseProfiles +
-					"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
+			query = queryProfile;
 		}
 
-		JsonObject params = new JsonObject();
+		final JsonObject params = new JsonObject();
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
 			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 		}
-		neo.execute(query, params, validEmptyHandler(handler));
+		neo.execute(query, params, validResultHandler(res->{
+			if(res.isRight()){
+				final List<String> allQueries = new ArrayList<>();
+  				Future<Integer> futures = Future.succeededFuture(0);
+				for(Object o : res.right().getValue()){
+					final JsonObject json = (JsonObject) o;
+					final Integer pgId = json.getInteger("pgId");
+					final Integer rId = json.getInteger("rId");
+					allQueries.add(String.format("MATCH (pg), (r) WHERE id(pg)=%s AND id(r)=%s CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ", pgId, rId));
+					if(allQueries.size()==batchSize){
+						final StatementsBuilder chunk = new StatementsBuilder();
+						for(final String q : allQueries){
+							chunk.add(q);
+						}
+						final JsonArray queries = chunk.build();
+						allQueries.clear();
+						final int total = queries.size();
+						futures = futures.compose(previous->{
+							final Future<Integer> future = Future.future();
+							logger.info("Mass authorize batch finish : "+total + "("+previous+")");
+							neo.executeTransaction(queries, null, true, resBatch -> {
+								if(resBatch.body().containsKey("message")){
+									future.fail(resBatch.body().getString("message"));
+								}else{
+									future.complete(total + previous);
+								}
+							});
+							return future;
+						});
+					}
+				}
+				if(allQueries.size() > 0){
+					final StatementsBuilder chunk = new StatementsBuilder();
+					for(final String q : allQueries){
+						chunk.add(q);
+					}
+					final JsonArray queries = chunk.build();
+					final int total = queries.size();
+					allQueries.clear();
+					futures = futures.compose(previous->{
+						final Future<Integer> future = Future.future();
+						logger.info("Mass authorize batch finish : "+total + "("+previous+")");
+						neo.executeTransaction(queries, null, true, resBatch -> {
+							if(resBatch.body().containsKey("message")){
+								future.fail(resBatch.body().getString("message"));
+							}else{
+								future.complete(previous + total);
+							}
+						});
+						return future;
+					});
+				}
+				futures.setHandler(resAll -> {
+					if(resAll.succeeded()){
+						final JsonObject payload = new JsonObject().put("nbCreation", resAll.result());
+						handler.handle(new Either.Right<String,JsonObject>(payload));
+					}else{
+						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+					}
+				});
+			} else {
+				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+			}
+		}));
 	}
 
 	@Override
 	public void massUnauthorize(String structureId, String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
-		String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
-		String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
-		String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
-		String whereClauseAdml = "fg.name ENDS WITH 'AdminLocal' ";
-		String whereClauseProfiles = "p.name IN {profiles} ";
-		String deleteAuth = "DELETE auth";
+		final String matchRole = "(app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) ";
+		final String matchStructures = "(inputStructure: Structure {id: {inputStructureId}})<-[:HAS_ATTACHMENT*0..]-(subStructure: Structure) ";
+		final String whereClause = "coalesce(app.locked, false) = false AND r.structureId = app.structureId ";
+		final String queryAdml = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
+		"WHERE " + whereClause + " AND fg.name ENDS WITH 'AdminLocal' " +
+		"MATCH (r)<-[auth:AUTHORIZED]-(fg) RETURN DISTINCT id(auth) as authId ";
+		final String queryProfile = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+		"WHERE " + whereClause + " AND p.name IN {profiles} " +
+		"MATCH (r)<-[auth:AUTHORIZED]-(pg) RETURN DISTINCT id(auth) as authId ";
 
 		String query = "";
 		if (profiles.contains("AdminLocal")) {
@@ -280,40 +347,85 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					.collect(Collectors.toList());
 			if (profiles.size() == 0) {
 				// Only ADML
-				query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"WHERE " + whereClause + " AND " + whereClauseAdml +
-						"MATCH (r)<-[auth:AUTHORIZED]-(fg) " +
-						deleteAuth;
+				query = queryAdml;
 			} else {
 				// Profiles + ADML
-				query = "MATCH " + matchRole + ", " + matchStructures +
-						"WHERE " + whereClause +
-						"WITH r, subStructure " +
-						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (pg)-[auth:AUTHORIZED]->(r) " +
-						"WHERE " + whereClauseProfiles +
-						"DELETE auth " +
-						"WITH r, subStructure " +
-						"OPTIONAL MATCH (subStructure)<-[:DEPENDS]-(fg:FunctionGroup), (fg)-[auth:AUTHORIZED]->(r) " +
-						"WHERE " + whereClauseAdml +
-						deleteAuth;
-
+				query = queryAdml + " UNION ALL " + queryProfile;
 			}
 		} else {
 			// only Profiles (no ADML)
-			query = "MATCH " + matchRole + ", " + matchStructures + "<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE " + whereClause + " AND " + whereClauseProfiles +
-					"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +
-					deleteAuth;
+			query = queryProfile;
 		}
 
-
-		JsonObject params = new JsonObject();
+		final JsonObject params = new JsonObject();
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
 			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 		}
-		neo.execute(query, params, validEmptyHandler(handler));
+		neo.execute(query, params, validResultHandler(res->{
+			if(res.isRight()){
+				final List<String> allQueries = new ArrayList<>();
+  				Future<Integer> futures = Future.succeededFuture(0);
+				for(Object o : res.right().getValue()){
+					final JsonObject json = (JsonObject) o;
+					final Integer authId = json.getInteger("authId");
+					allQueries.add(String.format("START r=rel(%s) DELETE r ", authId));
+					if(allQueries.size()==batchSize){
+						final StatementsBuilder chunk = new StatementsBuilder();
+						for(final String q : allQueries){
+							chunk.add(q);
+						}
+						final JsonArray queries = chunk.build();
+						allQueries.clear();
+						final int total = queries.size();
+						futures = futures.compose(previous->{
+							final Future<Integer> future = Future.future();
+							logger.info("Mass unauthorize batch : "+total + "("+previous+")");
+							neo.executeTransaction(queries, null, true, resBatch -> {
+								if(resBatch.body().containsKey("message")){
+									future.fail(resBatch.body().getString("message"));
+								}else{
+									future.complete(total + previous);
+								}
+							});
+							return future;
+						});
+					}
+				}
+				if(allQueries.size() > 0){
+					final StatementsBuilder chunk = new StatementsBuilder();
+					for(final String q : allQueries){
+						chunk.add(q);
+					}
+					final JsonArray queries = chunk.build();
+					final int total = queries.size();
+					allQueries.clear();
+					futures = futures.compose(previous->{
+						final Future<Integer> future = Future.future();
+						logger.info("Mass unauthorize batch : "+total + "("+previous+")");
+						neo.executeTransaction(queries, null, true, resBatch -> {
+							if(resBatch.body().containsKey("message")){
+								future.fail(resBatch.body().getString("message"));
+							}else{
+								future.complete(previous + total);
+							}
+						});
+						return future;
+					});
+				}
+				futures.setHandler(resAll -> {
+					if(resAll.succeeded()){
+						final JsonObject payload = new JsonObject().put("nbDeletion", resAll.result());
+						handler.handle(new Either.Right<String,JsonObject>(payload));
+					}else{
+						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+					}
+				});
+			} else {
+				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+			}
+		}));
 	}
 
 }

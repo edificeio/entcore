@@ -214,6 +214,7 @@ project(':app-registry') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    testCompile project(':test')
   }
 }
 

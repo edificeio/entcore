@@ -4,6 +4,7 @@ import com.mongodb.QueryBuilder;
 
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -116,8 +117,12 @@ public class DatabaseTestHelper {
         QueryBuilder builder = QueryBuilder.start("_id").is(id);
         final MongoDb mongo = MongoDb.getInstance();
         final Future<JsonObject> future = Future.future();
-        mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(message -> {
-            future.complete(message.right().getValue());
+        mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
+            if (res.isRight()) {
+                future.complete(res.right().getValue());
+            } else {
+                future.fail(res.left().getValue());
+            }
         }));
         return future;
     }
@@ -125,8 +130,25 @@ public class DatabaseTestHelper {
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
         final Future<JsonObject> future = Future.future();
-        mongo.findOne(collection, query, MongoDbResult.validResultHandler(message -> {
-            future.complete(message.right().getValue());
+        mongo.findOne(collection, query, MongoDbResult.validResultHandler(res -> {
+            if (res.isRight()) {
+                future.complete(res.right().getValue());
+            } else {
+                future.fail(res.left().getValue());
+            }
+        }));
+        return future;
+    }
+
+    public Future<JsonObject> executeNeo4jWithUniqueResult(String query, JsonObject params) {
+        final Neo4j neo4j = Neo4j.getInstance();
+        final Future<JsonObject> future = Future.future();
+        neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(res -> {
+            if (res.isRight()) {
+                future.complete(res.right().getValue());
+            } else {
+                future.fail(res.left().getValue());
+            }
         }));
         return future;
     }

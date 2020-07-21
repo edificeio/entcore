@@ -54,8 +54,10 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
 public class ExternalApplicationController extends BaseController {
-	private final ExternalApplicationService externalAppService = new DefaultExternalApplicationService();
-
+	private final ExternalApplicationService externalAppService;
+	public ExternalApplicationController(int batchSize){
+		externalAppService = new DefaultExternalApplicationService(batchSize);
+	}
 	@Get("/external-applications")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listExternalApplications(HttpServerRequest request) {

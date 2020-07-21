@@ -10,7 +10,7 @@ public class TestHelper {
     private final HttpTestHelper http = new HttpTestHelper(this);
     private final PortalTestHelper portal = new PortalTestHelper(this);
     private final FileTestHelper file = new FileTestHelper();
-    private final DirectoryTestHelper directory = new DirectoryTestHelper(vertx);
+    private final DirectoryTestHelper directory = new DirectoryTestHelper(this, vertx);
     private final AppRegistryTestHelper registry = new AppRegistryTestHelper(this);
 
     public Vertx vertx() {

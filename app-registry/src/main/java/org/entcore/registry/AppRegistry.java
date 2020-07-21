@@ -35,7 +35,7 @@ public class AppRegistry extends BaseServer {
 	public void start() throws Exception {
 		super.start();
 		addController(new AppRegistryController());
-		addController(new ExternalApplicationController());
+		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
 		addController(new LibraryController(vertx, config()));
 		setDefaultResourceFilter(new AppRegistryFilter());
