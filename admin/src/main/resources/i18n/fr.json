@@ -127,6 +127,8 @@
     "management.edt.import.onetime.placeholder": "Choisissez un type d'emploi du temps",
     "management.edt.import.notify.success.title": "Alimentation effectuée",
     "management.edt.import.notify.success.content": "Les données d'emploi du temps ont été chargées avec succès",
+    "management.edt.import.notify.unknown.title": "Une erreur est survenue",
+    "management.edt.import.notify.unknown.content": "Une erreur inconnue est survenue, l'import des données est encore en cours. Merci de revenir plus tard pour consulter le rapport d'exécution.",
     "management.edt.import.notify.error.title": "Échec lors de l'alimentation",
     "management.edt.import.notify.error.content": "Une erreur est survenue lors du chargement des données d'emploi du temps",
     "management.edt.correspondance.title": "Correspondance des classes non reconnues",
