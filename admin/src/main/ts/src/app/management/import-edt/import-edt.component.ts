@@ -156,6 +156,10 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       this._getGroupsMapping();
     }).catch((err) =>
     {
+      if(err.status == 0)
+      {
+        this.notify.notify("management.edt.import.notify.unknown.content", "management.edt.import.notify.unknown.title", err.statusText, "error", { timeout: 12000 });
+      }
       for(let i in err.error.errors)
       {
         let msg = err.error.errors[i];
