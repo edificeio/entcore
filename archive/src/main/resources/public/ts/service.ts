@@ -22,7 +22,7 @@ export const archiveService = {
         let preDeletedUserApps;
         if (activatedUserApps.length === 0) {
             isPreDeleted = true;
-            preDeletedUserApps = exportApps.data.apps;
+            preDeletedUserApps = Object.keys(exportApps.data.apps);
         }
 
         return {activatedUserApps, preDeletedUserApps, isPreDeleted};
