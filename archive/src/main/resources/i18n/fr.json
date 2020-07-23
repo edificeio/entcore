@@ -1,7 +1,7 @@
 {
     "archive.info": "Sélectionnez les applications dont vous voulez exporter les données et les documents.<br/>Note : l'export des applications autres que Espace Documentaire ou Casier sera au format brut json.",
     "archive.download.docs": "Vos documents de l'espace documentaire et du casier seront exportés.",
-    "archive.download.all": "Toutes vos données seront exportées mais ne seront pas toutes dans un format lisible.",
+    "archive.download.all": "Toutes vos données seront exportées.",
     "archive.title": "Mes données",
     "archive.waiting": "Le téléchargement va démarrer automatiquement dans quelques instants. L'attente peut prendre plusieurs minutes pour les fichiers volumineux. Si vous quittez cette page avant le début du téléchargement, un lien sera envoyé sur votre fil de nouveautés.",
     "archive.all": "Tous",
