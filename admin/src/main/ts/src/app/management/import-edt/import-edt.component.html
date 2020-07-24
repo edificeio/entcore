@@ -105,7 +105,7 @@
         <input type="file" (change)="loadFile($event)"/>
       </div>
       <div class="see-more">
-        <button class="active" (click)="manualImport(onetimeImport)">
+        <button class="active" [disabled]="onetimeImport == null" (click)="manualImport(onetimeImport)">
           <s5l>management.edt.import.button</s5l>
         </button>
       </div>

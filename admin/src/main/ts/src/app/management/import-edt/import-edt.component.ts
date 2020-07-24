@@ -96,7 +96,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   structureTitle(): String
   {
-    return this.structure == null ? "" : this.structure.name + " — " + this.structure.UAI;
+    return this.structure == null ? "" : this.structure.name + (this.structure.UAI == null ? "" : " — " + this.structure.UAI);
   }
 
   updateFluxType(): void
