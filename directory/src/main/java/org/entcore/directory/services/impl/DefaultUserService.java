@@ -798,7 +798,19 @@ public class DefaultUserService implements UserService {
 					"WHERE has(r.password) and u.level contains {level} " + levelFilter +
 					"RETURN r.id as id, u.ine as ine, head(r.profiles) as profile, r.lastName as lastName, r.firstName as firstName, " +
 					"r.login as login, r.loginAlias as loginAlias, r.email as email, r.mobile AS mobile, r.password as password ";
-		} else {
+		}
+		else if ("Teacher".equals(profile) || "Personnel".equals(profile))
+		{
+			query = "MATCH (u:User) " +
+							(levelContains != null ? "MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(:Class {name:{level}}) " : "") +
+							"WHERE HAS(u.password) AND {profile} IN u.profiles " +
+							(levelNotContains != null ? "OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(c:Class {name:{level}}) WITH u, c WHERE c = null " : "") +
+							"RETURN u.id as id, head(u.profiles) as profile, u.lastName as lastName, u.firstName as firstName, u.birthDate as birthDate, " +
+							"u.login as login, u.loginAlias as loginAlias, u.email as email, u.mobile AS mobile, u.password as password ";
+			params.put("profile", profile);
+		}
+		else
+		{
 			handler.handle(new Either.Right<>(new JsonArray()));
 			return;
 		}
