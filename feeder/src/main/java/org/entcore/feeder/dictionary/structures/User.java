@@ -856,10 +856,17 @@ public class User {
 					"WHERE u.firstNameSearchField = {firstName} AND u.lastNameSearchField = {lastName} AND ";
 			j.put("firstName", Validator.sanitize((String) j.remove("firstName")));
 			j.put("lastName", Validator.sanitize((String) j.remove("lastName")));
-		} else {
+		} else if ("Student".equals(j.getString("profile"))) {
 			query =
 					"MATCH (u:User {ine:{ine}}) " +
 					"WHERE ";
+		}
+		else
+		{
+			query = "MATCH (u:User) " +
+							"WHERE LOWER(u.firstName) = {firstName} AND LOWER(u.lastName) = {lastName} AND u.birthDate = {birthDate} AND ";
+			j.put("firstName", Validator.sanitize((String) j.remove("firstName")));
+			j.put("lastName", Validator.sanitize((String) j.remove("lastName")));
 		}
 		query +=
 				"HAS(u.activationCode) AND head(u.profiles) = {profile} " +
