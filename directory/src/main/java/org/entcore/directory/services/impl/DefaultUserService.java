@@ -786,17 +786,18 @@ public class DefaultUserService implements UserService {
 			params.put("notLevel", levelNotContains);
 		}
 
+		System.out.println(levelContains + " / " + levelNotContains + " / " + profile);
 		String query;
 		if ("Student".equals(profile)) {
 			query = "MATCH (u:User) " +
 					"WHERE has(u.password) and u.level contains {level} " + levelFilter +
 					"RETURN u.id as id, u.ine as ine, head(u.profiles) as profile, u.lastName as lastName, u.firstName as firstName, " +
-					"u.login as login, u.loginAlias as loginAlias, u.email as email, u.password as password ";
+					"u.login as login, u.loginAlias as loginAlias, u.email as email, u.mobile AS mobile, u.password as password ";
 		} else if ("Relative".equals(profile)) {
 			query = "MATCH (u:User)-[:RELATED]->(r:User) " +
 					"WHERE has(r.password) and u.level contains {level} " + levelFilter +
 					"RETURN r.id as id, u.ine as ine, head(r.profiles) as profile, r.lastName as lastName, r.firstName as firstName, " +
-					"r.login as login, r.loginAlias as loginAlias, r.email as email, r.password as password ";
+					"r.login as login, r.loginAlias as loginAlias, r.email as email, r.mobile AS mobile, r.password as password ";
 		} else {
 			handler.handle(new Either.Right<>(new JsonArray()));
 			return;
