@@ -34,20 +34,27 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.UserInStructure;
 import org.entcore.directory.services.TimetableService;
 import org.joda.time.DateTime;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -57,6 +64,38 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 public class TimetableController extends BaseController {
 
 	private TimetableService timetableService;
+	private Map<String, Long> importInProgress;
+
+	@Override
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions)
+	{
+		super.init(vertx, config, rm, securedActions);
+
+		this.importInProgress = MapFactory.getSyncClusterMap("timetable-imports", vertx);
+
+		Long periodicInProgressClear = config.getLong("periodicInProgressClear");
+
+		if (periodicInProgressClear != null)
+		{
+			vertx.setPeriodic(periodicInProgressClear, new Handler<Long>()
+			{
+				@Override
+				public void handle(Long event)
+				{
+					final long limit = System.currentTimeMillis() - config.getLong("periodicInProgressClear", 3600000l);
+					Set<Map.Entry<String, Long>> entries = new HashSet<>(importInProgress.entrySet());
+
+					for (Map.Entry<String, Long> e : entries)
+					{
+						if (e.getValue() == null || e.getValue() < limit)
+						{
+							importInProgress.remove(e.getKey());
+						}
+					}
+				}
+			});
+		}
+	}
 
 	@Get("/timetable")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -198,6 +237,13 @@ public class TimetableController extends BaseController {
 
 	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport)
 	{
+		if(importInProgress.containsKey(structureIdentifier) == true)
+		{
+			badRequest(request, "timetable.import.exists");
+			return;
+		}
+
+		importInProgress.put(structureIdentifier, System.currentTimeMillis());
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
 		final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
@@ -213,23 +259,34 @@ public class TimetableController extends BaseController {
 			@Override
 			public void handle(final HttpServerFileUpload upload) {
 				final String filename = path + File.separator + upload.filename();
-				upload.streamToFileSystem(filename).endHandler(new Handler<Void>() {
+				upload.streamToFileSystem(filename).endHandler(new Handler<Void>()
+				{
 					@Override
 					public void handle(Void event)
 					{
+						Handler<Either<JsonObject, JsonObject>> hnd = new Handler<Either<JsonObject, JsonObject>>()
+						{
+							@Override
+							public void handle(Either<JsonObject, JsonObject> result)
+							{
+								importInProgress.remove(structureIdentifier);
+								reportResponseHandler(vertx, path, request).handle(result);
+							}
+						};
+
 						if(feederImport != true)
 						{
 							timetableService.importTimetable(structureIdentifier, filename,
 									getHost(request), I18n.acceptLanguage(request),
 									identifierIsUAI, timetableType,
-									reportResponseHandler(vertx, path, request));
+									hnd);
 						}
 						else
 						{
 							timetableService.feederPronote(structureIdentifier, filename,
 									getHost(request), I18n.acceptLanguage(request),
 									identifierIsUAI,
-									reportResponseHandler(vertx, path, request));
+									hnd);
 						}
 					}
 				});
