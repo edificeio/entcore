@@ -160,6 +160,10 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       {
         this.notify.notify("management.edt.import.notify.unknown.content", "management.edt.import.notify.unknown.title", err.statusText, "error", { timeout: 12000 });
       }
+      if(err.error.error != null)
+      {
+        this.notify.notify("management.edt.import.notify.error.content", "management.edt.import.notify.error.title", err.error.error, "error", { timeout: 4000 });
+      }
       for(let i in err.error.errors)
       {
         let msg = err.error.errors[i];
