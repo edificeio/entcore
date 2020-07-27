@@ -47,6 +47,16 @@ public class SSOEduConnect extends AbstractSSOProvider {
 	}
 
 	private static final Map<String, String> academiesMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
+		put("0","ETRANGER");
+		put("1","PARIS");
+		put("2","AIX-MARSEILLE");
+		put("3","BESANCON");
+		put("4","BORDEAUX");
+		put("5","CAEN");
+		put("6","CLERMONT-FERRAND");
+		put("7","DIJON");
+		put("8","GRENOBLE");
+		put("9","LILLE");
 		put("00","ETRANGER");
 		put("01","PARIS");
 		put("02","AIX-MARSEILLE");
