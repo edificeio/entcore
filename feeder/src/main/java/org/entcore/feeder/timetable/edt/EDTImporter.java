@@ -60,7 +60,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			"SET HEAD(user).IDPN = {IDPN} " +
 			"RETURN DISTINCT HEAD(user).id as id, HEAD(user).IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
-			"MATCH (u:User {attachmentId : {idSconet}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
+			"MATCH (u:User {attachmentId : {IDPN}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
 	private static final String CLEAN_IDPN =
@@ -431,8 +431,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	}
 
 	public void addEleve(JsonObject currentEntity) {
-		final String sconetId = currentEntity.getString("IDSconet");
-		if (isNotEmpty(sconetId)) {
+		final String idpn = currentEntity.getString("IDPN");
+		if (isNotEmpty(idpn)) {
 			final JsonArray classes = currentEntity.getJsonArray("Classe");
 			final JsonArray pcs = currentEntity.getJsonArray("PartieDeClasse");
 
@@ -442,8 +442,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			if(studentsIdStrings.containsKey(idStr) == true)
 			{
 				ttReport.userFound();
-				studentToGroups(sconetId, classes, this.classes);
-				studentToGroups(sconetId, pcs, this.subClasses);
+				studentToGroups(idpn, classes, this.classes);
+				studentToGroups(idpn, pcs, this.subClasses);
 			}
 				else
 				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
@@ -455,7 +455,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		// Nothing to do
 	}
 
-	private void studentToGroups(String sconetId, JsonArray classes, Map<String, JsonObject> ref) {
+	private void studentToGroups(String idpn, JsonArray classes, Map<String, JsonObject> ref) {
 		if (classes != null && authorizeUpdateGroups == true) {
 			for (Object o : classes) {
 				if (o instanceof JsonObject) {
@@ -472,7 +472,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 								if (group != null) {
 									String name = group.getString("Nom");
 									txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-											.put("idSconet", sconetId)
+											.put("IDPN", idpn)
 											.put("externalId", this.getMappedGroupExternalId(name))
 											.put("source", EDT)
 											.put("inDate", DateTime.parse(inDate).getMillis())
