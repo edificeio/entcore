@@ -617,7 +617,7 @@ public class EDTFeeder implements Feed, EDTReader
 
     ele.firstName = currentEntity.getString("Prenom");
     ele.lastName = currentEntity.getString("Nom");
-    ele.setExternalId(currentEntity.getString("IDSconet"));
+    ele.setExternalId(currentEntity.getString("IDPN"));
 
     ele.birthDate = currentEntity.getString("DateNaissance");
 
