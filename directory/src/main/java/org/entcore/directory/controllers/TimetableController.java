@@ -24,11 +24,13 @@ import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
@@ -216,6 +218,15 @@ public class TimetableController extends BaseController {
 		});
 	}
 
+	@Delete("/timetable/import/progress")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void clearImportInProgress(final HttpServerRequest request)
+	{
+		this.importInProgress.clear();
+		Renders.ok(request);
+	}
+
 	@Post("/timetable/import/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -251,6 +262,7 @@ public class TimetableController extends BaseController {
 		request.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
+				importInProgress.remove(structureIdentifier);
 				badRequest(request, event.getMessage());
 				deleteImportPath(vertx, path);
 			}
@@ -298,6 +310,7 @@ public class TimetableController extends BaseController {
 				if (event.succeeded()) {
 					request.resume();
 				} else {
+					importInProgress.remove(structureIdentifier);
 					badRequest(request, "mkdir.error");
 				}
 			}
