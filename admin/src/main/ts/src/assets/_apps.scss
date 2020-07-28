@@ -444,3 +444,12 @@ i.library-large {
   @include fonticon;
   &::before {content: "\e94c";}
 }
+
+i.visioconf,
+i.visioconf-large {
+  @include fonticon;
+  &::before {
+    content: "\e957";
+    color: $purple;
+  }
+}
