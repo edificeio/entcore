@@ -94,6 +94,7 @@ public class EDTHandler extends DefaultHandler {
 				case "GrilleHoraire":
 				case "AnneeScolaire":
 				case "Ressource":
+				case "Absence":
 					currentEntityType = localName;
 					currentEntity = o;
 					break;
