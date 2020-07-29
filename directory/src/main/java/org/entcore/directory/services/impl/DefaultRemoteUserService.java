@@ -56,7 +56,10 @@ public class DefaultRemoteUserService implements RemoteUserService {
 	@Override
 	public void oldPlatformsSync(String level, String excludeLevel, String profile, Handler<Either<String, JsonObject>> handler) {
 		List<Future> futures = new ArrayList<>();
-		String uri = "/directory/user/level/list?level=" + level + "&profile=" + profile;
+		String uri = "/directory/user/level/list?profile=" + profile;
+		if(isNotEmpty(level)) {
+			uri += "&level=" + level;
+		}
 		if (isNotEmpty(excludeLevel)) {
 			uri += "&notLevel=" + excludeLevel;
 		}
