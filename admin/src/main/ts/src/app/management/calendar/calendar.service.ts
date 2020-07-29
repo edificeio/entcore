@@ -38,4 +38,11 @@ export class CalendarService {
     public deleteGrid(gridId: string): Observable<void> {
         return this.httpClient.delete<void>(`/directory/slotprofiles/${gridId}`);
     }
+
+    /**
+     * Get the value of the configuration key "displayAddSubject"
+     */
+    public getCalendarConfKey(): Observable<{ displayCalendar: boolean }> {
+        return this.httpClient.get<{ displayCalendar: boolean }>(`/admin/api/config/slotprofiles`);
+    }
 }

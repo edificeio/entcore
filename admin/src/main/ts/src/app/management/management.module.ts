@@ -22,19 +22,22 @@ import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import {ZimbraComponent} from './zimbra/zimbra.component';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
-import {SubjectsComponent} from "./subjects/subjects.component";
+import {SubjectsComponent} from './subjects/subjects.component';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
-import {SubjectCreate} from "./subjects/create/subject-create.component";
-import {SubjectDetails} from "./subjects/details/subject-details.component";
-import {SubjectsResolver} from "./subjects/subjects.resolver";
-import {SubjectsStore} from "./subjects/subjects.store";
-import {SubjectsService} from "./subjects/subjects.service";
-import {CalendarComponent} from "./calendar/calendar.component";
-import {MatRadioModule} from "@angular/material/radio";
-import {MatDividerModule} from "@angular/material/divider";
-import {FlexLayoutModule} from "@angular/flex-layout";
-import {ZimbraService} from "./zimbra/zimbra.service";
+import {SubjectCreate} from './subjects/create/subject-create.component';
+import {SubjectDetails} from './subjects/details/subject-details.component';
+import {SubjectsResolver} from './subjects/subjects.resolver';
+import {SubjectsStore} from './subjects/subjects.store';
+import {SubjectsService} from './subjects/subjects.service';
+import {CalendarComponent} from './calendar/calendar.component';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatDividerModule} from '@angular/material/divider';
+import {FlexLayoutModule} from '@angular/flex-layout';
+import {ZimbraService} from './zimbra/zimbra.service';
+import {CalendarService} from './calendar/calendar.service';
+import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
+import {SubjectsGuardService} from './subjects/subjects-guard.service';
 
 @NgModule({
     imports: [
@@ -95,7 +98,10 @@ import {ZimbraService} from "./zimbra/zimbra.service";
         },
         SubjectsResolver,
         SubjectsStore,
-        SubjectsService
+        SubjectsService,
+        CalendarService,
+        ImportEDTReportsService,
+        SubjectsGuardService
     ]
 })
 export class ManagementModule {}

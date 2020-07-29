@@ -49,7 +49,7 @@ export class ZimbraService {
      * Get the value of the configuration key "displayZimbraAdmin"
      */
   public getZimbraConfKey(): Observable<{ displayZimbra: boolean }> {
-        return this.httpClient.get<{ displayZimbra: boolean }>(`/admin/api/zimbra/config`);
+        return this.httpClient.get<{ displayZimbra: boolean }>(`/admin/api/config/zimbra`);
   }
 }
 
