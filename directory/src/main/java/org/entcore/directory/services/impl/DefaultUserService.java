@@ -804,7 +804,7 @@ public class DefaultUserService implements UserService {
 			query = "MATCH (u:User) " +
 							(levelContains != null ? "MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(:Class {name:{level}}) " : "") +
 							"WHERE HAS(u.password) AND {profile} IN u.profiles " +
-							(levelNotContains != null ? "OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(c:Class {name:{level}}) WITH u, c WHERE c = null " : "") +
+							(levelNotContains != null ? "OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(c:Class {name:{notLevel}}) WITH u, c WHERE c = null " : "") +
 							"RETURN u.id as id, head(u.profiles) as profile, u.lastName as lastName, u.firstName as firstName, u.birthDate as birthDate, " +
 							"u.login as login, u.loginAlias as loginAlias, u.email as email, u.mobile AS mobile, u.password as password ";
 			params.put("profile", profile);
