@@ -4,6 +4,9 @@ import { OdeComponent } from 'ngx-ode-core';
 import { routing } from '../../core/services/routing.service';
 import { StructureModel } from '../../core/store/models/structure.model';
 import {ZimbraService} from '../zimbra/zimbra.service';
+import {SubjectsService} from '../subjects/subjects.service';
+import {CalendarService} from '../calendar/calendar.service';
+import {ImportEDTReportsService} from '../import-edt/import-edt-reports.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 
@@ -23,47 +26,51 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'create.subjects', view: 'subjects/create', active: 'subjects'}
     ];
 
-    edt_tab = { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'};
+    edtTab = { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'};
 
     private structure: StructureModel;
 
-    private displayZimbra : boolean;
+    private displayZimbra: boolean;
 
-    constructor(injector: Injector, private zimbraService: ZimbraService) {
+    private displaySubjects: boolean;
+
+    private displayEdt: boolean;
+
+    private displayCalendar: boolean;
+
+    constructor(injector: Injector, private zimbraService: ZimbraService, private subjectsService: SubjectsService,
+                private calendarService: CalendarService, private importEDTReportsService: ImportEDTReportsService) {
         super(injector);
     }
 
     async admcSpecific() {
         const session: Session = await SessionModel.getSession();
-        if(session.isADMC() == true || this.structure.adminEDT == true)
-        {
-            for(let i = this.tabs.length; i-- > 0;)
-                if(this.tabs[i] == this.edt_tab)
+        if ((session.isADMC() || this.structure.adminEDT) && this.displayEdt) {
+            for (let i = this.tabs.length; i-- > 0;) {
+                if (this.tabs[i] === this.edtTab) {
                     return;
-            this.tabs.push(this.edt_tab);
-        }
-        else
-        {
-            for(let i = this.tabs.length; i-- > 0;)
-                if(this.tabs[i] == this.edt_tab)
+                }
+            }
+            this.tabs.push(this.edtTab);
+        } else {
+            for (let i = this.tabs.length; i-- > 0;) {
+                if (this.tabs[i] === this.edtTab) {
                     this.tabs.splice(i, 1);
+                }
+            }
         }
     }
 
     ngOnInit(): void {
         super.ngOnInit();
+        this.zimbraTabEnable();
+        this.subjectsTabEnable();
+        this.edtTabEnable();
+        this.calendarTabEnable();
+        this.changeDetector.markForCheck();
         // Watch selected structure
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
-                /* Remove zimbra tab if the config key is set to false */
-                this.zimbraService.getZimbraConfKey().subscribe((conf) => {
-                    this.displayZimbra = conf.displayZimbra;
-                    for (let i = 0; i < this.tabs.length; i++) {
-                        if (this.tabs[i].view === 'zimbra' && !this.displayZimbra) {
-                            this.tabs.splice(i, 1);
-                        }
-                    }
-                });
                 this.structure = data.structure;
                 this.admcSpecific();
                 this.changeDetector.markForCheck();
@@ -75,6 +82,54 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
                 this.changeDetector.markForCheck();
             }
         }));
+    }
+
+    subjectsTabEnable(): void {
+        /* Remove subjects tab if the config key is set to false */
+        this.subjectsService.getSubjectsConfKey().subscribe((conf) => {
+            this.displaySubjects = conf.displaySubjects;
+            for (let i = 0; i < this.tabs.length; i++) {
+                if (this.tabs[i].view === 'subjects/create' && !this.displaySubjects) {
+                    this.tabs.splice(i, 1);
+                }
+            }
+        });
+    }
+
+    zimbraTabEnable(): void {
+        /* Remove zimbra tab if the config key is set to false */
+        this.zimbraService.getZimbraConfKey().subscribe((conf) => {
+            this.displayZimbra = conf.displayZimbra;
+            for (let i = 0; i < this.tabs.length; i++) {
+                if (this.tabs[i].view === 'zimbra' && !this.displayZimbra) {
+                    this.tabs.splice(i, 1);
+                }
+            }
+        });
+    }
+
+    edtTabEnable(): void {
+        /* Remove edt tab if the config key is set to false */
+        this.importEDTReportsService.getEdtConfKey().subscribe((conf) => {
+            this.displayEdt = conf.displayEdt;
+            for (let i = 0; i < this.tabs.length; i++) {
+                if (this.tabs[i].view === 'import-edt' && !this.displayEdt) {
+                    this.tabs.splice(i, 1);
+                }
+            }
+        });
+    }
+
+    calendarTabEnable(): void {
+        /* Remove calendar tab if the config key is set to false */
+        this.calendarService.getCalendarConfKey().subscribe((conf) => {
+            this.displayCalendar = conf.displayCalendar;
+            for (let i = 0; i < this.tabs.length; i++) {
+                if (this.tabs[i].view === 'calendar' && !this.displayCalendar) {
+                    this.tabs.splice(i, 1);
+                }
+            }
+        });
     }
 
     onError(error: Error) {
