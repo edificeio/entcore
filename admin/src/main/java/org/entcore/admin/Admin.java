@@ -21,7 +21,7 @@ package org.entcore.admin;
 import org.entcore.admin.controllers.AdminController;
 import org.entcore.admin.controllers.BlockProfileTraceController;
 import org.entcore.admin.controllers.PlatformInfoController;
-import org.entcore.admin.controllers.ZimbraController;
+import org.entcore.admin.controllers.ConfigController;
 import org.entcore.admin.services.BlockProfileTraceService;
 import org.entcore.admin.services.impl.DefaultBlockProfileTraceService;
 import org.entcore.common.http.BaseServer;
@@ -44,7 +44,7 @@ public class Admin extends BaseServer {
 		 BlockProfileTraceService blockProfileTraceService = new DefaultBlockProfileTraceService("adminv2");
 		 blockProfileTraceController.setBlockProfileTraceService(blockProfileTraceService);
 		 addController(blockProfileTraceController);
-		 addController(new ZimbraController());
+		 addController(new ConfigController());
 		 
 		 final PlatformInfoController platformInfoController = new PlatformInfoController();
 

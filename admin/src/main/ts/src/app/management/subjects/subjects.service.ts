@@ -1,9 +1,9 @@
-import {Injectable} from "@angular/core";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs/Observable";
-import "rxjs/add/operator/do";
-import {SubjectsStore} from "./subjects.store";
-import {SubjectModel} from "../../core/store/models/subject.model";
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/operator/do';
+import {SubjectsStore} from './subjects.store';
+import {SubjectModel} from '../../core/store/models/subject.model';
 
 @Injectable()
 export class SubjectsService {
@@ -27,7 +27,7 @@ export class SubjectsService {
             code: subject.code
         })
             .do(() => {
-                let sub: SubjectModel = this.subjectsStore.structure.subjects.data.find(s => s.id === subject.id);
+                const sub: SubjectModel = this.subjectsStore.structure.subjects.data.find(s => s.id === subject.id);
                 if (sub) {
                     sub.label = subject.label;
                     sub.code = subject.code;
@@ -35,5 +35,12 @@ export class SubjectsService {
                 this.subjectsStore.subject.label = subject.label;
                 this.subjectsStore.subject.code = subject.code;
             });
+    }
+
+    /**
+     * Get the value of the configuration key "displaySubjects"
+     */
+    public getSubjectsConfKey(): Observable<{ displaySubjects: boolean }> {
+        return this.httpClient.get<{ displaySubjects: boolean }>(`/admin/api/config/subjects`);
     }
 }
