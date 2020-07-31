@@ -24,7 +24,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.calendar', view: 'calendar', active: 'calendar'},
         { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra'},
         { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'},
-        { label: 'create.subjects', view: 'subjects/create', active: 'subjects'}
+        { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects'}
     ];
 
     edtTab = { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'};
