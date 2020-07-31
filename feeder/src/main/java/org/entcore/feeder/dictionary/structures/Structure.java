@@ -208,7 +208,6 @@ public class Structure {
 		if (groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
 					"CREATE s<-[:DEPENDS]-(c:Group:FunctionalGroup {props}) ";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
@@ -227,7 +226,6 @@ public class Structure {
 		if (isNotEmpty(label) && groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
 					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) ";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
