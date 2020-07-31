@@ -23,7 +23,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.block.profile.tab', view: 'block-profiles', active: 'block-profiles'},
         { label: 'management.calendar', view: 'calendar', active: 'calendar'},
         { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra'},
-        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt'},
         { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects'}
     ];
 
@@ -46,7 +45,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
 
     async admcSpecific() {
         const session: Session = await SessionModel.getSession();
-        if ((session.isADMC() || this.structure.adminEDT) && this.displayEdt) {
+        if (session.isADMC() || (this.structure != null && this.structure.adminEDT) || this.displayEdt) {
             for (let i = this.tabs.length; i-- > 0;) {
                 if (this.tabs[i] === this.edtTab) {
                     return;
@@ -118,6 +117,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
                     this.tabs.splice(i, 1);
                 }
             }
+            this.admcSpecific();
         });
     }
 
