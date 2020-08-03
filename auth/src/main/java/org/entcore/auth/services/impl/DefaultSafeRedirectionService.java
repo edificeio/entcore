@@ -87,19 +87,19 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                 for (final String allowed : internalHosts) {
                     final Optional<String> extractedHost = extractHost(allowed);
                     if (extractedHost.isPresent())
-                        domainsWhiteList.add(extractedHost.get());
+                        domainsWhiteList.add(extractedHost.get().toLowerCase());
                 }
                 // configurable hosts
                 for (final String def : defaultDomainsWhiteList) {
                     final Optional<String> extractedHost = extractHost(def);
                     if (extractedHost.isPresent())
-                        domainsWhiteList.add(extractedHost.get());
+                        domainsWhiteList.add(extractedHost.get().toLowerCase());
                 }
                 // application hosts
                 for (final String addr : addresses) {
                     final Optional<String> extractedHost = extractHost(addr);
                     if (extractedHost.isPresent())
-                        domainsWhiteList.add(extractedHost.get());
+                        domainsWhiteList.add(extractedHost.get().toLowerCase());
                 }
                 if (!onReady.isComplete()) {
                     onReady.complete();
@@ -122,7 +122,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                 if (!extractedHost.isPresent()) {
                     logger.warn("Cannot parse destination uri : " + uri);
                     handler.handle(false);
-                } else if (!domainsWhiteList.contains(extractedHost.get())) {
+                } else if (!domainsWhiteList.contains(extractedHost.get().toLowerCase())) {
                     logger.warn("Redirection not authorized : " + uri);
                     handler.handle(false);
                 } else {
