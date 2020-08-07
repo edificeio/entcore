@@ -319,8 +319,8 @@ public class SamlController extends AbstractFederateController {
 	 * @return the base64 decoded and inflated string
 	 */
 	private static String base64decodedInflated(String input) throws Exception {
-		if (input.isEmpty()) {
-			return input;
+		if (input == null || input.isEmpty()) {
+			return "";
 		}
 		// Base64 decoder
 		byte[] decoded = Base64.getDecoder().decode(input);
