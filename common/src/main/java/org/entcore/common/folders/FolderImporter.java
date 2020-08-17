@@ -343,6 +343,8 @@ public class FolderImporter
 
 		Pattern fileId = Pattern.compile(StringUtils.UUID_REGEX);
 
+		List<String> usedIds = new ArrayList<String>();
+
 		this.fs.readDir(context.basePath, new Handler<AsyncResult<List<String>>>()
 		{
 			@Override
@@ -359,31 +361,36 @@ public class FolderImporter
 
 					LinkedList<Future> futures = new LinkedList<Future>();
 
-					for(String filePath : filesInDir)
+					fileFor: for(String filePath : filesInDir)
 					{
 						Future<Void> future = Future.future();
 						futures.add(future);
 
 						String fileTrunc = FileUtils.getFilename(filePath);
 						Matcher m = fileId.matcher(fileTrunc);
-						if(m.find() == false)
+
+						String fileName = null, fileId = null;
+						do
 						{
-							String error = "Filename " + fileTrunc + "does not contain the file id";
-							context.addError(null, null, error, null);
-							future.fail(new RuntimeException(error));
+							if(m.find() == false)
+							{
+								String error = "Filename " + fileTrunc + "does not contain the file id";
+								context.addError(null, null, error, null);
+								future.fail(new RuntimeException(error));
 
-							continue;
+								continue fileFor;
+							}
+
+							// File name format should be <FILE NAME>_<FILE ID><EXTENSION> or <FILE ID>_<FILE NAME><EXTENSION>
+							if(m.start() > 0)
+								fileName = fileTrunc.substring(0, m.start() - 1) + fileTrunc.substring(m.end());
+							else
+								fileName = fileTrunc.substring(m.end() + 1);
+
+							fileId = m.group();
 						}
-
-						String fileName;
-
-						// File name format should be <FILE NAME>_<FILE ID><EXTENSION> or <FILE ID>_<FILE NAME><EXTENSION>
-						if(m.start() > 0)
-							fileName = fileTrunc.substring(0, m.start() - 1) + fileTrunc.substring(m.end());
-						else
-							fileName = fileTrunc.substring(m.end() + 1);
-
-						String fileId = m.group();
+						while(usedIds.contains(fileId) == true); // This handles filenames like <UUID>_<UUID> that would cause conflicts
+						usedIds.add(fileId);
 
 						// Sanitise file data
 						JsonObject fileDocument = DocumentHelper.initFile(null, context.userId, context.userName, fileName, "media-library");
