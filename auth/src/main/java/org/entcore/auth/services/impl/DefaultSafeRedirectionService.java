@@ -1,6 +1,7 @@
 package org.entcore.auth.services.impl;
 
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -92,8 +93,12 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                 // configurable hosts
                 for (final String def : defaultDomainsWhiteList) {
                     final Optional<String> extractedHost = extractHost(def);
-                    if (extractedHost.isPresent())
+                    //allow wildcard
+                    if (extractedHost.isPresent()) {
                         domainsWhiteList.add(extractedHost.get().toLowerCase());
+                    } else if(def.startsWith("*.")){
+                        domainsWhiteList.add(def);
+                    }
                 }
                 // application hosts
                 for (final String addr : addresses) {
@@ -111,11 +116,15 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
 
     }
 
-    public void canRedirectTo(String uri, Handler<Boolean> handler) {
+    public void canRedirectTo(String uriOriginal, Handler<Boolean> handler) {
         ensureInit();
         if (!onReady.isComplete()) {
-            logger.warn("Trying to checkRedirect but whitelist is not loaded yet : " + uri);
+            logger.warn("Trying to checkRedirect but whitelist is not loaded yet : " + uriOriginal);
         }
+        try{
+            uriOriginal = URLDecoder.decode(uriOriginal, "UTF-8");//sometimes url are passed encoded
+        }catch(Exception e){}
+        final String uri = uriOriginal;
         onReady.setHandler(ready -> {
             if (ready.succeeded()) {
                 final Optional<String> extractedHost = extractHost(uri);
@@ -123,8 +132,14 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                     logger.warn("Cannot parse destination uri : " + uri);
                     handler.handle(false);
                 } else if (!domainsWhiteList.contains(extractedHost.get().toLowerCase())) {
-                    logger.warn("Redirection not authorized : " + uri);
-                    handler.handle(false);
+                    final String domain = extractedHost.get().toLowerCase();
+                    final String domainParent = StringUtils.substringAfter(domain, ".");
+                    if (!domainsWhiteList.contains("*."+domainParent)) {
+                        logger.warn("Redirection not authorized : " + uri);
+                        handler.handle(false);
+                    } else {
+                        handler.handle(true);
+                    }
                 } else {
                     handler.handle(true);
                 }
