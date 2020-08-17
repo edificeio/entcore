@@ -53,7 +53,7 @@ public class SafeRedirectionTest {
     static SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
     static final String entHost = "http://entcore.org";
     static final JsonObject redirectConfig = new JsonObject().put("delayInMinutes", 1l).put("defaultDomains",
-            new JsonArray().add("https://entcore-config.com").add("badhost"));
+            new JsonArray().add("https://entcore-config.com").add("badhost").add("*.entdomain.com"));
     static final URI entUri = URI.create(entHost);
 
     @BeforeClass
@@ -165,5 +165,41 @@ public class SafeRedirectionTest {
         context.assertEquals("www.facebook.com", DefaultSafeRedirectionService.extractHost(
                 "https://www.facebook.com/pg/Le-LHIL-Lyc%C3%A9e-H%C3%B4telier-International-de-Lille-1646472718941717/posts/?ref=page_internal")
                 .get());
+    }
+
+    @Test
+    public void testAuthServiceShouldRedirectSubdomainUsingWildcard(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https://subdomain.entdomain.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://subdomain.entdomain.com", "/custompath");
+    }
+
+    @Test
+    public void testAuthServiceShouldNotRedirectSubdomainUsingWildcard(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals(entHost + "/", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://subdomainentdomain.com", "/custompath");
+    }
+
+    @Test
+    public void testAuthServiceShouldRedirectSubdomainUsingWildcardAndEncoding(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https%3A%2F%2Fsubdomain.entdomain.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https%3A%2F%2Fsubdomain.entdomain.com", "/custompath");
     }
 }
