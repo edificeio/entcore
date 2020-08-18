@@ -147,6 +147,7 @@
     "classAdmin.unlink.success": "Les utilisateurs ont été retirés de la classe.",
     "classAdmin.unlink.error": "Les utilisateurs n'ont pas pu être retirés de la classe.",
     "classAdmin.unlink.text": "Attention, vous vous apprétez à retirer [[selectionCount]] utilisateurs de la classe [[currentClass]], si vous confirmer cette action,&nbsp;<b>vous ne verrez plus apparaître ces utilisateurs dans votre classe</b>. Ils pourront être ajoutés dans d'autres classes par la suite.",
+    "classAdmin.info.user.resetCode": "Le compte est bien actif, l'utilisateur peut toujours se connecter. Le code temporaire de renouvellement de mot de passe que vous voyez a pu être généré par l'utilisateur lui-même, un administrateur local ou l'enseignant de la classe. Ce code s'affichera tant qu'il n'est pas utilisé par l'utilisateur.",
     "directory": "Annuaire",
     "directory.Guest": "Invité",
     "directory.Personnel": "Personnel",

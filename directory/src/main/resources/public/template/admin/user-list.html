@@ -83,7 +83,15 @@
                             </td>
                             <td ng-if="isSelectedTab(kinds.Student)"><span ng-if="user.hasBirthDate">[[user.shortBirthDate]]</span></td>
                             <td>[[user.login]]</td>
-                            <td ng-class="displayCodeCss(user)">[[displayCode(user)]]</td>
+                            <td ng-class="displayCodeCss(user)" style="width: 230px">
+                                [[displayCode(user)]]
+                                <span class="tipbox left left-spacing" ng-if="user.resetCode">
+                                    <i class="help" style="color: #3889c1"></i>
+                                    <div class="tipbox-content">
+                                        <span class="small-text"><i18n>classAdmin.info.user.resetCode</i18n>></span>
+                                    </div>
+                                </span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
