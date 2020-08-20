@@ -397,8 +397,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
-	protected void persistCourse(JsonObject object) {
-		if (object == null) {
+	protected void persistCourse(JsonObject object)
+	{
+		if (object == null || DateTime.parse(object.getString("endDate")).getMillis() < importTimestamp) {
 			ttReport.courseIgnored();
 			return;
 		}
@@ -619,6 +620,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		return baseQuery.copy()
 			.put("deleted", new JsonObject().put("$exists", false))
 			.put("modified", new JsonObject().put("$ne", importTimestamp))
+			.put("$expr", new JsonObject()
+				.put("$gte", new JsonArray()
+					.add(new JsonObject().put("$dateFromString", new JsonObject().put("dateString", "$endDate")))
+					.add(new JsonObject().put("$dateFromString", new JsonObject().put("dateString", new DateTime(importTimestamp).toString())))))
 			.put("$or", new JsonArray()
 				.add(new JsonObject().put("manual", new JsonObject().put("$exists", false)))
 				.add(new JsonObject().put("manual", false))
