@@ -74,6 +74,9 @@ public class Starter extends BaseServer {
 			JsonObject emailConfig = config.getJsonObject("emailConfig");
 			if (emailConfig != null) {
 				serverMap.put("emailConfig", emailConfig.encode());
+				if(emailConfig.containsKey("postgresql")){
+					addController(new MailController(vertx, emailConfig));
+				}
 			}
 			JsonObject filesystem = config.getJsonObject("file-system");
 			if (filesystem != null) {
