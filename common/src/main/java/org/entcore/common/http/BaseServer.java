@@ -67,7 +67,7 @@ import java.io.File;
 import java.util.*;
 
 public abstract class BaseServer extends Server {
-
+	private static String moduleName;
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler;
 	private SearchingHandler searchingHandler;
@@ -75,8 +75,13 @@ public abstract class BaseServer extends Server {
 	private String contentSecurityPolicy;
 	private AccessLogger accessLogger;
 
+	public static String getModuleName() {
+		return moduleName;
+	}
+
 	@Override
 	public void start() throws Exception {
+		moduleName = getClass().getSimpleName();
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}

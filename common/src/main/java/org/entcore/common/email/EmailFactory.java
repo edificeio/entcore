@@ -28,13 +28,19 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.email.impl.PostgresqlEmailSender;
 
 import java.net.URISyntaxException;
 
 public class EmailFactory {
-
+	public static final int PRIORITY_VERY_LOW = -2;
+	public static final int PRIORITY_LOW = -1;
+	public static final int PRIORITY_NORMAL = 0;
+	public static final int PRIORITY_HIGH = 1;
+	public static final int PRIORITY_VERY_HIGH = 2;
 	private final Vertx vertx;
 	private final JsonObject config;
+	private final JsonObject moduleConfig;
 	private final Logger log = LoggerFactory.getLogger(EmailFactory.class);
 
 	public EmailFactory(Vertx vertx) {
@@ -42,6 +48,7 @@ public class EmailFactory {
 	}
 
 	public EmailFactory(Vertx vertx, JsonObject config) {
+		this.moduleConfig = config;
 		this.vertx = vertx;
 		if (config != null && config.getJsonObject("emailConfig") != null) {
 			this.config = config.getJsonObject("emailConfig");
@@ -57,6 +64,10 @@ public class EmailFactory {
 	}
 
 	public EmailSender getSender() {
+		return getSenderWithPriority(PRIORITY_NORMAL);
+	}
+
+	public EmailSender getSenderWithPriority(int priority) {
 		EmailSender sender = null;
 		if (config != null){
 			if ("SendInBlue".equals(config.getString("type"))) {
@@ -73,6 +84,9 @@ public class EmailFactory {
 					log.error(e.getMessage(), e);
 					vertx.close();
 				}
+			}
+			if(config.containsKey("postgresql")){
+				sender = new PostgresqlEmailSender(sender,vertx,moduleConfig, config, priority);
 			}
 		} else {
 			sender = new SmtpSender(vertx);

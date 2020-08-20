@@ -74,7 +74,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		super(vertx, config);
 		eb = Server.getEventBus(vertx);
 		EmailFactory emailFactory = new EmailFactory(this.vertx, config);
-		emailSender = emailFactory.getSender();
+		emailSender = emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
 		USERS_LIMIT = config.getInteger("users-loop-limit", 25);
 		super.init(vertx, config);
 	}
