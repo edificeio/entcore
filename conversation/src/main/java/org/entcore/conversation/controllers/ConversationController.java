@@ -20,7 +20,6 @@
 package org.entcore.conversation.controllers;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -146,7 +145,7 @@ public class ConversationController extends BaseController {
 								@Override
 								public void handle(JsonObject parent) {
 									final String threadId;
-									if( parent != null && ConversationController.getHaveMessagesSameReceivers(parent, message)){
+									if( parent != null){
 										threadId = parent.getString("thread_id");
 									}else{
 										threadId = null;
@@ -181,29 +180,6 @@ public class ConversationController extends BaseController {
 				}
 			}
 		});
-	}
-
-	public static boolean getHaveMessagesSameReceivers(JsonObject backMessage, JsonObject newMessage) {
-		// Compute backMessage's people
-		JsonArray backMessagePeople = backMessage.getJsonArray("to");
-		HashSet<String> backMessagePeopleSet = new HashSet<>();
-		for(Object o: backMessagePeople){
-			if ( o instanceof String ) {
-				backMessagePeopleSet.add((String)o);
-			}
-		}
-		backMessagePeopleSet.add(backMessage.getString("from"));
-		// Compute newMessage's people
-		JsonArray newMessagePeople = newMessage.getJsonArray("to");
-		HashSet<String> newMessagePeopleSet = new HashSet<>();
-		for(Object o: newMessagePeople){
-			if ( o instanceof String ) {
-				newMessagePeopleSet.add((String)o);
-			}
-		}
-		newMessagePeopleSet.add(newMessage.getString("from"));
-		// Compare two sets
-		return newMessagePeopleSet.equals(backMessagePeopleSet);
 	}
 
 	@Put("draft/:id")
@@ -322,7 +298,7 @@ public class ConversationController extends BaseController {
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
 									final String threadId;
-									if( parentMsg != null && ConversationController.getHaveMessagesSameReceivers(parentMsg, message)){
+									if( parentMsg != null){
 										threadId = parentMsg.getString("thread_id");
 									}else{
 										threadId = null;
