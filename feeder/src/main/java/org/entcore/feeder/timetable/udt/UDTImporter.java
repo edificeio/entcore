@@ -136,35 +136,72 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_12.xml"); // Lignes de Fiches-T
 					generateCourses(startDateWeek1.getWeekOfWeekyear(), true);
 					final String UCal12Filter = "(UDCal|udcal)_12_[0-9]+.xml";
+					final String UCal23Filter = "(UDCal|udcal)_23_[0-9]+.xml";
 					vertx.fileSystem().readDir(basePath, UCal12Filter, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<List<String>> event) {
+						public void handle(AsyncResult<List<String>> event_12) {
 							if (event.succeeded()) {
-								try {
-									for (String p : event.result()) {
-										Matcher m = filenameWeekPatter.matcher(p);
-										if (m.find()) {
-											final int weekNumber = Integer.parseInt(m.group(2));
-											if (periods.containsKey(weekNumber)) {
-												ttReport.addWeek(weekNumber);
-												parse(p);
-												parsedWeeks.add(weekNumber);
-												generateCourses(weekNumber, false);
-											} else {
-												log.warn("Ignore week : " + weekNumber);
+								vertx.fileSystem().readDir(basePath, UCal23Filter, new Handler<AsyncResult<List<String>>>() {
+									@Override
+									public void handle(AsyncResult<List<String>> event_23) {
+										if (event.succeeded()) {
+											try {
+												for (String p : event_12.result())
+												{
+													Matcher m = filenameWeekPatter.matcher(p);
+													if (m.find()) {
+														final int weekNumber = Integer.parseInt(m.group(2));
+														if (periods.containsKey(weekNumber)) {
+															ttReport.addWeek(weekNumber);
+															parse(p);
+															parsedWeeks.add(weekNumber);
+
+															boolean foundCoens = false;
+															for(String coensFile : event_23.result())
+															{
+																Matcher mcoens = filenameWeekPatter.matcher(coensFile);
+																if(mcoens.find())
+																{
+																	final int weekCoens = Integer.parseInt(mcoens.group(2));
+																	if(weekNumber == weekCoens)
+																	{
+																		foundCoens = true;
+
+																		Map<String, Set<String>> theoreticalCoens = coens;
+																		Map<String, Set<String>> theoreticalCoensUDT = coensUDT;
+																		coens = new HashMap<String, Set<String>>();
+																		coensUDT = new HashMap<String, Set<String>>();
+
+																		parse(coensFile);
+																		generateCourses(weekNumber, false);
+
+																		coens = theoreticalCoens;
+																		coensUDT = theoreticalCoensUDT;
+
+																		break;
+																	}
+																}
+															}
+															if(foundCoens == false)
+																generateCourses(weekNumber, false);
+														} else {
+															log.warn("Ignore week : " + weekNumber);
+														}
+													}
+												}
+												persistUsedGroups();
+
+												if(authorizeUpdateGroups == true)
+													for(String group : functionalGroupExternalIdCopy.values())
+														ttReport.groupDeleted(group);
+
+												commit(handler);
+											} catch (Exception e) {
+												handler.handle(new DefaultAsyncResult<Report>(e));
 											}
 										}
 									}
-									persistUsedGroups();
-
-									if(authorizeUpdateGroups == true)
-										for(String group : functionalGroupExternalIdCopy.values())
-											ttReport.groupDeleted(group);
-
-									commit(handler);
-								} catch (Exception e) {
-									handler.handle(new DefaultAsyncResult<Report>(e));
-								}
+								});
 							}
 						}
 					});
