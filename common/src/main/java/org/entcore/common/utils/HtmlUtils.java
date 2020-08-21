@@ -42,12 +42,12 @@ public class HtmlUtils {
         htmlEntities.put("&euro;","\u20a0");
     }
     private static Set<String> htmlEntitiesKeys = htmlEntities.keySet();
-    private static final Pattern imageSrcPattern = Pattern.compile("<img src=\"([^\"]+)");
-    private static final Pattern audioSrcPattern = Pattern.compile("<audio src=\"([^\"]+)");
-    private static final Pattern videoSrcPattern = Pattern.compile("<video src=\"([^\"]+)");
-    private static final Pattern iframeSrcPattern = Pattern.compile("<iframe src=\"([^\"]+)");
-    private static final Pattern attachmentsPattern = Pattern.compile("<div class=\"attachments\">\\s*(<a([\\s\\S]+)<\\/a>\\s*)+<\\/div>");
-    private static final Pattern attachmentLinkPattern = Pattern.compile("<a href=\"([^\"]+)\".*>\\s*<div class=\"download\"><\\/div>(.+)<\\/a>");
+    private static final Pattern imageSrcPattern = Pattern.compile("<img(\\s+.*)?\\ssrc=\"([^\"]+)");
+    private static final Pattern audioSrcPattern = Pattern.compile("<audio(\\s+.*)?\\ssrc=\"([^\"]+)");
+    private static final Pattern videoSrcPattern = Pattern.compile("<video(\\s+.*)?\\ssrc=\"([^\"]+)");
+    private static final Pattern iframeSrcPattern = Pattern.compile("<iframe(\\s+.*)?\\ssrc=\"([^\"]+)");
+    private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+.*)?\\sclass=\"attachments\">\\s*(<a([\\s\\S]+)<\\/a>\\s*)+<\\/div>");
+    private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+.*)?\\shref=\"([^\"]+)\".*>\\s*<div(\\s+.*)?\\sclass=\"download\"><\\/div>(.+)<\\/a>");
     private static final Pattern plainTextPattern = Pattern.compile(">([^</]+)");
     private static final Pattern htmlEntityPattern = Pattern.compile("&.*?;");
 
@@ -55,7 +55,7 @@ public class HtmlUtils {
         JsonArray images = new JsonArray();
         Matcher matcher = imageSrcPattern.matcher(htmlContent);
         while (matcher.find()) {
-            images.add(matcher.group(1));
+            images.add(matcher.group(2));
         }
         return images;
     }
@@ -65,7 +65,7 @@ public class HtmlUtils {
         Matcher matcher = imageSrcPattern.matcher(htmlContent);
         int nbfind = 0;
         while (nbfind < limit && matcher.find()) {
-            images.add(matcher.group(1));
+            images.add(matcher.group(2));
             nbfind++;
         }
 
@@ -78,11 +78,14 @@ public class HtmlUtils {
         while (matcher.find()){
             sb.append(matcher.group(1));
         }
-        return sb.toString();
+        return sb.toString().replaceAll(attachmentsPattern.pattern(),"");
     }
 
     public static String extractFormatText(String htmlContent){
-        return formatSpaces(unescapeHtmlEntities(htmlContent.replaceAll("<(/div|/p|/li|br|)>","\n").replaceAll("<.*?>","")));
+        String textWithoutattachments = htmlContent.replaceAll(attachmentsPattern.pattern(),"");
+        String onlyText = textWithoutattachments.replaceAll("<(/div|/p|/li|br|)>","\n").replaceAll("<.*?>","");
+        String unescaped = unescapeHtmlEntities(onlyText);
+        return formatSpaces(unescaped);
     }
 
     public static String extractFormatText(String htmlContent, int limitLines){
@@ -123,9 +126,9 @@ public class HtmlUtils {
         int nbFound = 0;
         Matcher matcher = imageSrcPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            medias.put(matcher.start(1), new JsonObject()
+            medias.put(matcher.start(2), new JsonObject()
                     .put("type", "image")
-                    .put("src", matcher.group(1))
+                    .put("src", matcher.group(2))
             );
             nbFound++;
         }
@@ -133,9 +136,9 @@ public class HtmlUtils {
         nbFound = 0;
         matcher = audioSrcPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            medias.put(matcher.start(1), new JsonObject()
+            medias.put(matcher.start(2), new JsonObject()
                     .put("type", "audio")
-                    .put("src", matcher.group(1))
+                    .put("src", matcher.group(2))
             );
             nbFound++;
         }
@@ -143,9 +146,9 @@ public class HtmlUtils {
         nbFound = 0;
         matcher = videoSrcPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            medias.put(matcher.start(1), new JsonObject()
+            medias.put(matcher.start(2), new JsonObject()
                     .put("type", "video")
-                    .put("src", matcher.group(1))
+                    .put("src", matcher.group(2))
             );
             nbFound++;
         }
@@ -153,26 +156,28 @@ public class HtmlUtils {
         nbFound = 0;
         matcher = iframeSrcPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            medias.put(matcher.start(1), new JsonObject()
+            medias.put(matcher.start(2), new JsonObject()
                     .put("type", "iframe")
-                    .put("src", matcher.group(1))
+                    .put("src", matcher.group(2))
             );
             nbFound++;
         }
         // 5. Attachments
         nbFound = 0;
         matcher = attachmentsPattern.matcher(htmlContent);
+        Matcher subMatcher;
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            int start = matcher.start(1);
-            String attachmentBlockContent = matcher.group(1);
-            matcher = attachmentLinkPattern.matcher(attachmentBlockContent);
-            while ((limitEach == 0 || nbFound < limitEach) && matcher.find())
-            medias.put(matcher.start(1) + start, new JsonObject()
-                    .put("type", "attachment")
-                    .put("src", matcher.group(1))
-                    .put("name", matcher.group(2))
-            );
-            nbFound++;
+            int start = matcher.start(2);
+            String attachmentBlockContent = matcher.group(2);
+            subMatcher = attachmentLinkPattern.matcher(attachmentBlockContent);
+            while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+                medias.put(subMatcher.start(2) + start, new JsonObject()
+                        .put("type", "attachment")
+                        .put("src", subMatcher.group(2))
+                        .put("name", subMatcher.group(4))
+                );
+                nbFound++;
+            }
         }
         // 6. Compute Json Array in order
         return new JsonArray(new ArrayList(medias.values()));
