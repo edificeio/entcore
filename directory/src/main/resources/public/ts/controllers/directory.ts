@@ -31,6 +31,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.currentDeletingFavorite = null;
 	$scope.visibleUser = false;
 
+	$scope.showDefaultValue = false;
+	$scope.defaultValueTitle = '';
+
 	$scope.currentUser = null;
 	$scope.pastUsers = [];
 
@@ -151,6 +154,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.create.favorite.options = $scope.generateCriteriaOptions($scope.create.favorite.filters);
 
 			$scope.classesOrder = ['structId', 'label'];
+
+			/* RM#30674 FEAT (JCBE) : applies only to wide screens. */
+			if (!ui.breakpoints.checkMaxWidth("wideScreen"))
+				await $scope.selectDefaultValues();
 
 			template.open('page', 'directory');
 			template.close('list');
@@ -318,6 +325,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = async function(){
+		$scope.showDefaultValue = false;
+		$scope.defaultValueTitle = '';
+
 		$scope.indexFormChanged($scope.search.index);
 
 		// Favorite
@@ -745,6 +755,49 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		else {
 			await $scope.selectFavorite($scope.favorites.first(), noupdate);
 		}
+	};
+
+	/* RM#30674 FEAT (JCBE) : generates a default content to display on wide screens, instead of emptyscreen. */
+	$scope.selectDefaultValues = async function() {
+		$scope.showDefaultValue = false;
+		$scope.defaultValueTitle = "";
+
+		if (model.me.type === 'PERSRELELEVE') {
+			// Defaults to "teachers of my children".
+			$scope.defaultValueTitle = lang.translate('directory.default.relative.title');
+			await directory.directory.users.searchDirectory("", {
+					structures: model.me.structures,
+					profiles: ["Teacher"]
+				}, null, false
+			);
+		}
+
+		if (model.me.type === 'ELEVE') {
+			// Defaults to "My classroom"
+			$scope.defaultValueTitle = lang.translate('birthday.class') +" - "+ model.me.level;
+			await directory.directory.users.searchDirectory("", {
+					classes: model.me.classes
+				}, null, false
+			);
+		}
+
+		if ( model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT' ) {
+			// Defaults to "Teachers and personnels of the main structure with communication rules".
+			$scope.defaultValueTitle = lang.translate('directory.default.teacher.title') +" "+ model.me.structureNames[0];
+			await directory.directory.users.searchDirectory("", {
+					structures: [model.me.structures[0]],
+					profiles: ["Teacher", "Personnel"]
+				}, null, false
+			);
+		}
+
+		if( $scope.defaultValueTitle.length > 0 ) {
+			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
+			template.open('dominosUser', 'dominos-user');
+			$scope.showDefaultValue = true;
+		}
+		return $scope.showDefaultValue;
 	};
 
 	$scope.sortByName = function(a, b) {

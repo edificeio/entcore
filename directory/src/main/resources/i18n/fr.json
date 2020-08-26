@@ -871,5 +871,8 @@
     "directory.has.app": "Application mobile",
     "directory.profile.otp" : "Connexion à l'application mobile",
     "directory.generate.otp" : "Générer mon mot de passe temporaire",
-	"error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance."
+    "error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance.",
+    "directory.default.relative.title" : "Enseignants de mes enfants",
+    "directory.default.teacher.title" : "Enseignants et personnels de l'établissement"
+    
 }
