@@ -63,6 +63,9 @@
 <div class="dominos centered-text" ng-class="dominoClass">
 
 	<div class="dominos-infos" ng-if="(search.index === 0 && !display.loading && users.match(search.text).length) || (search.index === 1 && !display.loading && !currentGroup && groups.match(search.text).length)">
+
+		<h2 class="default-value-title" ng-if="showDefaultValue && defaultValueTitle.length>0">[[defaultValueTitle]]</h2>
+
 		<div class="flex-row justify-center align-center f-wrap">
 			<!-- Users -->
 			<div class="item user" 
