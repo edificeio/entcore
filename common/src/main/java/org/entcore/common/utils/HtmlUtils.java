@@ -46,8 +46,8 @@ public class HtmlUtils {
     private static final Pattern audioSrcPattern = Pattern.compile("<audio(\\s+.*)?\\ssrc=\"([^\"]+)");
     private static final Pattern videoSrcPattern = Pattern.compile("<video(\\s+.*)?\\ssrc=\"([^\"]+)");
     private static final Pattern iframeSrcPattern = Pattern.compile("<iframe(\\s+.*)?\\ssrc=\"([^\"]+)");
-    private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+.*)?\\sclass=\"attachments\">\\s*(<a([\\s\\S]+)<\\/a>\\s*)+<\\/div>");
-    private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+.*)?\\shref=\"([^\"]+)\".*>\\s*<div(\\s+.*)?\\sclass=\"download\"><\\/div>(.+)<\\/a>");
+    private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+.*)?\\sclass=\"attachments\"(\\s+.*)?>\\s*((<a\\s+.*?>[\\s\\S]*?<\\/a>\\s*)+)<\\/div>");
+    private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+.*?)href=\"([^\"]+?)\"(\\s*.*?)><div(\\s+.*?)class=\"download\"><\\/div>([^<]+?)<\\/a>");
     private static final Pattern plainTextPattern = Pattern.compile(">([^</]+)");
     private static final Pattern htmlEntityPattern = Pattern.compile("&.*?;");
 
@@ -167,14 +167,14 @@ public class HtmlUtils {
         matcher = attachmentsPattern.matcher(htmlContent);
         Matcher subMatcher;
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            int start = matcher.start(2);
-            String attachmentBlockContent = matcher.group(2);
+            int start = matcher.start(3);
+            String attachmentBlockContent = matcher.group(3);
             subMatcher = attachmentLinkPattern.matcher(attachmentBlockContent);
-            while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
+            while ((limitEach == 0 || nbFound < limitEach) && subMatcher.find()) {
                 medias.put(subMatcher.start(2) + start, new JsonObject()
                         .put("type", "attachment")
                         .put("src", subMatcher.group(2))
-                        .put("name", subMatcher.group(4))
+                        .put("name", subMatcher.group(5))
                 );
                 nbFound++;
             }
