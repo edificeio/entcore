@@ -105,6 +105,19 @@ public class SafeRedirectionTest {
     }
 
     @Test
+    public void testAuthServiceShouldRedirectToInternalHostIgnoreCase(TestContext context) {
+        final String host = entUri.toString().toUpperCase().replaceAll("HTTP:","http:");
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals(host + "/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, host, "/custompath");
+    }
+
+    @Test
     public void testAuthServiceShouldRedirectToExternalHost(TestContext context) {
         final Async async = context.async();
         final HttpServerRequest request = getRequest();
@@ -114,6 +127,18 @@ public class SafeRedirectionTest {
             async.complete();
         });
         redirectionService.redirect(request, "https://connecteur2.com", "/custompath");
+    }
+
+    @Test
+    public void testAuthServiceShouldRedirectToExternalHostIgnoreCase(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https://Connecteur2.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://Connecteur2.com", "/custompath");
     }
 
     @Test
@@ -130,6 +155,19 @@ public class SafeRedirectionTest {
     }
 
     @Test
+    public void testAuthServiceShouldRedirectToExternalHostWithoutSchemeIgnoreCase(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            // webutils seems to concat enthost with host without scheme??
+            context.assertEquals("http://entcore.orgConnecteur2.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "Connecteur2.com", "/custompath");
+    }
+
+    @Test
     public void testAuthServiceShouldRedirectToConfiguredHost(TestContext context) {
         final Async async = context.async();
         final HttpServerRequest request = getRequest();
@@ -139,6 +177,18 @@ public class SafeRedirectionTest {
             async.complete();
         });
         redirectionService.redirect(request, "https://entcore-config.com", "/custompath");
+    }
+
+    @Test
+    public void testAuthServiceShouldRedirectToConfiguredHostIgnoreCase(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https://Entcore-config.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://Entcore-config.com", "/custompath");
     }
 
     @Test
@@ -180,6 +230,18 @@ public class SafeRedirectionTest {
     }
 
     @Test
+    public void testAuthServiceShouldRedirectSubdomainUsingWildcardIgnoreCase(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https://Subdomain.Entdomain.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://Subdomain.Entdomain.com", "/custompath");
+    }
+
+    @Test
     public void testAuthServiceShouldNotRedirectSubdomainUsingWildcard(TestContext context) {
         final Async async = context.async();
         final HttpServerRequest request = getRequest();
@@ -201,5 +263,17 @@ public class SafeRedirectionTest {
             async.complete();
         });
         redirectionService.redirect(request, "https%3A%2F%2Fsubdomain.entdomain.com", "/custompath");
+    }
+
+    @Test
+    public void testAuthServiceShouldRedirectSubdomainUsingWildcardAndEncodingIgnoreCase(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https%3A%2F%2FSubdomain.Entdomain.com/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "https%3A%2F%2FSubdomain.Entdomain.com", "/custompath");
     }
 }

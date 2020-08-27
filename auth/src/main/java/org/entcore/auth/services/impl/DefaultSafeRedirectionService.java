@@ -97,7 +97,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                     if (extractedHost.isPresent()) {
                         domainsWhiteList.add(extractedHost.get().toLowerCase());
                     } else if(def.startsWith("*.")){
-                        domainsWhiteList.add(def);
+                        domainsWhiteList.add(def.toLowerCase());
                     }
                 }
                 // application hosts
@@ -124,7 +124,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
         try{
             uriOriginal = URLDecoder.decode(uriOriginal, "UTF-8");//sometimes url are passed encoded
         }catch(Exception e){}
-        final String uri = uriOriginal;
+        final String uri = uriOriginal.toLowerCase();
         onReady.setHandler(ready -> {
             if (ready.succeeded()) {
                 final Optional<String> extractedHost = extractHost(uri);
