@@ -61,6 +61,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
 
     public static Optional<String> extractHost(String address) {
         try {
+            address = address.trim();
             if (address.startsWith("http:") || address.startsWith("https:")) {
                 // uri with scheme
                 return Optional.ofNullable(parseUri(address).getHost());
@@ -72,7 +73,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                 return Optional.ofNullable(parseUri("https://" + address).getHost());
             }
         } catch (Exception e) {
-            logger.warn("Cannot parse host : " + address);
+            logger.warn("Cannot parse host : " + address+". "+e.getMessage());
             return Optional.empty();
         }
     }
@@ -125,6 +126,10 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
             uriOriginal = URLDecoder.decode(uriOriginal, "UTF-8");//sometimes url are passed encoded
         }catch(Exception e){}
         final String uri = uriOriginal.toLowerCase();
+        if(uri.matches("^/[A-Za-z0-9].*$")){ //uri is in fact a path
+            handler.handle(true);
+            return;
+        }
         onReady.setHandler(ready -> {
             if (ready.succeeded()) {
                 final Optional<String> extractedHost = extractHost(uri);

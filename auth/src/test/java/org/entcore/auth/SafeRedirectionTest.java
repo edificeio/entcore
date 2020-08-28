@@ -53,7 +53,7 @@ public class SafeRedirectionTest {
     static SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
     static final String entHost = "http://entcore.org";
     static final JsonObject redirectConfig = new JsonObject().put("delayInMinutes", 1l).put("defaultDomains",
-            new JsonArray().add("https://entcore-config.com").add("badhost").add("*.entdomain.com"));
+            new JsonArray().add("https://entcore-config.com").add("badhost").add("*.entdomain.com").add("https://teleservices.ac-versailles.fr/ts"));
     static final URI entUri = URI.create(entHost);
 
     @BeforeClass
@@ -276,4 +276,29 @@ public class SafeRedirectionTest {
         });
         redirectionService.redirect(request, "https%3A%2F%2FSubdomain.Entdomain.com", "/custompath");
     }
+
+    @Test
+    public void testAuthServiceShouldRedirectToFakeUri(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("http://entcore.org/custompath", location);
+            async.complete();
+        });
+        redirectionService.redirect(request, "/custompath", "");
+    }
+    @Test
+    public void testAuthServiceShouldRedirectToAdressWithSpace(TestContext context) {
+        final Async async = context.async();
+        final HttpServerRequest request = getRequest();
+        request.response().endHandler(end -> {
+            final String location = request.response().headers().get("Location");
+            context.assertEquals("https://teleservices.ac-versailles.fr/ts", location.trim());
+            async.complete();
+        });
+        redirectionService.redirect(request, "https://teleservices.ac-versailles.fr/ts ", "");
+    }
+
+
 }
