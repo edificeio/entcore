@@ -20,6 +20,7 @@
 package org.entcore.conversation.controllers;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -145,7 +146,10 @@ public class ConversationController extends BaseController {
 								@Override
 								public void handle(JsonObject parent) {
 									final String threadId;
-									if( parent != null){
+									if( parent != null
+											&& (ConversationController.getHaveMessagesSameReceivers(parent, message)
+											|| ConversationController.getIsUserGroupsAreRceveivers(user, message))
+									){
 										threadId = parent.getString("thread_id");
 									}else{
 										threadId = null;
@@ -180,6 +184,39 @@ public class ConversationController extends BaseController {
 				}
 			}
 		});
+	}
+
+	public static HashSet<String> getMessagePeople(JsonObject message) {
+		HashSet<String> messagePeopleSet = new HashSet<>();
+		JsonArray messagePeopleTo = message.getJsonArray("to");
+		for(Object o: messagePeopleTo){
+			if ( o instanceof String ) {
+				messagePeopleSet.add((String)o);
+			}
+		}
+		JsonArray messagePeopleCc = message.getJsonArray("cc");
+		for(Object o: messagePeopleCc){
+			if ( o instanceof String ) {
+				messagePeopleSet.add((String)o);
+			}
+		}
+		messagePeopleSet.add(message.getString("from"));
+		return messagePeopleSet;
+	}
+
+	public static boolean getHaveMessagesSameReceivers(JsonObject backMessage, JsonObject newMessage) {
+		HashSet<String> backMessagePeopleSet = ConversationController.getMessagePeople(backMessage);
+		HashSet<String> newMessagePeopleSet = ConversationController.getMessagePeople(newMessage);
+		return newMessagePeopleSet.equals(backMessagePeopleSet);
+	}
+
+	public static boolean getIsUserGroupsAreRceveivers(UserInfos user, JsonObject message) {
+		HashSet<String> messagePeopleSet = ConversationController.getMessagePeople(message);
+		List<String> groups = user.getGroupsIds();
+		for(String g: groups) {
+			if (messagePeopleSet.contains(g)) return true;
+		}
+		return false;
 	}
 
 	@Put("draft/:id")
@@ -298,7 +335,10 @@ public class ConversationController extends BaseController {
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
 									final String threadId;
-									if( parentMsg != null){
+									if( parentMsg != null
+											&& (ConversationController.getHaveMessagesSameReceivers(parentMsg, message)
+											|| ConversationController.getIsUserGroupsAreRceveivers(user, message))
+									){
 										threadId = parentMsg.getString("thread_id");
 									}else{
 										threadId = null;
