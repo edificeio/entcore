@@ -189,15 +189,19 @@ public class ConversationController extends BaseController {
 	public static HashSet<String> getMessagePeople(JsonObject message) {
 		HashSet<String> messagePeopleSet = new HashSet<>();
 		JsonArray messagePeopleTo = message.getJsonArray("to");
-		for(Object o: messagePeopleTo){
-			if ( o instanceof String ) {
-				messagePeopleSet.add((String)o);
+		if (messagePeopleTo != null) {
+			for(Object o: messagePeopleTo){
+				if ( o instanceof String ) {
+					messagePeopleSet.add((String)o);
+				}
 			}
 		}
 		JsonArray messagePeopleCc = message.getJsonArray("cc");
-		for(Object o: messagePeopleCc){
-			if ( o instanceof String ) {
-				messagePeopleSet.add((String)o);
+		if (messagePeopleCc != null) {
+			for(Object o: messagePeopleCc){
+				if ( o instanceof String ) {
+					messagePeopleSet.add((String)o);
+				}
 			}
 		}
 		messagePeopleSet.add(message.getString("from"));
