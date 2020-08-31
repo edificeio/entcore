@@ -200,12 +200,8 @@ export class Mail implements Selectable {
     }
 
     setMailContent(origin: Mail, mailType: string, compile, sanitize, $scope, signature, copyReceivers?: boolean): Promise<any> {
-        if (origin.subject.indexOf(format[mailType].prefix) === -1) {
-            this.subject = lang.translate(format[mailType].prefix) + " " + origin.subject;
-        }
-        else {
-            this.subject = origin.subject;
-        }
+        let replyPrefix: string = lang.translate(format[mailType].prefix);
+        this.subject = (origin.subject.indexOf(replyPrefix) === -1 ? replyPrefix +" " : "") + origin.subject;
 
         if (copyReceivers) {
             this.cc = origin.cc;
