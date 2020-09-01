@@ -331,27 +331,35 @@ public class DefaultImportService implements ImportService {
                        foundApps.fieldNames().forEach(app -> {
 
                            String folder = foundApps.getString(app);
+                           String folderBase = folders.stream().filter(f -> f.endsWith(folder)).findFirst().get();
                            String folderPath;
                            if ("workspace".equals(app) || "rack".equals(app)) {
-                               folderPath = folders.stream().filter(f -> f.endsWith(folder)).findFirst().get();
+                               folderPath = folderBase;
                            } else {
-                               folderPath = folders.stream().filter(f -> f.endsWith(folder)).findFirst().get()
-                                       + File.separator + "Documents";
+                               folderPath = folderBase + File.separator + "Documents";
                            }
                            Future<Long> size = Future.future();
-                           fs.exists(folderPath, exist -> {
-                               if (exist.result()) {
-                                   Future<Long> promise = recursiveSize(folderPath);
-                                   promise.setHandler(result -> {
-                                       foundAppsWithSize.put(app, new JsonObject()
-                                               .put("folder", folder).put("size", result.result()));
-                                       size.complete(result.result());
-                                   });
-                               } else {
-                                   foundAppsWithSize.put(app, new JsonObject()
-                                           .put("folder", folder).put("size", 0l));
-                                   size.complete(0l);
+                           fs.readDir(folderBase, files ->
+                           {
+                               if(files.result().size() > 0) // Ignore empty folders
+                               {
+                                fs.exists(folderPath, exist -> {
+                                    if (exist.result()) {
+                                        Future<Long> promise = recursiveSize(folderPath);
+                                        promise.setHandler(result -> {
+                                            foundAppsWithSize.put(app, new JsonObject()
+                                                    .put("folder", folder).put("size", result.result()));
+                                            size.complete(result.result());
+                                        });
+                                    } else {
+                                        foundAppsWithSize.put(app, new JsonObject()
+                                                .put("folder", folder).put("size", 0l));
+                                        size.complete(0l);
+                                    }
+                                });
                                }
+                               else
+                                size.complete(0l);
                            });
                            getFoldersSize.add(size);
 
