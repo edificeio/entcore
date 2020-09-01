@@ -20,6 +20,7 @@
 package org.entcore.archive.controllers;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
@@ -28,6 +29,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.eventbus.MessageConsumer;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
@@ -35,6 +37,8 @@ import org.entcore.archive.services.impl.FileSystemExportService;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
@@ -244,6 +248,15 @@ public class ArchiveController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Delete("/export/clear/user/:userId")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void clearUserExport(final HttpServerRequest request)
+	{
+		exportService.clearUserExport(request.params().get("userId"));
+		Renders.ok(request);
 	}
 
 	@BusAddress("entcore.export")

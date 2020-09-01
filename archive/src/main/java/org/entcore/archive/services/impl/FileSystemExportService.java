@@ -375,6 +375,12 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
+	public void clearUserExport(String userId)
+	{
+		userExportInProgress.remove(userId);
+	}
+
+	@Override
 	public void setDownloadInProgress(String exportId) {
 		String userId = getUserId(exportId);
 		if (userExportInProgress.containsKey(userId)) {

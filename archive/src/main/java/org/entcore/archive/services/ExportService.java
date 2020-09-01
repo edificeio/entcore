@@ -49,4 +49,6 @@ public interface ExportService {
 
 	String getExportBusAddress(String exportId);
 
+	void clearUserExport(String string);
+
 }
