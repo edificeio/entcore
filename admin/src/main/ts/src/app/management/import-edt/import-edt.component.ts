@@ -27,6 +27,13 @@ export enum EDTImportFlux
   UDT="UDT",
 }
 
+export enum EDTImportMode
+{
+  DEFAULT,
+  TIMETABLE_ONLY,
+  GROUPS_ONLY
+}
+
 export interface TimetableClassesMapping
 {
   unknownClasses: String[],
@@ -53,6 +60,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
 
   //Angular hack to access the enum in the HTML
   public EDTImportFlux =  EDTImportFlux;
+  public EDTImportMode =  EDTImportMode;
 
   private structure: StructureModel;
   private reportList: EDTReport[] = [];
@@ -61,7 +69,8 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   public shownReport: string;
   public showFluxChangeWarning: boolean = false;
 
-  public changeFlux: EDTImportFlux = null;
+  public mainFlux: EDTImportFlux = null;
+  public importMode: EDTImportMode = EDTImportMode.DEFAULT;
   public onetimeImport: EDTImportFlux = null;
   private importFile: FileList;
 
@@ -85,7 +94,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
       if (data.structure)
       {
         this.structure = data.structure;
-        this.changeFlux = this.structure.timetable as EDTImportFlux;
+        this.mainFlux = this.structure.timetable as EDTImportFlux;
         this.onetimeImport = this.structure.punctualTimetable as EDTImportFlux;
         this._getReportsFromService();
         this._getClassesMapping();
@@ -106,14 +115,14 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     {
       this.notify.error("management.edt.flux.notify.error.content", "management.edt.flux.notify.error.title", data);
     };
-    this.timetableService.setFluxType(this.structure.id, this.changeFlux).subscribe(
+    this.timetableService.setFluxType(this.structure.id, this.mainFlux).subscribe(
     {
       next: (data) =>
       {
-        if(data.update == true || (oldTimetable == this.changeFlux || (oldTimetable == null && this.changeFlux == EDTImportFlux.DEFAULT)))
+        if(data.update == true || (oldTimetable == this.mainFlux || (oldTimetable == null && this.mainFlux == EDTImportFlux.DEFAULT)))
         {
           this.notify.success("management.edt.flux.notify.success.content", "management.edt.flux.notify.success.title");
-          this.structure.timetable = this.changeFlux;
+          this.structure.timetable = this.mainFlux;
           this.structure.syncGroups(true);
           this._getClassesMapping();
           this._getGroupsMapping();
@@ -145,9 +154,9 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
     this.importFile = $event.target.files;
   }
 
-  manualImport(importType: EDTImportFlux): void
+  manualImport(importMode: EDTImportMode, flux: EDTImportFlux): void
   {
-    this.timetableService.importFile(this.structure.id, importType, this.importFile).then((data) =>
+    this.timetableService.importFile(this.structure.id, importMode, flux, this.importFile).then((data) =>
     {
       this.notify.success("management.edt.import.notify.success.content", "management.edt.import.notify.success.title");
       this._getReportsFromService();

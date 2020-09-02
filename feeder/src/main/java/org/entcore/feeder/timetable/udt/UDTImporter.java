@@ -99,8 +99,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private JsonArray parsedWeeks = new JsonArray();
 
 	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
-											boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups);
+											boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups, updateTimetable);
 		this.vertx = vertx;
 		filenameWeekPatter = Pattern.compile("(UDCal|udcal)_[0-9]{2}_([0-9]{2})\\.xml$");
 	}
@@ -922,6 +922,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final I18n i18n = I18n.getInstance();
 		final String uai = message.body().getString("UAI");
 		final boolean updateGroups = message.body().getBoolean("updateGroups", true);
+		final boolean updateTimetable = message.body().getBoolean("updateTimetable", true);
 		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 		final String acceptLanguage = message.body().getString("language", "fr");
@@ -936,7 +937,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai);
 
-			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups, updateTimetable).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {

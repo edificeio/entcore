@@ -144,6 +144,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WITH u, collect(g.externalId) as groups " +
 			"SET u.groups = groups";
 	public static final String COURSES = "courses";
+
+	public static final boolean ALLOW_PAST_MODIFICATIONS = false;
+
 	protected long importTimestamp;
 	protected final Storage storage;
 	protected final String UAI;
@@ -186,9 +189,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 	protected final boolean authorizeUserCreation;
 	protected final boolean authorizeUpdateGroups;
+	protected final boolean authoriseUpdateTimetable;
 
 	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
-																				boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups)
+																				boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups, boolean authoriseUpdateTimetable)
 	{
 		this.storage = storage;
 		UAI = uai;
@@ -196,6 +200,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		this.report = new Report(acceptLanguage);
 		this.authorizeUserCreation = authorizeUserCreation;
 		this.authorizeUpdateGroups = authorizeUpdateGroups;
+		this.authoriseUpdateTimetable = authoriseUpdateTimetable;
 
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getTimetableSource());
@@ -399,17 +404,27 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected void persistCourse(JsonObject object)
 	{
-		if (object == null || DateTime.parse(object.getString("endDate")).getMillis() < importTimestamp) {
-			ttReport.courseIgnored();
+		if (object == null)
+		{
+			if(authoriseUpdateTimetable == true)
+				ttReport.courseIgnored();
 			return;
 		}
-		else
-		{
-			ttReport.courseCreated();
-		}
+
 		persEducNatToClasses(object);
 		persEducNatToGroups(object);
 		persEducNatToSubjects(object);
+
+		if(authoriseUpdateTimetable == false)
+			return;
+
+		if(ALLOW_PAST_MODIFICATIONS == false && DateTime.parse(object.getString("endDate")).getMillis() < importTimestamp)
+		{
+			ttReport.courseIgnored();
+			return;
+		}
+
+		ttReport.courseCreated();
 		object.put("pending", importTimestamp);
 		final int currentCount = countMongoQueries.incrementAndGet();
 		JsonObject m = new JsonObject().put("$set", object)
@@ -425,7 +440,11 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
-	private void persistBulKCourses() {
+	private void persistBulKCourses()
+	{
+		if(authoriseUpdateTimetable == false)
+			return;
+
 		final JsonArray cf = coursesBuffer;
 		coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 		final int countCoursesBuffer = cf.size();
@@ -582,6 +601,13 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	private void end() {
 		if (endHandler != null && countMongoQueries.get() == 0) {
+
+			if(authoriseUpdateTimetable == false)
+			{
+				endHandler.handle(new DefaultAsyncResult<>(report));
+				return;
+			}
+
 			final JsonObject baseQuery = new JsonObject().put("structureId", structureId);
 			if (txSuccess) {
 				CompositeFuture.all(updateMongoCourses(baseQuery), subjectAutoMapping())

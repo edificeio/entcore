@@ -89,8 +89,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
 
 	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
-			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups);
+			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups, updateTimetable);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -690,6 +690,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		}
 		final String uai = message.body().getString("UAI");
 		final boolean updateGroups = message.body().getBoolean("updateGroups", true);
+		final boolean updateTimetable = message.body().getBoolean("updateTimetable", true);
 		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 
@@ -703,7 +704,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			final long start = System.currentTimeMillis();
 			log.info("Launch EDT import : " + uai);
 
-			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport, updateGroups).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport, updateGroups, updateTimetable).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {
