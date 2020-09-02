@@ -391,7 +391,7 @@ public class DefaultTimetableService implements TimetableService {
 
 	@Override
 	public void importTimetable(String structureId, final String path, final String domain,
-			final String acceptLanguage, boolean uai, String timetableType, final Handler<Either<JsonObject, JsonObject>> handler) {
+			final String acceptLanguage, boolean uai, String timetableType, boolean groupsOnly, final Handler<Either<JsonObject, JsonObject>> handler) {
 		final String  structureAttr = uai ? "UAI" : "id";
 		final String setPunctualTimetable = timetableType == null ? "REMOVE s.punctualTimetable" : "SET s.punctualTimetable = {punctualTT}";
 		final String query = "MATCH (s:Structure {" + structureAttr + ":{id}}) " + setPunctualTimetable + " RETURN s.UAI as UAI, s.timetable as timetable";
@@ -413,7 +413,7 @@ public class DefaultTimetableService implements TimetableService {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						return;
 					}
-					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null, path, acceptLanguage, handler);
+					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null, groupsOnly, path, acceptLanguage, handler);
 				} else {
 					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
 					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
@@ -478,13 +478,14 @@ public class DefaultTimetableService implements TimetableService {
 		}));
 	}
 
-	private void callTimetableImport(String UAI, String timetableType, boolean isPunctual, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
+	private void callTimetableImport(String UAI, String timetableType, boolean isPunctual, boolean groupsOnly, String path, String acceptLanguage, Handler<Either<JsonObject, JsonObject>> handler)
 	{
 		JsonObject action = new JsonObject().put("action", "manual-" + timetableType.toLowerCase())
 				.put("path", path)
 				.put("UAI", UAI)
 				.put("isManualImport", true)
 				.put("updateGroups", isPunctual == false)
+				.put("updateTimetable", groupsOnly == false)
 				.put("language", acceptLanguage);
 		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override

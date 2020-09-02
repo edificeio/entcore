@@ -133,6 +133,7 @@
     "management.edt.import.mode.label": "Mode d'import",
     "management.edt.import.mode.default": "Import de l'emploi du temps et des groupes",
     "management.edt.import.mode.onetime": "Import de l'emploi du temps uniquement",
+    "management.edt.import.mode.groups": "Import des groupes uniquement",
     "management.edt.import.onetime.title": "Importer un emploi du temps ponctuel",
     "management.edt.import.onetime.body": "Importer un emploi du temps ponctuellement chargera les données de l'emploi du temps mais conservera les classes et les groupes créés par l'alimentation standard.",
     "management.edt.import.onetime.type": "Type d'emploi du temps",

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
-import { TimetableClassesMapping, TimetableGroupsMapping, EDTImportFlux } from './import-edt.component';
+import { TimetableClassesMapping, TimetableGroupsMapping, EDTImportFlux, EDTImportMode } from './import-edt.component';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +18,7 @@ export class ImportTimetableService
     });
   }
 
-  importFile(structureId: String, importType: EDTImportFlux, file: FileList): Promise<any>
+  importFile(structureId: String, importMode: EDTImportMode, flux: EDTImportFlux, file: FileList): Promise<any>
   {
     if(file.length != 1)
       throw "There must be exactly one timetable import file";
@@ -26,7 +26,20 @@ export class ImportTimetableService
     let form: FormData = new FormData();
     form.append("file", file[0]);
 
-    let type = importType != null ? `${importType}/` : "";
+    let type;
+    switch(importMode)
+    {
+      case EDTImportMode.TIMETABLE_ONLY:
+        type = `${flux}/`;
+        break;
+      case EDTImportMode.GROUPS_ONLY:
+        type = `groups/`;
+        break;
+      case EDTImportMode.DEFAULT:
+      default:
+        type = "";
+        break;
+    }
 
     return this.spinner.perform(
       'portal-content',

@@ -233,7 +233,7 @@ public class TimetableController extends BaseController {
 	public void importTimetable(final HttpServerRequest request) {
 		String structAttr = request.params().get("structAttr");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false);
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, false);
 	}
 
 	@Post("/timetable/import/:timetableType/:structureId")
@@ -243,10 +243,19 @@ public class TimetableController extends BaseController {
 	{
 		String structAttr = request.params().get("structAttr");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), isUAI, false);
+		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), isUAI, false, false);
 	}
 
-	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport)
+	@Post("/timetable/import/groups/:structureId")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void importTimetableGroupsOnly(final HttpServerRequest request) {
+		String structAttr = request.params().get("structAttr");
+		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, true);
+	}
+
+	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport, boolean groupsOnly)
 	{
 		if(importInProgress.containsKey(structureIdentifier) == true)
 		{
@@ -290,7 +299,7 @@ public class TimetableController extends BaseController {
 						{
 							timetableService.importTimetable(structureIdentifier, filename,
 									getHost(request), I18n.acceptLanguage(request),
-									identifierIsUAI, timetableType,
+									identifierIsUAI, timetableType, groupsOnly,
 									hnd);
 						}
 						else
@@ -324,7 +333,7 @@ public class TimetableController extends BaseController {
 	{
 		String structAttr = request.params().get("structAttr");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, true);
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, true, false);
 	}
 
 	@Get("/timetable/import/:structureId/reports")

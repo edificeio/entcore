@@ -38,7 +38,7 @@
           { value: EDTImportFlux.EDT, label: 'EDT' },
           { value: EDTImportFlux.UDT, label: 'UDT' }
         ]"
-        [(ngModel)]="changeFlux"
+        [(ngModel)]="mainFlux"
       ></ode-mono-select>
     </div>
     <div class="see-more">
@@ -58,9 +58,10 @@
           class="is-block"
           placeholder="management.edt.import.mode.default"
           [options]="[
-            { value: changeFlux, label: 'management.edt.import.mode.onetime' }
+            { value: EDTImportMode.TIMETABLE_ONLY, label: 'management.edt.import.mode.onetime' },
+            { value: EDTImportMode.GROUPS_ONLY, label: 'management.edt.import.mode.groups' }
           ]"
-          [(ngModel)]="onetimeImport"
+          [(ngModel)]="importMode"
         ></ode-mono-select>
       </div>
       <div class="flex-select">
@@ -70,7 +71,7 @@
         <input type="file" (change)="loadFile($event)"/>
       </div>
       <div class="see-more">
-        <button class="active" (click)="manualImport(onetimeImport)">
+        <button class="active" (click)="manualImport(importMode, mainFlux)">
           <s5l>management.edt.import.button</s5l>
         </button>
       </div>
@@ -101,7 +102,7 @@
         <input type="file" (change)="loadFile($event)"/>
       </div>
       <div class="see-more">
-        <button class="active" [disabled]="onetimeImport == null" (click)="manualImport(onetimeImport)">
+        <button class="active" [disabled]="onetimeImport == null" (click)="manualImport(EDTImportMode.TIMETABLE_ONLY, onetimeImport)">
           <s5l>management.edt.import.button</s5l>
         </button>
       </div>
