@@ -681,7 +681,7 @@ public class DefaultConversationService implements ConversationService {
 					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-					"visibles.profiles[0] as profile, visibles.structureName as structureName";
+					"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile";
 			findVisibles(eb, user.getUserId(), groups, params, true, true, false, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
@@ -691,12 +691,17 @@ public class DefaultConversationService implements ConversationService {
 					for (Object o: visibles) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) o;
+						// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group". 
+						// TODO It should be defined more clearly.
+						// See also SqlConversationService.java
 						if (j.getString("name") != null) {
 							j.remove("displayName");
 							UserUtils.groupDisplayName(j, acceptLanguage);
+							j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group. 
 							groups.add(j);
 						} else {
 							j.remove("name");
+							j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User. 
 							users.add(j);
 						}
 					}

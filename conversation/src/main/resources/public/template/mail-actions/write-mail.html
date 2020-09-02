@@ -12,7 +12,14 @@
                 || sending">
                 <i18n>submit</i18n>
             </button>
-		</div>
+        </div>
+
+        <infotip name="conversation-warn-message-grouped" class="info"
+                 on-change="agreedCommunicationRules($visible)"
+                 ng-if="showWarnAboutCommunicationRules">
+            <i18n>conversation.warn.message.grouped</i18n>
+        </infotip>
+
         <div>
 			<div class="row">
 				<div class="row receivers">
@@ -23,7 +30,7 @@
 					<div class="c-ten cell twelve-mobile right-magnet">
 						<recipient-list
 							ng-model="state.newItem.to"
-							ng-change="quickSaveDraft()"
+							ng-change="quickSaveDraft() && checkWarnAboutCommunicationRules()"
                             restriction="isLocalAdmin()"
 							update-found-items="updateFoundUsers(search, model, founds, restriction)">
 						</recipient-list>
@@ -47,7 +54,7 @@
 					    <div class="c-ten cell twelve-mobile right-magnet">
 						    <recipient-list
 							    ng-model="state.newItem.cc"
-							    ng-change="quickSaveDraft()"
+							    ng-change="quickSaveDraft() && checkWarnAboutCommunicationRules()"
                                 restriction="isLocalAdmin()"
                                 update-found-items="updateFoundUsers(search, model, founds, restriction)">
 						    </recipient-list>

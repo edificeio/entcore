@@ -633,7 +633,7 @@ public class SqlConversationService implements ConversationService{
 							"WHERE (v.id = visibles.id OR v.id IN {to} OR v.id IN {cc}) " +
 							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-							"visibles.profiles[0] as profile, visibles.structureName as structureName ";
+							"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile ";
 					callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 				}
 			}));
@@ -641,7 +641,7 @@ public class SqlConversationService implements ConversationService{
 			String customReturn =
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-					"visibles.profiles[0] as profile, visibles.structureName as structureName";
+					"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile";
 			callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 		}
 	}
@@ -657,12 +657,17 @@ public class SqlConversationService implements ConversationService{
 				for (Object o: visibles) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;
+					// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group". 
+					// TODO It should be defined more clearly.
+					// See also DefaultConversationService.java
 					if (j.getString("name") != null) {
 						j.remove("displayName");
 						UserUtils.groupDisplayName(j, acceptLanguage);
+						j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group. 
 						groups.add(j);
 					} else {
 						j.remove("name");
+						j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User. 
 						users.add(j);
 					}
 				}
