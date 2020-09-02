@@ -20,6 +20,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
         $scope.ccCciShow = false;
+        $scope.showWarnAboutCommunicationRules = false;
 
         route({
             readMail: async function (params) {
@@ -460,6 +461,31 @@ export let conversationController = ng.controller('ConversationController', [
                     }
                     $scope.draftSavingFlag = false;
                 }, 60000)
+            }
+        };
+
+        $scope.checkWarnAboutCommunicationRules = () => {
+            // Check if the recipients are groups of -or many different- relatives.
+            let count = 0;
+            let to: Array<User> = $scope.state.newItem.to || [];
+            let cc: Array<User> = $scope.state.newItem.cc || [];
+            to.concat(cc).map( (user) => {
+                if( user.profile=="Relative" ) {
+                    count += user.isAGroup() ? 2 : 1;
+                }
+            });
+            
+            // If 2+ relatives are recipients, then this is a group message which may bypass communication rules.
+            // => Relatives will be able to reply to the whole group, so let's display a warning !
+            if( count > 1 ) {
+                $scope.showWarnAboutCommunicationRules = true;
+            }
+        };
+
+        $scope.agreedCommunicationRules = (visible) => {
+            if( !visible ) {
+                $scope.showWarnAboutCommunicationRules = false;
+                // Also, don't display this warning not anymore: but this is managed by the infotip class directly.
             }
         };
 
