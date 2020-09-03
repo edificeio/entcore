@@ -359,6 +359,7 @@ public class ConversationController extends BaseController {
 															.put("subject", result.getString("subject"))
 															.put("body", StringUtils.stripHtmlTag(result.getString("body")))
 															.put("id", result.getString("id"))
+															.put("thread_id", result.getString("thread_id"))
 															.put("sentIds", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
 														timelineNotification(request, timelineParams, user);
 														renderJson(request, result
@@ -1652,6 +1653,7 @@ public class ConversationController extends BaseController {
 								JsonObject timelineParams = new JsonObject()
 									.put("subject", result.getString("subject"))
 									.put("id", result.getString("id"))
+									.put("thread_id", result.getString("thread_id"))
 									.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
 								timelineNotification(request, timelineParams, user);
 								JsonObject s = new JsonObject().put("status", "ok")
