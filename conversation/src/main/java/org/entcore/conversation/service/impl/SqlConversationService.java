@@ -194,7 +194,7 @@ public class SqlConversationService implements ConversationService{
 
 				String updateMessage =
 						"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
-								"RETURNING id, subject, body";
+								"RETURNING id, subject, body, thread_id";
 				String updateUnread = "UPDATE " + userMessageTable + " " +
 						"SET unread = " + unread +
 						" WHERE user_id = ? AND message_id = ? ";
