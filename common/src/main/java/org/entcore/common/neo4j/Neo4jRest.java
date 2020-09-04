@@ -44,6 +44,8 @@ public class Neo4jRest implements GraphDatabase {
 	private final String basePath;
 	private Pattern writingClausesPattern = Pattern.compile(
 			"(\\s+set\\s+|create\\s+|merge\\s+|delete\\s+|remove\\s+|foreach)", Pattern.CASE_INSENSITIVE);
+	private static final String EMPTY_STATEMENTS_STRING = "{\"statements\":[]}";
+	private boolean ignoreEmptyStateError = false;
 
 	public Neo4jRest(URI[] uris, boolean ro, Vertx vertx, long checkDelay, int poolSize,
 					 boolean keepAlive, JsonObject neo4jConfig) {
@@ -64,6 +66,7 @@ public class Neo4jRest implements GraphDatabase {
 					createIndex(j);
 				}
 			}
+			ignoreEmptyStateError = neo4jConfig.getBoolean("ignore-empty-statements-error", false);
 		}
 	}
 
@@ -194,6 +197,11 @@ public class Neo4jRest implements GraphDatabase {
 	public void executeTransaction(final JsonArray statements, final Integer transactionId,
 			final boolean commit, final boolean allowRetry, final boolean forceReadOnly,
 			final Handler<JsonObject> handler) {
+		// if (ignoreEmptyStateError && !commit && statements.isEmpty()) {
+		// 	logger.warn("Ignore empty transaction call without commit. Transaction id : " + transactionId);
+		// 	handler.handle(new JsonObject().put("results", new JsonArray()));
+		// 	return;
+		// }
 		String uri = "/transaction";
 		if (transactionId != null) {
 			uri += "/" +transactionId;
@@ -394,6 +402,11 @@ public class Neo4jRest implements GraphDatabase {
 
 	private void sendRequest(String path, Object body, boolean checkReadOnly, boolean forceReadOnly,
 			final Handler<HttpClientResponse> handler) throws Neo4jConnectionException {
+		sendRequest(path, body, checkReadOnly, forceReadOnly, 3, handler);
+	}
+
+	private void sendRequest(String path, Object body, boolean checkReadOnly, boolean forceReadOnly, int retry,
+			final Handler<HttpClientResponse> handler) throws Neo4jConnectionException {
 		HttpClient client = null;
 		if (forceReadOnly && ro) {
 			client = nodeManager.getSlaveClient();
@@ -416,7 +429,17 @@ public class Neo4jRest implements GraphDatabase {
 
 		final String b = Json.encode(body);
 
-		req.exceptionHandler(event -> logger.error("Neo4j error in request : " + b, event));
+		req.exceptionHandler(event -> {
+			logger.error("Neo4j error in request : " + path + " - " + b, event);
+			if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
+				logger.warn("Retry sendRequest with empty statements.");
+				try {
+					sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
+				} catch (Neo4jConnectionException e) {
+					logger.error("Error when try retry sendRequest call.", e);
+				}
+			}
+		});
 
 		req.end(b);
 	}

@@ -96,7 +96,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
 		if (neo4jConfig != null) {
 			neo4j = Neo4j.getInstance();
-			neo4j.init(vertx, new JsonObject(neo4jConfig));
+			neo4j.init(vertx, new JsonObject(neo4jConfig).put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));
 		}
 		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
