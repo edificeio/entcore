@@ -193,7 +193,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 					}
 
 					template.open('list', 'dominos');
-					template.open('dominosUser', 'dominos-user');					
+					template.open('dominosUser', 'dominos-user');	
+					$scope.dominoClass ='my-class';					
 					$scope.title = 'class';
 					$scope.$apply();
 				});
@@ -659,7 +660,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.colorFromType = function(type){
-		return ui.profileColors.match(type);
+		return ui.profileColors.match(type) +" "+ $scope.dominoClass;
 	};
 
 	$scope.lightenColorFromType = function(type){
