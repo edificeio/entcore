@@ -60,7 +60,7 @@
 	</a>
 </div>
 
-<div class="dominos centered-text">
+<div class="dominos centered-text" ng-class="dominoClass">
 
 	<div class="dominos-infos" ng-if="(search.index === 0 && !display.loading && users.match(search.text).length) || (search.index === 1 && !display.loading && !currentGroup && groups.match(search.text).length)">
 		<div class="flex-row justify-center align-center f-wrap">
