@@ -416,7 +416,7 @@ public class UserBookController extends BaseController {
 	@BusAddress("send.welcome.message")
 	public void welcomeMessage(Message<JsonObject> message) {
 		if (activationWelcomeMessage != null) {
-			final HttpServerRequest request = new JsonHttpServerRequest(message.body().getJsonObject("request"));
+			final HttpServerRequest request = new JsonHttpServerRequest(message.body().getJsonObject("request", new JsonObject()));
 			Map<String, String> messages = activationWelcomeMessage.get(getHost(request));
 			if (messages != null) {
 				String welcomeMessage = messages.get(message.body().getString("profile"));
