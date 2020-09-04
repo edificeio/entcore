@@ -148,7 +148,7 @@ public class ConversationController extends BaseController {
 									final String threadId;
 									if( parent != null
 											&& (ConversationController.getHaveMessagesSameReceivers(parent, message)
-											|| ConversationController.getIsUserGroupsAreRceveivers(user, message))
+											|| ConversationController.getIsUserGroupsAreRceveivers(user, parent))
 									){
 										threadId = parent.getString("thread_id");
 									}else{
@@ -341,7 +341,7 @@ public class ConversationController extends BaseController {
 									final String threadId;
 									if( parentMsg != null
 											&& (ConversationController.getHaveMessagesSameReceivers(parentMsg, message)
-											|| ConversationController.getIsUserGroupsAreRceveivers(user, message))
+											|| ConversationController.getIsUserGroupsAreRceveivers(user, parentMsg))
 									){
 										threadId = parentMsg.getString("thread_id");
 									}else{
