@@ -20,5 +20,8 @@
 		{"name": "appRegistry", "url": "/appregistry/admin"},
 		{"name": "communication", "url": "/communication/admin"},
 		{"name": "calendar", "url": "/directory/calendar"}
-	]
+	],
+	"tracker": {
+		"type":"none"
+	}
 }

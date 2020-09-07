@@ -1513,11 +1513,42 @@ module.directive('bindHtml', function($compile) {
 });
 
 module.directive('portal', function($compile) {
+    let buildTracker = function( type, params ) {
+        switch( type ) {
+            case "matomo":
+                try {
+                    var _paq = window._paq = window._paq || [];
+                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    (function() {
+                      _paq.push(['setTrackerUrl', params.url+'matomo.php']);
+                      _paq.push(['setSiteId', params.siteId]);
+                      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                      g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
+                    })();
+                } catch(e) {
+                    console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
+                }
+                break;
+            default: 
+                break;
+        }
+    };
     return {
         restrict: 'E',
         transclude: true,
         templateUrl: skin.portalTemplate,
         compile: function(element, attributes, transclude) {
+            // Load any configured tracker
+            http().get('/tracker').done(function(data) {
+                if( data && typeof data.type === 'string' && data.type.trim().length > 0 && data[data.type] ) {
+                    buildTracker( data.type, data[data.type] );
+                }
+            }).error(function(error) {
+                // silent fail
+            });
+
             element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
             ui.setStyle(skin.theme);
             Http.prototype.bind('disconnected', function() {

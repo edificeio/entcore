@@ -69,6 +69,7 @@ public class PortalController extends BaseController {
 	private enum PortalEvent { ACCESS_ADAPTER, ACCESS }
 	private static final String ADMIN_CONSOLE_MODULE = "AdminConsole";
 	private String defaultSkin;
+	private JsonObject defaultTracker;
 
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -116,6 +117,7 @@ public class PortalController extends BaseController {
 				}
 			});
 		}
+		defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 		adminConsoleEventStore = EventStoreFactory.getFactory().getEventStore(ADMIN_CONSOLE_MODULE);
 		vertx.sharedData().getLocalMap("server").put("assetPath", assetsPath);
@@ -398,6 +400,15 @@ public class PortalController extends BaseController {
 				unauthorized(request);
 			}
 		});
+	}
+
+	/**
+	 * Get the configured tracking system.
+	 * @param request request
+	 */
+	@Get("/tracker")
+	public void tracker(HttpServerRequest request) {
+		renderJson(request, defaultTracker);
 	}
 
 	@BusAddress("portal")
