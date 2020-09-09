@@ -4361,13 +4361,14 @@ module.directive('alphabetical', function($compile, $parse) {
         compile: function(element, attributes) {
             var iterator = attributes.list;
             var iteratorContent = element.html();
+			iteratorContent = iteratorContent.replace('<div class="item', '<div ng-repeat="'+ iterator +' |filter: matching(letter)" class="item>');
             element.html('<lightbox class="letter-picker" show="display.pickLetter" on-close="display.pickLetter = false;">' +
                 '<div ng-repeat="letter in letters"><h2 ng-click="viewLetter(letter)" class="cell" ng-class="{disabled: matchingElements[letter].length <= 0 }">[[letter]]</h2></div>' +
                 '</lightbox>' +
                 '<div ng-repeat="letter in letters">' +
                 '<div ng-if="matchingElements[letter].length > 0" class="row">' +
                 '<h1 class="letter-picker" ng-click="display.pickLetter = true;" id="alphabetical-[[letter]]">[[letter]]</h1><hr class="line" />' +
-                '<div class="row"><div ng-repeat="' + iterator + ' |filter: matching(letter)">' + iteratorContent + '</div></div>' +
+				'<div class="row">' + iteratorContent + '</div>' +
                 '</div><div ng-if="matchingElements[letter].length > 0" class="row"></div>' +
                 '</div>');
             element.addClass('alphabetical');
