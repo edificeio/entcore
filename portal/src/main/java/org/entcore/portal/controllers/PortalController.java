@@ -408,7 +408,22 @@ public class PortalController extends BaseController {
 	 */
 	@Get("/tracker")
 	public void tracker(HttpServerRequest request) {
-		renderJson(request, defaultTracker);
+		if( "matomo".equals(defaultTracker.getString("type")) ) {
+			UserUtils.getUserInfos(eb, request, user -> {
+				JsonObject personalizedTracker = defaultTracker.copy();
+				if (user != null) {
+					JsonObject matomoConfig = personalizedTracker.getJsonObject("matomo");
+					matomoConfig.put("Profile", user.getType());
+					if( user.getStructures().size() > 0 )
+						matomoConfig.put("School", user.getStructures().get(0));
+					matomoConfig.put("Project", request.host());
+				}
+				renderJson(request, personalizedTracker);
+			});
+		} else {
+			// Default tracker
+			renderJson(request, defaultTracker);
+		}
 	}
 
 	@BusAddress("portal")
