@@ -93,6 +93,21 @@ public class MimeTypeUtils {
         fileExtensionMap.put("odb", "application/vnd.oasis.opendocument.database");
         fileExtensionMap.put("odi", "application/vnd.oasis.opendocument.image");
         fileExtensionMap.put("oxt", "application/vnd.openofficeorg.extension");
+        //image
+        fileExtensionMap.put("jpg", "image/jpeg");
+        fileExtensionMap.put("gif", "image/gif");
+        fileExtensionMap.put("png", "image/png");
+        fileExtensionMap.put("swf", "application/x-shockwave-flash");
+        fileExtensionMap.put("psd", "image/psd");
+        fileExtensionMap.put("bmp", "image/bmp");
+        fileExtensionMap.put("tiff", "image/tiff");
+        fileExtensionMap.put("jpc", "application/octet-stream");
+        fileExtensionMap.put("jp2", "image/jp2");
+        fileExtensionMap.put("iff", "image/iff");
+        fileExtensionMap.put("webp", "image/webp");
+        fileExtensionMap.put("xbm", "image/xbm");
+        fileExtensionMap.put("ico", "image/vnd.microsoft.icon");
+        fileExtensionMap.put("wbmp", "image/vnd.wap.wbmp");
     }
 
     public static Optional<String> getContentTypeForExtension(String extension) {

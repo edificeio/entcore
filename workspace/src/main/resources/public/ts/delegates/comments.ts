@@ -36,7 +36,7 @@ export function CommentDelegate($scope: CommentDelegateScope) {
         $scope.targetElement = models.emptyDoc();
     });
     $scope.canShowBadgeComments = function (current: models.Element) {
-        return current.comments.length > 0 && $scope.currentTree.name !== 'trash'
+        return current.comments && current.comments.length > 0 && $scope.currentTree.name !== 'trash'
     }
     $scope.canShowCommentLightbox = function (current: models.Element) {
         return current.showComments && $scope.selectedItems()[0] === current;

@@ -76,6 +76,13 @@ public final class StringUtils {
         return trimToNull(str) == null;
     }
 
+    public static  String getFileExtension(String fileName) {
+        final int lastIndexOf = fileName.lastIndexOf(".");
+        if (lastIndexOf == -1 || fileName.length() < (lastIndexOf + 1)) {
+            return ""; // empty extension
+        }
+        return fileName.substring(lastIndexOf + 1);
+    }
     /**
      * Removes space characters (space, tab, etc ...)
      * beginning and end of string. If the result is an empty string, or if the

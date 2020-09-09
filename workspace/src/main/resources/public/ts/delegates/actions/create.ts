@@ -36,6 +36,9 @@ export interface CreateDelegateScope {
 
 export function ActionCreateDelegate($scope: CreateDelegateScope) {
     $scope.newElementSharing = [];
+    $scope.onImportFiles = function (files:FileList) {
+        workspaceService.onImportFiles.next(files);
+    }
     $scope.onCannotDropFile = function () {
         notify.error(lang.translate("workspace.contrib.cant"))
     }
@@ -53,7 +56,7 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
      * Share
      */
     const needAtLeastOneShared = function () {
-        if($scope.currentTree.filter == "shared" && $scope.openedFolder.folder === $scope.currentTree){
+        if ($scope.currentTree.filter == "shared" && $scope.openedFolder.folder === $scope.currentTree) {
             return true;
         }
         return $scope.currentTree.filter == "shared" && $scope.openedFolder.folder && !$scope.openedFolder.folder.isShared
@@ -171,9 +174,7 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         }, 300)
         openNewFileView(ev);
     })
-    $scope.onImportFiles = function (files) {
-        workspaceService.onImportFiles.next(files);
-    }
+    //
     $scope.onCloseShareNewFiles = function ($canceled, $close) {
         if ($canceled) {
             if (needAtLeastOneShared()) {

@@ -3,6 +3,7 @@ package org.entcore.common.folders.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.vertx.core.*;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -13,10 +14,6 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.buffer.Buffer;
@@ -29,15 +26,17 @@ public class FolderManagerWithQuota implements FolderManager {
 	protected final EventBus eventBus;
 	protected final QueryHelper queryHelper;
 	protected final int quotaThreshold;
+	protected final FolderImporterZip zipImporter;
 
 	public FolderManagerWithQuota(String collection, int quotaTreshold, QuotaService quotaService,
-			FolderManager folderManager, EventBus bus, boolean useOldQueryChildren) {
+								  FolderManager folderManager, Vertx vertx, boolean useOldQueryChildren) {
 		super();
-		this.eventBus = bus;
+		this.eventBus = vertx.eventBus();
 		this.quotaThreshold = quotaTreshold;
 		this.quotaService = quotaService;
 		this.folderManager = folderManager;
 		this.queryHelper = new QueryHelper(collection, useOldQueryChildren);
+		this.zipImporter = new FolderImporterZip(vertx, this);
 	}
 
 	@Override
@@ -56,7 +55,26 @@ public class FolderManagerWithQuota implements FolderManager {
 						Handler<AsyncResult<JsonObject>> handler) {
 		this.folderManager.addFileWithParent(parent, doc, ownerId, ownerName, handler);
 	}
-	
+
+	@Override
+	public void importFileZip(FolderImporterZip.FolderImporterZipContext context, Handler<AsyncResult<JsonObject>> handler) {
+		final Future<Long> size = this.zipImporter.getTotalSize(context);
+		final Future<Long> free = computFreeSpace(context.getUserId());
+		CompositeFuture.all(size, free).compose( all-> {
+			if (size.result() <= free.result()) {
+				return Future.succeededFuture(null);
+			} else {
+				return Future.failedFuture("files.too.large");
+			}
+		}).compose(res->{
+			final Future<JsonObject> future = Future.future();
+			this.folderManager.importFileZip(context, future.completer());
+			return future;
+		}).compose(res->{
+			return decrementFreeSpace(context.getUserId(), size.result()).map(e-> res);
+		}).setHandler(handler);
+	}
+
 	public void setAllowDuplicate(boolean allowDuplicate){
 		this.folderManager.setAllowDuplicate(allowDuplicate);
 	}

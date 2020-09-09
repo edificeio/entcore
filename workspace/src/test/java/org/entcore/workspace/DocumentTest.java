@@ -22,13 +22,20 @@
 
 package org.entcore.workspace;
 
-import java.util.Optional;
-
 import com.mongodb.QueryBuilder;
-
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
+import org.entcore.common.folders.impl.DocumentHelper;
+import org.entcore.common.folders.impl.FolderImporterZip;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
@@ -41,7 +48,6 @@ import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.DefaultWorkspaceService;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -49,17 +55,11 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Neo4jContainer;
 
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
-import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
 public class DocumentTest {
+    static final int SIZE_3LEVELS = 2080215;
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
@@ -73,9 +73,9 @@ public class DocumentTest {
         test.database().initNeo4j(context, neo4jContainer);
         final ShareService shareService = test.share().createMongoShareService(context,
                 DocumentDao.DOCUMENTS_COLLECTION);
-        final Storage storage = new StorageFactory(test.vertx(), new JsonObject(),
+        final Storage storage = new StorageFactory(test.vertx(), new JsonObject().put("file-system", new JsonObject().put("path", "/tmp")),
                 new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
-                        .getStorage();
+                .getStorage();
         final String imageResizerAddress = "wse.image.resizer";
         final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
                 test.vertx(), shareService, imageResizerAddress, false);
@@ -84,13 +84,18 @@ public class DocumentTest {
                 new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
         final int threshold = 80;
         workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
-                quotaService, folderManager, test.vertx().eventBus(), shareService, false);
+                quotaService, folderManager, test.vertx(), shareService, false);
         test.database().initMongo(context, mongoContainer);
         final Async async = context.async();
         test.directory().createActiveUser("user1", "password", "email").setHandler(res -> {
             context.assertTrue(res.succeeded());
             userid = res.result();
             async.complete();
+        });
+        final Async async2 = context.async();
+        test.directory().createActiveUser(test.http().sessionUser()).setHandler(r -> {
+            context.assertTrue(r.succeeded());
+            async2.complete();
         });
     }
 
@@ -272,19 +277,128 @@ public class DocumentTest {
                     final String id = res1.result().getString("_id");
                     final String modified = res1.result().getString("modified");
                     context.assertNotNull(id);
-                   workspaceService.trash(id, user, res2 -> {
-                       context.assertTrue(res2.succeeded());
+                    workspaceService.trash(id, user, res2 -> {
+                        context.assertTrue(res2.succeeded());
                         test.database().executeMongoWithUniqueResult("documents",
                                 MongoQueryBuilder.build(QueryBuilder.start("_id").is(id))).setHandler(res3 -> {
-                                    context.assertTrue(res3.succeeded());
-                                    System.out.println(res3.result().encodePrettily());
-                                    Boolean deleted = res3.result().getBoolean("deleted");
-                                    final String modified2 = res3.result().getString("modified");
-                                    context.assertNotEquals(modified, modified2);
-                                    context.assertTrue(deleted);
-                                    async.complete();
-                                });
+                            context.assertTrue(res3.succeeded());
+                            System.out.println(res3.result().encodePrettily());
+                            Boolean deleted = res3.result().getBoolean("deleted");
+                            final String modified2 = res3.result().getString("modified");
+                            context.assertNotEquals(modified, modified2);
+                            context.assertTrue(deleted);
+                            async.complete();
+                        });
                     });
                 });
     }
+
+    @Test
+    public void testWorkspaceServiceShouldNotImportZipBecauseOfQuota(TestContext context) {
+        final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
+        final Async async = context.async();
+        final UserInfos user = test.http().sessionUser();
+        test.userbook().setQuotaForUserId(user.getUserId(), (long) 0).setHandler(r -> {
+            workspaceService.importFileZip(zipPath, user,
+                    res1 -> {
+                        context.assertTrue(res1.failed());
+                        context.assertEquals("files.too.large", res1.cause().getMessage());
+                        async.complete();
+                    });
+        });
+    }
+
+    @Test
+    public void testWorkspaceServiceShouldImportZip(TestContext context) {
+        final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
+        final Async async = context.async();
+        final UserInfos user = test.http().sessionUser();
+        test.userbook().setQuotaForUserId(user.getUserId(), (long) SIZE_3LEVELS).setHandler(r -> {
+            context.assertTrue(r.succeeded());
+            workspaceService.importFileZip(zipPath, user,
+                    res1 -> {
+                        context.assertTrue(res1.succeeded());
+                        final JsonArray saved = res1.result().getJsonArray("saved");
+                        final JsonArray errors = res1.result().getJsonArray("errors");
+                        context.assertEquals(0, errors.size());
+                        context.assertEquals(8, saved.size());
+                        context.assertFalse(res1.result().containsKey("root"));
+                        final long nbFiles = saved.stream().filter(e -> DocumentHelper.isFile((JsonObject) e)).count();
+                        context.assertEquals(3l, nbFiles);
+                        final Optional<JsonObject> file1 = saved.stream().map(e -> (JsonObject) e).filter(e -> "IMG_20200713_114421.jpg".equals(DocumentHelper.getName(e))).findFirst();
+                        context.assertTrue(file1.isPresent());
+                        context.assertEquals(4, DocumentHelper.getAncestors(file1.get()).size());
+                        final Optional<JsonObject> file2 = saved.stream().map(e -> (JsonObject) e).filter(e -> "IMG-20200331-WA0000.jpg".equals(DocumentHelper.getName(e))).findFirst();
+                        context.assertTrue(file2.isPresent());
+                        context.assertEquals(3, DocumentHelper.getAncestors(file2.get()).size());
+                        final Optional<JsonObject> dir1 = saved.stream().map(e -> (JsonObject) e).filter(e -> "test".equals(DocumentHelper.getName(e))).findFirst();
+                        context.assertTrue(dir1.isPresent());
+                        context.assertEquals(1, DocumentHelper.getAncestors(dir1.get()).size());
+                        async.complete();
+                    });
+        });
+    }
+    @Test
+    public void testWorkspaceServiceShouldImportZipInSharedFolder(TestContext context) {
+        final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
+        final Async async = context.async();
+        final UserInfos user = test.http().sessionUser();
+        test.userbook().setQuotaForUserId(user.getUserId(), (long)2* SIZE_3LEVELS).setHandler(r -> {
+            createSharedFolder(context, "folder", user).setHandler(res0 -> {
+                context.assertTrue(res0.succeeded());
+                workspaceService.info(res0.result(), user, res2 -> {
+                    context.assertTrue(res2.succeeded());
+                    final JsonObject root = res2.result();
+                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user);
+                    ctx.setRootFolder(root);
+                    workspaceService.importFileZip(ctx,
+                            res1 -> {
+                                context.assertTrue(res1.succeeded());
+                                final JsonArray saved = res1.result().getJsonArray("saved");
+                                final JsonArray errors = res1.result().getJsonArray("errors");
+                                context.assertEquals(0, errors.size());
+                                context.assertEquals(8, saved.size());
+                                final Optional<JsonObject> dir1 = saved.stream().map(e -> (JsonObject) e).filter(e -> "test".equals(DocumentHelper.getName(e))).findFirst();
+                                context.assertTrue(dir1.isPresent());
+                                context.assertEquals(1, dir1.get().getJsonArray("inheritedShares").size());
+                                final Optional<JsonObject> file1 = saved.stream().map(e -> (JsonObject) e).filter(e -> "IMG_20200713_114421.jpg".equals(DocumentHelper.getName(e))).findFirst();
+                                context.assertTrue(file1.isPresent());
+                                context.assertEquals(1, file1.get().getJsonArray("inheritedShares").size());
+                                async.complete();
+                            });
+                });
+            });
+        });
+    }
+    @Test
+    public void testWorkspaceServiceShouldImportZipInFolder(TestContext context) {
+        final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
+        final Async async = context.async();
+        final UserInfos user = test.http().sessionUser();
+        test.userbook().setQuotaForUserId(user.getUserId(), (long)3* SIZE_3LEVELS).setHandler(r -> {
+            createFolder(context, "folder", user).setHandler(res0 -> {
+                context.assertTrue(res0.succeeded());
+                workspaceService.info(res0.result(), user, res2 -> {
+                    context.assertTrue(res2.succeeded());
+                    final JsonObject root = res2.result();
+                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user);
+                    ctx.setRootFolder(root);
+                    workspaceService.importFileZip(ctx,
+                            res1 -> {
+                                context.assertTrue(res1.succeeded());
+                                final JsonArray saved = res1.result().getJsonArray("saved");
+                                final JsonArray errors = res1.result().getJsonArray("errors");
+                                context.assertEquals(0, errors.size());
+                                context.assertEquals(8, saved.size());
+                                final Optional<JsonObject> file1 = saved.stream().map(e -> (JsonObject) e).filter(e -> "IMG_20200713_114421.jpg".equals(DocumentHelper.getName(e))).findFirst();
+                                context.assertTrue(file1.isPresent());
+                                context.assertEquals(5, DocumentHelper.getAncestors(file1.get()).size());
+                                async.complete();
+                            });
+                });
+            });
+        });
+    }
+
+
 }

@@ -8,6 +8,7 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -56,15 +57,15 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	private final DocumentDao documentDao;
 
 	public DefaultWorkspaceService(Storage storage, MongoDb mongo, int threshold, String imageResizerAddress,
-			QuotaService quotaService, FolderManager folderManager, EventBus eb, ShareService share, boolean useOldQueryChildren) {
-		super(DocumentDao.DOCUMENTS_COLLECTION, threshold, quotaService, folderManager, eb, useOldQueryChildren);
+								   QuotaService quotaService, FolderManager folderManager, Vertx vertx, ShareService share, boolean useOldQueryChildren) {
+		super(DocumentDao.DOCUMENTS_COLLECTION, threshold, quotaService, folderManager, vertx, useOldQueryChildren);
 		this.dao = new DocumentDao(mongo);
 		this.storage = storage;
 		this.mongo = mongo;
 		this.threshold = threshold;
 		this.shareService = share;
 		this.imageResizerAddress = imageResizerAddress;
-		this.eb = eb;
+		this.eb = vertx.eventBus();
 		this.revisionDao = new RevisionDao(mongo);
 		this.documentDao = new DocumentDao(mongo);
 	}

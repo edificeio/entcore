@@ -12,6 +12,7 @@ public class TestHelper {
     private final FileTestHelper file = new FileTestHelper();
     private final DirectoryTestHelper directory = new DirectoryTestHelper(this, vertx);
     private final AppRegistryTestHelper registry = new AppRegistryTestHelper(this);
+    private final UserbookTestHelper userbook = new UserbookTestHelper(this, vertx);
 
     public Vertx vertx() {
         return this.vertx;
@@ -23,6 +24,10 @@ public class TestHelper {
 
     public DatabaseTestHelper database() {
         return database;
+    }
+
+    public UserbookTestHelper userbook() {
+        return userbook;
     }
 
     public DirectoryTestHelper directory() {

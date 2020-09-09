@@ -42,7 +42,10 @@ subprojects {
 
   sourceSets {
     main { compileClasspath += configurations.provided }
-    test { runtimeClasspath += configurations.compileOnly }
+    test {
+      runtimeClasspath += configurations.compileOnly
+      resources.srcDirs = ["src/test/resources"]
+    }
   }
 
   configurations.all {

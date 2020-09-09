@@ -255,5 +255,12 @@
     "workspace.upload.forbidden": "Vous n'avez pas les droits sur ce dossier.",
     "workspace.notify.forbidden": "Vous n'avez pas les droits sur certains fichiers ou dossiers",
     "workspace.properties.parent": "Dossier parent",
-    "workspace.properties.managers": "Liste des gestionnaires"
+    "workspace.properties.managers": "Liste des gestionnaires",
+    "workspace.import.zip.title": "Importer des fichiers",
+    "workspace.import.zip.content": "Vous tentez de déposer une archive au format zip.<br/>Souhaitez vous qu'elle soit décompressée avant d'être importée ?<br/>Si votre archive comporte une arborescence de dossiers, cette arborescence sera conservée.",
+    "workspace.import.zip.uncompress": "Importer et décompresser",
+    "workspace.import.zip.upload": "Importer sans décompresser",
+    "workspace.import.zip.cancel": "Annuler",
+    "folder.zip.upload.notfound": "Le téléchargement du ZIP a échoué. Veuillez réessayer.",
+    "folder.zip.upload.partial": "Certains élements du fichiers ZIP n'ont pas pu être importé"
 }

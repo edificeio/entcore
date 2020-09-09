@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import org.entcore.common.folders.impl.FolderImporterZip;
 import org.entcore.common.folders.impl.FolderManagerMongoImpl;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
 import org.entcore.common.share.ShareService;
@@ -29,7 +30,7 @@ public interface FolderManager {
 	static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
 			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold, boolean useOldQueryChildren) {
 		return new FolderManagerWithQuota(collection, quotaTreshold, quota,
-				mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren), vertx.eventBus(),useOldQueryChildren);
+				mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren), vertx,useOldQueryChildren);
 	}
 
 	/**
@@ -87,6 +88,24 @@ public interface FolderManager {
 	 * @param handler  the handler that emit the file object save or an error if any
 	 */
 	void importFile(String filePath, String oldId, String userId, Handler<JsonObject> handler);
+
+
+	/**
+	 *
+	 * @param context containing all infos about import
+	 * @param handler  the handler that emit the file object save or an error if any
+	 */
+	void importFileZip(FolderImporterZip.FolderImporterZipContext context, Handler<AsyncResult<JsonObject>> handler);
+
+	/**
+	 *
+	 * @param zipPath of the zip file
+	 * @param user   the user's doing import
+	 * @param handler  the handler that emit the file object save or an error if any
+	 */
+	default void importFileZip(String zipPath, UserInfos user, Handler<AsyncResult<JsonObject>> handler){
+		importFileZip(new FolderImporterZip.FolderImporterZipContext(zipPath, user), handler);
+	}
 
 	/**
 		* Create the file's thumbnails if applicable

@@ -104,7 +104,7 @@ public class Workspace extends BaseServer {
 		 */
 		FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage, vertx, shareService, imageResizerAddress, useOldQueryChildren);
 		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
-				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService, useOldQueryChildren);
+				imageResizerAddress, quotaService, folderManager, vertx, shareService, useOldQueryChildren);
 
 		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
 		workspaceService.setAllowDuplicate(config.getBoolean("allowDuplicate", false));
