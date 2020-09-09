@@ -22,6 +22,7 @@ package org.entcore.common.utils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -137,6 +138,34 @@ public final class FileUtils {
 		t.start();
 	}
 
+	public static void visitZip(Vertx vertx, final String zipFilename, final FileVisitor<Path> visitor, final Handler<AsyncResult<Void>> handler)
+	{
+		vertx.executeBlocking(r->{
+			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, false)) {
+				final Path root = zipFileSystem.getPath("/");
+				Files.walkFileTree(root, visitor);
+				r.complete();
+			} catch (Exception e) {
+				r.fail(e);
+			}
+		}, handler);
+	}
+
+	public static<T> Future<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final ZipHandler<T> handler)
+	{
+		final Future<T> future = Future.future();
+		vertx.executeBlocking(r -> {
+			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, false)) {
+				final T res = handler.handle(zipFileSystem);
+				future.complete(res);
+			} catch (Exception e) {
+				log.error("Operation in zip filesystem failed: " + zipFilename, e);
+				future.fail(e);
+			}
+		},future.completer());
+		return future;
+	}
+
 	public static String getParentPath(String path) {
 		return Paths.get(path).getParent().toString();
 	}
@@ -158,4 +187,8 @@ public final class FileUtils {
 		return Optional.ofNullable(StringUtils.isEmpty(ext) ? null : ext);
 	}
 
+	@FunctionalInterface
+	public static interface ZipHandler<T> {
+		T handle(FileSystem fileSystem) throws Exception;
+	}
 }

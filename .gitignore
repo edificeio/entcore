@@ -18,6 +18,7 @@ out
 test-output
 test-results
 test-tmp
+.metals
 *.class
 mods
 */mods

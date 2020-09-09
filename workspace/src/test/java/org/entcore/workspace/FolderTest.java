@@ -72,7 +72,7 @@ public class FolderTest {
                 new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
         final int threshold = 80;
         workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
-                quotaService, folderManager, test.vertx().eventBus(), shareService, false);
+                quotaService, folderManager, test.vertx(), shareService, false);
         test.database().initMongo(context, mongoContainer);
     }
 

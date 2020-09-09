@@ -13,7 +13,7 @@
 		<article class="default flex-row align-center" ng-hide="display.dropFolderError">
 			<div class="three select-file">
 				<div class="hidden-content">
-					<input type="file" multiple files-input-change="importFiles()" ng-model="upload.files" />
+					<input type="file" multiple files-input-change="onImportFilesManually()" ng-model="upload.files" />
 				</div>
 				<button class="file-button no-margin"><i18n>library.file.choose</i18n></button>
 			</div>

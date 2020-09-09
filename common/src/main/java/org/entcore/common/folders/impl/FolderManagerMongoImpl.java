@@ -88,7 +88,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	protected final String imageResizerAddress;
 	protected boolean allowDuplicate = false;
-
+	protected final FolderImporterZip zipImporter;
 	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery)
 	{
 		this.storage = sto;
@@ -99,6 +99,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.imageResizerAddress = imageResizerAddress;
 		this.queryHelper = new QueryHelper(collection, useOldChildrenQuery);
 		this.inheritShareComputer = new InheritShareComputer(queryHelper);
+		this.zipImporter = new FolderImporterZip(vertx, this);
 	}
 
 	public void setAllowDuplicate(boolean allowDuplicate) {
@@ -939,6 +940,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 				}
 			});
 		}
+	}
+
+	@Override
+	public void importFileZip(FolderImporterZip.FolderImporterZipContext context, Handler<AsyncResult<JsonObject>> handler) {
+		zipImporter.doFinalize(context).map(r->{
+			return context.getResult();
+		}).setHandler(handler);
 	}
 
 	@Override

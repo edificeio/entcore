@@ -21,6 +21,7 @@ import org.entcore.common.folders.ElementQuery.ElementSort;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
+import org.entcore.common.folders.impl.FolderImporterZip;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfGenerator;
@@ -124,6 +125,44 @@ public class WorkspaceController extends BaseController {
 								badRequest(request, uploaded.getString("message"));
 							}
 						});
+					});
+				});
+			} else {
+				request.response().setStatusCode(401).end();
+			}
+		});
+	}
+
+	@Post("/zip")
+	@SecuredAction("workspace.document.add")
+	public void addZip(final HttpServerRequest request) {
+		request.pause();
+		request.setExpectMultipart(true);
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			if (userInfos != null) {
+				final JsonObject doc = new JsonObject();
+				final String parentId = request.params().get("parentId");
+				doc.put("eParent", parentId);
+				final Optional<String> parentIdOpt = Optional.ofNullable(parentId);
+				final boolean hasParent = parentIdOpt.isPresent();
+				workspaceService.canWriteOn(parentIdOpt, userInfos, resRights->{
+					final boolean hasFoundParent = resRights.succeeded() && resRights.result().isPresent();
+					if (resRights.failed() || (hasParent && !hasFoundParent)) {
+						badRequest(request, "workspace.upload.forbidden");
+						return;
+					}
+					final Future<FolderImporterZip.FolderImporterZipContext> future = FolderImporterZip.createContext(vertx, userInfos, request);
+					request.resume();
+					future.setHandler(resContext -> {
+						if(resContext.succeeded()){
+							final FolderImporterZip.FolderImporterZipContext context = resContext.result();
+							if(hasFoundParent){
+								context.setRootFolder(resRights.result().get());
+							}
+							workspaceService.importFileZip(context.setCleanZip(true), asyncDefaultResponseHandler(request, 201));
+						} else {
+							badRequest(request, resContext.cause().getMessage());
+						}
 					});
 				});
 			} else {
