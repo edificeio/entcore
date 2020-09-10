@@ -1513,7 +1513,7 @@ module.directive('bindHtml', function($compile) {
 });
 
 module.directive('portal', function($compile) {
-    let buildTracker = function( type, params ) {
+    var buildTracker = function( type, params ) {
         switch( type ) {
             case "matomo":
                 try {
