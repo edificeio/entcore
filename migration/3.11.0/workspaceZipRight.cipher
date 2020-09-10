@@ -1,0 +1,5 @@
+MATCH (a:Action) WHERE a.name ="org.entcore.workspace.controllers.WorkspaceController|addZip"
+WITH a
+MATCH (b:Action)-[]-(r:Role) WHERE b.name ="org.entcore.workspace.controllers.WorkspaceController|addDocument"
+WITH a,r
+MERGE (a)<-[:AUTHORIZE]-(r);
