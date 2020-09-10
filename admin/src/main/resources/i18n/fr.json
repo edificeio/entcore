@@ -966,6 +966,7 @@
     "alert.todo": "Traiter le signalement",
     "alert.notification.delete": "Notification supprimée",
     "alert.notification.keep": "Notification conservée",
+    "alerts.empty": "Aucun signalement",
     "subjects": "Matière",
     "search.subject": "Rechercher",
     "create.subjects": "Ajouter une matière",
