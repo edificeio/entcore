@@ -38,10 +38,6 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	@Override
 	protected void preCommit() {
 		super.preCommit();
-		importer.removeOldFunctionalGroup();
-		importer.removeEmptyClasses();
-		importer.restorePreDeletedUsers();
-		importer.addStructureNameInGroups(getAcademyPrefix());
 	}
 
 	@Override
@@ -57,7 +53,7 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 		importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
 			@Override
 			public void handle(Void event) {
-				parse(handler, null);
+				parse(handler, new CleanImportProcessing1d(path, vertx));
 			}
 		});
 	}
