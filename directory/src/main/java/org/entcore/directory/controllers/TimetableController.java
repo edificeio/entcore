@@ -262,12 +262,12 @@ public class TimetableController extends BaseController {
 			badRequest(request, "timetable.import.exists");
 			return;
 		}
+		request.setExpectMultipart(true);
 
 		importInProgress.put(structureIdentifier, System.currentTimeMillis());
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
 		final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
-		request.setExpectMultipart(true);
 		request.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
