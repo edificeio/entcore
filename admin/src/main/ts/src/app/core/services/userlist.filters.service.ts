@@ -204,9 +204,11 @@ class AdmlFilter extends UserFilter<string> {
 
     filter = (functions: [string, Array<string>]) => {
         const outputModel = this.outputModel;
+        const currentStructureId = window.location.href.split('/')[4];
         return outputModel.length === 0
             || outputModel.indexOf('users.adml') >= 0
                 && functions.findIndex((f) => f[0] === 'ADMIN_LOCAL') >= 0
+                && functions.findIndex((f) => f[1].includes(currentStructureId)) >= 0
             || outputModel.indexOf('users.not.adml') >= 0
                 && functions.findIndex((f) => f[0] === 'ADMIN_LOCAL') === -1;
     }
