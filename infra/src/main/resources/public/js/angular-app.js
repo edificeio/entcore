@@ -1512,29 +1512,71 @@ module.directive('bindHtml', function($compile) {
     }
 });
 
-module.directive('portal', function($compile) {
-    var buildTracker = function( type, params ) {
-        switch( type ) {
-            case "matomo":
-                try {
-                    var _paq = window._paq = window._paq || [];
-                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-                    _paq.push(['trackPageView']);
-                    _paq.push(['enableLinkTracking']);
-                    (function() {
-                      _paq.push(['setTrackerUrl', params.url+'matomo.php']);
-                      _paq.push(['setSiteId', params.siteId]);
-                      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-                      g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
-                    })();
-                } catch(e) {
-                    console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
-                }
-                break;
-            default: 
-                break;
-        }
-    };
+module.factory('tracker', ["$location", function($location){
+	var Tracker = function() {
+		var type = "none";
+		var params = {};
+	}
+	Tracker.prototype.init = function( type, params ) {
+		this.type = type;
+		this.params = params;
+		switch( type ) {
+			case "matomo":
+				try {
+					var _paq = window["_paq"] = window["_paq"] || [];
+					if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
+					if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
+					if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
+					/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+					_paq.push(['trackPageView']);
+					_paq.push(['enableLinkTracking']);
+					(function() {
+						_paq.push(['setTrackerUrl', params.url +'matomo.php']);
+						_paq.push(['setSiteId', params.siteId]);
+						var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+						g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
+					})();
+
+					if( params.detailApps && window.entcore.template ) {
+						// BIG AWFUL HACK to intercept calls to the template engine's open function :
+						var self = this;
+						var encapsulatedFunction = window.entcore.template.open;
+						// intercept calls to the template engine
+						window.entcore.template.open = function (name, view) {
+							var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
+							if( "main"===name ) {
+								self.trackPage( view||"unknown", $location.absUrl() );
+							}
+							return ret;
+						}
+						// END OF BIG AWFUL HACK
+					}
+				} catch(e) {
+					console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
+				}
+				break;
+			default: 
+				break;
+		}
+
+	}
+	Tracker.prototype.trackPage= function( title, url ) {
+		switch( this.type ) {
+		case "matomo":
+			// Then let's track single-page applications routes, too.
+			var _paq = window["_paq"] = window["_paq"] || [];
+			_paq.push(['setDocumentTitle', title]);
+			_paq.push(['setCustomUrl', url]);
+			_paq.push(['trackPageView']);
+			break;
+		default: 
+			break;
+		}
+	}
+	return new Tracker();
+}]);
+
+module.directive('portal', ['tracker', function(tracker){
     return {
         restrict: 'E',
         transclude: true,
@@ -1543,7 +1585,7 @@ module.directive('portal', function($compile) {
             // Load any configured tracker
             http().get('/tracker').done(function(data) {
                 if( data && typeof data.type === 'string' && data.type.trim().length > 0 && data[data.type] ) {
-                    buildTracker( data.type, data[data.type] );
+                    tracker.init( data.type, data[data.type] );
                 }
             }).error(function(error) {
                 // silent fail
@@ -1559,7 +1601,7 @@ module.directive('portal', function($compile) {
 			};
         }
     }
-});
+}]);
 
 module.directive('adminPortal', function($compile) {
     skin.skin = 'admin';
