@@ -20,7 +20,6 @@
 package org.entcore.conversation.controllers;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -145,15 +144,9 @@ public class ConversationController extends BaseController {
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								@Override
 								public void handle(JsonObject parent) {
-									final String threadId;
-									if( parent != null
-											&& (ConversationController.getHaveMessagesSameReceivers(parent, message)
-											|| ConversationController.getIsUserGroupsAreRceveivers(user, parent))
-									){
-										threadId = parent.getString("thread_id");
-									}else{
-										threadId = null;
-									}
+									final String threadId = ConversationController.getShouldCreateThread(parent, message, user)
+											? null
+											: parent != null ? parent.getString("thread_id") : null;
 									neoConversationService.addDisplayNames(message, parent, new Handler<JsonObject>() {
 										public void handle(JsonObject message) {
 											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201));
@@ -186,6 +179,11 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	/**
+	 * Concatenate all public participants to a message in a single Set. (from + to + cc)
+	 * @param message
+	 * @return A Set containing the ids of all the participants
+	 */
 	public static HashSet<String> getMessagePeople(JsonObject message) {
 		HashSet<String> messagePeopleSet = new HashSet<>();
 		JsonArray messagePeopleTo = message.getJsonArray("to");
@@ -208,19 +206,108 @@ public class ConversationController extends BaseController {
 		return messagePeopleSet;
 	}
 
-	public static boolean getHaveMessagesSameReceivers(JsonObject backMessage, JsonObject newMessage) {
-		HashSet<String> backMessagePeopleSet = ConversationController.getMessagePeople(backMessage);
-		HashSet<String> newMessagePeopleSet = ConversationController.getMessagePeople(newMessage);
-		return newMessagePeopleSet.equals(backMessagePeopleSet);
+	/**
+	 * Concatenate all private participants to a message in a single Set. (cci)
+	 * @param message
+	 * @return A Set containing the ids of all the private participants
+	 */
+	public static HashSet<String> getMessagePrivatePeople(JsonObject message) {
+		HashSet<String> messagePeopleSet = new HashSet<>();
+		JsonArray messagePeopleCci = message.getJsonArray("cci");
+		if (messagePeopleCci != null) {
+			for(Object o: messagePeopleCci){
+				if ( o instanceof String ) {
+					messagePeopleSet.add((String)o);
+				}
+			}
+		}
+		return messagePeopleSet;
 	}
 
-	public static boolean getIsUserGroupsAreRceveivers(UserInfos user, JsonObject message) {
+	/**
+	 * Returns true if the user belongs to a group that participates to the given message.
+	 * @param user
+	 * @param message
+	 * @return
+	 */
+	public static boolean getIsUserInParticipantGroups(UserInfos user, JsonObject message) {
 		HashSet<String> messagePeopleSet = ConversationController.getMessagePeople(message);
 		List<String> groups = user.getGroupsIds();
 		for(String g: groups) {
 			if (messagePeopleSet.contains(g)) return true;
 		}
 		return false;
+	}
+
+	public static class MemberDiff {
+		HashSet<String> added = new HashSet<>();
+		HashSet<String> removed = new HashSet<>();
+		HashSet<String> cciAdded = new HashSet<>();
+		HashSet<String> cciRemoved = new HashSet<>();
+
+		MemberDiff(JsonObject backMessage, JsonObject newMessage) {
+			HashSet<String> backMessagePeople = getMessagePeople(backMessage);
+			HashSet<String> backMessagePrivatePeople = getMessagePrivatePeople(backMessage);
+			HashSet<String> newMessagePeople = getMessagePeople(newMessage);
+			HashSet<String> newMessagePrivatePeople = getMessagePrivatePeople(newMessage);
+
+			for(String id: newMessagePeople) {
+				if (!backMessagePeople.contains(id)) {
+					added.add(id);
+				}
+			}
+			for(String id: backMessagePeople) {
+				if (!newMessagePeople.contains(id)) {
+					removed.add(id);
+				}
+			}
+			for(String id: newMessagePrivatePeople) {
+				if (!backMessagePrivatePeople.contains(id)) {
+					cciAdded.add(id);
+				}
+			}
+			for(String id: backMessagePrivatePeople) {
+				if (!newMessagePrivatePeople.contains(id)) {
+					cciRemoved.add(id);
+				}
+			}
+		}
+
+		boolean getHasNoPublicDiff() { return added.isEmpty() && removed.isEmpty(); }
+
+	}
+
+	/**
+	 * Computes if two messages (a new message and its parent) should be in the same thread or not.
+	 * To be in the same thread, the messages should have the same public participants,
+	 * unless the sender of the new message belongs to a public group of the parent message.
+	 * Note: if the user was in Cci, it is now in the public participants, this methods will return true.
+	 * @param backMessage The parent message information
+	 * @param newMessage The new message information
+	 * @param user The user that is currenlty logged in (sender of the new message).
+	 * @return True if a thread should be created.
+	 */
+	public static boolean getShouldCreateThread(JsonObject backMessage, JsonObject newMessage, UserInfos user) {
+		if (backMessage == null) return true;
+		MemberDiff diff = new ConversationController.MemberDiff(backMessage, newMessage);
+		if (diff.getHasNoPublicDiff()) return false;
+		else return !(getIsUserInParticipantGroups(user, backMessage)
+				&& diff.removed.isEmpty()
+				&& diff.added.size() == 1
+				&& diff.added.contains(user.getUserId())
+			);
+	}
+
+	/**
+	 * Computes if public participants of two messages are striclty the same.
+	 * @param backMessage
+	 * @param newMessage
+	 * @return
+	 */
+	public static boolean getHaveMessagesSamePublicParticipants(JsonObject backMessage, JsonObject newMessage) {
+		HashSet<String> backMessagePeopleSet = ConversationController.getMessagePeople(backMessage);
+		HashSet<String> newMessagePeopleSet = ConversationController.getMessagePeople(newMessage);
+		return newMessagePeopleSet.equals(backMessagePeopleSet);
 	}
 
 	@Put("draft/:id")
@@ -338,15 +425,9 @@ public class ConversationController extends BaseController {
 
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
-									final String threadId;
-									if( parentMsg != null
-											&& (ConversationController.getHaveMessagesSameReceivers(parentMsg, message)
-											|| ConversationController.getIsUserGroupsAreRceveivers(user, parentMsg))
-									){
-										threadId = parentMsg.getString("thread_id");
-									}else{
-										threadId = null;
-									}
+									final String threadId = ConversationController.getShouldCreateThread(parentMsg, message, user)
+											? null
+											: parentMsg != null ? parentMsg.getString("thread_id") : null;
 									neoConversationService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
 										public void handle(final JsonObject message) {
 											saveAndSend(messageId, message, user, parentMessageId, threadId,
