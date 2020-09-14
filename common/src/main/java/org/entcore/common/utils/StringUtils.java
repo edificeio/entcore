@@ -423,9 +423,28 @@ public final class StringUtils {
     }
 
     public final static Comparator<String> versionComparator = (v1, v2) -> {
-        try {
-            return new Double(Double.parseDouble("."+v1.split("-", 2)[0].replaceAll("\\.", "")))
-                    .compareTo(Double.parseDouble("."+v2.split("-", 2)[0].replaceAll("\\.", "")));
+        try
+        {
+            String a = v1.replaceAll("\\.", "-");
+            String b = v2.replaceAll("\\.", "-");
+
+            String aVers[] = a.split("-");
+            String bVers[] = b.split("-");
+
+            for(int i = 0; i < bVers.length; ++i)
+            {
+                int aVer = Integer.parseInt(aVers[i]);
+                int bVer = Integer.parseInt(bVers[i]);
+
+                if(aVer < bVer)
+                    return -1;
+                else if(aVer > bVer)
+                    return 1;
+                else
+                    continue;
+            }
+
+            return aVers.length > bVers.length ? 1 : 0;
         } catch (NumberFormatException nbe) {
             return 0;
         }
