@@ -1,5 +1,6 @@
 import {Routes} from '@angular/router';
 import {ManagementRootComponent} from './management-root/management-root.component';
+import {StructureInformationsComponent} from './structure-informations/structure-informations.component';
 import {MessageFlashComponent} from './message-flash/message-flash.component';
 import {MessageFlashListComponent} from './message-flash/message-flash-list/message-flash-list.component';
 import {EditMessageFlashComponent} from './message-flash/form/edit-message-flash.component';
@@ -25,8 +26,12 @@ export let routes: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: 'message-flash',
+                redirectTo: 'infos',
                 pathMatch: 'full'
+            },
+            {
+                path: 'infos',
+                component: StructureInformationsComponent
             },
             {
                 path: 'message-flash',

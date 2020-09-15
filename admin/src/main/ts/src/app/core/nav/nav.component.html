@@ -18,7 +18,7 @@
     <i class="school" aria-hidden="true"
        *ngIf="currentStructure"
        [title]="'management.structure' | translate"
-       [routerLink]="'/admin/' + currentStructure?.id + '/management/message-flash'"
+       [routerLink]="'/admin/' + currentStructure?.id + '/management/infos'"
        [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)">
     </i>
     <i class="fa fa-user" aria-hidden="true"

@@ -1,0 +1,59 @@
+.action
+{
+  display: flex;
+  justify-content: flex-end;
+}
+
+input[type="checkbox"],
+button.cancel,
+ode-message-sticker,
+i
+{
+  flex: none !important;
+}
+
+i.is-info
+{
+  font: inherit;
+  font-size: 10pt;
+}
+
+.actions-list > li
+{
+  display: flex;
+  align-items: center;
+}
+
+.profile-metrics
+{
+  display: flex;
+
+  > .profile-column
+  {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    > .profile-card
+    {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      background-color: #f7f6f6;
+      margin: 8px 16px;
+      padding: 12px;
+
+      > .profile-number
+      {
+        font-size: 56;
+        font-weight: bold;
+      }
+
+      > .profile-label
+      {
+        white-space: nowrap;
+        margin-top: 4px;
+      }
+    }
+  }
+}
