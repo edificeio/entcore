@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+    <addRequest>
+        <operationalAttributes><attr name="categoriePersonne"><value>Eleve</value></attr></operationalAttributes>
+        <identifier><id>2000000</id></identifier>
+        <attributes>
+            <attr name="ENTPersonJointure"><value>2000000</value></attr>
+            <attr name="ENTEleveINE"><value>100000000AA</value></attr>
+            <attr name="ENTEleveStructRattachId"><value>1</value></attr>
+            <attr name="ENTPersonDateNaissance"><value>01/01/2000</value></attr>
+            <attr name="ENTPersonNomPatro"><value>NOM</value></attr>
+            <attr name="sn"><value>NOM</value></attr>
+            <attr name="givenName"><value>Prenom</value></attr>
+            <attr name="ENTPersonAutresPrenoms"><value>Prenom</value><value>NOM</value></attr>
+            <attr name="personalTitle"><value>M.</value></attr>
+            <attr name="ENTElevePersRelEleve"><value>2000000$10$1$1$1$1</value><value>3000000$20$0$1$0$0</value></attr>
+            <attr name="ENTEleveBoursier"><value>N</value></attr>
+            <attr name="ENTEleveRegime"><value>INTERNE 5 JOURS</value></attr>
+            <attr name="ENTEleveTransport"><value>N</value></attr>
+            <attr name="ENTPersonAdresse"><value>1 rue de Test$$$</value></attr>
+            <attr name="ENTPersonCodePostal"><value>16730</value></attr>
+            <attr name="ENTPersonVille"><value>LINARS</value></attr>
+            <attr name="ENTPersonPays"><value>FRANCE</value></attr>
+            <attr name="ENTEleveAdresseRel"><value>2000000</value></attr>
+            <attr name="ENTEleveStatutEleve"><value>SCOLAIRE</value></attr>
+            <attr name="ENTEleveMEF"><value>10000000000</value></attr>
+            <attr name="ENTEleveLibelleMEF"><value>1E</value></attr>
+            <attr name="ENTEleveNivFormation"><value>BAC PRO</value></attr>
+            <attr name="ENTEleveFiliere"><value>BAC PRO</value></attr>
+            <attr name="ENTEleveEnseignements"><value>ANGLAIS LV1</value></attr>
+            <attr name="ENTEleveCodeEnseignements"><value>100000</value></attr>
+            <attr name="ENTPersonStructRattach"><value>1000</value></attr>
+            <attr name="ENTEleveDateEntreeClasses"><value>3000$18/08/2020$1AQUA</value></attr>
+            <attr name="ENTEleveDateSortieClasses"><value/></attr>
+            <attr name="ENTEleveClasses"><value>3000$1AQUA</value></attr>
+            <attr name="ENTEleveGroupes"><value/></attr>
+        </attributes>
+    </addRequest>
+</ficAlimMENESR>

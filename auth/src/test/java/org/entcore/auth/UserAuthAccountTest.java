@@ -39,10 +39,10 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldActivate(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user0", "activationCode0", "user0@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user0", "activationCode0", "User0@test.com").setHandler(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             final HttpServerRequest request = test.http().post("/auth/activation");
-            authAccount.activateAccount("user0", "activationCode0", "password0", "user0@test.com", "0666666666",
+            authAccount.activateAccount("user0", "activationCode0", "password0", "User0@test.com", "0666666666",
                     "theme1", request, resActiv -> {
                         context.assertTrue(resActiv.isRight());
                         final String id = resActiv.right().getValue();
@@ -51,6 +51,8 @@ public class UserAuthAccountTest {
                             context.assertNull(resUser.result().getString("activationCode"));
                             context.assertNotNull(resUser.result().getString("password"));
                             context.assertEquals("0666666666", resUser.result().getString("mobile"));
+                            context.assertEquals("User0@test.com", resUser.result().getString("email"));
+                            context.assertEquals("user0@test.com", resUser.result().getString("emailSearchField"));
                             async.complete();
                         });
                     });
