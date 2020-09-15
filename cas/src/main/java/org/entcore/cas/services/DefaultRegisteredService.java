@@ -20,12 +20,11 @@
 package org.entcore.cas.services;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.I18n;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -36,6 +35,8 @@ import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
+import org.entcore.cas.mapping.Mapping;
+import org.entcore.cas.mapping.MappingService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
@@ -44,10 +45,10 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 public class DefaultRegisteredService implements RegisteredService {
-
+	protected final MappingService mappingService = MappingService.getInstance();
 	protected final I18n i18n = I18n.getInstance();
-	protected final Set<Pattern> patterns = new HashSet<>();
-	private final Set<Pattern> confPatterns = new HashSet<>();
+	protected final Set<Mapping> criterias = new HashSet<>();
+	private final Set<Mapping> confCriterias = new HashSet<>();
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
 	protected String directoryAction = "getUser";
@@ -75,10 +76,9 @@ public class DefaultRegisteredService implements RegisteredService {
 
 	@Override
 	public boolean matches(final String serviceUri) {
-		for (Pattern pattern : patterns) {
-			Matcher matcher = pattern.matcher(serviceUri);
-			if (matcher.matches()) {
-				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + pattern.pattern());
+		for (Mapping criteria : criterias) {
+			if (criteria.matches(serviceUri)) {
+				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + criteria.pattern());
 				return true;
 			}
 		}
@@ -107,6 +107,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	private void createStatsEvent(String userId, JsonObject res, String service) {
+		final Optional<Mapping> mapping = foundMappingByService(service);
 		UserInfos user = new UserInfos();
 		user.setUserId(userId);
 		JsonArray profiles = res.getJsonArray("profiles");
@@ -118,8 +119,9 @@ public class DefaultRegisteredService implements RegisteredService {
 			user.setStructures(structureNodes.stream().map(s -> ((JsonObject)s)
 					.getString("id")).collect(Collectors.toList()));
 		}
-		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, new JsonObject()
-				.put("service", service).put("connector-type", "Cas"));
+		final JsonObject event = new JsonObject().put("service", service).put("connector-type", "Cas");
+		event.put("cas-type", mapping.map(e->e.getType()).orElse("unknwown"));
+		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, event);
 	}
 
 	@Override
@@ -127,11 +129,45 @@ public class DefaultRegisteredService implements RegisteredService {
 		return serviceUri;
 	}
 
+	protected Future<Mapping> getMapping(String pattern){
+		final Future<Mapping> future = Future.future();
+		mappingService.getMappings().setHandler(r->{
+			if(r.succeeded()){
+				final Optional<Mapping> found = r.result().find(getId(), pattern);
+				if(found.isPresent()){
+					future.complete(found.get());
+				} else{
+					future.complete(Mapping.unknown(getId(), pattern));
+					log.error("Could not found any type matching casType="+getId()+ " and pattern="+pattern);
+				}
+			}else{
+				future.complete(Mapping.unknown(getId(), pattern));
+				log.error("An error occured. Could not any found matching for casType="+getId()+ " and pattern="+pattern, r.cause());
+			}
+		});
+		return future;
+	}
+
+	public Optional<Mapping> foundMappingByService(final String serviceUri){
+		for(final Mapping mapping : criterias){
+			if(mapping.matches(serviceUri)){
+				return Optional.of(mapping);
+			}
+		}
+		return Optional.empty();
+	}
+
 	private void addConfPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				this.confPatterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
-				this.patterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
+				getMapping(pattern).setHandler(r->{
+					if(r.succeeded()){
+						this.confCriterias.add(r.result());
+						this.criterias.add(r.result());
+					} else{
+						log.error("Bad service configuration : failed to get mapping : " + pattern, r.cause());
+					}
+				});
 			}
 			catch (PatternSyntaxException pe) {
 				log.error("Bad service configuration : failed to compile regex : " + pattern);
@@ -143,7 +179,13 @@ public class DefaultRegisteredService implements RegisteredService {
 	public void addPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				this.patterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
+				getMapping(pattern).setHandler(r->{
+					if(r.succeeded()){
+						this.criterias.add(r.result());
+					} else{
+						log.error("Bad service configuration : failed to get mapping : " + pattern, r.cause());
+					}
+				});
 			}
 			catch (PatternSyntaxException pe) {
 				log.error("Bad service configuration : failed to compile regex : " + pattern);
@@ -153,8 +195,8 @@ public class DefaultRegisteredService implements RegisteredService {
 
 	@Override
 	public void cleanPatterns() {
-		this.patterns.clear();
-		this.patterns.addAll(this.confPatterns);
+		this.criterias.clear();
+		this.criterias.addAll(this.confCriterias);
 	}
 
 	@Override
@@ -190,13 +232,13 @@ public class DefaultRegisteredService implements RegisteredService {
 
 	@Override
 	public int hashCode() {
-		return this.getClass().hashCode() + patterns.hashCode() + principalAttributeName.hashCode();
+		return this.getClass().hashCode() + criterias.hashCode() + principalAttributeName.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		return obj != null && obj instanceof DefaultRegisteredService &&
-				this.patterns.equals(((DefaultRegisteredService) obj).patterns) &&
+				this.criterias.equals(((DefaultRegisteredService) obj).criterias) &&
 				this.principalAttributeName.equals(((DefaultRegisteredService) obj).principalAttributeName);
 	}
 

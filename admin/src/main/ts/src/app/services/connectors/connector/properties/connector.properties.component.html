@@ -104,10 +104,24 @@
            [innerHtml]="getCasTypeDescription()">
       </div>
 
+      <ode-form-field label="services.connector.cas.mapping">
+        <select [ngModel]="connector.casMappingId"
+                (ngModelChange)="onCasMappingChange($event)"
+                name="casMapping"
+                [disabled]="!connector.hasCas || disabled"
+                [required]="true"
+                class="is-flex-none has-min-width">
+          <option *ngFor="let casMapping of casMappings | orderBy:'name'" [value]="casMapping.id">
+            {{ casMapping.name }}
+          </option>
+        </select>
+        <i class='fa fa-plus' (click)="openCasType()" *ngIf="admc"></i>
+      </ode-form-field>
+
       <ode-form-field label="services.connector.cas.type">
         <select [(ngModel)]="connector.casTypeId"
                 name="casTypeId"
-                [disabled]="!connector.hasCas || disabled"
+                [disabled]="true"
                 class="is-flex-none has-min-width">
           <option *ngFor="let casType of casTypes | orderBy:'name'" [value]="casType.id">
             {{ casType.name }}
@@ -115,15 +129,45 @@
         </select>
       </ode-form-field>
 
-      <ode-form-field label="services.connector.cas.pattern" *ngIf="admc">
+      <ode-form-field label="services.connector.cas.pattern">
         <input type="text"
                [(ngModel)]="connector.casPattern"
                name="casPattern"
+               [disabled]="true"
                [placeholder]="'form.optional' | translate">
       </ode-form-field>
     </fieldset>
   </ode-panel-section>
-
+  <!--TYPE LIGHTBOX-->
+  <ode-lightbox-confirm *ngIf="!!isOpenCasType" lightboxTitle="services.connector.cas.newMapping"
+                    [show]="isOpenCasType"
+                    (onCancel)="closeCasType(false)"
+                    (onConfirm)="closeCasType(true)">
+        <ode-form-field label="services.connector.cas.mapping">
+          <input type="text"
+                  [(ngModel)]="newCasType.type"
+                  name="newCasType_type"
+                  required>
+        </ode-form-field>
+        <ode-form-field label="services.connector.cas.type">
+          <select [(ngModel)]="newCasType.casType"
+                  name="newCasType_casType"
+                  [required]="true"
+                  class="is-flex-none has-min-width">
+            <option *ngFor="let casType of casTypes | orderBy:'name'" [value]="casType.id">
+              {{ casType.name }}
+            </option>
+          </select>
+        </ode-form-field>
+        <ode-form-field label="services.connector.cas.pattern">
+          <input type="text"
+                  [(ngModel)]="newCasType.pattern"
+                  [required]="true"
+                  name="casPattern"
+                  [placeholder]="'form.optional' | translate">
+        </ode-form-field>
+  </ode-lightbox-confirm>
+  <!--/END LIGHTBOX-->
   <ode-panel-section section-title="services.connector.oauth.title" [folded]="true">
     <fieldset [disabled]="disabled">
       <div>

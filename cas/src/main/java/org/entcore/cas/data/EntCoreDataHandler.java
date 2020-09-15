@@ -20,12 +20,16 @@
 package org.entcore.cas.data;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
 import fr.wseduc.cas.async.Tuple;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.exceptions.ValidationException;
+import io.vertx.core.json.JsonArray;
 import org.entcore.cas.http.WrappedRequest;
+import org.entcore.cas.mapping.Mapping;
+import org.entcore.cas.services.RegisteredService;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -141,6 +145,24 @@ public class EntCoreDataHandler extends DataHandler {
 		});
 	}
 
+	protected void beforePersistAuth(final JsonObject doc){
+		for(final Object ticket : doc.getJsonArray("serviceTickets", new JsonArray())){
+			final JsonObject ticketJson = (JsonObject)ticket;
+			final String service = ticketJson.getString("service");
+			String type = "unknown";
+			if(service != null){
+				final RegisteredService rService = services.matches(service);
+				if(rService != null){
+					final Optional<Mapping> mapping = rService.foundMappingByService(service);
+					if(mapping.isPresent()){
+						type = mapping.get().getType();
+					}
+				}
+			}
+			ticketJson.put("type", type);
+		}
+	}
+
 	@Override
 	public void persistAuth(AuthCas authCas, final Handler<Boolean> handler) {
 		JsonObject query = new JsonObject().put("id", authCas.getId());
@@ -149,6 +171,7 @@ public class EntCoreDataHandler extends DataHandler {
 			handler.handle(false);
 			return;
 		}
+		beforePersistAuth(doc);
 		doc.put("updatedAt", MongoDb.now());
 		mongoDb.update(COLLECTION, query, doc, true, false, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override

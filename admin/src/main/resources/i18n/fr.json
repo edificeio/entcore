@@ -787,6 +787,7 @@
     "services.connector.properties.warning.header": "Attention !",
     "services.connector.properties.warning.content": "<p>Les paramètres du connecteur permettent de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de se réauthentifier.</p><p>Ce type de lien n'est possible qu'avec certains sites web. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaître les paramétrages à effectuer.</p>",
     "services.connector.cas.title": "Champs spécifiques CAS",
+    "services.connector.cas.mapping": "Type",
     "services.connector.cas.hasCas": "Activer le champs spécifique CAS",
     "services.connector.cas.type": "Cible",
     "services.connector.cas.pattern": "Pattern",

@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { SelectOption } from 'ngx-ode-ui';
-import { ConnectorModel } from '../../../../core/store/models/connector.model';
+import { ConnectorModel, MappingModel } from '../../../../core/store/models/connector.model';
 import { CasType } from '../CasType';
+import { MappingCollection } from 'src/app/core/store/collections/connector.collection';
 
 @Component({
     selector: 'ode-connector-properties',
@@ -46,7 +47,7 @@ import { CasType } from '../CasType';
         }
     `]
 })
-export class ConnectorPropertiesComponent extends OdeComponent implements OnChanges {
+export class ConnectorPropertiesComponent extends OdeComponent implements OnInit,OnChanges {
     @Input()
     connector: ConnectorModel;
     @Input()
@@ -98,6 +99,32 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnChan
         value: c.id,
         label: c.name
     })) : [];
+    casMappings: MappingModel[] = [];
+    casMappingCollection: MappingCollection;
+    isOpenCasType = false;
+    newCasType = new MappingModel;
+
+    async ngOnInit(){
+        super.ngOnInit();
+        this.casMappingCollection = await MappingCollection.getInstance();
+        this.casMappings = this.casMappingCollection.data;
+    }
+
+    private setMapping(mapping: MappingModel){
+        if(mapping){
+            this.connector.casPattern = mapping.pattern;
+            this.connector.casTypeId = mapping.casType;
+        } else{
+            this.connector.casTypeId = undefined;
+            this.connector.casPattern = undefined;
+        }
+    }
+
+    public onCasMappingChange(mappingId:string){
+        this.connector.casMappingId = mappingId;
+        const mapping = this.casMappings.find(e=>e.type==mappingId);
+        this.setMapping(mapping);
+    }
 
     public toggleCasType(): void {
         if (this.connector.hasCas) {
@@ -115,6 +142,20 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnChan
         return '';
     }
 
+    public openCasType(){
+        this.newCasType = new MappingModel;
+        this.isOpenCasType = true;
+    }
+
+    public async closeCasType(confirm: boolean){
+        if(confirm){
+            await this.casMappingCollection.createMapping(this.newCasType);
+            this.casMappings = this.casMappingCollection.data;
+        }
+        this.isOpenCasType = false;
+        this.newCasType =  new MappingModel;
+    }
+
     public setUserinfoInOAuthScope() {
         if (this.connector.oauthTransferSession
             && (!this.connector.oauthScope || this.connector.oauthScope.indexOf('userinfo') === -1)) {
@@ -129,6 +170,9 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnChan
     ngOnChanges(changes: SimpleChanges): void {
         super.ngOnChanges(changes);
         this.casTypesOptions = this.casTypes ? this.casTypes.map(c => ({value: c.id, label: c.name})) : [];
+        if(this.connector){
+            this.connector.casMappingId = this.casMappingCollection.getMappingId(this.connector.casTypeId, this.connector.casPattern);
+        }
     }
 
     public onUpload($event: File[]): void {
