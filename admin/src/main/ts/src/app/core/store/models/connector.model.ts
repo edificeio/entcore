@@ -1,7 +1,38 @@
 import {Mix, Model} from 'entcore-toolkit';
 import { RoleModel } from './role.model';
 
-export class ConnectorModel extends Model<ConnectorModel> {
+export interface IConnector{
+    id: string;
+    name: string;
+    displayName: string;
+    icon: string;
+    url: string;
+    target: string;
+    inherits: boolean;
+    locked: boolean;
+    casTypeId: string;
+    casMappingId: string;
+    casPattern: string;
+    oauthScope: string;
+    oauthSecret: string;
+    oauthGrantType: string;
+    structureId: string;
+    oauthTransferSession: boolean;
+}
+
+export class MappingModel {
+    type: string;
+    pattern: string;
+    casType: string;
+    get id(){
+        return this.type;
+    }
+    get name(){
+        return this.type;
+    }
+}
+
+export class ConnectorModel extends Model<ConnectorModel> implements IConnector{
     private _id: string;
     public get id() {
         return this._id;
@@ -29,7 +60,7 @@ export class ConnectorModel extends Model<ConnectorModel> {
     target: string;
     inherits: boolean;
     locked: boolean;
-
+    casMappingId: string;
     roles: RoleModel[];
 
     hasCas: boolean;

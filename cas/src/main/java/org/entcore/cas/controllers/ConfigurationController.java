@@ -21,6 +21,7 @@ package org.entcore.cas.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
@@ -28,6 +29,8 @@ import fr.wseduc.webutils.http.BaseController;
 import java.util.Arrays;
 
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
+import org.entcore.cas.mapping.MappingService;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -43,6 +46,7 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 public class ConfigurationController extends BaseController {
 
 	private RegisteredServices services;
+	private final MappingService mappingService = MappingService.getInstance();
 
 	@Get("/configuration/reload")
 	@ResourceFilter(SuperAdminFilter.class)
@@ -50,6 +54,42 @@ public class ConfigurationController extends BaseController {
 	public void reloadPatterns(HttpServerRequest request) {
 		loadPatterns();
 		Renders.renderJson(request, new JsonObject().put("result", "done"), 200);
+	}
+
+	@Get("/configuration/mappings")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getMappings(HttpServerRequest request) {
+		mappingService.getMappings().setHandler(res->{
+			if(res.succeeded()){
+				Renders.renderJson(request, res.result().toJson());
+			}else{
+				Renders.renderError(request, new JsonObject().put("error", "cas.mappings.cantload"));
+				log.error("Failed to load mapping : ", res.cause());
+			}
+		});
+	}
+
+	@Get("/configuration/mappings/reload")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void reloadMapping(HttpServerRequest request) {
+		mappingService.reset();
+		getMappings(request);
+	}
+
+	@Post("/configuration/mappings")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void createMapping(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, r->{
+			mappingService.create(r).setHandler(res->{
+				if(res.succeeded()){
+					reloadMapping(request);
+				}else{
+					Renders.renderError(request, new JsonObject().put("error", "cas.mappings.cantcreate"));
+					log.error("Failed to create mapping : ", res.cause());
+				}
+			});
+		});
 	}
 
 	public void loadPatterns() {

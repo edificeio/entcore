@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import java.util.Map;
+import java.util.Optional;
 
 import fr.wseduc.cas.entities.ServiceTicket;
 
@@ -28,8 +29,11 @@ import io.vertx.core.eventbus.EventBus;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.User;
 import io.vertx.core.json.JsonObject;
+import org.entcore.cas.mapping.Mapping;
 
 public interface RegisteredService {
+
+	Optional<Mapping> foundMappingByService(final String serviceUri);
 
 	void configure(EventBus eb, Map<String, Object> configuration);
 
