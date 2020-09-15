@@ -9,6 +9,7 @@ import {NgxOdeSijilModule, BundlesService} from 'ngx-ode-sijil';
 import {NgxOdeUiModule} from 'ngx-ode-ui';
 import {routes} from './management-routing.module';
 import {ManagementRootComponent} from './management-root/management-root.component';
+import {StructureInformationsComponent} from './structure-informations/structure-informations.component';
 import {MessageFlashComponent} from './message-flash/message-flash.component';
 import {MessageFlashListComponent} from './message-flash/message-flash-list/message-flash-list.component';
 import {EditMessageFlashComponent} from './message-flash/form/edit-message-flash.component';
@@ -69,6 +70,7 @@ import {SubjectsGuardService} from './subjects/subjects-guard.service';
     declarations: [
         ZimbraComponent,
         ManagementRootComponent,
+        StructureInformationsComponent,
         MessageFlashComponent,
         MessageFlashListComponent,
         EditMessageFlashComponent,
