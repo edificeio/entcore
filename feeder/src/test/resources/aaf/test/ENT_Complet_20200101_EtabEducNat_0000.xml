@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+    <addRequest>
+        <operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes>
+        <identifier><id>1</id></identifier>
+        <attributes>
+            <attr name="ENTStructureJointure"><value>1</value></attr>
+            <attr name="ENTStructureUAI"><value>0000000V</value></attr>
+            <attr name="ENTEtablissementUAI"><value>0000000V</value></attr>
+            <attr name="ENTStructureSIREN"><value>10000000000000</value></attr>
+            <attr name="ENTStructureNomCourant"><value>NOM$STRUCTURE$COURANT</value></attr>
+            <attr name="ENTStructureTypeStruct"><value>ECOLE</value></attr>
+            <attr name="ENTEtablissementMinistereTutelle"><value>MINISTERE DE L&apos;EDUCATION NATIONALE</value></attr>
+            <attr name="ENTEtablissementContrat"><value>OO</value></attr>
+            <attr name="postOfficeBox"><value></value></attr>
+            <attr name="street"><value>1 rue Test</value></attr>
+            <attr name="postalCode"><value>59500</value></attr>
+            <attr name="l"><value>DOUAI</value></attr>
+            <attr name="telephoneNumber"><value>+33 3 33 33 33 33</value></attr>
+            <attr name="facsimileTelephoneNumber"><value>+33 3 33 33 33 33</value></attr>
+            <attr name="ENTStructureMailSI"><value>test@yopmail.com</value></attr>
+            <attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+            <attr name="ENTEtablissementBassin"><value>00000$TEST</value></attr>
+            <attr name="ENTServAcAcademie"><value>LILLE</value></attr>
+            <attr name="ENTStructureClasses"><value/></attr>
+            <attr name="ENTStructureGroupes"><value/></attr>
+        </attributes>
+    </addRequest>
+</ficAlimMENESR>

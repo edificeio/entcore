@@ -152,4 +152,17 @@ public class DatabaseTestHelper {
         }));
         return future;
     }
+
+    public Future<JsonArray> executeNeo4j(String query, JsonObject params) {
+        final Neo4j neo4j = Neo4j.getInstance();
+        final Future<JsonArray> future = Future.future();
+        neo4j.execute(query, params, Neo4jResult.validResultHandler(res -> {
+            if (res.isRight()) {
+                future.complete(res.right().getValue());
+            } else {
+                future.fail(res.left().getValue());
+            }
+        }));
+        return future;
+    }
 }

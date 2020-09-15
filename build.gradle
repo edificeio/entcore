@@ -294,6 +294,7 @@ project(':feeder') {
     compile "com.googlecode.juniversalchardet:juniversalchardet:$juniversalchardetVersion"
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    testCompile project(':test')
   }
 }
 
@@ -317,6 +318,7 @@ project(':cas') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:cas-server-async:$casVersion"
+    testCompile project(':test')
   }
 }
 
