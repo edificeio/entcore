@@ -418,7 +418,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if(authoriseUpdateTimetable == false)
 			return;
 
-		if(ALLOW_PAST_MODIFICATIONS == false && DateTime.parse(object.getString("endDate")).getMillis() < importTimestamp)
+		if(ALLOW_PAST_MODIFICATIONS == false && DateTime.parse(object.getString("startDate")).getMillis() < importTimestamp)
 		{
 			ttReport.courseIgnored();
 			return;
