@@ -240,10 +240,12 @@ public class ConversationController extends BaseController {
 	}
 
 	public static class MemberDiff {
-		HashSet<String> added = new HashSet<>();
-		HashSet<String> removed = new HashSet<>();
-		HashSet<String> cciAdded = new HashSet<>();
-		HashSet<String> cciRemoved = new HashSet<>();
+		HashSet<String> allAdded = new HashSet<>();
+		HashSet<String> allRemoved = new HashSet<>();
+		HashSet<String> publicAdded = new HashSet<>();
+		HashSet<String> publicRemoved = new HashSet<>();
+		HashSet<String> invisibleAdded = new HashSet<>();
+		HashSet<String> invisibleRemoved = new HashSet<>();
 
 		MemberDiff(JsonObject backMessage, JsonObject newMessage) {
 			HashSet<String> backMessagePeople = getMessagePeople(backMessage);
@@ -253,27 +255,31 @@ public class ConversationController extends BaseController {
 
 			for(String id: newMessagePeople) {
 				if (!backMessagePeople.contains(id)) {
-					added.add(id);
+					publicAdded.add(id);
+					allAdded.add(id);
 				}
 			}
 			for(String id: backMessagePeople) {
 				if (!newMessagePeople.contains(id)) {
-					removed.add(id);
+					publicRemoved.add(id);
+					allRemoved.add(id);
 				}
 			}
 			for(String id: newMessagePrivatePeople) {
 				if (!backMessagePrivatePeople.contains(id)) {
-					cciAdded.add(id);
+					invisibleAdded.add(id);
+					allAdded.add(id);
 				}
 			}
 			for(String id: backMessagePrivatePeople) {
 				if (!newMessagePrivatePeople.contains(id)) {
-					cciRemoved.add(id);
+					invisibleRemoved.add(id);
+					allRemoved.add(id);
 				}
 			}
 		}
 
-		boolean getHasNoPublicDiff() { return added.isEmpty() && removed.isEmpty(); }
+		boolean getHasNoPublicDiff() { return publicAdded.isEmpty() && publicRemoved.isEmpty(); }
 
 	}
 
@@ -289,12 +295,14 @@ public class ConversationController extends BaseController {
 	 */
 	public static boolean getShouldCreateThread(JsonObject backMessage, JsonObject newMessage, UserInfos user) {
 		if (backMessage == null) return true;
-		MemberDiff diff = new ConversationController.MemberDiff(backMessage, newMessage);
+		ConversationController.MemberDiff diff = new ConversationController.MemberDiff(backMessage, newMessage);
 		if (diff.getHasNoPublicDiff()) return false;
 		else return !(getIsUserInParticipantGroups(user, backMessage)
-				&& diff.removed.isEmpty()
-				&& diff.added.size() == 1
-				&& diff.added.contains(user.getUserId())
+				&& diff.publicRemoved.isEmpty()
+				&& diff.invisibleAdded.isEmpty()
+				&& diff.invisibleRemoved.isEmpty()
+				&& diff.publicAdded.size() == 1
+				&& diff.publicAdded.contains(user.getUserId())
 			);
 	}
 
