@@ -29,14 +29,14 @@ class StructureMetrics {
 
 export class StructureInformationsComponent extends OdeComponent implements OnInit, OnDestroy
 {
-  private structure: StructureModel;
+  public structure: StructureModel;
 
-  private structName: string;
-  private structUAI: string;
-  private structHasApp: boolean;
-  private isADMC: boolean = false;
+  public structName: string;
+  public structUAI: string;
+  public structHasApp: boolean;
+  public isADMC: boolean = false;
 
-  private metrics: StructureMetrics = new StructureMetrics();
+  public metrics: StructureMetrics = new StructureMetrics();
 
   constructor(injector: Injector, private infoService: StructureInformationsService, private notify: NotifyService)
   {
