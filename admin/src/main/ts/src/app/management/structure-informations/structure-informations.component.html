@@ -9,7 +9,7 @@
             name="name"
             required
             pattern=".*\S+.*"
-            (blur)="structName = trim(structName)"
+            (blur)="structName = structName.trim()"
             #nameInput="ngModel"
       >
       <ode-form-errors [control]="nameInput"></ode-form-errors>
