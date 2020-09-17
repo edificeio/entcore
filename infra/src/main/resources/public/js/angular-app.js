@@ -1,4 +1,7 @@
+const { _ } = require("core-js");
 /// <reference path="./ui.js"  />
+
+const { angular, model } = require("entcore");
 
 
 
@@ -1538,6 +1541,19 @@ module.factory('tracker', ["$location", function($location){
 					})();
 
 					if( params.detailApps && window.entcore.template ) {
+                        // Check the doNotTrack apps filter.
+                        if( angular.isArray(params.doNotTrack) && model && model.me && angular.isArray(model.me.apps) ) {
+                            // Retrieve app from current URL.
+                            for( var i=0; i<model.me.apps.length; i++ ) {
+                                if( model.me.apps[i] && model.me.apps[i].address && model.me.apps[i].name
+                                        && $location.absUrl().indexOf(model.me.apps[i].address) !== -1
+                                        && params.doNotTrack.indexOf(model.me.apps[i].name) !== -1 ) {
+                                    // Don't intercept calls to th template's engine, see below.
+                                    return;
+                                }
+                            }
+                        }
+
 						// BIG AWFUL HACK to intercept calls to the template engine's open function :
 						var self = this;
 						var encapsulatedFunction = window.entcore.template.open;
