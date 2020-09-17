@@ -376,24 +376,16 @@ export class Mail implements Selectable {
         else {
             this.bodyShown = this.body;
         }
-        this.to = _.map(this.to, user => {
-            let displayName = this.displayNames.find(name => name[0] === user as any);
-            return new User(user, displayName[1], null, JSON.parse(displayName[2]));
-        });
-        if (!this.cc)
-            this.cc = [];
-        else
-            this.cc = _.map(this.cc, user => {
-                let displayName = this.displayNames.find(name => name[0] === user as any);
-                return new User(user, displayName[1], null, JSON.parse(displayName[2]));
-            });
-        if (!this.cci)
-            this.cci = [];
-        else
-            this.cci = _.map(this.cci, user => {
-                let displayName = this.displayNames.find(name => name[0] === user as any);
-                return new User(user, displayName[1], null, JSON.parse(displayName[2]));
-            });
+        const toUsers = (ids:string[]) => {
+            if(!ids) return [];
+            return ids.map(id=>{
+                let displayName = this.displayNames.find(name => name[0] === id);
+                return displayName? new User(id, displayName[1], null, JSON.parse(displayName[2])) : null;
+            }).filter(u => u!= null);
+        }
+        this.to = toUsers(this.to as any);
+        this.cc = toUsers(this.cc as any);
+        this.cci = toUsers(this.cci as any);
         if (!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
             await this.updateAllowReply();
