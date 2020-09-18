@@ -87,7 +87,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		this.managerRight = managerRight;
 		this.revisionsCollection = revisionsCollection;
 		this.revisionIdAttribute = revisionIdAttribute;
-		this.fileImporter = vertx == null ? null : new FolderImporter(vertx.fileSystem(), vertx.eventBus());
+		this.fileImporter = vertx == null ? null : new FolderImporter(vertx, vertx.fileSystem(), vertx.eventBus());
 	}
 
 	@Override
