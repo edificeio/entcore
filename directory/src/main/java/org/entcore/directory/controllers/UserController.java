@@ -352,7 +352,13 @@ public class UserController extends BaseController {
 													}
 													request.response().putHeader("Content-Disposition",
 															"attachment; filename="+filename);
-													request.response().end('\ufeff' + export);
+
+													//hack Chamilo, without bom
+													if ("Chamilo".equals(exportType)) {
+														request.response().end(export);
+													} else {
+														request.response().end('\ufeff' + export);
+													}
 												} else {
 													renderError(request);
 												}
