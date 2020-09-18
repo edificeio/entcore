@@ -19,17 +19,23 @@ import org.entcore.common.service.impl.AbstractRepositoryEvents;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.json.JsonArray;
 
 public class FolderImporter
 {
+	static Logger log = LoggerFactory.getLogger(FolderImporter.class);
 	public static class FolderImporterContext
 	{
 		public final String										basePath;
@@ -113,22 +119,36 @@ public class FolderImporter
 		}
 
 	}
-
+	protected Integer busTimeoutSec = 600;
 	protected final FileSystem fs;
 	protected final EventBus eb;
 	protected final boolean throwErrors;
 	protected final Pattern uuidPattern = Pattern.compile(StringUtils.UUID_REGEX);
 
-	public FolderImporter(FileSystem fs, EventBus eb)
+	public FolderImporter(Vertx vertx, FileSystem fs, EventBus eb)
 	{
-		this(fs, eb, true);
+		this(vertx, fs, eb, true);
 	}
 
-	public FolderImporter(FileSystem fs, EventBus eb, boolean throwErrors)
+	public FolderImporter(Vertx vertx, FileSystem fs, EventBus eb, boolean throwErrors)
 	{
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
+		try{
+			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
+			if(serverMap.containsKey("archiveConfig")){
+				final String archiveConfig = serverMap.get("archiveConfig").toString();
+				final JsonObject archiveConfigJson = new JsonObject(archiveConfig);				
+				this.busTimeoutSec = archiveConfigJson.getInteger("storageTimeout", 600);
+			}
+		}catch(Exception e){
+			log.error("Could not read archive config:", e);
+		}
+	}
+
+	public void setBusTimeoutSec(Integer busTimeoutSec) {
+		this.busTimeoutSec = busTimeoutSec;
 	}
 
 	private JsonObject sanitiseDocData(FolderImporterContext context, JsonObject docData)
@@ -214,14 +234,15 @@ public class FolderImporter
 																	.put("oldFileId", fileId)
 																	.put("filePath", filePath)
 																	.put("userId", context.userId);
-
-		this.eb.send("org.entcore.workspace", importParams, new Handler<AsyncResult<Message<JsonObject>>>()
+		final DeliveryOptions options = new DeliveryOptions().setSendTimeout(this.busTimeoutSec * 1000);
+		this.eb.send("org.entcore.workspace", importParams, options, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> message)
 			{
 				if(message.succeeded() == false)
 				{
+					log.error("Could not save file to storage : " + filePath, message.cause());
 					String error = message.cause().getMessage();
 					context.addError(docId, fileId, "Failed to import file", error);
 					promise.fail(new RuntimeException(message.cause()));
@@ -241,6 +262,7 @@ public class FolderImporter
 				else
 				{
 					String error = writtenFile.getString("message");
+					log.error("Could not save file to storage : " + filePath + " => Because of: " + error);
 					context.addError(docId, fileId, "Failed to write the archived file", error);
 					promise.fail(new RuntimeException(error));
 				}

@@ -29,7 +29,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected SqlRepositoryEvents(Vertx vertx) {
 		super(vertx);
-		fileImporter = new FolderImporter(vertx.fileSystem(), vertx.eventBus());
+		fileImporter = new FolderImporter(vertx, vertx.fileSystem(), vertx.eventBus());
 	}
 
     protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, HashMap<String, JsonArray> fieldsToNull,

@@ -20,7 +20,10 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.JsonObject;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.shareddata.LocalMap;
+
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
@@ -50,12 +53,15 @@ public class Archive extends BaseServer {
 		Storage storage = new StorageFactory(vertx, config).getStorage();
 
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
+		final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 
+		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
 		String privateKeyPath = config.getString("archive-private-key", null);
 		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
 
+		serverMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
 
 		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
 		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
