@@ -1515,108 +1515,132 @@ module.directive('bindHtml', function($compile) {
     }
 });
 
-module.factory('tracker', ["$location", function($location){
-	var Tracker = function() {
-		var type = "none";
-		var params = {};
-	}
-	Tracker.prototype.init = function( type, params ) {
-		this.type = type;
-		this.params = params;
-		switch( type ) {
-			case "matomo":
-				try {
-					var _paq = window["_paq"] = window["_paq"] || [];
-					if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
-					if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
-					if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
-					/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-					_paq.push(['trackPageView']);
-					_paq.push(['enableLinkTracking']);
-					(function() {
-						_paq.push(['setTrackerUrl', params.url +'matomo.php']);
-						_paq.push(['setSiteId', params.siteId]);
-						var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-						g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
-					})();
-
-					if( params.detailApps && window.entcore.template ) {
-                        // Check the doNotTrack apps filter.
-                        if( angular.isArray(params.doNotTrack) && model && model.me && angular.isArray(model.me.apps) ) {
-                            // Retrieve app from current URL.
-                            for( var i=0; i<model.me.apps.length; i++ ) {
-                                if( model.me.apps[i] && model.me.apps[i].address && model.me.apps[i].name
-                                        && $location.absUrl().indexOf(model.me.apps[i].address) !== -1
-                                        && params.doNotTrack.indexOf(model.me.apps[i].name) !== -1 ) {
-                                    // Don't intercept calls to th template's engine, see below.
-                                    return;
-                                }
-                            }
-                        }
-
-						// BIG AWFUL HACK to intercept calls to the template engine's open function :
-						var self = this;
-						var encapsulatedFunction = window.entcore.template.open;
-						// intercept calls to the template engine
-						window.entcore.template.open = function (name, view) {
-							var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
-							if( "main"===name ) {
-								self.trackPage( view||"unknown", $location.absUrl() );
-							}
-							return ret;
-						}
-						// END OF BIG AWFUL HACK
-					}
-				} catch(e) {
-					console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
-				}
-				break;
-			default: 
-				break;
+module.service('tracker', ["$location", (
+    function(){ // Tracker should be defined in its own source file, instead of locally.
+        var Tracker = function($location) {
+            this.$location = $location;
+			this.type = "none";
+			this.params = {};
+			this.isInitialized = false;
 		}
-
-	}
-	Tracker.prototype.trackPage= function( title, url ) {
-		switch( this.type ) {
-		case "matomo":
-			// Then let's track single-page applications routes, too.
-			var _paq = window["_paq"] = window["_paq"] || [];
-			_paq.push(['setDocumentTitle', title]);
-			_paq.push(['setCustomUrl', url]);
-			_paq.push(['trackPageView']);
-			break;
-		default: 
-			break;
-		}
-	}
-	return new Tracker();
-}]);
-
-module.directive('portal', ['tracker', function(tracker){
-    return {
-        restrict: 'E',
-        transclude: true,
-        templateUrl: skin.portalTemplate,
-        compile: function(element, attributes, transclude) {
-            // Load any configured tracker
+		Tracker.prototype.init = function() {
+			var self = this;
             http().get('/tracker').done(function(data) {
-                if( data && typeof data.type === 'string' && data.type.trim().length > 0 && data[data.type] ) {
-                    tracker.init( data.type, data[data.type] );
+                if( data && typeof data.type === 'string' && data.type.trim().length > 0 && data[data.type.trim()] ) {
+					self.initFromType( data.type, data[data.type] );
                 }
             }).error(function(error) {
                 // silent fail
             });
+		}
+		Tracker.prototype.initFromType = function( type, params ) {
+			this.type = type;
+			this.params = params;
+			this.isInitialized = true;
+			switch( type ) {
+				case "matomo":
+					try {
+						var _paq = window["_paq"] = window["_paq"] || [];
+						if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
+						if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
+						if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
+						/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+						_paq.push(['trackPageView']);
+						_paq.push(['enableLinkTracking']);
+						(function() {
+							_paq.push(['setTrackerUrl', params.url +'matomo.php']);
+							_paq.push(['setSiteId', params.siteId]);
+							var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+							g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
+						})();
 
-            element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
-            ui.setStyle(skin.theme);
-            Http.prototype.bind('disconnected', function() {
-                window.location.href = '/';
-            })
-            return function postLink( scope, element, attributes, controller, transcludeFn ) {
+						if( params.detailApps && window.entcore.template ) {
+							// Check the doNotTrack apps filter.
+							if( angular.isArray(params.doNotTrack) && model && model.me && angular.isArray(model.me.apps) ) {
+								// Retrieve app from current URL.
+								for( var i=0; i<model.me.apps.length; i++ ) {
+									if( model.me.apps[i] && model.me.apps[i].address && model.me.apps[i].name
+										&& this.$location.absUrl().indexOf(model.me.apps[i].address) !== -1
+										&& params.doNotTrack.indexOf(model.me.apps[i].name) !== -1 ) {
+										// Don't intercept calls to th template's engine, see below.
+										return;
+									}
+								}
+							}
+
+							// BIG AWFUL HACK to intercept calls to the template engine's open function :
+							var self = this;
+							var encapsulatedFunction = window.entcore.template.open;
+							// intercept calls to the template engine
+							window.entcore.template.open = function (name, view) {
+								var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
+								if( "main"===name ) {
+                                    self.trackPage( view||"unknown", this.$location.absUrl() );
+								}
+								return ret;
+							}
+							// END OF BIG AWFUL HACK
+						}
+					} catch(e) {
+						console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
+					}
+					break;
+				default: 
+					break;
+			}
+		}
+		Tracker.prototype.trackPage= function( title, url ) {
+			switch( this.type ) {
+			case "matomo":
+				// Then let's track single-page applications routes, too.
+				var _paq = window["_paq"] = window["_paq"] || [];
+				_paq.push(['setDocumentTitle', title]);
+				_paq.push(['setCustomUrl', url]);
+				_paq.push(['trackPageView']);
+				break;
+			default: 
+				break;
+			}
+		}
+        return Tracker;
+    })()
+]);
+
+module.directive('portal', ['$compile','tracker', function($compile,tracker){
+	return {
+		restrict: 'E',
+		transclude: true,
+		templateUrl: skin.portalTemplate,
+		compile: function(element, attributes, transclude){
+			// Initialize any configured tracker
+			tracker.init();
+
+			$("html").addClass("portal-container")
+			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
+			ui.setStyle(skin.theme);
+			Http.prototype.bind('disconnected', function(){
+				window.location.href = '/';
+			})
+			return function postLink( scope, element, attributes, controller, transcludeFn ) {
 				scope.template = template;
+				// Create the banner to display
+				scope.isTrackerInitialized = function() {
+					return tracker.isInitialized;
+				}
+				var bannerCode = ' \
+					<infotip name="rgpd-cookies-banner" class="info centered top-spacing-ten" style="max-width: 800px;" \
+							ng-show="isTrackerInitialized()" > \
+						<h1 class="centered-text"> \
+							<i18n>rgpd.cookies.banner.title</i18n> \
+						</h1> \
+						<p><i18n>rgpd.cookies.banner.text1</i18n></p> \
+						<p><i18n>rgpd.cookies.banner.text2</i18n> &nbsp; <h2><a href="/userbook/mon-compte"><i18n>rgpd.cookies.banner.link</i18n></a></h2></p> \
+					</infotip> \
+				';
+				element.prepend( $compile(bannerCode)(scope) );
 			};
-        }
-    }
+		}
+	}
 }]);
 
 module.directive('adminPortal', function($compile) {

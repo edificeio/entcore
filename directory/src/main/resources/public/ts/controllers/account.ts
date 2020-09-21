@@ -18,7 +18,7 @@
 import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
 
-export const accountController = ng.controller('MyAccount', ['$scope', 'route', ($scope, route) => {
+export const accountController = ng.controller('MyAccount', ['$scope', 'route', 'tracker', ($scope, route, tracker) => {
 	route({
 		editUserInfos: async function(params){
 			template.open('account/main', 'account/default-view');
@@ -61,6 +61,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.template = template;
 	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
 
+	$scope.withMatomoTracker = (): boolean => tracker.type==="matomo";
 
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){
