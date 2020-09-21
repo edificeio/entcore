@@ -859,6 +859,7 @@
     "label.data.protection": "Pour consulter les mentions d'informations, cliquez ici",
     "cgu.title": "Conditions générales d'utilisation",
     "data.protection.title" : "Mentions d'informations",
+    "rgpd.cookies.title": "Vie privée",
     "directory.blocked.label": "Bloqué",
     "directory.resetted.label": "Code temporaire: [[resetCode]]",
     "directory.otp.title": "Connexion à l'application mobile",
