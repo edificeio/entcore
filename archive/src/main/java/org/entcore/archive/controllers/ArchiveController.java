@@ -138,6 +138,7 @@ public class ArchiveController extends BaseController {
 					@Override
 					public void handle(Buffer event)
 					{
+						log.info("Début d'export par l'utilisateur " + user.getLogin());
 						eb.send("entcore.export",
 							new JsonObject()
 								.put("action", "start")
@@ -154,12 +155,21 @@ public class ArchiveController extends BaseController {
 								{
 									JsonObject msg = res.result().body();
 									if(msg.getString("status").equals("ok"))
+									{
+										log.info("Fin d'export pour l'utilisateur " + user.getLogin() + " exportId: " + msg.getString("exportId"));
 										renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
+									}
 									else
+									{
+										log.info("Echec de l'export pour l'utilisateur " + user.getLogin() + " exportId: " + msg.getString("exportId"));
 										badRequest(request, msg.getString("message"));
+									}
 								}
 								else
+								{
+									log.info("Echec de l'export pour l'utilisateur " + user.getLogin());
 									badRequest(request, res.cause().getMessage());
+								}
 							}
 						});
 					}
