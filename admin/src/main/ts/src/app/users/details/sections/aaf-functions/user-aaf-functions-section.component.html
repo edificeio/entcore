@@ -3,7 +3,8 @@
   [folded]="true" *ngIf="!user.deleteDate">
   <ul>
     <li *ngFor="let f of user?.aafFunctions">
-      <span *ngIf="f[0] == structure.externalId">{{ f[2] }} / {{ f[4] }}</span>
+      <span *ngIf="f[0] == structure.externalId && f.length > 2">{{ f[2] }} / {{ f[4] }}</span>
+      <span *ngIf="f[0] == structure.externalId && f.length == 2">{{ f[1] }}</span>
     </li>
   </ul>
 </ode-panel-section>
