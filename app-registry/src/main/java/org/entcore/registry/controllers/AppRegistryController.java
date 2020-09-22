@@ -291,7 +291,7 @@ public class AppRegistryController extends BaseController {
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject body) {
-				String structureId = request.params().get("structureId");
+				final String structureId = request.params().get("structureId");
 				final String casType = body.getString("casType", "");
 				final String address = body.getString("address", "");
 				final boolean updateCas = !StringUtils.isEmpty(casType);
@@ -310,7 +310,7 @@ public class AppRegistryController extends BaseController {
 							}
 
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-								sendPatternToCasConfiguration(updateCas, body, addressURL, casType);
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId);
 								Renders.renderJson(request, event.right().getValue(), 201);
 							} else {
 								JsonObject error = new JsonObject()
@@ -326,7 +326,7 @@ public class AppRegistryController extends BaseController {
 		});
 	}
 
-	private void sendPatternToCasConfiguration(boolean updateCas, JsonObject body, URL addressURL, String casType) {
+	private void sendPatternToCasConfiguration(boolean updateCas, JsonObject body, URL addressURL, String casType, String structureId) {
 		if (updateCas && addressURL != null) {
             String pattern = body.getString("pattern", "");
             if (pattern.isEmpty()) {
@@ -335,6 +335,7 @@ public class AppRegistryController extends BaseController {
             Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
                     .put("action", "add-patterns")
                     .put("service", casType)
+					.put("structureId", structureId)
                     .put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
         }
 	}
@@ -376,8 +377,8 @@ public class AppRegistryController extends BaseController {
 									Renders.renderJson(request, error, 400);
 									return;
 								}
-
-								sendPatternToCasConfiguration(updateCas, body, addressURL, casType);
+								final String structureId = event.right().getValue().getString("structureId");
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId);
 								Renders.renderJson(request, event.right().getValue());
 							}
 						});

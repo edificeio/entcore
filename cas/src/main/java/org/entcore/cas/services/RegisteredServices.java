@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import fr.wseduc.cas.async.Handler;
+import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
 import io.vertx.core.json.JsonArray;
@@ -38,9 +39,9 @@ public class RegisteredServices {
 		services.add(service);
 	}
 
-	public RegisteredService matches(String service) {
+	public RegisteredService matches(final AuthCas authCas, String service) {
 		for (RegisteredService registeredService : services) {
-			if (registeredService.matches(service)) {
+			if (registeredService.matches(authCas, service)) {
 				if (log.isDebugEnabled()) log.debug("service + |" + service + "| matches with registered service : " + registeredService.getClass().getSimpleName());
 				return registeredService;
 			}
@@ -48,17 +49,17 @@ public class RegisteredServices {
 		return null;
 	}
 
-	public void getUser(String userId, String service, Handler<User> userHandler) {
-		RegisteredService registeredService = matches(service);
+	public void getUser(AuthCas authCas, String service, Handler<User> userHandler) {
+		RegisteredService registeredService = matches(authCas, service);
 		if (registeredService != null) {
-			registeredService.getUser(userId, service, userHandler);
+			registeredService.getUser(authCas, service, userHandler);
 		} else {
 			userHandler.handle(null);
 		}
 	}
 
-	public String formatService(String service, ServiceTicket st) {
-		RegisteredService registeredService = matches(service);
+	public String formatService(AuthCas authCas, String service, ServiceTicket st) {
+		RegisteredService registeredService = matches(authCas, service);
 		if (registeredService != null) {
 			return registeredService.formatService(service, st);
 		}
@@ -73,11 +74,11 @@ public class RegisteredServices {
 		return infos;
 	}
 
-	public boolean addPatterns(String service, String... patterns) {
+	public boolean addPatterns(String service, String structureId, String... patterns) {
 		if (service != null && !service.trim().isEmpty() && patterns != null && patterns.length > 0) {
 			for (RegisteredService registeredService: services) {
 				if (service.equals(registeredService.getId())) {
-					registeredService.addPatterns(patterns);
+					registeredService.addPatterns(structureId, patterns);
 					return true;
 				}
 			}

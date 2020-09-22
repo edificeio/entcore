@@ -20,6 +20,7 @@
 package org.entcore.cas.data;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,8 +67,8 @@ public class EntCoreDataHandler extends DataHandler {
 	}
 
 	@Override
-	public void validateService(String service, Handler<Boolean> handler) {
-		handler.handle(services.matches(service) != null);
+	public void validateService(AuthCas authCas,String service, Handler<Boolean> handler) {
+		handler.handle(services.matches(authCas, service) != null);
 	}
 
 	@Override
@@ -80,7 +81,7 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	protected void validateService(AuthCas authCas, ServiceTicket st, String service,
 			Handler<Try<ValidationException, Tuple<AuthCas, User>>> handler) {
-		super.validateService(authCas, st, services.formatService(service, st), handler);
+		super.validateService(authCas, st, services.formatService(authCas, service, st), handler);
 	}
 
 	@Override
@@ -91,8 +92,8 @@ public class EntCoreDataHandler extends DataHandler {
 	}
 
 	@Override
-	protected void getUser(final String userId, final String service, final Handler<User> userHandler) {
-		services.getUser(userId, service, userHandler);
+	protected void getUser(final AuthCas authCas, final String service, final Handler<User> userHandler) {
+		services.getUser(authCas, service, userHandler);
 	}
 
 	@Override
@@ -107,7 +108,8 @@ public class EntCoreDataHandler extends DataHandler {
 				.put("_id", 0)
 				.put("id", 1)
 				.put("serviceTickets", 1)
-				.put("user", 1);
+				.put("user", 1)
+				.put("structureIds", 1);
 		mongoDb.findOne(COLLECTION, query, keys, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -139,21 +141,22 @@ public class EntCoreDataHandler extends DataHandler {
 				authCas.setId(UUID.randomUUID().toString());
 				if (userInfos != null) {
 					authCas.setUser(userInfos.getUserId());
+					authCas.setStructureIds(new HashSet<>(userInfos.getStructures()));
 				}
 				handler.handle(authCas);
 			}
 		});
 	}
 
-	protected void beforePersistAuth(final JsonObject doc){
+	protected void beforePersistAuth(final AuthCas authCas, final JsonObject doc){
 		for(final Object ticket : doc.getJsonArray("serviceTickets", new JsonArray())){
 			final JsonObject ticketJson = (JsonObject)ticket;
 			final String service = ticketJson.getString("service");
 			String type = "unknown";
 			if(service != null){
-				final RegisteredService rService = services.matches(service);
+				final RegisteredService rService = services.matches(authCas, service);
 				if(rService != null){
-					final Optional<Mapping> mapping = rService.foundMappingByService(service);
+					final Optional<Mapping> mapping = rService.foundMappingByService(authCas.getStructureIds(), service);
 					if(mapping.isPresent()){
 						type = mapping.get().getType();
 					}
@@ -164,14 +167,14 @@ public class EntCoreDataHandler extends DataHandler {
 	}
 
 	@Override
-	public void persistAuth(AuthCas authCas, final Handler<Boolean> handler) {
+	public void persistAuth(final AuthCas authCas, final Handler<Boolean> handler) {
 		JsonObject query = new JsonObject().put("id", authCas.getId());
 		JsonObject doc = serialize(authCas);
 		if (doc == null) {
 			handler.handle(false);
 			return;
 		}
-		beforePersistAuth(doc);
+		beforePersistAuth(authCas, doc);
 		doc.put("updatedAt", MongoDb.now());
 		mongoDb.update(COLLECTION, query, doc, true, false, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override

@@ -130,6 +130,7 @@ public class ExternalApplicationController extends BaseController {
 									Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
 											.put("action", "add-patterns")
 											.put("service", casType)
+											.put("structureId", structureId)
 											.put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
 								}
 								Renders.renderJson(request, event.right().getValue(), 201);

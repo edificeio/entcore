@@ -21,7 +21,9 @@ package org.entcore.cas.services;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.cas.entities.ServiceTicket;
 
 import io.vertx.core.eventbus.EventBus;
@@ -33,17 +35,17 @@ import org.entcore.cas.mapping.Mapping;
 
 public interface RegisteredService {
 
-	Optional<Mapping> foundMappingByService(final String serviceUri);
+	Optional<Mapping> foundMappingByService(final Set<String> structureIds, final String serviceUri);
 
 	void configure(EventBus eb, Map<String, Object> configuration);
 
-	boolean matches(String serviceUri);
+	boolean matches(final AuthCas authCas, String serviceUri);
 
-	void getUser(String userId, String service, Handler<User> userHandler);
+	void getUser(AuthCas authCas, String service, Handler<User> userHandler);
 
 	String formatService(String serviceUri, ServiceTicket st);
 
-	void addPatterns(String... pattern);
+	void addPatterns(String structureId,String... pattern);
 
 	void cleanPatterns();
 

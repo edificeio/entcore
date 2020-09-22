@@ -70,7 +70,8 @@ public class ConfigurationController extends BaseController {
 	}
 
 	@Get("/configuration/mappings/reload")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void reloadMapping(HttpServerRequest request) {
 		mappingService.reset();
 		getMappings(request);
@@ -93,6 +94,7 @@ public class ConfigurationController extends BaseController {
 	}
 
 	public void loadPatterns() {
+		mappingService.reset();
 		eb.send("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
@@ -102,11 +104,12 @@ public class ConfigurationController extends BaseController {
 					JsonArray externalApps = event.body().getJsonArray("result");
 					for (Object o: externalApps) {
 						if (!(o instanceof JsonObject)) continue;
-						JsonObject j = (JsonObject) o;
-						String service = j.getString("service");
-						JsonArray patterns = j.getJsonArray("patterns");
+						final JsonObject j = (JsonObject) o;
+						final String service = j.getString("service");
+						final String structureId = j.getString("structureId");
+						final JsonArray patterns = j.getJsonArray("patterns");
 						if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-							services.addPatterns(service,Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
+							services.addPatterns(service,structureId, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
 						}
 					}
 				} else {
@@ -124,10 +127,11 @@ public class ConfigurationController extends BaseController {
 						.put("result", services.getInfos(message.body().getString("accept-language", "fr"))));
 				break;
 			case "add-patterns" :
-				String service = message.body().getString("service");
-				JsonArray patterns = message.body().getJsonArray("patterns");
+				final String structureId = message.body().getString("structureId");
+				final String service = message.body().getString("service");
+				final JsonArray patterns = message.body().getJsonArray("patterns");
 				message.reply(new JsonObject().put("status",
-						services.addPatterns(service, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
+						services.addPatterns(service, structureId, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));

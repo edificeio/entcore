@@ -480,7 +480,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"MATCH (n:Application) " +
 				"WHERE n.id = {applicationId} AND coalesce(n.locked, false) = false " +
 				"SET " + nodeSetPropertiesFromJson("n", application) +
-				"RETURN n.id as id";
+				"RETURN n.id as id, n.structureId";
 		application.put("applicationId", applicationId);
 		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" +
 				application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
@@ -588,7 +588,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		String query =
 				"MATCH (app:Application) " +
 				"WHERE has(app.casType) and app.casType <> '' " +
-				"RETURN app.casType as service, app.address as address, COLLECT(app.pattern) as patterns";
+				"RETURN app.casType as service, app.address as address, app.structureId as structureId, COLLECT(app.pattern) as patterns";
 		neo.execute(query, (JsonObject) null, validResultHandler(new Handler<Either<String, JsonArray>>(){
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isLeft()){

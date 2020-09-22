@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
@@ -75,9 +76,9 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public boolean matches(final String serviceUri) {
+	public boolean matches(final AuthCas authCas,final String serviceUri) {
 		for (Mapping criteria : criterias) {
-			if (criteria.matches(serviceUri)) {
+			if (criteria.matches(authCas.getStructureIds(), serviceUri)) {
 				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + criteria.pattern());
 				return true;
 			}
@@ -86,7 +87,8 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public void getUser(final String userId, final String service, final Handler<User> userHandler) {
+	public void getUser(final AuthCas authCas, final String service, final Handler<User> userHandler) {
+		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put("action", directoryAction).put("userId", userId);
 		eb.send("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
@@ -98,7 +100,7 @@ public class DefaultRegisteredService implements RegisteredService {
 					User user = new User();
 					prepareUser(user, userId, service, res);
 					userHandler.handle(user);
-					createStatsEvent(userId, res, service);
+					createStatsEvent(authCas, res, service);
 				} else {
 					userHandler.handle(null);
 				}
@@ -106,8 +108,9 @@ public class DefaultRegisteredService implements RegisteredService {
 		}));
 	}
 
-	private void createStatsEvent(String userId, JsonObject res, String service) {
-		final Optional<Mapping> mapping = foundMappingByService(service);
+	private void createStatsEvent(AuthCas authCas, JsonObject res, String service) {
+		final String userId = authCas.getUser();
+		final Optional<Mapping> mapping = foundMappingByService(authCas.getStructureIds(), service);
 		UserInfos user = new UserInfos();
 		user.setUserId(userId);
 		JsonArray profiles = res.getJsonArray("profiles");
@@ -129,11 +132,11 @@ public class DefaultRegisteredService implements RegisteredService {
 		return serviceUri;
 	}
 
-	protected Future<Mapping> getMapping(String pattern){
+	protected Future<Mapping> getMapping(Optional<String> structureId, String pattern){
 		final Future<Mapping> future = Future.future();
 		mappingService.getMappings().setHandler(r->{
 			if(r.succeeded()){
-				final Optional<Mapping> found = r.result().find(getId(), pattern);
+				final Optional<Mapping> found = r.result().find(structureId, getId(), pattern);
 				if(found.isPresent()){
 					future.complete(found.get());
 				} else{
@@ -148,9 +151,9 @@ public class DefaultRegisteredService implements RegisteredService {
 		return future;
 	}
 
-	public Optional<Mapping> foundMappingByService(final String serviceUri){
+	public Optional<Mapping> foundMappingByService(final Set<String> structureIds, final String serviceUri){
 		for(final Mapping mapping : criterias){
-			if(mapping.matches(serviceUri)){
+			if(mapping.matches(structureIds, serviceUri)){
 				return Optional.of(mapping);
 			}
 		}
@@ -160,7 +163,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	private void addConfPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				getMapping(pattern).setHandler(r->{
+				getMapping(Optional.empty(),pattern).setHandler(r->{
 					if(r.succeeded()){
 						this.confCriterias.add(r.result());
 						this.criterias.add(r.result());
@@ -176,10 +179,10 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public void addPatterns(String... patterns) {
+	public void addPatterns(String structureId, String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				getMapping(pattern).setHandler(r->{
+				getMapping(Optional.ofNullable(structureId),pattern).setHandler(r->{
 					if(r.succeeded()){
 						this.criterias.add(r.result());
 					} else{
