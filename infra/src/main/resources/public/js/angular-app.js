@@ -1,7 +1,4 @@
-const { _ } = require("core-js");
 /// <reference path="./ui.js"  />
-
-const { angular, model } = require("entcore");
 
 
 
