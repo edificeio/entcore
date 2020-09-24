@@ -119,6 +119,7 @@ public class DefaultSchoolService implements SchoolService {
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
 				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.punctualTimetable AS punctualTimetable, " +
 				"s.hasApp as hasApp, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, s.adminEDT AS adminEDT, " +
+				"s.feederName AS feederName, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, result -> {
@@ -476,7 +477,7 @@ public class DefaultSchoolService implements SchoolService {
 	@Override
 	public void resetName(String structureId, Handler<Either<String, JsonObject>> handler)
 	{
-		String query = "MATCH (s:Structure {id:{structureId}}) SET s.manualName = false";
+		String query = "MATCH (s:Structure {id:{structureId}}) SET s.manualName = false, s.name = coalesce(s.feederName, s.name)";
 		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, validEmptyHandler(handler));
 	}

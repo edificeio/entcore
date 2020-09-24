@@ -219,6 +219,9 @@ public class Importer {
 		if (struct != null) {
 			groups = struct.getJsonArray("groups");
 		}
+		String name = struct.getString("name");
+		if(name != null)
+			struct.put("feederName", name); // This is used to reset manual names
 		final String error = structureValidator.validate(struct);
 		Structure s = null;
 		if (error != null) {

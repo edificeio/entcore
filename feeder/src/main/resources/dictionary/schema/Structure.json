@@ -8,6 +8,10 @@
 			"type": "string",
 			"validator" : "notEmpty"
 		},
+		"feederName" : {
+			"type": "string",
+			"validator" : "nop"
+		},
 		"SIRET" : {
 			"type": "string",
 			"validator":"siret"
