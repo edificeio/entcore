@@ -54,6 +54,7 @@ export class StructureModel extends Model<StructureModel> {
     adminEDT?: boolean;
     hasApp?: boolean;
     manualName?: boolean;
+    feederName?: string;
 
     quickSearchUsers(input: string) {
         return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {
