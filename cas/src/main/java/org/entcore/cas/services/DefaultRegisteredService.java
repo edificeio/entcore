@@ -163,10 +163,12 @@ public class DefaultRegisteredService implements RegisteredService {
 	private void addConfPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
+				final Mapping mapping = Mapping.unknown(getId(), pattern).setAllStructures(true);
+				this.confCriterias.add(mapping);
+				this.criterias.add(mapping);
 				getMapping(Optional.empty(),pattern).setHandler(r->{
-					if(r.succeeded()){
-						this.confCriterias.add(r.result());
-						this.criterias.add(r.result());
+					if(r.succeeded()){//set type as soon as we know it
+						mapping.setType(r.result().getType());
 					} else{
 						log.error("Bad service configuration : failed to get mapping : " + pattern, r.cause());
 					}

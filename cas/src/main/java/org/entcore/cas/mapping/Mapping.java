@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Mapping {
-    private final String type;
+    private String type;
     private final String casType;
     private final String pattern;
     private final Pattern patternCompiled;
@@ -24,6 +24,11 @@ public class Mapping {
         this.casType = casType;
         this.pattern = pattern;
         this.patternCompiled = Pattern.compile(pattern == null? "" :pattern, Pattern.CASE_INSENSITIVE);
+    }
+
+    public Mapping setType(String type) {
+        this.type = type;
+        return this;
     }
 
     public boolean isAllStructures() {
