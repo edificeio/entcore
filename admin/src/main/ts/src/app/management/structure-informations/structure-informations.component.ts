@@ -117,7 +117,14 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
       {
         next: (data) =>
         {
+          this.structure.manualName = false;
+          if(this.structure.feederName != null)
+          {
+            this.structName = this.structure.feederName;
+            this.structure.name = this.structure.feederName;
+          }
           this.notify.success("management.structure.informations.reset.name.success.content", "management.structure.informations.reset.name.success.title");
+          this.changeDetector.markForCheck();
         },
         error: (error) =>
         {
