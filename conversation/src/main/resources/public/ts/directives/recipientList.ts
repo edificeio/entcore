@@ -180,11 +180,13 @@ export const recipientList = ng.directive('recipientList', () => {
                     // if visible add them to email recipients
                     let visibleIds = visiblesRes.data.map(x => x['visibles.id'])
                     response.data.groups.forEach(group => {
+                        group.isGroup = true;
                         if (visibleIds.includes(group.id)) {
                             scope.addOneItem(group);
                         }
                     });
                     response.data.users.forEach(user => {
+                        user.isGroup = false;
                         if (visibleIds.includes(user.id)) {
                             scope.addOneItem(user);
                         }
@@ -193,11 +195,13 @@ export const recipientList = ng.directive('recipientList', () => {
                         scope.search.text = '';
                         scope.itemsFound = [];
                         response.data.groups.forEach(g => {
+                            g.isGroup = true;
                             if (!visibleIds.includes(g.id)) {
                                 scope.sharebookmark.excluded.push(g);
                             }
                         });
                         response.data.users.forEach(u => {
+                            u.isGroup = false;
                             if (!visibleIds.includes(u.id)) {
                                 scope.sharebookmark.excluded.push(u);
                             }
