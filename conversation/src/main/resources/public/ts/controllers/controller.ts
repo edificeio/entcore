@@ -470,8 +470,8 @@ export let conversationController = ng.controller('ConversationController', [
             let to: Array<User> = $scope.state.newItem.to || [];
             let cc: Array<User> = $scope.state.newItem.cc || [];
             to.concat(cc).map( (user) => {
-                if( user.profile=="Relative" ) {
-                    count += user.isAGroup() ? 2 : 1;
+                if( user.profile=="Relative" || user.profile=="Manual" ) {
+                    count += user.isGroup ? 2 : 1;
                 }
             });
             

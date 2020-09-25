@@ -692,9 +692,13 @@ public class DefaultConversationService implements ConversationService {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) o;
 						// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group". 
-						// TODO It should be defined more clearly.
+						// TODO It should be defined more clearly. See #39835
 						// See also SqlConversationService.java
 						if (j.getString("name") != null) {
+							if( j.getString("groupProfile") == null ) {
+								// This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"
+								j.put("groupProfile", "Manual");
+							}
 							j.remove("displayName");
 							UserUtils.groupDisplayName(j, acceptLanguage);
 							j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group. 
