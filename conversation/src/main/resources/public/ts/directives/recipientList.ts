@@ -42,25 +42,7 @@ export const recipientList = ng.directive('recipientList', () => {
                 </drop-down>
             </div>
 
-            <lightbox show="sharebookmark.excluded.length > 0" on-close="sharebookmark.excluded = []">
-                <h2><i18n>warning.title</i18n></h2>
-                <span class="bottom-spacing-twice">
-                    <i18n>warning.excluded</i18n>
-                </span>
-                <table class="twelve">
-                    <thead>
-                    <tr>
-                        <th class="" ng-click=""><i18n>name</i18n></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="e in sharebookmark.excluded">
-                        <td class="user">[[e.displayName || e.name]]</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <button type="button" class="cancel right-magnet" ng-click="sharebookmark.excluded = []"><i18n>warning.close</i18n></button>
-            </lightbox>
+            <excluded-list excluded="sharebookmark.excluded"></excluded-list>
         `,
 
         scope: {
