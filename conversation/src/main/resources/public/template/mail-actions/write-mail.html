@@ -1,7 +1,6 @@
 <article class="twelve cell solid write-mail" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
     <div class="row warning" ng-if="state.newItem.loadingAttachments.length > 0"><i18n>wait.attachments.completion</i18n></div>
-
-
+    
     <div class="flex-row f-column">
         <div>
             <plus class="right-magnet">
@@ -199,5 +198,6 @@
         </div>
         <button class="flat-button file-button" translate="" content="add.attachment"></button>
     </div>
-
+    
+    <excluded-list excluded="state.newItem.excluded"></excluded-list>
 </article>

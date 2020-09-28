@@ -39,6 +39,7 @@ export class Mail implements Selectable {
     to: User[];
     cc: User[];
     cci: User[];
+    excluded: User[];
     unread: boolean;
     state: string;
     parentConversation: Mail;
@@ -478,15 +479,37 @@ export class Mail implements Selectable {
         if (!this.to) {
             this.to = [];
         }
+        if (!this.excluded) {
+            this.excluded = [];
+        }
 
-        var data = (await http.get('/directory/sharebookmark/' + id)).data;
-        data.groups.forEach((element) => {
-            let group = new User(element.id, element.name, null, true);
-            this.to.push(group);
+        var shareBookmarkRes = (await http.get('/directory/sharebookmark/' + id)).data;
+        
+        // check if sharebookmark members are visible
+        let shareBookmarkIds = [
+            ...shareBookmarkRes.groups.map(g => g.id), 
+            ...shareBookmarkRes.users.map(u => u.id)
+        ];
+        
+        let visiblesRes = await http.post(`/conversation/visibles`, {ids: shareBookmarkIds});
+        
+        // if visible add them to email recipients
+        let visibleIds = visiblesRes.data.map(x => x['visibles.id']);
+        shareBookmarkRes.groups.forEach(group => {
+            const newGroup = new User(group.id, group.name, null, true);
+            if (visibleIds.includes(group.id)) {
+                this.to.push(newGroup);
+            } else {
+                this.excluded.push(newGroup);
+            }
         });
-        data.users.forEach((element) => {
-            let user = new User(element.id, element.displayName, element.profile, false);
-            this.to.push(user);
+        shareBookmarkRes.users.forEach(user => {
+            const newUser = new User(user.id, user.displayName, user.profile, false);
+            if (visibleIds.includes(user.id)) {
+                this.to.push(newUser);
+            } else {
+                this.excluded.push(newUser);
+            }
         });
     }
 }
