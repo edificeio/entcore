@@ -46,6 +46,9 @@ import { NotifyService } from 'src/app/core/services/notify.service';
             padding-top: 20px;
             font-weight: bold;
         }
+        :host /deep/ ode-lightbox > section > div{
+            min-width: 500px;
+        }​
     `]
 })
 export class ConnectorPropertiesComponent extends OdeComponent implements OnInit,OnChanges {
