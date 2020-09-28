@@ -1531,59 +1531,61 @@ module.service('tracker', ["$location", (
             });
 		}
 		Tracker.prototype.initFromType = function( type, params ) {
-			this.type = type;
-			this.params = params;
-			this.isInitialized = true;
-			switch( type ) {
-				case "matomo":
-					try {
-						var _paq = window["_paq"] = window["_paq"] || [];
-						if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
-						if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
-						if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
-						/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-						_paq.push(['trackPageView']);
-						_paq.push(['enableLinkTracking']);
-						(function() {
-							_paq.push(['setTrackerUrl', params.url +'matomo.php']);
-							_paq.push(['setSiteId', params.siteId]);
-							var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-							g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
-						})();
+			if( !this.isInitialized ) {
+				this.isInitialized = true;
+				this.type = type;
+				this.params = params;
+				switch( type ) {
+					case "matomo":
+						try {
+							var _paq = window["_paq"] = window["_paq"] || [];
+							if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
+							if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
+							if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
+							/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+							_paq.push(['trackPageView']);
+							_paq.push(['enableLinkTracking']);
+							(function() {
+								_paq.push(['setTrackerUrl', params.url +'matomo.php']);
+								_paq.push(['setSiteId', params.siteId]);
+								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+								g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
+							})();
 
-						if( params.detailApps && window.entcore.template ) {
-							// Check the doNotTrack apps filter.
-							if( angular.isArray(params.doNotTrack) && model && model.me && angular.isArray(model.me.apps) ) {
-								// Retrieve app from current URL.
-								for( var i=0; i<model.me.apps.length; i++ ) {
-									if( model.me.apps[i] && model.me.apps[i].address && model.me.apps[i].name
-										&& this.$location.absUrl().indexOf(model.me.apps[i].address) !== -1
-										&& params.doNotTrack.indexOf(model.me.apps[i].name) !== -1 ) {
-										// Don't intercept calls to th template's engine, see below.
-										return;
+							if( params.detailApps && window.entcore.template ) {
+								// Check the doNotTrack apps filter.
+								if( angular.isArray(params.doNotTrack) && model && model.me && angular.isArray(model.me.apps) ) {
+									// Retrieve app from current URL.
+									for( var i=0; i<model.me.apps.length; i++ ) {
+										if( model.me.apps[i] && model.me.apps[i].address && model.me.apps[i].name
+											&& this.$location.absUrl().indexOf(model.me.apps[i].address) !== -1
+											&& params.doNotTrack.indexOf(model.me.apps[i].name) !== -1 ) {
+											// Don't intercept calls to th template's engine, see below.
+											return;
+										}
 									}
 								}
-							}
 
-							// BIG AWFUL HACK to intercept calls to the template engine's open function :
-							var self = this;
-							var encapsulatedFunction = window.entcore.template.open;
-							// intercept calls to the template engine
-							window.entcore.template.open = function (name, view) {
-								var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
-								if( "main"===name ) {
-                                    self.trackPage( view||"unknown", this.$location.absUrl() );
+								// BIG AWFUL HACK to intercept calls to the template engine's open function :
+								var self = this;
+								var encapsulatedFunction = window.entcore.template.open;
+								// intercept calls to the template engine
+								window.entcore.template.open = function (name, view) {
+									var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
+									if( "main"===name ) {
+										self.trackPage( view||"unknown", this.$location.absUrl() );
+									}
+									return ret;
 								}
-								return ret;
+								// END OF BIG AWFUL HACK
 							}
-							// END OF BIG AWFUL HACK
+						} catch(e) {
+							console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
 						}
-					} catch(e) {
-						console.error('Invalid tracker object. Should look like {"siteId": 99999, "url":"http://your.matomo.server.com/"}"', e);
-					}
-					break;
-				default: 
-					break;
+						break;
+					default: 
+						break;
+				}
 			}
 		}
 		Tracker.prototype.trackPage= function( title, url ) {
