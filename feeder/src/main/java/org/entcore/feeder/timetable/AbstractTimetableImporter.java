@@ -1036,8 +1036,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 									if (r != null && r.size() == 2) {
 										Transition.publishDeleteGroups(eb, log, r.getJsonArray(0));
 									}
-									final JsonObject matcher = new JsonObject().put("structureId", conf.getString("structureId"));
-									MongoDb.getInstance().delete(COURSES, matcher, new Handler<Message<JsonObject>>() {
+									final JsonObject matcher = new JsonObject().put("structureId", conf.getString("structureId"))
+										.put("deleted", new JsonObject().put("$exists", false));
+									MongoDb.getInstance().update(COURSES, matcher,
+										new JsonObject().put("$set", new JsonObject().put("deleted", System.currentTimeMillis())),
+										false, true,
+										new Handler<Message<JsonObject>>() {
 										@Override
 										public void handle(Message<JsonObject> mongoResult) {
 											if (!"ok".equals(mongoResult.body().getString("status"))) {
