@@ -5,6 +5,7 @@ import { SelectOption } from 'ngx-ode-ui';
 import { ConnectorModel, MappingModel } from '../../../../core/store/models/connector.model';
 import { CasType } from '../CasType';
 import { MappingCollection } from 'src/app/core/store/collections/connector.collection';
+import { NotifyService } from 'src/app/core/services/notify.service';
 
 @Component({
     selector: 'ode-connector-properties',
@@ -103,7 +104,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     casMappingCollection: MappingCollection;
     isOpenCasType = false;
     newCasType = new MappingModel;
-
+    
     async ngOnInit(){
         super.ngOnInit();
         this.casMappingCollection = await MappingCollection.getInstance();
@@ -118,6 +119,31 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
             this.connector.casTypeId = undefined;
             this.connector.casPattern = undefined;
         }
+    }
+
+    public onCasMappingTypeChange(value:string){
+        const removeAccents = (strAccents) => {
+            strAccents = strAccents.split('');
+            let strAccentsOut :any = new Array();
+            let strAccentsLen = strAccents.length;
+            var accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+            var accentsOut = ['A','A','A','A','A','A','a','a','a','a','a','a','O','O','O','O','O','O','O','o','o','o','o','o','o','E','E','E','E','e','e','e','e','e','C','c','D','I','I','I','I','i','i','i','i','U','U','U','U','u','u','u','u','N','n','S','s','Y','y','y','Z','z'];
+            for (var y = 0; y < strAccentsLen; y++) {
+                if (accents.indexOf(strAccents[y]) != -1) {
+                    strAccentsOut[y] = accentsOut[accents.indexOf(strAccents[y])];
+                }
+                else
+                    strAccentsOut[y] = strAccents[y];
+            }
+            strAccentsOut = strAccentsOut.join('');
+            return strAccentsOut;
+        }
+        const slug = (s: string) => {
+            s = removeAccents(s);
+            const res = s.replace(/[^\w\s]/gi, " ").replace(/\s\s+/g, " ").trim().replace(/\s/g, "-");
+            return (res);
+        }
+        this.newCasType.type = slug(value);
     }
 
     public onCasMappingChange(mappingId:string){
@@ -148,12 +174,17 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     }
 
     public async closeCasType(confirm: boolean){
-        if(confirm){
-            await this.casMappingCollection.createMapping(this.newCasType);
-            this.casMappings = this.casMappingCollection.data;
+        try {
+            if(confirm){
+                await this.casMappingCollection.createMapping(this.newCasType);
+                this.casMappings = this.casMappingCollection.data;
+            }
+            this.isOpenCasType = false;
+            this.newCasType =  new MappingModel;
+        } catch(e) {
+            console.error(e)
+            this.notifyService.error(e.response.data.error)
         }
-        this.isOpenCasType = false;
-        this.newCasType =  new MappingModel;
     }
 
     public setUserinfoInOAuthScope() {
@@ -182,7 +213,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     public onInvalidUpload($event: string): void {
         this.iconFileInvalid.emit($event);
     }
-    constructor(injector: Injector) {
+    constructor(injector: Injector, private notifyService: NotifyService) {
         super(injector);
     }
 }

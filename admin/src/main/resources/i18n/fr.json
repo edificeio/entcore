@@ -791,6 +791,8 @@
     "services.connector.cas.hasCas": "Activer le champs spécifique CAS",
     "services.connector.cas.type": "Cible",
     "services.connector.cas.pattern": "Pattern",
+    "services.connector.cas.newMapping": "Ajouter un type",
+    "cas.mappings.cantcreate": "Le type de cas saisie existe déjà",
     "services.connector.oauth.title": "Champs spécifiques OAuth",
     "services.connector.oauth.transferSession": "Transmettre la session de l'utilisateur courant à l'application",
     "services.connector.oauth.clientId": "Client ID",

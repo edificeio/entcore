@@ -118,7 +118,7 @@
         <i class='fa fa-plus' (click)="openCasType()" *ngIf="admc"></i>
       </ode-form-field>
 
-      <ode-form-field label="services.connector.cas.type">
+      <ode-form-field label="services.connector.cas.type" *ngIf="admc">
         <select [(ngModel)]="connector.casTypeId"
                 name="casTypeId"
                 [disabled]="true"
@@ -129,7 +129,7 @@
         </select>
       </ode-form-field>
 
-      <ode-form-field label="services.connector.cas.pattern">
+      <ode-form-field label="services.connector.cas.pattern" *ngIf="admc">
         <input type="text"
                [(ngModel)]="connector.casPattern"
                name="casPattern"
@@ -145,7 +145,8 @@
                     (onConfirm)="closeCasType(true)">
         <ode-form-field label="services.connector.cas.mapping">
           <input type="text"
-                  [(ngModel)]="newCasType.type"
+                  [ngModel]="newCasType.type"
+                  (ngModelChange)="onCasMappingTypeChange($event)"
                   name="newCasType_type"
                   required>
         </ode-form-field>
