@@ -24,10 +24,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.HttpClientImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 
 import java.net.URI;
 import java.util.Random;
@@ -35,7 +37,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Neo4jRestNodeClient {
-
+	private final String authorizationHeader;
 	private final Vertx vertx;
 	private final HttpClient[] clients;
 	private final AtomicInteger master = new AtomicInteger(0);
@@ -44,8 +46,9 @@ public class Neo4jRestNodeClient {
 	private final Random rnd;
 	private static final Logger logger = LoggerFactory.getLogger(Neo4jRestNodeClient.class);
 
-	public Neo4jRestNodeClient(URI[] uris, Vertx vertx, long delay, int poolSize, boolean keepAlive) {
+	public Neo4jRestNodeClient(URI[] uris, Vertx vertx, long delay, int poolSize, boolean keepAlive, final String authorizationHeader) {
 		this.vertx = vertx;
+		this.authorizationHeader = authorizationHeader;
 		clients = new HttpClient[uris.length];
 		for (int i = 0; i < uris.length; i++) {
 			final HttpClientOptions options = new HttpClientOptions()
@@ -72,12 +75,19 @@ public class Neo4jRestNodeClient {
 		rnd = new Random();
 	}
 
+	private HttpClientRequest prepareRequest(final HttpClientRequest request){
+		if(!StringUtils.isEmpty(this.authorizationHeader)){
+			request.headers().add("Authorization", this.authorizationHeader);
+		}
+		return request;
+	}
+
 	private void checkHealth() {
 		for (int i = 0; i < clients.length; i++) {
 			final int idx = i;
 			HttpClient client = clients[i];
 			if (client != null) {
-				client.getNow("/db/manage/server/ha/available", new Handler<HttpClientResponse>() {
+				final HttpClientRequest req = client.get("/db/manage/server/ha/available", new Handler<HttpClientResponse>() {
 					@Override
 					public void handle(HttpClientResponse resp) {
 						if (resp.statusCode() == 200) {
@@ -96,6 +106,8 @@ public class Neo4jRestNodeClient {
 						}
 					}
 				});
+				req.exceptionHandler(e -> logger.error("Neo4j Health check failed", e));
+				prepareRequest(req).end();
 			} else {
 				unavailableNode(idx);
 			}

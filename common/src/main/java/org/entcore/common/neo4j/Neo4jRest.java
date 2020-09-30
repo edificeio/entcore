@@ -31,25 +31,40 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 
 import java.net.URI;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Neo4jRest implements GraphDatabase {
+	private static final Logger logger = LoggerFactory.getLogger(Neo4jRest.class);
+	private static final String EMPTY_STATEMENTS_STRING = "{\"statements\":[]}";
 
 	private final Neo4jRestNodeClient nodeManager;
 	private final boolean ro;
-	private static final Logger logger = LoggerFactory.getLogger(Neo4jRest.class);
 	private final String basePath;
-	private Pattern writingClausesPattern = Pattern.compile(
+	private final Pattern writingClausesPattern = Pattern.compile(
 			"(\\s+set\\s+|create\\s+|merge\\s+|delete\\s+|remove\\s+|foreach)", Pattern.CASE_INSENSITIVE);
-	private static final String EMPTY_STATEMENTS_STRING = "{\"statements\":[]}";
 	private boolean ignoreEmptyStateError = false;
+	private final String authorizationHeader;
 
 	public Neo4jRest(URI[] uris, boolean ro, Vertx vertx, long checkDelay, int poolSize,
 					 boolean keepAlive, JsonObject neo4jConfig) {
-		nodeManager = new Neo4jRestNodeClient(uris, vertx, checkDelay, poolSize, keepAlive);
+		//prepare authorization
+		if (neo4jConfig != null) {
+			if(neo4jConfig.containsKey("username") && neo4jConfig.containsKey("password")){
+				final String userCredentials = neo4jConfig.getString("username") + ":" + neo4jConfig.getString("password");
+				this.authorizationHeader = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
+			} else {
+				this.authorizationHeader = null;
+			}
+		}else{
+			this.authorizationHeader = null;
+		}
+		//
+		nodeManager = new Neo4jRestNodeClient(uris, vertx, checkDelay, poolSize, keepAlive, authorizationHeader);
 		this.ro = ro;
 		String path = uris[0].getPath();
 		if (path != null && path.endsWith("/")) {
@@ -70,6 +85,13 @@ public class Neo4jRest implements GraphDatabase {
 		}
 	}
 
+	private HttpClientRequest prepareRequest(final HttpClientRequest request){
+		if(!StringUtils.isEmpty(this.authorizationHeader)){
+			request.headers().add("Authorization", this.authorizationHeader);
+		}
+		return request;
+	}
+
 	private void createIndex(final JsonObject j) {
 		try {
 			final HttpClientRequest req = nodeManager.getClient()
@@ -86,6 +108,7 @@ public class Neo4jRest implements GraphDatabase {
 					}
 				}
 			});
+			prepareRequest(req);
 			JsonObject body = new JsonObject().put("name", j.getString("name"));
 			body.put("config", new JsonObject()
 					.put("type", j.getString("type", "exact"))
@@ -134,6 +157,7 @@ public class Neo4jRest implements GraphDatabase {
 			});
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
+			logger.error("Neo4j execution failed", e);
 		}
 	}
 
@@ -306,6 +330,7 @@ public class Neo4jRest implements GraphDatabase {
 					});
 				}
 			});
+			prepareRequest(req);
 			req.headers().add("Accept", "application/json; charset=UTF-8");
 			req.exceptionHandler(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
 			req.end();
@@ -334,6 +359,7 @@ public class Neo4jRest implements GraphDatabase {
 					});
 				}
 			});
+			prepareRequest(req);
 			req.exceptionHandler(e -> logger.error("Neo4j unmanaged extension error.", e));
 			if (body != null) {
 				req.end(body);
@@ -426,7 +452,7 @@ public class Neo4jRest implements GraphDatabase {
 		req.headers()
 				.add("Content-Type", "application/json")
 				.add("Accept", "application/json; charset=UTF-8");
-
+		prepareRequest(req);
 		final String b = Json.encode(body);
 
 		req.exceptionHandler(event -> {
