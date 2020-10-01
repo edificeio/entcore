@@ -18,6 +18,10 @@
 
 package org.entcore.admin.controllers;
 
+import org.entcore.admin.Admin;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.http.HttpServerRequest;
@@ -30,12 +34,18 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
 public class AdminController extends BaseController {
+	private final EventHelper eventHelper;
+	public AdminController(){
+		final EventStore store = EventStoreFactory.getFactory().getEventStore(Admin.class.getSimpleName());
+		eventHelper = new EventHelper(store);
+	}
 
 	@Get("")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	public void serveHome(HttpServerRequest request) {
 		renderView(request, new JsonObject(), "admin.html", null);
+		eventHelper.onAccess(request);
 	}
 
 	@Get(value = "(?!api).*", regex = true)
