@@ -18,7 +18,7 @@
 import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
 
-export const accountController = ng.controller('MyAccount', ['$scope', 'route', 'tracker', ($scope, route, tracker) => {
+export const accountController = ng.controller('MyAccount', ['$scope', 'route', 'tracker', '$location', '$anchorScroll', ($scope, route, tracker, $location, $anchorScroll) => {
 	route({
 		editUserInfos: async function(params){
 			template.open('account/main', 'account/default-view');
@@ -55,8 +55,30 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 				$scope.openView('user-view', 'user');
 			}
 			$scope.openView('userbook-edit', 'userbook');
+			$scope.applyShowParam();
 		}
 	});
+
+	// Look for an "show" URL parameter, and if found, scroll to the element id by it.
+	$scope.applyShowParam = () => {
+		//let hash_value = $location.search()["show"] || ""; // Bugged in angular v1.3.20
+		let hash_value = "";
+		let params: string[] = window.location.search.substring(1).split('&') || [];
+		for( let i=0; i < params.length; i++ ) {
+			let param: string[] = params[i].split('=');
+			if( param[0] === "show" ) {
+				hash_value = param[1]===undefined ? "" : decodeURIComponent( param[1] );
+				break;
+			}
+		}
+
+		if( hash_value.length > 0 && $location.hash() !== hash_value ) {
+			$location.hash( hash_value );
+			setTimeout( function(){
+				$anchorScroll();
+			}, 1000);
+		}
+	}
 
 	$scope.template = template;
 	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
