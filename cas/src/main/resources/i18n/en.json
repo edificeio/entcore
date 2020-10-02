@@ -32,5 +32,7 @@
   "PearltreesRegisteredService.name" : "Pearltrees",
   "PearltreesRegisteredService.description" : "Pearltrees",
   "ExplorateurDeMetiersRegisteredService.name" : "Explorateur de Métiers",
-  "ExplorateurDeMetiersRegisteredService.description" : "Explorateur de Métiers"
+  "ExplorateurDeMetiersRegisteredService.description" : "Explorateur de Métiers",
+  "SalvumRegisteredService.name" : "Salvum",
+  "SalvumRegisteredService.description" : "Salvum"
 }
