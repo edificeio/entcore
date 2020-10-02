@@ -351,6 +351,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						config.getBoolean("edt-user-creation", false));
 				break;
 			case "manual-udt":
+				message.body().put("udt-skip-empty-sts-groups", config.getBoolean("udt-skip-empty-sts-groups", true));
 				UDTImporter.launchImport(vertx, storage, message, postImport,
 						config.getBoolean("udt-user-creation", false));
 				break;
