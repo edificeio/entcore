@@ -86,6 +86,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private int maxYearWeek;
 	private Vertx vertx;
 	private DateTime startDateStudents;
+	private BitSet holidayMask;
 	private Set<DateTime> holidays = new HashSet<>();
 	private Set<Integer> holidaysWeeks = new HashSet<>();
 	private Map<String, JsonObject> eleves = new HashMap<>();
@@ -244,6 +245,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	public void setStartDateStudents(String startDateStudents) {
 		this.startDateStudents = DateTime.parse(startDateStudents, DateTimeFormat.forPattern(DATE_FORMAT));
 		maxYearWeek = this.startDateStudents.weekOfWeekyear().withMaximumValue().weekOfWeekyear().get();
+		this.holidayMask = new BitSet(maxYearWeek);
 	}
 
 	// Origine: Paramètres
@@ -292,7 +294,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void initHolidays(JsonObject currentEntity) {
 		DateTime s = DateTime.parse(currentEntity.getString("debut"), DateTimeFormat.forPattern(DATE_FORMAT));
 		DateTime e = DateTime.parse(currentEntity.getString("fin"), DateTimeFormat.forPattern(DATE_FORMAT));
-		while (s.isBefore(e)) {
+		while (s.isBefore(e))
+		{
+			// Ce masque permet d'éviter l'exclusion des élèves de leurs groupes d'enseignements durant les vacances scolaires
+			if(s.getDayOfWeek() == 1 && e.getDayOfWeek() == 7)
+				holidayMask.set(s.getWeekOfWeekyear() - 1, true);
+
 			holidays.add(s);
 			s = s.plusDays(1);
 			holidaysWeeks.add(s.getWeekOfWeekyear());
@@ -567,6 +574,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		final String codeGroup = currentEntity.getString("gpe");
 		final String codeDiv = currentEntity.getString("code_div");
+		final String semaines =  currentEntity.getString("semaines");
 
 		String date = StringValidation.convertDate(eleve.getString("naissance", ""));
 		String idStr = eleve.getString("prenom", "") + "$" + eleve.getString("nom", "") + "$" + date;
@@ -574,6 +582,69 @@ public class UDTImporter extends AbstractTimetableImporter {
 		// If the student is missing, don't try to link them to groups
 		if(studentsIdStrings.containsKey(idStr) == false)
 			return;
+
+		DateTime inDate = new DateTime(importTimestamp);
+		DateTime outDate = new DateTime(endStudents);
+
+		if(semaines != null && semaines.isEmpty() == false && "0".equals(semaines) == false)
+		{
+			try
+			{
+				long weeks = Long.valueOf(semaines);
+				BitSet weekBits = new BitSet(maxYearWeek);
+				int currentWeek = new DateTime(importTimestamp).weekOfWeekyear().get();
+				DateTime refWeek = new DateTime().withYear(year).withDayOfYear(1).withTimeAtStartOfDay();
+				int borderWeek = startDateStudents.weekOfWeekyear().get();
+
+				for (int i = 0; i < maxYearWeek; i++)
+					weekBits.set(i, ((1L << i) & weeks) != 0);
+
+				for(int i = 0; i < maxYearWeek; ++i)
+				{
+					if(holidayMask.get(i) == true)
+					{
+						int previous = (i - 1 + maxYearWeek) % maxYearWeek;
+						if(weekBits.get(previous) == true) // Keep children in their groups during holidays
+							weekBits.set(i, true);
+					}
+				}
+
+				for(int i = 0; i < maxYearWeek; ++i)
+				{
+					int prev = (currentWeek - i + maxYearWeek) % maxYearWeek;
+					if(weekBits.get(prev) == false)
+					{
+						int start = (prev + 1) % maxYearWeek;
+						if((start + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
+							inDate = refWeek.plusYears(1).plusWeeks(start).withDayOfWeek(1);
+						else
+							inDate = refWeek.plusWeeks(start).withDayOfWeek(1);
+						break;
+					}
+				}
+
+				for(int i = 0; i < maxYearWeek; ++i)
+				{
+					int next = (currentWeek + i) % maxYearWeek;
+					if(weekBits.get(next) == false)
+					{
+						int end = (next - 1 + maxYearWeek) % maxYearWeek;
+						if((end + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
+							outDate = refWeek.plusYears(1).plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
+						else
+							outDate = refWeek.plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
+						break;
+					}
+				}
+			}
+			catch(NumberFormatException e)
+			{
+				// Ignore
+			}
+		}
+
+		long inLong = inDate.getMillis() < startDateStudents.getMillis() ? startDateStudents.getMillis() : inDate.getMillis();
+		long outLong = outDate.getMillis() > endStudents ? endStudents : outDate.getMillis();
 
 		JsonArray groups;
 		if (isNotEmpty(codeGroup)) {
@@ -590,8 +661,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("externalId", this.getMappedGroupExternalId(name))
 					.put("structureExternalId", structureExternalId)
 					.put("source", UDT)
-					.put("inDate", importTimestamp)
-					.put("outDate", endStudents)
+					.put("inDate", inLong)
+					.put("outDate", outLong)
 					.put("now", importTimestamp));
 			groups = group.getJsonArray("groups");
 
@@ -613,8 +684,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 						.put("externalId", this.getMappedGroupExternalId(o2.toString()))
 						.put("structureExternalId", structureExternalId)
 						.put("source", UDT)
-						.put("inDate", importTimestamp)
-						.put("outDate", endStudents)
+						.put("inDate", inLong)
+						.put("outDate", outLong)
 						.put("now", importTimestamp));
 
 				ttReport.validateGroupCreated(o2.toString());
