@@ -42,5 +42,7 @@
   "PearltreesRegisteredService.name" : "Pearltrees",
   "PearltreesRegisteredService.description" : "Service CAS spécifique <a href='https://www.pearltrees.com/' target='_blank'>Pearltrees</a>, service web de partage de contenu numérique.",
   "ExplorateurDeMetiersRegisteredService.name" : "Explorateur de Métiers",
-  "ExplorateurDeMetiersRegisteredService.description" : "Service CAS spécifique <a href='https://www.explorateurdemetiers.tv/' target='_blank'>Explorateur de Métiers</a>, site d'information sur les métiers."
+  "ExplorateurDeMetiersRegisteredService.description" : "Service CAS spécifique <a href='https://www.explorateurdemetiers.tv/' target='_blank'>Explorateur de Métiers</a>, site d'information sur les métiers.",
+  "SalvumRegisteredService.name" : "Salvum",
+  "SalvumRegisteredService.description" : "Service CAS spécifique <a href='https://www.salvum.org/' target='_blank'>Salvum</a>, site de formation au secourisme."
 }
