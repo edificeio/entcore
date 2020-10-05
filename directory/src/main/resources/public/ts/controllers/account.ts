@@ -83,7 +83,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.template = template;
 	$scope.getThemeChoiceLabel = (theme:string)=> lang.translate(`${theme}.choice`);
 
-	$scope.withMatomoTracker = (): boolean => tracker.type==="matomo";
+	$scope.tracker = tracker;
 
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){

@@ -1512,13 +1512,15 @@ module.directive('bindHtml', function($compile) {
     }
 });
 
-module.service('tracker', ["$location", (
+module.service('tracker', ["$location", "$rootScope", (
     function(){ // Tracker should be defined in its own source file, instead of locally.
-        var Tracker = function($location) {
-            this.$location = $location;
+        var Tracker = function($location, $rootScope) {
+			this.$location = $location;
+			this.$rootScope = $rootScope;
 			this.type = "none";
 			this.params = {};
 			this.isInitialized = false;
+            this.hasOptedIn = false;
 		}
 		Tracker.prototype.init = function() {
 			var self = this;
@@ -1551,6 +1553,13 @@ module.service('tracker', ["$location", (
 								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
 								g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
 							})();
+                            
+                            // Retrieve current optin value
+                            var thisTracker = this;
+                            _paq.push([function() {
+                                thisTracker.hasOptedIn = !this.isUserOptedOut();
+                                thisTracker.$rootScope.$digest();
+                            }]);
 
 							if( params.detailApps && window.entcore.template ) {
 								// Check the doNotTrack apps filter.
@@ -1601,6 +1610,16 @@ module.service('tracker', ["$location", (
 				break;
 			}
 		}
+        Tracker.prototype.saveOptIn= function() {
+			switch( this.type ) {
+                case "matomo":
+                    var _paq = window["_paq"] = window["_paq"] || [];
+                    _paq.push( this.hasOptedIn ? ['forgetUserOptOut'] : ['optUserOut'] );
+                    break;
+                default: 
+                    break;
+            }
+        }
         return Tracker;
     })()
 ]);
