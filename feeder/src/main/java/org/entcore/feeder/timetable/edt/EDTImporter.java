@@ -87,6 +87,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private final Map<String, String> idpnIdent = new HashMap<>();
 	private final Map<String, TimetableReport.Teacher> teachersById = new HashMap<>();
 	private final Map<String, TimetableReport.Subject> subjectsById = new HashMap<>();
+	private int maxYearWeek;
 
 	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
 			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable) {
@@ -171,9 +172,10 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 
 	public void initSchoolYear(JsonObject schoolYear) {
 		startDateWeek1 = DateTime.parse(schoolYear.getString("DatePremierJourSemaine1"));
+		maxYearWeek = startDateWeek1.weekOfWeekyear().withMaximumValue().weekOfWeekyear().get();
 		byte week1 = (byte) startDateWeek1.getWeekOfWeekyear();
-		for(byte i = 0; i < 52; ++i)
-			ttReport.addWeek(((week1 + i) % 52) + 1);
+		for(byte i = 0; i < maxYearWeek; ++i)
+			ttReport.addWeek(((week1 + i) % maxYearWeek) + 1);
 	}
 
 	public void initSchedule(JsonObject currentEntity) {
@@ -526,7 +528,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		final Long cancelWeek = (currentEntity.getString("SemainesAnnulation") != null) ?
 				Long.valueOf(currentEntity.getString("SemainesAnnulation")) : null;
 
-		for (int i = 1; i < 53; i++)
+		for (int i = 1; i < maxYearWeek + 1; i++)
 		{
 			final BitSet currentWeek = new BitSet(weeks.size());
 			boolean enabledCurrentWeek = false;
@@ -541,7 +543,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 				enabledCurrentWeek = enabledCurrentWeek | currentWeek.get(j);
 			}
 			if(enabledCurrentWeek)
-				persistCourse(generateCourse(i - 1, currentWeek, items, currentEntity));
+				persistCourse(generateCourse(i, currentWeek, items, currentEntity));
 		}
 	}
 
