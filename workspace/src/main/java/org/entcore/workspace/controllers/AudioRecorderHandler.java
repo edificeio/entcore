@@ -22,8 +22,12 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.filter.UserAuthFilter.SESSION_ID;
 
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.workspace.Workspace;
 import org.entcore.workspace.service.impl.AudioRecorderWorker;
 
 import fr.wseduc.webutils.Server;
@@ -49,15 +53,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AudioRecorderHandler implements Handler<ServerWebSocket> {
-
+	static final String RESOURCE_NAME = "sound";
 	private static final Logger log = LoggerFactory.getLogger(AudioRecorderHandler.class);
 	private static final long TIMEOUT = 5000l;
 	private final Vertx vertx;
 	private final EventBus eb;
+	private final EventHelper eventHelper;
 
 	public AudioRecorderHandler(Vertx vertx) {
 		this.vertx = vertx;
 		this.eb = Server.getEventBus(vertx);
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
+		this.eventHelper = new EventHelper(eventStore);
 	}
 
 
@@ -161,6 +168,7 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 					public void handle(Message<JsonObject> event) {
 						if ("ok".equals(event.body().getString("status"))) {
 							ws.writeTextMessage("ok");
+							eventHelper.onCreateResource(UserUtils.sessionToUserInfos(infos), RESOURCE_NAME, ws.headers());
 						} else {
 							ws.writeTextMessage(event.body().getString("message"));
 							log.error("[Dictaphone] - Error: " + event.body().getString("message"));
