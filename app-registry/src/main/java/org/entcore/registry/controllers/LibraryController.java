@@ -33,9 +33,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.registry.AppRegistry;
 import org.entcore.registry.services.LibraryService;
 import org.entcore.registry.services.impl.DefaultLibraryService;
 
@@ -45,9 +49,13 @@ import java.util.List;
 public class LibraryController extends BaseController {
     final LibraryService service;
     final JsonObject config;
+    final EventHelper eventHelper;
+    static final String RESOURCE_NAME = "library";
 
     public LibraryController(Vertx vertx, JsonObject config) throws Exception {
         service = new DefaultLibraryService(vertx, config);
+        final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(AppRegistry.class.getSimpleName());
+        this.eventHelper = new EventHelper(eventStore);
         this.config = config;
     }
 
@@ -65,6 +73,7 @@ public class LibraryController extends BaseController {
             if (res.succeeded()) {
                 final JsonObject json = res.result();
                 if (json.getBoolean("success", false)) {
+                    eventHelper.onCreateResource(request, RESOURCE_NAME);
                     renderJson(request, res.result());
                 } else {
                     renderError(request, res.result());

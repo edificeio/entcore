@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
+
+import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.events.video.VideoEventsLogger;
@@ -58,16 +60,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class WorkspaceController extends BaseController {
-	private enum WokspaceEvent {
-		ACCESS, GET_RESOURCE
-	}
 
+	public static final String RESOURCE_NAME = "document";
 	public static final String GET_ACTION = "org-entcore-workspace-controllers-WorkspaceController|getDocument";
 	public static final String COPY_ACTION = "org-entcore-workspace-controllers-WorkspaceController|copyDocuments";
 	public static final String WRITE_ACTION = "org-entcore-workspace-controllers-WorkspaceController|updateDocument";
 	public static final String SHARED_ACTION = "org-entcore-workspace-controllers-WorkspaceController|shareResource";
 	public static final String MEDIALIB_APP = "media-library";
-	private EventStore eventStore;
+	private EventHelper eventHelper;
 	private WorkspaceService workspaceService;
 	private TimelineHelper notification;
 	private GenericShareService shareService;
@@ -119,8 +119,9 @@ public class WorkspaceController extends BaseController {
 						request.resume();
 						storage.writeUploadFile(request, emptySize, uploaded -> {
 							if ("ok".equals(uploaded.getString("status"))) {
+								final Handler<AsyncResult<JsonObject>> handler = eventHelper.onCreateResource(request, RESOURCE_NAME, asyncDefaultResponseHandler(request, 201));
 								workspaceService.addDocumentWithParent(resRights.result(),userInfos, quality, name, application, doc,
-										uploaded, asyncDefaultResponseHandler(request, 201));
+										uploaded, handler);
 							} else {
 								badRequest(request, uploaded.getString("message"));
 							}
@@ -960,7 +961,8 @@ public class WorkspaceController extends BaseController {
 		super.init(vertx, config, rm, securedActions);
 
 		notification = new TimelineHelper(vertx, eb, config);
-		eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
+		this.eventHelper = new EventHelper(eventStore);
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
 	}
@@ -1586,7 +1588,7 @@ public class WorkspaceController extends BaseController {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 						renderView(request, context);
-						eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
+						eventHelper.onAccess(request);
 				} else {
 					unauthorized(request);
 				}

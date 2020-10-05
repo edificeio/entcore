@@ -21,6 +21,10 @@ package org.entcore.timeline.controllers;
 import java.util.Map;
 import java.util.ArrayList;
 
+import fr.wseduc.webutils.Either;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -28,6 +32,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.timeline.Timeline;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
 import io.vertx.core.Handler;
@@ -48,9 +53,15 @@ import org.vertx.java.core.http.RouteMatcher;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class FlashMsgController extends BaseController {
-
+	static final String RESOURCE_NAME = "message_flash";
 	private FlashMsgService service;
 	private TimelineHelper notification;
+	private final EventHelper eventHelper;
+
+	public FlashMsgController(){
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
+		this.eventHelper = new EventHelper(eventStore);
+	}
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -126,8 +137,8 @@ public class FlashMsgController extends BaseController {
 						body.put("domain", getHost(request));
 						body.put("author", user.getUsername());
 						body.put("lastModifier", user.getUsername());
-
-						service.create(body, defaultResponseHandler(request));
+						final Handler<Either<String,JsonObject>> resultHandler = defaultResponseHandler(request);
+						service.create(body, eventHelper.onCreateResource(request, RESOURCE_NAME, resultHandler));
 					}
 				});
 			}

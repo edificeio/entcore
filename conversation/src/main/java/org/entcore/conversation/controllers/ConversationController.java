@@ -35,6 +35,7 @@ import io.vertx.core.http.HttpServerResponse;
 import org.entcore.common.cache.Cache;
 import org.entcore.common.cache.CacheOperation;
 import org.entcore.common.cache.CacheScope;
+import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -84,6 +85,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
 public class ConversationController extends BaseController {
+	public static final String RESOURCE_NAME = "message";
 
 	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
 
@@ -93,7 +95,7 @@ public class ConversationController extends BaseController {
 	private ConversationService conversationService;
 	private Neo4jConversationService neoConversationService;
 	private TimelineHelper notification;
-	private EventStore eventStore;
+	private EventHelper eventHelper;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
 	private final String exportPath;
 
@@ -113,7 +115,8 @@ public class ConversationController extends BaseController {
 		this.conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"));
 		this.neoConversationService = new Neo4jConversationService();
 		notification = new TimelineHelper(vertx, eb, config);
-		eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
+		this.eventHelper =  new EventHelper(eventStore);
 		this.threshold = config.getInteger("alertStorage", 80);
 	}
 
@@ -122,7 +125,7 @@ public class ConversationController extends BaseController {
 	@Cache(value = "/conversation/count/INBOX",useQueryParams = true,scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderView(request);
-		eventStore.createAndStoreEvent(ConversationEvent.ACCESS.name(), request);
+		eventHelper.onAccess(request);
 	}
 
 	@Post("draft")
@@ -443,6 +446,7 @@ public class ConversationController extends BaseController {
 												@Override
 												public void handle(Either<String, JsonObject> event) {
 													if (event.isRight()) {
+														eventHelper.onCreateResource(request, RESOURCE_NAME);
 														JsonObject result = event.right().getValue();
 														JsonObject timelineParams = new JsonObject()
 															.put("subject", result.getString("subject"))

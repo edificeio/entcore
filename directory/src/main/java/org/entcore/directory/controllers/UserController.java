@@ -40,6 +40,9 @@ import javax.xml.bind.Marshaller;
 
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -50,6 +53,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
@@ -76,11 +80,18 @@ import io.vertx.core.json.JsonObject;
 
 
 public class UserController extends BaseController {
-
+	static final String MOTTO_RESOURCE_NAME = "motto";
+	static final String MOOD_RESOURCE_NAME = "mood";
 	private UserService userService;
 	private UserBookService userBookService;
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
+	private final EventHelper eventHelper;
+
+	public UserController(){
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Directory.class.getSimpleName());
+		this.eventHelper = new EventHelper(eventStore);
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -141,6 +152,12 @@ public class UserController extends BaseController {
 							});
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
 							renderJson(request, event.right().getValue());
+							if(body.containsKey("motto")){
+								eventHelper.onCreateResource(request, MOTTO_RESOURCE_NAME);
+							}
+							if(body.containsKey("mood")){
+								eventHelper.onCreateResource(request, MOOD_RESOURCE_NAME);
+							}
 						} else {
 							JsonObject error = new JsonObject()
 									.put("error", event.left().getValue());
