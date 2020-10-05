@@ -860,6 +860,8 @@
     "cgu.title": "Conditions générales d'utilisation",
     "data.protection.title" : "Mentions d'informations",
     "rgpd.cookies.title": "Vie privée",
+    "rgpd.cookies.text": "Nous utilisons et stockons des informations personnelles anonymisées (pages consultées, terminal utilisé,...), nous permettant d'analyser les usages de la plateforme et de créer une meilleure expérience pour vous et les autres utilisateurs. Ces données ne sont en aucun cas transmises à un tiers. Vous pouvez modifier vos préférences à tout moment.",
+    "rgpd.cookies.checkbox": "J'accepte la collecte d'informations permettant l'amélioration de l'expérience utilisateur.",
     "directory.blocked.label": "Bloqué",
     "directory.resetted.label": "Code temporaire: [[resetCode]]",
     "directory.otp.title": "Connexion à l'application mobile",

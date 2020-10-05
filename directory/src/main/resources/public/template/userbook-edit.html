@@ -151,15 +151,21 @@
 	</article>
 </div>
 
-<div class="row reduce-block-six" ng-if="withMatomoTracker()">
+<div class="row reduce-block-six" ng-if="tracker.type==='matomo'">
 	<article id="rgpd_cookies">
 		<h2>
 			<i18n>rgpd.cookies.title</i18n>
 		</h2>
 		<div class="row medium-text">
-			<iframe style="border: 0; width: 100%;"
-				src="https://matomo.opendigitaleducation.com/index.php?module=CoreAdminHome&action=optOut&language=fr&backgroundColor=ffffff&fontColor=3f454f&fontSize=14px&fontFamily=Arial"
-        	></iframe>
+			<p><i18n>rgpd.cookies.text</i18n></p>
+			<div class="one cell reduce-block-six">
+				<input id="ckOptinMatomo" type="checkbox" 
+					ng-model="tracker.hasOptedIn" ng-change="tracker.saveOptIn()" 
+					style="padding-top:5px" />
+			</div>
+			<div class="eleven cell">
+				<label for="ckOptinMatomo"><i18n>rgpd.cookies.checkbox</i18n></label>
+			</div>
 		</div>
 	</article>
 </div>
