@@ -1627,14 +1627,11 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 					return tracker.isInitialized;
 				}
 				var bannerCode = ' \
-                    <infotip name="rgpd-cookies-banner" class="info centered top-spacing-ten" style="max-width: 800px;" \
+                    <infotip name="rgpd-cookies-banner" class="info modal" style="position:fixed; bottom:0; right:20px;" \
                             save-preference-under="tracking" \
+							show-once="true" \
 							ng-show="isTrackerInitialized()" > \
-						<h1 class="centered-text"> \
-							<i18n>rgpd.cookies.banner.title</i18n> \
-						</h1> \
-						<p><i18n>rgpd.cookies.banner.text1</i18n></p> \
-						<p><i18n>rgpd.cookies.banner.text2</i18n> &nbsp; <h2><a href="/userbook/mon-compte?show=rgpd_cookies"><i18n>rgpd.cookies.banner.link</i18n></a></h2></p> \
+                        <p><i18n>rgpd.cookies.banner.text1</i18n> &nbsp; <a href="/userbook/mon-compte?show=rgpd_cookies"><strong><i18n>rgpd.cookies.banner.link</i18n></strong></a>.</p> \
 					</infotip> \
 				';
 				element.prepend( $compile(bannerCode)(scope) );
