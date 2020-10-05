@@ -630,8 +630,6 @@
   "folders.errors.duplicate": "La mise à jour a échoué car un élément du même nom existe déjà",
   "folders.errors.duplicate.folder": "Le dossier n'a pas été crée car un élement du même nom existe déjà",
   "folders.errors.duplicate.file": "Le fichier n'a pas été importé car un élement du même nom existe déjà",
-  "rgpd.cookies.banner.title": "Vie privée",
-  "rgpd.cookies.banner.text1": "Ce site utilise des cookies pour vous offrir une expérience utilisateur de qualité, ils consistent à mesurer l'audience via une collecte d'information anonymisée (les pages consultées, les téléchargements, les clics sur des liens, etc.).",
-  "rgpd.cookies.banner.text2": "En poursuivant votre navigation sur ce site, vous acceptez l'utilisation de cookies.Vous pouvez refuser l'usage des cookies via le lien suivant :",
+  "rgpd.cookies.banner.text1": "Ce site utilise des cookies permettant de collecter des informations anonymisées visant à améliorer l'expérience utilisateur. En poursuivant votre navigation, vous acceptez l'utilisation de cookies. Vous pouvez modifier vos préférences à tout moment. Voir les",
   "rgpd.cookies.banner.link": "paramètres de vie privée"
 }
