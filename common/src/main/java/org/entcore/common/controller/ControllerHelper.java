@@ -19,12 +19,14 @@
 
 package org.entcore.common.controller;
 
+import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecuredAction;
+import io.vertx.core.AsyncResult;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
@@ -291,6 +293,10 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 	}
 
 	protected void create(final HttpServerRequest request) {
+		create(request, e-> {});
+	}
+
+	protected void create(final HttpServerRequest request, final Handler<AsyncResult<JsonObject>> handler) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -298,12 +304,20 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 					RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject object) {
-							crudService.create(object, user, notEmptyResponseHandler(request));
+							crudService.create(object, user, r -> {
+								notEmptyResponseHandler(request).handle(r);
+								if (r.isLeft()) {
+									handler.handle(new DefaultAsyncResult<>(new Exception(r.left().getValue())));
+								} else {
+									handler.handle(new DefaultAsyncResult<>(r.right().getValue()));
+								}
+							});
 						}
 					});
 				} else {
 					log.debug("User not found in session.");
 					Renders.unauthorized(request);
+					handler.handle(new DefaultAsyncResult<>(new Exception("unauthorized")));
 				}
 			}
 		});
