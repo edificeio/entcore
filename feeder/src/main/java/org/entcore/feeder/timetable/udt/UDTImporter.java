@@ -569,7 +569,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	// Origine: Appartenance des élèves dans les groupes
 	void addEleve(JsonObject currentEntity) {
-		if("0".equals(currentEntity.getString("theorique")) || authorizeUpdateGroups == false) {
+		if(authorizeUpdateGroups == false) {
 			return;
 		}
 		final String ele = currentEntity.getString("ele");
@@ -619,32 +619,40 @@ public class UDTImporter extends AbstractTimetableImporter {
 					}
 				}
 
-				for(int i = 0; i < maxYearWeek; ++i)
+				if(weekBits.get(currentWeek) == true)
 				{
-					int prev = (currentWeek - i + maxYearWeek) % maxYearWeek;
-					if(weekBits.get(prev) == false)
+					for(int i = 0; i < maxYearWeek; ++i)
 					{
-						int start = (prev + 1) % maxYearWeek;
-						if((start + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
-							inDate = refWeek.plusYears(1).plusWeeks(start).withDayOfWeek(1);
-						else
-							inDate = refWeek.plusWeeks(start).withDayOfWeek(1);
-						break;
+						int prev = (currentWeek - i + maxYearWeek) % maxYearWeek;
+						if(weekBits.get(prev) == false)
+						{
+							int start = (prev + 1) % maxYearWeek;
+							if((start + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
+								inDate = refWeek.plusYears(1).plusWeeks(start).withDayOfWeek(1);
+							else
+								inDate = refWeek.plusWeeks(start).withDayOfWeek(1);
+							break;
+						}
+					}
+
+					for(int i = 0; i < maxYearWeek; ++i)
+					{
+						int next = (currentWeek + i) % maxYearWeek;
+						if(weekBits.get(next) == false)
+						{
+							int end = (next - 1 + maxYearWeek) % maxYearWeek;
+							if((end + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
+								outDate = refWeek.plusYears(1).plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
+							else
+								outDate = refWeek.plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
+							break;
+						}
 					}
 				}
-
-				for(int i = 0; i < maxYearWeek; ++i)
+				else
 				{
-					int next = (currentWeek + i) % maxYearWeek;
-					if(weekBits.get(next) == false)
-					{
-						int end = (next - 1 + maxYearWeek) % maxYearWeek;
-						if((end + 1) < borderWeek) // +1 because BitSets are zero-indexed but weeks are one-indexed
-							outDate = refWeek.plusYears(1).plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
-						else
-							outDate = refWeek.plusWeeks(end).withDayOfWeek(7).plusDays(1).plusSeconds(-1);
-						break;
-					}
+					// Force leaving the group
+					outDate = new DateTime(0);
 				}
 			}
 			catch(NumberFormatException e)

@@ -116,7 +116,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"SET r.lastUpdated = {now}, r.source = {source}, r.outDate = {outDate} ";
 	private static final String UNLINK_GROUP =
 			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(fg:FunctionalGroup)<-[r:IN]-(u:User) " +
-			"WHERE r.source = {source} AND (r.outDate < {now} OR r.lastUpdated < {now}) " +
+			"WHERE r.source = {source} AND (r.outDate < {now} OR r.lastUpdated < {now} OR r.inDate > {now}) " +
 			"OPTIONAL MATCH fg-[rc:COMMUNIQUE]-u " +
 			"DELETE r, rc";
 	private static final String DELETE_GROUPS_1 =
