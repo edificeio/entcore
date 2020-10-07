@@ -1582,7 +1582,10 @@ module.service('tracker', ["$location", "$rootScope", (
 								window.entcore.template.open = function (name, view) {
 									var ret = encapsulatedFunction.apply( window.entcore.template, arguments );
 									if( "main"===name ) {
-										self.trackPage( view||"unknown", this.$location.absUrl() );
+										// Build a virtual URL for this template
+										view = view || "unknown";
+										var url = self.$location.absUrl().split("#")[0] +"/"+ view;
+										self.trackPage( "Template: "+name, url );
 									}
 									return ret;
 								}
