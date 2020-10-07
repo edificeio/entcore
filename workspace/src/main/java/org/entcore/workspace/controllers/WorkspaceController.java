@@ -952,6 +952,7 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("protected");
 				query.getProjection().add("ancestors");
 				query.getProjection().add("externalId");
+				query.getProjection().add("isShared");
 				final String includeall = request.params().get("includeall");
 				if (includeall != null && "true".equals(includeall)) {
 					query.setType(null);
