@@ -54,7 +54,9 @@ public class Group {
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
-					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id") +
+					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField") +
+					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.name ELSE {name} END " +
+					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
 					"RETURN t.id as id ";
 			transactionHelper.add(query, object);
 			if (create) {

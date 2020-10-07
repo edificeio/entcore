@@ -6,7 +6,7 @@
   </div>
   <div>
     <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup'"
+            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true"
             (click)="$renameButtonClicked.next()"
             class="lct-group-update-button">
       <s5l>group.rename.button</s5l>
@@ -24,7 +24,7 @@
             disabled="true"
             class="lct-group-delete-button">
       <s5l>group.delete.button.lock</s5l>
-      <i class="fa fa-trash is-size-5"></i>
+      <i class="fa fa-lock is-size-5"></i>
     </button>
   </div>
 </div>
