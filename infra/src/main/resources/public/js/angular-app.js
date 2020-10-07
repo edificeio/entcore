@@ -1524,7 +1524,7 @@ module.service('tracker', ["$location", "$rootScope", (
 		}
 		Tracker.prototype.init = function() {
 			var self = this;
-            http().get('/tracker').done(function(data) {
+            http().get('/analyticsConf').done(function(data) {
                 if( data && typeof data.type === 'string' && data.type.trim().length > 0 && data[data.type.trim()] ) {
 					self.initFromType( data.type, data[data.type] );
                 }

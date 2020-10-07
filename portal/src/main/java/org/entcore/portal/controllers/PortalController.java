@@ -406,7 +406,7 @@ public class PortalController extends BaseController {
 	 * Get the configured tracking system.
 	 * @param request request
 	 */
-	@Get("/tracker")
+	@Get("/analyticsConf")
 	public void tracker(HttpServerRequest request) {
 		if( "matomo".equals(defaultTracker.getString("type")) ) {
 			UserUtils.getUserInfos(eb, request, user -> {
