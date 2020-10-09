@@ -1512,9 +1512,10 @@ module.directive('bindHtml', function($compile) {
     }
 });
 
-module.service('tracker', ["$location", "$rootScope", (
+module.service('tracker', ["$document", "$location", "$rootScope", (
     function(){ // Tracker should be defined in its own source file, instead of locally.
-        var Tracker = function($location, $rootScope) {
+        var Tracker = function($document, $location, $rootScope) {
+			this.$document = $document;
 			this.$location = $location;
 			this.$rootScope = $rootScope;
 			this.type = "none";
@@ -1585,7 +1586,7 @@ module.service('tracker', ["$location", "$rootScope", (
 										// Build a virtual URL for this template
 										view = view || "unknown";
 										var url = self.$location.absUrl().split("#")[0] +"/"+ view;
-										self.trackPage( "Template: "+name, url );
+										self.trackPage( self.$document[0].title +" - "+ name, url );
 									}
 									return ret;
 								}
