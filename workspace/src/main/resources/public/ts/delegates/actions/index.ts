@@ -68,6 +68,10 @@ export function ActionDelegate($scope: ActionDelegateScope) {
 
     $scope.downloadFile = function () {
         workspaceService.downloadFiles($scope.selectedItems(),$scope.currentTree.filter=="trash")
+        // Un-select any selected doc/folder
+        $scope.selectedItems().forEach(folder => {
+            folder.selected = false;
+        });
     };
 }
 

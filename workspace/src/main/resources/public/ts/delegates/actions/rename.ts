@@ -82,6 +82,10 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
 
     $scope.rename = async function (item, newName) {
         template.close('lightbox');
+        // Un-select any selected doc/folder
+        $scope.selectedItems().forEach(folder => {
+            folder.selected = false;
+        });
         await workspaceService.rename(item, newName);
     }
 

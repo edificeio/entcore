@@ -85,6 +85,11 @@ export function CommentDelegate($scope: CommentDelegateScope) {
             $scope.targetElement = el;
         }
         template.close('lightbox');
+        // Un-select any selected doc/folder
+        $scope.selectedItems().forEach(folder => {
+            folder.selected = false;
+            folder.showComments = false;
+        });
         const comment = await workspaceService.sendComment($scope.targetElement);
         $scope.targetElement.comments = $scope.targetElement.comments || [];
         $scope.targetElement.comments.push(comment);
