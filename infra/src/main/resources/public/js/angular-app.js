@@ -1542,6 +1542,7 @@ module.service('tracker', ["$document", "$location", "$rootScope", (
 					case "matomo":
 						try {
 							var _paq = window["_paq"] = window["_paq"] || [];
+							_paq.push(['setRequestMethod', 'POST']);
 							if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
 							if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
 							if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
@@ -1552,7 +1553,7 @@ module.service('tracker', ["$document", "$location", "$rootScope", (
 								_paq.push(['setTrackerUrl', params.url +'matomo.php']);
 								_paq.push(['setSiteId', params.siteId]);
 								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-								g.type='text/javascript'; g.async=true; g.src=params.url+'matomo.js'; s.parentNode.insertBefore(g,s);
+								g.type='text/javascript'; g.async=true; g.src=params.url+'ode.js'; s.parentNode.insertBefore(g,s);
 							})();
                             
                             // Retrieve current optin value
