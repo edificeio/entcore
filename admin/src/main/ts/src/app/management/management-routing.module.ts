@@ -75,7 +75,7 @@ export let routes: Routes = [
             },
             {
                 path: 'import-edt',
-                canActivate : [ImportEdtGuardService],
+                //canActivate : [ImportEdtGuardService],
                 component: ImportEDTComponent
             },
             {

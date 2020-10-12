@@ -59,7 +59,6 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         this.structName = this.structure.name;
         this.structUAI = this.structure.UAI;
         this.structHasApp = this.structure.hasApp;
-        console.log(this.structure);
         this.infoService.getMetrics(this.structure.id).subscribe(
           {
             next: (data) =>
