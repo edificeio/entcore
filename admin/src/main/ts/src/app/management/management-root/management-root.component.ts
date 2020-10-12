@@ -60,6 +60,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
                 }
             }
         }
+        this.changeDetector.markForCheck();
     }
 
     ngOnInit(): void {
@@ -89,9 +90,10 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         /* Remove subjects tab if the config key is set to false */
         this.subjectsService.getSubjectsConfKey().subscribe((conf) => {
             this.displaySubjects = conf.displaySubjects;
-            for (let i = 0; i < this.tabs.length; i++) {
+            for (let i = this.tabs.length; i-- > 0;) {
                 if (this.tabs[i].view === 'subjects/create' && !this.displaySubjects) {
                     this.tabs.splice(i, 1);
+                    this.changeDetector.markForCheck();
                 }
             }
         });
@@ -101,9 +103,10 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         /* Remove zimbra tab if the config key is set to false */
         this.zimbraService.getZimbraConfKey().subscribe((conf) => {
             this.displayZimbra = conf.displayZimbra;
-            for (let i = 0; i < this.tabs.length; i++) {
+            for (let i = this.tabs.length; i-- > 0;) {
                 if (this.tabs[i].view === 'zimbra' && !this.displayZimbra) {
                     this.tabs.splice(i, 1);
+                    this.changeDetector.markForCheck();
                 }
             }
         });
@@ -113,9 +116,10 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         /* Remove edt tab if the config key is set to false */
         this.importEDTReportsService.getEdtConfKey().subscribe((conf) => {
             this.displayEdt = conf.displayEdt;
-            for (let i = 0; i < this.tabs.length; i++) {
+            for (let i = this.tabs.length; i-- > 0;) {
                 if (this.tabs[i].view === 'import-edt' && !this.displayEdt) {
                     this.tabs.splice(i, 1);
+                    this.changeDetector.markForCheck();
                 }
             }
             this.admcSpecific();
@@ -126,9 +130,10 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         /* Remove calendar tab if the config key is set to false */
         this.calendarService.getCalendarConfKey().subscribe((conf) => {
             this.displayCalendar = conf.displayCalendar;
-            for (let i = 0; i < this.tabs.length; i++) {
+            for (let i = this.tabs.length; i-- > 0;) {
                 if (this.tabs[i].view === 'calendar' && !this.displayCalendar) {
                     this.tabs.splice(i, 1);
+                    this.changeDetector.markForCheck();
                 }
             }
         });
