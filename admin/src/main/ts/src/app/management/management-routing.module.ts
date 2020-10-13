@@ -70,7 +70,7 @@ export let routes: Routes = [
             },
             {
                 path: 'zimbra',
-                canActivate : [ZimbraGuardService],
+                //canActivate : [ZimbraGuardService],
                 component: ZimbraComponent
             },
             {
@@ -80,13 +80,13 @@ export let routes: Routes = [
             },
             {
                 path: 'calendar',
-                canActivate : [CalendarGuardService],
+                //canActivate : [CalendarGuardService],
                 component: CalendarComponent
             },
             {
                 path: 'subjects',
                 component: SubjectsComponent,
-                canActivateChild : [SubjectsGuardService],
+                //canActivateChild : [SubjectsGuardService],
                 resolve: {
                     subjectLit: SubjectsResolver
                 },
