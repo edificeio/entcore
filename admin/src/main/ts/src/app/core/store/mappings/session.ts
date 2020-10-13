@@ -75,4 +75,13 @@ export class Session {
         return this.functions && this.functions.SUPER_ADMIN != null;
     }
 
+    hasRight(right: string): boolean
+    {
+        if(this.authorizedActions != null)
+            for(let i = this.authorizedActions.length; i-- > 0;)
+                if(this.authorizedActions[i].name == right)
+                    return true;
+        return false;
+    }
+
 }
