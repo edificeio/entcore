@@ -118,7 +118,7 @@ public class DefaultSchoolService implements SchoolService {
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
 				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.punctualTimetable AS punctualTimetable, " +
-				"s.hasApp as hasApp, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, s.adminEDT AS adminEDT, " +
+				"s.hasApp as hasApp, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, " +
 				"s.feederName AS feederName, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 

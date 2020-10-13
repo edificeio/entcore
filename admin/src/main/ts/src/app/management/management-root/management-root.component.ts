@@ -28,8 +28,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" }
     ];
 
-    edtTab = { label: "", view: "", active: ""};
-
     private structure: StructureModel;
 
     private displayZimbra: boolean;
@@ -45,25 +43,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         super(injector);
     }
 
-    async admcSpecific() {
-        const session: Session = await SessionModel.getSession();
-        if (session.isADMC() || (this.structure != null && this.structure.adminEDT) || this.displayEdt) {
-            for (let i = this.tabs.length; i-- > 0;) {
-                if (this.tabs[i] === this.edtTab) {
-                    return;
-                }
-            }
-            this.tabs.push(this.edtTab);
-        } else {
-            for (let i = this.tabs.length; i-- > 0;) {
-                if (this.tabs[i] === this.edtTab) {
-                    this.tabs.splice(i, 1);
-                }
-            }
-        }
-        this.changeDetector.markForCheck();
-    }
-
     ngOnInit(): void {
         super.ngOnInit();
         this.zimbraTabEnable();
@@ -75,7 +54,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
-                this.admcSpecific();
                 this.changeDetector.markForCheck();
             }
         }));
@@ -125,7 +103,6 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.importEDTReportsService.getEdtConfKey().subscribe((conf) => {
             this.displayEdt = conf.displayEdt;
             this.tabEnable("import-edt", this.displayEdt);
-            this.admcSpecific();
         });
     }
 
