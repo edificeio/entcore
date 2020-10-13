@@ -36,7 +36,7 @@
 		height: 0;
 		width: 0;
 		float: left;
-	    margin-left: 12px;
+	    padding-left: 10px;
 		border-radius: 5px;
 		@include run-transition(width);
 
@@ -69,7 +69,8 @@
 	button.black{
 		background: $black;
 	}
-	button.pink{
+	button.pink,
+	button.red{
 		background: $red;
 	}
 	button.purple{
