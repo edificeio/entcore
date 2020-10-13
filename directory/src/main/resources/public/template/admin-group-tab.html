@@ -139,7 +139,8 @@
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
-            <input class="six cell" type="text" ng-model="groupSelected.name"/>
+            <input class="six cell" type="text" ng-model="groupSelected.name" ng-if="groupSelected.lockDelete != true"/>
+            <span ng-if="groupSelected.lockDelete == true">[[groupSelected.name]]</span>
         </div>
         <hr class="separator">
         <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">
