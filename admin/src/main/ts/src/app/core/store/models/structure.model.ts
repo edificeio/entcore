@@ -51,7 +51,6 @@ export class StructureModel extends Model<StructureModel> {
     distributions: string[];
     timetable: string;
     punctualTimetable?: string;
-    adminEDT?: boolean;
     hasApp?: boolean;
     manualName?: boolean;
     feederName?: string;
