@@ -488,7 +488,7 @@ public class EDTFeeder implements Feed, EDTReader
       this.structure.createClassIfAbsent(c.externalId, c.name);
 
     for(Group g : this.groups.values())
-      this.structure.createFunctionalGroupIfAbsent(g.externalId, g.name);
+      this.structure.createFunctionalGroupIfAbsent(g.externalId, g.name, this.getFeederSource());
 
     // Create HeadTeacher groups
     for(Teacher t : this.teachers.values())

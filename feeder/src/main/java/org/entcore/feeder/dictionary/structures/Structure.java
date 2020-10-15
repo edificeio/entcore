@@ -173,7 +173,8 @@ public class Structure {
 		if (classes.add(classExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:BELONGS]-(c:Class {props})" +
+					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
+					"SET c.source = s.source " +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
@@ -204,11 +205,18 @@ public class Structure {
 		}
 	}
 
-	public void createFunctionalGroupIfAbsent(String groupExternalId, String name) {
+	public void createFunctionalGroupIfAbsent(String groupExternalId, String name)
+	{
+		this.createFunctionalGroupIfAbsent(groupExternalId, name, null);
+	}
+
+	public void createFunctionalGroupIfAbsent(String groupExternalId, String name, String source) {
 		if (groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:DEPENDS]-(c:Group:FunctionalGroup {props}) ";
+					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " : "WHERE s.timetable = {source} ") +
+					"CREATE s<-[:DEPENDS]-(c:Group:FunctionalGroup {props}) " +
+					"SET c.source = coalesce({source}, s.source) ";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
@@ -218,15 +226,23 @@ public class Structure {
 							.put("structureName", struct.getString("name"))
 							.put("name", name)
 					);
+			params.put("source", source);
 			getTransaction().add(query, params);
 		}
 	}
 
-	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label) {
+	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label)
+	{
+		this.createFunctionGroupIfAbsent(groupExternalId, name, label, null);
+	}
+
+	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label, String source) {
 		if (isNotEmpty(label) && groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) ";
+					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " : "WHERE s.timetable = s.source ") +
+					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) " +
+					"SET c.source = coalesce({source}, s.source)";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
@@ -237,6 +253,7 @@ public class Structure {
 									.put("name", name + "-" + label)
 									.put("filter", name)
 					);
+			params.put("source", source);
 			getTransaction().add(query, params);
 		}
 	}
@@ -245,7 +262,8 @@ public class Structure {
 		if (groups.add(structureGroupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:DEPENDS]-(:Group:HTGroup {props}) ";
+					"CREATE s<-[:DEPENDS]-(c:Group:HTGroup {props}) " +
+					"SET c.source = s.source";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
