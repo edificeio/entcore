@@ -602,7 +602,7 @@ public class Importer {
 					String query =
 							"MATCH (g:FunctionalGroup), (u:User { externalId : {userExternalId}}) " +
 							"WHERE g.externalId IN {groups} AND NOT(HAS(u.mergedWith)) " +
-							(crossSourceFunctionalGroupMatch == true ? "" : " AND NOT(HAS(g.source) OR g.source = {source}) ") +
+							(crossSourceFunctionalGroupMatch == true ? "" : " AND g.source = {source} ") +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
@@ -615,7 +615,7 @@ public class Importer {
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:FunctionalGroup) " +
 							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
 							(crossSourceFunctionalGroupMatch == true ? " AND NOT(g.externalId IN {groups}) "
-								: " AND (NOT(g.externalId IN {groups}) OR HAS(g.source) OR g.source = {source}) ") +
+								: " AND (NOT(g.externalId IN {groups}) OR (g.source <> {source})) ") +
 							"DELETE r";
 					final JsonObject pdfg = new JsonObject()
 							.put("userExternalId", externalId)
