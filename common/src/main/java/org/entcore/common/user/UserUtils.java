@@ -339,6 +339,18 @@ public class UserUtils {
 		findUsers(eb, userId, QUERY_VISIBLE_PROFILS_GROUPS, handler);
 	}
 
+	public static void findVisibleProfilsGroups(final EventBus eb, String userId, boolean allowEmptyGroups,
+												final Handler<JsonArray> handler) {
+		if (allowEmptyGroups) {
+			final JsonObject copy = QUERY_VISIBLE_PROFILS_GROUPS.copy();
+			final JsonObject additionnalParams = copy.getJsonObject("additionnalParams", new JsonObject());
+			copy.put("additionnalParams", additionnalParams.put("excludeEmptyGroups", false));
+			findUsers(eb, userId, copy, handler);
+		} else {
+			findUsers(eb, userId, QUERY_VISIBLE_PROFILS_GROUPS, handler);
+		}
+	}
+
 	public static void findUsersInProfilsGroups(String groupId, final EventBus eb, String userId,
 			boolean itSelf, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()

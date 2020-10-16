@@ -306,7 +306,7 @@ public abstract class GenericShareService implements ShareService {
 			handler.handle(false);
 			return;
 		}
-		findVisibleProfilsGroups(eb, userId, new Handler<JsonArray>() {
+		findVisibleProfilsGroups(eb, userId, true, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibleGroups) {
 				final List<String> visibleGroupsIds = new ArrayList<>();
