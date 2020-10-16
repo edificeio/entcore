@@ -45,6 +45,9 @@ public class Redis {
                 .setHost(redisConfig.getString("host"))
                 .setPort(redisConfig.getInteger("port"))
                 .setSelect(redisConfig.getInteger("select", 0));
+        if(redisConfig.containsKey("auth")){
+            this.redisOptions.setAuth(redisConfig.getString("auth"));
+        }
         this.redisClient = RedisClient.create(vertx, redisOptions);
     }
 
