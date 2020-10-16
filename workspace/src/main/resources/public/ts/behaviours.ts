@@ -155,7 +155,7 @@ Behaviours.register('workspace', {
 					http().putJson('/workspace/rename/' + data._id, {
 						legend: file.legend,
 						alt: file.alt,
-						name: file.name.replace('.' + file.metadata.extension, '')
+						name: file.name.replace('.' + file.metadata.extension, '') || file.name
 					}).done(function () {
 						if (typeof callback === 'function') {
 							data.metadata = file.metadata;
