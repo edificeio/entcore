@@ -145,6 +145,7 @@ public abstract class BaseServer extends Server {
 		//
 		clearFilters();
 		addFilter(new AccessLoggerFilter(accessLogger));
+		addFilter(new WebviewFilter(vertx, getEventBus(vertx)));
 		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
 				getEventBus(vertx), getPathPrefix(config), ()->{
 					try{
