@@ -78,6 +78,10 @@ public class Starter extends BaseServer {
 					addController(new MailController(vertx, emailConfig));
 				}
 			}
+			final JsonObject webviewConfig = config.getJsonObject("webviewConfig");
+			if (webviewConfig != null) {
+				serverMap.put("webviewConfig", webviewConfig.encode());
+			}
 			JsonObject filesystem = config.getJsonObject("file-system");
 			if (filesystem != null) {
 				serverMap.put("file-system", filesystem.encode());
