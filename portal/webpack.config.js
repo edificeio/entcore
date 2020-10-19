@@ -3,7 +3,7 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        'myapps/application': './portal/src/main/resources/public/ts/myapps/app.ts'
+        'myapps/application': './portal/src/main/resources/public/ts/myapps/main.ts'
     },
     output: {
         filename: '[name].js',
