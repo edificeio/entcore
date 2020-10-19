@@ -3,10 +3,10 @@
 
  -->
 
-<html>
+<html with-theme="ode-bootstrap-neo">
 <head lang="en">
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<title>{{#i18n}}portal.header.navigation.myapps{{/i18n}}</title>
 	<script type="text/javascript">
@@ -15,9 +15,10 @@
 	<script type="text/javascript" src="/public/dist/entcore/ng-app.js" id="context"></script>
 	<script type="text/javascript" src="/public/dist/myapps/application.js"></script>
 </head>
-<body ng-controller="ApplicationController">
-	<portal>
-		<div class="row" ng-include="template.containers.main"></div>
+<body class="applications" ng-controller="MainController">
+	<portal template-url="/public/template/portal.html" ng-controller="Account">
+		<container template="main"></container>
 	</portal>
+	
 </body>
 </html>

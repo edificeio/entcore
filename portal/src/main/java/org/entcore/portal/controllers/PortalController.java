@@ -43,6 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -150,6 +153,8 @@ public class PortalController extends BaseController {
 
 			@Override
 			public void handle(JsonObject session) {
+				JsonArray myAppsForceAsApplication = config.getJsonArray("my-apps-force-as-application", new JsonArray());
+				JsonArray myAppsForceAsConnector = config.getJsonArray("my-apps-force-as-connector", new JsonArray());
 				JsonArray apps = session.getJsonArray("apps", new fr.wseduc.webutils.collections.JsonArray());
 				for (Object o : apps) {
 					if (!(o instanceof JsonObject)) continue;
@@ -161,12 +166,41 @@ public class PortalController extends BaseController {
 					if (d != null) {
 						j.put("displayName", d);
 					}
+					myAppsForceExternal(j, myAppsForceAsApplication, false);
+					myAppsForceExternal(j, myAppsForceAsConnector, true);
 				}
 				JsonObject json = new JsonObject()
 						.put("apps", apps);
 				renderJson(request, json);
 			}
 		});
+	}
+
+	private void myAppsForceExternal(JsonObject app, JsonArray rules, boolean forceIsExternalTo) {
+		for (int i = 0; i < rules.size(); i++) {
+			JsonObject jo = rules.getJsonObject(i);
+			String field = jo.getString("field");
+			Boolean fullMatch = jo.getBoolean("fullMatch", false);
+			Boolean caseSensitive = jo.getBoolean("caseSensitive", true);
+			String pattern = jo.getString("pattern");
+			if (field == null || pattern == null) continue;
+			if (fullMatch.booleanValue()) {
+				pattern = "^" + pattern + "$";
+			}
+			Pattern p;
+			if (caseSensitive.booleanValue()) {
+				p = Pattern.compile(pattern);
+			} else {
+				p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+			}
+			String fieldValue = app.getString(field);
+			if (fieldValue == null) continue;
+			Matcher m = p.matcher(fieldValue);
+			if (m.find()) {
+				app.put("isExternal", forceIsExternalTo);
+				return;
+			}
+		}
 	}
 
 	@Get("/adapter")

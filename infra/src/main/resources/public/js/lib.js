@@ -2161,34 +2161,49 @@ function bootstrap(func) {
 			if(!data.preference){
 				data.preference = null;
 			}
-			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
+			model.me.myApps = JSON.parse(data.preference);
+			if (_.isArray(model.me.myApps)) {
+				model.me.bookmarkedApps = model.me.myApps;
+				model.me.myApps = {
+					bookmarks: _.map(model.me.myApps, app => app.name),
+					applications: [],
+					connectors: []
+				}
+				http().putJson('/userbook/preference/apps', model.me.myApps);
+				resolve();
+				return;
+			}
+			if (!model.me.myApps){
+				model.me.myApps = {
+					bookmarks: [],
+					applications: [],
+					connectors: []
+				}
+			}
+			model.me.bookmarkedApps = [];
 			var upToDate = true;
-			var remove = [];
-			model.me.bookmarkedApps.forEach(function(app, index){
-				var foundApp = _.findWhere(model.me.apps, { name: app.name });
-				var updateApp = true;
+			let remove = [];
+			model.me.myApps.bookmarks.forEach(function(appName, index){
+				var foundApp = _.findWhere(model.me.apps, { name: appName });
 				if(foundApp){
-					updateApp = JSON.stringify(foundApp) !== JSON.stringify(app);
-					if(updateApp){
-						for(var property in foundApp){
-							app[property] = foundApp[property];
-						}
+					var app = {};
+					for(var property in foundApp){
+						app[property] = foundApp[property];
 					}
+					model.me.bookmarkedApps.push(app);
 				}
 				else{
-					remove.push(app);
+					remove.push(appName);
+					upToDate = false;
 				}
-
-				upToDate = upToDate && !updateApp;
 			});
 			remove.forEach(function(app) {
-				var index = model.me.bookmarkedApps.indexOf(app);
-				model.me.bookmarkedApps.splice(index, 1);
+				var index = model.me.myApps.bookmarks.indexOf(app);
+				model.me.myApps.bookmarks.splice(index, 1);
 			});
 			if(!upToDate){
-				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
+				http().putJson('/userbook/preference/apps', model.me.myApps);
 			}
-
 			func();
 		});
 	})

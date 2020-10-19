@@ -1,56 +1,169 @@
-<h1 class="application-title"><i class="apps"></i>
-	<i18n>portal.header.navigation.myapps</i18n>
-</h1>
-<!-- Bookmarked apps -->
-<div class="row">
-	<nav class="list icons-view bookmarked-apps" ode-drop-target="add-app-bookmark" ode-ondrop="addBookmark($value)"
-		ode-drop-effect="copy">
-		<div ng-if="bookmarkedApps.length === 0" class="vertical-spacing-six">
-			<i18n>apps.drag</i18n>
-		</div>
-		<div class="list icons-view apps" ng-if="bookmarkedApps.length !== 0">
-			<div class="element reduce-block-six" ng-repeat="application in bookmarkedApps | filter: filterBookmark"
-				ode-drag-value="[[application.address]]" ode-drag-target="remove-app-bookmark">
-				<div class="container">
-					<a connector-lightbox-trigger="application" draggable="false">
-						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
-						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
-					</a>
-					<legend>
-						<a connector-lightbox-trigger="application" translate content="[[application.displayName]]" draggable="false"></a>
-					</legend>
-				</div>
+<span ng-controller="ApplicationController">
+	<div class="d-flex justify-content-between row">
+		<h1 class="application__title d-mobile-none col-lg-6"><i18n>portal.header.navigation.myapps</i18n></h1>
+		
+		<!-- Search bar -->
+		<section class="applications__search col-lg-6">
+			<div class="input-searchbar">
+				<i class="ic-search form-control-feedback"></i>
+				<input
+					role="search" 
+					type="search" 
+					ng-model="display.searchText" 
+					class="form-control" 
+					i18n-placeholder="apps.search" 
+					autofocus
+				>
 			</div>
+		</section>
+	</div>
+
+	<!-- Bookmarks section -->
+	<section class="applications__favorite">
+		<!-- section title and button to handle bookmarks -->
+		<div class="d-flex justify-content-between">
+			<h2 aria-label="[[lang.translate('apps.bookmarked')]]"><i18n>apps.bookmarked</i18n></h2>
+			<button 
+				class="btn btn-outline-orange btn-sm"
+				ng-class="{'active': display.modeBookmarkEdition}"
+				ng-click="toggleBookmarkEdition()"
+			>
+				[[lang.translate(display.modeBookmarkEditionButtonLabel)]]
+			</button>
 		</div>
-	</nav>
-</div>
-
-<div ode-drop-target="remove-app-bookmark" ode-ondrop="removeBookmark($value)">
-	<!-- Search apps -->
-	<div class="row">
-		<input type="search" ng-model="display.searchText" i18n-placeholder="search" class="apps-search" autofocus />
-	</div>
-	<!-- Other apps -->
-	<div class="row">
-		<nav class="list icons-view">
-			<div class="list icons-view apps">
-				<div class="element reduce-block-six"
-					ng-repeat="application in applications | orderBy:order | filter:searchDisplayName"
-					ode-drag-value="[[application.address]]" ode-drag-target="add-app-bookmark">
-					<div class="container" tooltip="[[application.displayName]]">
-						<a connector-lightbox-trigger="application" draggable="false">
-							<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
-							<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
-						</a>
-						<legend>
-							<a connector-lightbox-trigger="application" translate
-								content="[[application.displayName]]" draggable="false"></a>
-						</legend>
-					</div>
-				</div>
+		
+		<!-- "Empty screen" -->
+		<div class="text-center" ng-if="!display.searchText && !bookmarks.length">
+			<p class="text-center m-3 font-italic">
+				<i18n>apps.bookmarks.empty</i18n>
+			</p>
+		</div>
+		
+		<!-- bookmarks list -->
+		<section class="applications__list" id="bookmarked-apps">
+			<button 
+				id="[[application.name]]"
+				ng-repeat="application in filteredBookmarks = (bookmarks | filter:searchDisplayName)"
+				ng-class="{'connector': display.showConnectorSection && application.isExternal, 'no-hover': display.modeBookmarkEdition}"
+				ng-click="display.modeBookmarkEdition && removeBookmark(application, $index, $event)"
+				class="application__item"
+				connector-lightbox-trigger="application"
+			>
+				<img
+					ng-if="isIconUrl(application)"
+					skin-src="[[application.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				/>
+				<i 
+					ng-if="!isIconUrl(application)" 
+					class="application [[application.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				>
+				</i>
+				<span>[[translatedDisplayName(application)]]</span>
+				<a 
+					class="application__item--remove" 
+					title="Retirer des favoris"
+					ng-if="display.modeBookmarkEdition"
+					ng-click="removeBookmark(application, $index, $event)"
+				>
+					<i class="fas fa-minus"></i>
+				</a>
+			</button>
+			
+			<div class="text-center" ng-if="display.searchText && !filteredBookmarks.length">
+				<p class="text-center m-3 font-italic">
+					<i18n>apps.search.bookmark.empty</i18n>
+				</p>
 			</div>
-		</nav>
-	</div>
-</div>
+		</section>
+	</section>
 
-<connector-lightbox></connector-lightbox>
+	<!-- Applications section -->
+	<section class="applications__list mt-2">
+		<section class="applications__list" id="apps">
+			<button 
+				id="[[application.name]]" 
+				ng-repeat="application in filteredApplications = (applications | filter:searchDisplayName)"
+				ng-click="display.modeBookmarkEdition && addBookmark(application, $index, $event)"
+				class="application__item" 
+				ng-class="{'no-hover': display.modeBookmarkEdition}"
+				connector-lightbox-trigger="application"
+			>
+				<img
+					ng-if="isIconUrl(application)"  
+					skin-src="[[application.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				/>
+				<i 
+					ng-if="!isIconUrl(application)" 
+					class="application [[application.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				>
+				</i>
+				<span>[[translatedDisplayName(application)]]</span>
+				<a 
+					class="application__item--add" 
+					title="Ajouter aux favoris"
+					ng-if="display.modeBookmarkEdition"
+					ng-click="addBookmark(application, $index, $event)"
+				>
+					<i class="fas fa-plus"></i>
+				</a>
+			</button>
+			
+			<div class="text-center" ng-if="display.searchText && !filteredApplications.length">
+				<p class="text-center m-3 font-italic">
+					<i18n>apps.search.app.empty</i18n>
+				</p>
+			</div>
+		</section>
+	</section>
+
+	<!-- Connectors section -->
+	<section 
+		class="applications__connector" 
+		ng-show="showConnectorSection()"
+	>
+		<h2><span><i18n>apps.connectors</i18n></span></h2>
+		<section class="applications__list" id="connectors">
+			<button 
+				id="[[connector.name]]" 
+				ng-repeat="connector in filteredConnectors = (connectors | filter:searchDisplayName)"
+				ng-click="display.modeBookmarkEdition && addBookmark(connector, $index, $event)"
+				class="application__item connector"
+				ng-class="{'no-hover': display.modeBookmarkEdition}"
+				connector-lightbox-trigger="connector"
+			>
+				<img
+					ng-if="isIconUrl(connector)"  
+					skin-src="[[connector.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				/>
+				<i 
+					ng-if="!isIconUrl(connector)" 
+					class="application [[connector.icon]]"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				>
+				</i>
+				<span>[[translatedDisplayName(connector)]]</span>
+				<a 
+					class="application__item--add" 
+					title="Ajouter aux favoris"
+					ng-if="display.modeBookmarkEdition"
+					ng-click="addBookmark(connector, $index, $event)"
+				>
+					<i class="fas fa-plus"></i>
+				</a>
+			</button>
+			
+			<div class="text-center" ng-if="display.searchText && !filteredConnectors.length">
+				<p class="text-center m-3 font-italic">
+					<i18n>apps.search.connector.empty</i18n>
+				</p>
+			</div>
+		</section>
+	</section>
+
+	<connector-lightbox></connector-lightbox>
+</span>
