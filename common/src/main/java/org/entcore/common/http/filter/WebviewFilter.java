@@ -16,7 +16,7 @@ import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.utils.StringUtils;
 
 public class WebviewFilter implements Filter {
-    private static long COOKIE_TTL = -9223372036854775808L;
+    private static long COOKIE_TTL_DEFAULT = 24 * 60 * 60;
     private static final String XML_HTTP_REQUEST = "XMLHttpRequest";
     private static final String HEADER_REQUESTED_WITH = "X-Requested-With";
     private static final String COOKIE_WEBVIEW_DETECTED = "webviewdetected";
@@ -45,6 +45,10 @@ public class WebviewFilter implements Filter {
 
     protected boolean isEnabled(){
         return this.config.getBoolean("enabled", false);
+    }
+
+    protected Long getCookieTtl(){
+        return this.config.getLong("cookie-ttl", COOKIE_TTL_DEFAULT);
     }
 
     protected boolean isWhitelist(final String header){
@@ -82,7 +86,7 @@ public class WebviewFilter implements Filter {
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
         if(!isEnabled()){
-            CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_IGNORED, "true",COOKIE_TTL, request, false);
+            CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_IGNORED, "true",getCookieTtl(), request, false);
             handler.handle(true);
             return;
         }
@@ -95,14 +99,14 @@ public class WebviewFilter implements Filter {
             handler.handle(true);
         } else if(!StringUtils.isEmpty(xRequestedWith)){//authorized webview
             if(isWhitelist(xRequestedWith) && !isBlackList(xRequestedWith)){
-                CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_SECURE, "true",COOKIE_TTL, request, false);
+                CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_SECURE, "true",getCookieTtl(), request, false);
                 handler.handle(true);
             } else { //unauthorized webview
                 handler.handle(false);
                 log.warn("Unauthorized webview : xRequestedWith="+xRequestedWith+ " isWebview="+isWebview+ " UserAgent:"+ua);
             }
         } else if(isWebview){//unidentified webview
-            CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_LOCATION, getIllegalWebpage(), COOKIE_TTL, request, false);
+            CookieHelper.getInstance().setSigned(COOKIE_WEBVIEW_LOCATION, getIllegalWebpage(), getCookieTtl(), request, false);
             handler.handle(false);
             log.warn("Unidentified webview : xRequestedWith="+xRequestedWith+ " isWebview="+isWebview+ " UserAgent:"+ua);
         } else {//not in wevbiew
