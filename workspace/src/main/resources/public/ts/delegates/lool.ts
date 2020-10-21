@@ -1,9 +1,10 @@
 import {Behaviours, idiom as lang, model} from 'entcore'
-import {models} from "../services";
+import {models, workspaceService} from "../services";
 
 declare let window: any;
 
 export interface LoolDelegateScope {
+    trees: models.ElementTree[]
     onInit(cab: () => void);
     safeApply();
     canBeOpenOnLool(): boolean;
@@ -32,6 +33,7 @@ export function LoolDelegate($scope: LoolDelegateScope, $route) {
                    break;
                    case 'lool@resync': {
                        $scope.onTreeInit(() => {
+                           workspaceService.onChange.next({action:"tree-change"});
                            if ('folderId' in $route.current.params) {
                                $scope.openFolderById($route.current.params.folderId)
                            } else {
