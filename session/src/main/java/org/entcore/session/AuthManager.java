@@ -23,6 +23,7 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
+import io.vertx.core.json.Json;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;
@@ -478,7 +479,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"<-[:PROVIDE]-(app:Application) " +
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
-				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix]) as apps";
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix,app.casType,app.scope]) as apps";
 		final String query3 =
 				"MATCH (u:User {id: {id}})-[:IN]->(g:Group)-[auth:AUTHORIZED]->(w:Widget) " +
 				"WHERE HAS(u.login) " +
@@ -544,6 +545,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 										.put("displayName", (String) a.getString(4))
 										.put("display", ((a.getValue(5) == null) || a.getBoolean(5)))
 										.put("prefix", (String) a.getString(6))
+										.put("casType", (String) a.getString(7))
+										.put("scope", (JsonArray) a.getJsonArray(8))
 						);
 					}
 					for (Object o : getOrElse(j.getJsonArray("aafFunctions"), new fr.wseduc.webutils.collections.JsonArray())) {
