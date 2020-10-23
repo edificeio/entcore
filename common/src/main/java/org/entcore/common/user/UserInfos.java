@@ -88,6 +88,8 @@ public class UserInfos {
 		private String displayName;
 		private boolean display;
 		private String prefix;
+		private String casType;
+		private List<String> scope;
 
 		public String getName() {
 			return name;
@@ -139,6 +141,22 @@ public class UserInfos {
 
 		public void setPrefix(String prefix) {
 			this.prefix = prefix;
+		}
+
+		public String getCasType() {
+			return casType;
+		}
+
+		public void setCasType(String casType) {
+			this.casType = casType;
+		}
+
+		public List<String> getScope() {
+			return scope;
+		}
+
+		public void setScope(List<String> scope) {
+			this.scope = scope;
 		}
 	}
 
