@@ -216,8 +216,7 @@ export const importFiles = ng.directive('importFiles', () => {
 				}
 				//
 				element.find('.drop-zone').removeClass('dragover');
-				scope.importFiles(files);
-				scope.display.importFiles = true;
+				workspaceService.onImportFiles.next(files);
 				scope.safeApply();
 			}
 			element.on('drop', dropFiles);

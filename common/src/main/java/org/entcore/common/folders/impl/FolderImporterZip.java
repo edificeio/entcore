@@ -85,7 +85,11 @@ public class FolderImporterZip {
         FileUtils.visitZip(vertx, context.zipPath, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                context.createDocument(file, Files.size(file));
+                try{
+                    context.createDocument(file, Files.size(file));
+                } catch(Exception e){
+                    logger.warn("Failed to visitFile :" + e.getMessage());
+                }
                 return super.visitFile(file, attrs);
             }
 
@@ -122,11 +126,15 @@ public class FolderImporterZip {
                 FileUtils.executeInZipFileSystem(vertx, context.zipPath, fs -> {
                     final List<FileInfo> newFiles = new ArrayList<>();
                     for (final FileInfo info : infos) {
-                        final Path pathFile = fs.getPath(info.path);
-                        final String currentName = pathFile.getFileName().toString();
-                        final Path newPath = tempDir.resolve(currentName);
-                        Files.copy(pathFile, newPath);
-                        newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
+                        try{
+                            final Path pathFile = fs.getPath(info.path);
+                            final String currentName = pathFile.getFileName().toString();
+                            final Path newPath = tempDir.resolve(currentName);
+                            Files.copy(pathFile, newPath);
+                            newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
+                        }catch(Exception e){
+                            logger.warn("Failed to copy temp file: "+e.getMessage());
+                        }
                     }
                     return newFiles;
                 }).setHandler(r->{
