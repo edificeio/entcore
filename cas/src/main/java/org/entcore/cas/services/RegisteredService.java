@@ -45,7 +45,7 @@ public interface RegisteredService {
 
 	String formatService(String serviceUri, ServiceTicket st);
 
-	void addPatterns(String structureId,String... pattern);
+	void addPatterns(boolean emptyPattern, String structureId,String... pattern);
 
 	void cleanPatterns();
 

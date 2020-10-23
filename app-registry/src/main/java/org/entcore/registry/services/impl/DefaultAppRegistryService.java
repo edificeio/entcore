@@ -604,6 +604,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 						final URL addressURL = checkCasUrl(address);
 
 						if (addressURL != null) {
+							app.put("emptyPattern", true);
 							String pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 							patterns.add(pattern);
 						} else {
