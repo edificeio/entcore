@@ -137,6 +137,7 @@
     "classAdmin.template.code": "Code d'activation",
     "classAdmin.template.reset": "Code de renouvellement",
     "classAdmin.template.url": "Adresse de connexion",
+    "classAdmin.template.class": "en classe de",
     "classAdmin.email.nousers": "Aucun utilisateur sélectionné",
     "classAdmin.remove.class" : "Retirer de la classe",
     "classAdmin.report.nousers": "Aucun utilisateur sélectionné",

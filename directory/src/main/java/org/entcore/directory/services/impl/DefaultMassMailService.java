@@ -56,6 +56,18 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
         final JsonObject templateProps = new JsonObject().put("hostname", Renders.getHost(request)).put("host",Renders.getScheme(request));
 
+        // Try to extend each user data.
+        try {
+            for (int i = 0; i < users.size(); i++) {
+                final JsonObject user = users.getJsonObject(i);
+                final String profile = user.getString("Profile");
+                user.put("isGuestOrPersonnel", "Guest".equals(profile) || "Personnel".equals(profile));
+            }
+        } catch (Exception e) {
+            // Users list is not what we were waiting for. Let's proceed with actual data but emit a warn.
+            log.warn("MassMailService : cannot extend users data before generation of PDF from template", e);
+        }
+
         final String templateNamePrefix;
         if ("pdf".equals(type)) {
             templateNamePrefix = "massmail.pdf";
