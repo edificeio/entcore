@@ -124,6 +124,7 @@ public class ExternalApplicationController extends BaseController {
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 								if (updateCas) {
 									String pattern = body.getString("pattern", "");
+									boolean emptyPattern = pattern.isEmpty();
 									if (pattern.isEmpty()) {
 										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 									}
@@ -131,6 +132,7 @@ public class ExternalApplicationController extends BaseController {
 											.put("action", "add-patterns")
 											.put("service", casType)
 											.put("structureId", structureId)
+											.put("emptyPattern", emptyPattern)
 											.put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
 								}
 								Renders.renderJson(request, event.right().getValue(), 201);

@@ -48,7 +48,7 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR
 public class DefaultRegisteredService implements RegisteredService {
 	protected final MappingService mappingService = MappingService.getInstance();
 	protected final I18n i18n = I18n.getInstance();
-	protected final Set<Mapping> criterias = new HashSet<>();
+	protected final List<Mapping> criterias = new ArrayList<>();
 	private final Set<Mapping> confCriterias = new HashSet<>();
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
@@ -181,12 +181,17 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public void addPatterns(String structureId, String... patterns) {
+	public void addPatterns(boolean emptyPattern, String structureId, String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				getMapping(Optional.ofNullable(structureId),pattern).setHandler(r->{
+				final String typedPattern = emptyPattern?"":pattern;
+				getMapping(Optional.ofNullable(structureId),typedPattern).setHandler(r->{
 					if(r.succeeded()){
-						this.criterias.add(r.result());
+						Mapping mapping = r.result();
+						if(emptyPattern){
+							mapping.addExtraPatter(pattern);
+						}
+						this.criterias.add(mapping);
 					} else{
 						log.error("Bad service configuration : failed to get mapping : " + pattern, r.cause());
 					}

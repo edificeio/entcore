@@ -15,7 +15,9 @@ public class MappingService {
     private final MongoDb mongoDb = MongoDb.getInstance();
     private final Neo4j neo = Neo4j.getInstance();
     private Future<Mappings> cacheMapping;
+    private List<Future<Mappings>> cacheMappingPending = new ArrayList<>();
     private Future<JsonArray> cacheStructures;
+    private List<Future<JsonArray>> cacheStructuresPending = new ArrayList<>();
 
     private MappingService(){ }
 
@@ -89,12 +91,32 @@ public class MappingService {
                 });
                 return future;
             });
+            cacheMapping.setHandler(r -> {
+                for(final Future<Mappings> f : cacheMappingPending){
+                    if(!f.isComplete()){
+                        f.handle(r);
+                    }
+                }
+                cacheMappingPending.clear();
+            });
+            final Future<Mappings> future = Future.future();
+            cacheMappingPending.add(future);
+            return future;
+        } else if(cacheMapping.isComplete()){
+            if(cacheMapping.succeeded()){
+                return Future.succeededFuture(cacheMapping.result());
+            } else {
+                return Future.failedFuture(cacheMapping.cause());
+            }
+        }else {//pending
+            final Future<Mappings> future = Future.future();
+            cacheMappingPending.add(future);
+            return future;
         }
-        return cacheMapping;
     }
 
     public Future<JsonArray> getStructures(){
-        if(cacheStructures==null){
+        if(cacheStructures==null){//init
             cacheStructures = Future.future();
             final StringBuilder query = new StringBuilder();
             query.append("MATCH (s:Structure) OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) ");
@@ -107,8 +129,28 @@ public class MappingService {
                     cacheStructures.complete(r.right().getValue());
                 }
             }));
+            cacheStructures.setHandler(r -> {
+               for(final Future<JsonArray> f : cacheStructuresPending){
+                   if(!f.isComplete()){
+                       f.handle(r);
+                   }
+               }
+               cacheStructuresPending.clear();
+            });
+            final Future<JsonArray> future = Future.future();
+            cacheStructuresPending.add(future);
+            return future;
+        } else if(cacheStructures.isComplete()){
+            if(cacheStructures.succeeded()){
+                return Future.succeededFuture(cacheStructures.result());
+            } else {
+                return Future.failedFuture(cacheStructures.cause());
+            }
+        }else {//pending
+            final Future<JsonArray> future = Future.future();
+            cacheStructuresPending.add(future);
+            return future;
         }
-        return cacheStructures;
     }
 
     public static class Mappings{
