@@ -60,7 +60,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         try {
             for (int i = 0; i < users.size(); i++) {
                 final JsonObject user = users.getJsonObject(i);
-                final String profile = user.getString("Profile");
+                final String profile = user.getString("profile");
                 user.put("isGuestOrPersonnel", "Guest".equals(profile) || "Personnel".equals(profile));
             }
         } catch (Exception e) {
