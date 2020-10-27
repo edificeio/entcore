@@ -307,7 +307,7 @@ public class StructureController extends BaseController {
 				    filter.put("date", request.params().get("date"));
                 }
 
-				massMailService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, arrayResponseHandler(request));
+				massMailService.massmailUsers(structureId, filter, filterMail, true, infos, arrayResponseHandler(request));
 			}
 		});
 	}
@@ -441,14 +441,12 @@ public class StructureController extends BaseController {
 			final String templatePath = assetsPath + "/template/directory/";
 			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
 
-			final boolean isSimplePdf = "simplePdf".equals(type);
-
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				public void handle(final UserInfos infos) {
 
 					//PDF
-					if("pdf".equals(type) || "newPdf".equals(type) || isSimplePdf){
-						massMailService.massmailUsers(structureId, filter, true, isSimplePdf, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+					if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
+						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 							public void handle(Either<String, JsonArray> result) {
 								if(result.isLeft()){
 									forbidden(request);
@@ -461,7 +459,7 @@ public class StructureController extends BaseController {
 					}
 					//Mail
 					else if("mail".equals(type)){
-						massMailService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 							public void handle(final Either<String, JsonArray> result) {
 								if(result.isLeft()){
 									forbidden(request);
@@ -523,8 +521,7 @@ public class StructureController extends BaseController {
 							filterObj.put("activated","both");
 							filterObj.put("sort",new JsonArray().add("displayName"));
 
-							final boolean isNotPdf = !type.equals("pdf");
-							massMailService.massmailNoCheck(schoolId, filterObj, isNotPdf, infos, new Handler<Either<String, JsonArray>>() {
+							massMailService.massmailNoCheck(schoolId, filterObj, infos, new Handler<Either<String, JsonArray>>() {
 								@Override
 								public void handle(Either<String, JsonArray> result) {
 									if (result.isLeft()) {
