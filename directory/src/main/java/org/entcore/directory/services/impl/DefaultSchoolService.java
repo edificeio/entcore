@@ -27,6 +27,7 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import io.vertx.core.Handler;
@@ -324,16 +325,17 @@ public class DefaultSchoolService implements SchoolService {
 	
 	@Override
 	public void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler) {
+		final String search = StringValidation.sanitize(input);
 		String query =
 			"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 			"WHERE s.id = {id} " +
-			"AND u.displayName =~ {inputRegExp} " +
+			"AND u.displayNameSearchField CONTAINS {search} " +
 			"RETURN distinct u.id as id, u.firstName as firstName, u.lastName as lastName " +
 			"ORDER BY u.lastName";
-		String inputRegExp = "(?i).*" + input.trim() + ".*";
+
 		JsonObject params = new JsonObject()
 				.put("id", structureId)
-				.put("inputRegExp", inputRegExp);
+				.put("search", search);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
