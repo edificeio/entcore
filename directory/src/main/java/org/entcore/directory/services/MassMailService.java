@@ -28,12 +28,12 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 public interface MassMailService {
-	void massmailNoCheck(String structureId, JsonObject filter, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void massmailNoCheck(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
-	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren,
-					   Boolean hasMail, boolean performCheck, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void massmailUsers(String structureId, JsonObject filter, Boolean hasMail, boolean performCheck, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
 	void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void massMailUser(String userId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
