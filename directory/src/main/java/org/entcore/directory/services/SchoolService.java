@@ -80,4 +80,8 @@ public interface SchoolService {
 
 	void resetName(String string, Handler<Either<String, JsonObject>> defaultResponseHandler);
 
+	void getActivationInfos(JsonArray structureIds, Handler<Either<String, JsonArray>> handler);
+
+	void getUsersActivity(JsonArray userIds, Handler<Either<String, JsonArray>> handler);
+
 }

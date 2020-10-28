@@ -483,4 +483,31 @@ public class DefaultSchoolService implements SchoolService {
 		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
+
+	@Override
+	public void getActivationInfos(JsonArray structureIds, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+
+		query.append("MATCH (s:Structure) WHERE s.id IN {structures} WITH s ");
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(a:User) WHERE HAS (a.activationCode) ");
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) WHERE NOT(HAS(u.activationCode)) ");
+		query.append("RETURN DISTINCT s.id AS id, COUNT(DISTINCT u.id) AS activated, COUNT(DISTINCT a.id) AS notactivated");
+
+		JsonObject params = new JsonObject().put("structures", structureIds);
+		neo.execute(query.toString(), params, validResultHandler(handler));
+	}
+
+	@Override
+	public void getUsersActivity(JsonArray userIds, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+
+		query.append("MATCH (u:User) WHERE u.id IN {users} ");
+		query.append("RETURN u.id as id, u.lastLogin AS lastlogin, ");
+		query.append("(CASE WHEN u.lastLogin IS NULL THEN FALSE ELSE TRUE END) AS isactive");
+
+		JsonObject params = new JsonObject().put("users", userIds);
+		neo.execute(query.toString(), params, validResultHandler(handler));
+	}
+
+
 }

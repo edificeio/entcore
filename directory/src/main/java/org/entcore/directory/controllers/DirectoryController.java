@@ -561,6 +561,14 @@ public class DirectoryController extends BaseController {
 				JsonArray data = message.body().getJsonArray("data");
 				schoolService.massDistributionEducationMobileApp(data, busResponseHandler(message));
 				break;
+			case "getActivationInfos" :
+				JsonArray structureIds = message.body().getJsonArray("structureIds");
+				schoolService.getActivationInfos(structureIds, busArrayHandler(message));
+				break;
+			case "getUsersActivity" :
+				JsonArray usersIds = message.body().getJsonArray("userIds");
+				schoolService.getUsersActivity(usersIds, busArrayHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.put("status", "error")
