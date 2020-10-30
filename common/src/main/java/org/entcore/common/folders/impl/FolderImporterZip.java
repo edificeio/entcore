@@ -89,15 +89,22 @@ public class FolderImporterZip {
                     context.createDocument(file, Files.size(file));
                 } catch(Exception e){
                     logger.warn("Failed to visitFile :" + e.getMessage());
+                    context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
                 }
                 return super.visitFile(file, attrs);
             }
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                if (!dir.toString().equals("/")) {
-                    final JsonObject res = context.createDirectory(dir);
-                    context.pushAncestor(res);
+                try{
+                    if (!dir.toString().equals("/")) {
+                        final JsonObject res = context.createDirectory(dir);
+                        context.pushAncestor(res);
+                    }
+                } catch(Exception e){
+                    logger.warn("Failed to visitFile :" + e.getMessage());
+                    context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
+                    return FileVisitResult.SKIP_SUBTREE;
                 }
                 return super.preVisitDirectory(dir, attrs);
             }
@@ -150,6 +157,14 @@ public class FolderImporterZip {
     public Future<JsonObject> doFinalize(final FolderImporterZipContext context) {
         final Future<JsonObject> futureFinal = Future.future();
         doPrepare(context).compose(prep -> {
+            if(context.hasErrors())
+            {
+                context.cancel();
+                Future<JsonObject> failure = Future.future();
+                //failure.complete(context.getResult());
+                failure.fail(context.errors.getJsonObject(0).getString("message"));
+                return failure;
+            }
             return copyToTemp(context).compose(newFiles -> {
                 final List<Future> futures = new ArrayList<>();
                 for (final FileInfo newFile : newFiles) {
@@ -307,6 +322,17 @@ public class FolderImporterZip {
                             .put("details", details)
             );
             this.docToInsertById.remove(docId);
+        }
+
+        public boolean hasErrors()
+        {
+            return this.errors.size() > 0;
+        }
+
+        public void cancel()
+        {
+            this.docToInsertById.clear();
+            this.dirToInsertById.clear();
         }
 
         public List<JsonObject> getAllObjects() {

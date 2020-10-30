@@ -261,6 +261,7 @@
     "workspace.import.zip.uncompress": "Importer et décompresser",
     "workspace.import.zip.upload": "Importer sans décompresser",
     "workspace.import.zip.cancel": "Annuler",
+    "workspace.import.zip.error.encoding": "Votre archive possède des fichiers ou dossiers dont le nom contient des caractères accentués ou spéciaux incompatibles avec l'import",
     "folder.zip.upload.notfound": "Le téléchargement du ZIP a échoué. Veuillez réessayer.",
     "folder.zip.upload.partial": "Certains élements du fichiers ZIP n'ont pas pu être importé"
 }
