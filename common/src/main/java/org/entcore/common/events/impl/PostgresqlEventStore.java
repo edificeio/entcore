@@ -122,6 +122,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 		final String eventType = (String) event.remove("event-type");
 		final String userId = (String) event.remove("userId");
 		final String profile = (String) event.remove("profil");
+		final String resourceType = (String) event.remove("resource-type");
 		final LocalDateTime d = Instant.ofEpochMilli((long) event.remove("date"))
 				.atZone(ZoneId.systemDefault()).toLocalDateTime();
 		final JsonObject e;
@@ -155,6 +156,9 @@ public class PostgresqlEventStore extends GenericEventStore {
 		}
 		if (isNotEmpty(profile)) {
 			e.put("profile", profile);
+		}
+		if (isNotEmpty(resourceType)) {
+			e.put("resource_type", resourceType);
 		}
 		insertEvent(e, tableName, handler);
 	}
