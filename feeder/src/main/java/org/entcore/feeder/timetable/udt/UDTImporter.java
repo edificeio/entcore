@@ -619,6 +619,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 					}
 				}
 
+				for(int i = maxYearWeek; i-- > 0;)
+				{
+					if(holidayMask.get(i) == true)
+					{
+						int next = (i + 1) % maxYearWeek;
+						if(weekBits.get(next) == true) // Add children in their groups during holidays
+							weekBits.set(i, true);
+					}
+				}
+
 				if(weekBits.get(currentWeek) == true)
 				{
 					for(int i = 0; i < maxYearWeek; ++i)
