@@ -146,6 +146,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static final String COURSES = "courses";
 
 	public static final boolean ALLOW_PAST_MODIFICATIONS = false;
+	public static final long CLEARANCE_TIME = 15 * 60 * 1000;
 
 	protected long importTimestamp;
 	protected final Storage storage;
@@ -418,7 +419,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if(authoriseUpdateTimetable == false)
 			return;
 
-		if(ALLOW_PAST_MODIFICATIONS == false && DateTime.parse(object.getString("startDate")).getMillis() < importTimestamp)
+		long courseStart = DateTime.parse(object.getString("startDate")).getMillis();
+		if(ALLOW_PAST_MODIFICATIONS == false && courseStart - CLEARANCE_TIME < importTimestamp)
 		{
 			ttReport.courseIgnored();
 			return;
