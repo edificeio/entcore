@@ -1680,11 +1680,14 @@ public class WorkspaceController extends BaseController {
 			url = urlSplit[0];
 		}
 
-		String app = "";
 		// get calling App path in Referer URL
-		String[] refererSplit = request.getHeader("Referer").split("/");
-		if (refererSplit.length > 3) {
-			app = refererSplit[3];
+		String app = "";
+		String referer = request.getHeader("Referer");
+		if (referer != null) {
+			String[] refererSplit = referer.split("/");
+			if (refererSplit != null && refererSplit.length > 3) {
+				app = refererSplit[3];
+			}
 		}
 
 		JsonObject eventData = new JsonObject()
