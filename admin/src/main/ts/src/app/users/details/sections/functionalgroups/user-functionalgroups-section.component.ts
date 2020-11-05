@@ -51,11 +51,10 @@ export class UserFunctionalgroupsSectionComponent extends AbstractSection implem
     }
 
     private updateLightboxFunctionalGroups() {
-        this.lightboxFunctionalGroups = this.structure.groups.data
-            .filter(group => group.type === 'FunctionalGroup'
-                && this.details.functionalGroups
-                && !this.details.functionalGroups.find(functionalGroup => functionalGroup.id == group.id)
-            );
+        this.lightboxFunctionalGroups = this.structure.groups.data.filter(group => group.type === 'FunctionalGroup');
+        if (this.details.functionalGroups && this.details.functionalGroups.length > 0) {
+            this.lightboxFunctionalGroups = this.lightboxFunctionalGroups.filter(group => !this.details.functionalGroups.find(userFunctionalGroup => userFunctionalGroup.id === group.id));
+        }
     }
 
     filterByInput = (group: { id: string, name: string }) => {
