@@ -27,6 +27,18 @@ export class MappingCollection extends Collection<MappingModel> {
         await this.getAll();
     }
 
+    async getUsage(mappingId:string, structureId?: string)
+    {
+        const usage = await this.http.get(`/cas/configuration/mappings/${mappingId}/usage` + (structureId != null ? `/${structureId}` : ""));
+        return usage;
+    }
+
+    async removeMapping(model:MappingModel)
+    {
+        await this.http.delete(`/cas/configuration/mappings/${model.type}`);
+        await this.getAll();
+    }
+
     getMappingId(casType:string, pattern:string):string{
         pattern = pattern || "";
         const mapping = this.data.find(e=>e.casType==casType && e.pattern == pattern);

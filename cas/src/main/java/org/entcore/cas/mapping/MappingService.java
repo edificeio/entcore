@@ -2,6 +2,8 @@ package org.entcore.cas.mapping;
 
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
@@ -153,6 +155,106 @@ public class MappingService {
         }
     }
 
+    public Future<JsonObject> getMappingUsage(String mappingId, Optional<String> structureId)
+    {
+        final Future<JsonObject> future = Future.future();
+        cacheMapping.setHandler(new Handler<AsyncResult<Mappings>>()
+        {
+            @Override
+            public void handle(AsyncResult<Mappings> cacheRes)
+            {
+                if(cacheRes.failed() == true)
+                {
+                    future.fail(cacheRes.cause().getMessage());
+                    return;
+                }
+                final Mappings mps = cacheRes.result();
+                final Optional<Mapping> requested = mps.getById(mappingId);
+                if(requested.isPresent() == false)
+                {
+                    future.complete(new JsonObject());
+                    return;
+                }
+
+                Mapping found = requested.get();
+                String usageQuery = "MATCH (a:Application:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) "+
+                                    "WHERE a.casType = {type} AND a.pattern = {pattern} " +
+                                    "RETURN r.structureId AS sID, COLLECT(a.name) AS connectors";
+                neo.execute(usageQuery, new JsonObject().put("type", found.getCasType()).put("pattern", found.getPattern()), Neo4jResult.validResultHandler(r ->
+                {
+                    if(r.isLeft())
+                        future.fail(r.left().getValue());
+                    else
+                    {
+                        JsonObject usageStats = new JsonObject();
+                        long otherStructUsage = 0;
+                        long totalUsages = 0;
+
+                        JsonArray res = r.right().getValue();
+
+                        for(int i = res.size(); i-- > 0;)
+                        {
+                            JsonObject stats = res.getJsonObject(i);
+                            JsonArray cntrs = stats.getJsonArray("connectors");
+                            totalUsages += cntrs.size();
+                            if(stats.getString("sID").equals(structureId.orElse("")) == true)
+                                usageStats.put("connectorsInThisStruct", cntrs);
+                            else
+                                otherStructUsage += cntrs.size();
+
+                        }
+                        usageStats.put("usesInOtherStructs", otherStructUsage);
+                        usageStats.put("totalUses", totalUsages);
+                        future.complete(usageStats);
+                    }
+                }));
+            }
+        });
+        return future;
+    }
+
+    public Future<Void> delete(String mappingId)
+    {
+        final Future<Void> future = Future.future();
+        final JsonObject deleteData = new JsonObject().put("_id", mappingId);
+
+        if(mappingId == null)
+        {
+            future.fail("cas.mappings.emptyId");
+            return future;
+        }
+        this.getMappingUsage(mappingId, Optional.empty()).setHandler(new Handler<AsyncResult<JsonObject>>()
+        {
+            @Override
+            public void handle(AsyncResult<JsonObject> res)
+            {
+                if(res.failed() == true)
+                {
+                    future.fail(res.cause().getMessage());
+                    return;
+                }
+                else
+                {
+                    long nbUses = res.result().getLong("totalUses");
+                    if(nbUses == 0)
+                    {
+                        mongoDb.delete(COLLECTION, deleteData, r->
+                        {
+                            if ("ok".equals(r.body().getString("status"))) {
+                                future.complete();
+                            } else{
+                                future.fail(r.body().getString("message"));
+                            }
+                        });
+                    }
+                    else
+                        future.fail("cas.mapping.inuse");
+                }
+            }
+        });
+        return future;
+    }
+
     public static class Mappings{
         private final Map<String, Mapping> rowsByType;
         private final Map<String, Set<String>> structuresWithChildren = new HashMap<>();
@@ -208,5 +310,10 @@ public class MappingService {
             return Optional.empty();
         }
 
+        public Optional<Mapping> getById(String id)
+        {
+            Mapping m = rowsByType.get(id);
+            return Optional.ofNullable(m);
+        }
     }
 }

@@ -22,11 +22,13 @@ package org.entcore.cas.controllers;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -34,6 +36,7 @@ import org.entcore.cas.mapping.MappingService;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -90,6 +93,47 @@ public class ConfigurationController extends BaseController {
 					log.error("Failed to create mapping : ", res.cause());
 				}
 			});
+		});
+	}
+
+	@Delete("/configuration/mappings/:mappingId")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void deleteMapping(HttpServerRequest request) {
+		mappingService.delete(request.params().get("mappingId")).setHandler(res->{
+			if(res.succeeded()){
+				reloadMapping(request);
+			}else{
+				Renders.renderError(request, new JsonObject().put("error", "cas.mappings.cantdelete"));
+				log.error("Failed to delete mapping : ", res.cause());
+			}
+		});
+	}
+
+	@Get("/configuration/mappings/:mappingId/usage")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getMappingUsage(HttpServerRequest request) {
+		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.empty()).setHandler(res->{
+			if(res.succeeded()){
+				Renders.renderJson(request, res.result());
+			}else{
+				Renders.renderError(request, new JsonObject().put("cas.mappings.cantload"));
+				log.error("Failed to load mapping : ", res.cause());
+			}
+		});
+	}
+
+	@Get("/configuration/mappings/:mappingId/usage/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void getMappingUsageForStruct(HttpServerRequest request) {
+		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.of(request.params().get("structureId"))).setHandler(res->{
+			if(res.succeeded()){
+				Renders.renderJson(request, res.result());
+			}else{
+				Renders.renderError(request, new JsonObject().put("error", "cas.mappings.cantload"));
+				log.error("Failed to load mapping : ", res.cause());
+			}
 		});
 	}
 

@@ -115,7 +115,10 @@
             {{ casMapping.name }}
           </option>
         </select>
-        <i class='fa fa-plus' (click)="openCasType()" *ngIf="admc"></i>
+        <div>
+          <i class='fa fa-plus' (click)="openCasType()" *ngIf="admc"></i>
+          <i class='fa fa-times' (click)="removeCasType()" *ngIf="admc"></i>
+        </div>
       </ode-form-field>
 
       <ode-form-field label="services.connector.cas.type" *ngIf="admc">
@@ -167,6 +170,40 @@
                   name="casPattern"
                   [placeholder]="'form.optional' | translate">
         </ode-form-field>
+  </ode-lightbox-confirm>
+  <!--/END LIGHTBOX-->
+  <!--REMOVE LIGHTBOX-->
+  <ode-lightbox-confirm *ngIf="!!isOpenCasRemove" lightboxTitle="services.connector.cas.removeMapping"
+                    [show]="isOpenCasRemove"
+                    [disableConfirm]="isRemoveDisabled()"
+                    (onCancel)="closeCasRemove(false)"
+                    (onConfirm)="closeCasRemove(true)">
+    <s5l>services.connector.cas.removeMapping.warning</s5l>
+    <ode-form-field label="services.connector.cas.removeMapping.select">
+      <select [(ngModel)]="casTypeToRemoveId"
+              (ngModelChange)="onCasTypeToRemoveChange($event)"
+              name="casMapping"
+              [required]="true"
+              class="is-flex-none has-min-width">
+        <option *ngFor="let casMapping of casMappings | orderBy:'name'" [value]="casMapping.id">
+          {{ casMapping.name }}
+        </option>
+      </select>
+    </ode-form-field>
+    <div *ngIf="casTypeToRemove">
+      <s5l>services.connector.cas.removeMapping.list</s5l>
+      <ul>
+        <li *ngFor="let casConnector of casTypeToRemove.connectorsInStruct">
+          {{ casConnector }}
+        </li>
+      </ul>
+      <i *ngIf="casTypeToRemove.connectorsInStruct == null || casTypeToRemove.connectorsInStruct.length == 0">
+        <s5l>services.connector.cas.removeMapping.list.empty</s5l>
+      </i>
+      <i *ngIf="casTypeToRemove.connectorsOutsideStruct != null && casTypeToRemove.connectorsOutsideStruct > 0">
+        <b><s5l>services.connector.cas.removeMapping.others</s5l></b>
+      </i>
+    </div>
   </ode-lightbox-confirm>
   <!--/END LIGHTBOX-->
   <ode-panel-section section-title="services.connector.oauth.title" [folded]="true">
