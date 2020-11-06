@@ -1,11 +1,14 @@
 import { Component, EventEmitter, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { Data, NavigationEnd } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
+import { routing } from '../../../../core/services/routing.service';
 import { SelectOption } from 'ngx-ode-ui';
 import { ConnectorModel, MappingModel } from '../../../../core/store/models/connector.model';
 import { CasType } from '../CasType';
 import { MappingCollection } from 'src/app/core/store/collections/connector.collection';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { Structure } from 'src/app/services/shared/services-types';
 
 @Component({
     selector: 'ode-connector-properties',
@@ -26,6 +29,9 @@ import { NotifyService } from 'src/app/core/services/notify.service';
             margin-left: 5px;
             min-width: 80px;
             text-align: center;
+            import { Data, NavigationEnd } from '@angular/router';
+            import { OdeComponent } from 'ngx-ode-core';
+            import { routing } from '../../core/services/routing.service';
         }
     `, `
         .connector-properties-warning {
@@ -106,12 +112,24 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     casMappings: MappingModel[] = [];
     casMappingCollection: MappingCollection;
     isOpenCasType = false;
+    isOpenCasRemove = false;
+    casTypeToRemove: MappingModel = null;
+    casTypeToRemoveId: string = null;
     newCasType = new MappingModel;
+
+    structure:Structure = null;
     
     async ngOnInit(){
         super.ngOnInit();
         this.casMappingCollection = await MappingCollection.getInstance();
         this.casMappings = this.casMappingCollection.data;
+        // Watch selected structure
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
+            if (data.structure) {
+                this.structure = data.structure;
+                this.changeDetector.markForCheck();
+            }
+        }));
     }
 
     private setMapping(mapping: MappingModel){
@@ -181,9 +199,47 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
             if(confirm){
                 await this.casMappingCollection.createMapping(this.newCasType);
                 this.casMappings = this.casMappingCollection.data;
+                this.changeDetector.markForCheck();
             }
             this.isOpenCasType = false;
             this.newCasType =  new MappingModel;
+        } catch(e) {
+            console.error(e)
+            this.notifyService.error(e.response.data.error)
+        }
+    }
+
+    public removeCasType()
+    {
+        this.isOpenCasRemove = true;
+    }
+
+    public async onCasTypeToRemoveChange(mappingId:string)
+    {
+        let stats = await this.casMappingCollection.getUsage(mappingId, this.structure.id);
+        this.casTypeToRemove = this.casMappings.find(e=>e.type==mappingId);
+        this.casTypeToRemove.connectorsInStruct = stats.data["connectorsInThisStruct"] == null ? [] : stats.data["connectorsInThisStruct"];
+        this.casTypeToRemove.connectorsOutsideStruct = stats.data["usesInOtherStructs"];
+        this.changeDetector.markForCheck();
+    }
+
+    public isRemoveDisabled()
+    {
+        return this.casTypeToRemove == null
+        || (this.casTypeToRemove.connectorsInStruct == null || this.casTypeToRemove.connectorsInStruct.length != 0)
+        || (this.casTypeToRemove.connectorsOutsideStruct == null || this.casTypeToRemove.connectorsOutsideStruct != 0);
+    }
+
+    public async closeCasRemove(confirm: boolean)
+    {
+        try {
+            if(confirm){
+                await this.casMappingCollection.removeMapping(this.casTypeToRemove);
+                this.casMappings = this.casMappingCollection.data;
+                this.changeDetector.markForCheck();
+            }
+            this.isOpenCasRemove = false;
+            this.casTypeToRemove = null;
         } catch(e) {
             console.error(e)
             this.notifyService.error(e.response.data.error)
