@@ -50,10 +50,10 @@ export class UserManualgroupsSectionComponent extends AbstractSection implements
     }
 
     private updateLightboxManualGroups() {
-        this.lightboxManualGroups = this.structure.groups.data.filter(
-            group => group.type === 'ManualGroup'
-                && this.details.manualGroups
-                && !this.details.manualGroups.find(manualGroup => manualGroup.id == group.id));
+        this.lightboxManualGroups = this.structure.groups.data.filter(group => group.type === 'ManualGroup');
+        if (this.details.manualGroups && this.details.manualGroups.length > 0) {
+            this.lightboxManualGroups = this.lightboxManualGroups.filter(group => !this.details.manualGroups.find(userManualGroup => userManualGroup.id === group.id));
+        }
     }
 
     filterByInput = (manualGroup: { id: string, name: string }): boolean => {
