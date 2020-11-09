@@ -25,15 +25,18 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import javax.swing.text.html.Option;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -73,10 +76,17 @@ public final class FileUtils {
 	}
 
 	private static FileSystem createZipFileSystem(String zipFilename, boolean create) throws IOException {
+		return createZipFileSystem(zipFilename, Optional.empty(), create);
+	}
+
+	private static FileSystem createZipFileSystem(String zipFilename, Optional<String> encoding, boolean create) throws IOException {
 		final Path path = Paths.get(zipFilename);
 		final URI uri = URI.create("jar:file:" + path.toUri().getPath());
 
 		final Map<String, String> env = new HashMap<>();
+		if(encoding.isPresent()){
+			env.put("encoding", encoding.get());
+		}
 		if (create) {
 			env.put("create", "true");
 		}
@@ -140,8 +150,13 @@ public final class FileUtils {
 
 	public static void visitZip(Vertx vertx, final String zipFilename, final FileVisitor<Path> visitor, final Handler<AsyncResult<Void>> handler)
 	{
+		visitZip(vertx, zipFilename, Optional.empty(), visitor, handler);
+	}
+
+	public static void visitZip(Vertx vertx, final String zipFilename, final Optional<String> encoding, final FileVisitor<Path> visitor, final Handler<AsyncResult<Void>> handler)
+		{
 		vertx.executeBlocking(r->{
-			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, false)) {
+			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, encoding,false)) {
 				final Path root = zipFileSystem.getPath("/");
 				Files.walkFileTree(root, visitor);
 				r.complete();
@@ -153,9 +168,14 @@ public final class FileUtils {
 
 	public static<T> Future<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final ZipHandler<T> handler)
 	{
+		return executeInZipFileSystem(vertx, zipFilename, Optional.empty(), handler);
+	}
+
+	public static<T> Future<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final Optional<String> encoding, final ZipHandler<T> handler)
+	{
 		final Future<T> future = Future.future();
 		vertx.executeBlocking(r -> {
-			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, false)) {
+			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, encoding,false)) {
 				final T res = handler.handle(zipFileSystem);
 				future.complete(res);
 			} catch (Exception e) {
@@ -191,4 +211,57 @@ public final class FileUtils {
 	public static interface ZipHandler<T> {
 		T handle(FileSystem fileSystem) throws Exception;
 	}
-}
+
+	public static class ZipEncodingResult{
+		private final String encoding;
+		private final boolean defaut;
+
+		public ZipEncodingResult(Optional<String> encoding) {
+			this.encoding = encoding.orElseGet(() ->null);
+			this.defaut = !encoding.isPresent();
+		}
+
+		public String getEncoding() {
+			return encoding;
+		}
+
+		public boolean isDefaut() {
+			return defaut;
+		}
+	}
+
+	public static void guessZipEncondig(Vertx vertx, String zipFilename, List<String> encodings, Handler<AsyncResult<ZipEncodingResult>> handler)
+	{
+		vertx.executeBlocking(r->{
+			for(int i = -1; i < encodings.size(); i++){
+				Optional<String> encoding = Optional.empty();
+				if(i > -1){
+					encoding = Optional.of(encodings.get(i));
+				}
+				//
+				try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, encoding,false)) {
+					final Path root = zipFileSystem.getPath("/");
+					Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							file.getFileName().toString();
+							return super.visitFile(file, attrs);
+						}
+
+						@Override
+						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+							if(dir.getFileName()!=null){
+								dir.getFileName().toString();
+							}
+							return super.preVisitDirectory(dir, attrs);
+						}
+					});
+					r.complete(new ZipEncodingResult(encoding));
+					return;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			r.fail("fileutils.encoding.guess.failed");
+		}, handler);
+	}}
