@@ -30,10 +30,27 @@ public class FolderImporterZip {
     static final Logger logger = LoggerFactory.getLogger(FolderImporterZip.class);
     private final Vertx vertx;
     private final FolderManager manager;
+    private final List<String> encodings = new ArrayList<>();
+    private Optional<String> guessedEncoding = Optional.empty();
 
     public FolderImporterZip(final Vertx v, final FolderManager aManager) {
         this.vertx = v;
         this.manager = aManager;
+        try {
+            encodings.add("UTF-8");
+            encodings.add("ISO-8859-1");
+            final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
+            if (encodingList != null) {
+                final JsonArray encodingJson = new JsonArray(encodingList);
+                for (final Object o : encodingJson) {
+                    if (!encodings.contains(o.toString())) {
+                        encodings.add(o.toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, HttpServerRequest request) {
@@ -82,39 +99,44 @@ public class FolderImporterZip {
             return context.prepare;
         }
         context.prepare = Future.future();
-        FileUtils.visitZip(vertx, context.zipPath, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                try{
-                    context.createDocument(file, Files.size(file));
-                } catch(Exception e){
-                    logger.warn("Failed to visitFile :" + e.getMessage());
-                    context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
-                }
-                return super.visitFile(file, attrs);
+        FileUtils.guessZipEncondig(vertx, context.zipPath, encodings, resGuess -> {
+            if(resGuess.succeeded()){
+                guessedEncoding = Optional.ofNullable(resGuess.result().getEncoding());
             }
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                try{
-                    if (!dir.toString().equals("/")) {
-                        final JsonObject res = context.createDirectory(dir);
-                        context.pushAncestor(res);
+            FileUtils.visitZip(vertx, context.zipPath, guessedEncoding, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    try {
+                        context.createDocument(file, attrs.size());
+                    } catch (Exception e) {
+                        logger.warn("Failed to visitFile :" + e.getMessage());
+                        context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
                     }
-                } catch(Exception e){
-                    logger.warn("Failed to visitFile :" + e.getMessage());
-                    context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
-                    return FileVisitResult.SKIP_SUBTREE;
+                    return super.visitFile(file, attrs);
                 }
-                return super.preVisitDirectory(dir, attrs);
-            }
 
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                context.popAncestor();
-                return super.postVisitDirectory(dir, exc);
-            }
-        }, context.prepare.completer());
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    try {
+                        if (!dir.toString().equals("/")) {
+                            final JsonObject res = context.createDirectory(dir);
+                            context.pushAncestor(res);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Failed to visitDir :" + e.getMessage());
+                        context.addError("", null, "workspace.import.zip.error.encoding", e.getMessage());
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    return super.preVisitDirectory(dir, attrs);
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    context.popAncestor();
+                    return super.postVisitDirectory(dir, exc);
+                }
+            }, context.prepare.completer());
+        });
         return context.prepare;
     }
 
@@ -130,21 +152,21 @@ public class FolderImporterZip {
         vertx.fileSystem().mkdir(tempDir.toString(), dir -> {
             if (dir.succeeded()) {
                 context.toClean.add(tempDir.toString());
-                FileUtils.executeInZipFileSystem(vertx, context.zipPath, fs -> {
+                FileUtils.executeInZipFileSystem(vertx, context.zipPath, guessedEncoding, fs -> {
                     final List<FileInfo> newFiles = new ArrayList<>();
                     for (final FileInfo info : infos) {
-                        try{
+                        try {
                             final Path pathFile = fs.getPath(info.path);
                             final String currentName = pathFile.getFileName().toString();
                             final Path newPath = tempDir.resolve(currentName);
                             Files.copy(pathFile, newPath);
                             newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
-                        }catch(Exception e){
-                            logger.warn("Failed to copy temp file: "+e.getMessage());
+                        } catch (Exception e) {
+                            logger.warn("Failed to copy temp file: " + e.getMessage());
                         }
                     }
                     return newFiles;
-                }).setHandler(r->{
+                }).setHandler(r -> {
                     future.handle(r);
                 });
             } else {
@@ -157,8 +179,7 @@ public class FolderImporterZip {
     public Future<JsonObject> doFinalize(final FolderImporterZipContext context) {
         final Future<JsonObject> futureFinal = Future.future();
         doPrepare(context).compose(prep -> {
-            if(context.hasErrors())
-            {
+            if (context.hasErrors()) {
                 context.cancel();
                 Future<JsonObject> failure = Future.future();
                 //failure.complete(context.getResult());
@@ -174,8 +195,8 @@ public class FolderImporterZip {
                             final String storageId = DocumentHelper.getId(writtenFile);
                             DocumentHelper.setFileId(newFile.data, storageId);
                             DocumentHelper.setThumbnails(newFile.data, new JsonObject());
-                            final Long size = writtenFile.getJsonObject("metadata",new JsonObject()).getLong("size");
-                            if(size != null){
+                            final Long size = writtenFile.getJsonObject("metadata", new JsonObject()).getLong("size");
+                            if (size != null) {
                                 DocumentHelper.getMetadata(newFile.data).put("size", size);
                             }
                             final String extension = StringUtils.getFileExtension(newFile.path);
@@ -324,13 +345,11 @@ public class FolderImporterZip {
             this.docToInsertById.remove(docId);
         }
 
-        public boolean hasErrors()
-        {
+        public boolean hasErrors() {
             return this.errors.size() > 0;
         }
 
-        public void cancel()
-        {
+        public void cancel() {
             this.docToInsertById.clear();
             this.dirToInsertById.clear();
         }
