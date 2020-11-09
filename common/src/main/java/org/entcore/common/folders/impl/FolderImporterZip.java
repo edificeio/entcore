@@ -1,5 +1,6 @@
 package org.entcore.common.folders.impl;
 
+import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -31,7 +32,24 @@ public class FolderImporterZip {
     private final Vertx vertx;
     private final FolderManager manager;
     private final List<String> encodings = new ArrayList<>();
-    private Optional<String> guessedEncoding = Optional.empty();
+    private Optional<String> guessedEncodingCache;
+
+    public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {
+        if (guessedEncodingCache == null) {
+            final Future<Optional<String>> future = Future.future();
+            FileUtils.guessZipEncondig(vertx, context.zipPath, encodings, r -> {
+                if (r.succeeded()) {
+                    guessedEncodingCache = Optional.ofNullable(r.result().getEncoding());
+                } else {
+                    guessedEncodingCache = Optional.empty();
+                }
+                future.complete(guessedEncodingCache);
+            });
+            return future;
+        } else {
+            return Future.succeededFuture(guessedEncodingCache);
+        }
+    }
 
     public FolderImporterZip(final Vertx v, final FolderManager aManager) {
         this.vertx = v;
@@ -99,10 +117,8 @@ public class FolderImporterZip {
             return context.prepare;
         }
         context.prepare = Future.future();
-        FileUtils.guessZipEncondig(vertx, context.zipPath, encodings, resGuess -> {
-            if(resGuess.succeeded()){
-                guessedEncoding = Optional.ofNullable(resGuess.result().getEncoding());
-            }
+        getGuessedEncoding(context).setHandler(r -> {
+            final Optional<String> guessedEncoding = r.result();
             FileUtils.visitZip(vertx, context.zipPath, guessedEncoding, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -140,7 +156,7 @@ public class FolderImporterZip {
         return context.prepare;
     }
 
-    private Future<List<FileInfo>> copyToTemp(FolderImporterZipContext context) {
+    private Future<List<FileInfo>> copyToTemp(FolderImporterZipContext context, Optional<String> guessedEncoding) {
         final Future<List<FileInfo>> future = Future.future();
         final Collection<FileInfo> infos = context.docToInsertById.values();
         if (infos.isEmpty()) {
@@ -152,22 +168,31 @@ public class FolderImporterZip {
         vertx.fileSystem().mkdir(tempDir.toString(), dir -> {
             if (dir.succeeded()) {
                 context.toClean.add(tempDir.toString());
-                FileUtils.executeInZipFileSystem(vertx, context.zipPath, guessedEncoding, fs -> {
-                    final List<FileInfo> newFiles = new ArrayList<>();
-                    for (final FileInfo info : infos) {
+                final List<FileInfo> newFiles = new ArrayList<>();
+                FileUtils.visitZip(vertx, context.zipPath, guessedEncoding, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                         try {
-                            final Path pathFile = fs.getPath(info.path);
-                            final String currentName = pathFile.getFileName().toString();
-                            final Path newPath = tempDir.resolve(currentName);
-                            Files.copy(pathFile, newPath);
-                            newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
+                            if (path.getFileName() != null) {
+                                final String strPath = path.toString();
+                                final Optional<FileInfo> found = infos.stream().filter(e -> e.path.equals(strPath)).findFirst();
+                                if (found.isPresent()) {
+                                    final FileInfo info = found.get();
+                                    final String currentName = path.getFileName().toString();
+                                    final Path newPath = tempDir.resolve(currentName);
+                                    Files.copy(path, newPath);
+                                    newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
+                                } else {
+                                    logger.warn("Could not found path from prepared list:" + strPath);
+                                }
+                            }
                         } catch (Exception e) {
                             logger.warn("Failed to copy temp file: " + e.getMessage());
                         }
+                        return super.visitFile(path, attrs);
                     }
-                    return newFiles;
-                }).setHandler(r -> {
-                    future.handle(r);
+                }, r -> {
+                    future.handle(new DefaultAsyncResult<>(newFiles));
                 });
             } else {
                 future.fail(dir.cause());
@@ -178,52 +203,55 @@ public class FolderImporterZip {
 
     public Future<JsonObject> doFinalize(final FolderImporterZipContext context) {
         final Future<JsonObject> futureFinal = Future.future();
-        doPrepare(context).compose(prep -> {
-            if (context.hasErrors()) {
-                context.cancel();
-                Future<JsonObject> failure = Future.future();
-                //failure.complete(context.getResult());
-                failure.fail(context.errors.getJsonObject(0).getString("message"));
-                return failure;
-            }
-            return copyToTemp(context).compose(newFiles -> {
-                final List<Future> futures = new ArrayList<>();
-                for (final FileInfo newFile : newFiles) {
-                    final Future<Void> future = Future.future();
-                    manager.importFile(newFile.path, null, context.userId, writtenFile -> {
-                        if (writtenFile.getString("status").equals("ok")) {
-                            final String storageId = DocumentHelper.getId(writtenFile);
-                            DocumentHelper.setFileId(newFile.data, storageId);
-                            DocumentHelper.setThumbnails(newFile.data, new JsonObject());
-                            final Long size = writtenFile.getJsonObject("metadata", new JsonObject()).getLong("size");
-                            if (size != null) {
-                                DocumentHelper.getMetadata(newFile.data).put("size", size);
-                            }
-                            final String extension = StringUtils.getFileExtension(newFile.path);
-                            final String mime = MimeTypeUtils.getContentTypeForExtension(extension).orElse(MimeTypeUtils.OCTET_STREAM);
-                            DocumentHelper.setContentType(newFile.data, mime);
-                            future.complete();
-                        } else {
-                            final String error = writtenFile.getString("message");
-                            final String docId = DocumentHelper.getId(newFile.data);
-                            context.addError(newFile.path, docId, "Failed to write the archived file", error);
-                            future.fail(error);
-                        }
-                    });
-                    futures.add(future);
+        getGuessedEncoding(context).setHandler(rGuess -> {
+            final Optional<String> guess = rGuess.result();
+            doPrepare(context).compose(prep -> {
+                if (context.hasErrors()) {
+                    context.cancel();
+                    Future<JsonObject> failure = Future.future();
+                    //failure.complete(context.getResult());
+                    failure.fail(context.errors.getJsonObject(0).getString("message"));
+                    return failure;
                 }
-                return CompositeFuture.all(futures).compose(res -> {
-                    final List<JsonObject> list = context.getAllObjects();
-                    final Future<JsonObject> future = Future.future();
-                    MongoDbRepositoryEvents.importDocuments("documents", list, "", false, r -> {
-                        future.complete(context.getResult());
+                return copyToTemp(context, guess).compose(newFiles -> {
+                    final List<Future> futures = new ArrayList<>();
+                    for (final FileInfo newFile : newFiles) {
+                        final Future<Void> future = Future.future();
+                        manager.importFile(newFile.path, null, context.userId, writtenFile -> {
+                            if (writtenFile.getString("status").equals("ok")) {
+                                final String storageId = DocumentHelper.getId(writtenFile);
+                                DocumentHelper.setFileId(newFile.data, storageId);
+                                DocumentHelper.setThumbnails(newFile.data, new JsonObject());
+                                final Long size = writtenFile.getJsonObject("metadata", new JsonObject()).getLong("size");
+                                if (size != null) {
+                                    DocumentHelper.getMetadata(newFile.data).put("size", size);
+                                }
+                                final String extension = StringUtils.getFileExtension(newFile.path);
+                                final String mime = MimeTypeUtils.getContentTypeForExtension(extension).orElse(MimeTypeUtils.OCTET_STREAM);
+                                DocumentHelper.setContentType(newFile.data, mime);
+                                future.complete();
+                            } else {
+                                final String error = writtenFile.getString("message");
+                                final String docId = DocumentHelper.getId(newFile.data);
+                                context.addError(newFile.path, docId, "Failed to write the archived file", error);
+                                future.fail(error);
+                            }
+                        });
+                        futures.add(future);
+                    }
+                    return CompositeFuture.all(futures).compose(res -> {
+                        final List<JsonObject> list = context.getAllObjects();
+                        final Future<JsonObject> future = Future.future();
+                        MongoDbRepositoryEvents.importDocuments("documents", list, "", false, r -> {
+                            future.complete(context.getResult());
+                        });
+                        return future;
                     });
-                    return future;
                 });
+            }).setHandler(r -> {
+                futureFinal.handle(r);
+                clean(context);
             });
-        }).setHandler(r -> {
-            futureFinal.handle(r);
-            clean(context);
         });
         return futureFinal;
     }
