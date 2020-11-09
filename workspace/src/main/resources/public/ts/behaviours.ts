@@ -152,14 +152,20 @@ Behaviours.register('workspace', {
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
 				http().postFile('/workspace/document?' + visibility + '=true&application=media-library', formData).done(function (data) {
+					var file_name = file.name ? file.name : data.name ? data.name : file.metadata.filename;
+					if( typeof file_name === "string" ) {
+						// Remove file extension, if any.
+						var extPosition = file_name.lastIndexOf('.');
+						if( 0 < extPosition && extPosition < file_name.length ) file_name = file_name.substring( 0, file_name.lastIndexOf('.') );
+					}
 					http().putJson('/workspace/rename/' + data._id, {
 						legend: file.legend,
 						alt: file.alt,
-						name: (file.name ? file.name.replace('.' + file.metadata.extension, '') : "")
+						name: file_name
 					}).done(function () {
 						if (typeof callback === 'function') {
 							data.metadata = file.metadata;
-							data.name = file.metadata.filename;
+							data.name = file_name;
 							data.alt = file.alt;
 							data.legend = file.legend;
 							callback(data);
