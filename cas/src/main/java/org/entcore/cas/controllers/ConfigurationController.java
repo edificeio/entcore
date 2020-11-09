@@ -117,7 +117,7 @@ public class ConfigurationController extends BaseController {
 			if(res.succeeded()){
 				Renders.renderJson(request, res.result());
 			}else{
-				Renders.renderError(request, new JsonObject().put("cas.mappings.cantload"));
+				Renders.renderError(request, new JsonObject().put("error","cas.mappings.cantload"));
 				log.error("Failed to load mapping : ", res.cause());
 			}
 		});
