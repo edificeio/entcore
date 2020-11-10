@@ -152,9 +152,10 @@ public class ConfigurationController extends BaseController {
 						final String service = j.getString("service");
 						final String structureId = j.getString("structureId");
 						final JsonArray patterns = j.getJsonArray("patterns");
+						final boolean inherits = j.getBoolean("inherits", false);
 						final boolean emptyPattern = j.getBoolean("emptyPattern", false);
 						if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-							services.addPatterns(emptyPattern, service,structureId, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
+							services.addPatterns(emptyPattern, service,structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
 						}
 					}
 				} else {
@@ -175,9 +176,10 @@ public class ConfigurationController extends BaseController {
 				final String structureId = message.body().getString("structureId");
 				final String service = message.body().getString("service");
 				final JsonArray patterns = message.body().getJsonArray("patterns");
+				final boolean inherits = message.body().getBoolean("inherits", false);
 				final boolean emptyPattern = message.body().getBoolean("emptyPattern", false);
 				message.reply(new JsonObject().put("status",
-						services.addPatterns(emptyPattern, service, structureId, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
+						services.addPatterns(emptyPattern, service, structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));

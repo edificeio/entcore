@@ -588,7 +588,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		String query =
 				"MATCH (app:Application) " +
 				"WHERE has(app.casType) and app.casType <> '' " +
-				"RETURN app.casType as service, app.address as address, app.structureId as structureId, COLLECT(app.pattern) as patterns";
+				"RETURN app.inherits as inherits, app.casType as service, app.address as address, app.structureId as structureId, COLLECT(app.pattern) as patterns";
 		neo.execute(query, (JsonObject) null, validResultHandler(new Handler<Either<String, JsonArray>>(){
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isLeft()){
