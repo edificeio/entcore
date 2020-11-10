@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
 import { GroupModel } from 'src/app/core/store/models/group.model';
@@ -6,13 +6,15 @@ import { UserModel } from 'src/app/core/store/models/user.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { Subscription } from 'rxjs';
+import { ActivatedRoute, Data } from '@angular/router';
 
 @Component({
     selector: 'ode-user-functionalgroups-section',
     templateUrl: './user-functionalgroups-section.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserFunctionalgroupsSectionComponent extends AbstractSection implements OnInit, OnChanges {
+export class UserFunctionalgroupsSectionComponent extends AbstractSection implements OnInit, OnChanges, OnDestroy {
     lightboxFunctionalGroups: GroupModel[] = [];
     filteredGroups: GroupModel[] = [];
 
@@ -23,22 +25,35 @@ export class UserFunctionalgroupsSectionComponent extends AbstractSection implem
 
     public inputFilter = '';
 
+    private routeDatasubscription: Subscription;
+
     constructor(
         public spinner: SpinnerService,
         private notifyService: NotifyService,
-        private changeDetectorRef: ChangeDetectorRef) {
+        private changeDetectorRef: ChangeDetectorRef,
+        private activatedRoute: ActivatedRoute) {
         super();
     }
 
     ngOnInit() {
-        this.updateLightboxFunctionalGroups();
-        this.filterManageableGroups();
+        this.routeDatasubscription = this.activatedRoute.data.subscribe((data: Data) => {
+            if (data && data.user) {
+                this.details = data.user.userDetails;
+                this.updateLightboxFunctionalGroups();
+                this.filterManageableGroups();
+                this.changeDetectorRef.markForCheck();
+            }
+        });
     }
 
     // Refresh data when structure change
     ngOnChanges() {
         this.updateLightboxFunctionalGroups();
         this.filterManageableGroups();
+    }
+
+    ngOnDestroy() {
+        this.routeDatasubscription.unsubscribe();
     }
 
     private filterManageableGroups() {
