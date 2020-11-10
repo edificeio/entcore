@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
 import { GroupModel } from 'src/app/core/store/models/group.model';
@@ -6,13 +6,15 @@ import { UserModel } from 'src/app/core/store/models/user.model';
 import { SpinnerService } from 'ngx-ode-ui';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { Subscription } from 'rxjs';
+import { ActivatedRoute, Data } from '@angular/router';
 
 @Component({
     selector: 'ode-user-manualgroups-section',
     templateUrl: './user-manualgroups-section.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserManualgroupsSectionComponent extends AbstractSection implements OnInit, OnChanges {
+export class UserManualgroupsSectionComponent extends AbstractSection implements OnInit, OnChanges, OnDestroy {
     public filteredGroups: GroupModel[] = [];
     public lightboxManualGroups: GroupModel[] = [];
     public inputFilter = '';
@@ -23,21 +25,34 @@ export class UserManualgroupsSectionComponent extends AbstractSection implements
     @Input()
     public structure: StructureModel;
 
+    private routeDatasubscription: Subscription;
+
     constructor(
         public spinner: SpinnerService,
         private notifyService: NotifyService,
-        private changeDetectorRef: ChangeDetectorRef) {
+        private changeDetectorRef: ChangeDetectorRef,
+        private activatedRoute: ActivatedRoute) {
         super();
     }
 
     ngOnInit() {
-        this.updateLightboxManualGroups();
-        this.filterManageableGroups();
+        this.routeDatasubscription = this.activatedRoute.data.subscribe((data: Data) => {
+            if (data && data.user) {
+                this.details = data.user.userDetails;
+                this.updateLightboxManualGroups();
+                this.filterManageableGroups();
+                this.changeDetectorRef.markForCheck();
+            }
+        });
     }
 
     ngOnChanges() {
         this.updateLightboxManualGroups();
         this.filterManageableGroups();
+    }
+
+    ngOnDestroy() {
+        this.routeDatasubscription.unsubscribe();
     }
 
     private filterManageableGroups() {
