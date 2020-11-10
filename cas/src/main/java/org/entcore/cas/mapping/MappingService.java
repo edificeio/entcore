@@ -295,11 +295,15 @@ public class MappingService {
             return all;
         }
 
-        public Optional<Mapping> find(Optional<String> structureId, String casType, String pattern){
+        public Optional<Mapping> find(Optional<String> structureId, String casType, String pattern, boolean canInherits){
             for(Mapping mapping: rowsByType.values()){
                 if(mapping.getCasType().equals(casType) && mapping.getPattern().equals(pattern)){
                     if(structureId.isPresent()){
-                        final Set<String> descendantAndSelf = structuresWithDescendants.getOrDefault(structureId.get(), new HashSet<>());
+                        final Set<String> descendantAndSelf = new HashSet<>();
+                        if(canInherits){
+                            final Set<String> found = structuresWithDescendants.getOrDefault(structureId.get(), new HashSet<>());
+                            descendantAndSelf.addAll(found);
+                        }
                         descendantAndSelf.add(structureId.get());
                         return Optional.of(mapping.copyWith(descendantAndSelf, false));
                     } else {

@@ -107,6 +107,7 @@ public class ExternalApplicationController extends BaseController {
 				String structureId = request.params().get("structureId");
 				final String casType = body.getString("casType", "");
 				final String address = body.getString("address", "");
+				final boolean inherits = body.getBoolean("inherits", false);
 				final boolean updateCas = !StringUtils.isEmpty(casType);
 				final URL addressURL = DefaultAppRegistryService.checkCasUrl(address);
 
@@ -133,6 +134,7 @@ public class ExternalApplicationController extends BaseController {
 											.put("service", casType)
 											.put("structureId", structureId)
 											.put("emptyPattern", emptyPattern)
+											.put("inherits", inherits)
 											.put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
 								}
 								Renders.renderJson(request, event.right().getValue(), 201);

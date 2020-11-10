@@ -292,6 +292,7 @@ public class AppRegistryController extends BaseController {
 			@Override
 			public void handle(final JsonObject body) {
 				final String structureId = request.params().get("structureId");
+				final boolean inherits = body.getBoolean("inherits", false);
 				final String casType = body.getString("casType", "");
 				final String address = body.getString("address", "");
 				final boolean updateCas = !StringUtils.isEmpty(casType);
@@ -310,7 +311,7 @@ public class AppRegistryController extends BaseController {
 							}
 
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId);
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId, inherits);
 								Renders.renderJson(request, event.right().getValue(), 201);
 							} else {
 								JsonObject error = new JsonObject()
@@ -326,7 +327,7 @@ public class AppRegistryController extends BaseController {
 		});
 	}
 
-	private void sendPatternToCasConfiguration(boolean updateCas, JsonObject body, URL addressURL, String casType, String structureId) {
+	private void sendPatternToCasConfiguration(boolean updateCas, JsonObject body, URL addressURL, String casType, String structureId, boolean inherits) {
 		if (updateCas && addressURL != null) {
             String pattern = body.getString("pattern", "");
 			boolean emptyPattern = pattern.isEmpty();
@@ -338,6 +339,7 @@ public class AppRegistryController extends BaseController {
                     .put("service", casType)
 					.put("structureId", structureId)
 					.put("emptyPattern", emptyPattern)
+					.put("inherits", inherits)
                     .put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
         }
 	}
@@ -364,6 +366,7 @@ public class AppRegistryController extends BaseController {
 				String applicationId = request.params().get("id");
 				final String casType = body.getString("casType","");
 				final String address = body.getString("address", "");
+				final boolean inherits = body.getBoolean("inherits", false);
 				final boolean updateCas = !StringUtils.isEmpty(casType);
 
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
@@ -380,7 +383,7 @@ public class AppRegistryController extends BaseController {
 									return;
 								}
 								final String structureId = event.right().getValue().getString("structureId");
-								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId);
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType, structureId, inherits);
 								Renders.renderJson(request, event.right().getValue());
 							}
 						});
