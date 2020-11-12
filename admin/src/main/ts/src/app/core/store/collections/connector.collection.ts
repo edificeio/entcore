@@ -23,8 +23,8 @@ export class MappingCollection extends Collection<MappingModel> {
     }
 
     async createMapping(model:MappingModel){
-        await this.http.post(`/cas/configuration/mappings`,{...model})
-        await this.getAll();
+        const res = await this.http.post(`/cas/configuration/mappings`,{...model})
+        this.data = Mix.castArrayAs(MappingModel, res.data);
     }
 
     async getUsage(mappingId:string, structureId?: string)
