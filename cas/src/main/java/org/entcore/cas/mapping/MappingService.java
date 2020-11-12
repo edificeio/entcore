@@ -158,7 +158,7 @@ public class MappingService {
     public Future<JsonObject> getMappingUsage(String mappingId, Optional<String> structureId)
     {
         final Future<JsonObject> future = Future.future();
-        cacheMapping.setHandler(new Handler<AsyncResult<Mappings>>()
+        getMappings().setHandler(new Handler<AsyncResult<Mappings>>()
         {
             @Override
             public void handle(AsyncResult<Mappings> cacheRes)
@@ -172,7 +172,8 @@ public class MappingService {
                 final Optional<Mapping> requested = mps.getById(mappingId);
                 if(requested.isPresent() == false)
                 {
-                    future.complete(new JsonObject());
+                    //if mapping changes -> all nodes cannot receive it and mapping could not be found
+                    future.complete(new JsonObject().put("usesInOtherStructs", 0).put("totalUses", 0));
                     return;
                 }
 
