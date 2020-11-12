@@ -137,6 +137,13 @@ public class ConfigurationController extends BaseController {
 		});
 	}
 
+	private static boolean safeGetBoolean(final JsonObject json, final String path, final boolean defaut){
+		if(json.containsKey(path) && json.getValue(path) == null){
+			return defaut;
+		}
+		return json.getBoolean(path, defaut);
+	}
+
 	public void loadPatterns() {
 		mappingService.reset();
 		eb.send("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
@@ -147,15 +154,19 @@ public class ConfigurationController extends BaseController {
 					services.cleanPatterns();
 					JsonArray externalApps = event.body().getJsonArray("result");
 					for (Object o: externalApps) {
-						if (!(o instanceof JsonObject)) continue;
-						final JsonObject j = (JsonObject) o;
-						final String service = j.getString("service");
-						final String structureId = j.getString("structureId");
-						final JsonArray patterns = j.getJsonArray("patterns");
-						final boolean inherits = j.getBoolean("inherits", false);
-						final boolean emptyPattern = j.getBoolean("emptyPattern", false);
-						if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-							services.addPatterns(emptyPattern, service,structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
+						try {
+							if (!(o instanceof JsonObject)) continue;
+							final JsonObject j = (JsonObject) o;
+							final String service = j.getString("service");
+							final String structureId = j.getString("structureId");
+							final JsonArray patterns = j.getJsonArray("patterns");
+							final boolean inherits = safeGetBoolean(j,"inherits", false);
+							final boolean emptyPattern = safeGetBoolean(j,"emptyPattern", false);
+							if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
+								services.addPatterns(emptyPattern, service, structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
+							}
+						} catch(Exception e) {
+							log.error("Could not add CAS app", e);
 						}
 					}
 				} else {
@@ -176,8 +187,8 @@ public class ConfigurationController extends BaseController {
 				final String structureId = message.body().getString("structureId");
 				final String service = message.body().getString("service");
 				final JsonArray patterns = message.body().getJsonArray("patterns");
-				final boolean inherits = message.body().getBoolean("inherits", false);
-				final boolean emptyPattern = message.body().getBoolean("emptyPattern", false);
+				final boolean inherits = safeGetBoolean(message.body(),"inherits", false);
+				final boolean emptyPattern = safeGetBoolean(message.body(),"emptyPattern", false);
 				message.reply(new JsonObject().put("status",
 						services.addPatterns(emptyPattern, service, structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
