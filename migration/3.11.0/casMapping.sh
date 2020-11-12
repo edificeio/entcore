@@ -8,7 +8,7 @@ var slug = function (s) {\n
     var res = original = s.replace(/[^\w\s]/gi, " ").replace(/https?/, "").replace(/\s\s+/g, " ").trim().replace(/\s/g, "-");\n
     var counter = 0;\n
     while (duplicates.indexOf(res) > -1) {\n
-        console.log("already exists : ", res);\n
+        print("already exists : ", res);\n
         res = original + "-" + (counter++);\n
     };\n
     duplicates.push(res);\n
