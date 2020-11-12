@@ -6219,6 +6219,166 @@ module.directive('assistant', function(){
     }
 });
 
+(function(){
+
+    var _CACHE = undefined;
+    var _MUTEX = false;
+    
+    function _getPreference (cb){
+        if (_CACHE) {
+            return cb(_CACHE);
+        }
+            http().get('/userbook/preference/authenticatedConnectorsAccessed').done(function(data){
+                try {
+                    if (data.preference) {
+                        _CACHE = JSON.parse(data.preference);
+                    }
+                    return cb(_CACHE);
+                } catch (e) {
+                    console.log('Error parsing authenticatedConnectorsAccessed preferences');
+                    _CACHE = {}
+                    return cb(_CACHE);
+                }
+            }).error(function(error) {
+                console.log('Error parsing authenticatedConnectorsAccessed preferences', error);
+                _CACHE = {}
+                return cb(_CACHE);
+            });
+            
+        return _CACHE;
+    }
+    
+    var _onTriggerApp = [];
+
+     module.directive('connectorLightboxTrigger', ['$timeout', '$filter', function ($timeout, $filter) {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attributes) {
+                var app = scope.$eval(attributes.connectorLightboxTrigger);
+                //private functions
+                function init ()  {
+                    //event
+                    element.on('click', function () {
+                        for(var i = 0; i < _onTriggerApp.length; i++){
+                            _onTriggerApp[i](app);
+                        }
+                    })
+                    scope.$on('$destroy', function () {
+                        element.off('click');
+                    });
+                }
+                //init
+                init();
+            }
+        }
+    }]);
+    
+    
+    module.directive('connectorLightbox', ['$timeout', '$filter', function ($timeout, $filter) {
+        return {
+            restrict: 'E',
+            scope: {
+            },
+            template: 
+            '<lightbox show="display.showAuthenticatedConnectorLightbox" on-close="onClose()">'+
+                '<h3><i18n>apps.authenticatedConnector.lightbox.title</i18n></h3>'+
+                '<div class="info vertical-spacing-twice"><i18n>apps.authenticatedConnector.lightbox.content</i18n></div>'+
+                '<div>'+
+                    '<button class="horizontal-spacing" ng-click="onConfirm(authenticatedConnectorClicked)">'+
+                        '<i18n>confirm</i18n>'+
+                        '</button>'+
+                    '<button class="horizontal-spacing" ng-click="onClose()">'+
+                        '<i18n>cancel</i18n>'+
+                    '</button>'+
+                '</div>'+
+            '</lightbox>'
+            ,
+            link: function (scope, element, attributes) {
+                scope.display = {
+                    showAuthenticatedConnectorLightbox: false
+                };
+                var _app = null;
+                function remove(array, element) {
+                    var index = array.indexOf(element);
+                    array.splice(index, 1);
+                }
+                //private functions
+                function init (cb) {
+                    //event
+                    var sub = function(event) {
+                        _app = event;
+                        openAppWithCheck(event);
+                    }
+                    _onTriggerApp.push(sub)
+                    scope.$on('$destroy', function () {
+                        remove(_onTriggerApp, sub)
+                    });
+                    _getPreference(function(data){
+                        scope.authenticatedConnectorsAccessed = data || [];
+                        scope.$apply();
+                        cb && cb();
+                    });
+                }
+                function isAuthenticatedConnector(app) {
+                    return !!app.casType || (app.scope && app.scope.length > 0 && !!app.scope[0]);
+                };
+    
+                function isAuthenticatedConnectorFirstAccess(app) {
+                    return !scope.authenticatedConnectorsAccessed
+                        || (scope.authenticatedConnectorsAccessed && scope.authenticatedConnectorsAccessed.indexOf(app.name) == -1);
+                }
+                //public functions
+                scope.onClose = function () {
+                    scope.display.showAuthenticatedConnectorLightbox = false;
+                    _MUTEX = false;
+                }
+                scope.onConfirm = function () {
+                    scope.onClose();
+                    if (scope.authenticatedConnectorsAccessed) {
+                        scope.authenticatedConnectorsAccessed.push(_app.name);
+                    } else {
+                        scope.authenticatedConnectorsAccessed = [_app.name];
+                    }
+    
+                    var target = _app.target != null ? _app.target : '_self';
+    
+                    if (target != '_self') {
+                        http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
+                        window.open(_app.address, target);
+                    } else {
+                        (function()
+                        {
+                            http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed).done(function(){
+                                window.open(_app.address, target);
+                            });
+                        })();
+                    }
+                };
+                function openAppWithCheck (app) {
+                    if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
+                        if (_MUTEX == true) {
+                            return;
+                        }
+                        _MUTEX = true;
+                        scope.authenticatedConnectorClicked = app;
+                        scope.display.showAuthenticatedConnectorLightbox = true;
+                        scope.$apply();
+                    } else {
+                        if (app.target) {
+                            window.open(app.address, app.target);
+                        } else {
+                            window.open(app.address, '_self');
+                        }
+                    }
+                };
+                //init
+                init();
+            }
+        }
+    }]);
+    
+})();
+
 module.directive('pulsar', function($compile){
     return {
         restrict: 'A',
