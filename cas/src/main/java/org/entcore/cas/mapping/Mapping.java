@@ -130,4 +130,17 @@ public class Mapping {
         maping.extraPatterns.addAll(this.extraPatterns);
         return maping;
     }
+
+    @Override
+    public String toString() {
+        return "Mapping{" +
+                "type='" + type + '\'' +
+                ", casType='" + casType + '\'' +
+                ", pattern='" + pattern + '\'' +
+                ", patternCompiled=" + patternCompiled +
+                ", allStructures=" + allStructures +
+                ", structureIds=" + structureIds +
+                ", extraPatterns=" + extraPatterns +
+                '}';
+    }
 }
