@@ -164,6 +164,9 @@ export class SmartConnectorComponent extends OdeComponent implements OnInit, OnD
                     this.servicesStore.connector.id = res.id;
                     this.servicesStore.connector.structureId = this.servicesStore.structure.id;
                     this.servicesStore.structure.connectors.data.push(this.servicesStore.connector);
+                    this.subscriptions.add(this.servicesService
+                      .getCasTypes()
+                      .subscribe((res: CasType[]) => this.casTypes = res));
                     this.notifyService.success({
                       key: 'services.connector.create.success.content',
                       parameters: {connector: this.servicesStore.connector.displayName}

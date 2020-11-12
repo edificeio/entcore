@@ -111,12 +111,16 @@
                         <strong class="small-text" ng-bind-html="casDescription(externalApp.data.casType)"></strong>
                     </div>
                     <div class="row bottom-spacing">
+                        <label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("services.connector.cas.mapping")]]</span></label>
+                        <select class="six cell" ng-required="true" ng-model="externalApp.data.casMappingId" ng-options="mapping.type as mapping.type for mapping in casMappings" ng-change="onCasMappingChange()"></select>
+                    </div>
+                    <div class="row bottom-spacing">
                         <label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
-                        <select class="six cell" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
+                        <select class="six cell" ng-disabled="true" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
                     </div>
                     <div class="row" ng-if="isCentralAdmin()">
                         <label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
-                        <input type="text" ng-model="externalApp.data.pattern" class="six cell" i18n-placeholder="optional"/>
+                        <input type="text" ng-disabled="true" ng-model="externalApp.data.pattern" class="six cell" i18n-placeholder="optional"/>
                     </div>
                 </fieldset>
                 <fieldset>
