@@ -1,3 +1,4 @@
+
 function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
 
 	/////// VARS ///////
@@ -195,9 +196,45 @@ function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
 	/////// APPLICATIONS ///////
 	http().get('/appregistry/cas-types').done(function(data){
         $scope.casTypes = data
-    })
+	})
+	http().get("/cas/configuration/mappings").done(function(data){
+		$scope.casMappings = data;
+	})
+	function refreshCasMapping(){
+        if($scope.externalApp && $scope.externalApp.data && $scope.casMappings){
+			for(var i = 0 ; i < $scope.casMappings.length; i++){
+				var mapping = $scope.casMappings[i];
+				var model = $scope.externalApp.data;
+				if(mapping.casType== model.casType && mapping.pattern==model.pattern){
+					$scope.externalApp.data.casMappingId = mapping.type;
+				}
+			}
+        }
+	}
+	$scope.$watch("casMappings", refreshCasMapping);
+	$scope.$watch("externalApp.data", refreshCasMapping);
     $scope.casDescription = function(casType){
         return _.findWhere($scope.casTypes, {id: casType}).description
+	}
+	
+    $scope.onCasMappingChange= function(mappingId){
+		mappingId = mappingId || $scope.externalApp.data.casMappingId;
+		for(var i = 0 ; i < $scope.casMappings.length; i++){
+			if($scope.casMappings[i].type==mappingId){
+				_setMapping($scope.casMappings[i]);
+			}
+		}
+    }
+
+    function _setMapping(mapping){
+        if(mapping){
+            $scope.externalApp.data.pattern = mapping.pattern;
+            $scope.externalApp.data.casType = mapping.casType;
+        } else{
+            $scope.externalApp.data.casType = undefined;
+            $scope.externalApp.data.pattern = undefined;
+		}
+		$scope.$apply();
     }
 
 	$scope.application = new Application({ name: 'Application', displayName: 'application', external: true })
