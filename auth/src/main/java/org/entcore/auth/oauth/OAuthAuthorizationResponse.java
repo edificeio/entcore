@@ -26,10 +26,13 @@ import io.vertx.core.http.HttpServerRequest;
 public class OAuthAuthorizationResponse {
 
 	public static void code(HttpServerRequest request,
-			String redirectUri, String code, String state) {
+			String redirectUri, String code, String state, String nonce) {
 		String params = "code=" + code;
 		if (state != null && !state.trim().isEmpty()) {
 			params += "&state=" + state;
+		}
+		if (nonce != null && !nonce.trim().isEmpty()) {
+			params += "&nonce=" + nonce;
 		}
 		doRedirect(request, redirectUri, params);
 	}
