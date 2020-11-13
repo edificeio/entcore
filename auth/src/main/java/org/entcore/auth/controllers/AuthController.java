@@ -182,6 +182,7 @@ public class AuthController extends BaseController {
 		final String redirectUri = request.params().get("redirect_uri");
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
+		final String nonce = request.params().get("nonce");
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
 			if (isNotEmpty(scope)) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
@@ -201,7 +202,7 @@ public class AuthController extends BaseController {
 													@Override
 													public void handle(AuthInfo auth) {
 														if (auth != null) {
-															code(request, redirectUri, auth.getCode(), state);
+															code(request, redirectUri, auth.getCode(), state, nonce);
 														} else {
 															serverError(request, redirectUri, state);
 														}
