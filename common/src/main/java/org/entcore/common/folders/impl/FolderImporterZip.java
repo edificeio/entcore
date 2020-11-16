@@ -1,6 +1,8 @@
 package org.entcore.common.folders.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -14,12 +16,15 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
+import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
+import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.MimeTypeUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.FileValidator;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -32,7 +37,31 @@ public class FolderImporterZip {
     private final Vertx vertx;
     private final FolderManager manager;
     private final List<String> encodings = new ArrayList<>();
+    private final Optional<AntivirusClient> antivirusClient;
+    private final Optional<FileValidator> fileValidator;
     private Optional<String> guessedEncodingCache;
+
+    public FolderImporterZip(final Vertx v, final FolderManager aManager) {
+        this.vertx = v;
+        this.manager = aManager;
+        this.fileValidator = FileValidator.create(v);
+        this.antivirusClient =  AntivirusClient.create(v);
+        try {
+            encodings.add("UTF-8");
+            encodings.add("ISO-8859-1");
+            final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
+            if (encodingList != null) {
+                final JsonArray encodingJson = new JsonArray(encodingList);
+                for (final Object o : encodingJson) {
+                    if (!encodings.contains(o.toString())) {
+                        encodings.add(o.toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
 
     public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {
         if (guessedEncodingCache == null) {
@@ -51,31 +80,12 @@ public class FolderImporterZip {
         }
     }
 
-    public FolderImporterZip(final Vertx v, final FolderManager aManager) {
-        this.vertx = v;
-        this.manager = aManager;
-        try {
-            encodings.add("UTF-8");
-            encodings.add("ISO-8859-1");
-            final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
-            if (encodingList != null) {
-                final JsonArray encodingJson = new JsonArray(encodingList);
-                for (final Object o : encodingJson) {
-                    if (!encodings.contains(o.toString())) {
-                        encodings.add(o.toString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-
-        }
-    }
-
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, HttpServerRequest request) {
+        final String message = I18n.getInstance().translate("workspace.invalidfile.placeholder", Renders.getHost(request), I18n.acceptLanguage(request));
         final Future<FolderImporterZipContext> future = Future.future();
         request.uploadHandler(upload -> {
             if (!future.isComplete()) {
-                createContext(vertx, user, upload).setHandler(future.completer());
+                createContext(vertx, user, upload, message).setHandler(future.completer());
             }
         });
         request.exceptionHandler(res -> {
@@ -86,7 +96,7 @@ public class FolderImporterZip {
         return future;
     }
 
-    public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, ReadStream<Buffer> buffer) {
+    public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, ReadStream<Buffer> buffer, String invalidMessage) {
         final Future<FolderImporterZipContext> future = Future.future();
         final String name = UUID.randomUUID().toString() + ".zip";
         final String zipPath = Paths.get(System.getProperty("java.io.tmpdir"), name).normalize().toString();
@@ -97,7 +107,7 @@ public class FolderImporterZip {
                 final Pump pump = Pump.pump(buffer, file);
                 buffer.endHandler(r -> {
                     file.end();
-                    future.complete(new FolderImporterZipContext(zipPath, user));
+                    future.complete(new FolderImporterZipContext(zipPath, user, invalidMessage));
                 });
                 buffer.exceptionHandler(e -> {
                     file.end();
@@ -117,7 +127,23 @@ public class FolderImporterZip {
             return context.prepare;
         }
         context.prepare = Future.future();
-        getGuessedEncoding(context).setHandler(r -> {
+        final Future<Void> futureAntivirus = Future.future();
+        if(antivirusClient.isPresent()){
+            antivirusClient.get().scan(context.zipPath, futureAntivirus.completer());
+        } else {
+            logger.warn("Could not check zip because antivirus client is missing");
+            futureAntivirus.complete();
+        }
+        futureAntivirus.compose( r-> {
+            return getGuessedEncoding(context);
+        }).setHandler(r -> {
+            if(r.failed()){
+                final Throwable e = r.cause();
+                logger.warn("Failed to analyze zip :" + e.getMessage());
+                context.addError("", null, "workspace.import.zip.invalid", e.getMessage());
+                context.prepare.fail("workspace.import.zip.invalid");
+                return;
+            }
             final Optional<String> guessedEncoding = r.result();
             FileUtils.visitZip(vertx, context.zipPath, guessedEncoding, new SimpleFileVisitor<Path>() {
                 @Override
@@ -151,7 +177,40 @@ public class FolderImporterZip {
                     context.popAncestor();
                     return super.postVisitDirectory(dir, exc);
                 }
-            }, context.prepare.completer());
+            }, e -> {
+                if(e.succeeded()){
+                    if(this.fileValidator.isPresent()){
+                        final List<Future> futures = new ArrayList<>();
+                        for(final Map.Entry<String, FileInfo> entry : context.docToInsertById.entrySet()){
+                            final FileInfo info = entry.getValue();
+                            final String key = entry.getKey();
+                            final String name = Paths.get(info.path).getFileName().toString();
+                            final JsonObject meta = new JsonObject().put("filename", name).put("size", info.size);
+                            final JsonObject vContext = new JsonObject();
+                            final Future future = Future.future();
+                            this.fileValidator.get().process(meta,vContext, valid ->{
+                                if(valid.failed()){
+                                    final FileInfo copy = new FileInfo(info.data, info.size, info.path, true);
+                                    context.docToInsertById.put(key, copy);
+                                }
+                                future.complete();
+                            });
+                            futures.add(future);
+                        }
+                        CompositeFuture.all(futures).setHandler((ee)-> {
+                            if(ee.succeeded()){
+                                context.prepare.complete();
+                            } else {
+                                context.prepare.fail(ee.cause());
+                            }
+                        });
+                    } else {
+                        context.prepare.complete();
+                    }
+                } else {
+                    context.prepare.fail(e.cause());
+                }
+            });
         });
         return context.prepare;
     }
@@ -180,8 +239,16 @@ public class FolderImporterZip {
                                     final FileInfo info = found.get();
                                     final String currentName = path.getFileName().toString();
                                     final Path newPath = tempDir.resolve(currentName);
-                                    Files.copy(path, newPath);
-                                    newFiles.add(new FileInfo(info.data, info.size, newPath.toString()));
+                                    final long size = info.getRealSize(context);
+                                    final Path destPath;
+                                    if(info.invalid){
+                                        destPath = newPath.resolveSibling(newPath+".txt");
+                                        Files.write(destPath, context.invalidMessage.getBytes());
+                                    } else {
+                                        destPath = newPath;
+                                        Files.copy(path, destPath);
+                                    }
+                                    newFiles.add(new FileInfo(info.data, size, destPath.toString(), info.invalid));
                                 } else {
                                     logger.warn("Could not found path from prepared list:" + strPath);
                                 }
@@ -275,7 +342,7 @@ public class FolderImporterZip {
             final Future<Long> future = Future.future();
             long total = 0;
             for (final FileInfo info : context.docToInsertById.values()) {
-                total += info.size;
+                total += info.getRealSize(context);
             }
             future.complete(total);
             return future;
@@ -286,11 +353,21 @@ public class FolderImporterZip {
         private final JsonObject data;
         private final Long size;
         private final String path;
+        private final boolean invalid;
 
-        FileInfo(JsonObject d, Long s, String p) {
+        FileInfo(JsonObject d, Long s, String p, boolean invalid) {
             this.data = d;
             this.size = s;
             this.path = p;
+            this.invalid = invalid;
+        }
+
+        public long getRealSize(final FolderImporterZipContext context){
+            if(this.invalid){
+                return context.invalidMessage.length();
+            }else{
+                return this.size;
+            }
         }
     }
 
@@ -305,15 +382,17 @@ public class FolderImporterZip {
         private final Set<String> toClean = new HashSet<>();
         private Future<Void> prepare;
         private boolean cleanZip = false;
+        private final String invalidMessage;
 
-        public FolderImporterZipContext(final String aZipPath, UserInfos user) {
-            this(aZipPath, user.getUserId(), user.getUsername());
+        public FolderImporterZipContext(final String aZipPath, UserInfos user, String invalidMessage) {
+            this(aZipPath, user.getUserId(), user.getUsername(), invalidMessage);
         }
 
-        public FolderImporterZipContext(final String aZipPath, final String aUserId, final String aUserName) {
+        public FolderImporterZipContext(final String aZipPath, final String aUserId, final String aUserName, final String invalidMessage) {
             this.zipPath = aZipPath;
             this.userId = aUserId;
             this.userName = aUserName;
+            this.invalidMessage = invalidMessage;
         }
 
         public FolderImporterZipContext setRootFolder(final JsonObject parentFolder) {
@@ -333,7 +412,7 @@ public class FolderImporterZip {
             DocumentHelper.setFileName(document, fileName);
             final String id = UUID.randomUUID().toString();
             DocumentHelper.setId(document, id);
-            docToInsertById.put(id, new FileInfo(document, size, path.toString()));
+            docToInsertById.put(id, new FileInfo(document, size, path.toString(), false));
             return document;
         }
 

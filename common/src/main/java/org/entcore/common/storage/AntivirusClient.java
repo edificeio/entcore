@@ -20,8 +20,44 @@
 package org.entcore.common.storage;
 
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.storage.impl.FileStorage;
+import org.entcore.common.storage.impl.HttpAntivirusClient;
+
+import java.util.Optional;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public interface AntivirusClient {
 
 	void scan(String path);
 
+	void scan(String path, Handler<AsyncResult<Void>> handler);
+
+	static Optional<AntivirusClient> create(Vertx vertx){
+		try{
+			final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+			final String s = (String) server.get("file-system");
+			if (s != null) {
+				final JsonObject fs = new JsonObject(s);
+				final JsonObject antivirus = fs.getJsonObject("antivirus");
+				if (antivirus != null) {
+					final String h = antivirus.getString("host");
+					final String c = antivirus.getString("credential");
+					if (isNotEmpty(h) && isNotEmpty(c)) {
+						final AntivirusClient av = new HttpAntivirusClient(vertx, h, c);
+						return Optional.ofNullable(av);
+					}
+				}
+			}
+		} catch(Exception e){
+			LoggerFactory.getLogger(AntivirusClient.class).warn("Could not create antivirus client: ", e);
+		}
+		return Optional.empty();
+	}
 }

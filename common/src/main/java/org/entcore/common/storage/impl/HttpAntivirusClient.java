@@ -19,6 +19,8 @@
 
 package org.entcore.common.storage.impl;
 
+import fr.wseduc.webutils.DefaultAsyncResult;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.http.HttpClientOptions;
 import org.entcore.common.storage.AntivirusClient;
 import io.vertx.core.Handler;
@@ -49,18 +51,29 @@ public class HttpAntivirusClient implements AntivirusClient {
 
 	@Override
 	public void scan(final String path) {
+		this.scan(path, e -> {});
+	}
+
+	@Override
+	public void scan(String path, Handler<AsyncResult<Void>> handler){
 		HttpClientRequest req = httpClient.post("/infra/antivirus/scan", new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(HttpClientResponse resp) {
 				if (resp.statusCode() != 200) {
 					log.error("Error when call scan file : " + path);
+					final Exception exc = new Exception("Error when call scan file ("+resp.statusCode() +"): " + path);
+					handler.handle(new DefaultAsyncResult<>(exc));
+				} else {
+					handler.handle(new DefaultAsyncResult<>((Void)null));
 				}
 			}
 		});
 		req.putHeader("Content-Type", "application/json");
 		req.putHeader("Authorization", "Basic " + credential);
-		req.exceptionHandler(e -> log.error("Exception when call scan file : " + path, e));
+		req.exceptionHandler(e -> {
+			log.error("Exception when call scan file : " + path, e);
+			handler.handle(new DefaultAsyncResult<>(e));
+		});
 		req.end(new JsonObject().put("file", path).encode());
 	}
-
 }
