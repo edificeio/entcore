@@ -19,7 +19,33 @@
 package org.entcore.common.validation;
 
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.storage.AntivirusClient;
+
+import java.util.Optional;
 
 public abstract class FileValidator extends AbstractValidator<JsonObject, JsonObject> {
+
+    public static Optional<FileValidator> create(Vertx vertx) {
+        try {
+            final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+            final String s = (String) server.get("file-system");
+            if (s != null) {
+                final JsonObject fs = new JsonObject(s);
+                final FileValidator fileValidator = new QuotaFileSizeValidation();
+                final JsonArray blockedExtensions = fs.getJsonArray("blockedExtensions");
+                if (blockedExtensions != null && blockedExtensions.size() > 0) {
+                    fileValidator.setNext(new ExtensionValidator(blockedExtensions));
+                }
+                return Optional.of(fileValidator);
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(AntivirusClient.class).warn("Could not create file validator: ", e);
+        }
+        return Optional.empty();
+    }
 }
