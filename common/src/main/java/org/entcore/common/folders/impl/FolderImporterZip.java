@@ -244,6 +244,9 @@ public class FolderImporterZip {
                                     if(info.invalid){
                                         destPath = newPath.resolveSibling(newPath+".txt");
                                         Files.write(destPath, context.invalidMessage.getBytes());
+                                        //update filename and size
+                                        DocumentHelper.setFileName(info.data, destPath.getFileName().toString());
+                                        DocumentHelper.setFileSize(info.data, size);
                                     } else {
                                         destPath = newPath;
                                         Files.copy(path, destPath);

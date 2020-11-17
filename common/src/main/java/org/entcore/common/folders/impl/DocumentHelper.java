@@ -347,6 +347,12 @@ public class DocumentHelper {
 		return 0;
 	}
 
+	public static void setFileSize(JsonObject doc, long size) {
+		final JsonObject metadata = doc.getJsonObject("metadata", new JsonObject());
+		metadata.put("size", size);
+		doc.put("metadata", metadata);
+	}
+
 	public static long getFileSize(Collection<JsonObject> docs) {
 		return docs.stream().map(o -> DocumentHelper.getFileSize(o)).reduce(0l, (a1, a2) -> a1 + a2);
 	}
