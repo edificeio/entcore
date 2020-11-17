@@ -105,7 +105,7 @@ public class Structure {
 			String updateGroupsName =
 					"MATCH (s:Structure { externalId : {externalId}})<-[:DEPENDS]-(g:Group) " +
 					"WHERE s.checksum = {checksum} and last(split(g.name, '-')) IN " +
-					"['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'SCOLARITE'] " +
+					"['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
 					"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName} ";
 			getTransaction().add(updateGroupsName, struct.copy().put("sanitizeName", Validator.sanitize(struct.getString("name"))));
 		}
@@ -297,6 +297,25 @@ public class Structure {
 					.put("structureGroupExternalId", structureGroupExternalId)
 					.put("classGroupExternalId", classGroupExternalId);
 			getTransaction().add(linkParent, pl);
+		}
+	}
+
+	public void createDirectionGroupIfAbsent(String groupExternalId) {
+		if (groups.add(groupExternalId)) {
+			String query =
+					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
+					"CREATE s<-[:DEPENDS]-(c:Group:DirectionGroup {props}) " +
+					"SET c.source = s.source";
+			JsonObject params = new JsonObject()
+					.put("structureExternalId", externalId)
+					.put("props", new JsonObject()
+							.put("externalId", groupExternalId)
+							.put("id", UUID.randomUUID().toString())
+							.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
+							.put("name", struct.getString("name") + "-Direction")
+							.put("filter", "Direction")
+					);
+			getTransaction().add(query, params);
 		}
 	}
 

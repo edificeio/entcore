@@ -376,7 +376,7 @@ public class DefaultSchoolService implements SchoolService {
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct: Structure) " +
 			"  WITH distinct u, p, classes, structuresDup, " +
 			"  CASE WHEN duplicate IS NULL THEN [] ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
-			"  COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +
+			"  COLLECT (distinct {id: struct.id, name: struct.name, externalId: struct.externalId}) as structures " +
 			"OPTIONAL MATCH (u)-[:IN]->(fgroup: FunctionalGroup) " +
     		"  WITH distinct u, p, classes, structuresDup, duplicates, structures, CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups " +
 			"OPTIONAL MATCH (u)-[:IN]->(mgroup: ManualGroup) " +
@@ -399,7 +399,7 @@ public class DefaultSchoolService implements SchoolService {
 			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
 			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
-			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
+			"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
 			"ORDER BY lastName, firstName ";
 
 		JsonObject params = new JsonObject().put("structureId", structureId);
@@ -444,6 +444,7 @@ public class DefaultSchoolService implements SchoolService {
 
 		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) ");
 		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) ");
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(dirg:DirectionGroup) ");
 		query.append("RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, ");
 
 		if (getClassesForMonoEtabOnly) {
@@ -454,7 +455,10 @@ public class DefaultSchoolService implements SchoolService {
 			query.append("FILTER(c IN COLLECT(DISTINCT { id: c.id, name: c.name}) WHERE NOT(c.id IS NULL)) as classes, ");
 		}
 
-		query.append("CASE WHEN LENGTH(COLLECT(distinct htg)) = 0 THEN COLLECT(DISTINCT fg.filter) ELSE COLLECT(DISTINCT fg.filter) + 'HeadTeacher' END as functions, ");
+		query.append("COLLECT(DISTINCT fg.filter) " +
+									" + CASE WHEN LENGTH(COLLECT(distinct htg)) = 0 THEN [] ELSE 'HeadTeacher' END " +
+									" + CASE WHEN LENGTH(COLLECT(distinct dirg)) = 0 THEN [] ELSE 'Direction' END " +
+									" as functions, ");
 		query.append("['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, ");
 		query.append("['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes");
 

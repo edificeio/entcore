@@ -42,8 +42,8 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         this.usersStore.user = null;
         this.newUser.classes = null;
         this.newUser.type = 'Personnel';
-        const {id, name} = this.usersStore.structure;
-        this.newUser.structures = [{id, name}];
+        const {id, name, externalId} = this.usersStore.structure;
+        this.newUser.structures = [{id, name, externalId}];
         this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
 
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {

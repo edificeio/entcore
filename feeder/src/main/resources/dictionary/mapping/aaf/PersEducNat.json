@@ -16,6 +16,7 @@
 	"ENTAuxEnsClassesMatieres" : { "attribute" : "classes", "type" : "array-classe-group-fieldOfStudy", "prefix" : true },
 	"ENTAuxEnsGroupesMatieres" : { "attribute" : "groups", "type" : "array-classe-group-fieldOfStudy", "prefix" : true },
 	"ENTAuxEnsClassesPrincipal" : { "attribute" : "headTeacher", "type" : "array-string", "prefix" : true },
+	"ENTEnsFonctionDir" : { "attribute": "direction", "type": "array-string", "prefix": true },
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"PersEducNatPresenceDevantEleves" : { "attribute" : "teaches", "type" : "boolean" },
 	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" },
