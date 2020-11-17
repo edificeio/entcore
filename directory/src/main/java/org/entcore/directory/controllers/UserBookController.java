@@ -77,8 +77,8 @@ public class UserBookController extends BaseController {
 	private UserBookService userBookService;
 	private EventStore eventStore;
 	private ConversationNotification conversationNotification;
-	private enum DirectoryEvent { ACCESS }
-	private static final String ANNUAIRE_MODULE = "Annuaire";
+	protected enum DirectoryEvent { ACCESS }
+	protected static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
 
 
@@ -143,6 +143,7 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void monCompte(HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "MyAccount"));
 	}
 
 	@Get("/birthday")
