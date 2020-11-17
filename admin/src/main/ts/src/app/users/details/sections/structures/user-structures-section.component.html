@@ -28,6 +28,25 @@
       <i class="fa fa-times action" (click)="removeStructure(structure)"
          [title]="'delete.this.structure' | translate"
          [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
+      <span class="direction-buttons"
+            *ngIf="!details.isDirectionFromAAF(structure.externalId)">
+                        <button class="noflex"
+                                *ngIf="!details.isDirectionManual(structure.externalId)"
+                                (click)="addDirectionManual(structure.id, structure.externalId)">
+                            <s5l>directionManual.add</s5l>
+                        </button>
+                        <button *ngIf="details.isDirectionManual(structure.externalId)"
+                                (click)="removeDirectionManual(structure.id, structure.externalId)">
+                            <s5l>directionManual.remove</s5l>
+                        </button>
+                    </span>
+      <span class="direction-buttons"
+            *ngIf="details.isDirectionFromAAF(structure.externalId)"
+            [tooltip]="'direction.aaf.detail' | translate">
+                         <button disabled>
+                            <s5l>directionManual.remove</s5l>
+                        </button>
+                    </span>
     </li>
     <li *ngFor="let structure of user.visibleRemovedStructures()">
       <span><s>{{ structure.name }}</s></span>

@@ -484,6 +484,24 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void addDirectionManual(String id,String structureExternalId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-add-direction")
+				.put("userId", id)
+				.put("structureExternalId", structureExternalId);
+		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+	}
+
+	@Override
+	public void removeDirectionManual(String id,String structureExternalId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-remove-direction")
+				.put("userId", id)
+				.put("structureExternalId", structureExternalId);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+	}
+
+	@Override
 	public void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-remove-user-function")

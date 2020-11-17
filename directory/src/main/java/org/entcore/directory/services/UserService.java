@@ -73,6 +73,10 @@ public interface UserService {
 
 	void updateHeadTeacherManual(String id, String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result);
 
+	void addDirectionManual(String id, String structureExternalId, Handler<Either<String, JsonObject>> result);
+
+	void removeDirectionManual(String id, String structureExternalId, Handler<Either<String, JsonObject>> result);
+
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);
 
 	void listFunctions(String userId, Handler<Either<String, JsonArray>> handler);

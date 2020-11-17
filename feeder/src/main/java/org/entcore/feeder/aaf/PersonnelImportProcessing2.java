@@ -71,6 +71,7 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 		}
 		createFunctionGroups(object.getJsonArray("functions"), groups);
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), groups);
+		createDirectionGroups(object.getJsonArray("direction"), groups);
 		importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,
 				classes, groups.toArray(new String[][]{}), false, true);
 	}

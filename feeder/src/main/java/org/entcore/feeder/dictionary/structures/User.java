@@ -464,6 +464,10 @@ public class User {
 				"MATCH (u:User { id : {userId}}) WHERE HAS(u.headTeacherManual) " +
 				"REMOVE u.headTeacherManual ";
 		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}}) WHERE HAS(u.directionManual) " +
+				"REMOVE u.directionManual ";
+		transaction.add(query, params);
 	}
 
 	public static void getDelete(long delay, int limit, TransactionHelper transactionHelper) {
@@ -553,6 +557,49 @@ public class User {
 		String query3 =
 				"MATCH (u:User { id : {userId}})-[r:IN |COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure {externalId : {structureExternalId}}) " +
 				"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+				"DELETE r ";;
+
+		transactionHelper.add(query3, params);
+	}
+
+	public static void addDirectionManual(String userId,String structureExternalId, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("structureExternalId", structureExternalId);
+
+		String query =
+				"MERGE (u:User { id: {userId} })" +
+				"FOREACH(x in CASE WHEN {structureExternalId} in u.directionManual THEN [] ELSE [1] END | " +
+				"SET u.directionManual = coalesce(u.directionManual,[]) + {structureExternalId} " +
+				") " +
+				"RETURN u.directionManual";
+
+		transactionHelper.add(query, params);
+
+		String query3 =
+				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:DirectionGroup) " +
+				"MERGE u-[:IN]->g " +
+				"MERGE g-[:COMMUNIQUE]->u";
+		;
+		transactionHelper.add(query3, params);
+	}
+
+
+	public static void removeDirectionManual(String userId,String structureExternalId, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("structureExternalId", structureExternalId);
+
+		String query =
+				"MATCH (u:User) " +
+				"WHERE HAS(u.directionManual) AND u.id = {userId} " +
+				"SET u.directionManual = FILTER(x IN u.directionManual WHERE x <> {structureExternalId}) " +
+				"RETURN u.directionManual";
+
+		transactionHelper.add(query, params);
+
+		String query3 =
+				"MATCH (u:User { id : {userId}})-[r:IN |COMMUNIQUE]->(g:Group:DirectionGroup)-[:DEPENDS]->(s:Structure {externalId : {structureExternalId}}) " +
 				"DELETE r ";;
 
 		transactionHelper.add(query3, params);
