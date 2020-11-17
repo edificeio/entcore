@@ -65,9 +65,8 @@ public class PortalController extends BaseController {
 	private Map<String, JsonArray> themesDetails;
 	private Map<String, String> hostSkin;
 	private String assetsPath;
-	private EventStore eventStore, adminConsoleEventStore;
+	private EventStore eventStore;
 	private enum PortalEvent { ACCESS_ADAPTER, ACCESS }
-	private static final String ADMIN_CONSOLE_MODULE = "AdminConsole";
 	private String defaultSkin;
 	private JsonObject defaultTracker;
 
@@ -119,7 +118,6 @@ public class PortalController extends BaseController {
 		}
 		defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-		adminConsoleEventStore = EventStoreFactory.getFactory().getEventStore(ADMIN_CONSOLE_MODULE);
 		vertx.sharedData().getLocalMap("server").put("assetPath", assetsPath);
 	}
 
@@ -444,15 +442,5 @@ public class PortalController extends BaseController {
 			default: log.error("Archive : invalid action " + action);
 		}
 	}
-
-	/*
-	@Get("/admin")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
-	public void admin(HttpServerRequest request) {
-		redirectPermanent(request, "/directory/admin-console");
-		adminConsoleEventStore.createAndStoreEvent(PortalEvent.ACCESS.name(), request);
-	}
-	*/
 
 }
