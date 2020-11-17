@@ -5,13 +5,13 @@
 	"address" : "wse.communication",
 	"initDefaultCommunicationRules" : {
 		"Structure-Personnel" : {
-			"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher"]
+			"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher", "Structure-Direction"]
 		},
 		"Structure-Teacher" : {
-			"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher"]
+			"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher", "Structure-Direction"]
 		},
 		"Structure-Student" : {"users" : "OUTGOING"},
-		"Structure-Relative" : {"users" : "OUTGOING"},
+		"Structure-Relative" : {"users" : "OUTGOING", "communiqueWith": ["Structure-Direction"]},
 		"Class-Personnel" : {"users" : "OUTGOING"},
 		"Class-Teacher" : {"users" : "OUTGOING"},
 		"Class-Student" : {

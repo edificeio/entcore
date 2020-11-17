@@ -450,6 +450,33 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Post("/:structure/user/:userId/direction")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructures.class)
+	@IgnoreCsrf
+	public void addDirectionManual(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		bodyToJson(request, pathPrefix + "addDirection", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				userService.addDirectionManual(userId, event.getString("structureExternalId"), defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/:structure/user/:userId/direction")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructures.class)
+	public void removeDirectionManual(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		bodyToJson(request, pathPrefix + "removeDirection", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+			userService.removeDirectionManual(userId, event.getString("structureExternalId"), defaultResponseHandler(request));
+			}
+		});
+	}
+
 
 	@Delete("/user/function/:userId/:function")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

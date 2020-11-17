@@ -3,7 +3,7 @@ import {UserModel} from './user.model';
 
 export type InternalCommunicationRule = 'BOTH' | 'INCOMING' | 'OUTGOING' | 'NONE';
 
-export type GroupType = 'ProfileGroup' | 'FunctionalGroup' | 'ManualGroup' | 'CommunityGroup' | 'FunctionGroup' | 'HTGroup';
+export type GroupType = 'ProfileGroup' | 'FunctionalGroup' | 'ManualGroup' | 'CommunityGroup' | 'FunctionGroup' | 'HTGroup' | 'DirectionGroup';
 
 export class GroupModel extends Model<GroupModel> {
 

@@ -107,4 +107,42 @@ export class UserStructuresSectionComponent extends AbstractSection implements O
             })
         );
     }
+
+    /**
+     * Ajout du droit de direction
+     */
+    addDirectionManual(structureId: string, externalId: string) {
+        this.spinner.perform('portal-content', this.details.addDirectionManual(structureId, externalId))
+            .then(() => {
+                this.ns.success({
+                    key: 'notify.user.add.direction.content',
+                    parameters: {user: this.user.firstName + ' ' + this.user.lastName}
+                }, 'notify.user.add.direction.title');
+                this.cdRef.markForCheck();
+            }).catch(err => {
+            this.ns.error({
+                key: 'notify.user.add.direction.error.content',
+                parameters: {user: this.user.firstName + ' ' + this.user.lastName}
+            }, 'notify.user.add.direction.error.title', err);
+        });
+    }
+
+    /**
+     * Suppression du droit de direction
+     */
+    removeDirectionManual(structureId: string, externalId: string) {
+        this.spinner.perform('portal-content', this.details.removeDirectionManual(structureId, externalId))
+            .then(() => {
+                this.ns.success({
+                    key: 'notify.user.remove.direction.content',
+                    parameters: {user: this.user.firstName + ' ' + this.user.lastName}
+                }, 'notify.user.remove.direction.title');
+                this.cdRef.markForCheck();
+            }).catch(err => {
+            this.ns.error({
+                key: 'notify.user.remove.direction.error.content',
+                parameters: {user: this.user.firstName + ' ' + this.user.lastName}
+            }, 'notify.user.remove.direction.error.title', err);
+        });
+    }
 }

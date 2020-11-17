@@ -10,7 +10,7 @@
 	"ENTPersonMail" : { "attribute" : "email", "type" : "string" },
 	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string", "prefix" : true },
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
-	"ENTEnsFonctionDir" : { "attribute" : "deprecated", "type" : "array-string" },
+	"ENTEnsFonctionDir" : { "attribute": "direction", "type": "array-string", "prefix": true },
 	"ENTEnsSpecialites" : { "attribute" : "deprecated", "type" : "array-string" },
 	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" }
 }

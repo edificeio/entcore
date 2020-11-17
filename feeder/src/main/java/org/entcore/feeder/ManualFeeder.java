@@ -956,6 +956,30 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void addUserDirectionManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String structureExternalId = message.body().getString("structureExternalId");
+		if (userId == null || structureExternalId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.addDirectionManual(userId,structureExternalId, tx);
+			}
+		});
+	}
+
+	public void removeUserDirectionManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String structureExternalId = message.body().getString("structureExternalId");
+		if (userId == null || structureExternalId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.removeDirectionManual(userId, structureExternalId, tx);
+			}
+		});
+	}
+
 	public void removeUserFunction(Message<JsonObject> message) {
 		final String userId = getMandatoryString("userId", message);
 		final String function = message.body().getString("function");
@@ -1109,7 +1133,7 @@ public class ManualFeeder extends BusModBase {
 						"SET s.manualName = ({name} <> s.name), s.name = {name} " +
 						"WITH s " +
 						"MATCH (s)<-[:DEPENDS]-(g:Group) " +
-						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'SCOLARITE'] " +
+						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
 						"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
 				params.put("sanitizeName", Validator.sanitize(s.getString("name")));
 			}

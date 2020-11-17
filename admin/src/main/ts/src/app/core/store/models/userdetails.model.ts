@@ -36,6 +36,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     teaches: boolean;
     headTeacher?: Array<string>;
     headTeacherManual?: Array<string>;
+    direction?: Array<string>;
+    directionManual?: Array<string>;
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>;
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>;
     functionalGroups?: GroupModel[];
@@ -122,6 +124,25 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         });
     }
 
+    addDirectionManual(structureId: string, structureExternalId: string) {
+        return this.http.post(`/directory/${structureId}/user/${this.id}/direction`, {
+            structureExternalId
+        }).then(async (res) => {
+            if (this.directionManual === undefined) {
+                this.directionManual = [];
+            }
+            this.directionManual.push(structureExternalId);
+        });
+    }
+
+    removeDirectionManual(structureId: string, structureExternalId: string) {
+        return this.http.put(`/directory/${structureId}/user/${this.id}/direction`, {
+            structureExternalId
+        }).then(() => {
+            this.directionManual.splice(this.directionManual.findIndex((f) => f === structureExternalId), 1);
+        });
+    }
+
     addAdml(structureId) {
         return this.http.post(`/directory/user/function/${this.id}`, {
             functionCode: 'ADMIN_LOCAL',
@@ -196,6 +217,29 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         if (this.headTeacherManual && this.headTeacherManual.length > 0) {
             const headTeacherManuelIndex = this.headTeacherManual.findIndex((f) => f === classe.externalId);
             return (headTeacherManuelIndex >= 0);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Détermine si l'utilisateur est directeur venant de l'AAF
+     * @param {string} structureExternalId
+     * @returns {boolean}
+     */
+    isDirectionFromAAF(structureExternalId: string) {
+        if (this.direction && this.direction.length > 0) {
+            const directionIndex = this.direction.findIndex((f) => f === structureExternalId);
+            return (directionIndex >= 0);
+        } else {
+            return false;
+        }
+    }
+
+    isDirectionManual(structureExternalId: string) {
+        if (this.directionManual && this.directionManual.length > 0) {
+            const directionIndex = this.directionManual.findIndex((f) => f === structureExternalId);
+            return (directionIndex >= 0);
         } else {
             return false;
         }

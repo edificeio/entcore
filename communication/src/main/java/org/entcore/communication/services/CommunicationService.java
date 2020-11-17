@@ -37,7 +37,7 @@ public interface CommunicationService {
 	String WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communicate";
 	
 	List<String> EXPECTED_TYPES = Arrays.asList(
-			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup");
+			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup", "DirectionGroup");
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { INCOMING, OUTGOING, BOTH, NONE }

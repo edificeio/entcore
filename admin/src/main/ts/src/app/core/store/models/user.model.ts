@@ -41,7 +41,7 @@ export class UserModel extends Model<UserModel> {
     functionalGroups: string[] = [];
     manualGroups: string[] = [];
     functions?: Array<[string, Array<string>]> = [];
-    structures: { id: string, name: string }[] = [];
+    structures: { id: string, name: string, externalId: string }[] = [];
     classes: Classe[] = [];
     duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[] = [];
     deleteDate?: number;
@@ -64,7 +64,7 @@ export class UserModel extends Model<UserModel> {
             .then(() => {
                 const targetStructure = globalStore.structures.data.find(s => s.id === structureId);
                 if (targetStructure) {
-                    this.structures.push({id: targetStructure.id, name: targetStructure.name});
+                    this.structures.push({id: targetStructure.id, name: targetStructure.name, externalId: null});
                     if (targetStructure.users.data.length > 0)
                     {
                         targetStructure.users.data.push(this);

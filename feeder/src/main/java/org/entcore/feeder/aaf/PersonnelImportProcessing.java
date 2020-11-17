@@ -30,8 +30,15 @@ import io.vertx.core.json.JsonObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
+
+	protected static final List<String> DIRECTION_FONCTIONS = Arrays.asList(
+		"DIRECTION CHEF D'ETABLISSEMENT",
+		"DIRECTION CHEF D&apos;ETABLISSEMENT",
+		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT"
+	);
 
 	protected PersonnelImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
@@ -54,6 +61,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
+		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
 		String profile = detectProfile(object);
 		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
@@ -166,6 +174,9 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 						} else if (!"-".equals(g[1])) {
 							groupExternalId = s.getExternalId() + "$" + g[1];
 							s.createFunctionGroupIfAbsent(groupExternalId, g[2], "Func");
+
+							if(DIRECTION_FONCTIONS.contains(g[4]) == true)
+								createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
 						} else {
 							continue;
 						}
@@ -202,6 +213,25 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 							classGroup[1] = classGroupExternalId;
 							linkStructureGroups.add(classGroup);
 						}
+					}
+				}
+			}
+		}
+	}
+
+	protected void createDirectionGroups(JsonArray direction, List<String[]> linkStructureGroups) {
+		if (direction != null && direction.size() > 0) {
+			for (Object o: direction) {
+				if (!(o instanceof String)) continue;
+				Structure s = importer.getStructure((String)o);
+				if (s != null) {
+					String structureGroupExternalId = s.getExternalId() + "-dir";
+					s.createDirectionGroupIfAbsent(structureGroupExternalId);
+					if (linkStructureGroups != null) {
+						final String[] structureGroup = new String[2];
+						structureGroup[0] = s.getExternalId();
+						structureGroup[1] = structureGroupExternalId;
+						linkStructureGroups.add(structureGroup);
 					}
 				}
 			}
