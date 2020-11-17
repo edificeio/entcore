@@ -31,6 +31,8 @@ import fr.wseduc.webutils.security.BCrypt;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -66,6 +68,7 @@ public class DirectoryController extends BaseController {
 	private UserService userService;
 	private GroupService groupService;
 	private SlotProfileService slotProfileService;
+	private EventStore eventStore;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -73,6 +76,7 @@ public class DirectoryController extends BaseController {
 		this.neo = new Neo(vertx, eb,log);
 		this.config = config;
 		this.admin = new JsonObject(vertx.fileSystem().readFileBlocking("super-admin.json").toString());
+		eventStore = EventStoreFactory.getFactory().getEventStore(UserBookController.ANNUAIRE_MODULE);
 	}
 
 	@Get("/admin-console")
@@ -86,6 +90,7 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("classadmin.address")
 	public void classAdmin(HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(UserBookController.DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "ClassParam"));
 	}
 
 	@Get("/class-admin/:userId")
