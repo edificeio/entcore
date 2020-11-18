@@ -21,6 +21,7 @@ package org.entcore.common.neo4j;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -106,7 +107,15 @@ public class Neo4jRestNodeClient {
 						}
 					}
 				});
-				req.exceptionHandler(e -> logger.error("Neo4j Health check failed", e));
+				req.exceptionHandler(e -> {
+					if (e instanceof VertxException && "Connection was closed".equals(e.getMessage())) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Neo4j Health check failed", e);
+						}
+					} else {
+						logger.error("Neo4j Health check failed", e);
+					}
+				});
 				prepareRequest(req).end();
 			} else {
 				unavailableNode(idx);
