@@ -1,4 +1,4 @@
-import { ng, _ } from 'entcore';
+import { angular, idiom, ng, _ } from 'entcore';
 import http from 'axios';
 
 /**
@@ -15,7 +15,7 @@ import http from 'axios';
         update-found-items="<function>(search, model, founds)">
     </recipient-list>
  */
-export const recipientList = ng.directive('recipientList', () => {
+export const recipientList = ng.directive('recipientList', ['CounterService', (svcCounter) => {
     return {
         restrict: 'E',
         template: `
@@ -30,11 +30,13 @@ export const recipientList = ng.directive('recipientList', () => {
                 </label>
                 <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px" ng-if="loading"/>
                 <form class="input-help" ng-submit="update(true)">
-                    <input class="chip-input right-magnet" type="text" ng-model="search.text" ng-change="update()" autocomplete="off" ng-class="{ move: search.text.length > 0 }" 
+										<input class="chip-input right-magnet" type="text" ng-model="search.text" ng-change="update()" autocomplete="off" ng-class="{ move: search.text.length > 0 }" 
+										aria-autocomplete="list" aria-expanded="[[isDropDownVisible()]]" aria-controls="[[idOfDataDropDown]]" aria-haspopup="listbox"
                     i18n-placeholder="[[restriction ? 'share.search.help' : 'share.search.placeholder' ]]"
                     />    
                 </form>
                 <drop-down
+										list-id="[[idOfDataDropDown]]"
                     options="itemsFound"
                     ng-change="addItem()"
                     on-close="clearSearch()"
@@ -66,6 +68,13 @@ export const recipientList = ng.directive('recipientList', () => {
             scope.sharebookmark = {
                 excluded: []
             }
+						scope.idOfDataDropDown = "dd-id-for-aria-" + svcCounter.increase();
+						var statusId = "status-id-for-aria-" + svcCounter.increase();
+						var indexOfFocusedOption = -1;
+						// True if DropDown is considered visible
+						scope.isDropDownVisible = function() {
+							return angular.isArray(scope.itemsFound) && scope.itemsFound.length > 0;
+						}
 
             element.find('input').on('focus', () => {
                 if (firstFocus)
@@ -82,16 +91,60 @@ export const recipientList = ng.directive('recipientList', () => {
                     if (!scope.focused) {
                         element.find('form').width(0);
                         scope.itemsFound = [];
+												scope.$apply('itemsFound');
                     }
                 }, 250);
             });
 
+						// Begin: ARIA support : Let the dropdown be accessible, without loosing focus (using up and down arrow)
+						scope.ariaReader = angular.element('<span id="'+statusId+'" role="status" aria-live="polite" style="width:0; height:0; opacity:0; border:0; margin:0; padding:0;"></span>');
+						element.append( scope.ariaReader );
+						element.find('input').attr( 'aria-controls', statusId).attr( 'aria-label', idiom.translate('recipient') );
+
+						var ariaLive = function() {
+							if( indexOfFocusedOption<0 ) {
+								indexOfFocusedOption = -1;
+								scope.ariaReader.text("");
+							} else if( indexOfFocusedOption >= scope.itemsFound.length ) {
+								indexOfFocusedOption = scope.itemsFound.length-1;
+							}
+							if( indexOfFocusedOption >= 0 ) {
+								scope.currentReceiver = scope.itemsFound[indexOfFocusedOption];
+								scope.ariaReader.text( scope.currentReceiver.toString() );
+							}
+							scope.$apply('indexOfFocusedOption');
+						}
+						// End: ARIA support						
+
             element.find('input').on('keydown', function (e) {
-                if (e.keyCode === 8 && scope.search.text && scope.search.text.length === 0) { // BackSpace
+                if (e.keyCode === 8 && typeof scope.search.text === "string" && scope.search.text.length === 0) { // BackSpace
                     var nb = scope.ngModel.length;
                     if (nb > 0)
                         scope.deleteItem(scope.ngModel[nb - 1]);
-                }
+								}
+								// Begin: ARIA support : navigating by keyboard and allowing screen-readers
+								else if( e.keyCode === 40 && scope.isDropDownVisible() ) { // Down arrow)
+									// Move pseudo-focus farther in DropDown list
+									indexOfFocusedOption = Math.min( ++indexOfFocusedOption, scope.itemsFound.length - 1 );
+									ariaLive();
+									e.preventDefault();
+								} else if( e.keyCode === 38 && scope.isDropDownVisible() ) { // Up arrow)
+									// Move pseudo-focus closer in DropDown list
+									indexOfFocusedOption = Math.max( --indexOfFocusedOption, -1 );
+									ariaLive();
+									e.preventDefault();
+								} else if( e.keyCode === 13 && scope.isDropDownVisible() ) { // Enter)
+									if( 0<=indexOfFocusedOption && indexOfFocusedOption < scope.itemsFound.length ) {
+										scope.addItem();
+										let tmp = scope.focused;
+										scope.focused = false;
+										scope.clearSearch();
+										scope.focused = tmp;
+									}
+								} else {
+									indexOfFocusedOption = -1;
+								}
+								// End: ARIA support
             });
 
             //prevent blur when look for more users in dropDown
@@ -215,6 +268,7 @@ export const recipientList = ng.directive('recipientList', () => {
             };
 
             scope.clearSearch = () => {
+								indexOfFocusedOption = -1;
                 if (!scope.focused) {
                     scope.search.text = '';
                     scope.itemsFound = [];
@@ -248,4 +302,4 @@ export const recipientList = ng.directive('recipientList', () => {
             }, 0);
         }
     };
-});
+}]);

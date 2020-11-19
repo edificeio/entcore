@@ -102,7 +102,14 @@
             <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
         </div>
 		<editor class="no-margin-all" ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
-	</div>
+		<div class="row">
+			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
+					|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+					|| sending">
+					<i18n>submit</i18n>
+			</button>
+		</div>
+</div>
     <div class="row drop-down-block" ng-class="{slided: signatureShow}">
 		<div class="drop-down-label">
 			<div class="twelve cell bottom-spacing" pulsar-highlight="7">

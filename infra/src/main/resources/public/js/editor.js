@@ -3063,8 +3063,8 @@ window.RTE = (function () {
 				return {
 					restrict: 'E',
 					template: '' +
-						'<button type="button" class="editor-toolbar-opener"></button>' +
-						'<button type="button" class="close-focus">OK</button>' +
+						'<button type="button" class="editor-toolbar-opener" tabindex="-1"></button>' +
+						'<button type="button" class="close-focus" tabindex="-1">OK</button>' +
 						'<editor-toolbar></editor-toolbar>' +
 						'<contextual-menu><ul></ul></contextual-menu>' +
 						'<popover>' +
@@ -3077,9 +3077,9 @@ window.RTE = (function () {
 						'</ul>' +
 						'</popover-content>' +
 						'</popover>' +
-						'<div><div contenteditable="true"></div></div>' +
-						'<textarea></textarea>' +
-						'<code class="language-html"></code>',
+						'<div><div role="textbox" contenteditable="true" aria-label="[[lang.translate(\'aria.message.content\')]]" aria-multiline="true"></div>' +
+						'<textarea tabindex="-1"></textarea>' +
+						'<code class="language-html" tabindex="-1"></code>',
 					link: function (scope, element, attributes) {
 						if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
 							element.find('code').hide();
