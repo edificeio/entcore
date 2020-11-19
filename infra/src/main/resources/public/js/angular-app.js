@@ -4872,6 +4872,137 @@ module.directive('attachments', function($parse) {
     }
 });
 
+module.directive('lightAttachments', function($parse) {
+    return {
+        scope: true,
+        restrict: 'E',
+        templateUrl: '/' + infraPrefix + '/public/template/attachments.html',
+        controller: function($scope) {
+            $scope.linker = {
+                resource: {}
+            }
+            $scope.attachments = {
+                me: model.me,
+                display: {
+                    search: {
+                        text: '',
+                        application: {}
+                    },
+                    pickFile: false
+                },
+                addAttachment: function(resource) {
+                    resource.provider = $scope.attachments.display.search.application;
+                    if ($scope.ngModel($scope) instanceof Array) {
+                        $scope.ngModel($scope).push(resource);
+                    } else {
+                        $scope.ngModel.assign($scope, [resource]);
+                    }
+                    $scope.attachments.display.pickFile = false;
+                },
+                removeAttachment: function(resource) {
+                    $scope.ngModel.assign($scope, _.reject($scope.ngModel($scope), function(item) {
+                        return item === resource;
+                    }));
+                },
+                attachmentsList: function() {
+                    $scope.list = $scope.ngModel($scope);
+                    return $scope.list;
+                }
+            };
+        },
+        link: function(scope, element, attributes) {
+            scope.ngModel = $parse(attributes.ngModel);
+            scope.attachments.onChange = function() {
+                scope.$eval(attributes.onChange);
+            };
+            scope.apps = scope.$eval(attributes.apps);
+            scope.$watch(
+                function() {
+                    return scope.attachments.display.pickFile
+                },
+                function(newVal) {
+                    if (newVal) {
+                        scope.attachments.loadApplicationResources(function() {
+                            scope.attachments.searchApplication();
+                            scope.attachments.display.search.text = ' ';
+                            scope.$apply('attachments');
+                        });
+                    } else {
+                        scope.attachments.display.search.text = '';
+                    }
+                },
+                true
+            );
+
+            http().get('/resources-applications').done(function(apps) {
+                scope.attachments.apps = _.filter(model.me.apps, function(app) {
+                    return _.find(apps, function(match) {
+                        return app.address.indexOf(match) !== -1 && app.icon
+                    }) && _.find(scope.apps, function(match) {
+                        return app.address.indexOf(match) !== -1
+                    });
+                });
+
+                scope.attachments.display.search.application = scope.attachments.apps[0];
+                scope.attachments.loadApplicationResources(function() {});
+
+                scope.$apply('attachments');
+            });
+
+            scope.attachments.loadApplicationResources = function(cb) {
+                if (!cb) {
+                    cb = function() {
+                        scope.attachments.display.searchApplication();
+                        scope.$apply('attachments');
+                    };
+                }
+
+                var split = scope.attachments.display.search.application.address.split('/');
+                scope.prefix = split[split.length - 1];
+
+                Behaviours.loadBehaviours(scope.prefix, function(appBehaviour) {
+                    //appBehaviour.loadResources(cb);
+                    scope.attachments.addResource = appBehaviour.create;
+                });
+            };
+
+            scope.attachments.searchApplication = function() {
+                var split = scope.attachments.display.search.application.address.split('/');
+                scope.prefix = split[split.length - 1];
+
+                Behaviours.loadBehaviours(scope.prefix, function(appBehaviour) {
+                    scope.attachments.resources = _.filter(appBehaviour.resources, function(resource) {
+                        return scope.attachments.display.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.attachments.display.search.text).toLowerCase()) !== -1 ||
+                            resource._id === scope.attachments.display.search.text);
+                    });
+                });
+            };
+
+            scope.linker.createResource = function() {
+                var split = scope.attachments.display.search.application.address.split('/');
+                var prefix = split[split.length - 1];
+
+                Behaviours.loadBehaviours(prefix, function(appBehaviour) {
+                    var backup = appBehaviour.loadResources;
+                    appBehaviour.loadResources = function(cb){
+                        cb && cb();
+                    }
+                    appBehaviour.create(scope.linker.resource, function(rr, newResource) {
+                        appBehaviour.loadResources = backup;
+                        if (!(scope.ngModel(scope) instanceof Array)) {
+                            scope.ngModel.assign(scope, []);
+                        }
+                        newResource.title = newResource.name;
+                        scope.attachments.display.pickFile = false;
+                        scope.ngModel(scope).push(newResource);
+                        scope.$apply();
+                    });
+                });
+            };
+        }
+    }
+});
+
 module.directive('wizard', function() {
     return {
         restrict: 'E',
