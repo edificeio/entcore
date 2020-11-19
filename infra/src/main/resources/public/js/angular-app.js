@@ -1894,15 +1894,16 @@ module.directive('dropDown', function($compile, $timeout) {
     return {
         restrict: 'E',
         scope: {
+						listId: "=?",				// HTML id of the inner list container (required for ARIA)
             options: '=',
             ngChange: '&',
             onClose: '&',
             ngModel: '='
         },
         template: '<div data-drop-down class="drop-down">' +
-            '<div>' +
+            '<div role="listbox">' +
             '<ul class="ten cell right-magnet">' +
-            '<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
+            '<li ng-repeat="option in options | limitTo:limit" ng-model="option" ng-class="{alert: option === ngModel}">[[option.toString()]]</li>' +
             '<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">' + lang.translate('seemore') + '</li>' +
             '</ul>' +
             '</div>' +
@@ -1911,6 +1912,11 @@ module.directive('dropDown', function($compile, $timeout) {
             scope.limit = 6;
             var dropDown = element.find('[data-drop-down]');
             var dropDownContent = element.find('[data-drop-down] ul')
+
+						if( dropDownContent ) {
+							if( scope.listId )
+								dropDownContent.attr( 'id', scope.listId );
+						}
 
             scope.setDropDownHeight = function() {
                 var liHeight = 0;
@@ -7627,3 +7633,16 @@ function shouldRevalidateTerms() {
     }
 }
 model.one("bootstrap",shouldRevalidateTerms);
+
+//=== Global counter service for uniqueness
+module.service("CounterService", [
+	(function(){ // CounterService should be defined in its own source file, instead of locally.
+		var CounterService = function() {
+			this.count = 1;
+		}
+		CounterService.prototype.increase = function() {
+      return ++this.count;
+		}
+		return CounterService;
+	})()
+]);
