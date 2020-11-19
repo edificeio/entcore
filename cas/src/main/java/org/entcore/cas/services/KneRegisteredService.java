@@ -217,7 +217,8 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					additionalAttributes.add(createTextElement("ENTAuxEnsMEFs", "", doc));
 					break;
 			}
-
+			additionalAttributes.add(createTextElement("ENTPersonNom", data.getString("lastName"), doc));
+			additionalAttributes.add(createTextElement("ENTPersonPrenom", data.getString("firstName"), doc));
 		} catch (Exception e) {
 			log.error("Failed to transform User for KNE", e);
 		}
