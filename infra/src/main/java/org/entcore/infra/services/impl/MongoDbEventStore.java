@@ -92,6 +92,9 @@ public class MongoDbEventStore implements EventStoreService {
 			if (user.getGroupsIds() != null) {
 				event.put("groups", new fr.wseduc.webutils.collections.JsonArray(user.getGroupsIds()));
 			}
+			if (request.headers().get("User-Agent") != null) {
+				event.put("ua", request.headers().get("User-Agent"));
+			}
 		}
 		if (request != null) {
 			event.put("referer", request.headers().get("Referer"));
