@@ -6354,28 +6354,31 @@ module.directive('assistant', function(){
 
     var _CACHE = undefined;
     var _MUTEX = false;
-    
+    var _SKIP = false;
     function _getPreference (cb){
         if (_CACHE) {
             return cb(_CACHE);
         }
-            http().get('/userbook/preference/authenticatedConnectorsAccessed').done(function(data){
-                try {
-                    if (data.preference) {
-                        _CACHE = JSON.parse(data.preference);
-                    }
-                    return cb(_CACHE);
-                } catch (e) {
-                    console.log('Error parsing authenticatedConnectorsAccessed preferences');
-                    _CACHE = {}
-                    return cb(_CACHE);
+        http().get('/userbook/preference/authenticatedConnectorsAccessed').done(function(data){
+            try {
+                if (data.preference) {
+                    _CACHE = JSON.parse(data.preference);
                 }
-            }).error(function(error) {
-                console.log('Error parsing authenticatedConnectorsAccessed preferences', error);
+                return cb(_CACHE);
+            } catch (e) {
+                console.log('Error parsing authenticatedConnectorsAccessed preferences');
                 _CACHE = {}
                 return cb(_CACHE);
-            });
-            
+            }
+        }).error(function(error) {
+            console.log('Error parsing authenticatedConnectorsAccessed preferences', error);
+            _CACHE = {}
+            return cb(_CACHE);
+        });
+        
+        http().get('/cas/conf/public').done(function(data){
+            _SKIP = !!data.skip;
+        });
         return _CACHE;
     }
     
@@ -6486,6 +6489,14 @@ module.directive('assistant', function(){
                     }
                 };
                 function openAppWithCheck (app) {
+                    if(_SKIP){
+                        if (app.target) {
+                            window.open(app.address, app.target);
+                        } else {
+                            window.open(app.address, '_self');
+                        }
+                        return;
+                    }
                     if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
                         if (_MUTEX == true) {
                             return;
