@@ -349,7 +349,7 @@ public class DocumentTest {
                 workspaceService.info(res0.result(), user, res2 -> {
                     context.assertTrue(res2.succeeded());
                     final JsonObject root = res2.result();
-                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user);
+                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user, "");
                     ctx.setRootFolder(root);
                     workspaceService.importFileZip(ctx,
                             res1 -> {
@@ -381,7 +381,7 @@ public class DocumentTest {
                 workspaceService.info(res0.result(), user, res2 -> {
                     context.assertTrue(res2.succeeded());
                     final JsonObject root = res2.result();
-                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user);
+                    final FolderImporterZip.FolderImporterZipContext ctx = new FolderImporterZip.FolderImporterZipContext(zipPath, user, "");
                     ctx.setRootFolder(root);
                     workspaceService.importFileZip(ctx,
                             res1 -> {

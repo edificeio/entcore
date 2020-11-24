@@ -48,7 +48,6 @@ public class FolderImporterZip {
         this.antivirusClient =  AntivirusClient.create(v);
         try {
             encodings.add("UTF-8");
-            encodings.add("ISO-8859-1");
             final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
             if (encodingList != null) {
                 final JsonArray encodingJson = new JsonArray(encodingList);
