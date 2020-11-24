@@ -26,6 +26,7 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
@@ -59,10 +60,16 @@ public class Starter extends BaseServer {
 		try {
 			super.start();
 			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 			//JWT need signKey
 			SecurityHandler.setVertx(vertx);
+			//encoding
+			final JsonArray encondings = config.getJsonArray("encoding-available", new JsonArray());
+			final JsonArray safeEncondigs = new JsonArray();
+			for(final Object o : encondings){
+				safeEncondigs.add(o.toString());
+			}
+			serverMap.put("encoding-available", safeEncondigs.encode());
 			//
 			CookieHelper.getInstance().init((String) vertx
 					.sharedData().getLocalMap("server").get("signKey"), log);
