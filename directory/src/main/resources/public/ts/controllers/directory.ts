@@ -213,6 +213,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.$apply('users');
 	});
 
+	$scope.avatarFor = function( user, thumbnail ) {
+		return {
+			 "background-image": "url(/userbook/avatar/"+user.id+ (typeof thumbnail==="string" ? "?thumbnail="+thumbnail : "" ) +")"
+			,"background-size" : "cover"
+			,"background-position": "center"
+		};
+	}
+
 	$scope.createAllFavorites = async function(dateString){
 		directory.directory.favorites.all = [];
 		await directory.directory.favorites.getAll();
