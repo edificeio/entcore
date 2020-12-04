@@ -174,7 +174,6 @@ public class Starter extends BaseServer {
 			addController(antiVirusController);
 			vertx.deployVerticle(ExecCommandWorker.class.getName(), new DeploymentOptions().setWorker(true));
 		}
-		addController(new VideoEventsController());
 	}
 
 	private void loadInvalidEmails() {
