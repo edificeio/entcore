@@ -17,7 +17,6 @@ import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.events.video.VideoEventsLogger;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
 import org.entcore.common.folders.ElementShareOperations;
@@ -900,9 +899,7 @@ public class WorkspaceController extends BaseController {
                                     && request.headers().get("Range").startsWith("bytes=0-")
                                     && jo.getJsonObject("metadata") != null
                                     && jo.getJsonObject("metadata").getBoolean("captation", false)) {
-								UserUtils.getUserInfos(eb, request, userinfos -> {
-									logVideoGetEvent(request, jo, userinfos);
-								});
+								// TODO: Ici semble le meilleur endroit pour prélever/générer les mesures nécessaires aux VIDEO_EVENT_STREAM
 							}
 						} else {
 							request.response().setStatusCode(404).end();
@@ -1670,40 +1667,5 @@ public class WorkspaceController extends BaseController {
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
-	}
-
-	private void logVideoGetEvent(HttpServerRequest request, JsonObject videoData, UserInfos userInfos) {
-		String url = request.host();
-		// get host without port number
-		String[] urlSplit = url.split(":");
-		if (urlSplit.length > 0) {
-			url = urlSplit[0];
-		}
-
-		// get calling App path in Referer URL
-		String app = "";
-		String referer = request.getHeader("Referer");
-		if (referer != null) {
-			String[] refererSplit = referer.split("/");
-			if (refererSplit != null && refererSplit.length > 3) {
-				app = refererSplit[3];
-			}
-		}
-
-		JsonObject eventData = new JsonObject()
-				.put("event", "EVENT_VIDEO_GET")
-				.put("videoId", videoData.getString("_id"))
-				.put("userId", userInfos.getUserId())
-				.put("userProfile", userInfos.getType())
-				.put("device", "")
-				.put("browser", "")
-				.put("structure", userInfos.getStructureNames().get(0))
-				.put("level", userInfos.getLevel())
-				.put("videoDuration", videoData.getJsonObject("metadata").getInteger("duration"))
-				.put("videoSize", videoData.getJsonObject("metadata").getInteger("size"))
-				.put("url", url)
-				.put("app", app);
-
-		new VideoEventsLogger().info(eventData);
 	}
 }

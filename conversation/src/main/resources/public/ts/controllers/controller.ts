@@ -2,7 +2,7 @@ import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui }
 import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
-    '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
+    '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', 'VideoEventTracker', function ($scope, $timeout, $compile, $sanitize, model, route, videoEventTracker) {
         $scope.state = {
             selectAll: false,
             filterUnread: false,
@@ -307,6 +307,9 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.state.mailLimit = mail.bodyShown.length;
                     }
                 }, 0);
+
+								// Wait a tick for video component to be displayed
+                setTimeout( ()=>{videoEventTracker.trackAll($scope);}, 0);
             } 
             catch (e) {
                 template.open('page', 'errors/e404');
