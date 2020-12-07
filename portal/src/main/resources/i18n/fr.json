@@ -139,7 +139,7 @@
   "directory.user": "Annuaire",
   "disconnected.redirect": "Se reconnecter",
   "disconnected.title": "Déconnexion",
-  "disconnected.warning": "Pour des raisons de sécurité, vous avez été déconnecté suite à une période d'inactivité.",
+  "disconnected.warning": "Pour des raisons de sécurité, vous avez été déconnecté suite à une période d'inactivité.<br/>Reconnectez-vous pour récupérer votre contenu en cours d'édition.",
   "download": "Télécharger",
   "duplicate": "Dupliquer",
   "duplicate.done": "Duplication réussie",
