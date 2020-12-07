@@ -451,6 +451,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
             catch (e) {
                 $scope.state.draftError = true;
+                console.error(e);
             }
         };
 
