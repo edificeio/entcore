@@ -797,32 +797,37 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void listByLevel(String levelContains, String levelNotContains, String profile, boolean stream,
+	public void listByLevel(String levelContains, String levelNotContains, String profile, String structureId, boolean stream,
 			Handler<Either<String, JsonArray>> handler) {
 		final JsonObject params = new JsonObject();
 		params.put("level", levelContains);
 		String levelFilter = "";
+		String structureMatcher = "";
 		if (isNotEmpty(levelNotContains)) {
 			levelFilter = "AND NOT(u.level contains {notLevel}) ";
 			params.put("notLevel", levelNotContains);
+		}
+		if(isNotEmpty(structureId)) {
+			structureMatcher = "-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}})";
+			params.put("structureId", structureId);
 		}
 
 		System.out.println(levelContains + " / " + levelNotContains + " / " + profile);
 		String query;
 		if ("Student".equals(profile)) {
-			query = "MATCH (u:User) " +
+			query = "MATCH (u:User)" + structureMatcher + " " +
 					"WHERE has(u.password) and u.level contains {level} " + levelFilter +
 					"RETURN u.id as id, u.ine as ine, head(u.profiles) as profile, u.lastName as lastName, u.firstName as firstName, " +
 					"u.login as login, u.loginAlias as loginAlias, u.email as email, u.mobile AS mobile, u.password as password ";
 		} else if ("Relative".equals(profile)) {
-			query = "MATCH (u:User)-[:RELATED]->(r:User) " +
+			query = "MATCH (u:User)-[:RELATED]->(r:User)" + structureMatcher + " " +
 					"WHERE has(r.password) and u.level contains {level} " + levelFilter +
 					"RETURN r.id as id, u.ine as ine, head(r.profiles) as profile, r.lastName as lastName, r.firstName as firstName, " +
 					"r.login as login, r.loginAlias as loginAlias, r.email as email, r.mobile AS mobile, r.password as password ";
 		}
 		else if ("Teacher".equals(profile) || "Personnel".equals(profile))
 		{
-			query = "MATCH (u:User) " +
+			query = "MATCH (u:User)" + structureMatcher + " " +
 							(levelContains != null ? "MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(:Class {name:{level}}) " : "") +
 							"WHERE HAS(u.password) AND u.firstName IS NOT NULL AND u.lastName IS NOT NULL AND u.birthDate IS NOT NULL AND {profile} IN u.profiles " +
 							(levelNotContains != null ? "OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup {filter: {profile}})-[:DEPENDS]->(c:Class {name:{notLevel}}) WITH u, c WHERE c = null " : "") +

@@ -568,7 +568,6 @@ directory.User.prototype.saveAccount = function(cb){
 };
 
 directory.User.prototype.thumbs = "";
-directory.User.prototype.moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 
 directory.User.prototype.loadUserbook = async function(){
 	this.pictureVersion = 0;
@@ -584,6 +583,8 @@ directory.User.prototype.loadUserbook = async function(){
 		data.picture = '';
 	}
 	var mood = _.findWhere(directory.User.prototype.moods, { id: data.mood });
+	if(mood == null)
+		mood = _.findWhere(directory.User.prototype.moods, { id: "default" });
 	data.mood = {
 		id: mood.id,
 		icon: mood.icon,
@@ -733,6 +734,8 @@ directory.User.prototype.mergeByKeys = function(keys, handler) {
 	}.bind(this));
 };
 
+directory.User.prototype.moods = ["default"];
+
 model.build = function(){
 	this.makeModels(directory);
 	directory.directory = new directory.Directory();
@@ -746,11 +749,16 @@ model.build = function(){
 		});
 	}
 
-	directory.User.prototype.moods = _.map(directory.User.prototype.moods, function(mood){
+	var mood_map = function(mood){
 		return {
 			icon: mood,
 			text: lang.translate('userBook.mood.' + mood),
 			id: mood
 		}
+	};
+
+	directory.User.prototype.moods = _.map(directory.User.prototype.moods, mood_map);
+	oldHttp().get("/directory/userbook/moods").done(function(data){
+		directory.User.prototype.moods = _.map(data , mood_map);
 	});
 };
