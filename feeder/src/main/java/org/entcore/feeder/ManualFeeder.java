@@ -415,7 +415,7 @@ public class ManualFeeder extends BusModBase {
 		final String removeDefaultGroup =
 				matchUser +
 				"MATCH (u)-[indpg:IN]-(:DefaultProfileGroup) " +
-				"MATCH (u)-[:IN|COMMUNIQUE]-(pg:ProfileGroup) " +
+				"MATCH (u)-[:IN]-(pg:ProfileGroup) " +
 				"WHERE NOT (pg:DefaultProfileGroup)" +
 				"DELETE indpg";
 		tx.add(query, params);
