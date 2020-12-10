@@ -28,6 +28,6 @@ import io.vertx.core.json.JsonObject;
 
 public interface RemoteUserService {
 
-	void oldPlatformsSync(String level, String excludeLevel, String profile, Handler<Either<String, JsonObject>> handler);
+	void oldPlatformsSync(String level, String excludeLevel, String profile, String structureId, Handler<Either<String, JsonObject>> handler);
 
 }

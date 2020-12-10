@@ -54,7 +54,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 	}
 
 	@Override
-	public void oldPlatformsSync(String level, String excludeLevel, String profile, Handler<Either<String, JsonObject>> handler) {
+	public void oldPlatformsSync(String level, String excludeLevel, String profile, String structureId, Handler<Either<String, JsonObject>> handler) {
 		List<Future> futures = new ArrayList<>();
 		String uri = "/directory/user/level/list?profile=" + profile;
 		if(isNotEmpty(level)) {
@@ -62,6 +62,9 @@ public class DefaultRemoteUserService implements RemoteUserService {
 		}
 		if (isNotEmpty(excludeLevel)) {
 			uri += "&notLevel=" + excludeLevel;
+		}
+		if(isNotEmpty(structureId)) {
+			uri += "&structureId=" + structureId;
 		}
 		remoteClient.getRemote(uri, futures);
 		CompositeFuture.all(futures).map(CompositeFuture::list).setHandler(ar -> {
