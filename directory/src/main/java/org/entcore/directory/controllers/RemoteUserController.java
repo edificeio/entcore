@@ -42,7 +42,7 @@ public class RemoteUserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void oldPlatformsSync(HttpServerRequest request) {
 		remoteUserService.oldPlatformsSync(request.params().get("level"), request.params().get("notLevel"),
-				request.params().get("profile"), defaultResponseHandler(request));
+				request.params().get("profile"), request.params().get("structureId"), defaultResponseHandler(request));
 	}
 
 	public void setRemoteUserService(RemoteUserService remoteUserService) {

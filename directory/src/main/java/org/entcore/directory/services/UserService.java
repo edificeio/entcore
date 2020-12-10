@@ -109,7 +109,7 @@ public interface UserService {
 
 	void getUserInfos(String userId, Handler<Either<String,JsonObject>> handler);
 
-	void listByLevel(String levelContains, String levelNotContains, String profile, boolean stream,
+	void listByLevel(String levelContains, String levelNotContains, String profile, String structureId, boolean stream,
 					 Handler<Either<String, JsonArray>> handler);
 
 	void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);

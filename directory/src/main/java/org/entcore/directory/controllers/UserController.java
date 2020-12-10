@@ -87,6 +87,8 @@ public class UserController extends BaseController {
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
 	private final EventHelper eventHelper;
+	private JsonObject userBookData;
+	private JsonArray userBookMoods;
 
 	public UserController(){
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Directory.class.getSimpleName());
@@ -97,6 +99,25 @@ public class UserController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
+		this.userBookData = config.getJsonObject("user-book-data");
+		if(this.userBookData == null)
+			this.userBookData = new JsonObject();
+
+		this.userBookMoods = this.userBookData.getJsonArray("moods");
+		if(this.userBookMoods == null)
+		{
+			this.userBookMoods = new JsonArray();
+			this.userBookData.put("moods", this.userBookMoods);
+		}
+		if(this.userBookMoods.contains("default") == false)
+			this.userBookMoods.add("default");
+		
+	}
+
+	@Get("/userbook/moods")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void mood(HttpServerRequest request) {
+		renderJson(request, this.userBookMoods);
 	}
 
 	@Put("/user/:userId")
@@ -135,6 +156,12 @@ public class UserController extends BaseController {
 				final String userId = request.params().get("userId");
 				String motto = body.getString("motto");
 				if( motto != null && motto.length() > MOTTO_MAX_LENGTH){
+					badRequest(request);
+					return;
+				}
+				String mood = body.getString("mood");
+				if(userBookMoods.contains(mood) == false)
+				{
 					badRequest(request);
 					return;
 				}
@@ -758,7 +785,7 @@ public class UserController extends BaseController {
 			h = arrayResponseHandler(request);
 		}
 		userService.listByLevel(request.params().get("level"), request.params().get("notLevel"),
-				request.params().get("profile"), stream, h);
+				request.params().get("profile"), request.params().get("structureId"), stream, h);
 	}
 
 	@Get("/user/:userId/attachment-school")
