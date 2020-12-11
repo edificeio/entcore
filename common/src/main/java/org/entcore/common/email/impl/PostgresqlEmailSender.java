@@ -62,8 +62,13 @@ public class PostgresqlEmailSender implements EmailSender {
         //
         final String defaultMail = emailConfig.getString("email", "noreply@one1d.fr");
         final String defaultHost = emailConfig.getString("host", "http://localhost:8009");
-        this.senderEmail = moduleConfig.getString("email", defaultMail);
-        this.host = moduleConfig.getString("host", defaultHost);
+        if(moduleConfig != null){
+            this.senderEmail = moduleConfig.getString("email", defaultMail);
+            this.host = moduleConfig.getString("host", defaultHost);
+        }else{
+            this.senderEmail = defaultMail;
+            this.host = defaultHost;
+        }
     }
 
     @Override
