@@ -48,17 +48,19 @@ public class EmailFactory {
 	}
 
 	public EmailFactory(Vertx vertx, JsonObject config) {
-		this.moduleConfig = config;
 		this.vertx = vertx;
 		if (config != null && config.getJsonObject("emailConfig") != null) {
 			this.config = config.getJsonObject("emailConfig");
+			this.moduleConfig = config;
 		} else {
 			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 			String s = (String) server.get("emailConfig");
 			if (s != null) {
 				this.config = new JsonObject(s);
+				this.moduleConfig = this.config;
 			} else {
 				this.config = null;
+				this.moduleConfig = null;
 			}
 		}
 	}
