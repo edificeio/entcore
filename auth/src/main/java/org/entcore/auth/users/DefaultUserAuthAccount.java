@@ -75,6 +75,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final JsonArray allowActivateDuplicateProfiles;
 	private final EventStore eventStore;
 	private final boolean storePasswordEventEnabled;
+	private final long resetCodeExpireDelay;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		this.eb = Server.getEventBus(vertx);
@@ -96,6 +97,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				new JsonArray().add("Relative"));
 		this.eventStore = eventStore;
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
+		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
 	}
 
 	@Override
@@ -286,12 +288,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n." + loginFieldName + "={login} AND n.resetCode = {resetCode} " +
+				"WHERE n." + loginFieldName + "={login} AND has(n.resetDate) " +
+				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
-			.put("resetCode", potentialResetCode);
+			.put("resetCode", potentialResetCode)
+			.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
@@ -521,22 +525,17 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void resetPassword(String login, String resetCode, String password, final Handler<Boolean> handler) {
-		final long codeDelay = config.getInteger("resetCodeDelay", 0);
-
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login={login} AND n.resetCode = {resetCode} " +
-				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
+				"WHERE n.login={login} AND has(n.resetDate) " +
+				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
-		if(codeDelay > 0){
-			params.put("today", new Date().getTime());
-			params.put("delay", codeDelay);
-		}
+		params.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
 		updatePassword(handler, query, password, login, params);
 	}
 
