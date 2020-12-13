@@ -37,6 +37,7 @@ import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Ent;
@@ -619,36 +620,43 @@ public class StructureController extends BaseController {
 				final String structureId = request.params().get("id");
 				final String profile = json.getString("profile");
 				final boolean block = json.getBoolean("block", true);
-				structureService.blockUsers(structureId, profile, block, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject r) {
-						if ("ok".equals(r.getString("status"))) {
-							request.response().setStatusCode(204);
-							request.response().end();
-							JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
-							eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
-							for (Object userId : usersId) {
-								UserUtils.deletePermanentSession(eb, (String) userId, null, false, new Handler<Boolean>() {
-									@Override
-									public void handle(Boolean event) {
-										if (!event) {
-											log.error("Error delete permanent session with userId : " + userId);
-										}
+				UserUtils.getUserInfos(eb, request, user -> {
+					if (user != null) {
+						final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
+						structureService.blockUsers(structureId, profile, block, isAdmc, new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject r) {
+								if ("ok".equals(r.getString("status"))) {
+									request.response().setStatusCode(204);
+									request.response().end();
+									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
+									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
+									for (Object userId : usersId) {
+										UserUtils.deletePermanentSession(eb, (String) userId, null, false, new Handler<Boolean>() {
+											@Override
+											public void handle(Boolean event) {
+												if (!event) {
+													log.error("Error delete permanent session with userId : " + userId);
+												}
+											}
+										});
+										UserUtils.deleteCacheSession(eb, (String) userId, new Handler<Boolean>() {
+											@Override
+											public void handle(Boolean event) {
+												if (!event) {
+													log.error("Error delete cache session with userId : " + userId);
+												}
+											}
+										});
 									}
-								});
-								UserUtils.deleteCacheSession(eb, (String) userId, new Handler<Boolean>() {
-									@Override
-									public void handle(Boolean event) {
-										if (!event) {
-											log.error("Error delete cache session with userId : " + userId);
-										}
-									}
-								});
+								}
+								else {
+									badRequest(request);
+								}
 							}
-						}
-						else {
-							badRequest(request);
-						}
+						});
+					} else {
+						unauthorized(request, "invalid.user");
 					}
 				});
 			}
