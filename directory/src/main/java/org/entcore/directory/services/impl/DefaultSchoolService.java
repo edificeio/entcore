@@ -387,8 +387,16 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler) {
-		String query = "MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) WHERE g.name ENDS WITH {profile} SET u.blocked = {blocked} RETURN COLLECT(DISTINCT u.id) as usersId";
+	public void blockUsers(String structureId, String profile, boolean block, boolean isAdmc, Handler<JsonObject> handler) {
+		String filter = "";
+		if (!isAdmc) {
+			filter = "AND NOT((u)-[:HAS_FUNCTION]->(:Function {externalId:'SUPER_ADMIN'})) ";
+		}
+		String query =
+			"MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) " +
+			"WHERE g.name ENDS WITH {profile} " + filter +
+			"SET u.blocked = {blocked} " +
+			"RETURN COLLECT(DISTINCT u.id) as usersId";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
 				.put("profile", profile)

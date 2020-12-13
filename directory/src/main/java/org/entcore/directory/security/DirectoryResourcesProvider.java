@@ -21,6 +21,8 @@ package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
+
+import org.entcore.common.http.filter.AdminUpdateFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
@@ -39,6 +41,8 @@ import static org.entcore.common.user.DefaultFunctions.*;
 public class DirectoryResourcesProvider implements ResourcesProvider {
 
 	private final Neo4j neo = Neo4j.getInstance();
+	private AdminUpdateFilter adminUpdateFilter = new AdminUpdateFilter();
+
 	private static class HandlerWrapper{
 		final Handler<Boolean> originalHandler;
 		final Handler<Boolean> handler; 
@@ -137,7 +141,13 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "unlinkUser" :
 				case "linkUser" :
-					isAdminOfStructureOrClass4(request, user, handler);
+					adminUpdateFilter.checkADMCUpdate(request, user, false, hr -> {
+						if (Boolean.FALSE.equals(hr)) {
+							handler.handle(false);
+							return;
+						}
+						isAdminOfStructureOrClass4(request, user, handler);
+					});
 					break;
 				case "metrics":
 				case "listChildren":
@@ -419,27 +429,33 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	}
 
 	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, final Handler<Boolean> handler) {
-		Set<String> ids = getIds(user);
-		if (ids == null) return;
-		String query =
-				"MATCH (u:User {id : {userId}})-[:IN]->()-[:DEPENDS]->()-[:BELONGS*0..1]->s2 " +
-				"WHERE s2.id IN {ids} " +
-				"RETURN count(*) > 0 as exists";
-		JsonObject params = new JsonObject()
-				.put("id", request.params().get("groupId"))
-				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				JsonArray res = r.body().getJsonArray("result");
-				if ("ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ( res.getJsonObject(0)).getBoolean("exists", false)) {
-					handler.handle(true);
-				} else {
-					isTeacherOf(request, user, handler);
-				}
+		adminUpdateFilter.checkADMCUpdate(request, user, false, hr -> {
+			if (Boolean.FALSE.equals(hr)) {
+				handler.handle(false);
+				return;
 			}
+			Set<String> ids = getIds(user);
+			if (ids == null) return;
+			String query =
+					"MATCH (u:User {id : {userId}})-[:IN]->()-[:DEPENDS]->()-[:BELONGS*0..1]->s2 " +
+					"WHERE s2.id IN {ids} " +
+					"RETURN count(*) > 0 as exists";
+			JsonObject params = new JsonObject()
+					.put("id", request.params().get("groupId"))
+					.put("userId", request.params().get("userId"))
+					.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+			neo.execute(query, params, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> r) {
+					JsonArray res = r.body().getJsonArray("result");
+					if ("ok".equals(r.body().getString("status")) &&
+							res.size() == 1 && ( res.getJsonObject(0)).getBoolean("exists", false)) {
+						handler.handle(true);
+					} else {
+						isTeacherOf(request, user, handler);
+					}
+				}
+			});
 		});
 	}
 

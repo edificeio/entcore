@@ -70,7 +70,7 @@ public interface SchoolService {
 	
 	void userList(String structureId, boolean listRemovedUsersInsteadOfNormalUsers, Handler<Either<String, JsonArray>> handler);
 
-	void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler);
+	void blockUsers(String structureId, String profile, boolean block, boolean isAdmc, Handler<JsonObject> handler);
 
 	void searchCriteria(List<String> structures, boolean getClassesForMonoEtabOnly, Handler<Either<String, JsonObject>> handler);
 

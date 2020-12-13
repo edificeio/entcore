@@ -23,6 +23,7 @@ import fr.wseduc.webutils.http.Binding;
 
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.controllers.AuthController;
+import org.entcore.common.http.filter.AdminUpdateFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.DefaultFunctions;
@@ -36,9 +37,11 @@ import io.vertx.core.json.JsonObject;
 public class AuthResourcesProvider implements ResourcesProvider {
 
 	private final Neo neo;
+	private AdminUpdateFilter adminUpdateFilter;
 
 	public AuthResourcesProvider(Neo neo) {
 		this.neo = neo;
+		this.adminUpdateFilter = new AdminUpdateFilter();
 	}
 
 	@Override
@@ -46,28 +49,45 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			UserInfos user, Handler<Boolean> handler) {
 		final String serviceMethod = binding.getServiceMethod();
 		if (serviceMethod != null && serviceMethod.startsWith(AuthController.class.getName())) {
-			String method = serviceMethod
+			final String method = serviceMethod
 					.substring(AuthController.class.getName().length() + 1);
-			switch (method) {
-				case "blockUser" :
-					isClassTeacher(request, user, handler);
-					break;
-				case "blockUsers" :
-					isClassTeacherOfMultipleUsers(request, user, handler);
-					break;
-				case "sendResetPassword" :
-					isClassTeacherByUserLogin(request, user, handler);
-					break;
-				case "generatePasswordRenewalCode" :
-					isClassTeacherByUserLogin(request, user, handler);
-					break;
-				case "massGeneratePasswordRenewalCode" :
-					isClassTeacherOfMultipleUsers(request, user, handler);
-					break;
-				default: handler.handle(false);
+			if ("massGeneratePasswordRenewalCode".equals(method) || "blockUsers".equals(method) ||
+					"sendResetPassword".equals(method) || "generatePasswordRenewalCode".equals(method)) {
+				checkFilterCases(request, user, handler, method);
+			} else if ("blockUser".equals(method)) {
+				adminUpdateFilter.checkADMCUpdate(request, user, hr -> {
+					if (Boolean.FALSE.equals(hr)) {
+						handler.handle(false);
+						return;
+					}
+					checkFilterCases(request, user, handler, method);
+				});
+			} else {
+				handler.handle(false);
 			}
 		} else {
 			handler.handle(false);
+		}
+	}
+
+	private void checkFilterCases(HttpServerRequest request, UserInfos user, Handler<Boolean> handler, final String method) {
+		switch (method) {
+			case "blockUser" :
+				isClassTeacher(request, user, handler);
+				break;
+			case "blockUsers" :
+				isClassTeacherOfMultipleUsers(request, user, handler);
+				break;
+			case "sendResetPassword" :
+				isClassTeacherByUserLogin(request, user, handler);
+				break;
+			case "generatePasswordRenewalCode" :
+				isClassTeacherByUserLogin(request, user, handler);
+				break;
+			case "massGeneratePasswordRenewalCode" :
+				isClassTeacherOfMultipleUsers(request, user, handler);
+				break;
+			default: handler.handle(false);
 		}
 	}
 
@@ -123,30 +143,38 @@ public class AuthResourcesProvider implements ResourcesProvider {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject json) {
-				request.pause();
 				JsonArray userIds = json.getJsonArray("users");
 				if (userIds == null || userIds.isEmpty()) {
 					handler.handle(false);
 					return;
 				}
-				String query = "MATCH (c:Class)<-[:DEPENDS]-(Group)<-[:IN]-(User { id : {teacherId}}) " +
-						"WITH c MATCH (u:User)-[:IN]->(Group)-[:DEPENDS]->(c) " +
-						"WHERE u.id in {ids} " +
-						"RETURN count(distinct u) = {size} as exists";
-				JsonObject params = new JsonObject()
-						.put("teacherId", user.getUserId())
-						.put("ids", userIds)
-						.put("size", userIds.size());
-				neo.execute(query, params, new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> r) {
-						JsonArray res = r.body().getJsonArray("result");
-						request.resume();
-						handler.handle(
-								"ok".equals(r.body().getString("status")) &&
-										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
-						);
+				request.pause();
+				adminUpdateFilter.checkADMCUpdate(request, user, userIds, false, hr -> {
+					if (Boolean.FALSE.equals(hr)) {
+						handler.handle(false);
+						return;
 					}
+
+					String query = "MATCH (c:Class)<-[:DEPENDS]-(Group)<-[:IN]-(t:User { id : {teacherId}}) " +
+							"WHERE head(t.profiles) IN ['Teacher', 'Personnel'] " +
+							"WITH c MATCH (u:User)-[:IN]->(Group)-[:DEPENDS]->(c) " +
+							"WHERE u.id in {ids} " +
+							"RETURN count(distinct u) = {size} as exists";
+					JsonObject params = new JsonObject()
+							.put("teacherId", user.getUserId())
+							.put("ids", userIds)
+							.put("size", userIds.size());
+					neo.execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r) {
+							JsonArray res = r.body().getJsonArray("result");
+							request.resume();
+							handler.handle(
+									"ok".equals(r.body().getString("status")) &&
+											res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+							);
+						}
+					});
 				});
 			}
 		});
@@ -167,32 +195,40 @@ public class AuthResourcesProvider implements ResourcesProvider {
 					handler.handle(false);
 					return;
 				}
-				String query;
-				if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-					query =
-						"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->" +
-						"(:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)" +
-						"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
-						"WHERE fg.name =~ \".*AdminLocal.*\"" +
-						"RETURN count(*) >= 1 as exists ";
-				} else {
-					query =
-						"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
-						"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
-						"RETURN count(*) >= 1 as exists ";
-				}
-				JsonObject params = new JsonObject()
-						.put("login", login)
-						.put("teacherId", user.getUserId());
-				neo.execute(query, params, new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> r) {
-						JsonArray res = r.body().getJsonArray("result");
-						handler.handle(
-								"ok".equals(r.body().getString("status")) &&
-										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
-						);
+
+				adminUpdateFilter.checkADMCUpdate(request, user, new JsonArray().add(login), true, true, hr -> {
+					if (Boolean.FALSE.equals(hr)) {
+						handler.handle(false);
+						return;
 					}
+					String query;
+					if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+						query =
+							"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->" +
+							"(:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)" +
+							"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
+							"WHERE fg.name =~ \".*AdminLocal.*\"" +
+							"RETURN count(*) >= 1 as exists ";
+					} else {
+						query =
+							"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+							"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
+							"WHERE head(t.profiles) IN ['Teacher', 'Personnel'] " +
+							"RETURN count(*) >= 1 as exists ";
+					}
+					JsonObject params = new JsonObject()
+							.put("login", login)
+							.put("teacherId", user.getUserId());
+					neo.execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r) {
+							JsonArray res = r.body().getJsonArray("result");
+							handler.handle(
+									"ok".equals(r.body().getString("status")) &&
+											res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+							);
+						}
+					});
 				});
 			}
 		});
