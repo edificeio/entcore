@@ -599,7 +599,14 @@ public class StructureController extends BaseController {
 	@ResourceFilter(AdminStructureFilter.class)
 	public void userList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
-		this.structureService.userList(structureId, false, arrayResponseHandler(request));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
+				this.structureService.userList(structureId, false, isAdmc, arrayResponseHandler(request));
+			} else {
+				unauthorized(request, "invalid.user");
+			}
+		});
 	}
 
 	@Get("/structure/:id/removedUsers")
@@ -607,7 +614,14 @@ public class StructureController extends BaseController {
 	@ResourceFilter(AdminStructureFilter.class)
 	public void removedUserList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
-		this.structureService.userList(structureId, true, arrayResponseHandler(request));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
+				this.structureService.userList(structureId, true, isAdmc, arrayResponseHandler(request));
+			} else {
+				unauthorized(request, "invalid.user");
+			}
+		});
 	}
 
 	@Put("structure/:id/profile/block")

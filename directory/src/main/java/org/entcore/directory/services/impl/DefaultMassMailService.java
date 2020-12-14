@@ -395,7 +395,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             " RETURN distinct collect(p.name)[0] as profile"
             +", u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName"
             +", u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login"
-            +", u.login as originalLogin, u.activationCode as activationCode, u.resetCode as resetCode, u.created as creationDate"
+            +", u.login as originalLogin, u.activationCode as activationCode, u.created as creationDate"
             +", classes"
             +", CASE WHEN size(classes) = 0 THEN null ELSE head(classes) END as firstClass"
             +", CASE WHEN size(classes) < 2 THEN null ELSE tail(classes) END as otherClasses"
