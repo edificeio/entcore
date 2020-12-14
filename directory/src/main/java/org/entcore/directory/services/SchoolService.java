@@ -68,7 +68,7 @@ public interface SchoolService {
 	
 	void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler);
 	
-	void userList(String structureId, boolean listRemovedUsersInsteadOfNormalUsers, Handler<Either<String, JsonArray>> handler);
+	void userList(String structureId, boolean listRemovedUsersInsteadOfNormalUsers, boolean isAdmc, Handler<Either<String, JsonArray>> handler);
 
 	void blockUsers(String structureId, String profile, boolean block, boolean isAdmc, Handler<JsonObject> handler);
 

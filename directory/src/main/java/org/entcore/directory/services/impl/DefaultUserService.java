@@ -388,6 +388,9 @@ public class DefaultUserService implements UserService {
 				condition += "AND u.activationCode IS NULL ";
 			}
 		}
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
+			condition += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+		}
 
 		String query =
 				"MATCH " + filter + "(u:User) " +
