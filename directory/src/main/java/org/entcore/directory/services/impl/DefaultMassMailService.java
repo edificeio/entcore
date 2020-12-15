@@ -426,6 +426,10 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User {id: {userId}}), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
         String condition = "";
+        if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
+            condition = "WHERE " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+        }
+
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
@@ -435,6 +439,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         //With clause
         String withStr =
                 "WITH u, p ";
+
 
         //Return clause
         String returnStr =
@@ -478,6 +483,10 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 condition += "WHERE s.id IN {scope} ";
                 params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
             }
+        }
+
+        if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
+            condition += (condition.isEmpty() ? "WHERE " : "AND ") + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         //With clause
