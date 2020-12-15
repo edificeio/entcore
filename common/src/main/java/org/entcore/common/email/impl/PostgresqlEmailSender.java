@@ -181,77 +181,81 @@ public class PostgresqlEmailSender implements EmailSender {
     public void sendEmail(HttpServerRequest request, List<Object> to, String from, List<Object> cc, List<Object> bcc,
                           String subject, JsonArray attachments, String templateBody, JsonObject templateParams,
                           boolean translateSubject, JsonArray headers, final Handler<AsyncResult<Message<JsonObject>>> handler) {
-        final PostgresEmailHelper.MailBuilder mail = PostgresEmailHelper.mail();
-        for (final Object t : to) {
-            mail.withTo(t.toString());
-        }
-        mail.withFrom(from);
-        if (cc != null) {
-            for (final Object c : cc) {
-                mail.withCc(c.toString());
+        try {
+            final PostgresEmailHelper.MailBuilder mail = PostgresEmailHelper.mail();
+            for (final Object t : to) {
+                mail.withTo(t.toString());
             }
-        }
-        if (bcc != null) {
-            for (final Object c : bcc) {
-                mail.withBcc(c.toString());
-            }
-        }
-
-        if (translateSubject) {
-            mail.withSubject(I18n.getInstance().translate(
-                    subject, getHost(request), I18n.acceptLanguage(request)));
-        } else {
-            mail.withSubject(subject);
-        }
-
-        if (headers != null) {
-            for (final Object o : headers) {
-                if (o instanceof JsonObject) {
-                    mail.withHeader((JsonObject) o);
+            mail.withFrom(from);
+            if (cc != null) {
+                for (final Object c : cc) {
+                    mail.withCc(c.toString());
                 }
             }
-        }
+            if (bcc != null) {
+                for (final Object c : bcc) {
+                    mail.withBcc(c.toString());
+                }
+            }
 
-        final Handler<String> mailHandler = body -> {
-            if (body != null) {
-                mail.withBody(body);
-                //attachments
-                final List<PostgresEmailHelper.MailAttachmentBuilder> attList = new ArrayList<>();
-                int mailSize = body.getBytes().length;
-                if (attachments != null) {
-                    for (Object o : attachments) {
-                        if (!(o instanceof JsonObject)) continue;
-                        JsonObject att = (JsonObject) o;
-                        if (att.getString("name") == null || att.getString("content") == null) continue;
-                        mailSize += att.getString("content").getBytes().length;
-                        if (maxSize > 0 && mailSize > maxSize) {
-                            mailSize -= att.getString("content").getBytes().length;
-                            logger.warn("Mail too big, can't attach " + att.getString("name"));
-                        } else {
-                            attList.add(PostgresEmailHelper.attachment(mail).withName(att.getString("name")).withEncodedContent(att.getString("content")));
+            if (translateSubject) {
+                mail.withSubject(I18n.getInstance().translate(
+                        subject, getHost(request), I18n.acceptLanguage(request)));
+            } else {
+                mail.withSubject(subject);
+            }
+
+            if (headers != null) {
+                for (final Object o : headers) {
+                    if (o instanceof JsonObject) {
+                        mail.withHeader((JsonObject) o);
+                    }
+                }
+            }
+
+            final Handler<String> mailHandler = body -> {
+                if (body != null) {
+                    mail.withBody(body);
+                    //attachments
+                    final List<PostgresEmailHelper.MailAttachmentBuilder> attList = new ArrayList<>();
+                    int mailSize = body.getBytes().length;
+                    if (attachments != null) {
+                        for (Object o : attachments) {
+                            if (!(o instanceof JsonObject)) continue;
+                            JsonObject att = (JsonObject) o;
+                            if (att.getString("name") == null || att.getString("content") == null) continue;
+                            mailSize += att.getString("content").getBytes().length;
+                            if (maxSize > 0 && mailSize > maxSize) {
+                                mailSize -= att.getString("content").getBytes().length;
+                                logger.warn("Mail too big, can't attach " + att.getString("name"));
+                            } else {
+                                attList.add(PostgresEmailHelper.attachment(mail).withName(att.getString("name")).withEncodedContent(att.getString("content")));
+                            }
                         }
                     }
+                    addMeta(request, mail).compose(r -> {
+                        return helper.createWithAttachments(mail, attList);
+                    }).setHandler(r -> {
+                        if (r.failed()) {
+                            logger.error("Failed to save mail: ", r.cause());
+                            handleAsyncError("Message is null.", handler);
+                        } else {
+                            handleAsyncResult(new ResultMessage(), handler);
+                        }
+                    });
+                } else {
+                    logger.error("Message is null.");
+                    handleAsyncError("Message is null.", handler);
                 }
-                addMeta(request, mail).compose(r->{
-                    return helper.createWithAttachments(mail, attList);
-                }).setHandler(r -> {
-                    if (r.failed()) {
-                        logger.error("Failed to save mail: ", r.cause());
-                        handleAsyncError("Message is null.", handler);
-                    }else{
-                        handleAsyncResult(new ResultMessage(), handler);
-                    }
-                });
-            } else {
-                logger.error("Message is null.");
-                handleAsyncError("Message is null.", handler);
-            }
-        };
+            };
 
-        if (templateParams != null) {
-            renders.processTemplate(request, templateBody, templateParams, mailHandler);
-        } else {
-            mailHandler.handle(templateBody);
+            if (templateParams != null) {
+                renders.processTemplate(request, templateBody, templateParams, mailHandler);
+            } else {
+                mailHandler.handle(templateBody);
+            }
+        }catch(Exception e){
+            logger.error("Failed to send email ", e);
         }
     }
 
@@ -266,17 +270,21 @@ public class PostgresqlEmailSender implements EmailSender {
             mail.withPlatformId(platformId);
         }
         mail.withPlatformUrl(getHost(request));
-        UserUtils.getUserInfos(eventBus, request, user -> {
-            if (user != null) {
-                if (Utils.isNotEmpty(user.getUserId())) {
-                    mail.withUserId(user.getUserId());
+        if(request != null){
+            UserUtils.getUserInfos(eventBus, request, user -> {
+                if (user != null) {
+                    if (Utils.isNotEmpty(user.getUserId())) {
+                        mail.withUserId(user.getUserId());
+                    }
+                    if (Utils.isNotEmpty(user.getType())) {
+                        mail.withProfile(user.getType());
+                    }
                 }
-                if (Utils.isNotEmpty(user.getType())) {
-                    mail.withProfile(user.getType());
-                }
-            }
+                future.complete(mail);
+            });
+        }else{
             future.complete(mail);
-        });
+        }
         return future;
     }
 }
