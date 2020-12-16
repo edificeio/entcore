@@ -142,6 +142,8 @@ public class EntCoreDataHandler extends DataHandler {
 				if (userInfos != null) {
 					authCas.setUser(userInfos.getUserId());
 					authCas.setStructureIds(new HashSet<>(userInfos.getStructures()));
+				} else{
+					log.warn("Could not found user info - necessary for computing cas structures");
 				}
 				handler.handle(authCas);
 			}

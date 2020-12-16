@@ -12,19 +12,39 @@ import org.entcore.common.neo4j.Neo4jResult;
 import java.util.*;
 
 public class MappingService {
+    private boolean splitByStructure = true;
     private static MappingService instance = new MappingService();
     public static final String COLLECTION = "casMapping";
     private final MongoDb mongoDb = MongoDb.getInstance();
     private final Neo4j neo = Neo4j.getInstance();
+    private Date cacheMappingDate;
+    private Date cacheStructuresDate;
     private Future<Mappings> cacheMapping;
     private List<Future<Mappings>> cacheMappingPending = new ArrayList<>();
     private Future<JsonArray> cacheStructures;
     private List<Future<JsonArray>> cacheStructuresPending = new ArrayList<>();
-
     private MappingService(){ }
 
     public static MappingService getInstance(){
         return instance;
+    }
+
+    public Date getCacheMappingDate() {
+        return cacheMappingDate;
+    }
+
+    public Date getCacheStructuresDate() {
+        return cacheStructuresDate;
+    }
+
+    public boolean isSplitByStructure() {
+        return splitByStructure;
+    }
+
+    public void configure(JsonObject config){
+        if(config != null){
+            this.splitByStructure = config.getBoolean("enableStructureSplit", true);
+        }
     }
 
     public void reset(){
@@ -100,6 +120,7 @@ public class MappingService {
                     }
                 }
                 cacheMappingPending.clear();
+                cacheMappingDate = new Date();
             });
             final Future<Mappings> future = Future.future();
             cacheMappingPending.add(future);
@@ -138,6 +159,7 @@ public class MappingService {
                    }
                }
                cacheStructuresPending.clear();
+               cacheStructuresDate = new Date();
             });
             final Future<JsonArray> future = Future.future();
             cacheStructuresPending.add(future);
