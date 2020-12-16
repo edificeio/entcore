@@ -93,17 +93,19 @@ public class Mapping {
         return Objects.hash(type, casType, pattern, patternCompiled, allStructures, structureIds, extraPatterns);
     }
 
-    public boolean matches(final Collection<String> structureIds, final String serviceUri){
-        if(!allStructures){
-            boolean ok = false;
-            for(final String s : structureIds){
-                if(this.structureIds.contains(s)){
-                   ok = true;
-                   break;
+    public boolean matches(final Collection<String> structureIds, final String serviceUri, boolean splitByStructure){
+        if(splitByStructure) {
+            if (!allStructures) {
+                boolean ok = false;
+                for (final String s : structureIds) {
+                    if (this.structureIds.contains(s)) {
+                        ok = true;
+                        break;
+                    }
                 }
-            }
-            if(!ok){
-                return false;
+                if (!ok) {
+                    return false;
+                }
             }
         }
         if(patternCompiled.matcher(serviceUri).matches()){

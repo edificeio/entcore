@@ -23,6 +23,7 @@ import fr.wseduc.cas.endpoint.CredentialResponse;
 import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
 import org.entcore.cas.http.VertxHttpClientFactory;
+import org.entcore.cas.mapping.MappingService;
 import org.entcore.common.http.BaseServer;
 
 import fr.wseduc.cas.endpoint.CasValidator;
@@ -38,7 +39,7 @@ public class Cas extends BaseServer {
 	@Override
 	public void start() throws Exception {
 		super.start();
-
+		MappingService.getInstance().configure(config());
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 
 		final ConfigurationController configurationController = new ConfigurationController();

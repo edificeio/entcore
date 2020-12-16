@@ -77,13 +77,25 @@ public class DefaultRegisteredService implements RegisteredService {
 
 	@Override
 	public boolean matches(final AuthCas authCas,final String serviceUri) {
+		final boolean splitByStructure = mappingService.isSplitByStructure();
 		for (Mapping criteria : criterias) {
-			if (criteria.matches(authCas.getStructureIds(), serviceUri)) {
+			if (criteria.matches(authCas.getStructureIds(), serviceUri, splitByStructure)) {
 				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + criteria.pattern());
 				return true;
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public Optional<Mapping> findMatch(final AuthCas authCas, String serviceUri, boolean splitByStructure){
+		for (Mapping criteria : criterias) {
+			if (criteria.matches(authCas.getStructureIds(), serviceUri, splitByStructure)) {
+				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + criteria.pattern());
+				return Optional.of(criteria);
+			}
+		}
+		return Optional.empty();
 	}
 
 	@Override
@@ -152,8 +164,9 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	public Optional<Mapping> foundMappingByService(final Set<String> structureIds, final String serviceUri){
+		final boolean splitByStructure = mappingService.isSplitByStructure();
 		for(final Mapping mapping : criterias){
-			if(mapping.matches(structureIds, serviceUri)){
+			if(mapping.matches(structureIds, serviceUri, splitByStructure)){
 				return Optional.of(mapping);
 			}
 		}

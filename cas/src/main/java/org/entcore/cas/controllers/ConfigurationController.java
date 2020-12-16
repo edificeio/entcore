@@ -20,6 +20,7 @@
 package org.entcore.cas.controllers;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Delete;
@@ -27,12 +28,14 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
+import org.entcore.cas.mapping.Mapping;
 import org.entcore.cas.mapping.MappingService;
+import org.entcore.cas.services.RegisteredService;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -42,6 +45,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.utils.StringUtils;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -49,6 +55,7 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 public class ConfigurationController extends BaseController {
 
 	private RegisteredServices services;
+	private final Neo4j neo = Neo4j.getInstance();
 	private final MappingService mappingService = MappingService.getInstance();
 
 	@Get("/configuration/reload")
@@ -76,6 +83,7 @@ public class ConfigurationController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void reloadMapping(HttpServerRequest request) {
+		log.info("Reloading cas mapping");
 		mappingService.reset();
 		getMappings(request);
 	}
@@ -145,6 +153,7 @@ public class ConfigurationController extends BaseController {
 	}
 
 	public void loadPatterns() {
+		log.info("Reloading cas pattern and mapping");
 		mappingService.reset();
 		eb.send("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
@@ -169,6 +178,7 @@ public class ConfigurationController extends BaseController {
 							log.error("Could not add CAS app", e);
 						}
 					}
+					log.info("Cas pattern has been reloaded successfully: "+externalApps.size());
 				} else {
 					log.error(event.body().getString("message"));
 				}
@@ -199,6 +209,74 @@ public class ConfigurationController extends BaseController {
 
 	public void setRegisteredServices(RegisteredServices services) {
 		this.services = services;
+	}
+
+	@Get("/configuration/simulate")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void simulate(HttpServerRequest request) {
+		final String service = request.params().get("service");
+		final String user = request.params().get("user");
+		final String splitByStructureStr = request.params().get("splitByStructure");
+		final List<String> structures = request.params().getAll("structures");
+		final boolean splitByStructure;
+		final Future<List<String>> futureStructures = Future.future();
+		//compute split flag if not exists
+		if(splitByStructureStr == null){
+			splitByStructure = mappingService.isSplitByStructure();
+		}else{
+			splitByStructure = "true".equals(splitByStructureStr);
+		}
+		//if missing structure param compute it
+		if(!StringUtils.isEmpty(user) && (structures == null || structures.isEmpty())){
+			final String query = "MATCH (u:`User` { id : {id}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"RETURN s.id as id ";
+			neo.execute(query, new JsonObject().put("id", user), Neo4jResult.validResultHandler(r->{
+				if(r.isLeft()){
+					futureStructures.fail(r.left().getValue());
+				}else{
+					final List<String> structureIds = new ArrayList<>();
+					for(final Object obj : r.right().getValue()){
+						if(obj instanceof JsonObject){
+							final String id = ((JsonObject)obj).getString("id");
+							if(id!=null){
+								structureIds.add(id);
+							}
+						}
+					}
+					futureStructures.complete(structureIds);
+				}
+			}));
+		}else{
+			futureStructures.complete(structures != null? structures : new ArrayList<>());
+		}
+		futureStructures.setHandler(r->{
+			if(r.failed()){
+				renderJson(request, new JsonObject().put("error", r.cause().getMessage()));
+				return;
+			}
+			final AuthCas authCas = new AuthCas();
+			authCas.setUser(user);
+			authCas.setStructureIds(new HashSet<>(r.result()));
+			final Optional<Mapping> result = services.findMatch(authCas, service, splitByStructure);
+			final Date structDate = mappingService.getCacheStructuresDate();
+			final Date mappingDate = mappingService.getCacheMappingDate();
+			final String structDateStr = structDate!=null?structDate.toString():"";
+			final String mappingDateStr = mappingDate!=null?mappingDate.toString():"";
+			final JsonObject response = new JsonObject().put("cacheStructureDate", structDateStr).put("cacheMappingDate", mappingDateStr);
+			response.put("split-by-structure", splitByStructure);
+			if(result.isPresent()){
+				response.put("found", true);
+				response.put("mapping-type", result.get().getType());
+				response.put("pattern", result.get().getPattern());
+				response.put("cas-type", result.get().getCasType());
+				response.put("structures-ids", new JsonArray(new ArrayList<>(result.get().getStructureIds())));
+				response.put("generated-pattern", new JsonArray(new ArrayList<>(result.get().getExtraPatterns())));
+			}else{
+				response.put("found", false);
+			}
+			renderJson(request, response);
+		});
 	}
 
 }

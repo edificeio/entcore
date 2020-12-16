@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import fr.wseduc.cas.async.Handler;
@@ -29,6 +30,7 @@ import fr.wseduc.cas.entities.User;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.cas.mapping.Mapping;
 
 public class RegisteredServices {
 
@@ -47,6 +49,17 @@ public class RegisteredServices {
 			}
 		}
 		return null;
+	}
+
+	public Optional<Mapping> findMatch(final AuthCas authCas, String service, boolean splitByStructure) {
+		for (RegisteredService registeredService : services) {
+			final Optional<Mapping> res = registeredService.findMatch(authCas, service, splitByStructure);
+			if (res.isPresent()) {
+				if (log.isDebugEnabled()) log.debug("service + |" + service + "| matches with registered service : " + registeredService.getClass().getSimpleName());
+				return res;
+			}
+		}
+		return Optional.empty();
 	}
 
 	public void getUser(AuthCas authCas, String service, Handler<User> userHandler) {

@@ -41,6 +41,8 @@ public interface RegisteredService {
 
 	boolean matches(final AuthCas authCas, String serviceUri);
 
+	Optional<Mapping> findMatch(final AuthCas authCas, String serviceUri, boolean splitByStructure);
+
 	void getUser(AuthCas authCas, String service, Handler<User> userHandler);
 
 	String formatService(String serviceUri, ServiceTicket st);
