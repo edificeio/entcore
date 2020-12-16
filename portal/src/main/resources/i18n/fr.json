@@ -642,5 +642,7 @@
   "rgpd.cookies.banner.text1": "Ce site utilise des cookies permettant de collecter des informations anonymisées visant à améliorer l'expérience utilisateur. En poursuivant votre navigation, vous acceptez l'utilisation de cookies. Vous pouvez modifier vos préférences à tout moment. Voir les",
   "rgpd.cookies.banner.link": "paramètres de vie privée",
   "workspace.invalidfile.placeholder": "Fichier invalide",
-  "workspace.import.zip.invalid": "Fichier invalide"
+  "workspace.import.zip.invalid": "Fichier invalide",
+  "helpbox.next": "Suivant",
+  "helpbox.finish": "J'ai compris"
 }
