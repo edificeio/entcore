@@ -204,8 +204,6 @@
     "workspace.help.title": "Du nouveau dans l'espace documentaire!",
     "workspace.help.1": "Le droit de contribution dans un dossier permet désormais aux personnes autorisées d'ajouter des documents dans vos dossiers partagés.",
     "workspace.help.2": "Cette possibilité implique que tous les dossiers partagés soient visibles par tous au même endroit. Vos fichiers partagés sont désormais tous rangés dans cet emplacement. Si vous partagez un dossier ou un fichier depuis votre espace personnel, ils se retrouveront automatiquement ici.",
-    "helpbox.next": "Suivant",
-    "helpbox.finish": "J'ai compris",
     "folderpicker.folder.edit": "Créer un nouveau dossier",
     "workspace.create.cancel.title": "Attention!",
     "workspace.create.cancel.delete": "Supprimer le dossier",

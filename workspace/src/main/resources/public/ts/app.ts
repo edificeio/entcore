@@ -5,7 +5,6 @@ import { fileViewer } from './directives/fileViewer';
 import { pdfViewer } from './directives/pdfViewer';
 import { cssTransitionEnd } from './directives/cssTransitions';
 import { dropzoneOverlay } from './directives/dropzoneOverlay';
-import { helpBox, helpBoxStep } from './directives/helpBox'; 
 import { lazyLoadImg } from './directives/lazyLoad';
 import { csvViewer } from './directives/csvViewer';
 import { txtViewer } from './directives/txtViewer';
@@ -44,8 +43,6 @@ ng.directives.push(fileViewer);
 ng.directives.push(pdfViewer);
 ng.directives.push(cssTransitionEnd);
 ng.directives.push(dropzoneOverlay)
-ng.directives.push(helpBoxStep);
-ng.directives.push(helpBox); 
 ng.directives.push(lazyLoadImg)
 ng.directives.push(csvViewer)
 ng.directives.push(txtViewer)
