@@ -50,6 +50,8 @@ public class Cas extends BaseServer {
 		CredentialResponse credentialResponse;
 		if (isNotEmpty(config.getString("external-login-uri")) && isNotEmpty(config.getString("host"))) {
 			credentialResponse = new ExternalCredentialResponse(config.getString("external-login-uri"), config.getString("host"));
+		} else if (config.containsKey("external-login-uri-by-host")) {
+			credentialResponse = new ExternalCredentialResponse(config.getJsonObject("external-login-uri-by-host"));
 		} else {
 			credentialResponse = new EntCoreCredentialResponse();
 		}
