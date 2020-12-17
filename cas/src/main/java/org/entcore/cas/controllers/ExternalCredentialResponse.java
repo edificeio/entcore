@@ -22,6 +22,9 @@ package org.entcore.cas.controllers;
 import fr.wseduc.cas.entities.LoginTicket;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.cas.http.Response;
+import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.json.JsonObject;
+import org.entcore.cas.http.WrappedRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -30,10 +33,18 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 
 	private final String uri;
 	private final String host;
+	private final JsonObject externalUriByHost;
 
 	public ExternalCredentialResponse(String uri, String host) {
 		this.uri = uri;
 		this.host = host;
+		this.externalUriByHost = null;
+	}
+
+	public ExternalCredentialResponse(JsonObject externalUriByHost) {
+		this.uri = null;
+		this.host = null;
+		this.externalUriByHost = externalUriByHost;
 	}
 
 	@Override
@@ -41,8 +52,22 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 			boolean renew, boolean gateway, String method) {
 		Response response = request.getResponse();
 		try {
-			response.putHeader("Location", uri + "?callback=" +
-					URLEncoder.encode(host + "/cas/login?" + serializeParams(request), "UTF-8"));
+			String cUri;
+			final String cHost;
+			if (externalUriByHost == null) {
+				cUri = uri;
+				cHost = host;
+			} else {
+				WrappedRequest wrappedRequest = (WrappedRequest) request;
+				cHost = Renders.getScheme(wrappedRequest.getServerRequest()) + "://" +  Renders.getHost(wrappedRequest.getServerRequest());
+				cUri = externalUriByHost.getString(Renders.getHost(wrappedRequest.getServerRequest()));
+				if (cUri == null || cUri.isEmpty()) {
+					cUri = "/auth/login";
+				}
+			}
+
+			response.putHeader("Location", cUri + "?callback=" +
+					URLEncoder.encode(cHost + "/cas/login?" + serializeParams(request), "UTF-8"));
 			response.setStatusCode(302);
 		} catch (UnsupportedEncodingException e) {
 			response.setStatusCode(500);
@@ -51,5 +76,4 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 			response.close();
 		}
 	}
-
 }
