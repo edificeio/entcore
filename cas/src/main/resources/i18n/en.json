@@ -34,5 +34,7 @@
   "ExplorateurDeMetiersRegisteredService.name" : "Explorateur de Métiers",
   "ExplorateurDeMetiersRegisteredService.description" : "Explorateur de Métiers",
   "SalvumRegisteredService.name" : "Salvum",
-  "SalvumRegisteredService.description" : "Salvum"
+  "SalvumRegisteredService.description" : "Salvum",
+  "MilliwebRegisteredService.name" : "Milliweb",
+  "MilliwebRegisteredService.description" : "Milliweb"
 }
