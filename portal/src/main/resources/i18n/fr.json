@@ -585,6 +585,8 @@
   "video.play": "Lire",
   "video.redo": "Refaire",
   "video.default.camera": "Caméra par défaut",
+  "video.front.camera": "Caméra avant",
+  "video.back.camera": "Caméra arrière",
   "video.start.camera": "Activer la caméra",
   "video.start.record": "Démarrer l'enregistrement",
   "video.stop.record": "Pause/reprise",
