@@ -90,6 +90,7 @@ public class UserInfos {
 		private String prefix;
 		private String casType;
 		private List<String> scope;
+		private boolean isExternal;
 
 		public String getName() {
 			return name;
@@ -157,6 +158,14 @@ public class UserInfos {
 
 		public void setScope(List<String> scope) {
 			this.scope = scope;
+		}
+
+		public boolean getIsExternal() {
+			return isExternal;
+		}
+
+		public void setIsExternal(boolean isExternal) {
+			this.isExternal = isExternal;
 		}
 	}
 
