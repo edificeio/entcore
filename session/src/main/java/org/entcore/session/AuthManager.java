@@ -489,7 +489,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"<-[:PROVIDE]-(app:Application) " +
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
-				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix,app.casType,app.scope]) as apps";
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix,app.casType,app.scope,app:External]) as apps";
 		final String query3 =
 				"MATCH (u:User {id: {id}})-[:IN]->(g:Group)-[auth:AUTHORIZED]->(w:Widget) " +
 				"WHERE HAS(u.login) " +
@@ -557,6 +557,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 										.put("prefix", (String) a.getString(6))
 										.put("casType", (String) a.getString(7))
 										.put("scope", (JsonArray) a.getJsonArray(8))
+										.put("isExternal", a.getBoolean(9))
 						);
 					}
 					for (Object o : getOrElse(j.getJsonArray("aafFunctions"), new fr.wseduc.webutils.collections.JsonArray())) {
