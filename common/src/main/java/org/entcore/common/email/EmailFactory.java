@@ -28,7 +28,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.email.impl.PostgresqlEmailSender;
+import org.entcore.common.email.impl.PostgresEmailSender;
 
 import java.net.URISyntaxException;
 
@@ -88,7 +88,7 @@ public class EmailFactory {
 				}
 			}
 			if(config.containsKey("postgresql")){
-				sender = new PostgresqlEmailSender(sender,vertx,moduleConfig, config, priority);
+				sender = new PostgresEmailSender(sender,vertx,moduleConfig, config, priority);
 			}
 		} else {
 			sender = new SmtpSender(vertx);

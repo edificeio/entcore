@@ -20,11 +20,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.StringUtils;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,8 +28,8 @@ import java.util.List;
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncError;
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncResult;
 
-public class PostgresqlEmailSender implements EmailSender {
-    protected static final Logger logger = LoggerFactory.getLogger(PostgresqlEmailSender.class);
+public class PostgresEmailSender implements EmailSender {
+    protected static final Logger logger = LoggerFactory.getLogger(PostgresEmailSender.class);
     private final EmailSender oldMailSender;
     private final Renders renders;
     private final EventBus eventBus;
@@ -44,14 +40,14 @@ public class PostgresqlEmailSender implements EmailSender {
     private final String senderEmail;
     private final String host;
 
-    public PostgresqlEmailSender(EmailSender aMailSender, Vertx vertx, JsonObject moduleConfig, JsonObject emailConfig, int priority) {
+    public PostgresEmailSender(EmailSender aMailSender, Vertx vertx, JsonObject moduleConfig, JsonObject emailConfig, int priority) {
         final JsonObject pgConfig = emailConfig.getJsonObject("postgresql");
         this.priority = priority;
         this.oldMailSender = aMailSender;
         this.eventBus = vertx.eventBus();
         this.renders = new Renders(vertx, moduleConfig);
         maxSize = pgConfig.getInteger("max-size", -1);
-        this.helper = new PostgresEmailHelper(vertx, pgConfig);
+        this.helper = PostgresEmailHelper.create(vertx, pgConfig);
         final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
         if (eventStoreConf != null) {
             final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
@@ -182,7 +178,7 @@ public class PostgresqlEmailSender implements EmailSender {
                           String subject, JsonArray attachments, String templateBody, JsonObject templateParams,
                           boolean translateSubject, JsonArray headers, final Handler<AsyncResult<Message<JsonObject>>> handler) {
         try {
-            final PostgresEmailHelper.MailBuilder mail = PostgresEmailHelper.mail();
+            final PostgresEmailBuilder.EmailBuilder mail = PostgresEmailBuilder.mail();
             for (final Object t : to) {
                 mail.withTo(t.toString());
             }
@@ -217,7 +213,7 @@ public class PostgresqlEmailSender implements EmailSender {
                 if (body != null) {
                     mail.withBody(body);
                     //attachments
-                    final List<PostgresEmailHelper.MailAttachmentBuilder> attList = new ArrayList<>();
+                    final List<PostgresEmailBuilder.AttachmentBuilder> attList = new ArrayList<>();
                     int mailSize = body.getBytes().length;
                     if (attachments != null) {
                         for (Object o : attachments) {
@@ -229,7 +225,7 @@ public class PostgresqlEmailSender implements EmailSender {
                                 mailSize -= att.getString("content").getBytes().length;
                                 logger.warn("Mail too big, can't attach " + att.getString("name"));
                             } else {
-                                attList.add(PostgresEmailHelper.attachment(mail).withName(att.getString("name")).withEncodedContent(att.getString("content")));
+                                attList.add(PostgresEmailBuilder.attachment(mail).withName(att.getString("name")).withEncodedContent(att.getString("content")));
                             }
                         }
                     }
@@ -238,9 +234,13 @@ public class PostgresqlEmailSender implements EmailSender {
                     }).setHandler(r -> {
                         if (r.failed()) {
                             logger.error("Failed to save mail: ", r.cause());
-                            handleAsyncError("Message is null.", handler);
+                            if(handler != null){
+                                handleAsyncError("Message is null.", handler);
+                            }
                         } else {
-                            handleAsyncResult(new ResultMessage(), handler);
+                            if(handler != null) {
+                                handleAsyncResult(new ResultMessage(), handler);
+                            }
                         }
                     });
                 } else {
@@ -256,11 +256,14 @@ public class PostgresqlEmailSender implements EmailSender {
             }
         }catch(Exception e){
             logger.error("Failed to send email ", e);
+            if(handler != null){
+                handleAsyncError(e.getMessage(), handler);
+            }
         }
     }
 
-    private Future<PostgresEmailHelper.MailBuilder> addMeta(HttpServerRequest request, PostgresEmailHelper.MailBuilder mail) {
-        final Future<PostgresEmailHelper.MailBuilder> future = Future.future();
+    private Future<PostgresEmailBuilder.EmailBuilder> addMeta(HttpServerRequest request, PostgresEmailBuilder.EmailBuilder mail) {
+        final Future<PostgresEmailBuilder.EmailBuilder> future = Future.future();
         mail.withPriority(priority);
         final String moduleName = BaseServer.getModuleName();
         if (Utils.isNotEmpty(moduleName)) {

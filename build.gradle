@@ -258,6 +258,7 @@ project(':infra') {
     compile project(':common')
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
     compile "fr.wseduc:web-utils:$webUtilsVersion"
+    testCompile project(':test')
   }
 }
 
