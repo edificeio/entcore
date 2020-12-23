@@ -23,18 +23,24 @@
 package org.entcore.infra;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.events.impl.BusEventStoreFactory;
 import org.entcore.common.events.impl.PostgresqlEventStoreFactory;
+import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MailController;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.ArrayList;
@@ -43,5 +49,79 @@ import java.util.UUID;
 
 @RunWith(VertxUnitRunner.class)
 public class EventStoreTest {
-   
+    private static final TestHelper test = TestHelper.helper();
+
+    @ClassRule
+    public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("init_event.sql");
+    @ClassRule
+    public static MongoDBContainer mongoContainer = test.database().createMongoContainer();
+    static EventStoreFactory storeFactory;
+    static JsonObject postgresql;
+    static EventStore eventStore;
+    @BeforeClass
+    public static void setUp(TestContext context) throws Exception {
+        test.database().initMongo(context, mongoContainer);
+        postgresql = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
+        final JsonObject config = new JsonObject().put("postgresql", postgresql).put("platform", "test");
+        test.vertx().sharedData().getLocalMap("server").put("event-store", config.toString());
+        final EventStoreFactory fac = new PostgresqlEventStoreFactory();
+        fac.setVertx(test.vertx());
+        eventStore = fac.getEventStore("test");
+        test.vertx().eventBus().localConsumer("event.store", new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                final JsonObject json = event.body();
+                final String eventType = event.body().getString("event-type");
+                json.put("user_id", json.getString("userId"));
+                json.remove("event-type");
+                json.remove("userId");
+                json.remove("groups");
+                eventStore.storeCustomEvent(eventType, json);
+            }
+        });
+    }
+
+    @Test
+    public void testShouldCreateDefaultEventStore(TestContext context) {
+        EventStoreFactory factory = EventStoreFactory.getFactory();
+        context.assertFalse(factory instanceof BusEventStoreFactory);
+    }
+
+    @Test
+    public void testShouldCreateEvent(TestContext context) {
+        final EventStoreFactory fac = new PostgresqlEventStoreFactory();
+        fac.setVertx(test.vertx());
+        final EventStore store = fac.getEventStore("test");
+        //multiple pgclient (eventstore) should not work inside worker
+        store.createAndStoreEvent("ACCESS", TestHelper.helper().directory().generateUser("user1"));
+        final Async async = context.async();
+        //TODO missing handler on eventstore interface
+        test.vertx().setTimer(500, r->{
+            async.complete();
+        });
+    }
+
+    @Test
+    public void testShouldCreateEventInsideWorker(TestContext testCtx) {
+        //multiple pgclient (eventstore) should not work inside worker
+        final EventStoreFactory fac = new PostgresqlEventStoreFactory();
+        fac.setVertx(test.vertx());
+        final EventStore store = fac.getEventStore("test");
+        final Async async = testCtx.async();
+        test.vertx().deployVerticle("org.entcore.infra.EventWorkerForTest", new DeploymentOptions().setWorker(true).setInstances(1).setMultiThreaded(false).setConfig(new JsonObject().put("postgres", postgresql))
+                .setIsolationGroup("event_worker_group")
+                .setIsolatedClasses(Arrays.asList("org.entcore.infra.*")), rDep -> {
+            test.vertx().eventBus().send(EventWorkerForTest.class.getSimpleName(),
+                    new JsonObject().put("action", "send"), r -> {
+                        if (r.failed()) {
+                            r.cause().printStackTrace();
+                        } else {
+                            final JsonObject json = (JsonObject)r.result().body();
+                            testCtx.assertTrue(json.getBoolean("success"));
+                        }
+                        async.complete();
+                    });
+        });
+    }
+
 }

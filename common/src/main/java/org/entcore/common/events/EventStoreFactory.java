@@ -19,18 +19,25 @@
 
 package org.entcore.common.events;
 
+import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.events.impl.BusEventStoreFactory;
 import org.entcore.common.events.impl.MongoDbEventStoreFactory;
+import org.entcore.common.http.BaseServer;
 
 import java.util.ServiceLoader;
 
 public abstract class EventStoreFactory {
+	static final Logger logger = LoggerFactory.getLogger(EventStoreFactory.class);
 
 	protected Vertx vertx;
 
 	private static class EventStoreFactoryHolder {
 
 		private static final EventStoreFactory factory;
+		private static final BusEventStoreFactory busFactory = new BusEventStoreFactory();
 
 		static {
 			ServiceLoader<EventStoreFactory> eventStoreFactories = ServiceLoader.load(EventStoreFactory.class);
@@ -43,6 +50,13 @@ public abstract class EventStoreFactory {
 	}
 
 	public static EventStoreFactory getFactory() {
+		//running multiple pgclient in worker context cause issues (netty emit data to each inbound handler causing NPE)
+		final Context context = Vertx.currentContext();
+		if(context != null && context.isWorkerContext()){
+			final String name = BaseServer.getModuleName();
+			logger.info((name!=null ? name : "") + " init a bus eventstore for worker...");
+			return EventStoreFactoryHolder.busFactory;
+		}
 		return EventStoreFactoryHolder.factory;
 	}
 
