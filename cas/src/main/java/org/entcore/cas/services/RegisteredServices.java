@@ -87,11 +87,11 @@ public class RegisteredServices {
 		return infos;
 	}
 
-	public boolean addPatterns(boolean emptyPattern, String service, String structureId, boolean canInherits, String... patterns) {
+	public boolean addPatterns(boolean emptyPattern, String service, String structureId, boolean canInherits, Optional<String> statCasType, String... patterns) {
 		if (service != null && !service.trim().isEmpty() && patterns != null && patterns.length > 0) {
 			for (RegisteredService registeredService: services) {
 				if (service.equals(registeredService.getId())) {
-					registeredService.addPatterns(emptyPattern, structureId, canInherits, patterns);
+					registeredService.addPatterns(emptyPattern, structureId, canInherits, statCasType, patterns);
 					return true;
 				}
 			}

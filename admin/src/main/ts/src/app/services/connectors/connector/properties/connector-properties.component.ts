@@ -105,10 +105,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
         {value: this.OAUTH_GRANTTYPE_BASIC, label: 'services.connector.oauth.grantType.basic'}
     ];
 
-    casTypesOptions: SelectOption<string>[] = this.casTypes ? this.casTypes.map(c => ({
-        value: c.id,
-        label: c.name
-    })) : [];
+    casTypesOptions: SelectOption<string>[];
     casMappings: MappingModel[] = [];
     casMappingCollection: MappingCollection;
     isOpenCasType = false;
@@ -116,6 +113,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     casTypeToRemove: MappingModel = null;
     casTypeToRemoveId: string = null;
     newCasType = new MappingModel;
+    
 
     structure:Structure = null;
     
@@ -167,9 +165,9 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
         this.newCasType.type = slug(value);
     }
 
-    public onCasMappingChange(mappingId:string){
-        this.connector.casMappingId = mappingId;
-        const mapping = this.casMappings.find(e=>e.type==mappingId);
+    public onCasMappingChange(statCasType:string){
+        this.connector.statCasType = statCasType;
+        const mapping = this.casMappings.find(e=>e.type==statCasType);
         this.setMapping(mapping);
     }
 
@@ -214,10 +212,10 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
         this.isOpenCasRemove = true;
     }
 
-    public async onCasTypeToRemoveChange(mappingId:string)
+    public async onCasTypeToRemoveChange(statCasType:string)
     {
-        let stats = await this.casMappingCollection.getUsage(mappingId, this.structure.id);
-        this.casTypeToRemove = this.casMappings.find(e=>e.type==mappingId);
+        let stats = await this.casMappingCollection.getUsage(statCasType, this.structure.id);
+        this.casTypeToRemove = this.casMappings.find(e=>e.type==statCasType);
         this.casTypeToRemove.connectorsInStruct = stats.data["connectorsInThisStruct"] == null ? [] : stats.data["connectorsInThisStruct"];
         this.casTypeToRemove.connectorsOutsideStruct = stats.data["usesInOtherStructs"];
         this.changeDetector.markForCheck();
@@ -260,8 +258,8 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     ngOnChanges(changes: SimpleChanges): void {
         super.ngOnChanges(changes);
         this.casTypesOptions = this.casTypes ? this.casTypes.map(c => ({value: c.id, label: c.name})) : [];
-        if(this.connector){
-            this.connector.casMappingId = this.casMappingCollection.getMappingId(this.connector.casTypeId, this.connector.casPattern);
+        if(this.casMappingCollection && this.connector && !this.connector.statCasType){//compute it only if not exists
+            this.connector.statCasType = this.casMappingCollection.getStatCasType(this.connector.casTypeId, this.connector.casPattern);
         }
     }
 
@@ -274,5 +272,9 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     }
     constructor(injector: Injector, private notifyService: NotifyService) {
         super(injector);
+        this.casTypesOptions = this.casTypes ? this.casTypes.map(c => ({
+            value: c.id,
+            label: c.name
+        })) : [];
     }
 }
