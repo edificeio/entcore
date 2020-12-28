@@ -297,19 +297,23 @@ public class MappingService {
             }
         }
 
-        private Set<String> getDescendants(final String structureId){
-            final Set<String> all = new HashSet<>();
+        private void getDescendants(final String structureId, final Set<String> all){
             final Set<String> children = this.structuresWithChildren.getOrDefault(structureId, new HashSet<>());
             for(final String child : children){
-                all.add(child);
-                all.addAll(getDescendants(child));
+                if(all.contains(child)){
+                    logger.warn("Loop while getting descendant of "+structureId+ " child already added: "+child);
+                }else{
+                    all.add(child);
+                    getDescendants(child, all);
+                }
             }
-            return all;
         }
 
         public void computeHierarchy(){
             for(final String structureId : structuresWithChildren.keySet()){
-                this.structuresWithDescendants.put(structureId, getDescendants(structureId));
+                final Set<String> all = new HashSet<>();
+                getDescendants(structureId, all);
+                this.structuresWithDescendants.put(structureId, all);
             }
         }
 
