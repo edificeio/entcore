@@ -167,12 +167,14 @@ public class ConfigurationController extends BaseController {
 							if (!(o instanceof JsonObject)) continue;
 							final JsonObject j = (JsonObject) o;
 							final String service = j.getString("service");
+							final String statCasType = j.getString("statCasType");
 							final String structureId = j.getString("structureId");
 							final JsonArray patterns = j.getJsonArray("patterns");
 							final boolean inherits = safeGetBoolean(j,"inherits", false);
 							final boolean emptyPattern = safeGetBoolean(j,"emptyPattern", false);
+							final Optional<String> statCasTypeOpt = StringUtils.isEmpty(statCasType)?Optional.empty():Optional.ofNullable(statCasType);
 							if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-								services.addPatterns(emptyPattern, service, structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
+								services.addPatterns(emptyPattern, service, structureId, inherits, statCasTypeOpt, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
 							}
 						} catch(Exception e) {
 							log.error("Could not add CAS app", e);
@@ -196,11 +198,13 @@ public class ConfigurationController extends BaseController {
 			case "add-patterns" :
 				final String structureId = message.body().getString("structureId");
 				final String service = message.body().getString("service");
+				final String statCasType = message.body().getString("statCasType");
 				final JsonArray patterns = message.body().getJsonArray("patterns");
 				final boolean inherits = safeGetBoolean(message.body(),"inherits", false);
 				final boolean emptyPattern = safeGetBoolean(message.body(),"emptyPattern", false);
+				final Optional<String> statCasTypeOpt = StringUtils.isEmpty(statCasType)?Optional.empty():Optional.ofNullable(statCasType);
 				message.reply(new JsonObject().put("status",
-						services.addPatterns(emptyPattern, service, structureId, inherits, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
+						services.addPatterns(emptyPattern, service, structureId, inherits, statCasTypeOpt, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));

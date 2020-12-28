@@ -27,9 +27,9 @@ export class MappingCollection extends Collection<MappingModel> {
         this.data = Mix.castArrayAs(MappingModel, res.data);
     }
 
-    async getUsage(mappingId:string, structureId?: string)
+    async getUsage(statCasType:string, structureId?: string)
     {
-        const usage = await this.http.get(`/cas/configuration/mappings/${mappingId}/usage` + (structureId != null ? `/${structureId}` : ""));
+        const usage = await this.http.get(`/cas/configuration/mappings/${statCasType}/usage` + (structureId != null ? `/${structureId}` : ""));
         return usage;
     }
 
@@ -39,7 +39,7 @@ export class MappingCollection extends Collection<MappingModel> {
         await this.getAll();
     }
 
-    getMappingId(casType:string, pattern:string):string{
+    getStatCasType(casType:string, pattern:string):string{
         pattern = pattern || "";
         const mapping = this.data.find(e=>e.casType==casType && e.pattern == pattern);
         return mapping? mapping.type : undefined;
@@ -60,7 +60,7 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
         const connectors = new Array<IConnector>();
         
         res.data.forEach(connector => {
-            const mapping = instance.getMappingId(connector.data.casType,connector.data.pattern);
+            const statCasType = connector.data.statCasType || instance.getStatCasType(connector.data.casType,connector.data.pattern);
             connectors.push({
                 id: connector.data.id,
                 name: connector.data.name,
@@ -71,7 +71,7 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                 inherits: connector.data.inherits,
                 locked: connector.data.locked,
                 casTypeId: connector.data.casType,
-                casMappingId: mapping,
+                statCasType: statCasType,
                 casPattern: connector.data.pattern,
                 oauthScope: connector.data.scope,
                 oauthSecret: connector.data.secret,

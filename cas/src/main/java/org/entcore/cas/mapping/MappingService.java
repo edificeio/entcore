@@ -6,6 +6,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 
@@ -279,6 +281,7 @@ public class MappingService {
     }
 
     public static class Mappings{
+        static final Logger logger = LoggerFactory.getLogger(Mappings.class);
         private final Map<String, Mapping> rowsByType;
         private final Map<String, Set<String>> structuresWithChildren = new HashMap<>();
         private final Map<String, Set<String>> structuresWithDescendants = new HashMap<>();
@@ -318,7 +321,28 @@ public class MappingService {
             return all;
         }
 
-        public Optional<Mapping> find(Optional<String> structureId, String casType, String pattern, boolean canInherits){
+        public Optional<Mapping> find(Optional<String> structureId, String casType, String pattern, boolean canInherits, Optional<String> statCasType){
+            //find by statType
+            if(statCasType.isPresent()){
+                if(rowsByType.containsKey(statCasType.get())){
+                    final Mapping mapping = rowsByType.get(statCasType.get());
+                    if(structureId.isPresent()){
+                        final Set<String> descendantAndSelf = new HashSet<>();
+                        if(canInherits){
+                            final Set<String> found = structuresWithDescendants.getOrDefault(structureId.get(), new HashSet<>());
+                            descendantAndSelf.addAll(found);
+                        }
+                        descendantAndSelf.add(structureId.get());
+                        return Optional.of(mapping.copyWith(descendantAndSelf, false));
+                    } else {
+                        return Optional.of(mapping.copyWith(new HashSet<>(), true));
+                    }
+                } else {
+                    logger.warn("Could not found forced statCasType: "+statCasType.get());
+                    return Optional.empty();
+                }
+            }
+            //find by pattern and casType
             for(Mapping mapping: rowsByType.values()){
                 if(mapping.getCasType().equals(casType) && mapping.getPattern().equals(pattern)){
                     if(structureId.isPresent()){

@@ -144,11 +144,11 @@ public class DefaultRegisteredService implements RegisteredService {
 		return serviceUri;
 	}
 
-	protected Future<Mapping> getMapping(Optional<String> structureId, String pattern, boolean canInherits){
+	protected Future<Mapping> getMapping(Optional<String> structureId, String pattern, boolean canInherits, Optional<String> statCasType){
 		final Future<Mapping> future = Future.future();
 		mappingService.getMappings().setHandler(r->{
 			if(r.succeeded()){
-				final Optional<Mapping> found = r.result().find(structureId, getId(), pattern, canInherits);
+				final Optional<Mapping> found = r.result().find(structureId, getId(), pattern, canInherits, statCasType);
 				if(found.isPresent()){
 					future.complete(found.get());
 				} else{
@@ -179,7 +179,7 @@ public class DefaultRegisteredService implements RegisteredService {
 				final Mapping mapping = Mapping.unknown(getId(), pattern).setAllStructures(true);
 				this.confCriterias.add(mapping);
 				this.criterias.add(mapping);
-				getMapping(Optional.empty(),pattern, true).setHandler(r->{
+				getMapping(Optional.empty(),pattern, true, Optional.empty()).setHandler(r->{
 					if(r.succeeded()){//set type as soon as we know it
 						mapping.setType(r.result().getType());
 					} else{
@@ -194,11 +194,11 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public void addPatterns(boolean emptyPattern, String structureId, boolean canInherits, String... patterns) {
+	public void addPatterns(boolean emptyPattern, String structureId, boolean canInherits, Optional<String> statCasType, String... patterns) {
 		for (String pattern : patterns) {
 			try {
 				final String typedPattern = emptyPattern?"":pattern;
-				getMapping(Optional.ofNullable(structureId), typedPattern, canInherits).setHandler(r->{
+				getMapping(Optional.ofNullable(structureId), typedPattern, canInherits, statCasType).setHandler(r->{
 					if(r.succeeded()){
 						Mapping mapping = r.result();
 						if(emptyPattern){

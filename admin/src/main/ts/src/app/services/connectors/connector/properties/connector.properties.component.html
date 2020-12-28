@@ -105,7 +105,7 @@
       </div>
 
       <ode-form-field label="services.connector.cas.mapping">
-        <select [ngModel]="connector.casMappingId"
+        <select [ngModel]="connector.statCasType"
                 (ngModelChange)="onCasMappingChange($event)"
                 name="casMapping"
                 [disabled]="!connector.hasCas || disabled"

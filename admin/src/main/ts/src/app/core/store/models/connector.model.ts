@@ -11,7 +11,7 @@ export interface IConnector{
     inherits: boolean;
     locked: boolean;
     casTypeId: string;
-    casMappingId: string;
+    statCasType: string;
     casPattern: string;
     oauthScope: string;
     oauthSecret: string;
@@ -62,7 +62,7 @@ export class ConnectorModel extends Model<ConnectorModel> implements IConnector{
     target: string;
     inherits: boolean;
     locked: boolean;
-    casMappingId: string;
+    statCasType: string;
     roles: RoleModel[];
 
     hasCas: boolean;

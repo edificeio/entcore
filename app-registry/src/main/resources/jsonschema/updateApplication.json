@@ -30,6 +30,9 @@
     "casType": {
         "type": "string"
     },
+    "statCasType": {
+        "type": "string"
+    },
 	"pattern": {
 		"type": "string"
 	},
