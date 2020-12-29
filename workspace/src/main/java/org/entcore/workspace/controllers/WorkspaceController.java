@@ -698,6 +698,7 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("trasher");
 				query.getProjection().add("ancestors");
 				query.getProjection().add("externalId");
+				query.getProjection().add("isShared");
 				workspaceService.findByQuery(query, userInfos, asyncArrayResponseHandler(request));
 			} else {
 				unauthorized(request);
