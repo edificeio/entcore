@@ -41,7 +41,7 @@ public class MailWorkerForTest extends BusModBase implements Handler<Message<Jso
                 r.cause().printStackTrace();
                 message.fail(400, r.cause().getMessage());
             }else {
-                helper.setRead(true, (UUID)mail.getMail().get("id")).setHandler(r2->{
+                helper.setRead(true, (UUID)mail.getMail().get("id"), new JsonObject()).setHandler(r2->{
                     if (r2.failed()) {
                         r2.cause().printStackTrace();
                         message.fail(400, r2.cause().getMessage());

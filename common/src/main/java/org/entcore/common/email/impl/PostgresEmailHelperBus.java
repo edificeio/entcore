@@ -19,9 +19,12 @@ public class PostgresEmailHelperBus implements PostgresEmailHelper {
     }
 
     @Override
-    public Future<Void> setRead(boolean read, UUID mailId) {
+    public Future<Void> setRead(boolean read, UUID mailId, final JsonObject extraParams) {
         final Future<Void> future = Future.future();
         final JsonObject payload = new JsonObject();
+        for(String key : extraParams.fieldNames()){
+            payload.put(key, extraParams.getValue(key));
+        }
         payload.put("action", "setRead");
         payload.put("read", read);
         payload.put("mailId", mailId.toString());
