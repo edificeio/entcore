@@ -501,11 +501,12 @@ public class DefaultSchoolService implements SchoolService {
 	@Override
 	public void getActivationInfos(JsonArray structureIds, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
-
 		query.append("MATCH (s:Structure) WHERE s.id IN {structures} WITH s ");
-		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(a:User) WHERE HAS (a.activationCode) ");
-		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) WHERE NOT(HAS(u.activationCode)) ");
-		query.append("RETURN DISTINCT s.id AS id, COUNT(DISTINCT u.id) AS activated, COUNT(DISTINCT a.id) AS notactivated");
+		query.append("MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s)" );
+		query.append("WITH s, COLLECT(DISTINCT u) as users WITH s, ");
+		query.append("FILTER(u IN users WHERE u.activationCode IS NULL) as active, ");
+		query.append("FILTER(u IN users WHERE NOT(u.activationCode IS NULL)) as inactive ");
+		query.append("RETURN s.id AS id, LENGTH(active) AS activated, LENGTH(inactive) AS notactivated");
 
 		JsonObject params = new JsonObject().put("structures", structureIds);
 		neo.execute(query.toString(), params, validResultHandler(handler));
