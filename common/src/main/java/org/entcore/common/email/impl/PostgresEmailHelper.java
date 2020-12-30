@@ -2,10 +2,13 @@ package org.entcore.common.email.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.user.UserUtils;
 
 import java.util.*;
 
@@ -13,7 +16,30 @@ public interface PostgresEmailHelper {
     String MAILER_ADDRESS = "org.entcore.email";
     Logger logger = LoggerFactory.getLogger(PostgresEmailHelper.class);
 
-    Future<Void> setRead(boolean read, UUID uuid);
+    Future<Void> setRead(boolean read, UUID uuid, JsonObject extraParams);
+
+    default Future<Void> setRead(boolean read, UUID uuid, EventBus bus, HttpServerRequest request){
+        final JsonObject extraParams = new JsonObject();
+        if (request != null) {
+            final Future<Void> future = Future.future();
+            final String ua = request.headers().get("User-Agent");
+            if (ua != null) {
+                extraParams.put("ua", ua);
+            }
+            UserUtils.getUserInfos(bus, request, user ->{
+                if(user != null){
+                    extraParams.put("user_id", user.getUserId());
+                    if (user.getType() != null) {
+                        extraParams.put("profile", user.getType());
+                    }
+                }
+                setRead(read, uuid, extraParams).setHandler(future);
+            });
+            return future;
+        } else {
+            return setRead(read, uuid, extraParams);
+        }
+    }
 
     Future<Void> createWithAttachments(PostgresEmailBuilder.EmailBuilder mailB, List<PostgresEmailBuilder.AttachmentBuilder> attachmentsB);
 

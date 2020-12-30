@@ -27,8 +27,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.entcore.common.email.impl.PostgresEmailHelper;
 import org.entcore.common.email.impl.PostgresEmailBuilder;
+import org.entcore.common.email.impl.PostgresEmailHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.impl.PostgresqlEventStoreFactory;
 import org.entcore.infra.controllers.MailController;
@@ -79,7 +79,7 @@ public class MailTest {
             if (r.failed()) {
                 r.cause().printStackTrace();
             }else {
-                helper.setRead(true, (UUID)mail.getMail().get("id")).setHandler(r2->{
+                helper.setRead(true, (UUID)mail.getMail().get("id"),new JsonObject()).setHandler(r2->{
                     if (r2.failed()) {
                         r2.cause().printStackTrace();
                     }
@@ -113,5 +113,4 @@ public class MailTest {
                     });
         });
     }
-
 }

@@ -24,15 +24,25 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 public class MailController extends BaseController implements Handler<Message<JsonObject>> {
     private final PostgresEmailHelper helper;
     private final String image;
+    private final boolean enableTracking;
+    private final boolean trackUserInfos;
     public MailController(Vertx vertx, JsonObject config){
+        this.enableTracking = config.getBoolean("tracking-enabled", true);
+        this.trackUserInfos = config.getBoolean("tracking-userinfos", true);
         this.image = config.getString("tracking-image", "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
         this.helper = PostgresEmailHelper.createDefault(vertx, config.getJsonObject("postgresql"));
     }
 
     @Get("/mail/:id")
-    public void checkScanReport(final HttpServerRequest request) {
-        final String id = request.getParam("id");
-        helper.setRead(true, UUID.fromString(id));
+    public void mailNotification(final HttpServerRequest request) {
+        if(this.enableTracking){
+            final String id = request.getParam("id");
+            if(trackUserInfos){
+                helper.setRead(true, UUID.fromString(id), eb, request);
+            }else{
+                helper.setRead(true, UUID.fromString(id), new JsonObject());
+            }
+        }
         final HttpServerResponse response = request.response();
         response.putHeader("Content-Type", "image/png");
         response.putHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
@@ -46,7 +56,11 @@ public class MailController extends BaseController implements Handler<Message<Js
                 case "setRead": {
                     final String mailId = message.body().getString("mailId");
                     final boolean read = message.body().getBoolean("read");
-                    this.helper.setRead(read, UUID.fromString(mailId)).setHandler(r->{
+                    final JsonObject copy = message.body().copy();
+                    copy.remove("action");
+                    copy.remove("mailId");
+                    copy.remove("read");
+                    this.helper.setRead(read, UUID.fromString(mailId), copy).setHandler(r->{
                         if (r.succeeded()) {
                             message.reply(new JsonObject().put("success", true));
                         } else {
