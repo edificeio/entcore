@@ -37,14 +37,28 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         this.readTableName = pgConfig.getString("read-tablename", "mail.read_events");
     }
 
+    private static LocalDateTime getDate(final JsonObject extraParams){
+        try{
+            if(extraParams.containsKey("date")){
+                return LocalDateTime.parse(extraParams.getString("date"));
+            } else {
+                return LocalDateTime.now();
+            }
+        }catch(Exception e){
+            return LocalDateTime.now();
+        }
+    }
+
     @Override
-    public Future<Void> setRead(boolean read, UUID mailId, final JsonObject extraParams) {
+    public Future<Void> setRead(UUID mailId, final JsonObject extraParams) {
         final Future promise = Future.future();
         final StringBuilder query = new StringBuilder();
         final List<String> placeholders = new ArrayList<>();
         final List<String> names = new ArrayList<>();
-        final Tuple tuple = Tuple.tuple().addValue(mailId).addValue(read).addValue(LocalDateTime.now());
-        final String[] extraCols = {"profile","user_id","ua","device_type"};
+        final LocalDateTime date = getDate(extraParams);
+        final LocalDateTime readAt = LocalDateTime.now();
+        final Tuple tuple = Tuple.tuple().addValue(mailId).addValue(date).addValue(readAt);
+        final String[] extraCols = {"user_id","ua","device_type"};
         for(final String col : extraCols){
             if(extraParams.containsKey(col)){
                 names.add(col);
@@ -54,7 +68,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         }
         final String separator = placeholders.isEmpty()?" ":", ";
         query.append("INSERT INTO ").append(readTableName);
-        query.append("(id, read,date").append(separator).append(String.join(",",names)).append(") ");
+        query.append("(id, date, read_at").append(separator).append(String.join(",",names)).append(") ");
         query.append("VALUES ($1, $2, $3").append(separator).append(String.join(",",placeholders)).append(") RETURNING id");
         this.pool.preparedQuery(query.toString(), tuple, r -> {
             if (r.succeeded()) {

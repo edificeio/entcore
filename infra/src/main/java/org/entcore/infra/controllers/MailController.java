@@ -36,11 +36,16 @@ public class MailController extends BaseController implements Handler<Message<Js
     @Get("/mail/:id")
     public void mailNotification(final HttpServerRequest request) {
         if(this.enableTracking){
+            final String date = request.getParam("date");
             final String id = request.getParam("id");
+            final JsonObject extraParams = new JsonObject();
+            if(date != null){
+                extraParams.put("date", date);
+            }
             if(trackUserInfos){
-                helper.setRead(true, UUID.fromString(id), eb, request);
+                helper.setRead(UUID.fromString(id), eb, request, extraParams);
             }else{
-                helper.setRead(true, UUID.fromString(id), new JsonObject());
+                helper.setRead(UUID.fromString(id), extraParams);
             }
         }
         final HttpServerResponse response = request.response();
@@ -60,7 +65,7 @@ public class MailController extends BaseController implements Handler<Message<Js
                     copy.remove("action");
                     copy.remove("mailId");
                     copy.remove("read");
-                    this.helper.setRead(read, UUID.fromString(mailId), copy).setHandler(r->{
+                    this.helper.setRead(UUID.fromString(mailId), copy).setHandler(r->{
                         if (r.succeeded()) {
                             message.reply(new JsonObject().put("success", true));
                         } else {
