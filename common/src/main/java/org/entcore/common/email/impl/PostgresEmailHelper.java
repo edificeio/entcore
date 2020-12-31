@@ -16,10 +16,9 @@ public interface PostgresEmailHelper {
     String MAILER_ADDRESS = "org.entcore.email";
     Logger logger = LoggerFactory.getLogger(PostgresEmailHelper.class);
 
-    Future<Void> setRead(boolean read, UUID uuid, JsonObject extraParams);
+    Future<Void> setRead(UUID uuid, JsonObject extraParams);
 
-    default Future<Void> setRead(boolean read, UUID uuid, EventBus bus, HttpServerRequest request){
-        final JsonObject extraParams = new JsonObject();
+    default Future<Void> setRead(UUID uuid, EventBus bus, HttpServerRequest request, final JsonObject extraParams){
         if (request != null) {
             final Future<Void> future = Future.future();
             final String ua = request.headers().get("User-Agent");
@@ -33,11 +32,11 @@ public interface PostgresEmailHelper {
                         extraParams.put("profile", user.getType());
                     }
                 }
-                setRead(read, uuid, extraParams).setHandler(future);
+                setRead(uuid, extraParams).setHandler(future);
             });
             return future;
         } else {
-            return setRead(read, uuid, extraParams);
+            return setRead(uuid, extraParams);
         }
     }
 
