@@ -602,32 +602,34 @@ public class UDTImporter extends AbstractTimetableImporter {
 			{
 				long weeks = Long.valueOf(semaines);
 				BitSet weekBits = new BitSet(maxYearWeek);
-				int currentWeek = new DateTime(importTimestamp).weekOfWeekyear().get();
+				int currentWeek = new DateTime(importTimestamp).weekOfWeekyear().get() - 1;
 				DateTime refWeek = new DateTime().withYear(year).withDayOfYear(1).withTimeAtStartOfDay();
 				int borderWeek = startDateStudents.weekOfWeekyear().get();
 
 				for (int i = 0; i < maxYearWeek; i++)
 					weekBits.set(i, ((1L << i) & weeks) != 0);
 
-				for(int i = 0; i < maxYearWeek; ++i)
-				{
-					if(holidayMask.get(i) == true)
+				for(int x = 0; x++ < 2;) // We need to loop twice to handle the case where vacations start before the new year and end after
+					for(int i = 0; i < maxYearWeek; ++i)
 					{
-						int previous = (i - 1 + maxYearWeek) % maxYearWeek;
-						if(weekBits.get(previous) == true) // Keep children in their groups during holidays
-							weekBits.set(i, true);
+						if(holidayMask.get(i) == true)
+						{
+							int previous = (i - 1 + maxYearWeek) % maxYearWeek;
+							if(weekBits.get(previous) == true) // Keep children in their groups during holidays
+								weekBits.set(i, true);
+						}
 					}
-				}
 
-				for(int i = maxYearWeek; i-- > 0;)
-				{
-					if(holidayMask.get(i) == true)
+				for(int x = 0; x++ < 2;) // // We need to loop twice to handle the case where vacations start before the new year and end after
+					for(int i = maxYearWeek; i-- > 0;)
 					{
-						int next = (i + 1) % maxYearWeek;
-						if(weekBits.get(next) == true) // Add children in their groups during holidays
-							weekBits.set(i, true);
+						if(holidayMask.get(i) == true)
+						{
+							int next = (i + 1) % maxYearWeek;
+							if(weekBits.get(next) == true) // Add children in their groups during holidays
+								weekBits.set(i, true);
+						}
 					}
-				}
 
 				if(weekBits.get(currentWeek) == true)
 				{
