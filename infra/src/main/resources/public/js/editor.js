@@ -3077,7 +3077,7 @@ window.RTE = (function () {
 						'</ul>' +
 						'</popover-content>' +
 						'</popover>' +
-						'<div><div role="textbox" contenteditable="true" aria-label="[[lang.translate(\'aria.message.content\')]]" aria-multiline="true"></div>' +
+						'<div><div role="textbox" contenteditable="true" aria-label="[[lang.translate(\'aria.message.content\')]]" aria-multiline="true"></div></div>' +
 						'<textarea tabindex="-1"></textarea>' +
 						'<code class="language-html" tabindex="-1"></code>',
 					link: function (scope, element, attributes) {
