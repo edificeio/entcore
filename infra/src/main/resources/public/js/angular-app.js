@@ -1472,26 +1472,25 @@ module.directive('bindHtml', function($compile) {
                 var htmlContent = htmlVal[0].outerHTML;
                 if (!window.MathJax && !window.MathJaxLoading) {
                     window.MathJaxLoading = true;
-                    loader.openFile({
-                        async: true,
-                        ajax: false,
-                        url: '/infra/public/mathjax/MathJax.js',
-                        success: function() {
-                            window.MathJaxLoading = false;
-                            MathJax.Hub.Config({
-                                messageStyle: 'none',
-                                tex2jax: {
-                                    preview: 'none'
-                                },
-                                jax: ["input/TeX", "output/CommonHTML"],
-                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
-                                TeX: {
-                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-                                }
-                            });
-                            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+                    window.MathJax = {
+                        options: {
+                          ignoreHtmlClass: 'tex2jax_ignore',
+                          processHtmlClass: 'tex2jax_process'
+                        },
+                        tex: {
+                          packages: ['base', 'ams', 'noerrors', 'noundefined']
+                        },
+                        loader: {
+                          load: ['/infra/public/mathjax/es5/input/tex/extensions/noerrors']
                         }
-                    });
+                    };
+                        
+
+                    let script = $('<script></script>')
+                       .attr('src', '/infra/public/mathjax/es5/tex-chtml.js')
+                        .appendTo('head');
+
+                    script[0].async = false;
                 }
                 element.html($compile(htmlContent)(scope.$parent));
                 //weird browser bug with audio tags
@@ -1504,9 +1503,8 @@ module.directive('bindHtml', function($compile) {
                         .appendTo(parent);
                 });
 
-                if (window.MathJax && window.MathJax.Hub) {
-                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-                }
+                if(window.MathJax.typesetPromise != null)
+                    window.MathJax.typesetPromise();
             });
         }
     }
