@@ -47,7 +47,7 @@
     "management.structure.informations.parents.detach": "Détacher de la structure parente",
     "management.structure.informations.update": "Enregistrer",
     "management.structure.informations.update.notify.success.title": "Informations mises à jour",
-    "management.structure.informations.update.notify.success.content": "Les infroamtions de la structure ont été mises à jour.",
+    "management.structure.informations.update.notify.success.content": "Les informations de la structure ont été mises à jour.",
     "management.structure.informations.update.notify.error.title": "Erreur d'enregistrement",
     "management.structure.informations.update.notify.error.content": "Les informations de la structure n'ont pas pu être mises à jour.",
     "management.structure.informations.reset.name.success.title": "Nom réinitialisé",
