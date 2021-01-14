@@ -1440,6 +1440,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		return potentialChild.children && potentialChild.children.some(function(child){ return child.id === structure.id })
 	}
 
+	$scope.isNotParentRecursive = function(structure, potentialChild) {
+		return !potentialChild.children || (!potentialChild.children.some(function(child){ return child.id === structure.id; }) &&
+			potentialChild.children.every(function(child){ return $scope.isNotParentRecursive(structure, child); }));
+	}
+
 	$scope.canSubmitResetPassword = function(resetEmail) {
 		return resetEmail && !$rootScope.targetUser.isSendingMailAndWaitingFeedback();
 	}

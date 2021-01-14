@@ -165,7 +165,19 @@ public class StructureController extends BaseController {
 	public void defineParent(final HttpServerRequest request) {
 		final String parentStructureId = request.params().get("parentStructureId");
 		final String structureId = request.params().get("structureId");
-		structureService.defineParent(structureId, parentStructureId, notEmptyResponseHandler(request));
+		// Checking if structureId is not already a parent of parentStructureId, to avoid loop
+		structureService.isParent(parentStructureId, structureId, isParent -> {
+			if (isParent.isRight()) {
+				if (isParent.right().getValue().booleanValue()) {
+					String message = "Error: structure \"" + structureId + "\" is a parent of structure \"" + parentStructureId + "\"";
+					unauthorized(request, message);
+				} else {
+					structureService.defineParent(structureId, parentStructureId, notEmptyResponseHandler(request));
+				}
+			} else {
+				renderError(request, new JsonObject().put("error", isParent.left().getValue()));
+			}
+		});
 	}
 
 	@Delete("/structure/:structureId/parent/:parentStructureId")
