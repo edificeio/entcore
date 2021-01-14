@@ -44,6 +44,8 @@ public interface SchoolService {
 
 	void unlink(String structureId, String userId, Handler<Either<String, JsonObject>> result);
 
+	void isParent(String structureId, String parentStructureId, Handler<Either<String, Boolean>> handler);
+
 	void defineParent(String structureId, String parentStructureId, Handler<Either<String,JsonObject>> handler);
 
 	void removeParent(String structureId, String parentStructureId, Handler<Either<String,JsonObject>> handler);
