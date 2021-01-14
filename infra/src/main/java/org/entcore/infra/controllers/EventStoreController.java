@@ -43,10 +43,12 @@ public class EventStoreController extends BaseController {
 
 	private EventStoreService eventStoreService;
 	private JsonArray userBlackList;
+	private final JsonArray eventWhiteList;
 
 
 	public EventStoreController (JsonObject eventConfig) {
-        this.userBlackList = eventConfig.getJsonArray("user-blacklist", new fr.wseduc.webutils.collections.JsonArray());
+		this.userBlackList = eventConfig.getJsonArray("user-blacklist", new fr.wseduc.webutils.collections.JsonArray());
+		this.eventWhiteList = eventConfig.getJsonArray("event-whitelist", new fr.wseduc.webutils.collections.JsonArray());
 
 	}
 
@@ -61,6 +63,26 @@ public class EventStoreController extends BaseController {
                 } else {
                     eventStoreService.store(event, voidResponseHandler(request));
                 }
+			}
+		});
+	}
+
+	@Post("/event/web/store")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void storeWeb(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null && !userBlackList.contains(user.getUserId())) {
+				RequestUtils.bodyToJson(request, event -> {
+					final String eventType = event.getString("event-type", "*");
+					if (eventWhiteList.contains(eventType.toUpperCase()) || eventWhiteList.contains(eventType.toLowerCase())) {
+						eventStoreService.store(event, voidResponseHandler(request));
+						Renders.ok(request);
+					} else {
+						Renders.badRequest(request, "bad event:"+eventType);
+					}
+				});
+			} else {
+				Renders.unauthorized(request);
 			}
 		});
 	}
