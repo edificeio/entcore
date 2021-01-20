@@ -160,7 +160,7 @@ public class UserController extends BaseController {
 					return;
 				}
 				String mood = body.getString("mood");
-				if(userBookMoods.contains(mood) == false)
+				if(mood != null && userBookMoods.contains(mood) == false)
 				{
 					badRequest(request);
 					return;
