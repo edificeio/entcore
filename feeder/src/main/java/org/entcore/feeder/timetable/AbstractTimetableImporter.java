@@ -651,7 +651,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			.put("$expr", new JsonObject()
 				.put("$gte", new JsonArray()
 					.add(new JsonObject().put("$dateFromString", new JsonObject().put("dateString", "$startDate")))
-					.add(new JsonObject().put("$dateFromString", new JsonObject().put("dateString", new DateTime(importTimestamp).toString())))))
+					.add(new JsonObject().put("$dateFromString", new JsonObject().put("dateString", new DateTime(importTimestamp + CLEARANCE_TIME).toString())))))
 			.put("$or", new JsonArray()
 				.add(new JsonObject().put("manual", new JsonObject().put("$exists", false)))
 				.add(new JsonObject().put("manual", false))
