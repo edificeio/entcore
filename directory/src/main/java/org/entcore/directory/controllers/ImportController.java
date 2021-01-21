@@ -237,6 +237,7 @@ public class ImportController extends BaseController {
 					}
 				});
 				upload.streamToFileSystem(filename);
+				request.resume();
 			}
 		});
 		deleteImportPath(vertx, path,res->{

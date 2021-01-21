@@ -177,6 +177,7 @@ public class FileStorage implements Storage {
 					}
 				});
 				upload.streamToFileSystem(path);
+				request.resume();
 			}
 		});
 		mkdirsIfNotExists(id, path, new Handler<AsyncResult<Void>>() {

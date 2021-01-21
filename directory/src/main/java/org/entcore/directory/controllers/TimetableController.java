@@ -311,6 +311,7 @@ public class TimetableController extends BaseController {
 						}
 					}
 				});
+				request.resume();
 			}
 		});
 		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
