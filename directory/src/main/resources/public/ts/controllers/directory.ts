@@ -163,6 +163,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			template.close('list');
 			template.open('list', 'dominos');
 			$scope.title = 'directory';
+			$scope.dominoInfosClass = 'dominos-infos';
 			$scope.$apply();
 		},
 		myClass: async function(){
@@ -201,7 +202,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 					template.open('list', 'dominos');
 					template.open('dominosUser', 'dominos-user');	
-					$scope.dominoClass ='my-class';					
+					$scope.dominoClass ='my-class';
 					$scope.title = 'class';
 					$scope.$apply();
 				});
