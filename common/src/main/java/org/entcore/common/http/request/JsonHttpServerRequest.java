@@ -239,4 +239,22 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	public HttpServerRequest endHandler(Handler<Void> voidHandler) {
 		return null;
 	}
+
+	@Override
+	public HttpServerRequest streamPriorityHandler(Handler<StreamPriority> handler)
+	{
+		return null;
+	}
+
+	@Override
+	public long bytesRead()
+	{
+		return -1;
+	}
+
+	@Override
+	public HttpServerRequest fetch(long bytes)
+	{
+		return null;
+	}
 }
