@@ -21,6 +21,9 @@ package org.entcore.common.neo4j;
 
 public class Neo4jConnectionException extends Exception {
 
+	public Neo4jConnectionException(String message) {
+		super(message);
+	}
 	public Neo4jConnectionException(String message, Throwable cause) {
 		super(message, cause);
 	}

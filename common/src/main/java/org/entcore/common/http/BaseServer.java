@@ -190,10 +190,14 @@ public abstract class BaseServer extends Server {
 	protected void initModulesHelpers(String node) {
 		if (config.getBoolean("neo4j", true)) {
 			if (config.getJsonObject("neo4jConfig") != null) {
-				Neo4j.getInstance().init(vertx, config.getJsonObject("neo4jConfig"));
+				final JsonObject neo4jConfigJson = config.getJsonObject("neo4jConfig").copy();
+				final JsonObject neo4jConfigOverride = config.getJsonObject("neo4jConfigOverride", new JsonObject());
+				Neo4j.getInstance().init(vertx, neo4jConfigJson.mergeIn(neo4jConfigOverride));
 			} else {
-				String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
-				Neo4j.getInstance().init(vertx, new JsonObject(neo4jConfig));
+				final String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
+				final JsonObject neo4jConfigJson = new JsonObject(neo4jConfig);
+				final JsonObject neo4jConfigOverride = config.getJsonObject("neo4jConfigOverride", new JsonObject());
+				Neo4j.getInstance().init(vertx, neo4jConfigJson.mergeIn(neo4jConfigOverride));
 			}
 			Neo4jUtils.loadScripts(this.getClass().getSimpleName(), vertx,
 					FileResolver.absolutePath(config.getString("neo4j-init-scripts", "neo4j")));
