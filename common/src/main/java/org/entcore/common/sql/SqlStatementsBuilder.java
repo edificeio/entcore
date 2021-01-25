@@ -88,6 +88,25 @@ public class SqlStatementsBuilder {
 		return this;
 	}
 
+	public SqlStatementsBuilder upsert(String table, JsonArray fields, JsonArray values, JsonArray conflictFields,
+					   JsonArray updateFields, String returning) {
+		if (table != null && !table.trim().isEmpty() && values != null && !values.isEmpty() &&
+				!((conflictFields == null || conflictFields.isEmpty()) && updateFields != null && !updateFields.isEmpty())) {
+			JsonObject statement = new JsonObject()
+					.put("action", "upsert")
+					.put("table", table)
+					.put("fields", fields)
+					.put("values", values)
+					.put("conflictFields", conflictFields)
+					.put("updateFields", updateFields);
+			if (returning != null && !returning.trim().isEmpty()) {
+				statement.put("returning", returning);
+			}
+			statements.add(statement);
+		}
+		return this;
+	}
+
 	public SqlStatementsBuilder select(String table, JsonArray fields) {
 		if (table != null && !table.trim().isEmpty()) {
 			JsonObject statement = new JsonObject()
