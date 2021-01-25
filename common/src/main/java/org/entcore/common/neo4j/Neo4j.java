@@ -85,6 +85,10 @@ public class Neo4j {
 		}
 	}
 
+	public JsonObject getMetrics(){
+		return this.database.getMetrics();
+	}
+
 	public void execute(String query, JsonObject params, Handler<Message<JsonObject>> handler) {
 		database.execute(query, params, resultHandler(handler));
 	}

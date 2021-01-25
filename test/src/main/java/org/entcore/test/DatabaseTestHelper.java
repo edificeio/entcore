@@ -52,6 +52,10 @@ public class DatabaseTestHelper {
         return async;
     }
 
+    public DatabaseClusterTestHelper cluster(){
+        return new DatabaseClusterTestHelper(vertx);
+    }
+
     public Async initMongo(TestContext context, MongoDBContainer mongoDBContainer) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "wse.mongodb.persistor")
@@ -111,6 +115,10 @@ public class DatabaseTestHelper {
         }));
         return future;
 
+    }
+
+    public PostgresReactiveTestHelper pgReactive(PostgreSQLContainer<?> postgres){
+        return new PostgresReactiveTestHelper(vertx, postgres);
     }
 
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {

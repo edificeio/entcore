@@ -47,12 +47,14 @@ public class MonitoringController extends BaseController {
 
 	private boolean postgresql;
 	private long dbCheckTimeout;
+	private boolean enableNeo4jMetrics;
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		dbCheckTimeout = config.getLong("dbCheckTimeout", 5000l);
 		postgresql = config.getBoolean("sql", true);
+		enableNeo4jMetrics = config.getBoolean("neo4jMetricsEnable", false);
 	}
 
 	@Get("/monitoring/db")
@@ -78,6 +80,23 @@ public class MonitoringController extends BaseController {
 				getResponseHandler("neo4j", timerId,  result, count, request, closed));
 		MongoDb.getInstance().command("{ dbStats: 1 }",
 				getResponseHandler("mongodb", timerId,  result, count, request, closed));
+	}
+
+	@Get("/monitoring/db/neo4j/metrics")
+	public void checkDbNeo4j(final HttpServerRequest request) {
+		if(enableNeo4jMetrics){
+			final JsonObject metrics = Neo4j.getInstance().getMetrics();
+			final StringBuilder text = new StringBuilder();
+			for(final String key : metrics.fieldNames()){
+				text.append(key).append(" ").append(metrics.getValue(key).toString()).append("\n");
+			}
+			request.response().putHeader("content-type", "text/plain");
+			request.response().putHeader("Cache-Control", "no-cache, must-revalidate");
+			request.response().putHeader("Expires", "-1");
+			request.response().end(text.toString());
+		}else{
+			notFound(request);
+		}
 	}
 
 	@Get("/monitoring/versions")

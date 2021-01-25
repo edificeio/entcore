@@ -42,7 +42,7 @@ public class Neo4jRest implements GraphDatabase {
 	private static final Logger logger = LoggerFactory.getLogger(Neo4jRest.class);
 	private static final String EMPTY_STATEMENTS_STRING = "{\"statements\":[]}";
 
-	private final Neo4jRestNodeClient nodeManager;
+	private final Neo4jRestClientNodeManager nodeManager;
 	private final boolean ro;
 	private final String basePath;
 	private final Pattern writingClausesPattern = Pattern.compile(
@@ -64,7 +64,7 @@ public class Neo4jRest implements GraphDatabase {
 			this.authorizationHeader = null;
 		}
 		//
-		nodeManager = new Neo4jRestNodeClient(uris, vertx, checkDelay, poolSize, keepAlive, authorizationHeader);
+		nodeManager = new Neo4jRestClientNodeManager(uris, vertx, checkDelay, poolSize, keepAlive, authorizationHeader, neo4jConfig);
 		this.ro = ro;
 		String path = uris[0].getPath();
 		if (path != null && path.endsWith("/")) {
@@ -85,6 +85,13 @@ public class Neo4jRest implements GraphDatabase {
 		}
 	}
 
+	public JsonObject getMetrics(){
+		final long count = this.nodeManager.getClients().size();
+		final long down = this.nodeManager.getClients().stream().filter(e->!e.isAvailable()).count();
+		final long up = this.nodeManager.getClients().stream().filter(e->e.isAvailable()).count();
+		return new JsonObject().put("neo4j_instance_up", up).put("neo4j_instance_down", down).put("neo4j_instance_total", count);
+	}
+
 	private HttpClientRequest prepareRequest(final HttpClientRequest request){
 		if(!StringUtils.isEmpty(this.authorizationHeader)){
 			request.headers().add("Authorization", this.authorizationHeader);
@@ -94,7 +101,7 @@ public class Neo4jRest implements GraphDatabase {
 
 	private void createIndex(final JsonObject j) {
 		try {
-			final HttpClientRequest req = nodeManager.getClient()
+			final HttpClientRequest req = nodeManager.getMasterClient()
 					.post("/db/data/index/" + j.getString("for"), new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(HttpClientResponse event) {
@@ -305,7 +312,7 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void rollbackTransaction(int transactionId, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getClient().delete(
+			HttpClientRequest req = nodeManager.getMasterClient().delete(
 					basePath + "/transaction/" + transactionId, new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(final HttpClientResponse resp) {
@@ -342,7 +349,7 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void unmanagedExtension(String method, String uri, String body, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getClient().request(HttpMethod.valueOf(method.toUpperCase()), uri,
+			HttpClientRequest req = nodeManager.getMasterClient().request(HttpMethod.valueOf(method.toUpperCase()), uri,
 					new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(final HttpClientResponse response) {
@@ -446,7 +453,7 @@ public class Neo4jRest implements GraphDatabase {
 			}
 		}
 		if (client == null) {
-			client = nodeManager.getClient();
+			client = nodeManager.getMasterClient();
 		}
 		HttpClientRequest req = client.post(basePath + path, handler);
 		req.headers()

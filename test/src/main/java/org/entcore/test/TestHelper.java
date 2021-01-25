@@ -13,6 +13,7 @@ public class TestHelper {
     private final DirectoryTestHelper directory = new DirectoryTestHelper(this, vertx);
     private final AppRegistryTestHelper registry = new AppRegistryTestHelper(this);
     private final UserbookTestHelper userbook = new UserbookTestHelper(this, vertx);
+    private final ConfigTestHelper config = new ConfigTestHelper(vertx);
 
     public Vertx vertx() {
         return this.vertx;
@@ -20,6 +21,10 @@ public class TestHelper {
 
     public static TestHelper helper() {
         return new TestHelper();
+    }
+
+    public ConfigTestHelper config() {
+        return config;
     }
 
     public DatabaseTestHelper database() {

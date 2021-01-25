@@ -25,6 +25,8 @@ import io.vertx.core.json.JsonObject;
 
 public interface GraphDatabase {
 
+	JsonObject getMetrics();
+
 	void execute(String query, JsonObject params, Handler<JsonObject> handler);
 
 	void executeBatch(JsonArray queries, Handler<JsonObject> handler);
