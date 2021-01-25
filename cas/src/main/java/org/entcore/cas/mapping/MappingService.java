@@ -301,7 +301,7 @@ public class MappingService {
             final Set<String> children = this.structuresWithChildren.getOrDefault(structureId, new HashSet<>());
             for(final String child : children){
                 if(all.contains(child)){
-                    logger.warn("Loop while getting descendant of "+structureId+ " child already added: "+child);
+                    logger.debug("Loop while getting descendant of "+structureId+ " child already added: "+child);
                 }else{
                     all.add(child);
                     getDescendants(child, all);
