@@ -45,7 +45,11 @@ public class SmtpSender extends BusMailSender implements EmailSender {
 	private final ObjectMapper mapper;
 
 	public SmtpSender(Vertx vertx) {
-		super(vertx, null);
+		this(vertx, new JsonObject());
+	}
+
+	public SmtpSender(final Vertx vertx, final JsonObject config) {
+		super(vertx, config);
 		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 		if (node == null) {
 			node = "";
