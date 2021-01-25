@@ -79,7 +79,7 @@ public class MailTest {
             if (r.failed()) {
                 r.cause().printStackTrace();
             }else {
-                helper.setRead(true, (UUID)mail.getMail().get("id"),new JsonObject()).setHandler(r2->{
+                helper.setRead((UUID)mail.getMail().get("id"),new JsonObject()).setHandler(r2->{
                     if (r2.failed()) {
                         r2.cause().printStackTrace();
                     }
