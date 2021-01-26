@@ -22,7 +22,7 @@ package org.entcore.common.utils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -166,24 +166,24 @@ public final class FileUtils {
 		}, handler);
 	}
 
-	public static<T> Future<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final ZipHandler<T> handler)
+	public static<T> Promise<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final ZipHandler<T> handler)
 	{
 		return executeInZipFileSystem(vertx, zipFilename, Optional.empty(), handler);
 	}
 
-	public static<T> Future<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final Optional<String> encoding, final ZipHandler<T> handler)
+	public static<T> Promise<T> executeInZipFileSystem(final Vertx vertx,final String zipFilename, final Optional<String> encoding, final ZipHandler<T> handler)
 	{
-		final Future<T> future = Future.future();
+		final Promise<T> promise = Promise.promise();
 		vertx.executeBlocking(r -> {
 			try (FileSystem zipFileSystem = createZipFileSystem(zipFilename, encoding,false)) {
 				final T res = handler.handle(zipFileSystem);
-				future.complete(res);
+				promise.complete(res);
 			} catch (Exception e) {
 				log.error("Operation in zip filesystem failed: " + zipFilename, e);
-				future.fail(e);
+				promise.fail(e);
 			}
-		},future.completer());
-		return future;
+		}, promise);
+		return promise;
 	}
 
 	public static String getParentPath(String path) {
