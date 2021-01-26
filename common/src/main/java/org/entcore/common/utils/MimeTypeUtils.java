@@ -51,6 +51,7 @@ public class MimeTypeUtils {
         pptExtensions.add("odp");
         pptExtensions.add("otp");
         // MS Office
+        fileExtensionMap.put("pdf", "application/pdf");
         fileExtensionMap.put("doc", "application/msword");
         fileExtensionMap.put("dot", "application/msword");
         fileExtensionMap.put("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
