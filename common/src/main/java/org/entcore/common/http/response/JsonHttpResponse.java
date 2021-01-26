@@ -310,4 +310,46 @@ public class JsonHttpResponse implements HttpServerResponse {
 	public HttpServerResponse exceptionHandler(Handler<Throwable> throwableHandler) {
 		return this;
 	}
+
+	@Override
+	public void end(Handler<AsyncResult<Void>> handler)
+	{
+		return;
+	}
+
+	@Override
+	public void end(Buffer buff, Handler<AsyncResult<Void>> handler)
+	{
+		return;
+	}
+
+	@Override
+	public void end(String str, Handler<AsyncResult<Void>> handler)
+	{
+		return;
+	}
+
+	@Override
+	public void end(String str, String str2, Handler<AsyncResult<Void>> handler)
+	{
+		return;
+	}
+
+	@Override
+	public HttpServerResponse write(Buffer buff, Handler<AsyncResult<Void>> handler)
+	{
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse write(String str, Handler<AsyncResult<Void>> handler)
+	{
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse write(String str, String str2, Handler<AsyncResult<Void>> handler)
+	{
+		return null;
+	}
 }
