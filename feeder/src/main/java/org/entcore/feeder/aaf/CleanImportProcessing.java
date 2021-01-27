@@ -33,7 +33,10 @@ public class CleanImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		parse(handler, null);
+		initAcademyPrefix(path);
+		importer.applyRemoveRelativesFromStructure(getAcademyPrefix(), e -> {
+			parse(handler, null);
+		});
 	}
 
 	@Override

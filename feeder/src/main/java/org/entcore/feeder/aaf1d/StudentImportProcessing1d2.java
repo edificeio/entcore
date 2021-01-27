@@ -27,12 +27,10 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Set;
-
 public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 
-	protected StudentImportProcessing1d2(String path, Vertx vertx, Set<String> allRelatives) {
-		super(path, vertx, allRelatives);
+	protected StudentImportProcessing1d2(String path, Vertx vertx) {
+		super(path, vertx);
 	}
 
 	@Override
@@ -50,12 +48,7 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
 		initAcademyPrefix(path);
-		importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
-			@Override
-			public void handle(Void event) {
-				parse(handler, new CleanImportProcessing1d(path, vertx));
-			}
-		});
+		parse(handler, new CleanImportProcessing1d(path, vertx));
 	}
 
 	@Override

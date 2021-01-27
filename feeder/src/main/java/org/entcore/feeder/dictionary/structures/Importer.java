@@ -791,10 +791,37 @@ public class Importer {
 		transactionHelper.add(query3, null);
 	}
 
-	public void applyRemoveRelativesFromStructure(Set<String> allRelatives)
-	{
-		for(String relativeExternalId : allRelatives)
-			ManualFeeder.applyRemoveUserFromStructure(null, relativeExternalId, null, null, transactionHelper);
+	public void applyRemoveRelativesFromStructure(String prefix, final Handler<Void> handler) {
+		log.info("applyRemoveRelativesFromStructure");
+		JsonObject params = new JsonObject().put("currentSource", currentSource);
+		String filter = "";
+		if (isNotEmpty(prefix)) {
+			filter = "AND u.externalId STARTS WITH {prefix} ";
+			params.put("prefix", prefix);
+		}
+
+		final String query =
+				"MATCH (u:User) " +
+				"WHERE u.source = {currentSource} AND head(u.profiles) = 'Relative' AND HAS(u.removedFromStructures) " + filter +
+				"RETURN u.externalId as externalId";
+		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonArray res = message.body().getJsonArray("result");
+				if ("ok".equals(message.body().getString("status")) && res != null) {
+					for (Object o : res) {
+						if (!(o instanceof JsonObject)) continue;
+						String externalId = ((JsonObject) o).getString("externalId");
+						if (externalId != null) {
+							ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
+						}
+					}
+				} else {
+					log.error("Error when get Relative removed from structures");
+				}
+				handler.handle(null);
+			}
+		});
 	}
 
 	public void addRelativeProperties(String source) {
