@@ -27,8 +27,8 @@ import java.util.Set;
 
 public class UserImportProcessing1d extends UserImportProcessing {
 
-	protected UserImportProcessing1d(String path, Vertx vertx, Set<String> allRelatives) {
-		super(path, vertx, allRelatives);
+	protected UserImportProcessing1d(String path, Vertx vertx, Set<String> resp) {
+		super(path, vertx, resp);
 	}
 
 	public String getMappingResource() {
@@ -36,7 +36,7 @@ public class UserImportProcessing1d extends UserImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing1d(path, vertx, allRelatives);
+		return new PersonnelImportProcessing1d(path, vertx);
 	}
 
 }

@@ -33,11 +33,8 @@ import java.util.Set;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
-	protected final Set<String> allRelatives;
-
-	protected PersonnelImportProcessing(String path, Vertx vertx, Set<String> allRelatives) {
+	protected PersonnelImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
-		this.allRelatives = allRelatives;
 	}
 
 	@Override
@@ -217,7 +214,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing2(path, vertx, allRelatives);
+		return new PersonnelImportProcessing2(path, vertx);
 	}
 
 }

@@ -36,8 +36,8 @@ import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_P
 
 public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
-	protected PersonnelImportProcessing1d(String path, Vertx vertx, Set<String> allRelatives) {
-		super(path, vertx, allRelatives);
+	protected PersonnelImportProcessing1d(String path, Vertx vertx) {
+		super(path, vertx);
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
 	@Override
 	protected ImportProcessing getNextImportProcessing() {
-		return new StudentImportProcessing1d2(path, vertx, allRelatives);
+		return new MarkMissingUsers1d(path, vertx);
 	}
 
 }

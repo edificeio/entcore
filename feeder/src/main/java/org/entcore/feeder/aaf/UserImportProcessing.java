@@ -23,7 +23,6 @@ import org.entcore.feeder.dictionary.structures.Importer;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Set;
@@ -31,11 +30,11 @@ import java.util.Set;
 public class UserImportProcessing extends BaseImportProcessing {
 
 	private final Importer importer = Importer.getInstance();
-	protected final Set<String> allRelatives;
+	private final Set<String> resp;
 
-	protected UserImportProcessing(String path, Vertx vertx, Set<String> allRelatives) {
+	protected UserImportProcessing(final String path, final Vertx vertx, final Set<String> resp) {
 		super(path, vertx);
-		this.allRelatives = allRelatives;
+		this.resp = resp;
 	}
 
 	@Override
@@ -49,12 +48,12 @@ public class UserImportProcessing extends BaseImportProcessing {
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing(path, vertx, allRelatives);
+		return new PersonnelImportProcessing(path, vertx);
 	}
 
 	@Override
-	public void process(JsonObject object) {
-		if (allRelatives.contains(object.getString("externalId"))) {
+	public void process(final JsonObject object) {
+		if (resp.contains(object.getString("externalId"))) {
 			object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Relative"));
 			importer.createOrUpdateUser(object);
 		}
