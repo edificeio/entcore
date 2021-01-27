@@ -39,7 +39,6 @@ public class FolderImporterZip {
     private final List<String> encodings = new ArrayList<>();
     private final Optional<AntivirusClient> antivirusClient;
     private final Optional<FileValidator> fileValidator;
-    private Optional<String> guessedEncodingCache;
 
     public FolderImporterZip(final Vertx v, final FolderManager aManager) {
         this.vertx = v;
@@ -63,19 +62,19 @@ public class FolderImporterZip {
     }
 
     public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {
-        if (guessedEncodingCache == null) {
+        if (context.guessedEncodingCache == null) {
             final Future<Optional<String>> future = Future.future();
             FileUtils.guessZipEncondig(vertx, context.zipPath, encodings, r -> {
                 if (r.succeeded()) {
-                    guessedEncodingCache = Optional.ofNullable(r.result().getEncoding());
+                    context.guessedEncodingCache = Optional.ofNullable(r.result().getEncoding());
                 } else {
-                    guessedEncodingCache = Optional.empty();
+                    context.guessedEncodingCache = Optional.empty();
                 }
-                future.complete(guessedEncodingCache);
+                future.complete(context.guessedEncodingCache);
             });
             return future;
         } else {
-            return Future.succeededFuture(guessedEncodingCache);
+            return Future.succeededFuture(context.guessedEncodingCache);
         }
     }
 
@@ -385,6 +384,7 @@ public class FolderImporterZip {
         private Future<Void> prepare;
         private boolean cleanZip = false;
         private final String invalidMessage;
+        private Optional<String> guessedEncodingCache;
 
         public FolderImporterZipContext(final String aZipPath, UserInfos user, String invalidMessage) {
             this(aZipPath, user.getUserId(), user.getUsername(), invalidMessage);

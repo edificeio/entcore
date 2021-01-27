@@ -109,6 +109,60 @@ public class MimeTypeUtils {
         fileExtensionMap.put("xbm", "image/xbm");
         fileExtensionMap.put("ico", "image/vnd.microsoft.icon");
         fileExtensionMap.put("wbmp", "image/vnd.wap.wbmp");
+        fileExtensionMap.put("jpeg", "image/jpeg");
+        fileExtensionMap.put("svg", "image/svg+xml");
+        fileExtensionMap.put("tif", "image/tiff");
+        //audio
+        fileExtensionMap.put("aac", "audio/aac");
+        fileExtensionMap.put("mid", "audio/midi");
+        fileExtensionMap.put("oga", "audio/ogg");
+        fileExtensionMap.put("wav", "audio/x-wav");
+        fileExtensionMap.put("weba", "audio/webm");
+        fileExtensionMap.put("mp3", "video/mp3");
+        //video
+        fileExtensionMap.put("avi", "video/x-msvideo");
+        fileExtensionMap.put("mp4", "video/mp4");
+        fileExtensionMap.put("mpeg", "video/mpeg");
+        fileExtensionMap.put("ogv", "video/ogg");
+        fileExtensionMap.put("webm", "video/webm");
+        fileExtensionMap.put("3gp", "video/3gpp");
+        fileExtensionMap.put("3g2", "video/3gpp2");
+        //text
+        fileExtensionMap.put("css", "text/css");
+        fileExtensionMap.put("csv", "text/csv");
+        fileExtensionMap.put("htm", "text/html");
+        fileExtensionMap.put("ics", "text/calendar");
+        //font
+        fileExtensionMap.put("woff", "font/woff");
+        fileExtensionMap.put("woff2", "font/woff2");
+        fileExtensionMap.put("otf", "font/otf");
+        fileExtensionMap.put("ttf", "font/ttf");
+        //all others
+        fileExtensionMap.put("abw", "application/x-abiword");
+        fileExtensionMap.put("arc", "application/octet-stream");
+        fileExtensionMap.put("azw", "application/vnd.amazon.ebook");
+        fileExtensionMap.put("bin", "application/octet-stream");
+        fileExtensionMap.put("bz", "application/x-bzip");
+        fileExtensionMap.put("bz2", "application/x-bzip2");
+        fileExtensionMap.put("csh", "application/x-csh");
+        fileExtensionMap.put("eot", "application/vnd.ms-fontobject");
+        fileExtensionMap.put("epub", "application/epub+zip");
+        fileExtensionMap.put("jar", "application/java-archive");
+        fileExtensionMap.put("js", "application/javascript");
+        fileExtensionMap.put("json", "application/json");
+        fileExtensionMap.put("mpkg", "application/vnd.apple.installer+xml");
+        fileExtensionMap.put("ogx", "application/ogg");
+        fileExtensionMap.put("rar", "application/x-rar-compressed");
+        fileExtensionMap.put("rtf", "application/rtf");
+        fileExtensionMap.put("sh", "application/x-sh");
+        fileExtensionMap.put("tar", "application/x-tar");
+        fileExtensionMap.put("ts", "application/typescript");
+        fileExtensionMap.put("vsd", "application/vnd.visio");
+        fileExtensionMap.put("xhtml", "application/xhtml+xml");
+        fileExtensionMap.put("xml", "application/xml");
+        fileExtensionMap.put("xul", "application/vnd.mozilla.xul+xml");
+        fileExtensionMap.put("zip", "application/zip");
+        fileExtensionMap.put("7z", "application/x-7z-compressed");
     }
 
     public static Optional<String> getContentTypeForExtension(String extension) {
