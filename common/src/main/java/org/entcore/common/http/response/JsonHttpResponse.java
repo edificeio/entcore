@@ -26,6 +26,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpFrame;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.Cookie;
 
 public class JsonHttpResponse implements HttpServerResponse {
 
@@ -349,6 +350,18 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public HttpServerResponse write(String str, String str2, Handler<AsyncResult<Void>> handler)
+	{
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse addCookie(Cookie cookie)
+	{
+		return null;
+	}
+
+	@Override
+	public Cookie removeCookie(String str, boolean bool)
 	{
 		return null;
 	}
