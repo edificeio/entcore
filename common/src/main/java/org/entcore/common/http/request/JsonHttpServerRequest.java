@@ -19,6 +19,8 @@
 
 package org.entcore.common.http.request;
 
+import java.util.Map;
+
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -254,6 +256,24 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public HttpServerRequest fetch(long bytes)
+	{
+		return null;
+	}
+
+	@Override
+	public Map<String, Cookie> cookieMap()
+	{
+		return null;
+	}
+
+	@Override
+	public int cookieCount()
+	{
+		return -1;
+	}
+
+	@Override
+	public Cookie getCookie(String str)
 	{
 		return null;
 	}
