@@ -27,8 +27,6 @@ public interface SessionStore {
 
     long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 
-    long LAST_ACTIVITY_DELAY = 60000l;
-
     void getSession(String sessionId, Handler<AsyncResult<JsonObject>> handler);
 
     void listSessionsIds(String userId, Handler<AsyncResult<JsonArray>> handler);
@@ -48,5 +46,7 @@ public interface SessionStore {
     void dropCacheAttributeByUserId(String userId, String key, Handler<AsyncResult<Void>> handler);
 
     void getSessionsNumber(Handler<AsyncResult<Long>> handler);
+
+    boolean inactivityEnabled();
 
 }

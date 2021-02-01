@@ -18,18 +18,11 @@
 
 package org.entcore.session;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.impl.VertxInternal;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
 
 public abstract class AbstractSessionStore implements SessionStore {
 
@@ -37,22 +30,10 @@ public abstract class AbstractSessionStore implements SessionStore {
     protected final long sessionTimeout;
     protected final long prolongedSessionTimeout;
     protected final Vertx vertx;
-    protected Map<String, Long> inactivity;
+    protected ActivityManager inactivity;
 
     public AbstractSessionStore(Vertx vertx, JsonObject config, Boolean cluster) {
         this.vertx = vertx;
-
-        if (Boolean.TRUE.equals(cluster)) {
-            final ClusterManager cm = ((VertxInternal) vertx).getClusterManager();
-            if (getOrElse(config.getBoolean("inactivity"), false)) {
-                inactivity = cm.getSyncMap("inactivity");
-                logger.info("inactivity ha map : " + inactivity.getClass().getName());
-            }
-        } else {
-            if (getOrElse(config.getBoolean("inactivity"), false)) {
-                inactivity = new HashMap<>();
-            }
-        }
 
         Object timeout = config.getValue("session_timeout");
 		if (timeout != null) {
@@ -81,8 +62,12 @@ public abstract class AbstractSessionStore implements SessionStore {
     }
 
     protected long setTimer(final String userId, final String sessionId, final boolean secureLocation) {
-        if (inactivity != null) {
-            inactivity.put(sessionId, System.currentTimeMillis());
+        if (inactivityEnabled()) {
+            inactivity.updateLastActivity(sessionId, userId, secureLocation, ar -> {
+                if (ar.failed()) {
+                    logger.error("Error when set initial activity with session " + sessionId, ar.cause());
+                }
+            });
         }
         return setTimer(userId, sessionId, sessionTimeout, secureLocation);
     }
@@ -90,27 +75,43 @@ public abstract class AbstractSessionStore implements SessionStore {
     protected long setTimer(final String userId, final String sessionId, final long sessionTimeout,
             final boolean secureLocation) {
         return vertx.setTimer(sessionTimeout, timerId -> {
-            if (inactivity != null) {
-                final Long lastActivity = inactivity.get(sessionId);
-                if (lastActivity != null) {
-                    final long timeoutTimestamp = lastActivity
-                            + (secureLocation ? prolongedSessionTimeout : sessionTimeout);
-                    final long now = System.currentTimeMillis();
-                    if (timeoutTimestamp > now) {
-                        setTimer(userId, sessionId, (timeoutTimestamp - now), secureLocation);
+            if (inactivityEnabled()) {
+                inactivity.getLastActivity(sessionId, secureLocation, ar -> {
+                    if (ar.succeeded()) {
+                        final Long lastActivity = ar.result();
+                        if (lastActivity != null) {
+                            final long timeoutTimestamp = lastActivity
+                                    + (secureLocation ? prolongedSessionTimeout : sessionTimeout);
+                            final long now = System.currentTimeMillis();
+                            if (timeoutTimestamp > now) {
+                                final long tId = setTimer(userId, sessionId, (timeoutTimestamp - now), secureLocation);
+                                updateTimerId(userId, sessionId, tId);
+                            } else {
+                                dropSession(sessionId, null);
+                            }
+                        } else {
+                            logger.warn("Null last activity with session " + sessionId);
+                            dropSession(sessionId, null);
+                        }
                     } else {
+                        logger.error("Error getting last activity with session " + sessionId, ar.cause());
                         dropSession(sessionId, null);
                     }
-                } else {
-                    dropSession(sessionId, null);
-                }
+                });
             } else {
                 removeCacheSession(userId, sessionId);
             }
         });
     }
 
+    @Override
+    public boolean inactivityEnabled() {
+        return inactivity != null && inactivity.isEnabled();
+    }
+
     protected abstract void removeCacheSession(String userId, String sessionId);
+
+    protected abstract void updateTimerId(String userId, String sessionId, long timerId);
 
     protected void dropMongoDbSession(String sessionId) {
         MongoDb.getInstance().delete(AuthManager.SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId));
