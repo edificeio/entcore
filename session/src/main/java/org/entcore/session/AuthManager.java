@@ -23,7 +23,6 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import io.vertx.core.json.Json;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;
@@ -217,7 +216,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		sessionStore.getSession(sessionId, ar -> {
 			if (ar.succeeded()) {
 				sendOK(message, new JsonObject().put("status", "ok").put("session", ar.result()));
-			} else {
+			} else if (!sessionStore.inactivityEnabled()) {
 				final JsonObject query = new JsonObject().put("_id", sessionId);
 				mongo.findOne(SESSIONS_COLLECTION, query, event -> {
 					JsonObject res = event.body().getJsonObject("result");
@@ -259,6 +258,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						message.reply(new JsonObject().put("status", "error").put("message", "Session not found. 4"));
 					}
 				});
+			} else {
+				message.reply(new JsonObject().put("status", "error").put("message", "Session not found. 5 (with inactivity enabled)"));
 			}
 		});
 	}
@@ -292,27 +293,28 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
+					final JsonObject json = new JsonObject().put("_id", sessionId).put("userId", userId);
+					if (sessionIndex != null && nameId != null) {
+						json.put("SessionIndex", sessionIndex).put("NameID", nameId);
+					}
+					if (secureLocation) {
+						json.put("secureLocation", secureLocation);
+					}
+					infos.put("sessionMetadata", json);
 					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {
 						if (ar.failed()) {
 							logger.error("Error putting session in store", ar.cause());
 						}
 
-						// TODO verify logs and verify if add else clause isn't necessarry (converse old fonctionnality)
-						final JsonObject now = MongoDb.now();
-						if (sId == null) {
-							JsonObject json = new JsonObject()
-									.put("_id", sessionId).put("userId", userId)
-									.put("created", now).put("lastUsed", now);
-							if (sessionIndex != null && nameId != null) {
-								json.put("SessionIndex", sessionIndex).put("NameID", nameId);
+						if (!sessionStore.inactivityEnabled()) {
+							final JsonObject now = MongoDb.now();
+							if (sId == null) {
+								json.put("created", now).put("lastUsed", now);
+								mongo.save(SESSIONS_COLLECTION, json);
+							} else {
+								mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
+										new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
 							}
-							if (secureLocation) {
-								json.put("secureLocation", secureLocation);
-							}
-							mongo.save(SESSIONS_COLLECTION, json);
-						} else {
-							mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
-									new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
 						}
 						handler.handle(sessionId);
 					});
@@ -333,13 +335,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		if (sessionMeta) {
 			final JsonObject query = new JsonObject().put("_id", sessionId);
-			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonObject res = event.body().getJsonObject("result");
-					dropSession(message, sessionId, res);
-				}
-			});
+			if (!sessionStore.inactivityEnabled()) {
+				mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						JsonObject res = event.body().getJsonObject("result");
+						dropSession(message, sessionId, res);
+					}
+				});
+			} else {
+				dropSession(message, sessionId, new JsonObject());
+			}
 		} else {
 			dropSession(message, sessionId, null);
 		}
@@ -369,7 +375,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			}
 			JsonObject res = new JsonObject().put("status", "ok");
 			if (meta != null) {
-				res.put("sessionMetadata", meta);
+				if (meta.isEmpty() && ar.result().getJsonObject("sessionMetadata") != null) {
+					res.put("sessionMetadata", ar.result().getJsonObject("sessionMetadata"));
+				} else {
+					res.put("sessionMetadata", meta);
+				}
 			}
 			if (message != null) {
 				sendOK(message, res);
