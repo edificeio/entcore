@@ -33,15 +33,13 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-
 public class MapSessionStore extends AbstractSessionStore {
 
     protected Map<String, String> sessions;
     protected Map<String, List<LoginInfo>> logins;
 
     private static final class LoginInfo implements Serializable {
-        final long timerId;
+        long timerId;
         final String sessionId;
 
         private LoginInfo(long timerId, String sessionId) {
@@ -52,21 +50,15 @@ public class MapSessionStore extends AbstractSessionStore {
 
     public MapSessionStore(final Vertx vertx, final Boolean cluster, JsonObject config) {
         super(vertx, config, cluster);
+        inactivity = new MapActivityManager(vertx, config, cluster);
         if (Boolean.TRUE.equals(cluster)) {
             final ClusterManager cm = ((VertxInternal) vertx).getClusterManager();
             sessions = cm.getSyncMap("sessions");
             logins = cm.getSyncMap("logins");
-            if (getOrElse(config.getBoolean("inactivity"), false)) {
-                inactivity = cm.getSyncMap("inactivity");
-                logger.info("inactivity ha map : " + inactivity.getClass().getName());
-            }
             logger.info("Initialize session cluster maps.");
         } else {
             sessions = new HashMap<>();
             logins = new HashMap<>();
-            if (getOrElse(config.getBoolean("inactivity"), false)) {
-                inactivity = new HashMap<>();
-            }
             logger.info("Initialize session hash maps.");
         }
     }
@@ -85,13 +77,15 @@ public class MapSessionStore extends AbstractSessionStore {
             }
         }
         if (session != null) {
-            if (inactivity != null) {
-                Long lastActivity = inactivity.get(sessionId);
-                String userId = sessions.get(sessionId);
-                if (userId != null && (lastActivity == null
-                        || (lastActivity + LAST_ACTIVITY_DELAY) < System.currentTimeMillis())) {
-                    inactivity.put(sessionId, System.currentTimeMillis());
-                }
+            final String userId = session.getString("userId");
+            final boolean secureLocation = (session.getJsonObject("sessionMetadata") != null ? 
+                    session.getJsonObject("sessionMetadata").getBoolean("secureLocation", false) : false);
+            if (inactivityEnabled() && userId != null) {
+                inactivity.updateLastActivity(sessionId, userId, secureLocation, ar -> {
+                    if (ar.failed()) {
+                        logger.error("Error when update last activity with session " + sessionId, ar.cause());
+                    }
+                });
             }
             handler.handle(Future.succeededFuture(session));
         } else {
@@ -138,6 +132,19 @@ public class MapSessionStore extends AbstractSessionStore {
         List<LoginInfo> loginInfos = logins.get(userId);
         if (loginInfos != null && !loginInfos.isEmpty()) {
             return loginInfos.get(loginInfos.size() - 1);
+        }
+        return null;
+    }
+
+    private LoginInfo getLoginInfo(String sessionId, String userId) {
+        List<LoginInfo> loginInfos = logins.get(userId);
+        LoginInfo loginInfo = null;
+        if (loginInfos != null && sessionId != null) {
+            for (LoginInfo i : loginInfos) {
+                if (sessionId.equals(i.sessionId)) {
+                    return loginInfo;
+                }
+            }
         }
         return null;
     }
@@ -231,8 +238,12 @@ public class MapSessionStore extends AbstractSessionStore {
                 handler.handle(Future.failedFuture(new SessionException("Session not found when drop")));
             }
         }
-        if (inactivity != null) {
-            inactivity.remove(sessionId);
+        if (inactivityEnabled()) {
+            inactivity.removeLastActivity(sessionId, ar -> {
+                if (ar.failed()) {
+                    logger.error("Error when update last activity with session " + sessionId, ar.cause());
+                }
+            });
             dropMongoDbSession(sessionId);
         }
 
@@ -373,6 +384,14 @@ public class MapSessionStore extends AbstractSessionStore {
     @Override
     public void getSessionsNumber(Handler<AsyncResult<Long>> handler) {
         handler.handle(Future.succeededFuture(0L));
+    }
+
+    @Override
+    protected void updateTimerId(String userId, String sessionId, long timerId) {
+        final LoginInfo loginInfo = getLoginInfo(sessionId, userId);
+        if (loginInfo != null) {
+            loginInfo.timerId = timerId;
+        }
     }
 
 }
