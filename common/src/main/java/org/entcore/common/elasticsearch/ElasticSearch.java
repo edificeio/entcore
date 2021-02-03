@@ -106,6 +106,7 @@ public class ElasticSearch {
 	public void init(URI[] uris, Vertx vertx, int poolSize,
 						 boolean keepAlive, JsonObject elasticsearchConfig) {
 		defaultIndex = elasticsearchConfig.getString("index");
+		Boolean elasticSearchSSL = elasticsearchConfig.getBoolean("elasticsearch-ssl", false);
 		clients = new ElasticSearchClient[uris.length];
 		for (int i = 0; i < uris.length; i++) {
 			HttpClientOptions httpClientOptions = new HttpClientOptions()
@@ -113,7 +114,8 @@ public class ElasticSearch {
 					.setMaxPoolSize(poolSize)
 					.setDefaultHost(uris[i].getHost())
 					.setDefaultPort(uris[i].getPort())
-					.setConnectTimeout(20000);
+					.setConnectTimeout(20000)
+					.setSsl(elasticSearchSSL);
 			clients[i] = new ElasticSearchClient(i, vertx.createHttpClient(httpClientOptions));
 			availableNodes.addIfAbsent(i);
 		}
