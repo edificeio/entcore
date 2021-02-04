@@ -67,7 +67,7 @@ const appsTarget = {
     'cns-large': '2D',
     'forum-large': '2D',
     'sharebigfiles-large': '2D',
-    'cahier-de-texte-large': '1D',
+    'cahier-de-texte-large': '1D-2D',
     'userbook-large': '1D-2D',
     'settings-class-large': '1D',
     competences: '2D',
