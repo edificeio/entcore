@@ -64,7 +64,6 @@ public class Importer {
 	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
 	private Set<String> blockedIne;
 	private Report report;
-	private boolean crossSourceFunctionalGroupMatch;
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -84,11 +83,10 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, final String source, String acceptLanguage, boolean blockCreateByIne, boolean crossSourceFunctionalGroupMatch,
+	public void init(final Neo4j neo4j, final String source, String acceptLanguage, boolean blockCreateByIne,
 			final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
-		this.crossSourceFunctionalGroupMatch = crossSourceFunctionalGroupMatch;
 		this.report = new Report(acceptLanguage);
 		this.transactionHelper = new TransactionHelper(neo4j, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
@@ -605,7 +603,7 @@ public class Importer {
 					String query =
 							"MATCH (g:FunctionalGroup), (u:User { externalId : {userExternalId}}) " +
 							"WHERE g.externalId IN {groups} AND NOT(HAS(u.mergedWith)) " +
-							(crossSourceFunctionalGroupMatch == true ? "" : " AND g.source = {source} ") +
+							"AND g.source = {source} " +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
@@ -617,8 +615,7 @@ public class Importer {
 					final String qdfg =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:FunctionalGroup) " +
 							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
-							(crossSourceFunctionalGroupMatch == true ? " AND NOT(g.externalId IN {groups}) "
-								: " AND (NOT(g.externalId IN {groups}) OR (g.source <> {source})) ") +
+							"AND (NOT(g.externalId IN {groups}) OR (g.source <> {source})) " +
 							"DELETE r";
 					final JsonObject pdfg = new JsonObject()
 							.put("userExternalId", externalId)

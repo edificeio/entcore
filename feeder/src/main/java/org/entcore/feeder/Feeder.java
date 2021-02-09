@@ -355,7 +355,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						config.getBoolean("edt-user-creation", false));
 				break;
 			case "manual-udt":
-				message.body().put("udt-skip-empty-sts-groups", config.getBoolean("udt-skip-empty-sts-groups", true));
 				UDTImporter.launchImport(vertx, storage, message, postImport,
 						config.getBoolean("udt-user-creation", false));
 				break;
@@ -689,7 +688,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (importer.isReady()) {
 			final long start = System.currentTimeMillis();
 			importer.init(neo4j, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
-				config.getBoolean("cross-source-functional-group-match", true),
 					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
