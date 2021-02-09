@@ -98,14 +98,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, TimetableReport.Teacher> ttTeachersById = new HashMap<String, TimetableReport.Teacher>();
 	private Map<String, TimetableReport.Subject> ttSubjects = new HashMap<String, TimetableReport.Subject>();
 	private JsonArray parsedWeeks = new JsonArray();
-	private boolean skipEmptySTSGroups = false;
 
 	public UDTImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
-											boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable, boolean skipEmptySTSGroups) {
+											boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable) {
 		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups, updateTimetable);
 		this.vertx = vertx;
 		filenameWeekPatter = Pattern.compile("(UDCal|udcal)_[0-9]{2}_([0-9]{2})\\.xml$");
-		this.skipEmptySTSGroups = skipEmptySTSGroups;
 	}
 
 	@Override
@@ -423,14 +421,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 	// Origine: Groupe
 	void addGroup(JsonObject currentEntity)
 	{
-		if(skipEmptySTSGroups == true)
-		{
-			String code = currentEntity.getString("code");
-			String codeSTS = currentEntity.getString("code_sts");
+		String code = currentEntity.getString("code");
+		String codeSTS = currentEntity.getString("code_sts");
 
-			if(code != null && code.isEmpty() == false && codeSTS != null && codeSTS.isEmpty() == true)
-				return;
-		}
+		if(code != null && code.isEmpty() == false && codeSTS != null && codeSTS.isEmpty() == true)
+			return;
+
 		final String id = currentEntity.getString("code_div") + currentEntity.getString(CODE);
 		groups.put(id, currentEntity);
 
@@ -1029,7 +1025,6 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final boolean isManualImport = message.body().getBoolean("isManualImport");
 		final String path = message.body().getString("path");
 		final String acceptLanguage = message.body().getString("language", "fr");
-		final boolean skipEmptySTSGroups = message.body().getBoolean("udt-skip-empty-sts-groups", false);
 
 		if (Utils.isEmpty(uai) || Utils.isEmpty(path) || Utils.isEmpty(acceptLanguage)) {
 			JsonObject json = new JsonObject().put("status", "error").put("message",
@@ -1041,7 +1036,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai);
 
-			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups, updateTimetable, skipEmptySTSGroups)
+			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups, updateTimetable)
 			.launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
