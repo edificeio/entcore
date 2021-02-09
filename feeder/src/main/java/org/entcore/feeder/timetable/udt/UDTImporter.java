@@ -788,7 +788,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 			if (!theoretical && e.getKey() != periodWeek) continue;
 			final int startPeriodWeek = e.getKey();
 			final int endPeriodWeek = theoretical ? e.getValue() : startPeriodWeek;
-			for (List<JsonObject> c : lfts.values()) {
+			for (Map.Entry<String, List<JsonObject>> le : lfts.entrySet()) {
+				List<JsonObject> c = le.getValue();
 				Collections.sort(c, new LftComparator());
 				String start = null;
 				String startCode = null;
@@ -809,7 +810,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 						if (follows == false) {
 							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
 								persistCourse(generateCourse(start, previous.getString("fic"), startCode,
-									previous, week, theoretical));
+									previous, week, le.getKey(), theoretical));
 							start = j.getString("fic");
 							startCode = j.getString(CODE);
 							current = val;
@@ -818,7 +819,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 						if (count == c.size()) {
 							for(int week = startPeriodWeek; week <= endPeriodWeek; ++week)
 								persistCourse(generateCourse(start, j.getString("fic"), startCode,
-									j, week, theoretical));
+									j, week, le.getKey(), theoretical));
 						}
 					}
 					previous = j;
@@ -862,7 +863,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return new JsonObject().put("$and", new JsonArray().add(defaultQuery).add(saveOtherWeeks));
 	}
 
-	private JsonObject generateCourse(String start, String end, String startCode, JsonObject entity, int periodWeek, boolean theoretical) {
+	private JsonObject generateCourse(String start, String end, String startCode, JsonObject entity, int periodWeek, String ligneFicheTTmpId, boolean theoretical) {
 		JsonObject ficheTStart = fichesT.get(start);
 		JsonObject ficheTEnd = fichesT.get(end);
 		if (ficheTStart == null || ficheTEnd == null) {
@@ -926,6 +927,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", day)
 				.put("teacherIds", teacherIds)
+				.put("courseId", structureId + "_" + ligneFicheTTmpId + "_" + start + end)
 				.put("theoretical", theoretical);
 		if (!theoretical) {
 			c.put("periodWeek", periodWeek);
