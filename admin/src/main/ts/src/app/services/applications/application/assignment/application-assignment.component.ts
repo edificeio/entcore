@@ -48,7 +48,7 @@ const appsTarget = {
     'Xiti-large': '1D-2D',
     'stats-large': '1D',
     'rbs-large': '2D',
-    schoolbook: '1D',
+    schoolbook: '1D-2D',
     'scrap-book-large': '1D-2D',
     'searchengine-large': '2D',
     'poll-large': '2D',
