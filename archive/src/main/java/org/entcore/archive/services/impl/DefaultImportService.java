@@ -72,7 +72,8 @@ public class DefaultImportService implements ImportService {
 
     private final Map<String, UserImport> userImports;
 
-    public DefaultImportService(Vertx vertx, Storage storage, String importPath, String customHandlerActionName, PublicKey verifyKey, boolean forceEncryption) {
+    public DefaultImportService(Vertx vertx, final JsonObject config, Storage storage, String importPath, String customHandlerActionName,
+                                PublicKey verifyKey, boolean forceEncryption) {
         this.vertx = vertx;
         this.storage = storage;
         this.importPath = importPath;
@@ -295,12 +296,16 @@ public class DefaultImportService implements ImportService {
 
                            Object o = apps.getValue(key);
 
+                           JsonObject minimumImportVersions = config.getJsonObject("minimum-import-version");
+
                            if (o instanceof JsonObject) {
                                // case where Manifest contains folder name
 
-                               if ("timelinegenerator".equals(appName) &&
-                                       StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), "1.7") < 0) {
-                                   return;
+                               for (Map.Entry<String, Object> app: minimumImportVersions.getMap().entrySet()) {
+                                   if (app.getKey().equals(appName) &&
+                                           StringUtils.versionComparator.compare(((JsonObject)o).getString("version"), app.getValue().toString()) < 0) {
+                                       return;
+                                   }
                                }
 
                                JsonObject jo = (JsonObject)o;
@@ -311,9 +316,11 @@ public class DefaultImportService implements ImportService {
                            } else {
                                // case where Manifest doesn't contain folder name
 
-                               if ("timelinegenerator".equals(appName) &&
-                                       StringUtils.versionComparator.compare((String)o, "1.7") < 0) {
-                                   return;
+                               for (Map.Entry<String, Object> app: minimumImportVersions.getMap().entrySet()) {
+                                   if (app.getKey().equals(appName) &&
+                                           StringUtils.versionComparator.compare((String)o, app.getValue().toString()) < 0) {
+                                       return;
+                                   }
                                }
 
                                String i = i18n.getString(appName);

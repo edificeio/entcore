@@ -54,7 +54,7 @@ public class DuplicationController extends BaseController
 	{
     super.init(vertx, config, rm, securedActions);
 
-    this.dupService = new DefaultDuplicationService(vertx, storage, importPath, signKey, verifyKey, forceEncryption);
+    this.dupService = new DefaultDuplicationService(vertx, config, storage, importPath, signKey, verifyKey, forceEncryption);
   }
 
   @Post("/duplicate")
