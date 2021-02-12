@@ -66,7 +66,7 @@ public class Archive extends BaseServer {
 		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
 		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
 
-		ImportService importService = new DefaultImportService(vertx, storage, importPath, null, verifyKey, forceEncryption);
+		ImportService importService = new DefaultImportService(vertx, config, storage, importPath, null, verifyKey, forceEncryption);
 
 		ArchiveController ac = new ArchiveController(storage, archiveInProgress, signKey, forceEncryption);
 		ImportController ic = new ImportController(importService, storage, archiveInProgress);
