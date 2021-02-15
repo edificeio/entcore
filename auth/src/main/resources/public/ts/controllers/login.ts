@@ -7,9 +7,18 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 	$scope.lang = lang;
 
 
-	$scope.welcome = {
-
-	};
+	$scope.welcome = {	};
+    var _callback = $scope.callBack;
+    //init callback only if not already setted
+    Object.defineProperty($scope, "callBack", {
+        get : function(){
+            return _callback;
+        },set : function(value){
+            if(!_callback){
+                _callback = value;
+            }
+        }
+    })
 
 	http().get('/auth/configure/welcome').done(function (d) {
 		$scope.welcome.content = d.welcomeMessage;
@@ -110,7 +119,7 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 		}
 		if (window.location.href.split('callback=').length > 1) {
 			let details = window.location.href.split('callback=')[1].split('&')[0].split('#');
-			$scope.callBack = details[0];
+			_callback = details[0];
 			$scope.details = details.length > 0 ? details[1] : "";
 		}
 	}

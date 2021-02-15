@@ -15,7 +15,7 @@
         {{/notLoggedIn}}
 	</head>
 	<body class="login" ng-controller="LoginController"
-		  ng-init='error = "{{error.message}}"; callBack = "{{callBack}}"'>
+		  ng-init='error = "{{error.message}}"; callBack = "{{callBack}}"; mainPage = "{{mainPage}}"'>
 		<default-styles>
 			<div class="absolute">
              <div ng-include="template.containers.main"></div>
