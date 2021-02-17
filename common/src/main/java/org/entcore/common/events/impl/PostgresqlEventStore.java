@@ -118,6 +118,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			logger.error("Knows events is null : " + event.encode());
 			return;
 		}
+		final String id = (String) event.remove("_id");
 		final String ua = (String) event.remove("ua");
 		final String eventType = (String) event.remove("event-type");
 		final String userId = (String) event.remove("userId");
@@ -144,7 +145,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			e.put("payload", event.encode());
 			tableName = "events.unknown_events";
 		}
-		e.put("id", UUID.randomUUID().toString());
+		e.put("id", (id != null ? id : UUID.randomUUID().toString()));
 		e.put("event_type", eventType);
 		e.put("date", d.toString());
 		e.put("platform_id", platform);

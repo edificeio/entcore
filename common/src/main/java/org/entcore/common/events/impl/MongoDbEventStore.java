@@ -19,6 +19,10 @@
 
 package org.entcore.common.events.impl;
 
+import java.util.UUID;
+
+import org.entcore.common.utils.StringUtils;
+
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -33,6 +37,9 @@ public class MongoDbEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
+		if (StringUtils.isEmpty(event.getString("_id"))) {
+			event.put("_id", UUID.randomUUID().toString());
+		}
 		mongoDb.insert(COLLECTION, event, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
