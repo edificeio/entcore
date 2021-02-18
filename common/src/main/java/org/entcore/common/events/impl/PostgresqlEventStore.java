@@ -45,7 +45,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class PostgresqlEventStore extends GenericEventStore {
 
-	private int MAX_RETRY = 10;
+	private static final int MAX_RETRY = 10;
 	private String platform;
 	private PgPool pgClient;
 	private Set<String> knownEvents;
