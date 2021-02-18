@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -44,9 +45,11 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class PostgresqlEventStore extends GenericEventStore {
 
+	private int MAX_RETRY = 10;
 	private String platform;
 	private PgPool pgClient;
 	private Set<String> knownEvents;
+	private final AtomicInteger retryInitKnownEvents = new AtomicInteger(MAX_RETRY);
 
 	public void init() {
 		init(ar -> {
@@ -116,6 +119,17 @@ public class PostgresqlEventStore extends GenericEventStore {
 	public void store(final JsonObject event, final Handler<Either<String, Void>> handler) {
 		if (knownEvents == null) {
 			logger.error("Knows events is null : " + event.encode());
+			if (retryInitKnownEvents.get() > 0) {
+				listKnownEvents(ar -> {
+					if (ar.succeeded()) {
+						knownEvents = ar.result();
+						retryInitKnownEvents.set(MAX_RETRY);
+					} else {
+						logger.error("Error listing known events", ar.cause());
+						retryInitKnownEvents.decrementAndGet();
+					}
+				});
+			}
 			return;
 		}
 		final String id = (String) event.remove("_id");
