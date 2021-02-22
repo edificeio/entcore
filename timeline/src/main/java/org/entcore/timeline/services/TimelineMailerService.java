@@ -25,6 +25,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Date;
+
 public interface TimelineMailerService {
 
 	/**
@@ -82,6 +84,8 @@ public interface TimelineMailerService {
 	 */
 	void sendDailyMails(int dayDelta, final Handler<Either<String, JsonObject>> handler);
 
+	void sendDailyMails(Date date, int dayDelta, final Handler<Either<String, JsonObject>> handler);
+
 	/**
 	 * Sends weekly notification emails for all users.
 	 *
@@ -89,6 +93,8 @@ public interface TimelineMailerService {
 	 * @param handler : Handles the results, emails sent / users KO
 	 */
 	void sendWeeklyMails(int dayDelta, final Handler<Either<String, JsonObject>> handler);
+
+	void sendWeeklyMails(Date date, int dayDelta, final Handler<Either<String, JsonObject>> handler);
 
 	/**
 	 * Retrieves default properties for all notifications.

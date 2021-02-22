@@ -64,6 +64,8 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
 import java.io.Writer;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -404,14 +406,34 @@ public class TimelineController extends BaseController {
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
 	public void performDailyMailing(final HttpServerRequest request) {
-		mailerService.sendDailyMails(0, defaultResponseHandler(request));
+		if(request.params().contains("forday")){
+			try{
+				final LocalDate ldate = LocalDate.parse(request.params().get("forday"));
+				final Date date = Date.from(ldate.atStartOfDay(ZoneOffset.UTC).toInstant());
+				mailerService.sendDailyMails(date, 0, defaultResponseHandler(request));
+			}catch(Exception e){
+				renderError(request, new JsonObject().put("message", e.getMessage()));
+			}
+		}else{
+			mailerService.sendDailyMails(0, defaultResponseHandler(request));
+		}
 	}
 
 	@Get("/performWeeklyMailing")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
 	public void performWeeklyMailing(final HttpServerRequest request) {
-		mailerService.sendWeeklyMails(0, defaultResponseHandler(request));
+		if(request.params().contains("forday")){
+			try{
+				final LocalDate ldate = LocalDate.parse(request.params().get("forday"));
+				final Date date = Date.from(ldate.atStartOfDay(ZoneOffset.UTC).toInstant());
+				mailerService.sendWeeklyMails(date, 0, defaultResponseHandler(request));
+			}catch(Exception e){
+				renderError(request, new JsonObject().put("message", e.getMessage()));
+			}
+		}else{
+			mailerService.sendWeeklyMails(0, defaultResponseHandler(request));
+		}
 	}
 
 	@Get("/allowLanguages")
