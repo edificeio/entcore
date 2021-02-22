@@ -28,6 +28,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -35,6 +36,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
@@ -53,6 +55,7 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
@@ -67,6 +70,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	private HashMap<String, JsonObject> lazyEventsI18n;
 	private final EmailSender emailSender;
 	private final int USERS_LIMIT;
+	private final long QUERY_TIMEOUT;
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final Neo4j neo4j = Neo4j.getInstance();
 
@@ -76,6 +80,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		EmailFactory emailFactory = new EmailFactory(this.vertx, config);
 		emailSender = emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
 		USERS_LIMIT = config.getInteger("users-loop-limit", 25);
+		QUERY_TIMEOUT = config.getLong("query-timeout", 300000L);
 		super.init(vertx, config);
 	}
 
@@ -253,14 +258,22 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		}
 	}
 
+	@Override
+	public void sendDailyMails(int dayDelta, Handler<Either<String, JsonObject>> handler) {
+		sendDailyMails(Optional.empty(), dayDelta, handler);
+	}
 
 	@Override
-	public void sendDailyMails(int dayDelta, final Handler<Either<String, JsonObject>> handler){
+	public void sendDailyMails(Date date, int dayDelta, Handler<Either<String, JsonObject>> handler) {
+		sendDailyMails(Optional.ofNullable(date), dayDelta, handler);
+	}
 
+	protected void sendDailyMails(Optional<Date> forDate, int dayDelta, final Handler<Either<String, JsonObject>> handler){
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final AtomicInteger endPage = new AtomicInteger(0);
 		final Calendar dayDate = Calendar.getInstance();
+		if(forDate.isPresent()) dayDate.setTime(forDate.get());
 		dayDate.add(Calendar.DAY_OF_MONTH, dayDelta);
 		dayDate.set(Calendar.HOUR_OF_DAY, 0);
 		dayDate.set(Calendar.MINUTE, 0);
@@ -268,6 +281,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		dayDate.set(Calendar.MILLISECOND, 0);
 		//
 		final Calendar weekEndDate = Calendar.getInstance();
+		if(forDate.isPresent()) weekEndDate.setTime(forDate.get());
 		weekEndDate.add(Calendar.DAY_OF_MONTH, dayDelta + 1);
 		weekEndDate.set(Calendar.HOUR_OF_DAY, 0);
 		weekEndDate.set(Calendar.MINUTE, 0);
@@ -432,7 +446,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.getList());
 					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
+					results.put("users.recipients", notifiedUsers.size());
+					results.put("users.pages", endPage.get());
 				} else {
+					results.put("users.recipients", 0);
+					results.put("users.pages", 0);
 					handler.handle(new Either.Right<String, JsonObject>(results));
 					return;
 				}
@@ -453,12 +471,22 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		});
 	}
 
-	public void sendWeeklyMails(int dayDelta, final Handler<Either<String, JsonObject>> handler) {
+	@Override
+	public void sendWeeklyMails(Date date, int dayDelta, Handler<Either<String, JsonObject>> handler) {
+		sendWeeklyMails(Optional.ofNullable(date), dayDelta, handler);
+	}
 
+	@Override
+	public void sendWeeklyMails(int dayDelta, Handler<Either<String, JsonObject>> handler) {
+		sendWeeklyMails(Optional.empty(), dayDelta, handler);
+	}
+
+	protected void sendWeeklyMails(Optional<Date> forDate, int dayDelta, final Handler<Either<String, JsonObject>> handler) {
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final AtomicInteger endPage = new AtomicInteger(0);
 		final Calendar weekDate = Calendar.getInstance();
+		if(forDate.isPresent()) weekDate.setTime(forDate.get());
 		weekDate.add(Calendar.DAY_OF_MONTH, dayDelta - 6);
 		weekDate.set(Calendar.HOUR_OF_DAY, 0);
 		weekDate.set(Calendar.MINUTE, 0);
@@ -466,6 +494,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		weekDate.set(Calendar.MILLISECOND, 0);
 		//
 		final Calendar weekEndDate = Calendar.getInstance();
+		if(forDate.isPresent()) weekEndDate.setTime(forDate.get());
 		weekEndDate.add(Calendar.DAY_OF_MONTH, dayDelta + 1);
 		weekEndDate.set(Calendar.HOUR_OF_DAY, 0);
 		weekEndDate.set(Calendar.MINUTE, 0);
@@ -646,7 +675,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.getList());
 					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
+					results.put("users.recipients", notifiedUsers.size());
+					results.put("users.pages", endPage.get());
 				} else {
+					results.put("users.recipients", 0);
+					results.put("users.pages", 0);
 					handler.handle(new Either.Right<String, JsonObject>(results));
 					return;
 				}
@@ -751,28 +784,25 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
 		JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("date").greaterThanEquals(from).lessThan(to));
-		JsonObject grouper = new JsonObject("{ \"_id\" : \"notifiedUsers\", \"recipients\" : {\"$addToSet\" : \"$recipients.userId\"}}");
 
 		pipeline.add(new JsonObject().put("$match", matcher));
 		pipeline.add(new JsonObject().put("$unwind", "$recipients"));
-		pipeline.add(new JsonObject().put("$group", grouper));
-
-		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("error".equals(event.body().getString("status", "error"))) {
-					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+		pipeline.add(new JsonObject().put("$group", new JsonObject().put("_id", "$recipients.userId")));
+		//
+		mongo.command(aggregation.encode(), new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), event -> {
+			if ("error".equals(event.body().getString("status", "error"))) {
+				log.error("getRecipientsUsers failed: "+ event.body().encode());
+				handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+			} else {
+				JsonArray r = event.body().getJsonObject("result", new JsonObject())
+						.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch");
+				if (r != null && r.size() > 0) {
+					final List<String> userIds = r.stream().map(e -> ((JsonObject)e).getString("_id")).filter(e -> !StringUtils.isEmpty(e)).collect(Collectors.toList());
+					handler.handle(new JsonArray(userIds));
 				} else {
-					JsonArray r = event.body().getJsonObject("result", new JsonObject())
-							.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch");
-					if (r != null && r.size() > 0) {
-						handler.handle(r.getJsonObject(0).getJsonArray("recipients", new fr.wseduc.webutils.collections.JsonArray()));
-					} else {
-						handler.handle(new fr.wseduc.webutils.collections.JsonArray());
-					}
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
-
 		});
 	}
 
