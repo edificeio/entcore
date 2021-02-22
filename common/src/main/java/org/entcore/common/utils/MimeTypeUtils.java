@@ -166,6 +166,7 @@ public class MimeTypeUtils {
     }
 
     public static Optional<String> getContentTypeForExtension(String extension) {
+        extension = trim(extension);
         if (fileExtensionMap.containsKey(extension)) {
             return Optional.ofNullable(fileExtensionMap.get(extension));
         }
@@ -187,7 +188,7 @@ public class MimeTypeUtils {
 
     private static String trim(String extension){
         if(extension!=null){
-            return extension.trim();
+            return extension.trim().toLowerCase();
         }
         return "";
     }
