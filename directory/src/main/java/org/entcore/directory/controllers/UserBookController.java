@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.*;
 
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -710,6 +711,9 @@ public class UserBookController extends BaseController {
 								@Override
 								public void handle(Either<String, JsonObject> result) {
 									if (result.isRight()) {
+										if("language".equals(application)){
+											CookieHelper.set("langVersion", System.currentTimeMillis()+"", request);
+										}
 										renderJson(request, result.right().getValue());
 
 										UserUtils.getSession(eb, request, new Handler<JsonObject>() {

@@ -38,6 +38,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.events.EventHelper;
@@ -178,6 +179,7 @@ public class UserController extends BaseController {
 								}
 							});
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+							CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 							renderJson(request, event.right().getValue());
 							if(body.containsKey("motto")){
 								eventHelper.onCreateResource(request, MOTTO_RESOURCE_NAME);
