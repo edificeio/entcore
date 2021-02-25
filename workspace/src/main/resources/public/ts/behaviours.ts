@@ -116,6 +116,33 @@ Behaviours.register('workspace', {
 			}
 		}.bind(this));
 	},
+	loadOneResource: function (id:string, callback) {
+		http().get('/workspace/documents?filter=all&hierarchical=true&id='+id).done(function (documents) {
+			this.resources = [(this.resources || []),...documents.filter(function (doc) { return !doc.deleted }).map(function (doc) {
+				if (doc.metadata['content-type'] && doc.metadata['content-type'].indexOf('image') !== -1) {
+					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+				}
+				else {
+					doc.icon = '/img/icons/unknown-large.png';
+				}
+				return {
+					title: doc.name,
+					owner: {
+						name: doc.ownerName,
+						userId: doc.owner
+					},
+					icon: doc.icon,
+					path: '/workspace/document/' + doc._id,
+					_id: doc._id,
+					metadata: doc.metadata,
+					protected: doc.protected
+				};
+			})];
+			if (typeof callback === 'function') {
+				callback(this.resources);
+			}
+		}.bind(this));
+	},
 	create: function (file, callback) {
 		console.log('creating file');
 		console.log(file);
@@ -271,7 +298,7 @@ Behaviours.register('workspace', {
 				},
 				addDocument: function (document) {
 					console.log('adding ' + JSON.stringify(document) + ' in documents');
-					Behaviours.applicationsBehaviours.workspace.loadResources(function (resources) {
+					Behaviours.applicationsBehaviours.workspace.loadOneResource(document._id, function (resources) {
 						document = _.findWhere(resources, { _id: document._id });
 
 						this.cursor.currentFolder.documents.push(document);
