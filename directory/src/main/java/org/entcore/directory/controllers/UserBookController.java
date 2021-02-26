@@ -343,6 +343,7 @@ public class UserBookController extends BaseController {
 				if (user != null) {
 					String prop = request.params().get("prop");
 					if (prop != null && (prop.startsWith("theme") || "userPreferencesBirthdayClass".equals(prop))) {
+						final boolean isTheme = prop.startsWith("theme");
 						String attr = prop.replaceAll("\\W+", "");
 						String neoRequest =
 								"MATCH (n:User)-[:USERBOOK]->(m:UserBook)" +
@@ -354,6 +355,9 @@ public class UserBookController extends BaseController {
 
 							@Override
 							public void handle(Message<JsonObject> res) {
+								if(isTheme){
+									CookieHelper.set("themeVersion", System.currentTimeMillis()+"", request);
+								}
 								renderJson(request, res.body());
 							}
 						});
@@ -713,6 +717,9 @@ public class UserBookController extends BaseController {
 									if (result.isRight()) {
 										if("language".equals(application)){
 											CookieHelper.set("langVersion", System.currentTimeMillis()+"", request);
+										}
+										if("theme".equals(application)){
+											CookieHelper.set("themeVersion", System.currentTimeMillis()+"", request);
 										}
 										renderJson(request, result.right().getValue());
 
