@@ -18,6 +18,10 @@ export abstract class Folder implements Selectable {
     reverse: boolean;
     searchText: string;
 
+    static purgeCache(){
+        setCookie("convVersion", new Date().getTime()+"");
+    }
+
     abstract removeSelection();
     abstract sync();
     abstract selectAll();
@@ -61,7 +65,7 @@ export abstract class Folder implements Selectable {
         await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: true, filterUnread: this.filter });
     }
 
-    async countUnread () {
+    async countUnread (purge?:boolean) {
         var name = this.getName();
         var restrain;
         if (this instanceof SystemFolder) {
@@ -70,7 +74,10 @@ export abstract class Folder implements Selectable {
         if (this instanceof UserFolder) {
             restrain = '&restrain=';
         }
-        const response = await http.get('/conversation/count/' + name + '?unread=true' + restrain)
+        if(purge){
+            Folder.purgeCache();
+        }
+        const response = await http.get('/conversation/count/' + name + '?unread=true' + restrain);
         this.nbUnread = parseInt(response.data.count);
     }
 
@@ -453,4 +460,10 @@ export class SystemFolders {
         Conversation.instance.currentFolder.mails.full = false;
         Conversation.instance.currentFolder.eventer.trigger('change');
     }
+}
+function setCookie(cname:string, cvalue:string, exdays=1) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    const expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
