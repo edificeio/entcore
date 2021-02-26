@@ -13,9 +13,9 @@
 		 	[[app.data.displayName]]
 		 </a>
 		 <div class="pictos">
-			<i class="linked" ng-if="inherited(app)" tooltip="appregistry.inherited.application"/>
-			<i class="lock" ng-if="app.data.locked" tooltip="appregistry.app.is.locked"/>
-			<i class="lock" ng-if="app.data.appLocked " tooltip="appregistry.app.is.applocked"/>
+			<i class="linked" ng-if="inherited(app)" tooltip="appregistry.inherited.application"></i>
+			<i class="lock" ng-if="app.data.locked" tooltip="appregistry.app.is.locked"></i>
+			<i class="lock" ng-if="app.data.appLocked " tooltip="appregistry.app.is.applocked"></i>
 		 </div>
 		 <div class="actions">
 			<i class="remove" ng-click="deleteExternalApp(app)" ng-if="!app.data.appLocked && !app.data.locked && scopeable(app)" tooltip="appregistry.delete.application"></i>
