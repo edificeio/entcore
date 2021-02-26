@@ -517,6 +517,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.newItem.setMailSignature($scope.getSignature());
             await $scope.openFolder(Conversation.instance.folders.inbox.folderName);
             await Conversation.instance.folders.draft.countTotal();
+            $scope.$root.$emit('refreshMails');
             $scope.sending = false;
         };
 

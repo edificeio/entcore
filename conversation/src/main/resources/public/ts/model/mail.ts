@@ -321,9 +321,11 @@ export class Mail implements Selectable {
         data.cc = _.pluck(this.cc, 'id');
         data.cci = _.pluck(this.cci, 'id');
         if (data.to.indexOf(model.me.userId) !== -1) {
+            Folder.purgeCache();
             Conversation.instance.folders['inbox'].nbUnread++;
         }
         if (data.cc.indexOf(model.me.userId) !== -1) {
+            Folder.purgeCache();
             Conversation.instance.folders['inbox'].nbUnread++;
         }
         var path = '/conversation/send?';
@@ -336,7 +338,6 @@ export class Mail implements Selectable {
         if (this.parentConversation) {
             path += 'In-Reply-To=' + this.parentConversation.id;
         }
-
         try {
             const response = await http.post(path, data);
             const result = response.data;
@@ -361,6 +362,7 @@ export class Mail implements Selectable {
     };
 
     async open(forPrint?: boolean) {
+        const unread = this.unread;
         if (this.unread && this.state !== "DRAFT") {
             Conversation.instance.currentFolder.nbUnread--;
         }
@@ -384,7 +386,7 @@ export class Mail implements Selectable {
         this.cc = toUsers(this.cc as any);
         this.cci = toUsers(this.cci as any);
         if (!forPrint) {
-            await Conversation.instance.folders['inbox'].countUnread();
+            await Conversation.instance.folders['inbox'].countUnread(unread);
             await this.updateAllowReply();
         }
     };
