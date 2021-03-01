@@ -1,5 +1,5 @@
-import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui } from 'entcore';
-import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment } from '../model';
+import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui, Folder } from 'entcore';
+import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment , Folder as FolderModel} from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', 'VideoEventTracker', function ($scope, $timeout, $compile, $sanitize, model, route, videoEventTracker) {
@@ -539,7 +539,9 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
+            FolderModel.purgeCache();
             await Conversation.instance.currentFolder.toggleUnreadSelection(unread);
+            $scope.$root.$emit('refreshMails');
             $scope.state.selectAll = false;
             $scope.$apply();
         };
