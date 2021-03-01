@@ -114,7 +114,10 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 		JsonObject h = object.getJsonObject("headers");
 		if (h != null) {
 			for (String attr : h.fieldNames()) {
-				m.add(attr, h.getString(attr));
+				final String val = h.getString(attr);
+				if(val != null) {
+					m.add(attr, val);
+				}
 			}
 		}
 		return m;
@@ -136,7 +139,10 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 		JsonObject p = object.getJsonObject("params");
 		if (p != null) {
 			for (String attr : p.fieldNames()) {
-				m.add(attr, p.getString(attr));
+				final String val = p.getString(attr);
+				if(val != null) {
+					m.add(attr, val);
+				}
 			}
 		}
 		return m;
