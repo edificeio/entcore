@@ -297,6 +297,8 @@ public class DefaultImportService implements ImportService {
                            Object o = apps.getValue(key);
 
                            JsonObject minimumImportVersions = config.getJsonObject("minimum-import-version");
+                           if(minimumImportVersions == null)
+                            minimumImportVersions = new JsonObject();
 
                            if (o instanceof JsonObject) {
                                // case where Manifest contains folder name
