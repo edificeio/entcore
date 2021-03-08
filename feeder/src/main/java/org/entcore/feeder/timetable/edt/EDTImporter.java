@@ -562,16 +562,16 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", startDate.getDayOfWeek());
 
-			String courseIdTeachers = "";
-			String courseIdClasses = "";
-			String courseIdGroups = "";
-			String courseIdSubject = "";
+			String recurrenceTeachers = "";
+			String recurrenceClasses = "";
+			String recurrenceGroups = "";
+			String recurrenceSubject = "";
 
 		final String codeMat = entity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT);
 		final String sId = subjects.get(codeMat);
 		if (isNotEmpty(sId)) {
 			c.put("timetableSubjectId", sId);
-			courseIdSubject = sId;
+			recurrenceSubject = sId;
 		}
 		final String sBCNId = subjectsBCN.get(codeMat);
 		if (isNotEmpty(sBCNId)) {
@@ -594,9 +594,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 							teachersArray.add(tId);
 							List<String> l = (List<String>) teachersArray.getList();
 							java.util.Collections.sort(l);
-							courseIdTeachers = "";
+							recurrenceTeachers = "";
 							for(Object o : l)
-								courseIdTeachers += (String) o;
+								recurrenceTeachers += (String) o;
 						}
 						break;
 					case "Classe":
@@ -614,9 +614,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 							classesExternalIdsArray.add(ci.getString("classExternalId"));
 							List<String> l = (List<String>) classesExternalIdsArray.getList();
 							java.util.Collections.sort(l);
-							courseIdClasses = "";
+							recurrenceClasses = "";
 							for(Object o : l)
-								courseIdClasses += (String) o;
+								recurrenceClasses += (String) o;
 						}
 						break;
 					case "Groupe":
@@ -634,9 +634,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 							groupsExternalIds.add(g.getString("externalId"));
 							List<String> l = (List<String>) groupsExternalIds.getList();
 							java.util.Collections.sort(l);
-							courseIdGroups = "";
+							recurrenceGroups = "";
 							for(Object o : l)
-								courseIdGroups += (String) o;
+								recurrenceGroups += (String) o;
 						}
 						break;
 					case "Materiel":
@@ -681,7 +681,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			c.put("classesExternalIds", new JsonArray());
 		}
 		try {
-			c.put("courseId", structureId + "_" + courseIdSubject + "_" + courseIdTeachers + "_" + courseIdClasses + "_" + courseIdGroups + "_" + day + "_" + startPlace + "_" + placesNumber);
+			c.put("recurrence", structureId + "_" + recurrenceSubject + "_" + recurrenceTeachers + "_" + recurrenceClasses + "_" + recurrenceGroups + "_" + day + "_" + startPlace + "_" + placesNumber);
 			c.put("_id", JsonUtil.checksum(c));
 		} catch (NoSuchAlgorithmException e) {
 			log.error("Error generating course checksum", e);
