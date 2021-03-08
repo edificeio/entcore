@@ -61,6 +61,9 @@ public class Starter extends BaseServer {
 			super.start();
 			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+
+			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
+
 			//JWT need signKey
 			SecurityHandler.setVertx(vertx);
 			//encoding
@@ -72,7 +75,9 @@ public class Starter extends BaseServer {
 			serverMap.put("encoding-available", safeEncondigs.encode());
 			//
 			CookieHelper.getInstance().init((String) vertx
-					.sharedData().getLocalMap("server").get("signKey"), log);
+					.sharedData().getLocalMap("server").get("signKey"),
+					(String) vertx.sharedData().getLocalMap("server").get("sameSiteValue"),
+					log);
 
 			JsonObject swift = config.getJsonObject("swift");
 			if (swift != null) {
