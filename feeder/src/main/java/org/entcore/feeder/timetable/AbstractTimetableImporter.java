@@ -730,19 +730,24 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							public void handle(AsyncResult<Report> report)
 							{
 								ttReport.end();
-								String ttReportID = ttReport.persist();
-
-								AsyncResult<Report> mapped = report.map(new java.util.function.Function<Report, Report>()
+								ttReport.persist(new Handler<String>()
 								{
 									@Override
-									public Report apply(Report rp)
+									public void handle(String ttReportID)
 									{
-										rp.result.put("timetableReport", ttReportID);
-										return rp;
+										AsyncResult<Report> mapped = report.map(new java.util.function.Function<Report, Report>()
+										{
+											@Override
+											public Report apply(Report rp)
+											{
+												rp.result.put("timetableReport", ttReportID);
+												return rp;
+											}
+										});
+
+										handler.handle(mapped);
 									}
 								});
-
-								handler.handle(mapped);
 							}
 						};
 						end();

@@ -204,6 +204,7 @@ public class TimetableReport
   private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
   private TemplateProcessor templator;
   private String waitFileID = null;
+  private Handler<String> waitFileHandler = null;
 
   public TimetableReport(Vertx vertx)
   {
@@ -225,21 +226,25 @@ public class TimetableReport
     }
   }
 
-  public String persist()
+  public String persist(Handler<String> handler)
   {
-    return this.persist(null);
+    return this.persist(null, handler);
   }
 
-  private String persist(String uuid)
+  private String persist(String uuid, Handler<String> handler)
   {
     final String fuuid = uuid == null ? UUID.randomUUID().toString() : uuid;
     if(this.fileID == null)
     {
       this.waitFileID = fuuid;
+      this.waitFileHandler = handler;
       return fuuid;
     }
     else
+    {
       this.waitFileID = null;
+      this.waitFileHandler = null;
+    }
 
     this.template(new Handler<String>()
     {
@@ -260,7 +265,8 @@ public class TimetableReport
           @Override
           public void handle(Message<JsonObject> msg)
           {
-            // Nothing to do
+            if(handler != null)
+              handler.handle(fuuid);
           }
         });
       }
@@ -388,7 +394,7 @@ public class TimetableReport
   {
     this.fileID = id;
     if(this.waitFileID != null)
-      this.persist(this.waitFileID);
+      this.persist(this.waitFileID, this.waitFileHandler);
   }
 
   public void setUAI(String UAI)
