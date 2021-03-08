@@ -923,7 +923,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", day)
 				.put("teacherIds", teacherIds)
-				.put("courseId", structureId + "_" + ligneFicheTTmpId + "_" + start + end)
+				.put("recurrence", structureId + "_" + ligneFicheTTmpId + "_" + start + end)
 				.put("theoretical", theoretical);
 		if (!theoretical) {
 			c.put("periodWeek", periodWeek);
