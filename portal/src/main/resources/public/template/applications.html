@@ -3,7 +3,7 @@
 		<h1 class="application__title d-mobile-none col-lg-6"><i18n>portal.header.navigation.myapps</i18n></h1>
 		
 		<!-- Search bar -->
-		<section class="applications__search col-lg-6">
+		<section class="applications__search col-lg-4">
 			<div class="input-searchbar">
 				<i class="ic-search form-control-feedback"></i>
 				<input
@@ -22,7 +22,6 @@
 	<section class="applications__favorite">
 		<!-- section title and button to handle bookmarks -->
 		<div class="d-flex justify-content-between">
-			<h2 aria-label="[[lang.translate('apps.bookmarked')]]"><i18n>apps.bookmarked</i18n></h2>
 			<button 
 				class="btn btn-outline-orange btn-sm"
 				ng-class="{'active': display.modeBookmarkEdition}"
@@ -34,7 +33,7 @@
 		
 		<!-- "Empty screen" -->
 		<div class="text-center" ng-if="!display.searchText && !bookmarks.length">
-			<p class="text-center m-3 font-italic">
+			<p class="text-center m-2 lead">
 				<i18n>apps.bookmarks.empty</i18n>
 			</p>
 		</div>
