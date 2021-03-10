@@ -261,7 +261,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
         return $scope.display.showConnectorSection && $scope.connectors && $scope.connectors.length > 0;
     }
     
-    $scope.isIconUrl = (app: App): boolean => app.icon && app.icon.startsWith("/");
+    $scope.isIconUrl = (app: App): boolean => app.icon && (app.icon.startsWith("/") || app.icon.startsWith("http://") || app.icon.startsWith("https://"));
     
     // Utils functions
     const isBookmark = (app: App): boolean => model.me.bookmarkedApps.find(bookmarkedApp => bookmarkedApp.name === app.name);
