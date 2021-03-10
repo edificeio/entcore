@@ -152,6 +152,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				groups: $scope.generateCriteriaOptions($scope.filters.groups)
 			};
 			$scope.create.favorite.options = $scope.generateCriteriaOptions($scope.create.favorite.filters);
+			//fix structure filter (add manual group structures)
+			$scope.filtersOptions.users.structures = $scope.schools.all.map(function(e){return {label:e.name, type: e.id}; });
+			$scope.create.favorite.options.structures = $scope.schools.all.map(function(e){return {label:e.name, type: e.id}; });
 
 			$scope.classesOrder = ['structId', 'label'];
 
