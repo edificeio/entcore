@@ -163,7 +163,7 @@ public class Neo4jRest implements GraphDatabase {
 				}
 			});
 		} catch (Neo4jConnectionException e) {
-			ExceptionUtils.exceptionToJson(e);
+			handler.handle(ExceptionUtils.exceptionToJson(e));
 			logger.error("Neo4j execution failed", e);
 		}
 	}
