@@ -73,7 +73,9 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
                   case "Relative": path = "relatives"; break;
                   case "Teacher": path = "teachers"; break;
                   case "Personnel": path = "personnels"; break;
+                  case "Guest": continue;
                 }
+
                 this.metrics[path].inactive = dmetrics[i].inactive;
                 this.metrics[path].active = dmetrics[i].active;
               }
