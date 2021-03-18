@@ -334,6 +334,17 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
+		if(groups == null)
+			return;
+
+		for(int i = groups.size(); i-- > 0;)
+		{
+			if(groups.hasNull(i))
+			groups.remove(i);
+		}
+		if(groups.size() == 0)
+			return;
+
 		for (Object o : groups) {
 			if (!(o instanceof JsonObject))
 				continue;
@@ -376,12 +387,22 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteUsers(JsonArray users) {
+		if(users == null)
+			return;
 		Set<String> userIds = new HashSet<>();
 		for (int i = 0; i < users.size(); i++) {
 			JsonObject j = users.getJsonObject(i);
 			String id = j.getString("id");
 			userIds.add(id);
 		}
+		for(int i = users.size(); i-- > 0;)
+		{
+			if(users.hasNull(i))
+				users.remove(i);
+		}
+		if(users.size() == 0)
+			return;
+
 		ElementQuery query = new ElementQuery(false);
 		query.setOwnerIds(userIds);
 		query.setActionNotExists(WorkspaceController.SHARED_ACTION);

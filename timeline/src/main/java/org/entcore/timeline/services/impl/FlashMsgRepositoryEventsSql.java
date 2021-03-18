@@ -45,6 +45,17 @@ public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
+		if(groups == null)
+			return;
+
+		for(int i = groups.size(); i-- > 0;)
+		{
+			if(groups.hasNull(i))
+			groups.remove(i);
+		}
+    if(groups.size() == 0)
+				return;
+
 		String query =
 			"DELETE FROM flashmsg.messages_read r "+
 			"USING flashmsg.messages m " +

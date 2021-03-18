@@ -92,9 +92,17 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		if(groups == null || groups.size() == 0) {
+		if(groups == null) {
 			return;
 		}
+
+		for(int i = groups.size(); i-- > 0;)
+		{
+			if(groups.hasNull(i))
+			groups.remove(i);
+		}
+    if(groups.size() == 0)
+        return;
 
 		final String[] groupIds = new String[groups.size()];
 		for (int i = 0; i < groups.size(); i++) {
@@ -125,9 +133,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void deleteUsers(JsonArray users) {
-		if(users == null || users.size() == 0) {
+		if(users == null) {
 			return;
 		}
+		for(int i = users.size(); i-- > 0;)
+		{
+			if(users.hasNull(i))
+				users.remove(i);
+		}
+		if(users.size() == 0)
+			return;
 
 		final String[] userIds = new String[users.size()];
 		for (int i = 0; i < users.size(); i++) {
