@@ -68,6 +68,12 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 	public void deleteUsers(JsonArray users) {
 		if (users == null) return;
 
+		for(int i = users.size(); i-- > 0;)
+		{
+			if(users.hasNull(i))
+				users.remove(i);
+		}
+
 		if (users.size() > 1) {
 			String query =
 					"MATCH (u:UserBook)-[r]-(n) " +

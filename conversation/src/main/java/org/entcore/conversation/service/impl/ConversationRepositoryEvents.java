@@ -353,6 +353,17 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
+		if(groups == null)
+			return;
+
+		for(int i = groups.size(); i-- > 0;)
+		{
+			if(groups.hasNull(i))
+			groups.remove(i);
+		}
+    if(groups.size() == 0)
+        return;
+
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
 		String setTO =
@@ -401,6 +412,17 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	@Override
 	public void deleteUsers(JsonArray users) {
 		JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
+
+		if(users == null)
+			return;
+		for(int i = users.size(); i-- > 0;)
+		{
+			if(users.hasNull(i))
+				users.remove(i);
+		}
+		if(users.size() == 0)
+			return;
+
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
 			userIds.add(((JsonObject) o).getString("id"));
