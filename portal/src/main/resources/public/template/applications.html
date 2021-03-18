@@ -20,8 +20,12 @@
 
 	<!-- Bookmarks section -->
 	<section class="applications__favorite">
-		<!-- section title and button to handle bookmarks -->
-		<div class="d-flex justify-content-end">
+				
+		<!-- "Empty screen" -->
+		<div class="text-center m-2" ng-if="!display.searchText && !bookmarks.length">
+			<p class="lead m-1">
+				<i18n>apps.bookmarks.empty</i18n>
+			</p>
 			<button 
 				class="btn btn-outline-orange btn-sm"
 				ng-class="{'active': display.modeBookmarkEdition}"
@@ -29,13 +33,6 @@
 			>
 				[[lang.translate(display.modeBookmarkEditionButtonLabel)]]
 			</button>
-		</div>
-		
-		<!-- "Empty screen" -->
-		<div class="text-center" ng-if="!display.searchText && !bookmarks.length">
-			<p class="text-center lead">
-				<i18n>apps.bookmarks.empty</i18n>
-			</p>
 		</div>
 		
 		<!-- bookmarks list -->
@@ -76,6 +73,17 @@
 				</p>
 			</div>
 		</section>
+		<!-- section title and button to handle bookmarks -->
+		<div class="d-flex justify-content-end">
+			<button 
+				class="btn btn-outline-orange btn-sm"
+				ng-class="{'active': display.modeBookmarkEdition}"
+				ng-click="toggleBookmarkEdition()"
+				ng-if="!display.searchText && bookmarks.length"
+			>
+				[[lang.translate(display.modeBookmarkEditionButtonLabel)]]
+			</button>
+		</div>
 	</section>
 
 	<!-- Applications section -->
