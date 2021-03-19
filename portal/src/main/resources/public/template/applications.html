@@ -37,35 +37,63 @@
 		
 		<!-- bookmarks list -->
 		<section class="applications__list" id="bookmarked-apps">
-			<button 
-				id="[[application.name]]"
+			<article
 				ng-repeat="application in filteredBookmarks = (bookmarks | filter:searchDisplayName)"
-				ng-class="{'connector': display.showConnectorSection && application.isExternal, 'no-hover': display.modeBookmarkEdition}"
-				ng-click="display.modeBookmarkEdition && removeBookmark(application, $index, $event)"
-				class="application__item"
-				connector-lightbox-trigger="application"
+				id="[[application.name]]"
+				class="position-relative"				
 			>
-				<img
-					ng-if="isIconUrl(application)"
-					skin-src="[[application.icon]]"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
-				/>
-				<i 
-					ng-if="!isIconUrl(application)" 
-					class="application [[application.icon]]"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+				<!-- links for applications (not connector) -->
+				<a
+					ng-if="!application.isExternal"
+					ng-href="[[application.address]]"  
+					class="application__item"
+					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 				>
-				</i>
-				<span>[[translatedDisplayName(application)]]</span>
-				<a 
+					<img
+						ng-if="isIconUrl(application)"
+						skin-src="[[application.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					/>
+					<i 
+						ng-if="!isIconUrl(application)" 
+						class="application [[application.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					>
+					</i>
+					<span>[[translatedDisplayName(application)]]</span>
+				</a>
+				
+				<!-- links for connectors -->
+				<a
+					ng-if="application.isExternal"
+					connector-lightbox-trigger="application"
+					href=""  
+					class="application__item"
+					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+				>
+					<img
+						ng-if="isIconUrl(application)"
+						skin-src="[[application.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					/>
+					<i 
+						ng-if="!isIconUrl(application)" 
+						class="application [[application.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					>
+					</i>
+					<span>[[translatedDisplayName(application)]]</span>
+				</a>
+				
+				<button 
 					class="application__item--remove" 
 					title="Retirer des favoris"
 					ng-if="display.modeBookmarkEdition"
 					ng-click="removeBookmark(application, $index, $event)"
 				>
 					<i class="fas fa-minus"></i>
-				</a>
-			</button>
+				</button>
+			</article>
 			
 			<div class="text-center" ng-if="display.searchText && !filteredBookmarks.length">
 				<p class="text-center m-3 font-italic">
@@ -86,16 +114,19 @@
 		</div>
 	</section>
 
-	<!-- Applications section -->
-	<section class="applications__list mt-2">
-		<section class="applications__list" id="apps">
-			<button 
-				id="[[application.name]]" 
-				ng-repeat="application in filteredApplications = (applications | filter:searchDisplayName)"
-				ng-click="display.modeBookmarkEdition && addBookmark(application, $index, $event)"
+	<!-- Applications section (may contain connectors if number of connectors is below 6 or the plaftorm configured number) -->
+	<section class="applications__list mt-2" id="apps">
+		<article
+			ng-repeat="application in filteredApplications = (applications | filter:searchDisplayName)"
+			id="[[application.name]]"
+			class="position-relative"
+		>
+			<!-- links for applications (not connector) -->
+			<a
+				ng-if="!application.isExternal"
+				ng-href="[[application.address]]"
 				class="application__item" 
-				ng-class="{'no-hover': display.modeBookmarkEdition}"
-				connector-lightbox-trigger="application"
+				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 			>
 				<img
 					ng-if="isIconUrl(application)"  
@@ -109,61 +140,85 @@
 				>
 				</i>
 				<span>[[translatedDisplayName(application)]]</span>
-				<a 
-					class="application__item--add" 
-					title="Ajouter aux favoris"
-					ng-if="display.modeBookmarkEdition"
-					ng-click="addBookmark(application, $index, $event)"
-				>
-					<i class="fas fa-plus"></i>
-				</a>
-			</button>
+			</a>
 			
-			<div class="text-center" ng-if="display.searchText && !filteredApplications.length">
-				<p class="text-center m-3 font-italic">
-					<i18n>apps.search.app.empty</i18n>
-				</p>
-			</div>
-		</section>
-	</section>
-
-	<!-- Connectors section -->
-	<section 
-		class="applications__connector" 
-		ng-show="showConnectorSection()"
-	>
-		<h2><span><i18n>apps.connectors</i18n></span></h2>
-		<section class="applications__list" id="connectors">
-			<button 
-				id="[[connector.name]]" 
-				ng-repeat="connector in filteredConnectors = (connectors | filter:searchDisplayName)"
-				ng-click="display.modeBookmarkEdition && addBookmark(connector, $index, $event)"
-				class="application__item connector"
-				ng-class="{'no-hover': display.modeBookmarkEdition}"
-				connector-lightbox-trigger="connector"
+			<!-- links for connectors -->
+			<a
+				ng-if="application.isExternal"
+				connector-lightbox-trigger="application"
+				href=""
+				class="application__item" 
+				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 			>
 				<img
-					ng-if="isIconUrl(connector)"  
-					skin-src="[[connector.icon]]"
+					ng-if="isIconUrl(application)"  
+					skin-src="[[application.icon]]"
 					ng-class="{'opacity-50': display.modeBookmarkEdition}"
 				/>
 				<i 
-					ng-if="!isIconUrl(connector)" 
-					class="application [[connector.icon]]"
+					ng-if="!isIconUrl(application)" 
+					class="application [[application.icon]]"
 					ng-class="{'opacity-50': display.modeBookmarkEdition}"
 				>
 				</i>
-				<span>[[translatedDisplayName(connector)]]</span>
+				<span>[[translatedDisplayName(application)]]</span>
+			</a>
+			
+			<button 
+				class="application__item--add" 
+				title="Ajouter aux favoris"
+				ng-if="display.modeBookmarkEdition"
+				ng-click="addBookmark(application, $index, $event)"
+			>
+				<i class="fas fa-plus"></i>
+			</button>
+		</article>
+		
+		<div class="text-center" ng-if="display.searchText && !filteredApplications.length">
+			<p class="text-center m-3 font-italic">
+				<i18n>apps.search.app.empty</i18n>
+			</p>
+		</div>
+	</section>
+
+	<!-- Connectors section -->
+	<section class="applications__connector" ng-show="showConnectorSection()">
+		<h2><span><i18n>apps.connectors</i18n></span></h2>
+		<section class="applications__list" id="connectors">
+			<article
+				ng-repeat="connector in filteredConnectors = (connectors | filter:searchDisplayName)"
+				id="[[connector.name]]" 
+				class="position-relative"
+			>
 				<a 
+					href=""
+					connector-lightbox-trigger="connector"
+					class="application__item connector"
+					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+				>
+					<img
+						ng-if="isIconUrl(connector)"  
+						skin-src="[[connector.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					/>
+					<i 
+						ng-if="!isIconUrl(connector)" 
+						class="application [[connector.icon]]"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					>
+					</i>
+					<span>[[translatedDisplayName(connector)]]</span>
+				</a>
+				<button 
 					class="application__item--add" 
 					title="Ajouter aux favoris"
 					ng-if="display.modeBookmarkEdition"
 					ng-click="addBookmark(connector, $index, $event)"
 				>
 					<i class="fas fa-plus"></i>
-				</a>
-			</button>
-			
+				</button>
+			</article>
+
 			<div class="text-center" ng-if="display.searchText && !filteredConnectors.length">
 				<p class="text-center m-3 font-italic">
 					<i18n>apps.search.connector.empty</i18n>
