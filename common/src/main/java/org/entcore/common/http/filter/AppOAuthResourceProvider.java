@@ -136,8 +136,13 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	}
 
 	@Override
-	protected void getOAuthInfos(final SecureHttpServerRequest request, final JsonObject payload, final Handler<AsyncResult<JsonObject>> handler){
+	protected void getOAuthInfos(final SecureHttpServerRequest request, final JsonObject payload, final Handler<AsyncResult<JsonObject>> origHandler){
 		if(getCacheService().isPresent()){
+			request.pause();
+			final Handler<AsyncResult<JsonObject>> handler = e -> {
+				request.resume();
+				origHandler.handle(e);
+			};
 			Optional<String> token = getTokenHeader(request);
 			if(!token.isPresent()){
 				token = getTokenParam(request);
@@ -167,7 +172,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 				super.getOAuthInfos(request, payload, handler);
 			}
 		} else {
-			super.getOAuthInfos(request, payload, handler);
+			super.getOAuthInfos(request, payload, origHandler);
 		}
 	}
 
