@@ -135,7 +135,7 @@ public class DefaultRegisteredService implements RegisteredService {
 					.getString("id")).collect(Collectors.toList()));
 		}
 		final JsonObject event = new JsonObject().put("service", service).put("connector-type", "Cas");
-		event.put("cas-type", mapping.map(e->e.getType()).orElse("unknwown"));
+		event.put("cas-type", mapping.map(e->e.getType()).orElse("unknown"));
 		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, event);
 	}
 
