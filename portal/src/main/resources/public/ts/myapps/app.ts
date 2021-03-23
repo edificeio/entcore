@@ -121,7 +121,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
         create(bookmarkedAppsElement, {
             animation: 150,
             ghostClass: 'blue-background-class',
-            delay: 200,
+            delay: 150,
             delayOnTouchOnly: true,
             // Moving within bookmarks
             onUpdate: function (evt) {
@@ -135,7 +135,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
         create(appsElement, {
             animation: 150,
             ghostClass: 'blue-background-class',
-            delay: 200,
+            delay: 150,
             delayOnTouchOnly: true,
             // Moving within applications
             onUpdate: function (evt) {
@@ -149,7 +149,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
         create(connectorsElement, {
             animation: 150,
             ghostClass: 'blue-background-class',
-            delay: 200,
+            delay: 150,
             delayOnTouchOnly: true,
             // Moving within connectors
             onUpdate: function (evt) {
