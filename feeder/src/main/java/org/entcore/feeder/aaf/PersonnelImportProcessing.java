@@ -200,17 +200,16 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (g.length == 2) {
 					Structure s = importer.getStructure(g[0]);
 					if (s != null) {
-						String structureGroupExternalId = s.getExternalId() + "-ht";
-						String classGroupExternalId = s.getExternalId() + "$" + g[1] + "-ht";
-						s.createHeadTeacherGroupIfAbsent(structureGroupExternalId, classGroupExternalId, g[1]);
+						String classGroupExternalId = s.getExternalId() + "$" + g[1];
+						String[] structureGroupExternalId = s.createHeadTeacherGroupIfAbsent(classGroupExternalId, g[1]);
 						if (linkStructureGroups != null) {
 							final String[] structureGroup = new String[2];
 							structureGroup[0] = s.getExternalId();
-							structureGroup[1] = structureGroupExternalId;
+							structureGroup[1] = structureGroupExternalId[0];
 							linkStructureGroups.add(structureGroup);
 							final String[] classGroup = new String[2];
 							classGroup[0] = s.getExternalId();
-							classGroup[1] = classGroupExternalId;
+							classGroup[1] = structureGroupExternalId[1];
 							linkStructureGroups.add(classGroup);
 						}
 					}
@@ -225,8 +224,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				Structure s = importer.getStructure((String)o);
 				if (s != null) {
-					String structureGroupExternalId = s.getExternalId() + "-dir";
-					s.createDirectionGroupIfAbsent(structureGroupExternalId);
+					String structureGroupExternalId = s.createDirectionGroupIfAbsent();
 					if (linkStructureGroups != null) {
 						final String[] structureGroup = new String[2];
 						structureGroup[0] = s.getExternalId();

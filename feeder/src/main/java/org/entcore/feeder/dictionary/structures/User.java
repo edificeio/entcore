@@ -526,8 +526,9 @@ public class User {
 
 		String query3 =
 				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:HTGroup) " +
-				"MERGE u-[:IN]->g " +
-				"MERGE g-[:COMMUNIQUE]->u";
+				"MERGE u-[r:IN]->g " +
+				"MERGE g-[c:COMMUNIQUE]->u " +
+				"SET r.source = 'MANUAL', c.source = 'MANUAL'";
 		;
 		transactionHelper.add(query3, params);
 	}
@@ -560,6 +561,13 @@ public class User {
 				"DELETE r ";;
 
 		transactionHelper.add(query3, params);
+
+		String query4 =
+				"MATCH (u:User { id : {userId}})-[r:IN |COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure {externalId : {structureExternalId}}) " +
+				"WHERE length(u.headTeacherManual) = 0 AND length(u.headTeacher) > 0 " +
+				"REMOVE r.source ";;
+
+		transactionHelper.add(query4, params);
 	}
 
 	public static void addDirectionManual(String userId,String structureExternalId, TransactionHelper transactionHelper) {
