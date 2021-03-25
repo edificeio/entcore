@@ -189,6 +189,7 @@ public class Structure {
 					);
 			getTransaction().add(query, params);
 		}
+		this.createHeadTeacherGroupIfAbsent(classExternalId, name);
 	}
 
 	public void updateClassName(String classExternalId, String name) {
@@ -258,7 +259,9 @@ public class Structure {
 		}
 	}
 
-	public void createHeadTeacherGroupIfAbsent(String structureGroupExternalId, String classGroupExternalId, String name) {
+	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name) {
+		String structureGroupExternalId = this.externalId + "-ht";
+		String classGroupExternalId = classExternalId + "-ht";
 		if (groups.add(structureGroupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
@@ -282,7 +285,7 @@ public class Structure {
 					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = {displayNameSearchField}, " +
 					"cg.name = {name}, cg.structureName = {structureName} ";
 			JsonObject params = new JsonObject()
-					.put("classExternalId", classGroupExternalId.substring(0, classGroupExternalId.length() - 3))
+					.put("classExternalId", classExternalId)
 					.put("externalId", classGroupExternalId)
 					.put("id", UUID.randomUUID().toString())
 					.put("displayNameSearchField", Validator.sanitize(name))
@@ -298,9 +301,11 @@ public class Structure {
 					.put("classGroupExternalId", classGroupExternalId);
 			getTransaction().add(linkParent, pl);
 		}
+		return new String[]{structureGroupExternalId, classGroupExternalId};
 	}
 
-	public void createDirectionGroupIfAbsent(String groupExternalId) {
+	public String createDirectionGroupIfAbsent() {
+		String groupExternalId = this.externalId + "-dir";
 		if (groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
@@ -317,6 +322,7 @@ public class Structure {
 					);
 			getTransaction().add(query, params);
 		}
+		return groupExternalId;
 	}
 
 	public void linkModules(String moduleExternalId) {
