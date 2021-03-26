@@ -205,13 +205,22 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 String body = pushNotif.getString("body", "");
                 body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
 
+                // Caution : Push-notif length can't exceed 4kb
+                // @see https://firebase.google.com/docs/cloud-messaging/http-server-ref#downstream-http-messages-plain-text
+
                 notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
                 notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
                 if(typeData) {
+                    if (notification.containsKey("type"))
+                        data.put("type", notification.getJsonObject("type").toString());
+                    if (notification.containsKey("event-type"))
+                        data.put("event-type", notification.getJsonObject("event-type").toString());
                     if (notification.containsKey("params"))
                         data.put("params", notification.getJsonObject("params").toString());
                     if (notification.containsKey("resource"))
                         data.put("resource", notification.getString("resource"));
+                    if (notification.containsKey("sender"))
+                        data.put("sender", notification.getString("sender"));
                     if (notification.containsKey("sub-resource"))
                         data.put("sub-resource", notification.getString("sub-resource"));
                     if(!typeNotification)
