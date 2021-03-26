@@ -42,12 +42,12 @@ public class HtmlUtils {
         htmlEntities.put("&euro;","\u20a0");
     }
     private static Set<String> htmlEntitiesKeys = htmlEntities.keySet();
-    private static final Pattern imageSrcPattern = Pattern.compile("<img(\\s+.*)?\\ssrc=\"([^\"]+)");
-    private static final Pattern audioSrcPattern = Pattern.compile("<audio(\\s+.*)?\\ssrc=\"([^\"]+)");
-    private static final Pattern videoSrcPattern = Pattern.compile("<video(\\s+.*)?\\ssrc=\"([^\"]+)");
-    private static final Pattern iframeSrcPattern = Pattern.compile("<iframe(\\s+.*)?\\ssrc=\"([^\"]+)");
-    private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+.*)?\\sclass=\"attachments\"(\\s+.*)?>\\s*((<a\\s+.*?>[\\s\\S]*?<\\/a>\\s*)+)<\\/div>");
-    private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+.*?)href=\"([^\"]+?)\"(\\s*.*?)><div(\\s+.*?)class=\"download\"><\\/div>([^<]+?)<\\/a>");
+    private static final Pattern imageSrcPattern = Pattern.compile("<img(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
+    private static final Pattern audioSrcPattern = Pattern.compile("<audio(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
+    private static final Pattern videoSrcPattern = Pattern.compile("<video(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
+    private static final Pattern iframeSrcPattern = Pattern.compile("<iframe(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
+    private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+[^>]*)?\\sclass=\"attachments\"(\\s+[^>]*)?>\\s*((<a(\\s+[^>]*)?>[\\s\\S]*?<\\/a>\\s*)+)<\\/div>");
+    private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+[^>]*?)href=\"([^\"]+?)\"(\\s*[^>]*?)><div(\\s+[^>]*?)class=\"download\"><\\/div>([^<]+?)<\\/a>");
     private static final Pattern plainTextPattern = Pattern.compile(">([^</]+)");
     private static final Pattern htmlEntityPattern = Pattern.compile("&.*?;");
 
