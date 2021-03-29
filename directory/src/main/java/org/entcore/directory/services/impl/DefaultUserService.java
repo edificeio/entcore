@@ -402,7 +402,7 @@ public class DefaultUserService implements UserService {
 				"u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
 				"u.birthDate as birthDate, u.blocked as blocked, u.created as creationDate, u.lastLogin as lastLogin, " +
-				"u.email as email, u.homePhone as phone, u.zipCode as zipCode, u.address as address, " +
+				"u.email as email, u.homePhone as phone, u.mobile as mobile, u.zipCode as zipCode, u.address as address, " +
 				"u.city as city, u.country as country, " +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
 				"collect(distinct {id: s.id, name: s.name}) as structures, " +
