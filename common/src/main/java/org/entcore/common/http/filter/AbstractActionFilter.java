@@ -116,6 +116,17 @@ public abstract class AbstractActionFilter implements Filter {
 	}
 
 	private Binding requestBinding(HttpServerRequest request) {
+		//check first if a route exact match
+		for (Binding binding: bindings) {
+			if (!request.method().name().equals(binding.getMethod().name())) {
+				continue;
+			}
+			final String uri = binding.getUriPattern().toString();
+			if (uri.equals(request.path())) {
+				return binding;
+			}
+		}
+		//then check if route regex match
 		for (Binding binding: bindings) {
 			if (!request.method().name().equals(binding.getMethod().name())) {
 				continue;
