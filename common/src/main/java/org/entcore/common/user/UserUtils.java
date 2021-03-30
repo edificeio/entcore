@@ -449,9 +449,13 @@ public class UserUtils {
 						handler.handle(session);
 					} else {
 						handler.handle(null);
+						final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
+						log.warn("Could not found session: "+key+ message.result().body().getString("error"));
 					}
 				} else {
 					handler.handle(null);
+					final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
+					log.error("Could not found session: "+key,message.cause());
 				}
 				final long timeGetSessionDelay = System.currentTimeMillis() - startSessionTime;
 				if (timeGetSessionDelay > LOG_SESSION_DELAY) {
