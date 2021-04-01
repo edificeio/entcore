@@ -35,6 +35,7 @@ import java.util.Arrays;
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	protected static final List<String> DIRECTION_FONCTIONS = Arrays.asList(
+		"DIRECTION",
 		"DIRECTION CHEF D'ETABLISSEMENT",
 		"DIRECTION CHEF D&apos;ETABLISSEMENT",
 		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT"
