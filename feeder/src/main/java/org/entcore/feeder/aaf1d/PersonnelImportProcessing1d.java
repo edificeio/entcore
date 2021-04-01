@@ -21,12 +21,14 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.PersonnelImportProcessing;
+import org.entcore.feeder.dictionary.structures.Structure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -75,7 +77,10 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		if (email != null && !email.trim().isEmpty()) {
 			object.put("emailAcademy", email);
 		}
+		final List<String[]> groups = new ArrayList<>();
 		JsonArray functions = object.getJsonArray("functions");
+		createDirectionGroups(object.getJsonArray("direction"), groups);
+		getDirectionFromFunctions(functions, groups);
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {
 			Set<String> s = new HashSet<>();
@@ -85,7 +90,22 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 			}
 			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
 		}
-		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, null, true, true);
+		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, groups.toArray(new String[][]{}), true, true);
+	}
+
+	protected void getDirectionFromFunctions(JsonArray functions, List<String[]> linkStructureGroups) {
+		if (functions != null && functions.size() > 0) {
+			for (Object o : functions) {
+				if (!(o instanceof String)) continue;
+				String [] g = ((String) o).split("\\$");
+				if (g.length == 5) {
+					Structure s = importer.getStructure(g[0]);
+
+					if(s != null && DIRECTION_FONCTIONS.contains(g[4]) == true)
+							createDirectionGroups(new JsonArray().add(g[0]), null);
+				}
+			}
+		}
 	}
 
 	@Override

@@ -110,6 +110,7 @@ public class Structure {
 			getTransaction().add(updateGroupsName, struct.copy().put("sanitizeName", Validator.sanitize(struct.getString("name"))));
 		}
 		this.struct = struct;
+		this.createDirectionGroupIfAbsent();
 	}
 
 	public void create() {
@@ -125,6 +126,7 @@ public class Structure {
 				.put("groupSearchField", Validator.sanitize(struct.getString("name")))
 				.put("props", struct);
 		getTransaction().add(query, params);
+		this.createDirectionGroupIfAbsent();
 	}
 
 
