@@ -31,6 +31,8 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.List;
@@ -87,6 +89,9 @@ import jp.eisbahn.oauth2.server.models.Request;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -118,6 +123,7 @@ public class AuthController extends BaseController {
 	private JsonArray authorizedHostsLogin;
 	private ClientCredentialFetcher clientCredentialFetcher;
 	private long sessionsLimit;
+	private HttpClient sessionLimitConfClient;
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
@@ -159,6 +165,46 @@ public class AuthController extends BaseController {
 			smsProvider = (String) server.get("smsProvider");
 		slo = config.getBoolean("slo", false);
 		sessionsLimit = config.getLong("sessions-limit", 0L);
+		log.info("Initial Session limit : " + sessionsLimit);
+		final JsonObject sessionLimitConfig = config.getJsonObject("session-limit-config");
+		if (sessionLimitConfig != null && isNotEmpty(sessionLimitConfig.getString("uri")) && isNotEmpty(sessionLimitConfig.getString("platform"))) {
+			// TODO replace http conf with pg referencial
+			try {
+				final URI sessionLimitConfigUri = new URI(sessionLimitConfig.getString("uri"));
+				final String sessionLimitConfigHost = sessionLimitConfigUri.getHost();
+				final HttpClientOptions sessionLimitOptions = new HttpClientOptions()
+					.setDefaultHost(sessionLimitConfigUri.getHost())
+					.setDefaultPort(sessionLimitConfigUri.getPort())
+					.setSsl("https".equals(sessionLimitConfigUri.getScheme()))
+					.setMaxPoolSize(sessionLimitConfig.getInteger("poolSize", 2))
+					.setKeepAlive(false)
+					.setConnectTimeout(sessionLimitConfig.getInteger("timeout", 10000));
+				if ("https".equals(sessionLimitConfigUri.getScheme())) {
+					sessionLimitOptions.setForceSni(true);
+				}
+				sessionLimitConfClient = vertx.createHttpClient(sessionLimitOptions);
+				vertx.setPeriodic(sessionLimitConfig.getLong("delay-refresh-session-limit", 300000L), sessionLimitHandler -> {
+					HttpClientRequest sessionLimitReq = sessionLimitConfClient.get("/session/limit", clientResp -> {
+						if (clientResp.statusCode() == 200) {
+							clientResp.bodyHandler(sessionLimitBuffer -> {
+								final JsonObject sessionLimitConfJson = new JsonObject(sessionLimitBuffer.toString("UTF-8"));
+								if (sessionLimitConfJson != null && sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform")) != null) {
+									final Long sessionsLimitTmp = sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform"));
+									if (sessionsLimitTmp != null && ((long) sessionsLimitTmp) != sessionsLimit) {
+										sessionsLimit = sessionsLimitTmp;
+										log.info("Update Session limit : " + sessionsLimit);
+									}
+								}
+							});
+						}
+					});
+					sessionLimitReq.putHeader("Host", sessionLimitConfigHost);
+					sessionLimitReq.end();
+				});
+			} catch (URISyntaxException e) {
+				log.error("Bad session limit confi URI", e);
+			}
+		}
 		ipAllowedByPassLimit = getOrElse(config.getJsonArray("ip-allowed-by-pass-limit"), new JsonArray());
 
 //		if (server != null) {
