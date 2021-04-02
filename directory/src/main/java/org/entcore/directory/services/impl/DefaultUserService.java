@@ -146,6 +146,40 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void getForExternalService(String id, Handler<Either<String, JsonObject>> handler) {
+		final JsonArray filter = new JsonArray()
+				.add("activationCode").add("mobile").add("mobilePhone").add("surname").add("lastLogin").add("created")
+				.add("modified").add("ine").add("workPhone").add("homePhone").add("country").add("zipCode")
+				.add("address").add("postbox").add("city").add("otherNames").add("title").add("functions")
+				.add("lastDomain").add("displayName").add("source").add("login").add("teaches").add("headTeacher")
+				.add("externalId").add("emailInternal").add("joinKey").add("birthDate").add("modules").add("lastScheme")
+				.add("isTeacher").add("structures").add("type").add("children").add("parents").add("functionalGroups")
+				.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
+				.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
+				.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level")
+				.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
+				.add("email").add("emailAcademy").add("emailInternal");
+		get(id, true, filter, result -> {
+			if (result.isRight()) {
+				JsonObject resultJson = result.right().getValue();
+				JsonArray structures = resultJson.getJsonArray("structureNodes");
+				JsonArray reformatStructures = new JsonArray();
+				for(Object structure : structures){
+					JsonObject structureJson = (JsonObject) structure;
+					reformatStructures.add(new JsonObject().put("UAI",structureJson.getString("UAI"))
+							.put("name",structureJson.getString("name"))
+							.put("externalId",structureJson.getString("externalId")));
+				}
+				resultJson.put("structures",reformatStructures);
+				resultJson.remove("structureNodes");
+				handler.handle(new Either.Right<>(resultJson));
+			} else {
+				handler.handle(new Either.Left<>("Problem with get in DefaultUserService : " + result.left().getValue()));
+			}
+		});
+	}
+
+	@Override
 	public void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
 		get(id, getManualGroups, new JsonArray(), result);
 	}

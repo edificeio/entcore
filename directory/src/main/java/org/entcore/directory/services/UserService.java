@@ -39,6 +39,8 @@ public interface UserService {
 
 	void sendUserCreatedEmail(HttpServerRequest request, String userId, Handler<Either<String, Boolean>> result);
 
+	void getForExternalService(String id, Handler<Either<String, JsonObject>> result);
+
 	void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result);
 
 	void get(String id, boolean getManualGroups, JsonArray filterAttributes, Handler<Either<String, JsonObject>> result);
