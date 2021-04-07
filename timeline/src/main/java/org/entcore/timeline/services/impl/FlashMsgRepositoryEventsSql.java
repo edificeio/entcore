@@ -51,7 +51,9 @@ public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 		for(int i = groups.size(); i-- > 0;)
 		{
 			if(groups.hasNull(i))
-			groups.remove(i);
+				groups.remove(i);
+			else if (groups.getJsonObject(i) != null && groups.getJsonObject(i).getString("group") == null)
+				groups.remove(i);
 		}
     if(groups.size() == 0)
 				return;
