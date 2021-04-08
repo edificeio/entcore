@@ -186,7 +186,7 @@
 	</section>
 
 	<!-- Connectors section -->
-	<section class="applications__connector" ng-show="showConnectorSection()">
+	<section class="applications__connector" ng-if="display.showConnectorSection && connectors && connectors.length > 0">
 		<h2><span><i18n>apps.connectors</i18n></span></h2>
 		<section class="applications__list" id="connectors">
 			<article
