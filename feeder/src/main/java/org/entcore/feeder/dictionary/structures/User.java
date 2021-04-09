@@ -586,8 +586,9 @@ public class User {
 
 		String query3 =
 				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:DirectionGroup) " +
-				"MERGE u-[:IN]->g " +
-				"MERGE g-[:COMMUNIQUE]->u";
+				"MERGE u-[r:IN]->g " +
+				"MERGE g-[c:COMMUNIQUE]->u " +
+				"SET r.source = 'MANUAL', c.source = 'MANUAL'";
 		;
 		transactionHelper.add(query3, params);
 	}
