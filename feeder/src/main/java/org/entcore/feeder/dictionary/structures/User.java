@@ -104,6 +104,7 @@ public class User {
 			try {
 				TransactionHelper tx = TransactionManager.getInstance().begin();
 				User.getDelete(delay, LIMIT, tx);
+				User.deleteNullId(delay, tx);
 				tx.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
@@ -488,6 +489,18 @@ public class User {
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.id IN {deleteUsers} " +
 				GET_DELETE_OPTIONS;
+		transactionHelper.add(query, params);
+	}
+
+	public static void deleteNullId(long delay, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.put("date", System.currentTimeMillis() - delay);
+		String query =
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} AND NOT(HAS(u.id))" +
+				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH u-[r]-() " +
+				"DELETE u,b,r,rb ";
 		transactionHelper.add(query, params);
 	}
 
