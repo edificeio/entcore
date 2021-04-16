@@ -400,14 +400,14 @@ public class AuthController extends BaseController {
 									if (ar.result() > sessionsLimit) {
 										renderView(request, new JsonObject(), "tooload.html", null);
 									} else {
-										viewLogin(request, null, request.params().get("callBack"));
+										viewLogin(request, null, "");
 									}
 								} else {
 									renderView(request, new JsonObject(), "tooload.html", null);
 								}
 							});
 						} else {
-							viewLogin(request, null, request.params().get("callBack"));
+							viewLogin(request, null, "");
 						}
 					} else {
 						String callBack = request.params().get("callBack");
