@@ -473,7 +473,7 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void massDistributionEducationMobileApp(JsonArray data, Handler<Either<String, JsonObject>> handler) {
+	public void massDistributionEducationMobileApp(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
 
 		StatementsBuilder s = new StatementsBuilder();
 
@@ -505,7 +505,7 @@ public class DefaultSchoolService implements SchoolService {
 
 		});
 
-		neo.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
+		neo.executeTransaction(s.build(), transactionId, commit.booleanValue(), validEmptyHandler(handler));
 	}
 
 	@Override
