@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import java.util.UUID;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -566,6 +567,10 @@ public class AuthController extends BaseController {
 						long timeout = rememberMe ? 3600l * 24 * 365 : config.getLong("cookie_timeout", Long.MIN_VALUE);
 						CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 						CookieHelper.set("authenticated", "true", timeout, request);
+						//create xsrf token on create session to avoid cache issue
+						if(config.getBoolean("xsrfOnAuth", true)){
+							CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), request);
+						}
 						redirectionService.redirect(request,
 								callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?")
 										? callBack.replaceFirst("/auth/login", "")
