@@ -78,7 +78,7 @@ public interface SchoolService {
 
 	void getClasses(String structureId, Handler<Either<String, JsonObject>> handler);
 
-	void massDistributionEducationMobileApp(JsonArray data, Handler<Either<String, JsonObject>> handler);
+	void massDistributionEducationMobileApp(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
 
 	void resetName(String string, Handler<Either<String, JsonObject>> defaultResponseHandler);
 

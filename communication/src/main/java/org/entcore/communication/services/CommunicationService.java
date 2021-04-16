@@ -66,8 +66,14 @@ public interface CommunicationService {
 	void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction,
 			Handler<Either<String, JsonObject>> handler);
 
+	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
+						  final Boolean commit, final Handler<Either<String, JsonObject>> handler);
+
 	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
 			Handler<Either<String, JsonObject>> handler);
+
+	void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
+						   Handler<Either<String, JsonObject>> handler);
 
 	void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler);
 

@@ -62,11 +62,19 @@ public class TransactionManager {
 		return begin(UUID.randomUUID().toString());
 	}
 
-	public synchronized TransactionHelper begin(String name) throws TransactionException {
+	public TransactionHelper begin(Integer transactionId) throws TransactionException {
+		return begin(UUID.randomUUID().toString(), transactionId);
+	}
+
+	public TransactionHelper begin(String name) throws TransactionException {
+		return begin(name, null);
+	}
+
+	public synchronized TransactionHelper begin(String name, Integer transactionId) throws TransactionException {
 		if (transactions.containsKey(name)) {
 			throw new TransactionException("Concurrent transaction already in use");
 		}
-		TransactionHelper tx = new TransactionHelper(neo4j, 1000);
+		TransactionHelper tx = new TransactionHelper(neo4j, 1000, transactionId);
 		transactions.put(name, tx);
 		return tx;
 	}
@@ -127,10 +135,14 @@ public class TransactionManager {
 		return TransactionManager.getInstance().begin();
 	}
 
-	public static TransactionHelper getTransaction(boolean autoSend) throws TransactionException {
-		TransactionHelper tx = TransactionManager.getInstance().begin();
+	public static TransactionHelper getTransaction(boolean autoSend, Integer transactionId) throws TransactionException {
+		TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
 		tx.setAutoSend(autoSend);
 		return tx;
+	}
+
+	public static TransactionHelper getTransaction(boolean autoSend) throws TransactionException {
+		return getTransaction(autoSend, null);
 	}
 
 	public static void executeTransaction(final Function<TransactionHelper, Message<JsonObject>> f) {

@@ -621,8 +621,10 @@ public class AppRegistryController extends BaseController {
 				appRegistryService.listCasConnectors(busArrayHandler(message));
 				break;
 			case "set-roles-and-profiles-by-structureId" :
-				JsonArray data = message.body().getJsonArray("data");
-				appRegistryService.massAuthorization(data, busResponseHandler(message));
+				final JsonArray data = message.body().getJsonArray("data");
+				final Integer transactionId = message.body().getInteger("transactionId");
+				final Boolean commit = message.body().getBoolean("commit", true);
+				appRegistryService.massAuthorization(data, transactionId, commit, busResponseHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")

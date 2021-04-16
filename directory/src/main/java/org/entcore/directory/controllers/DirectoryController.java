@@ -563,8 +563,10 @@ public class DirectoryController extends BaseController {
 				slotProfileService.listSlots(slotProfileId, busResponseHandler(message));
 				break;
 			case "set-distrib-and-education-by-structureId" :
-				JsonArray data = message.body().getJsonArray("data");
-				schoolService.massDistributionEducationMobileApp(data, busResponseHandler(message));
+				final JsonArray data = message.body().getJsonArray("data");
+				final Integer transactionId = message.body().getInteger("transactionId");
+				final Boolean commit = message.body().getBoolean("commit", true);
+				schoolService.massDistributionEducationMobileApp(data, transactionId, commit, busResponseHandler(message));
 				break;
 			case "getActivationInfos" :
 				JsonArray structureIds = message.body().getJsonArray("structureIds");

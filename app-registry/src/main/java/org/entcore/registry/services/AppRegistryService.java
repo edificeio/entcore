@@ -88,5 +88,5 @@ public interface AppRegistryService {
 
 	void massUnauthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler);
 
-	void massAuthorization(JsonArray data, Handler<Either<String, JsonObject>> handler);
+	void massAuthorization(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
 }

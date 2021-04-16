@@ -422,13 +422,15 @@ public class CommunicationController extends BaseController {
 						initDefaultRules, responseHandler);
 				break;
 			case "initAndApplyDefaultCommunicationRules" :
+				final Integer transactionId = message.body().getInteger("transactionId");
+				final Boolean commit = message.body().getBoolean("commit", true);
 				communicationService.initDefaultRules(message.body().getJsonArray("schoolIds"),
-						initDefaultRules, new Handler<Either<String, JsonObject>>() {
+						initDefaultRules, transactionId, commit, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
-							communicationService.applyDefaultRules(
-									message.body().getJsonArray("schoolIds"), responseHandler);
+							communicationService.applyDefaultRules(message.body().getJsonArray("schoolIds"),
+									transactionId, commit, responseHandler);
 						} else {
 							message.reply(new JsonObject().put("status", "error")
 									.put("message", event.left().getValue()));

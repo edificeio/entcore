@@ -241,8 +241,8 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
-			final Handler<Either<String, JsonObject>> handler) {
+	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
+			final Boolean commit, final Handler<Either<String, JsonObject>> handler) {
 		final StatementsBuilder s1 = new StatementsBuilder();
 		final StatementsBuilder s2 = new StatementsBuilder();
 		final StatementsBuilder s3 = new StatementsBuilder();
@@ -261,7 +261,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		for (String attr : defaultRules.fieldNames()) {
 			initDefaultRules(structureIds, attr, defaultRules.getJsonObject(attr), s1, s2);
 		}
-		neo4j.executeTransaction(s1.build(), null, false, new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(s1.build(), transactionId, false, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
@@ -271,7 +271,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
 								Integer transactionId = event.body().getInteger("transactionId");
-								neo4j.executeTransaction(s3.build(), transactionId, true,
+								neo4j.executeTransaction(s3.build(), transactionId, commit.booleanValue(),
 										new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> message) {
@@ -298,6 +298,12 @@ public class DefaultCommunicationService implements CommunicationService {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
+								 final Handler<Either<String, JsonObject>> handler) {
+		initDefaultRules(structureIds, defaultRules, null, true, handler);
 	}
 
 	private void initDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
@@ -405,7 +411,8 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler) {
+	public void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
+								  Handler<Either<String, JsonObject>> handler) {
 		StatementsBuilder s = new StatementsBuilder();
 		JsonObject params = new JsonObject().put("structures", structureIds);
 		String query =
@@ -452,7 +459,18 @@ public class DefaultCommunicationService implements CommunicationService {
 				"WITH DISTINCT v " +
 				"SET v:Visible ";
 		s.add(setVisible2, params);
-		neo4j.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
+		neo4j.executeTransaction(s.build(), transactionId, commit.booleanValue(), event -> {
+			if ("ok".equals(event.body().getString("status"))) {
+				handler.handle(new Either.Right<>(event.body()));
+			} else {
+				handler.handle(new Either.Left<>(event.body().getString("message")));
+			}
+		});
+	}
+
+	@Override
+	public void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler) {
+		applyDefaultRules(structureIds, null, true, handler);
 	}
 
 	@Override

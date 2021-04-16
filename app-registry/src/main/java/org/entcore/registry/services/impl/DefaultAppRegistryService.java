@@ -735,7 +735,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void massAuthorization(JsonArray data, Handler<Either<String, JsonObject>> handler) {
+	public void massAuthorization(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
 
 		final Map<String,Map<String,List<String>>> map = new HashMap<>();
 
@@ -763,50 +763,40 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 		}
 
+		final StatementsBuilder s = new StatementsBuilder();
+
 		final String deleteExistingAuthQuery = "MATCH (roleOrWidget)<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure {id: {structureId}}) "+
 				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(roleOrWidget) DELETE a";
 
-		List<Future> list = new ArrayList<>();
-
 		map.entrySet().forEach(structure -> {
-			final StatementsBuilder s = new StatementsBuilder();
 			s.add(deleteExistingAuthQuery, new JsonObject().put("structureId", structure.getKey()));
 
-			Future promise = Future.future();
-			list.add(promise);
-
 			structure.getValue().entrySet().forEach(roleOrWidget -> {
-				final String query2 =
+				final String query =
 						"MATCH (s:Structure {id: {structureId}}), " +
 								"(r:" + (roleOrWidget.getKey().charAt(0) == 'R' ? "Role" : "Widget") + " {id: {roleOrWidgetId}}) " +
 								"WITH s, r MATCH (s)<-[:DEPENDS]-(g:Group) " +
 								"WHERE CASE WHEN g.externalId ENDS WITH 'ADMIN_LOCAL' THEN 'AdminLocal' IN {profiles} "+
 								"ELSE g.filter IN {profiles} END " +
 								"CREATE UNIQUE g-[:AUTHORIZED]->r ";
-				JsonObject params2 = new JsonObject().put("structureId", structure.getKey())
+				JsonObject params = new JsonObject().put("structureId", structure.getKey())
 						.put("roleOrWidgetId", roleOrWidget.getKey().substring(1))
 						.put("profiles", roleOrWidget.getValue());
-				s.add(query2, params2);
+				s.add(query, params);
 			});
 
-			neo.executeTransaction(s.build(), null, true, event -> {
-				if (!"ok".equals(event.body().getString("status"))) {
-					String message = event.body().getString("message");
-					log.error("[AppRegistry] - Transaction failed: " + message);
-					promise.fail(message);
-				} else {
-					promise.complete();
-				}
-			});
 		});
 
-		CompositeFuture.join(list).setHandler(compositeFutureAsyncResult -> {
-			if (compositeFutureAsyncResult.succeeded()) {
-				handler.handle(new Either.Right<>(new JsonObject()));
+		neo.executeTransaction(s.build(), transactionId, commit.booleanValue(), event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				String message = event.body().getString("message");
+				log.error("[AppRegistry] - Transaction failed: " + message);
+				handler.handle(new Either.Left<>(message));
 			} else {
-				handler.handle(new Either.Left<>(compositeFutureAsyncResult.cause().toString()));
+				handler.handle(new Either.Right<>(new JsonObject()));
 			}
 		});
+
 	}
 
 }

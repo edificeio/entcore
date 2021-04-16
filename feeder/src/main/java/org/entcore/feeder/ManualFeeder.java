@@ -70,6 +70,8 @@ public class ManualFeeder extends BusModBase {
 
 	public void createStructure(final Message<JsonObject> message) {
 		JsonObject struct = getMandatoryObject("data", message);
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
 		if (struct == null) return;
 		if (struct.getString("externalId") == null) {
 			struct.put("externalId", UUID.randomUUID().toString());
@@ -79,6 +81,7 @@ public class ManualFeeder extends BusModBase {
 			logger.error(error);
 			sendError(message, error);
 		} else {
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
 			String query =
 					"CREATE (s:Structure {props}) " +
 					"WITH s " +
@@ -90,10 +93,16 @@ public class ManualFeeder extends BusModBase {
 			JsonObject params = new JsonObject()
 					.put("groupSearchField", Validator.sanitize(struct.getString("name")))
 					.put("props", struct);
-			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			statementsBuilder.add(query, params);
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 				@Override
-				public void handle(Message<JsonObject> m) {
-					message.reply(m.body());
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+					} else {
+						message.reply(event.body());
+					}
 				}
 			});
 		}
@@ -107,11 +116,14 @@ public class ManualFeeder extends BusModBase {
 		if (c.getString("externalId") == null || c.getString("externalId").isEmpty()) {
 			c.put("externalId", structureId + "$" + c.getString("name"));
 		}
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
 		final String error = classValidator.validate(c);
 		if (error != null) {
 			logger.error(error);
 			sendError(message, error);
 		} else {
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
 			String query =
 					"MATCH (s:Structure { id : {structureId}}) " +
 					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
@@ -126,10 +138,16 @@ public class ManualFeeder extends BusModBase {
 					.put("structureId", structureId)
 					.put("groupSearchField", Validator.sanitize(c.getString("name")))
 					.put("props", c);
-			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			statementsBuilder.add(query, params);
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 				@Override
-				public void handle(Message<JsonObject> m) {
-					message.reply(m.body());
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+					} else {
+						message.reply(event.body());
+					}
 				}
 			});
 		}
@@ -204,6 +222,9 @@ public class ManualFeeder extends BusModBase {
 
 	private void createUserInStructure(final Message<JsonObject> message,
 			final JsonObject user, String profile, String structureId, JsonArray childrenIds) {
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
@@ -225,13 +246,19 @@ public class ManualFeeder extends BusModBase {
 				"SET u.structures = [s.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
-				if ("ok".equals(m.body().getString("status"))) {
-					eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
-							(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					message.reply(event.body().put("result", results.getJsonArray(0)));
+					if (commit.booleanValue()) {
+						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+					}
+				} else {
+					message.reply(event.body());
 				}
 			}
 		});
@@ -274,6 +301,8 @@ public class ManualFeeder extends BusModBase {
 
 	private void addUserInStructure(final Message<JsonObject> message,
 			String userId, String structureId) {
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
@@ -291,7 +320,7 @@ public class ManualFeeder extends BusModBase {
 		String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
 		statementsBuilder.add(query, params);
 		statementsBuilder.add(removeDefaultGroup, params);
-		neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray results = event.body().getJsonArray("results");
@@ -472,6 +501,9 @@ public class ManualFeeder extends BusModBase {
 
 	private void createUserInClass(final Message<JsonObject> message,
 			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
@@ -493,13 +525,19 @@ public class ManualFeeder extends BusModBase {
 				"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
-				if ("ok".equals(m.body().getString("status"))) {
-					eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
-							(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					message.reply(event.body().put("result", results.getJsonArray(0)));
+					if (commit.booleanValue()) {
+						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+					}
+				} else {
+					message.reply(event.body());
 				}
 			}
 		});
@@ -508,6 +546,9 @@ public class ManualFeeder extends BusModBase {
 
 	private void addUserInClass(final Message<JsonObject> message,
 								String userId, String classId) {
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", userId);
@@ -522,10 +563,16 @@ public class ManualFeeder extends BusModBase {
 						"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
 						"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
 						"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					message.reply(event.body().put("result", results.getJsonArray(0)));
+				} else {
+					message.reply(event.body());
+				}
 			}
 		});
 	}
@@ -829,12 +876,29 @@ public class ManualFeeder extends BusModBase {
 		executeTransaction(message, f, event -> message.reply(event.body()));
 	}
 
-	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f, Handler<Message<JsonObject>> h) {
+	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f,
+									Integer transactionId, Boolean commit, Boolean autoSend) {
+		executeTransaction(message, f, transactionId, commit, autoSend, event -> message.reply(event.body()));
+	}
+
+	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f,
+									Handler<Message<JsonObject>> h) {
+		executeTransaction(message, f, null, true, true, h);
+	}
+
+	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f,
+									Integer transactionId, Boolean commit, Boolean autoSend,
+									Handler<Message<JsonObject>> h) {
 		TransactionHelper tx;
 		try {
-			tx = TransactionManager.getInstance().begin();
+			tx = TransactionManager.getInstance().begin(transactionId);
+			tx.setAutoSend(autoSend.booleanValue());
 			f.apply(tx);
-			tx.commit(h);
+			if (commit.booleanValue()) {
+				tx.commit(h);
+			} else {
+				tx.flush(h);
+			}
 		} catch (TransactionException | ValidationException e) {
 			sendError(message, e.getMessage(), e);
 		}
@@ -890,8 +954,12 @@ public class ManualFeeder extends BusModBase {
 		final String userId = getMandatoryString("userId", message);
 		final String function = message.body().getString("function");
 		if (userId == null || function == null) return;
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		final Boolean autoSend = message.body().getBoolean("autoSend", true);
 		final JsonArray scope = message.body().getJsonArray("scope");
 		String inherit =  message.body().getString("inherit", "");
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		if (scope != null && ("s".equals(inherit) || "sc".equals(inherit))) {
 			String query;
 			if ("sc".equals(inherit)) {
@@ -903,18 +971,21 @@ public class ManualFeeder extends BusModBase {
 						"WHERE s.id IN {scope} " +
 						"RETURN COLLECT(scope.id) as ids ";
 			}
-			neo4j.execute(query, new JsonObject().put("scope", scope), new Handler<Message<JsonObject>>() {
+			JsonObject params = new JsonObject()
+					.put("scope", scope);
+			statementsBuilder.add(query, params);
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					JsonArray result = event.body().getJsonArray("result");
+					JsonArray result = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
-						final JsonArray s = result.getJsonObject(0).getJsonArray("ids");
+						final JsonArray s = result.getJsonArray(0).getJsonObject(0).getJsonArray("ids");
 						executeTransaction(message, new VoidFunction<TransactionHelper>() {
 							@Override
 							public void apply(TransactionHelper tx) {
 								User.addFunction(userId, function, s, tx);
 							}
-						});
+						}, transactionId, commit, autoSend);
 					} else {
 						sendError(message, "invalid.scope");
 					}
@@ -926,7 +997,7 @@ public class ManualFeeder extends BusModBase {
 				public void apply(TransactionHelper tx) {
 					User.addFunction(userId, function, scope, tx);
 				}
-			});
+			}, transactionId, commit, autoSend);
 		}
 	}
 
@@ -1096,12 +1167,15 @@ public class ManualFeeder extends BusModBase {
 	public void structureAttachment(Message<JsonObject> message) {
 		final String structureId = getMandatoryString("structureId", message);
 		final String parentStructureId = getMandatoryString("parentStructureId", message);
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		final Boolean autoSend = message.body().getBoolean("autoSend", true);
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) throws ValidationException {
 				Structure.addAttachment(structureId, parentStructureId, tx);
 			}
-		});
+		}, transactionId, commit, autoSend);
 	}
 
 	public void structureDetachment(Message<JsonObject> message) {
