@@ -24,6 +24,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import java.util.UUID;
 
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
@@ -84,6 +85,10 @@ public abstract class AbstractFederateController extends BaseController {
 					long timeout = config.getLong("cookie_timeout", Long.MIN_VALUE);
 					CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 					CookieHelper.set("authenticated", "true", timeout, request);
+					//create xsrf token on create session to avoid cache issue
+					if(config.getBoolean("xsrfOnAuth", true)){
+						CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), request);
+					}
 					final String callback = CookieHelper.getInstance().getSigned("callback", request);
 					if (isNotEmpty(callback)) {
 						redirectionService.redirect(request, callback, "");
