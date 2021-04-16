@@ -62,16 +62,27 @@ public class TransactionHelper {
 
 	}
 
+	public TransactionHelper(Neo4j neo4j, Integer transactionId) {
+		this(neo4j, 1000, transactionId);
+	}
+
 	public TransactionHelper(Neo4j neo4j) {
 		this(neo4j, 1000);
 	}
 
 	public TransactionHelper(Neo4j neo4j, int statementNumber) {
+		this(neo4j, statementNumber, null);
+	}
+
+	public TransactionHelper(Neo4j neo4j, int statementNumber, Integer transactionId) {
 		this.neo4j = neo4j;
 		this.remainingStatementNumber = new AtomicInteger(statementNumber);
 		this.statementNumber = statementNumber;
 		this.statements = new fr.wseduc.webutils.collections.JsonArray();
-		send(new fr.wseduc.webutils.collections.JsonArray());
+		this.transactionId = transactionId;
+		if (this.transactionId == null) {
+			send(new fr.wseduc.webutils.collections.JsonArray());
+		}
 	}
 
 	public void add(String query, JsonObject params) {
