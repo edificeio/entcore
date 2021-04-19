@@ -37,6 +37,10 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
         modeBookmarkEditionButtonLabel: 'apps.bookmarks.button.edit.start'
     };
     
+    $scope.isIconUrl = (app: App): boolean => {
+        return app.icon && (app.icon.startsWith("/") || app.icon.startsWith("http://") || app.icon.startsWith("https://"));
+    }
+
     const connectorsThreshold: number = await AppsService.getInstance().getConnectorsThresold();
 
     const applicationList = await AppsService.getInstance().getApplicationsList();
@@ -235,6 +239,4 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
         await http.put('/userbook/preference/apps', model.me.myApps);
         notify.info('apps.bookmarks.notify.remove', 1000);
     }
-    
-    $scope.isIconUrl = (app: App): boolean => app.icon && (app.icon.startsWith("/") || app.icon.startsWith("http://") || app.icon.startsWith("https://"));
 }]);
