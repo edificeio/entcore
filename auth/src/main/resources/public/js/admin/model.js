@@ -30,7 +30,7 @@ model.build = function () {
                     return new Message({ lang: lg, content: "" });
                 }));
 
-                http().get('/auth/configure/welcome?allLanguages')
+                http().get('/auth/configure/welcome?allLanguages=allLanguages')
                     .done(function (messages) {
                         this.hide = !messages.enabled;
                         var message;
