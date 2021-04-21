@@ -76,7 +76,6 @@ public class EventStoreController extends BaseController {
 					final String eventType = event.getString("event-type", "*");
 					if (eventWhiteList.contains(eventType.toUpperCase()) || eventWhiteList.contains(eventType.toLowerCase())) {
 						eventStoreService.store(event, voidResponseHandler(request));
-						Renders.ok(request);
 					} else {
 						Renders.badRequest(request, "bad event:"+eventType);
 					}
@@ -97,7 +96,6 @@ public class EventStoreController extends BaseController {
 					if (!StringUtils.isEmpty(module)) {
 						eventStoreService.generateMobileEvent(TRACE_TYPE_MOBILE, user,
 								request, module, voidResponseHandler(request));
-						Renders.ok(request);
 					} else {
 						Renders.badRequest(request);
 					}
