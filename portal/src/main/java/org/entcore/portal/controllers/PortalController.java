@@ -445,6 +445,7 @@ public class PortalController extends BaseController {
 				JsonObject personalizedTracker = defaultTracker.copy();
 				if (user != null) {
 					JsonObject matomoConfig = personalizedTracker.getJsonObject("matomo");
+					matomoConfig.put("UserId", user.getUserId());
 					matomoConfig.put("Profile", user.getType());
 					if( user.getStructures().size() > 0 )
 						matomoConfig.put("School", user.getStructures().get(0));
