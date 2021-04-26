@@ -19,30 +19,24 @@
 
 package org.entcore.workspace.service.impl;
 
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.service.impl.BasicQuotaService;
 import org.entcore.workspace.service.WorkspaceService;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.collections.Joiner;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
-public class DefaultQuotaService implements org.entcore.common.folders.QuotaService {
+public class DefaultQuotaService extends BasicQuotaService {
 
-	private final Neo4j neo4j = Neo4j.getInstance();
-	private static final Logger log = LoggerFactory.getLogger(DefaultQuotaService.class);
 	private final TimelineHelper notification;
 	private final boolean neo4jPlugin;
 
@@ -93,82 +87,38 @@ public class DefaultQuotaService implements org.entcore.common.folders.QuotaServ
 
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
-		String query = "MATCH (u:UserBook { userid : {userId}}) " + "RETURN u.quota as quota, u.storage as storage ";
-		JsonObject params = new JsonObject().put("userId", userId);
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		super.quotaAndUsage(userId, handler);
 	}
 
 	@Override
 	public void quotaAndUsageStructure(String structureId, Handler<Either<String, JsonObject>> handler) {
-		String query = "MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(:ProfileGroup)"
-				+ "<-[:IN]-(:User)-[:USERBOOK]->(u:UserBook) "
-				+ "RETURN sum(u.quota) as quota, sum(u.storage) as storage ";
-		JsonObject params = new JsonObject().put("structureId", structureId);
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
-
+		super.quotaAndUsageStructure(structureId, handler);
 	}
 
 	@Override
 	public void quotaAndUsageGlobal(Handler<Either<String, JsonObject>> handler) {
-		String query = "MATCH (u:UserBook) " + "RETURN sum(u.quota) as quota, sum(u.storage) as storage ";
-		JsonObject params = new JsonObject();
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		super.quotaAndUsageGlobal(handler);
 	}
 
 	@Override
 	public void update(JsonArray users, long quota, Handler<Either<String, JsonArray>> handler) {
-		String query = "MATCH (u:UserBook)<-[:USERBOOK]-(:User)-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
-				+ "WHERE u.userid IN {users} AND u.storage <= {quota} AND {quota} <= coalesce(p.maxQuota, 1073741824) "
-				+ "SET u.quota = {quota}, u.alertSize = false " + "RETURN u.userid as id ";
-		JsonObject params = new JsonObject().put("users", users).put("quota", quota);
-		neo4j.execute(query, params, validResultHandler(handler));
+		super.update(users, quota, handler);
 	}
 
 	@Override
 	public void updateQuotaDefaultMax(String profile, Long defaultQuota, Long maxQuota,
 			Handler<Either<String, JsonObject>> handler) {
-		if (defaultQuota == null && maxQuota == null) {
-			handler.handle(new Either.Left<String, JsonObject>("invalid.params"));
-			return;
-		}
-		JsonObject params = new JsonObject().put("profile", profile);
-		List<String> p = new ArrayList<>();
-		if (maxQuota != null) {
-			p.add("p.maxQuota = {maxQuota}");
-			params.put("maxQuota", maxQuota);
-		}
-		if (defaultQuota != null) {
-			p.add("p.defaultQuota = {defaultQuota}");
-			params.put("defaultQuota", defaultQuota);
-		}
-		String query = "MATCH (p:Profile { name : {profile}}) " + "SET " + Joiner.on(", ").join(p)
-				+ " RETURN p.id as id ";
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		super.updateQuotaDefaultMax(profile, defaultQuota, maxQuota, handler);
 	}
 
 	@Override
 	public void getDefaultMaxQuota(Handler<Either<String, JsonArray>> handler) {
-		String query = "MATCH (p:Profile) RETURN p.name as name, coalesce(p.maxQuota, 1073741824) as maxQuota";
-		neo4j.execute(query, new JsonObject(), validResultHandler(handler));
+		super.getDefaultMaxQuota(handler);
 	}
 
 	@Override
 	public void init(final String userId) {
-		String query = "MATCH (n:User {id : {userId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
-				+ "WITH n, sum(CASE WHEN has(p.defaultQuota) THEN p.defaultQuota ELSE 104857600 END) as quota "
-				+ "MERGE (m:UserBook { userid : {userId}}) "
-				+ "SET m.quota = quota, m.storage = 0, m.alertSize = false " + "WITH m, n "
-				+ "CREATE UNIQUE n-[:USERBOOK]->m";
-		JsonObject params = new JsonObject().put("userId", userId);
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> message) {
-				if (!"ok".equals(message.body().getString("status"))) {
-					log.error("Error initializing quota for user " + userId + " : "
-							+ message.body().getString("message"));
-				}
-			}
-		});
+		super.init(userId);
 	}
 
 }
