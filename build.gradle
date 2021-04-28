@@ -339,6 +339,7 @@ project(':test') {
   dependencies {
     compileOnly project(':common')
     compile "io.vertx:vertx-unit:$vertxVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "org.testcontainers:neo4j:$testContainerVersion"
     compile "org.testcontainers:mongodb:$testContainerVersion"
     compile "org.testcontainers:postgresql:$testContainerVersion"
