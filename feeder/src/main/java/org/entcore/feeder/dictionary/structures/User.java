@@ -540,8 +540,7 @@ public class User {
 		String query3 =
 				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:HTGroup) " +
 				"MERGE u-[r:IN]->g " +
-				"MERGE g-[c:COMMUNIQUE]->u " +
-				"SET r.source = 'MANUAL', c.source = 'MANUAL'";
+				"SET r.source = 'MANUAL'";
 		;
 		transactionHelper.add(query3, params);
 	}
@@ -600,8 +599,7 @@ public class User {
 		String query3 =
 				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:DirectionGroup) " +
 				"MERGE u-[r:IN]->g " +
-				"MERGE g-[c:COMMUNIQUE]->u " +
-				"SET r.source = 'MANUAL', c.source = 'MANUAL'";
+				"SET r.source = 'MANUAL'";
 		;
 		transactionHelper.add(query3, params);
 	}
