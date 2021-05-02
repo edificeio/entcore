@@ -1017,7 +1017,7 @@ public class AuthController extends BaseController {
 											});
 								} else if ("mobile".equals(service) && !mobile.isEmpty() && smsProvider != null
 										&& !smsProvider.isEmpty()) {
-									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), id);
+									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), id, request);
 									userAuthAccount.sendForgottenIdSms(request, id, mobile,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else {
@@ -1109,7 +1109,7 @@ public class AuthController extends BaseController {
 									userAuthAccount.sendResetPasswordMail(request, mail, resetCode, displayName, login,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else if ("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()) {
-									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
+									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login, request);
 									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode, displayName, login,
 											DefaultResponseHandler.defaultResponseHandler(request));
 								} else {

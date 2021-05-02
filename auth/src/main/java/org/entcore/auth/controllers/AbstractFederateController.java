@@ -68,7 +68,7 @@ public abstract class AbstractFederateController extends BaseController {
 			activateUser(activationCode, login, email, mobile, theme, sessionIndex, nameId, request);
 		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
 			log.info("Connexion de l'utilisateur fédéré " + login);
-			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
+			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login, request);
 			createSession(userId, sessionIndex, nameId, request);
 		} else {
 			redirectionService.redirect(request, LOGIN_PAGE);
@@ -110,7 +110,7 @@ public abstract class AbstractFederateController extends BaseController {
 			public void handle(Either<String, String> activated) {
 				if (activated.isRight() && activated.right().getValue() != null) {
 					log.info("Activation du compte utilisateur " + login);
-					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login);
+					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login, request);
 					createSession(activated.right().getValue(), sessionIndex, nameId, request);
 				} else {
 					log.info("Echec de l'activation : compte utilisateur " + login +
