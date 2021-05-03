@@ -84,9 +84,8 @@
 		</div>
 	</div>
 
-	<div class="row">
-
-        <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
+	<div class="row top-spacing-three">
+        <!-- <div class="row info hollow no-margin"><span>(shadow-element)<span></div> -->
         <div class="row info fade-in no-margin" ng-if="state.newItem.id && !state.draftError" >
             <i class="check-circle"></i>
             <i18n>message.draft.saved</i18n>
@@ -102,13 +101,77 @@
             <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
         </div>
 		<editor class="no-margin-all" ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
-		<div class="row">
-			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
-					|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
-					|| sending">
-					<i18n>submit</i18n>
-			</button>
-		</div>
+        <div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
+            <div class="hidden-content">
+                <input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
+                <input type="text" data-display-file="">
+            </div>
+            <button class="flat-button file-button" translate="" content="add.attachment"></button>
+        </div>
+        <div class="row">
+            <!-- attachment list header -->
+            <div ng-if="state.newItem.attachments.length">
+              <h2>
+                <i18n>attachments</i18n>
+                <div class="save-attachments right-magnet">
+                  <a data-ng-if="state.newItem.attachments.length > 1" ng-click="copyToWorkspace(state.newItem.attachments)" class="fade-in-hover" tooltip="conversation.copy.all.toworkspace">
+                    <i class="folder-close info-color"></i>
+                  </a>
+                  <a data-ng-if="state.newItem.attachments.length > 1" class="fade-in-hover" ng-href="[['message/'+state.newItem.id+'/allAttachments']]" tooltip="download.all.attachment">
+                    <i class="download-disk valid-color"></i>
+                  </a>
+                </div>
+              </h2>
+              <hr class="line no-margin" />
+            </div>
+    
+            <!-- attachment list while loading -->
+            <div ng-if="state.newItem.loadingAttachments.length > 0">
+                <h2 class="no-margin">
+                    <i18n>attachments.loading</i18n>
+                </h2>
+                <hr class="line no-margin" />
+    
+                <div class="loading-list no-padding vertical-spacing-twice">
+                    <ul>
+                        <li class="no-margin" ng-repeat="attachment in state.newItem.loadingAttachments">
+                            <div class="title">
+                                [[attachment.file.name]]
+                            </div>
+                            <div class="title">
+                                <progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    
+        <!-- attachment list loaded -->
+        <div class="loading-list no-padding vertical-spacing-twice" ng-init="columnOrder = 'filename'" drop-files="state.newItem.newAttachments" on-drop="postAttachments()" ng-if="state.newItem.attachments.length" style="border: none">
+            <ul>
+                <li class="no-margin removable" ng-repeat="attachment in state.newItem.attachments | orderBy: columnOrder">
+                    <div class="icon">
+                        <i class="[[formatFileType(attachment.contentType)]]"></i>
+                    </div>
+                    <div class="title">
+                        [[attachment.filename]]
+                    </div>
+                    <div class="status-infos">
+                        <span class="small-text reduce-block-four">[[formatSize(attachment.size)]]</span>
+                    </div>
+                    <div class="save-attachments">
+                      <a ng-click="copyToWorkspace(attachment)" class="fade-in-hover">
+                          <i class="folder-close info-color" tooltip="conversation.copy.toworkspace"></i>
+                      </a>
+                      <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover">
+                        <i class="download-disk valid-color" tooltip="download"></i>
+                      </a>
+                      <i class="close" ng-click="deleteAttachment($event, attachment, state.newItem)" tooltip="remove.attachment"></i>
+                    </div>
+                </li>
+            </ul>
+        </div>
 </div>
     <div class="row drop-down-block" ng-class="{slided: signatureShow}">
 		<div class="drop-down-label">
@@ -133,78 +196,13 @@
 		</div>
 	</div>
 
-	<div class="row">
-        <!-- attachment list header -->
-        <div ng-if="state.newItem.attachments.length">
-          <h2>
-            <i18n>attachments</i18n>
-            <div class="save-attachments right-magnet">
-              <a data-ng-if="state.newItem.attachments.length > 1" ng-click="copyToWorkspace(state.newItem.attachments)" class="fade-in-hover" tooltip="conversation.copy.all.toworkspace">
-                <i class="folder-close info-color"></i>
-              </a>
-              <a data-ng-if="state.newItem.attachments.length > 1" class="fade-in-hover" ng-href="[['message/'+state.newItem.id+'/allAttachments']]" tooltip="download.all.attachment">
-                <i class="download-disk valid-color"></i>
-              </a>
-            </div>
-          </h2>
-          <hr class="line no-margin" />
-        </div>
-
-        <!-- attachment list while loading -->
-        <div ng-if="state.newItem.loadingAttachments.length > 0">
-            <h2 class="no-margin">
-                <i18n>attachments.loading</i18n>
-            </h2>
-            <hr class="line no-margin" />
-
-            <div class="loading-list no-padding vertical-spacing-twice">
-                <ul>
-                    <li class="no-margin" ng-repeat="attachment in state.newItem.loadingAttachments">
-                        <div class="title">
-                            [[attachment.file.name]]
-                        </div>
-                        <div class="title">
-                            <progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-	</div>
-
-    <!-- attachment list loaded -->
-    <div class="loading-list no-padding vertical-spacing-twice" ng-init="columnOrder = 'filename'" drop-files="state.newItem.newAttachments" on-drop="postAttachments()" ng-if="state.newItem.attachments.length">
-        <ul>
-            <li class="no-margin removable" ng-repeat="attachment in state.newItem.attachments | orderBy: columnOrder">
-                <div class="icon">
-                    <i class="[[formatFileType(attachment.contentType)]]"></i>
-                </div>
-                <div class="title">
-                    [[attachment.filename]]
-                </div>
-                <div class="status-infos">
-                    <span class="small-text reduce-block-four">[[formatSize(attachment.size)]]</span>
-                </div>
-                <div class="save-attachments">
-                  <a ng-click="copyToWorkspace(attachment)" class="fade-in-hover">
-                      <i class="folder-close info-color" tooltip="conversation.copy.toworkspace"></i>
-                  </a>
-                  <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover">
-                    <i class="download-disk valid-color" tooltip="download"></i>
-                  </a>
-                  <i class="close" ng-click="deleteAttachment($event, attachment, state.newItem)" tooltip="remove.attachment"></i>
-                </div>
-            </li>
-        </ul>
+    <div class="row">
+        <button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
+                || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+                || sending">
+                <i18n>submit</i18n>
+        </button>
     </div>
-
-    <div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
-        <div class="hidden-content">
-            <input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
-            <input type="text" data-display-file="">
-        </div>
-        <button class="flat-button file-button" translate="" content="add.attachment"></button>
-    </div>
-    
+        
     <excluded-list excluded="state.newItem.excluded"></excluded-list>
 </article>
