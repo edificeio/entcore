@@ -212,9 +212,9 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
                 if(typeData) {
                     if (notification.containsKey("type"))
-                        data.put("type", notification.getJsonObject("type").toString());
+                        data.put("type", notification.getString("type"));
                     if (notification.containsKey("event-type"))
-                        data.put("event-type", notification.getJsonObject("event-type").toString());
+                        data.put("event-type", notification.getString("event-type"));
                     if (notification.containsKey("params"))
                         data.put("params", notification.getJsonObject("params").toString());
                     if (notification.containsKey("resource"))
