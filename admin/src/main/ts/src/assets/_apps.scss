@@ -335,14 +335,20 @@ i.mail {
 // & also 1D APPS
 i.statistics-large,
 i.statistics.cas,
-i.statistics,
-i.statistics,
+i.statistics {
+    @include fonticon;
+    &::before {
+      content: '\e810';
+      color: $purple;
+    }
+}
+
 i.stats-large,
 i.type.stats,
 i.stats {
     @include fonticon;
     &::before {
-      content: '\e810';
+      content: '\e909';
       color: $purple;
     }
 }
