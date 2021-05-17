@@ -455,6 +455,7 @@ public class CsvFeeder implements Feed {
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Student":
+							createFunctionDisciplineGroup(profile, structure, user, groups);
 							JsonArray relative = user.getJsonArray("relative");
 							if (relative == null && user.containsKey("r_nom") && user.containsKey("r_prenom")) {
 								relative = new JsonArray();
@@ -490,6 +491,7 @@ public class CsvFeeder implements Feed {
 									relative, true, true);
 							break;
 						case "Relative":
+							createFunctionDisciplineGroup(profile, structure, user, groups);
 							if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||
 									("".equals(strings[0]) && "Intitulé".equals(strings[1]) &&
 											"Adresse Organisme".equals(strings[2]))) {
@@ -658,7 +660,7 @@ public class CsvFeeder implements Feed {
 				}
 				if ("Teacher".equals(profile)) {
 					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
-				} else if ("Personnel".equals(profile)) {
+				} else {
 					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
 				}
 				final String[] groupId = new String[3];
