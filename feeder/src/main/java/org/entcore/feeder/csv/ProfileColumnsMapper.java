@@ -125,6 +125,7 @@ public class ProfileColumnsMapper {
 				.put("sexe", "gender")
 				.put("alias", "loginAlias")
 				.put("login", "loginAlias")
+				.put("multietab", "multiEtab")
 				//.put("importid", "importId")
 				.put("identifiantclasse", "ignore")
 				.put("dateinscription", "ignore")

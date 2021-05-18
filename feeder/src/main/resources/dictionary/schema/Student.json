@@ -181,6 +181,9 @@
 		"endDateClasses" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
+		},
+		"multiEtab": {
+			"type": "boolean"
 		}
 	},
 	"generate" : {
