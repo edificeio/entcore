@@ -51,6 +51,7 @@ public class PersEducNat extends AbstractUser {
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
 				String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
+		final Boolean isMultiEtab = object.getBoolean("multietab", false);
 		if (error != null) {
 			if (object.getJsonArray("profiles") != null && object.getJsonArray("profiles").size() == 1) {
 				report.addIgnored(object.getJsonArray("profiles").getString(0), error, object);
@@ -73,8 +74,26 @@ public class PersEducNat extends AbstractUser {
 				if (!EDTImporter.EDT.equals(currentSource)) {
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 				}
-				sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
-						"id", "externalId", "login", "activationCode", "displayName", "displayNameSearchField", "email", "emailSearchField", "created"));
+
+				if (Boolean.TRUE.equals(isMultiEtab)) {
+
+					sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
+							"id", "externalId", "login", "activationCode", "displayName",
+							"displayNameSearchField", "email", "emailSearchField", "created", "structures", "functions"));
+
+					if (object.getJsonArray("structures") != null && object.getJsonArray("structures").size() > 0) {
+						sb.append(", u.structures = FILTER (s IN coalesce(u.structures, []) WHERE NOT s IN {structures}) + {structures}");
+					}
+					if (object.getJsonArray("functions") != null && object.getJsonArray("functions").size() > 0) {
+						sb.append(", u.functions = FILTER (f IN coalesce(u.functions, []) WHERE NOT f IN {functions}) + {functions}");
+					}
+
+				} else {
+					sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
+							"id", "externalId", "login", "activationCode", "displayName",
+							"displayNameSearchField", "email", "emailSearchField", "created"));
+				}
+
 				if (EDTImporter.EDT.equals(currentSource)) {
 					sb.append("RETURN u.id as id, u.IDPN as IDPN, head(u.profiles) as profile");
 				}
@@ -121,20 +140,24 @@ public class PersEducNat extends AbstractUser {
 								.put("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
-					String qs =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
-									"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-									"DELETE r";
-					JsonObject ps = new JsonObject()
-							.put("userExternalId", externalId)
-							.put("source", currentSource)
-							.put("structures", structuresByFunctions);
-					transactionHelper.add(qs, ps);
-					final String daa =
-							"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r";
-					transactionHelper.add(daa, ps.copy().put("structures", getOrElse(structures, new JsonArray())));
+
+					if (Boolean.FALSE.equals(isMultiEtab)) {
+						String qs =
+								"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
+										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+										"DELETE r";
+						JsonObject ps = new JsonObject()
+								.put("userExternalId", externalId)
+								.put("source", currentSource)
+								.put("structures", structuresByFunctions);
+						transactionHelper.add(qs, ps);
+						final String daa =
+								"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
+										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+										"DELETE r";
+						transactionHelper.add(daa, ps.copy().put("structures", getOrElse(structures, new JsonArray())));
+					}
+
 				}
 				final JsonObject fosm = new JsonObject();
 				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
@@ -164,10 +187,6 @@ public class PersEducNat extends AbstractUser {
 							.put("profileExternalId", profileExternalId)
 							.put("classes", classes);
 					transactionHelper.add(query, p0);
-					JsonObject p = new JsonObject()
-							.put("userExternalId", externalId)
-							.put("source", currentSource)
-							.put("classes", classes);
 					fosm.mergeIn(fcm);
 				}
 				if (externalId != null) {
@@ -219,16 +238,22 @@ public class PersEducNat extends AbstractUser {
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null) {
-					final String qdfg =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:Group) " +
-							"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup) AND " +
-							"NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r";
+
 					final JsonObject pdfg = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
 							.put("groups", groups);
-					transactionHelper.add(qdfg, pdfg);
+
+					if (Boolean.FALSE.equals(isMultiEtab)) {
+						final String qdfg =
+								"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:Group) " +
+										"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup) AND " +
+										"NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+										"DELETE r";
+
+						transactionHelper.add(qdfg, pdfg);
+					}
+
 					fosm.mergeIn(fgm);
 					final String deleteOldFoslg =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
