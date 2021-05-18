@@ -181,6 +181,8 @@ public class CsvReport extends Report {
 	//												l[i] = ((JsonArray) v).<String>get(count);
 	//											}
 											}
+										} else if (v instanceof  Boolean) {
+											l[i] = String.valueOf(v);
 										} else {
 											l[i] = "";
 										}
