@@ -315,7 +315,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					if (!(o instanceof JsonObject)) continue;
 					final JsonObject user = (JsonObject) o;
 					final String externalId = user.getString("externalId");
-					final String ca = user.getString("className");
+					final String ca = user.getString("className", "");
 					for (String attr: user.copy().fieldNames()) {
 						if (user.getValue(attr) == null) {
 							user.remove(attr);
