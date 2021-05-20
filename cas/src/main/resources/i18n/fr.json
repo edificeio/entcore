@@ -46,5 +46,7 @@
   "SalvumRegisteredService.name" : "Salvum",
   "SalvumRegisteredService.description" : "Service CAS spécifique <a href='https://www.salvum.org/' target='_blank'>Salvum</a>, site de formation au secourisme.",
   "MilliwebRegisteredService.name" : "Milliweb",
-  "MilliwebRegisteredService.description" : "Service CAS spécifique <a href='https://milliweb.fr/' target='_blank'>Milliweb</a>, L'ÉDUCATION NUMÉRIQUE MOBILE."
+  "MilliwebRegisteredService.description" : "Service CAS spécifique <a href='https://milliweb.fr/' target='_blank'>Milliweb</a>, L'ÉDUCATION NUMÉRIQUE MOBILE.",
+  "IjboxRegisteredService.name" : "IJBOX",
+  "IjboxRegisteredService.description" : "Service CAS 3.0 retournant le principalAttributeName et l'UAI de l'établissement auquel appartient l'utilisateur."
 }

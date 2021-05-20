@@ -36,5 +36,7 @@
   "SalvumRegisteredService.name" : "Salvum",
   "SalvumRegisteredService.description" : "Salvum",
   "MilliwebRegisteredService.name" : "Milliweb",
-  "MilliwebRegisteredService.description" : "Milliweb"
+  "MilliwebRegisteredService.description" : "Milliweb",
+  "IjboxRegisteredService.name" : "IJBOX",
+  "IjboxRegisteredService.description" : "IJBOX"
 }
