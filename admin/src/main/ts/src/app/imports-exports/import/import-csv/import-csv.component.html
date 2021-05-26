@@ -17,6 +17,7 @@
       </ode-message-sticker>
     </h2>
     <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <message-box *ngFor="let key of globalError.profile | keys" [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
     <h3>{{ 'import.header.selectFile' | translate }}</h3>
     <p *ngFor="let p of profiles.asArray(true)">
       <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]" />

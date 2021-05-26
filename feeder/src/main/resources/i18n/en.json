@@ -1,6 +1,7 @@
 {
   "file.missing.in.directory" : "Le fichier {0} est manquant dans le dossier {1}.",
   "invalid.column" : "Colonne {0} invalide.",
+  "error.file.separator": "Erreur lors de la récupération du fichier",
   "error.list.files" : "Erreur lors de la lecture des fichiers.",
   "relative.error.line" : "",
   "null.object": "L'objet n'est pas défini.",

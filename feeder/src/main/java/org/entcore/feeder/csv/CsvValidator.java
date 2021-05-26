@@ -215,9 +215,15 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			public void handle(AsyncResult<List<String>> event) {
 				if (event.succeeded() && event.result().size() == 1) {
 					final String path = event.result().get(0);
-					String[] s = path.replaceAll("/$", "").substring(path.lastIndexOf("/") + 1).split("_")[0].split("@");
+					String fileName = path.replaceAll("/$", "").substring(path.lastIndexOf("/") + 1);
+					String[] s = fileName.split("@");
 					if (s.length == 2) {
-						structureId = s[1];
+						structureId = s[1].split("_")[0];
+					} else if(s.length > 2)
+					{
+						addError("error.file.separator");
+						handler.handle(result);
+						return;
 					}
 					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
 						@Override
