@@ -582,7 +582,7 @@ public class AppRegistryController extends BaseController {
 					}
 				});
 				break;
-			case "create-external-application" :
+			case "create-application" :
 				appRegistryService.createApplication(structureId,
 						message.body().getJsonObject("application"), null, busResponseHandler(message));
 				break;
