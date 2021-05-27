@@ -21,6 +21,7 @@ package org.entcore.registry.controllers;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
+import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
@@ -202,6 +203,10 @@ public class ExternalApplicationController extends BaseController {
 		switch (message.body().getString("action", "")) {
 			case "list" :
 				externalAppService.listExternalApps(structureId, busArrayHandler(message));
+				break;
+			case "create":
+				final JsonObject application = message.body().getJsonObject("application");
+				externalAppService.createExternalApplication(structureId, application, busResponseHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
