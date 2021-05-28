@@ -315,6 +315,16 @@ public class UserInfos {
 		this.functions = functions;
 	}
 
+	public boolean isADMC()
+	{
+		return isSuperAdmin();
+	}
+
+	public boolean isSuperAdmin()
+	{
+		return this.functions != null && this.functions.containsKey(DefaultFunctions.SUPER_ADMIN);
+	}
+
 	private Map<String, Function> functions;
 
 	public String getUserId() {

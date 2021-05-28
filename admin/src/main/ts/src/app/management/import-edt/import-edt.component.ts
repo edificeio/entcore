@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, OnInit, SystemJsNgModuleLoader } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { routing } from 'src/app/core/services/routing.service';
@@ -7,6 +7,8 @@ import { ImportEDTReportsService } from './import-edt-reports.service';
 import { ImportTimetableService } from './import-timetable.service';
 import { SelectOption } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 
 export interface EDTReport
 {
@@ -82,9 +84,17 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   public groupNames: SelectOption<String>[] = [];
   public groupsMapping: object = {}; // Map<String, String>
 
+  private isADMC: boolean = false;
+
   constructor(injector: Injector, private reportService: ImportEDTReportsService, private timetableService: ImportTimetableService, private notify: NotifyService)
   {
     super(injector);
+  }
+
+  async admcSpecific() {
+    const session: Session = await SessionModel.getSession();
+    this.isADMC = session.isADMC();
+    this.changeDetector.markForCheck();
   }
 
   ngOnInit(): void
@@ -101,11 +111,17 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
         this._getGroupsMapping();
       }
     }));
+    this.admcSpecific();
   }
 
   structureTitle(): String
   {
     return this.structure == null ? "" : this.structure.name + (this.structure.UAI == null ? "" : " — " + this.structure.UAI);
+  }
+
+  isFluxTypeBlocked(): boolean
+  {
+    return !(this.isADMC || this.structure.timetable == null);
   }
 
   updateFluxType(): void

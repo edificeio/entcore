@@ -31,7 +31,22 @@
       </label>
       <ode-mono-select
         class="is-block"
+        *ngIf="isFluxTypeBlocked() == false"
         placeholder="management.edt.flux.placeholder"
+        [options]="[
+          { value: EDTImportFlux.DEFAULT, label: 'management.edt.flux.default' },
+          { value: EDTImportFlux.NONE, label: 'management.edt.flux.none' },
+          { value: EDTImportFlux.EDT, label: 'EDT' },
+          { value: EDTImportFlux.UDT, label: 'UDT' }
+        ]"
+        [(ngModel)]="mainFlux"
+      ></ode-mono-select>
+      <ode-mono-select
+        class="is-block"
+        *ngIf="isFluxTypeBlocked()"
+        placeholder="management.edt.flux.placeholder"
+        disabled
+        title="{{ 'management.edt.flux.blocked' | translate }}"
         [options]="[
           { value: EDTImportFlux.DEFAULT, label: 'management.edt.flux.default' },
           { value: EDTImportFlux.NONE, label: 'management.edt.flux.none' },
@@ -42,7 +57,10 @@
       ></ode-mono-select>
     </div>
     <div class="see-more">
-      <button class="active" (click)="showFluxChangeWarning = true">
+      <button class="active" *ngIf="isFluxTypeBlocked() == false" (click)="showFluxChangeWarning = true">
+        <s5l>confirm</s5l>
+      </button>
+      <button class="active" *ngIf="isFluxTypeBlocked()" disabled title="{{ 'management.edt.flux.blocked' | translate }}">
         <s5l>confirm</s5l>
       </button>
     </div>
