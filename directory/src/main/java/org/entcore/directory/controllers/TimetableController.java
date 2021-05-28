@@ -39,6 +39,7 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.UserInStructure;
+import org.entcore.directory.security.AdmlOfStructureWithoutEDTInit;
 import org.entcore.directory.services.TimetableService;
 import org.joda.time.DateTime;
 import io.vertx.core.AsyncResult;
@@ -170,7 +171,7 @@ public class TimetableController extends BaseController {
 
 	@Put("/timetable/init/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructure.class)
+	@ResourceFilter(AdmlOfStructureWithoutEDTInit.class)
 	public void initStructure(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "initTimetable", new Handler<JsonObject>() {
 			@Override
