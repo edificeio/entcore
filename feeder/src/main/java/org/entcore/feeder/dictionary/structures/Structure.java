@@ -369,6 +369,7 @@ public class Structure {
 									}
 									transitionClassGroup();
 									transitionReattachUsers();
+									transitionResetTimetable();
 								}
 								handler.handle(event);
 							} else {
@@ -437,6 +438,16 @@ public class Structure {
 			"MATCH (u:User) " +
 			"WHERE EXISTS(u.removedFromStructures) AND {externalId} IN u.removedFromStructures " +
 			"SET u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> {externalId}]";
+		tx.add(query, params);
+	}
+
+	private void transitionResetTimetable()
+	{
+		TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
+		JsonObject params = new JsonObject().put("id", id);
+		String query =
+				"MATCH (s:Structure {id : {id}}) " +
+				"REMOVE s.timetable, s.punctualTimetable";
 		tx.add(query, params);
 	}
 

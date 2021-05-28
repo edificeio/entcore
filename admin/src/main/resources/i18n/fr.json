@@ -155,6 +155,7 @@
     "management.edt.flux.placeholder": "Choisissez un type de flux",
     "management.edt.flux.default": "Alimentation standard (AAF, CSV)",
     "management.edt.flux.none": "Aucun",
+    "management.edt.flux.blocked": "Vous ne pouvez pas changer le flux d'alimentation en cours d'année. En cas de besoin, référrez-vous à votre administrateur central.",
     "management.edt.flux.warning": "Le changement du type de flux supprimera tous les groupes d'enseignement de l'établissement et donc tous les partages associés, ainsi que tous les cours de l'emploi du temps",
     "management.edt.flux.notify.success.title": "Flux mis à jour",
     "management.edt.flux.notify.success.content": "Le changement du type de flux d'alimentation a bien été pris en compte",
