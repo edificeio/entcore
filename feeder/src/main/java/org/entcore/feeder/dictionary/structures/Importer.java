@@ -355,6 +355,10 @@ public class Importer {
 	}
 
 	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent, boolean linkRelativeWithoutChild) {
+		createOrUpdateUser(object, linkStudent, linkRelativeWithoutChild, null);
+	}
+
+	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent, boolean linkRelativeWithoutChild, String[][] linkGroups) {
 		final String error = userValidator.validate(object);
 		if (error != null) {
 			report.addIgnored("Relative", error, object);
@@ -400,6 +404,25 @@ public class Importer {
 							.put("profileExternalId", DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
 					transactionHelper.add(q1, p);
 				}
+			}
+
+			if (linkGroups != null && object.getString("externalId") != null) {
+				final JsonArray groups = new JsonArray();
+				for (String[] structGroup : linkGroups) {
+					if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {
+						groups.add(structGroup[1]);
+					}
+				}
+				String q2 = "MATCH (g:FunctionGroup), (u:User { externalId : {userExternalId}}) " +
+						"WHERE g.externalId IN {groups} " +
+						"AND NOT(HAS(u.mergedWith)) " +
+						"AND g.source = {source} " +
+						"MERGE u-[:IN]->g";
+				JsonObject p = new JsonObject()
+						.put("userExternalId", object.getString("externalId"))
+						.put("source", currentSource)
+						.put("groups", groups);
+				transactionHelper.add(q2, p);
 			}
 		}
 	}
@@ -601,8 +624,10 @@ public class Importer {
 						}
 					}
 					String query =
-							"MATCH (g:FunctionalGroup), (u:User { externalId : {userExternalId}}) " +
-							"WHERE g.externalId IN {groups} AND NOT(HAS(u.mergedWith)) " +
+							"MATCH (g), (u:User { externalId : {userExternalId}}) " +
+							"WHERE (g:FunctionalGroup OR g:FunctionGroup) " +
+							"AND g.externalId IN {groups} " +
+							"AND NOT(HAS(u.mergedWith)) " +
 							"AND g.source = {source} " +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
