@@ -596,7 +596,7 @@ public class CsvFeeder implements Feed {
 									}
 								}
 							}
-							importer.createOrUpdateUser(user, linkStudents, true);
+							importer.createOrUpdateUser(user, linkStudents, true, groups.toArray(new String[groups.size()][3]));
 							break;
 						case "Guest":
 							importer.createOrUpdateGuest(user, classes.toArray(new String[classes.size()][2]));
