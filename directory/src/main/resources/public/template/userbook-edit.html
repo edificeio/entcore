@@ -151,21 +151,17 @@
 	</article>
 </div>
 
-<div class="row reduce-block-six" ng-if="tracker.type==='matomo'">
+<div class="row reduce-block-six">
 	<article id="rgpd_cookies">
 		<h2>
 			<i18n>rgpd.cookies.title</i18n>
 		</h2>
 		<div class="row medium-text">
 			<p><i18n>rgpd.cookies.text</i18n></p>
-			<div class="one cell reduce-block-six">
-				<input id="ckOptinMatomo" type="checkbox" 
-					ng-model="tracker.hasOptedIn" ng-change="tracker.saveOptIn()" 
-					style="padding-top:5px" />
-			</div>
-			<div class="eleven cell">
-				<label for="ckOptinMatomo"><i18n>rgpd.cookies.checkbox</i18n></label>
-			</div>
+			<p class="bold bottom-spacing-small"><i18n>rgpd.cookies.mandatory.title</i18n></p>
+			<p class="italic-text top-spacing-small"><i18n>rgpd.cookies.mandatory.text</i18n></p>
+			<p class="bold bottom-spacing-small"><i18n>rgpd.cookies.stats.title</i18n></p>
+			<p class="italic-text top-spacing-small"><i18n>rgpd.cookies.stats.text</i18n></p>
 		</div>
 	</article>
 </div>
