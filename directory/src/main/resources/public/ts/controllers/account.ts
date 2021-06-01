@@ -18,6 +18,8 @@
 import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
 
+declare let window: any;
+
 export const accountController = ng.controller('MyAccount', ['$scope', 'route', 'tracker', '$location', '$anchorScroll', ($scope, route, tracker, $location, $anchorScroll) => {
 	route({
 		editUserInfos: async function(params){
@@ -154,6 +156,9 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			published: true,
 			activated: false
 		}
+
+		$scope.hidePersonalData = window.hidePersonalData;
+
 		loadThemeConf();
 	}
 

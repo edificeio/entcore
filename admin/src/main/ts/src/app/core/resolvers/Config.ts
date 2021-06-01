@@ -7,4 +7,5 @@ export interface Config {
     'relative-pre-delete-delay': number;
     'guest-pre-delete-delay': number;
     'hide-adminv1-link': boolean;
+    'hide-personal-data': boolean;
 }

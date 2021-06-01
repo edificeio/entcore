@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, ViewChild, Input} from '@angular/core';
 import {AbstractControl, NgForm} from '@angular/forms';
 
 import {AbstractSection} from '../abstract.section';
@@ -10,6 +10,7 @@ import {UsersStore} from '../../../users.store';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { SpinnerService } from 'ngx-ode-ui';
 import { UserListService } from 'src/app/core/services/userlist.service';
+import {Config} from "../../../../core/resolvers/Config";
 
 @Component({
     selector: 'ode-user-administrative-section',
@@ -26,6 +27,8 @@ export class UserAdministrativeSectionComponent extends AbstractSection {
 
     @ViewChild('lastNameInput', { static: false })
     lastNameInput: AbstractControl;
+
+    @Input() config: Config;
 
     constructor(
         private usersStore: UsersStore,
