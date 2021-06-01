@@ -34,6 +34,7 @@ import java.util.*;
 
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -143,7 +144,9 @@ public class UserBookController extends BaseController {
 	@Get("/mon-compte")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void monCompte(HttpServerRequest request) {
-		renderView(request);
+		LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
+		JsonObject configuration = new JsonObject().put("hidePersonalData", serverMap.get("hidePersonalData"));
+		renderView(request, configuration, "mon-compte.html", null);
 		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "MyAccount"));
 	}
 

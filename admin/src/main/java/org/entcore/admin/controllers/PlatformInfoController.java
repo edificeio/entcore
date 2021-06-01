@@ -18,6 +18,7 @@
 
 package org.entcore.admin.controllers;
 
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.http.HttpServerRequest;
@@ -59,12 +60,15 @@ public class PlatformInfoController extends BaseController {
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	public void readConfig(HttpServerRequest request) {
+		LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
+
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
 		final JsonObject configuration =  new JsonObject()
 				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
 				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 				.put("distributions", config.getJsonArray("distributions", new JsonArray()))
-				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false));
+				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false))
+				.put("hide-personal-data", serverMap.get("hidePersonalData"));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
 				PROFILES.containsAll(preDelete.fieldNames())) {

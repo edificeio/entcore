@@ -24,13 +24,13 @@
         </ode-date-picker>
         <ode-form-errors [control]="birthDateInput"></ode-form-errors>
       </ode-form-field>
-      <ode-form-field label="address">
+      <ode-form-field label="address" *ngIf="!config['hide-personal-data']">
         <input type="text" [(ngModel)]="details.address" name="address" >
       </ode-form-field>
-      <ode-form-field label="zipCode">
+      <ode-form-field label="zipCode" *ngIf="!config['hide-personal-data']">
         <input type="text" [(ngModel)]="details.zipCode" name="zipCode" >
       </ode-form-field>
-      <ode-form-field label="city">
+      <ode-form-field label="city" *ngIf="!config['hide-personal-data']">
         <input type="text" [(ngModel)]="details.city" name="city">
       </ode-form-field>
       <ode-form-field label="email">
@@ -38,10 +38,10 @@
                #emailInput="ngModel" [pattern]="emailPattern" >
         <ode-form-errors [control]="emailInput"></ode-form-errors>
       </ode-form-field>
-      <ode-form-field label="homePhone">
+      <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
         <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" >
       </ode-form-field>
-      <ode-form-field label="mobilePhone">
+      <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
         <input type="tel" [(ngModel)]="details.mobile" name="mobile" >
       </ode-form-field>
     </fieldset>
