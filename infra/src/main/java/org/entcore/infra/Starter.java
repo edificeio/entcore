@@ -63,6 +63,7 @@ public class Starter extends BaseServer {
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
 			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
+			serverMap.put("hidePersonalData", config.getBoolean("hidePersonalData", false));
 
 			//JWT need signKey
 			SecurityHandler.setVertx(vertx);

@@ -106,7 +106,7 @@
 				<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 			</div>
 
-			<div class="row">
+			<div class="row" ng-if="!hidePersonalData">
 				<label translate content="userBook.profile.telephone" class="four cell"></label>
 				<div class="seven cell">
 					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.homePhone" />
@@ -120,7 +120,7 @@
 				<div class="clear"></div>
 			</div>
 
-			<div class="row">
+			<div class="row" ng-if="!hidePersonalData">
 				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
 				<div class="seven cell">
 					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.mobile" />

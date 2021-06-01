@@ -79,6 +79,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			});
 			$http.get('/admin/api/platform/config').success(function (data) {
 				$scope.distributions = data.distributions;
+				$scope.hidePersonalData = data["hide-personal-data"];
 			});
 		},
         viewStructureUser: function(params){
