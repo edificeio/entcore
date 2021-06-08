@@ -152,13 +152,13 @@ public class DefaultUserService implements UserService {
 				.add("modified").add("ine").add("workPhone").add("homePhone").add("country").add("zipCode")
 				.add("address").add("postbox").add("city").add("otherNames").add("title").add("functions")
 				.add("lastDomain").add("displayName").add("source").add("login").add("teaches").add("headTeacher")
-				.add("externalId").add("emailInternal").add("joinKey").add("birthDate").add("modules").add("lastScheme")
+				.add("externalId").add("joinKey").add("birthDate").add("modules").add("lastScheme")
 				.add("isTeacher").add("structures").add("type").add("children").add("parents").add("functionalGroups")
 				.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
 				.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
 				.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level")
 				.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
-				.add("email").add("emailAcademy").add("emailInternal");
+				.add("email").add("emailAcademy").add("emailInternal").add("lastName").add("firstName");
 		get(id, true, filter, result -> {
 			if (result.isRight()) {
 				JsonObject resultJson = result.right().getValue();
