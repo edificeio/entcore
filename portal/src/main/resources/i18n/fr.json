@@ -617,7 +617,7 @@
   "video.capture.guard.text": "Etes-vous sûr de vouloir sortir de cette page? Votre captation ne sera pas sauvegardée.",
   "video.drop.help": "Glissez-déposez un fichier depuis votre appareil ou cliquez sur Parcourir",
   "video.drop.help2": "Déposez un fichier",
-  "video.upload.supported.formats": "Formats supportés : MP4, MOV, AVI",
+  "video.upload.supported.formats": "Formats supportés : [[acceptedFileList()]]",
   "video.upload.supported.weight": "Poids maximal : [[maxWeight]]Mo",
   "video.upload.error.format": "Le format du fichier n'est pas supporté.",
   "video.upload.error.weight": "Votre fichier dépasse le poids maximal autorisé.",
