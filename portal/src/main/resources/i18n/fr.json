@@ -595,7 +595,7 @@
   "video.auth.text": "Veuillez autoriser l'accès à votre caméra pour commencer l'enregistrement.",
   "video.file.error": "Erreur lors de l'enregistrement de la vidéo",
   "video.file.saved": "Votre vidéo est disponible dans votre espace documentaire",
-  "video.msg": "Souriez, vous êtes filmé(e) ! Vous pouvez enregistrer jusqu'à 3 minutes de vidéo.",
+  "video.msg": "Souriez, vous êtes filmé(e) ! Vous pouvez enregistrer jusqu'à [[recordMaxTime]] minutes de vidéo.",
   "video.play": "Lire",
   "video.redo": "Refaire",
   "video.default.camera": "Caméra par défaut",
