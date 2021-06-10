@@ -20,6 +20,7 @@
 package org.entcore.common.email;
 
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.email.SMTPSender;
 import fr.wseduc.webutils.email.SendInBlueSender;
 import fr.wseduc.webutils.email.GoMailSender;
 import fr.wseduc.webutils.exception.InvalidConfigurationException;
@@ -72,21 +73,33 @@ public class EmailFactory {
 	public EmailSender getSenderWithPriority(int priority) {
 		EmailSender sender = null;
 		if (config != null){
-			if ("SendInBlue".equals(config.getString("type"))) {
-				try {
-					sender = new SendInBlueSender(vertx, config);
-				} catch (InvalidConfigurationException | URISyntaxException e) {
-					log.error(e.getMessage(), e);
-					vertx.close();
-				}
-			} else if ("GoMail".equals(config.getString("type"))) {
-				try {
-					sender = new GoMailSender(vertx, config);
-				} catch (InvalidConfigurationException | URISyntaxException e) {
-					log.error(e.getMessage(), e);
-					vertx.close();
-				}
+			switch (config.getString("type")) {
+				case "SendInBlue":
+					try {
+						sender = new SendInBlueSender(vertx, config);
+					} catch (InvalidConfigurationException | URISyntaxException e) {
+						log.error(e.getMessage(), e);
+						vertx.close();
+					}
+				break;
+				case "GoMail":
+					try {
+						sender = new GoMailSender(vertx, config);
+					} catch (InvalidConfigurationException | URISyntaxException e) {
+						log.error(e.getMessage(), e);
+						vertx.close();
+					}
+				break;
+				case "SMTP":
+					try {
+						sender = new SMTPSender(vertx, config);
+					} catch (InvalidConfigurationException e) {
+						log.error(e.getMessage(), e);
+						vertx.close();
+					}
+					break;
 			}
+
 			if(config.containsKey("postgresql")){
 				sender = new PostgresEmailSender(sender,vertx,moduleConfig, config, priority);
 			}
