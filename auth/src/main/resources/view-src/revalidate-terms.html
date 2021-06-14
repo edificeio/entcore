@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+    <title>{{#i18n}}terms.revalidate.title{{/i18n}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" src="/auth/public/dist/entcore/ng-app.js" id="context"></script>
+    <script type="text/javascript" src="/auth/public/dist/application.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    {{#notLoggedIn}}
+    <script type="text/javascript">var notLoggedIn = true;</script>
+    {{/notLoggedIn}}
+</head>
+
+<body class="login" ng-controller="TermsRevalidationController">
+    <default-styles>
+        <div class="centered container row">
+            <section class="main">
+                <div class="login panel">
+                    <div class="rigid-grid panels-container">
+                        <form>
+                            <h2><i18n>terms.revalidate.title</i18n></h2>
+                            <p><i18n>terms.revalidate.body</i18n></p>
+                            <p><i18n>terms.revalidate.chartAndCguLinks</i18n></p>
+
+                            <input id="revalidate" type="checkbox" ng-model="checked">
+                            <label for="revalidate" style="display: inline;"><i18n>terms.revalidate.checkbox</i18n></label>
+                            
+                            <div class="flex-row justify-end">
+                                <button ng-click="validate()" ng-disabled="!checked" class="vertical-spacing-four">
+                                    <i18n>cgu.revalidate.action</i18n>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </default-styles>
+</body>
+</html>
