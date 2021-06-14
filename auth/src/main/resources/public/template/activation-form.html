@@ -59,7 +59,26 @@
 					</span>
 				</p>
 				<p ng-if="cgu">
-					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>&nbsp;&nbsp;<a href="[[lang.translate('auth.charter')]]" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
+					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>
+					&nbsp;&nbsp;
+					<i18n>label.accept.cgu.1</i18n>
+					<a 
+						href="[[lang.translate('auth.charter')]]" 
+						target="_blank" 
+						translate content="label.accept.cgu.2" 
+						style="display: inline"
+						class="medium-text"
+					>
+					</a>
+					<i18n>label.accept.cgu.3</i18n>
+					<a 
+						href="[[lang.translate('cgu.file')]]" 
+						target="_blank" 
+						translate content="label.accept.cgu.4" 
+						style="display: inline"
+						class="medium-text"
+					>
+					</a>
 				</p>
 				<input type="text" name="username" id="username" ng-model="user.login" hidden readonly />
 				<input type="submit" translate attr="value" value="auth.activate" ng-disabled="activationForm.$invalid" tabindex="6"/>
