@@ -161,6 +161,9 @@ public abstract class BaseServer extends Server {
 						return Optional.empty();
 					}
 		}, oauthTtl), new BasicFilter()));
+
+		addFilter(new TermsRevalidationFilter(getEventBus(vertx)));
+
 		addFilter(new TraceFilter(getEventBus(vertx), securedUriBinding));
 	}
 

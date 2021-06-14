@@ -513,6 +513,7 @@ public class DirectoryController extends BaseController {
 			+ "firstName:'" + admin.getString("lastname") + "', "
 			+ "login:'" + admin.getString("login") + "', "
 			+ "displayName:'" + admin.getString("firstname") + " " + admin.getString("lastname") + "', "
+			+ "needRevalidateTerms:false, "
 			+ "password:'" + BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) + "'})-[:HAS_FUNCTION]->" +
 			"(f:Function { externalId : 'SUPER_ADMIN', name : 'SuperAdmin' })", event -> {
 				if (!"ok".equals(event.body().getString("status"))) {
