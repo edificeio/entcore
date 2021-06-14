@@ -1461,6 +1461,11 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Get("/revalidate-terms")
+	public void revalidateTerms(final HttpServerRequest request) {
+		renderView(request);
+	}
+
 	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
 		this.userAuthAccount = userAuthAccount;
 	}
