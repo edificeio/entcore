@@ -73,7 +73,10 @@
     "forgot.id.error": "Utilisateur inconnu ou aucune adresse mail renseignée pour cet utilisateur. Veuillez contacter votre administrateur ENT.",
     "forgot.mail.error": "Courriel inconnu. Veuillez contacter votre administrateur ENT.",
     "invalid.cgu": "Vous devez accepter les conditions générales d'utilisation",
-    "label.accept.cgu": "J'accepte les conditions générales d'utilisation.",
+    "label.accept.cgu.1": "J'accepte la",
+    "label.accept.cgu.2": "charte d'utilisation",
+    "label.accept.cgu.3": "et les",
+    "label.accept.cgu.4": "Conditions Générales d'Utilisation.",
     "mail.reset.pw.subject": "Réinitialisation de votre mot de passe",
     "missing.password": "Mot de passe oublié",
     "missing.id": "Identifiant oublié",
@@ -112,5 +115,10 @@
     "fed.form.user.wait" : "Veuillez patienter, vous allez être redirigé vers l'application demandée.",
     "fed.form.user.redirect" : "Si vous n'êtes pas automatiquement redirigé, vous pouvez cliquer sur le bouton ci-dessous.",
     "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifiants ENT ou contactez votre établissement.",
-    "auth.force.change.pw.header" : "Vous devez renouveler votre mot de passe"
+    "auth.force.change.pw.header" : "Vous devez renouveler votre mot de passe",
+    "terms.revalidate.title": "Mise à jour des Conditions Générales d'Utilisation",
+    "terms.revalidate.body": "Pour poursuivre la navigation sur l'ENT vous devez accepter les nouvelles Conditions Générales d'Utilisation.",
+    "terms.revalidate.chartAndCguLinks": "Consulter la <a href=\"[[chartUrl]]\" target=\"_blank\" class=\"medium-text\" style=\"display: inline;\">charte d'utilisation</a> et les <a href=\"[[cguUrl]]\" target=\"_blank\" class=\"medium-text\" style=\"display: inline;\">Conditions Générales d'Utilisation</a>",
+    "terms.revalidate.checkbox": "J'ai lu la charte d'utilisation et les Conditions Générales d'Utilisation",
+    "terms.revalidate.success": "Mise à jour réalisé avec succès"
 }
