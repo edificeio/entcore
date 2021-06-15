@@ -51,7 +51,7 @@ public class PersEducNat extends AbstractUser {
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
 				String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
-		final Boolean isMultiEtab = object.getBoolean("multietab", false);
+		final Boolean isMultiEtab = object.getBoolean("multiEtab", false);
 		if (error != null) {
 			if (object.getJsonArray("profiles") != null && object.getJsonArray("profiles").size() == 1) {
 				report.addIgnored(object.getJsonArray("profiles").getString(0), error, object);
