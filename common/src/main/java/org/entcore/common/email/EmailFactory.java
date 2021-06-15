@@ -72,8 +72,8 @@ public class EmailFactory {
 
 	public EmailSender getSenderWithPriority(int priority) {
 		EmailSender sender = null;
-		if (config != null){
-			switch (config.getString("type", "")) {
+		if (config != null && config.getString("type") != null){
+			switch (config.getString("type")) {
 				case "SendInBlue":
 					try {
 						sender = new SendInBlueSender(vertx, config);
