@@ -411,7 +411,7 @@ public class UserBookController extends BaseController {
 		final String userId = message.body().getString("userId");
 		final String theme = message.body().getString("theme");
 		final JsonObject headers = message.body().getJsonObject("request", new JsonObject()).getJsonObject("headers", new JsonObject());
-		final String defaultLanguage = userBookData.getString("default-language", "en");
+		final String defaultLanguage = userBookData.getString("default-language", "fr");
 		final JsonArray languages = I18n.getInstance().getLanguages(headers.getString("Host"));
 		final String lang = headers.getString("Accept-Language", defaultLanguage);
 		final String locale = Locale.forLanguageTag(lang.split(",")[0].split("-")[0]).toString();
