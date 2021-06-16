@@ -751,7 +751,7 @@ public class DuplicateUsers {
 						log.warn("All " + users.size() + " users with ine " + ine + " has disappearanceDate or deleteDate.");
 						continue;
 					}
-					final String principalSource = principalUser.getString("source");
+					final String principalSource = principalUser.getString("source") == null ? "" : principalUser.getString("source");
 					final boolean principalActivated = isEmpty(principalUser.getString("activationCode"));
 					for (Object o2 :  users) {
 						if (!(o2 instanceof JsonObject)) continue;
@@ -812,6 +812,7 @@ public class DuplicateUsers {
 		}
 		final String query4 =
 				"MATCH (old:User {id: {oldId}}) " +
+				"WHERE old.oldId IS NULL OR old.oldId <> {id} " +
 				"SET old.oldId = old.id, old.id = null, old.oldLogin = old.login, old.login = null " +
 				"WITH old " +
 				"MATCH (u:User {id: {id}}) " +
@@ -992,9 +993,20 @@ public class DuplicateUsers {
 		}
 
 		private int compareSourceAndCreated(JsonObject o1, JsonObject o2) {
-			final int c = sourcePriority.get(o2.getString("source"))
-					.compareTo(sourcePriority.get(o1.getString("source")));
-			return (c != 0) ? c : o2.getString("created").compareTo(o1.getString("created"));
+			Integer sp2 = sourcePriority.get(o2.getString("source"));
+			Integer sp1 = sourcePriority.get(o1.getString("source"));
+			if(sp1 == null)
+				sp1 = Integer.MIN_VALUE;
+			if(sp2 == null)
+				sp2 = Integer.MIN_VALUE;
+			final int c = sp1.compareTo(sp2);
+			String cr1 = o1.getString("created");
+			String cr2 = o2.getString("created");
+			if(cr1 == null)
+				cr1 = "";
+			if(cr2 == null)
+				cr2 = "";
+			return (c != 0) ? c : cr2.compareTo(cr1);
 		}
 
 	}
