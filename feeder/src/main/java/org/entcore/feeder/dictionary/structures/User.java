@@ -46,6 +46,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.feeder.utils.Validator;
+import org.entcore.common.user.UserDataSync;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -885,8 +886,8 @@ public class User {
 	}
 
 	public static void searchUserFromOldPlatform(Vertx vertx) {
-		final JsonObject keys = new JsonObject().put("created", 0).put("modified", 0);
-		MongoDb.getInstance().find(OLD_PLATFORM_USERS, new JsonObject(), null, keys, m -> {
+		final JsonObject keys = new JsonObject().put("created", 0).put("modified", 0).put("_id", 0).put(UserDataSync.STATUS_FIELD, 0);
+		MongoDb.getInstance().find(OLD_PLATFORM_USERS, new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED), null, keys, m -> {
 			if ("ok".equals(m.body().getString("status"))) {
 				final JsonArray res = m.body().getJsonArray("results");
 				EmailSender emailSender = new EmailFactory(vertx).getSender();
@@ -942,7 +943,7 @@ public class User {
 				"WHERE LENGTH(users) = 1 " +
 				"UNWIND users as u " +
 				"SET u.activationCode = null, " + Neo4jUtils.nodeSetPropertiesFromJson(
-						"u", j, "ine", "profile", "lastName", "firstName", "_id") +
+						"u", j, "ine", "profile", "lastName", "firstName", UserDataSync.OLD_ID_FIELD) +
 				"RETURN u.id as userId,  head(u.profiles) as profile, u.login AS login";
 		Neo4j.getInstance().execute(query, j, r -> {
 			if ("ok".equals(r.body().getString("status"))) {
@@ -951,7 +952,11 @@ public class User {
 					final JsonObject u = res.getJsonObject(0);
 					log.info("Activate user " + u.encode() + " : " + j.encode());
 					Server.getEventBus(vertx).publish("activation.ack", u);
-					MongoDb.getInstance().delete(OLD_PLATFORM_USERS, new JsonObject().put("_id", j.getString("_id")));
+
+					JsonObject update = new JsonObject().put("$set",
+						new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED).put(UserDataSync.NEW_ID_FIELD, u.getString("userId"))
+					);
+					MongoDb.getInstance().update(OLD_PLATFORM_USERS, new JsonObject().put(UserDataSync.OLD_ID_FIELD, j.getString(UserDataSync.OLD_ID_FIELD)), update);
 
 					String login = u.getString("login");
 					boolean updatedLogin = login.equals(oldLogin.getString("login")) == false && login.equals(oldLogin.getString("loginAlias")) == false;

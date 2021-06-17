@@ -35,6 +35,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.remote.RemoteClient;
 import org.entcore.common.remote.RemoteClientResponse;
 import org.entcore.directory.services.RemoteUserService;
+import org.entcore.common.user.UserDataSync;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,13 +80,13 @@ public class DefaultRemoteUserService implements RemoteUserService {
 						if (!(o1 instanceof JsonObject)) continue;
 						final JsonObject j1 = (JsonObject) o1;
 						final String id = (String) j1.remove("id");
-						j1.put("_id", id).put("modified", importTimestamp);
+						j1.put(UserDataSync.OLD_ID_FIELD, id).put("modified", importTimestamp);
 						final JsonObject m = new JsonObject().put("$set", j1)
-								.put("$setOnInsert", new JsonObject().put("created", importTimestamp));
+								.put("$setOnInsert", new JsonObject().put("created", importTimestamp).put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED));
 						a.add(new JsonObject()
 								.put("operation", "upsert")
 								.put("document", m)
-								.put("criteria", new JsonObject().put("_id", id)));
+								.put("criteria", new JsonObject().put(UserDataSync.OLD_ID_FIELD, id)));
 						if (a.size() % 1000 == 0) {
 							futuresMongo.add(importOldPlateformsUsers(a));
 							a = new JsonArray();
