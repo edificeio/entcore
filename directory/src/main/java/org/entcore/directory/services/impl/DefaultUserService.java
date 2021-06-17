@@ -846,7 +846,6 @@ public class DefaultUserService implements UserService {
 			params.put("structureId", structureId);
 		}
 
-		System.out.println(levelContains + " / " + levelNotContains + " / " + profile);
 		String query;
 		if ("Student".equals(profile)) {
 			query = "MATCH (u:User)" + structureMatcher + " " +
