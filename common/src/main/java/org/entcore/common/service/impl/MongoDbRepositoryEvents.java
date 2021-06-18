@@ -274,7 +274,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray g, String exportPath, String locale,
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, String exportId, String userId, JsonArray g, String exportPath, String locale,
 			String host, Handler<Boolean> handler)
 	{
 			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
@@ -324,7 +324,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							{
 								if (path != null)
 								{
-									exportDocumentsDependancies(results, path, new Handler<Boolean>()
+									Handler<Boolean> finish = new Handler<Boolean>()
 									{
 										@Override
 										public void handle(Boolean bool)
@@ -339,7 +339,12 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 												handler.handle(exported.get());
 											}
 										}
-									});
+									};
+
+									if(exportDocuments == true)
+										exportDocumentsDependancies(results, path, finish);
+									else
+										finish.handle(Boolean.TRUE);
 								}
 								else
 								{

@@ -35,7 +35,7 @@ public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(FlashMsgRepositoryEventsSql.class);
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, String exportId, String userId,
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, String exportId, String userId,
 			JsonArray groups, String exportPath, String locale, String host,
 			Handler<Boolean> handler) {}
 

@@ -33,9 +33,9 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
     protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, HashMap<String, JsonArray> fieldsToNull,
-            String exportPath, AtomicBoolean exported, Handler<Boolean> handler) {
+            boolean exportDocuments, String exportPath, AtomicBoolean exported, Handler<Boolean> handler) {
 		if (queries.isEmpty()) {
-			exportDocumentsDependancies(cumulativeResult, exportPath, new Handler<Boolean>() {
+            Handler<Boolean> finish = new Handler<Boolean>() {
 				@Override
 				public void handle(Boolean bool) {
 					if (bool) {
@@ -47,7 +47,12 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 						handler.handle(exported.get());
 					}
 				}
-			});
+			};
+
+            if(exportDocuments == true)
+    			exportDocumentsDependancies(cumulativeResult, exportPath, finish);
+            else
+                finish.handle(Boolean.TRUE);
 		} else {
 			Map.Entry<String, JsonArray> entry = queries.entrySet().iterator().next();
 			String tableName = entry.getKey();
@@ -99,7 +104,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 									new Handler<AsyncResult<Void>>() {
 										@Override
 										public void handle(AsyncResult<Void> voidAsyncResult) {
-											exportTables(queries, cumulativeResult.add(results), fieldsToNull, exportPath,
+											exportTables(queries, cumulativeResult.add(results), fieldsToNull, exportDocuments, exportPath,
 													exported, handler);
 										}
 							});
