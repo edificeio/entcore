@@ -134,7 +134,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray groups, String exportPath,
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, String exportId, String userId, JsonArray groups, String exportPath,
 			String locale, String host, Handler<Boolean> handler) {
 
 
@@ -200,7 +200,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 						exportAttachments(path, attachments, new Handler<Boolean>() {
 							@Override
 							public void handle(Boolean event) {
-								exportTables(queries, new JsonArray(), null, path, exported, handler);
+								exportTables(queries, new JsonArray(), null, exportDocuments, path, exported, handler);
 							}
 						});
 					} else {

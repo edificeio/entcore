@@ -63,6 +63,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 			case "export" :
 				final JsonArray exportApps = message.body().getJsonArray("apps");
 				final JsonArray resourcesIds = message.body().getJsonArray("resourcesIds");
+				final Boolean exportDocuments = message.body().getBoolean("exportDocuments", true);
 				String title = Server.getPathPrefix(Config.getConf());
 
 				if (!Utils.isEmpty(title) && exportApps.contains(title.substring(1)))
@@ -75,7 +76,8 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
 
 					String finalBusAddress = exportedBusAddress;
-					repositoryEvents.exportResources(resourcesIds, exportId, userId, groupIds, path, locale, host, new Handler<Boolean>()
+					repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportId, userId, groupIds, path, locale, host,
+					new Handler<Boolean>()
 					{
 						@Override
 						public void handle(Boolean isExported)
