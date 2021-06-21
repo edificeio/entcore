@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,6 +72,8 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private final FolderImporter importer;
 	private final FileSystem fs;
 	private final long timeout;
+
+	private static final String SKIP_DOCUMENT_IMPORT_FILE = "skipDocs";
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers,
 			FolderManager folderManager, FolderManager folderManagerRevision) {
@@ -143,7 +146,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		final String finalExportPath = exportPathOrig + File.separator +
 				I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
 
-		exportDocs(exportPath, locale, queries, new JsonArray(), new Handler<Boolean>() {
+		exportDocs(exportPath, exportDocuments, locale, queries, new JsonArray(), new Handler<Boolean>() {
 			@Override
 			public void handle(Boolean bool) {
 				if (bool.booleanValue()) {
@@ -209,13 +212,13 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		return res;
 	}
 
-	private void exportDocs(String exportPath, String locale, Map<String,JsonObject> queries,
+	private void exportDocs(String exportPath, boolean exportDocuments, String locale, Map<String,JsonObject> queries,
 							JsonArray cumulativeResults, Handler<Boolean> handler)
 	{
 		if (queries.isEmpty())
 		{
 			String filePath = exportPath + File.separator + I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
-			fs.writeFile(filePath, cumulativeResults.toBuffer(), new Handler<AsyncResult<Void>>()
+			Handler<AsyncResult<Void>> finish = new Handler<AsyncResult<Void>>()
 			{
 				@Override
 				public void handle(AsyncResult<Void> event)
@@ -225,6 +228,18 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					} else {
 						handler.handle(false);
 					}
+				}
+			};
+
+			fs.writeFile(filePath, cumulativeResults.toBuffer(), new Handler<AsyncResult<Void>>()
+			{
+				@Override
+				public void handle(AsyncResult<Void> event)
+				{
+					if(exportDocuments == true)
+						finish.handle(event);
+					else
+						fs.writeFile(exportPath + File.separator + SKIP_DOCUMENT_IMPORT_FILE, new JsonObject().toBuffer(), finish);
 				}
 			});
 		}
@@ -248,12 +263,14 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					{
 						List<JsonObject> rows = results.stream().map(obj -> (JsonObject) obj)
 								.collect(Collectors.toList());
+						if(exportDocuments == false)
+							rows = new ArrayList<JsonObject>();
 						exporter.export(new FolderExporterContext(exportPathFolder), rows).setHandler(res ->
 						{
 							if (res.succeeded())
 							{
 								JsonArray newResults = removeDuplicatesAndErrors(results, res.result(), translatedFolder);
-								exportDocs(exportPath, locale, queries, cumulativeResults.addAll(newResults), handler);
+								exportDocs(exportPath, exportDocuments, locale, queries, cumulativeResults.addAll(newResults), handler);
 							}
 							else
 							{
@@ -278,10 +295,25 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	public void importResources(String importId, String userId, String userLogin, String userName, String importPath,
 		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler)
 	{
+		final String skipDocs = importPath + File.separator + SKIP_DOCUMENT_IMPORT_FILE;
+		this.fs.readFile(skipDocs, new Handler<AsyncResult<Buffer>>()
+		{
+			@Override
+			public void handle(AsyncResult<Buffer> res)
+			{
+				importResources(importId, res.succeeded() == true, userId, userLogin, userName, importPath, locale, host, forceImportAsDuplication, handler);
+			}
+		});
+	}
+
+	public void importResources(String importId, boolean skipDocs, String userId, String userLogin, String userName, String importPath,
+		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler)
+	{
 		WorkspaceRepositoryEvents self = this;
 
 		final String backupPath = importPath + File.separator + I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
 		FolderImporterContext context = new FolderImporterContext(importPath, userId, userName);
+		context.setSkipDocumentImport(skipDocs);
 
 		this.fs.readFile(backupPath, new Handler<AsyncResult<Buffer>>()
 		{
