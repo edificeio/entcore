@@ -42,7 +42,8 @@ public class FolderImporter
 		public final String										userId;
 		public final String										userName;
 		public final boolean									doCommitToDocumentsCollection;
-		public String													importIntoFolderId = null;
+		public boolean											skipDocumentImport = false;
+		public String											importIntoFolderId = null;
 
 		public Map<String, String>						oldIdsToNewIds = new HashMap<String, String>();
 		public Map<String, String>						fileOldIdsToNewIds = new HashMap<String, String>();
@@ -116,6 +117,11 @@ public class FolderImporter
 		public synchronized void addFileLink(String oldId, String newId)
 		{
 			this.fileOldIdsToNewIds.put(oldId, newId);
+		}
+
+		public void setSkipDocumentImport(boolean skip)
+		{
+			this.skipDocumentImport = skip;
 		}
 
 	}
@@ -310,7 +316,7 @@ public class FolderImporter
 			Future<Void> future = Future.future();
 			futures.add(future);
 
-			if(DocumentHelper.isFolder(fileDoc) == false)
+			if(DocumentHelper.isFolder(fileDoc) == false && context.skipDocumentImport == false)
 				this.bufferToStorage(context, fileDoc, context.basePath + File.separator + fileDoc.getString("localArchivePath"), future);
 			else
 				// Folders don't exist in the vertx filesystem, only in the mongo docs, so do nothing
