@@ -27,7 +27,8 @@ import io.vertx.core.http.HttpServerRequest;
 
 public interface ExportService {
 
-	void export(UserInfos user, String locale, JsonArray apps, JsonArray resourcesIds, boolean exportDocuments, HttpServerRequest request, Handler<Either<String, String>> handler);
+	void export(UserInfos user, String locale, JsonArray apps, JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources,
+				HttpServerRequest request, Handler<Either<String, String>> handler);
 
 	void userExportExists(UserInfos user, Handler<Boolean> handler);
 

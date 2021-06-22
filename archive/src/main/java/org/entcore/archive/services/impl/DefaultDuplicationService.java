@@ -52,7 +52,7 @@ public class DefaultDuplicationService implements DuplicationService
     {
       String locale = I18n.acceptLanguage(request);
 
-      exportService.export(user, locale, apps, resourcesIds, true, request, new Handler<Either<String, String>>()
+      exportService.export(user, locale, apps, resourcesIds, true, true, request, new Handler<Either<String, String>>()
       {
         @Override
         public void handle(Either<String, String> result)
