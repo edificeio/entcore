@@ -274,8 +274,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, String exportId, String userId, JsonArray g, String exportPath, String locale,
-			String host, Handler<Boolean> handler)
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
+			JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler)
 	{
 			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
 			QueryBuilder findByOwner = QueryBuilder.start("owner.userId").is(userId);
@@ -285,7 +285,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				QueryBuilder.start("shared.userId").is(userId).get(),
 				QueryBuilder.start("shared.groupId").in(g).get()
 			);
-			QueryBuilder findByAuthorOrOwnerOrShared = QueryBuilder.start().or(
+			QueryBuilder findByAuthorOrOwnerOrShared = exportSharedResources == false ? findByAuthorOrOwner : QueryBuilder.start().or(
 				findByAuthorOrOwner.get(),
 				findByShared.get()
 			);

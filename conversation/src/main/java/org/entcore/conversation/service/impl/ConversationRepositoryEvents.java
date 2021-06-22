@@ -134,8 +134,8 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, String exportId, String userId, JsonArray groups, String exportPath,
-			String locale, String host, Handler<Boolean> handler) {
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
+								JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler) {
 
 
 			final HashMap<String, JsonArray> queries = new HashMap<String, JsonArray>();
