@@ -146,6 +146,7 @@ public class ArchiveController extends BaseController {
 								.put("locale", I18n.acceptLanguage(request))
 								.put("apps", event.toJsonObject().getJsonArray("apps"))
 								.put("exportDocuments", event.toJsonObject().getBoolean("exportDocuments", true))
+								.put("exportSharedResources", event.toJsonObject().getBoolean("exportSharedResources", true))
 								.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
 							new Handler<AsyncResult<Message<JsonObject>>>()
 						{
@@ -285,6 +286,7 @@ public class ArchiveController extends BaseController {
 				JsonArray resourcesIds = body.getJsonArray("resourcesIds");
 				Boolean synchroniseReply = body.getBoolean("synchroniseReply", false);
 				Boolean exportDocuments = body.getBoolean("exportDocuments", true);
+				Boolean exportSharedResources = body.getBoolean("exportSharedResources", true);
 				Boolean force = body.getBoolean("force", false);
 				HttpServerRequest request = new JsonHttpServerRequest(body.getJsonObject("request", new JsonObject()));
 
@@ -299,7 +301,7 @@ public class ArchiveController extends BaseController {
 					if(Boolean.TRUE.equals(force)){
 						archiveInProgress.remove(userId);
 					}
-					exportService.export(user, locale, apps, resourcesIds, exportDocuments.booleanValue(), request,
+					exportService.export(user, locale, apps, resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(), request,
 						new Handler<Either<String, String>>()
 					{
 						@Override

@@ -88,14 +88,13 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void exportResources(final JsonArray resourcesIds, boolean exportDocuments, final String exportId, final String userId, JsonArray groupIds, final String exportPathOrig,
-			final String locale, String host, final Handler<Boolean> handler) {
+	public void exportResources(final JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, final String exportId, final String userId,
+								JsonArray groupIds, final String exportPathOrig, final String locale, String host, final Handler<Boolean> handler) {
 
 		QueryBuilder findByOwner = QueryBuilder.start("owner").is(userId);
 		QueryBuilder findByShared = QueryBuilder.start().or(QueryBuilder.start("inheritedShares.userId").is(userId).get(),
 				QueryBuilder.start("inheritedShares.groupId").in(groupIds).get());
-		QueryBuilder findByOwnerOrShared = QueryBuilder.start().or(findByOwner.get(),
-				findByShared.get());
+		QueryBuilder findByOwnerOrShared = exportSharedResources == false ? findByOwner : QueryBuilder.start().or(findByOwner.get(), findByShared.get());
 
 		QueryBuilder findByOwnerOrSharedResourcesRestricted;
 
