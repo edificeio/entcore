@@ -74,7 +74,7 @@ public class FileSystemExportService implements ExportService {
 	private final PrivateKey signKey;
 	private final boolean forceEncryption;
 	private final WebClient client;
-	private JsonObject reprise;
+	private final JsonObject reprise;
 
 	private static final long DOWNLOAD_READY = -1l;
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
@@ -578,8 +578,10 @@ public class FileSystemExportService implements ExportService {
 				if (asyncResult.failed()) {
 					downloadExportPromise.fail(asyncResult.cause());
 				} else {
-					Buffer archive = asyncResult.result().body();
-					storage.writeBuffer(exportId, archive, "application/zip", (exportId+".zip"), result -> {
+					final Buffer archive = asyncResult.result().body();
+					final String filename = exportId + ".zip";
+					final String path = this.reprise.getString("path") + File.separator + filename;
+					storage.writeBuffer(path, exportId, archive, "application/zip", filename, result -> {
 						if ("ok".equals(result.getString("status"))) {
 							downloadExportPromise.complete(exportId);
 						} else {
