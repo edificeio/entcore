@@ -30,7 +30,13 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
@@ -51,11 +57,14 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.http.RouteMatcher;
+import io.vertx.ext.web.client.WebClient;
 
 import java.security.PrivateKey;
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class ArchiveController extends BaseController {
 
@@ -83,6 +92,12 @@ public class ArchiveController extends BaseController {
 	{
 		super.init(vertx, config, rm, securedActions);
 
+		JsonObject reprise = config.getJsonObject("reprise");
+		/*String basicAuthCredential = reprise.getString("basic-auth-credential");
+		String reprisePlatformURL = reprise.getString("platform-url");
+		exportDocuments = reprise.getBoolean("export-documents");
+		exportSharedResources = reprise.getBoolean("export-shared-resources");*/
+
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
@@ -91,7 +106,7 @@ public class ArchiveController extends BaseController {
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
-				signKey, forceEncryption);
+				signKey, forceEncryption, reprise);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");
@@ -127,59 +142,65 @@ public class ArchiveController extends BaseController {
 
 	@Post("/export")
 	@SecuredAction("archive.export")
-	public void export(final HttpServerRequest request)
-	{
-		UserUtils.getUserInfos(eb, request, user ->
-		{
-			if(user != null)
-			{
-				request.bodyHandler(new Handler<Buffer>()
-				{
-					@Override
-					public void handle(Buffer event)
-					{
-						log.info("Début d'export par l'utilisateur " + user.getLogin());
-						eb.send("entcore.export",
-							new JsonObject()
-								.put("action", "start")
-								.put("userId", user.getUserId())
-								.put("locale", I18n.acceptLanguage(request))
-								.put("apps", event.toJsonObject().getJsonArray("apps"))
-								.put("exportDocuments", event.toJsonObject().getBoolean("exportDocuments", true))
-								.put("exportSharedResources", event.toJsonObject().getBoolean("exportSharedResources", true))
-								.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
-							new Handler<AsyncResult<Message<JsonObject>>>()
-						{
-							@Override
-							public void handle(AsyncResult<Message<JsonObject>> res)
-							{
-								if(res.succeeded() == true)
-								{
-									JsonObject msg = res.result().body();
-									if(msg.getString("status").equals("ok"))
-									{
-										log.info("Fin d'export pour l'utilisateur " + user.getLogin() + " exportId: " + msg.getString("exportId"));
-										renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
-									}
-									else
-									{
-										log.info("Echec de l'export pour l'utilisateur " + user.getLogin() + " exportId: " + msg.getString("exportId"));
-										badRequest(request, msg.getString("message"));
-									}
-								}
-								else
-								{
-									log.info("Echec de l'export pour l'utilisateur " + user.getLogin());
-									badRequest(request, res.cause().getMessage());
-								}
-							}
-						});
-					}
+	public void export(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user != null) {
+				RequestUtils.bodyToJson(request, body -> {
+					body.put("userId", user.getUserId());
+					body.put("login", user.getLogin());
+					initExport(request, body);
 				});
 			}
-			else
+			else {
 				unauthorized(request);
+			}
 		});
+	}
+
+	@Post("/export/user")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void exportForUser(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, body -> {
+			JsonObject apps = getOrElse(getOrElse(this.config.getJsonObject("publicConf"), new JsonObject())
+					.getJsonObject("apps"), new JsonObject());
+			JsonArray appsAsJsonArray = new JsonArray(new ArrayList(apps.getMap().keySet()));
+			body.put("apps", appsAsJsonArray);
+			initExport(request, body);
+		});
+	}
+
+	private void initExport(final HttpServerRequest request, final JsonObject body) {
+		final String login = body.getString("login");
+		final String userId = body.getString("userId");
+		log.info("Début d'export par l'utilisateur " + login);
+		eb.send("entcore.export",
+				new JsonObject()
+						.put("action", "start")
+						.put("userId", userId)
+						.put("locale", I18n.acceptLanguage(request))
+						.put("apps", body.getJsonArray("apps"))
+						.put("exportDocuments", body.getBoolean("exportDocuments", true))
+						.put("exportSharedResources", body.getBoolean("exportSharedResources", true))
+						.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
+				new Handler<AsyncResult<Message<JsonObject>>>() {
+					@Override
+					public void handle(AsyncResult<Message<JsonObject>> res) {
+						if(res.succeeded() == true) {
+							JsonObject msg = res.result().body();
+							if(msg.getString("status").equals("ok")) {
+								log.info("Fin d'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
+								renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
+							} else {
+								log.info("Echec de l'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
+								badRequest(request, msg.getString("message"));
+							}
+						} else {
+							log.info("Echec de l'export pour l'utilisateur " + login);
+							badRequest(request, res.cause().getMessage());
+						}
+					}
+				});
 	}
 
 	@Get("/export/verify/:exportId")
