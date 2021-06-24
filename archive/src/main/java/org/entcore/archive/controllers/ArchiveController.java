@@ -31,7 +31,12 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
@@ -53,12 +58,15 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.http.RouteMatcher;
+import io.vertx.ext.web.client.WebClient;
 
 
 import java.security.PrivateKey;
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class ArchiveController extends BaseController {
 
@@ -86,6 +94,12 @@ public class ArchiveController extends BaseController {
 	{
 		super.init(vertx, config, rm, securedActions);
 
+		JsonObject reprise = config.getJsonObject("reprise");
+		/*String basicAuthCredential = reprise.getString("basic-auth-credential");
+		String reprisePlatformURL = reprise.getString("platform-url");
+		exportDocuments = reprise.getBoolean("export-documents");
+		exportSharedResources = reprise.getBoolean("export-shared-resources");*/
+
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
@@ -94,7 +108,7 @@ public class ArchiveController extends BaseController {
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
-				signKey, forceEncryption);
+				signKey, forceEncryption, reprise);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");

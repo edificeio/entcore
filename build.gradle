@@ -307,6 +307,7 @@ project(':archive') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
+    compile "io.vertx:vertx-web-client:$vertxVersion"
   }
 }
 
