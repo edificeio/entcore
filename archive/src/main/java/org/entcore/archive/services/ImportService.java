@@ -20,6 +20,8 @@ public interface ImportService {
 
     void launchImport(String userId, String userLogin, String userName, String importId, String locale, String host, JsonObject apps);
 
+    void importFromFile(String fileName, String userId, String userLogin, String userName, String locale, String host, JsonObject archiveConfig);
+
     void imported(String importId, String app, JsonObject importRapport);
 
     boolean isUserAlreadyImporting(String userId);
