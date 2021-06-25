@@ -91,12 +91,11 @@ public class ImportController extends BaseController {
         final String importId = request.params().get("importId");
         RequestUtils.bodyToJson(request, body ->
         {
-            String importPath = body.getString("importPath");
             JsonObject apps = body.getJsonObject("apps");
 
             UserUtils.getUserInfos(eb, request, user ->
             {
-                importService.launchImport(user.getUserId(), user.getLogin(), user.getUsername(), importId, importPath,
+                importService.launchImport(user.getUserId(), user.getLogin(), user.getUsername(), importId,
                     I18n.acceptLanguage(request), request.headers().get("Host"), apps);
                 final String address = importService.getImportBusAddress(importId);
                 final MessageConsumer<JsonObject> consumer = eb.consumer(address);

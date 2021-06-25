@@ -124,7 +124,7 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                 $timeout(function() {
                     $scope.importLaunched = true;
                 });
-                archiveService.launchImport($scope.currentImportId,currentImport.path, currentImport.apps)
+                archiveService.launchImport($scope.currentImportId, currentImport.apps)
                 .then(result => {
                     $scope.resultsApps = Object.keys(result.data);
                     $scope.resultsApps.forEach(app => {
