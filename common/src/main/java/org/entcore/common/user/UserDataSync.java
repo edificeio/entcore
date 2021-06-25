@@ -27,6 +27,9 @@ public interface UserDataSync
     public final String STATUS_FIELD = "_status";
     public final String OLD_ID_FIELD = "_old_id";
     public final String NEW_ID_FIELD = "_new_id";
+    public final String EXPORT_ATTEMPTS_FIELD = "_exportAttemps";
+    public final String EXPORT_ID_FIELD = "_exportId";
+    public final String IMPORT_ATTEMPTS_FIELD = "_importAttemps";
 
     public enum SyncState
     {
