@@ -73,8 +73,6 @@ public class FileSystemExportService implements ExportService {
 	private final TimelineHelper timeline;
 	private final PrivateKey signKey;
 	private final boolean forceEncryption;
-	private final WebClient client;
-	private final JsonObject reprise;
 
 	private static final long DOWNLOAD_READY = -1l;
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
@@ -82,7 +80,7 @@ public class FileSystemExportService implements ExportService {
 
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 								   EmailSender notification, Storage storage, Map<String, Long> userExportInProgress, TimelineHelper timeline,
-								   PrivateKey signKey, boolean forceEncryption, JsonObject reprise) {
+								   PrivateKey signKey, boolean forceEncryption) {
 		this.vertx = vertx;
 		this.fs = fs;
 		this.eb = eb;
@@ -95,8 +93,6 @@ public class FileSystemExportService implements ExportService {
 		this.timeline = timeline;
 		this.signKey = signKey;
 		this.forceEncryption = forceEncryption;
-		this.client = WebClient.create(vertx);
-		this.reprise = reprise;
 	}
 
 	@Override
@@ -536,68 +532,5 @@ public class FileSystemExportService implements ExportService {
 		return "export." + exportId;
 	}
 
-	@Override
-	public void launchExport(final HttpServerRequest request, final String userId, final String login,
-							 Handler<Either<String, JsonObject>> handler) {
-		final String reprisePlatformURL = this.reprise.getString("platform-url");
-		final String basicAuthCredential = this.reprise.getString("basic-auth-credential");
-		HttpRequest<Buffer> httpRequest1 = client.postAbs(reprisePlatformURL + "/archive/export/user");
-		httpRequest1.putHeader("Authorization", "Basic " + basicAuthCredential);
-		final JsonObject body = new JsonObject()
-				.put("login", login)
-				.put("userId", userId)
-				.put("exportDocuments", this.reprise.getBoolean("export-documents", true))
-				.put("exportSharedResources", this.reprise.getBoolean("export-shared-resources", true));
-		final Promise<String> initExportPromise = Promise.promise();
-		httpRequest1.sendJsonObject(body, asyncResult -> {
-			if (asyncResult.failed()) {
-				initExportPromise.fail(asyncResult.cause());
-			} else {
-				HttpResponse<Buffer> httpResponse = asyncResult.result();
-				final String exportId = httpResponse.bodyAsJsonObject().getString("exportId");
-				initExportPromise.complete(exportId);
-			}
-		});
-		initExportPromise.future().compose(exportId -> {
-			HttpRequest<Buffer> httpRequest2 = client.getAbs(reprisePlatformURL + "/archive/export/verify/" + exportId);
-			httpRequest2.putHeader("Authorization", "Basic " + basicAuthCredential);
-			final Promise<String> verifyExportPromise = Promise.promise();
-			httpRequest2.send(asyncResult -> {
-				if (asyncResult.failed()) {
-					verifyExportPromise.fail(asyncResult.cause());
-				} else {
-					verifyExportPromise.complete(exportId);
-				}
-			});
-			return verifyExportPromise.future();
-		}).compose(exportId -> {
-			HttpRequest<Buffer> httpRequest3 = client.getAbs(reprisePlatformURL + "/archive/export/" + exportId);
-			httpRequest3.putHeader("Authorization", "Basic " + basicAuthCredential);
-			final Promise<String> downloadExportPromise = Promise.promise();
-			httpRequest3.send(asyncResult -> {
-				if (asyncResult.failed()) {
-					downloadExportPromise.fail(asyncResult.cause());
-				} else {
-					final Buffer archive = asyncResult.result().body();
-					final String filename = exportId + ".zip";
-					final String path = this.reprise.getString("path") + File.separator + filename;
-					storage.writeBuffer(path, exportId, archive, "application/zip", filename, result -> {
-						if ("ok".equals(result.getString("status"))) {
-							downloadExportPromise.complete(exportId);
-						} else {
-							downloadExportPromise.fail(result.getString("message"));
-						}
-					});
-				}
-			});
-			return downloadExportPromise.future();
-		}).onComplete(result -> {
-			if (result.failed()) {
-				handler.handle(new Either.Left<>(result.cause().toString()));
-			} else {
-				handler.handle(new Either.Right<>(new JsonObject().put("exportId", result.result())));
-			}
-		});
-	}
 
 }
