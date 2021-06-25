@@ -290,7 +290,7 @@ public class DefaultImportService implements ImportService {
                            String appName = key.substring(key.lastIndexOf(".") + 1).replace("-", "");
 
                            String workflow = config.getJsonObject("publicConf").getJsonObject("apps").getString(appName);
-                           if (user.getAuthorizedActions().stream().noneMatch(action -> action.getName().equals(workflow))) {
+                           if (user != null && user.getAuthorizedActions().stream().noneMatch(action -> action.getName().equals(workflow))) {
                                return;
                            }
 
@@ -375,9 +375,12 @@ public class DefaultImportService implements ImportService {
                        });
                        CompositeFuture.join(getFoldersSize).setHandler(completed -> {
                            reply.put("apps", foundAppsWithSize);
-                           getQuota(user, reply, replyWithQuota -> {
-                               handler.handle(new Either.Right<>(replyWithQuota));
-                           });
+                           if(user != null)
+                               getQuota(user, reply, replyWithQuota -> {
+                                   handler.handle(new Either.Right<>(replyWithQuota));
+                               });
+                            else
+                                handler.handle(new Either.Right<>(reply));
                        });
 
                    } else {
@@ -437,6 +440,28 @@ public class DefaultImportService implements ImportService {
     private String getUnzippedImportPath(String importId)
     {
         return getImportPath(importId) + "_unzip";
+    }
+
+    @Override
+    public void importFromFile(String fileName, String userId, String userLogin, String userName, String locale, String host, JsonObject archiveConfig)
+    {
+        String importId = fileName;
+        analyzeArchive(null, importId, locale, archiveConfig, new Handler<Either<String, JsonObject>>()
+        {
+            @Override
+            public void handle(Either<String, JsonObject> either)
+            {
+                if(either.isRight())
+                {
+                    JsonObject apps = either.right().getValue().getJsonObject("apps");
+                    launchImport(userId, userLogin, userName, importId, locale, host, apps);
+                }
+                else
+                {
+                    log.error("[Archive] - Import from file failure - analyze failed");
+                }
+            }
+        });
     }
 
     @Override
