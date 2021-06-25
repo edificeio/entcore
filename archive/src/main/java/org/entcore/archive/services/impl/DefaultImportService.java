@@ -93,7 +93,7 @@ public class DefaultImportService implements ImportService {
     @Override
     public void uploadArchive(HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler) {
         final String importId = System.currentTimeMillis() + "_" + user.getUserId();
-        final String filePath = importPath + File.separator + importId;
+        final String filePath = getImportPath(importId);
         storage.writeUploadToFileSystem(request, filePath, written -> {
             if ("ok".equals(written.getString("status"))) {
                 MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
@@ -109,7 +109,7 @@ public class DefaultImportService implements ImportService {
     @Override
     public void copyArchive(String archiveId, Handler<Either<String, String>> handler)
     {
-      storage.copyFileId(archiveId, importPath + File.separator + archiveId, new Handler<JsonObject>()
+      storage.copyFileId(archiveId, getImportPath(archiveId), new Handler<JsonObject>()
       {
         @Override
         public void handle(JsonObject obj)
@@ -127,8 +127,8 @@ public class DefaultImportService implements ImportService {
     @Override
     public void analyzeArchive(UserInfos user, String importId, String locale, JsonObject config,
                                Handler<Either<String, JsonObject>> handler) {
-        final String filePath = importPath + File.separator + importId;
-        final String unzippedPath = filePath + "_unzip";
+        final String filePath = getImportPath(importId);
+        final String unzippedPath = getUnzippedImportPath(importId);
         fs.mkdirs(unzippedPath, done -> {
             FileUtils.unzip(filePath, unzippedPath, new Handler<Either<String, Void>>()
             {
@@ -186,7 +186,7 @@ public class DefaultImportService implements ImportService {
 
         if (!StringUtils.isEmpty(importPath)) {
 
-            String filePath = importPath + File.separator + importId;
+            String filePath = getImportPath(importId);
             log.debug("[Archive] - Deleting import located at " + filePath);
 
             fs.deleteRecursive(filePath, true, deleted -> {
@@ -194,7 +194,7 @@ public class DefaultImportService implements ImportService {
                     log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
                 }
             });
-            fs.deleteRecursive(filePath + "_unzip", true, deleted -> {
+            fs.deleteRecursive(getUnzippedImportPath(importId), true, deleted -> {
                 if (deleted.failed()) {
                     log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
                 }
@@ -277,7 +277,7 @@ public class DefaultImportService implements ImportService {
            if (res.failed()) {
                deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
            } else {
-               JsonObject reply = new JsonObject().put("importId", importId).put("path",FileUtils.getParentPath(manifestPath));
+               JsonObject reply = new JsonObject().put("importId", importId);
                JsonObject foundApps = new JsonObject();
                JsonObject apps = res.result().toJsonObject();
                eb.send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), map -> {
@@ -397,21 +397,46 @@ public class DefaultImportService implements ImportService {
     }
 
     @Override
-    public void launchImport(String userId, String userLogin, String userName, String importId, String importPath,
+    public void launchImport(String userId, String userLogin, String userName, String importId,
       String locale, String host, JsonObject apps)
     {
         userImports.put(importId, new UserImport(apps.size()));
-        JsonObject j = new JsonObject()
-                .put("action", handlerActionName)
-                .put("importId", importId)
-                .put("userId", userId)
-                .put("userLogin", userLogin)
-                .put("userName", userName)
-                .put("locale", locale)
-                .put("host", host)
-                .put("apps", apps)
-                .put("path", importPath);
-        eb.publish("user.repository", j);
+
+        fs.readDir(getUnzippedImportPath(importId), results -> {
+            if (results.succeeded()) {
+                if (results.result().size() == 1)
+                {
+                    JsonObject j = new JsonObject()
+                            .put("action", handlerActionName)
+                            .put("importId", importId)
+                            .put("userId", userId)
+                            .put("userLogin", userLogin)
+                            .put("userName", userName)
+                            .put("locale", locale)
+                            .put("host", host)
+                            .put("apps", apps)
+                            .put("path", results.result().get(0));
+                    eb.publish("user.repository", j);
+                }
+                else {
+                    deleteArchive(importId);
+                    log.error("[Archive] - Import could not be launched - wrong number of unzipped files");
+                }
+            } else {
+                deleteArchive(importId);
+                log.error("[Archive] - Import could not be deleted - no unzipped filed");
+            }
+        });
+    }
+
+    private String getImportPath(String importId)
+    {
+        return importPath + File.separator + importId;
+    }
+
+    private String getUnzippedImportPath(String importId)
+    {
+        return getImportPath(importId) + "_unzip";
     }
 
     @Override

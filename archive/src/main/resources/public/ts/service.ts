@@ -44,7 +44,7 @@ export const archiveService = {
     },
 
     async launchImport(importId: string, path: string, apps: Object) {
-        return await http.post(`archive/import/${importId}/launch`, { "apps": apps, "importPath": path });
+        return await http.post(`archive/import/${importId}/launch`, { "apps": apps });
     },
 
     cancelUpload() {
