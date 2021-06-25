@@ -94,12 +94,6 @@ public class ArchiveController extends BaseController {
 	{
 		super.init(vertx, config, rm, securedActions);
 
-		JsonObject reprise = config.getJsonObject("reprise");
-		/*String basicAuthCredential = reprise.getString("basic-auth-credential");
-		String reprisePlatformURL = reprise.getString("platform-url");
-		exportDocuments = reprise.getBoolean("export-documents");
-		exportSharedResources = reprise.getBoolean("export-shared-resources");*/
-
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
@@ -108,7 +102,7 @@ public class ArchiveController extends BaseController {
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
 				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
-				signKey, forceEncryption, reprise);
+				signKey, forceEncryption);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
 		Long periodicUserClear = config.getLong("periodicUserClear");
@@ -203,6 +197,17 @@ public class ArchiveController extends BaseController {
 			}
 		});
 	}
+
+	/*@Get("/export/test")
+	public void test(final HttpServerRequest request) {
+		exportService.launchExport(request, "e44af9cc-1034-4d5c-b893-b148af404668", "catherine.bailly", handler -> {
+			if (handler.isLeft()) {
+				renderError(request, new JsonObject().put("error", handler.left().getValue()));
+			} else {
+				renderJson(request, handler.right().getValue());
+			}
+		});
+	}*/
 
 	@Get("/export/verify/:exportId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

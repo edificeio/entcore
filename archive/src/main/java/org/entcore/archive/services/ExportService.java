@@ -52,6 +52,4 @@ public interface ExportService {
 	String getExportBusAddress(String exportId);
 
 	void clearUserExport(String string);
-
-	void launchExport(final HttpServerRequest request, final String userId, final String login, Handler<Either<String, JsonObject>> handler);
 }

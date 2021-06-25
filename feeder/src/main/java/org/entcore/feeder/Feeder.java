@@ -361,6 +361,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "reinit-logins" :
 				Validator.initLogin(neo4j, vertx);
 				break;
+			case "find-users-old-platform":
+				User.findUsersFromOldPlatform(message);
+				break;
+			case "update-users-old-platform":
+				User.updateStatusUsersFromOldPlatform(message);
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}

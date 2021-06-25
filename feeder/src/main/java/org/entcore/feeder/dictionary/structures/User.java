@@ -19,10 +19,14 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.Either;
 
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
@@ -990,6 +994,46 @@ public class User {
 			}
 		});
 
+	}
+
+	public static void findUsersFromOldPlatform(final Message<JsonObject> message) {
+		final JsonObject matcher = message.body().getJsonObject("matcher");
+		final JsonObject sort = message.body().getJsonObject("sort");
+		final JsonObject keys = message.body().getJsonObject("keys");
+		final Integer limit = message.body().getInteger("limit");
+		// TO DO: ajouter une méthode dans le persisteur mongo qui prend la limit sans le skip ni le batchSize
+		MongoDb.getInstance().find(OLD_PLATFORM_USERS, matcher, sort, keys, -1, limit.intValue(), 2147483647, m -> {
+			if ("ok".equals(m.body().getString("status"))) {
+				final JsonArray res = m.body().getJsonArray("results");
+				message.reply(new JsonObject().put("results", res).put("status", "ok"));
+			} else {
+				final String errorMmessage = m.body().getString("message");
+				log.error("Error find user old platform : " + errorMmessage);
+				message.reply(new JsonObject().put("status", "error").put("message", errorMmessage));
+			}
+		});
+	}
+
+	public static void updateStatusUsersFromOldPlatform(final Message<JsonObject> message) {
+		final JsonObject criteria = message.body().getJsonObject("criteria");
+		final JsonObject update = message.body().getJsonObject("update");
+		final String oldId = message.body().getString(UserDataSync.OLD_ID_FIELD);
+		final String status = message.body().getString("status");
+		final String exportId = message.body().getString("exportId");
+		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", MongoDb.now())
+				.set(UserDataSync.STATUS_FIELD, status);
+		if (exportId != null) {
+			set.set("exportId", exportId);
+		}
+		MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, update, m -> {
+			if ("ok".equals(m.body().getString("status"))) {
+				message.reply(new JsonObject().put("status", "ok"));
+			} else {
+				final String errorMmessage = m.body().getString("message");
+				log.error("Error find user old platform : " + errorMmessage);
+				message.reply(new JsonObject().put("status", "error").put("message", errorMmessage));
+			}
+		});
 	}
 
 }

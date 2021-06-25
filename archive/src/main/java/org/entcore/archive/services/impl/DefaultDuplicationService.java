@@ -41,11 +41,9 @@ public class DefaultDuplicationService implements DuplicationService
       this.eb = vertx.eventBus();
       this.fs = vertx.fileSystem();
 
-      JsonObject reprise = config.getJsonObject("reprise");
-
       String tmpDir = System.getProperty("java.io.tmpdir");
       this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null,
-              storage, null, null, signKey, forceEncryption, reprise);
+              storage, null, null, signKey, forceEncryption);
       this.importService = new DefaultImportService(vertx, config, storage, importPath, "duplicate:import", verifyKey, forceEncryption);
     }
 

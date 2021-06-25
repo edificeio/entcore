@@ -20,8 +20,8 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
-import fr.wseduc.webutils.collections.JsonObject;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
 import org.entcore.archive.controllers.ArchiveController;
@@ -29,7 +29,9 @@ import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
 import org.entcore.archive.filters.ArchiveFilter;
 import org.entcore.archive.services.ImportService;
+import org.entcore.archive.services.RepriseService;
 import org.entcore.archive.services.impl.DefaultImportService;
+import org.entcore.archive.services.impl.DefaultRepriseService;
 import org.entcore.archive.services.impl.DeleteOldArchives;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
@@ -86,6 +88,29 @@ public class Archive extends BaseServer {
 								exportPath,
 								importService
 						));
+			} catch (ParseException e) {
+				log.error("Invalid cron expression.", e);
+			}
+		}
+
+		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"));
+		JsonObject reprise = config.getJsonObject("reprise", new JsonObject());
+		String repriseExportCron = reprise.getString("export-cron");
+		if (repriseExportCron != null) {
+			try {
+				new CronTrigger(vertx, repriseExportCron).schedule(event -> {
+					repriseService.launchExportForUsersFromOldPlatform();
+				});
+			} catch (ParseException e) {
+				log.error("Invalid cron expression.", e);
+			}
+		}
+		String repriseImportCron = reprise.getString("import-cron");
+		if (repriseImportCron != null) {
+			try {
+				new CronTrigger(vertx, repriseImportCron).schedule(event -> {
+
+				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
