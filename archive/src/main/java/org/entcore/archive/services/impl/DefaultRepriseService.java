@@ -3,6 +3,9 @@ package org.entcore.archive.services.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -15,6 +18,8 @@ import org.entcore.common.user.UserDataSync;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import fr.wseduc.bus.BusAddress;
+import org.entcore.archive.services.ImportService;
 
 import java.io.File;
 import java.util.Arrays;
@@ -32,12 +37,16 @@ public class DefaultRepriseService implements RepriseService {
     private final Storage storage;
     private final WebClient client;
     private final JsonObject reprise;
+    private final JsonObject archiveConfig;
+    private final ImportService importService;
 
-    public DefaultRepriseService(Vertx vertx, Storage storage, JsonObject reprise) {
+    public DefaultRepriseService(Vertx vertx, Storage storage, JsonObject reprise, JsonObject archiveConfig, ImportService importService) {
         this.eb = vertx.eventBus();
         this.storage = storage;
         this.client = WebClient.create(vertx);
         this.reprise = reprise;
+        this.archiveConfig = archiveConfig;
+        this.importService = importService;
     }
 
     @Override
@@ -195,6 +204,106 @@ public class DefaultRepriseService implements RepriseService {
             }
         });
         return promise.future();
+    }
+
+    @Override
+    public void launchImportForUsersFromOldPlatform() {
+        final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED);
+        final JsonObject keys = new JsonObject().put("login", 1).put(UserDataSync.NEW_ID_FIELD, 1).put(UserDataSync.EXPORT_ID_FIELD, 1);
+        final JsonObject sort = new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1);
+        final Integer limit = this.reprise.getInteger("limit", 1);
+        final JsonObject action = new JsonObject()
+                .put("action", "find-users-old-platform")
+                .put("matcher", matcher)
+                .put("keys", keys)
+                .put("sort", sort)
+                .put("limit", limit);
+
+        final Promise<JsonArray> promise = Promise.promise();
+        eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
+            JsonObject body = message.body();
+            if ("ok".equals(body.getString("status"))) {
+                promise.complete(body.getJsonArray("results"));
+            } else {
+                promise.fail(body.getString("message"));
+            }
+        }));
+        promise.future().compose(users -> {
+            final Promise<JsonArray> incrementTryPromise = Promise.promise();
+            if (users.isEmpty()) {
+                incrementTryPromise.complete(users);
+            } else {
+                final List<String> userIds = users.stream().map(user -> ((JsonObject)user).getString(UserDataSync.NEW_ID_FIELD)).collect(Collectors.toList());
+                final JsonObject criteria = new JsonObject().put(UserDataSync.NEW_ID_FIELD, new JsonObject().put("$in", userIds));
+                final JsonObject update = new JsonObject().put("$inc", new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1));
+                JsonObject action2 = new JsonObject()
+                        .put("action", "update-users-old-platform")
+                        .put("criteria", criteria)
+                        .put("update", update);
+                eb.request(FEEDER_BUS_ADDRESS, action2, handlerToAsyncHandler(message -> {
+                    JsonObject body = message.body();
+                    if ("ok".equals(body.getString("status"))) {
+                        incrementTryPromise.complete(users);
+                    } else {
+                        incrementTryPromise.fail(body.getString("message"));
+                    }
+                }));
+            }
+            return incrementTryPromise.future();
+        }).onComplete(asyncUsers -> {
+            if (asyncUsers.succeeded()) {
+                JsonArray users = asyncUsers.result();
+                for (int i = 0; i < users.size(); i++) {
+                    final JsonObject user = users.getJsonObject(i);
+                    final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
+                    final String login = user.getString("login");
+                    final String exportId = user.getString(UserDataSync.EXPORT_ID_FIELD);
+                    importService.importFromFile(exportId, userId, login, login, reprise.getString("locale", "fr"), archiveConfig.getString("host"), archiveConfig);
+
+                    final String address = importService.getImportBusAddress(exportId);
+                    final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+
+                    final Handler<Message<JsonObject>> importHandler = event ->
+                    {
+                        JsonObject update = new JsonObject();
+                        JsonObject action2 = new JsonObject()
+                            .put("action", "update-users-old-platform")
+                            .put("criteria", new JsonObject()
+                                .put(UserDataSync.NEW_ID_FIELD, userId)
+                            )
+                            .put("update", new JsonObject()
+                                .put("$set", update)
+                            );
+
+                        if ("ok".equals(event.body().getString("status"))) {
+                            event.reply(new JsonObject().put("status", "ok"));
+                            update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
+                        } else {
+                            event.reply(new JsonObject().put("status", "error"));
+                            update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
+                        }
+                        eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
+                            JsonObject body = message2.body();
+                            if (!"ok".equals(body.getString("status"))) {
+                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
+                            } else {
+                                log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+                            }
+                        }));
+                        consumer.unregister();
+                    };
+                    consumer.handler(importHandler);
+                }
+            } else {
+                log.error("[Reprise] Error on import task: " + asyncUsers.cause().toString());
+            }
+        });
+    }
+
+    @Override
+    public void imported(String importId, String app, JsonObject rapport)
+    {
+        this.importService.imported(importId, app, rapport);
     }
 
 }
