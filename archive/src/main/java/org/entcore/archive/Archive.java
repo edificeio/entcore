@@ -27,6 +27,7 @@ import io.vertx.core.shareddata.LocalMap;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
+import org.entcore.archive.controllers.RepriseController;
 import org.entcore.archive.filters.ArchiveFilter;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.RepriseService;
@@ -93,8 +94,14 @@ public class Archive extends BaseServer {
 			}
 		}
 
-		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"));
 		JsonObject reprise = config.getJsonObject("reprise", new JsonObject());
+		String reprisePath = reprise.getString("path", System.getProperty("java.io.tmpdir"));
+		ImportService repriseImportService = new DefaultImportService(vertx, config, storage, reprisePath, "reprise:import", verifyKey, forceEncryption);
+		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"), config, repriseImportService);
+
+		RepriseController rc = new RepriseController(repriseService);
+		addController(rc);
+
 		Boolean relativePersonnelFirst = reprise.getBoolean("relative-personnel-first", false);
 		String repriseExportCron = reprise.getString("export-cron");
 		if (repriseExportCron != null) {
@@ -110,7 +117,7 @@ public class Archive extends BaseServer {
 		if (repriseImportCron != null) {
 			try {
 				new CronTrigger(vertx, repriseImportCron).schedule(event -> {
-
+					repriseService.launchImportForUsersFromOldPlatform();
 				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);

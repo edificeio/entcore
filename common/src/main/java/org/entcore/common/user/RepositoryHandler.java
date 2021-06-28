@@ -99,6 +99,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				importedBusAddress = "entcore.duplicate";
 				forceImportAsDuplication = true;
 				// Fallthrough
+			case "reprise:import":
+				if(forceImportAsDuplication == false)
+					importedBusAddress = "entcore.reprise";
+				//Fallthrough
 			case "import" :
 				final JsonObject importApps = message.body().getJsonObject("apps");
 				final String appTitle = Server.getPathPrefix(Config.getConf());

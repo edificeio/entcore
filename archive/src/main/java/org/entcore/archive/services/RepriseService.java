@@ -8,5 +8,6 @@ import io.vertx.core.json.JsonObject;
 public interface RepriseService {
 
     void launchExportForUsersFromOldPlatform(boolean relativePersonnelFirst);
-
+    void launchImportForUsersFromOldPlatform();
+    void imported(String importId, String app, JsonObject rapport);
 }
