@@ -121,6 +121,10 @@ watch () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/$SPRINGBOARD"
 }
 
+ngWatch () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm run start"
+}
+
 infra () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
 }
@@ -156,6 +160,9 @@ do
       ;;
     watch)
       watch
+      ;;
+    ngWatch)
+      ngWatch
       ;;
     test)
       testGradle
