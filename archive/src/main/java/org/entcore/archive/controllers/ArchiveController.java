@@ -198,17 +198,6 @@ public class ArchiveController extends BaseController {
 		});
 	}
 
-	/*@Get("/export/test")
-	public void test(final HttpServerRequest request) {
-		exportService.launchExport(request, "e44af9cc-1034-4d5c-b893-b148af404668", "catherine.bailly", handler -> {
-			if (handler.isLeft()) {
-				renderError(request, new JsonObject().put("error", handler.left().getValue()));
-			} else {
-				renderJson(request, handler.right().getValue());
-			}
-		});
-	}*/
-
 	@Get("/export/verify/:exportId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void verifyExport(final HttpServerRequest request) {

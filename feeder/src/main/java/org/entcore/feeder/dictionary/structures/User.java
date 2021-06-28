@@ -1014,18 +1014,10 @@ public class User {
 		});
 	}
 
-	public static void updateStatusUsersFromOldPlatform(final Message<JsonObject> message) {
+	public static void updateUsersFromOldPlatform(final Message<JsonObject> message) {
 		final JsonObject criteria = message.body().getJsonObject("criteria");
 		final JsonObject update = message.body().getJsonObject("update");
-		final String oldId = message.body().getString(UserDataSync.OLD_ID_FIELD);
-		final String status = message.body().getString("status");
-		final String exportId = message.body().getString("exportId");
-		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", MongoDb.now())
-				.set(UserDataSync.STATUS_FIELD, status);
-		if (exportId != null) {
-			set.set("exportId", exportId);
-		}
-		MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, update, m -> {
+		MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, update, false, true, m -> {
 			if ("ok".equals(m.body().getString("status"))) {
 				message.reply(new JsonObject().put("status", "ok"));
 			} else {

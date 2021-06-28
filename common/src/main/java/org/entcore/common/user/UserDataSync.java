@@ -30,6 +30,10 @@ public interface UserDataSync
     public final String EXPORT_ATTEMPTS_FIELD = "_exportAttemps";
     public final String EXPORT_ID_FIELD = "_exportId";
     public final String IMPORT_ATTEMPTS_FIELD = "_importAttemps";
+    public final String PROFILE_FIELD = "profile";
+
+    public final String RELATIVE_PROFILE = "Relative";
+    public final String TEACHER_PROFILE = "Teacher";
 
     public enum SyncState
     {

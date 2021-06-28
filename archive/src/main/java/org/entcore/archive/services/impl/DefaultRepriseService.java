@@ -1,6 +1,5 @@
 package org.entcore.archive.services.impl;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -18,14 +17,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultRepriseService implements RepriseService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultRepriseService.class);
+    private static final String FEEDER_BUS_ADDRESS = "entcore.feeder";
 
     private final EventBus eb;
     private final Storage storage;
@@ -40,11 +41,14 @@ public class DefaultRepriseService implements RepriseService {
     }
 
     @Override
-    public void launchExportForUsersFromOldPlatform() {
+    public void launchExportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
         final Promise<JsonArray> promise = Promise.promise();
         final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED);
+        if (relativePersonnelFirst) {
+            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
+        }
         final JsonObject keys = new JsonObject().put("login", 1).put("_old_id", 1);
-        final JsonObject sort = new JsonObject().put("_exportAttemps", 1);
+        final JsonObject sort = new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1).put("modified", 1);
         final Integer limit = this.reprise.getInteger("limit", 1);
         final JsonObject action = new JsonObject()
                 .put("action", "find-users-old-platform")
@@ -52,46 +56,42 @@ public class DefaultRepriseService implements RepriseService {
                 .put("keys", keys)
                 .put("sort", sort)
                 .put("limit", limit);
-        eb.request("entcore.feeder", action, handlerToAsyncHandler(message -> {
+        eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
                 JsonArray users = body.getJsonArray("results");
-                promise.complete(users);
+                if (users.isEmpty() && relativePersonnelFirst) {
+                    // There are no more teachers and relatives to export, we relaunch it for other profiles
+                    launchExportForUsersFromOldPlatform(false);
+                } else {
+                    promise.complete(users);
+                }
             } else {
-                log.error("[Archive] Error retrieving activated old platform users: " + body.getString("message"));
                 promise.fail(body.getString("message"));
             }
         }));
         promise.future().compose(users -> {
-            List<Future> list = new ArrayList<>();
-            for (int i = 0; i < users.size(); i++) {
-                final Promise<Void> incrementTryPromise = Promise.promise();
-                list.add(incrementTryPromise.future());
-                final JsonObject user = users.getJsonObject(i);
-                final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
-                final JsonObject update = new JsonObject().put("$inc", new JsonObject().put("_exportAttemps", 1));
+            final Promise<JsonArray> incrementTryPromise = Promise.promise();
+            if (users.isEmpty()) {
+                incrementTryPromise.complete(users);
+            } else {
+                final List<String> userIds = users.stream().map(user -> ((JsonObject)user).getString("_old_id")).collect(Collectors.toList());
+                final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, new JsonObject().put("$in", userIds));
+                final JsonObject update = new JsonObject().put("$inc", new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1));
                 JsonObject action2 = new JsonObject()
                         .put("action", "update-users-old-platform")
                         .put("criteria", criteria)
                         .put("update", update);
-                eb.request("entcore.feeder", action2, handlerToAsyncHandler(message -> {
+                eb.request(FEEDER_BUS_ADDRESS, action2, handlerToAsyncHandler(message -> {
                     JsonObject body = message.body();
                     if ("ok".equals(body.getString("status"))) {
-                        incrementTryPromise.complete();
+                        incrementTryPromise.complete(users);
                     } else {
                         incrementTryPromise.fail(body.getString("message"));
                     }
                 }));
             }
-            final Promise<JsonArray> compositePromise = Promise.promise();
-            CompositeFuture.join(list).onComplete(handler -> {
-                if (handler.succeeded()) {
-                    compositePromise.complete(users);
-                } else {
-                    compositePromise.fail(handler.cause());
-                }
-            });
-            return compositePromise.future();
+            return incrementTryPromise.future();
         }).onComplete(asyncUsers -> {
             if (asyncUsers.succeeded()) {
                 JsonArray users = asyncUsers.result();
@@ -99,33 +99,36 @@ public class DefaultRepriseService implements RepriseService {
                     final JsonObject user = users.getJsonObject(i);
                     final String userId = user.getString("_old_id");
                     final String login = user.getString("login");
+                    log.info("[Reprise] Export for " + login + " (" + userId + ") has started");
                     Future<String> export = this.launchExportForUser(userId, login);
                     export.onComplete(asyncResult -> {
                         final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
                         final JsonObject set = new JsonObject();
                         if (asyncResult.failed()) {
                             set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_EXPORT);
+                            log.error("[Reprise] Export for " + login + " (" + userId + ") failed: " + asyncResult.cause().toString());
                         } else {
                             final String exportId = asyncResult.result();
-                            set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED).put("_exportId", exportId);
+                            set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED).put(UserDataSync.EXPORT_ID_FIELD, exportId);
+                            log.info("[Reprise] Export for " + login + " (" + userId + ") succeeded");
                         }
                         final JsonObject update = new JsonObject().put("$set", set);
                         JsonObject action3 = new JsonObject()
                                 .put("action", "update-users-old-platform")
                                 .put("criteria", criteria)
                                 .put("update", update);
-                        eb.request("entcore.feeder", action3, handlerToAsyncHandler(message -> {
+                        eb.request(FEEDER_BUS_ADDRESS, action3, handlerToAsyncHandler(message -> {
                             JsonObject body = message.body();
-                            if ("ok".equals(body.getString("status"))) {
-                                log.info("[Reprise] Export for " + login + " (" + userId + ") succeeded");
+                            if (!"ok".equals(body.getString("status"))) {
+                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
                             } else {
-                                log.error("[Reprise] Export for " + login + " (" + userId + ") failed: " + body.getString("message"));
+                                log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
                             }
                         }));
                     });
                 }
             } else {
-                log.error("[Reprise] Error on export: " + asyncUsers.cause().toString());
+                log.error("[Reprise] Error on export task: " + asyncUsers.cause().toString());
             }
         });
     }

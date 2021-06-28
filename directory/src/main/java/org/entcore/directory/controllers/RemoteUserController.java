@@ -22,7 +22,6 @@
 
 package org.entcore.directory.controllers;
 
-import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -38,7 +37,7 @@ public class RemoteUserController extends BaseController {
 
 	private RemoteUserService remoteUserService;
 
-	@Get("/remote/user/old-platforms-sync")
+	@Put("/remote/user/old-platforms-sync")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void oldPlatformsSync(HttpServerRequest request) {

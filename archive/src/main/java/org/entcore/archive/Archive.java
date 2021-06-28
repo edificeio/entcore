@@ -95,11 +95,12 @@ public class Archive extends BaseServer {
 
 		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"));
 		JsonObject reprise = config.getJsonObject("reprise", new JsonObject());
+		Boolean relativePersonnelFirst = reprise.getBoolean("relative-personnel-first");
 		String repriseExportCron = reprise.getString("export-cron");
 		if (repriseExportCron != null) {
 			try {
 				new CronTrigger(vertx, repriseExportCron).schedule(event -> {
-					repriseService.launchExportForUsersFromOldPlatform();
+					repriseService.launchExportForUsersFromOldPlatform(relativePersonnelFirst.booleanValue());
 				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
