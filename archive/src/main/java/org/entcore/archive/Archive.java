@@ -95,7 +95,7 @@ public class Archive extends BaseServer {
 
 		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"));
 		JsonObject reprise = config.getJsonObject("reprise", new JsonObject());
-		Boolean relativePersonnelFirst = reprise.getBoolean("relative-personnel-first");
+		Boolean relativePersonnelFirst = reprise.getBoolean("relative-personnel-first", false);
 		String repriseExportCron = reprise.getString("export-cron");
 		if (repriseExportCron != null) {
 			try {
