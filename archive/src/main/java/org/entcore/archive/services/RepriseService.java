@@ -7,6 +7,6 @@ import io.vertx.core.json.JsonObject;
 
 public interface RepriseService {
 
-    void launchExportForUsersFromOldPlatform();
+    void launchExportForUsersFromOldPlatform(boolean relativePersonnelFirst);
 
 }

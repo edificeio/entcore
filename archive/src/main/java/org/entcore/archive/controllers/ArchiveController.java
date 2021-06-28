@@ -160,7 +160,6 @@ public class ArchiveController extends BaseController {
 					.getJsonObject("apps"), new JsonObject());
 			JsonArray appsAsJsonArray = new JsonArray(new ArrayList(apps.getMap().keySet()));
 			body.put("apps", appsAsJsonArray);
-			//body.put("apps", new JsonArray().add("blog"));
 			initExport(request, body);
 		});
 	}
@@ -197,17 +196,6 @@ public class ArchiveController extends BaseController {
 					}
 				});
 	}
-
-	/*@Get("/export/test")
-	public void test(final HttpServerRequest request) {
-		exportService.launchExport(request, "e44af9cc-1034-4d5c-b893-b148af404668", "catherine.bailly", handler -> {
-			if (handler.isLeft()) {
-				renderError(request, new JsonObject().put("error", handler.left().getValue()));
-			} else {
-				renderJson(request, handler.right().getValue());
-			}
-		});
-	}*/
 
 	@Get("/export/verify/:exportId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
