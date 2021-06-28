@@ -15,6 +15,7 @@ import io.vertx.ext.web.client.WebClient;
 import org.entcore.archive.services.RepriseService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserDataSync;
+import org.entcore.common.user.UserInfos;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,6 +25,7 @@ import org.entcore.archive.services.ImportService;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -130,8 +132,12 @@ public class DefaultRepriseService implements RepriseService {
                             JsonObject body = message.body();
                             if (!"ok".equals(body.getString("status"))) {
                                 log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
+                                eventStore.createAndStoreEvent(RepriseEvent.EXPORT_ERROR.name(),
+								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+                                eventStore.createAndStoreEvent(RepriseEvent.EXPORT_OK.name(),
+								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
                             }
                         }));
                     });
@@ -286,8 +292,17 @@ public class DefaultRepriseService implements RepriseService {
                             JsonObject body = message2.body();
                             if (!"ok".equals(body.getString("status"))) {
                                 log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
+                                eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
+								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+
+                                int nbResources = 0;
+                                for(Map.Entry<String, Object> e : event.body().getJsonObject("result").getMap().entrySet())
+                                    nbResources += Integer.parseInt(((JsonObject)e.getValue()).getString("resourcesNumber", "0"));
+
+                                eventStore.createAndStoreEvent(RepriseEvent.IMPORT_OK.name(),
+								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
                             }
                         }));
                         consumer.unregister();
