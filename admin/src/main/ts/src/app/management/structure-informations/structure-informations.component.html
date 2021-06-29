@@ -124,3 +124,49 @@
     </div>
   </div>
 </div>
+<div class="container has-shadow settings" *ngIf="isADMC == true">
+  <h2>
+    <s5l>management.structure.informations.duplication.setting</s5l>
+  </h2>
+  <form #settingsForm="ngForm" (ngSubmit)="duplicateSettings()">
+    <div class="settings-bloc">
+      <div>
+        <h3>
+          <s5l>management.structure.informations.duplication.setting.select</s5l>
+        </h3>
+        <ode-form-field label="management.structure.informations.duplication.setting.applications">
+          <input type="checkbox" name="applications" [(ngModel)]="settings.applications" />
+        </ode-form-field>
+        <ode-form-field label="management.structure.informations.duplication.setting.widgets">
+          <input type="checkbox" name="widgets" [(ngModel)]="settings.widgets" />
+        </ode-form-field>
+        <ode-form-field label="management.structure.informations.duplication.setting.distribution">
+          <input type="checkbox" name="distribution" [(ngModel)]="settings.distribution" />
+        </ode-form-field>
+        <ode-form-field label="management.structure.informations.duplication.setting.mobileapp">
+          <input type="checkbox" name="mobileapp" [(ngModel)]="settings.mobileapp" />
+        </ode-form-field>
+        <ode-form-field label="management.structure.informations.duplication.setting.education">
+          <input type="checkbox" name="education" [(ngModel)]="settings.education" />
+        </ode-form-field>
+      </div>
+      <div>
+        <h3>
+          <s5l>management.structure.informations.duplication.setting.uai</s5l>
+          <ode-message-sticker class="sticker" type="info" [messages]="['management.structure.informations.duplication.setting.uai.tooltip']">
+          </ode-message-sticker>
+        </h3>
+        <textarea
+            name="uaiList"
+            [(ngModel)]="settings.uaiList"
+            [attr.placeholder]="'management.structure.informations.duplication.setting.uai.placeholder' | translate">
+        </textarea>
+      </div>
+    </div>
+    <div class="action">
+      <button class="create confirm" [disabled]="!settings.canDuplicateSettings()">
+        <s5l>management.structure.informations.duplication.setting.uai.button</s5l>
+      </button>
+    </div>
+  </form>
+</div>
