@@ -2440,3 +2440,7 @@ ode-message-flash, ode-message-flash-form {
     }
   }
 }
+
+.settings > form > .settings-bloc ode-form-field > div > label {
+  flex-basis: 250px !important;
+}
