@@ -20,6 +20,26 @@ class StructureMetrics {
   personnels: UserMetric = new UserMetric();
 };
 
+class DuplicationSettings {
+  applications: boolean = false;
+  widgets: boolean = false;
+  distribution: boolean = false;
+  mobileapp: boolean = false;
+  education: boolean = false;
+  uaiList: string = "";
+
+  uaiListRegex: RegExp = /^[0-9]{7}[a-zA-Z]([\r\n,;][0-9]{7}[a-zA-Z])*$/;
+  canDuplicateSettings(): boolean
+  {
+    return this.uaiList && this.uaiListRegex.test(this.uaiList) &&
+      (this.applications ||
+      this.distribution ||
+      this.education ||
+      this.mobileapp ||
+      this.widgets)
+  }
+}
+
 @Component(
 {
   selector: 'ode-structure-informations',
@@ -37,6 +57,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public isADMC: boolean = false;
 
   public metrics: StructureMetrics = new StructureMetrics();
+  public settings: DuplicationSettings = new DuplicationSettings();
 
   constructor(injector: Injector, private infoService: StructureInformationsService, private notify: NotifyService)
   {
@@ -154,5 +175,10 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         }
       }
     );
+  }
+
+  duplicateSettings(): void
+  {
+
   }
 }
