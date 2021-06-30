@@ -18,7 +18,7 @@ public class MarkMissingUsers1d extends StudentImportProcessing2 {
 
 	@Override
 	protected void preCommit() {
-        log.info("Mark missing users 1d");
+        log.info(e -> "Mark missing users 1d", true);
 	}
 
 	@Override

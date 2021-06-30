@@ -46,7 +46,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 
 	@Override
 	protected void preCommit() {
-		log.info("clean import process");
+		log.info(e-> "clean import process", true);
 		importer.removeOldFunctionalGroup();
 		importer.removeEmptyClasses();
 		importer.restorePreDeletedUsers();

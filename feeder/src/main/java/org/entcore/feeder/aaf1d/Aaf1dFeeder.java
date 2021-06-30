@@ -20,6 +20,7 @@
 package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.Feed;
+import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.ResultMessage;
@@ -36,12 +37,13 @@ import io.vertx.core.logging.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class Aaf1dFeeder implements Feed {
 
-	private static final Logger log = LoggerFactory.getLogger(Aaf1dFeeder.class);
 	private final Vertx vertx;
 	private final String path;
+	protected final FeederLogger log;
 
 	public Aaf1dFeeder(Vertx vertx, String path) {
 		this.vertx = vertx;
@@ -50,10 +52,12 @@ public class Aaf1dFeeder implements Feed {
 		} else {
 			this.path = path;
 		}
+		log = new FeederLogger(e-> String.format("AAF1D | path: %s", path));
 	}
 
 	@Override
 	public void launch(Importer importer, final Handler<Message<JsonObject>> handler) throws Exception {
+		log.info(t -> "START launch");
 		vertx.fileSystem().readFile(path + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON,
 				new Handler<AsyncResult<Buffer>>() {
 			@Override
@@ -64,7 +68,7 @@ public class Aaf1dFeeder implements Feed {
 						importSubDirectories = new fr.wseduc.webutils.collections.JsonArray(f.result().toString());
 					} catch (RuntimeException e) {
 						handler.handle(new ResultMessage().error("invalid.importDirectories.file"));
-						log.error("Invalid importDirectories file.", e);
+						log.error(t -> "FAILED launch because of invalid importDirectories file.", e);
 						return;
 					}
 					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
@@ -79,6 +83,7 @@ public class Aaf1dFeeder implements Feed {
 									}
 								}
 								if (importsDirs.size() < 1) {
+									log.error(t -> "FAILED to Start import process because missing directories");
 									handler.handle(new ResultMessage().error("missing.subdirectories"));
 									return;
 								}
@@ -86,6 +91,7 @@ public class Aaf1dFeeder implements Feed {
 								handlers[handlers.length - 1] = new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> m) {
+										log.info(t -> "START import process successfully");
 										handler.handle(m);
 									}
 								};
@@ -95,22 +101,27 @@ public class Aaf1dFeeder implements Feed {
 										@Override
 										public void handle(Message<JsonObject> m) {
 											if (m != null && "ok".equals(m.body().getString("status"))) {
+												log.info(t -> "START import process for path -> "+ importsDirs.get(j));
 												new StructureImportProcessing1d(
 														importsDirs.get(j), vertx).start(handlers[j]);
 											} else {
+												log.error(t -> "FAILED import process because of error: "+ m.body());
 												handler.handle(m);
 											}
 										}
 									};
 								}
+								log.info(t -> "START import process for path -> "+ importsDirs.get(0));
 								new StructureImportProcessing1d(
 										importsDirs.get(0), vertx).start(handlers[0]);
 							} else {
+								log.error(t -> "FAILED to Start import process because of error", event.cause());
 								handler.handle(new ResultMessage().error(event.cause().getMessage()));
 							}
 						}
 					});
 				} else {
+					log.info(t -> "START import process for current path");
 					new StructureImportProcessing1d(path, vertx).start(handler);
 				}
 			}

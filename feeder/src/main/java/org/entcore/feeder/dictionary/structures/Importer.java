@@ -23,6 +23,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
@@ -37,6 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -813,8 +815,13 @@ public class Importer {
 		transactionHelper.add(query3, null);
 	}
 
+	protected static FeederLogger logger(final String method, final String prefix){
+		return new FeederLogger(e -> String.format("%s | prefix: %s", method, prefix));
+	}
+
 	public void applyRemoveRelativesFromStructure(String prefix, final Handler<Void> handler) {
-		log.info("applyRemoveRelativesFromStructure");
+		final FeederLogger log = logger("applyRemoveRelativesFromStructure" ,prefix);
+		log.info(t -> "START to get relative removed from structure | source: "+currentSource, true);
 		JsonObject params = new JsonObject().put("currentSource", currentSource);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
@@ -838,8 +845,9 @@ public class Importer {
 							ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
 						}
 					}
+					log.info(t -> "SUCCEED to get relative removed from structure | source: "+currentSource);
 				} else {
-					log.error("Error when get Relative removed from structures");
+					log.error(t -> "FAILED to get relative removed from structure | source: "+currentSource+" | detail:"+message.body().encode());
 				}
 				handler.handle(null);
 			}
@@ -883,6 +891,8 @@ public class Importer {
 	public static void markMissingUsers(String structureExternalId, String currentSource,
 			final Set<String> userImportedExternalId, final TransactionHelper transactionHelper, String prefix,
 			final Handler<Void> handler) {
+		final FeederLogger log = logger("markMissingUsers",prefix);
+		log.info(t -> String.format("START mark missing user | source: %s | structureExternalId: %s ",currentSource, structureExternalId));
 		String query;
 		JsonObject params = new JsonObject().put("currentSource", currentSource);
 		String filter = "";
@@ -928,6 +938,9 @@ public class Importer {
 					for (String eId : userImportedExternalId) {
 						transactionHelper.add(q2, new JsonObject().put("externalId", eId));
 					}
+					log.info(t -> String.format("SUCCEED mark missing user | source: %s | structureExternalId: %s ",currentSource, structureExternalId));
+				}else{
+					log.error(t -> String.format("FAILED mark missing user | source: %s | structureExternalId: %s | details: %s ",currentSource, structureExternalId, res.encode()));
 				}
 				handler.handle(null);
 			}

@@ -174,7 +174,12 @@ public class DuplicateUsers {
 					handlers[0].handle(null);
 				} else {
 					log.warn("lastSearchDuplicates not found.");
-					message.reply(new JsonObject().put("status", "ok"));
+					if (message != null) {
+						message.reply(new JsonObject().put("status", "ok"));
+					}
+					if (handler != null) {
+						handler.handle(new JsonObject().put("status", "ok"));
+					}
 				}
 			}
 		});

@@ -89,6 +89,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	public void start() {
 		super.start();
 		storage = new StorageFactory(vertx, config).getStorage();
+		FeederLogger.init(config);
 		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 		if (node == null) {
 			node = "";
@@ -613,10 +614,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void launchImport(final Message<JsonObject> message) {
+		final FeederLogger logger = new FeederLogger(e -> "Feeder.launchImport");
 		final String source = getOrElse(message.body().getString("feeder"), defaultFeed);
 		final Feed feed = feeds.get(source);
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
+			logger.error(e -> String.format("message: invalid feeder | source: %s", source));
 			return;
 		}
 
@@ -624,23 +627,29 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String structureExternalId = message.body().getString("structureExternalId");
 
 		if (message.body().getBoolean("transition", false)) {
+			logger.error(e -> "START transition");
 			launchTransition(message, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
 						validateAndImport(message, feed, preDelete, structureExternalId, source);
+						logger.error(e -> "SUCCEED transition");
 					} else {
 						sendError(message, "transition.error");
+						logger.error(e -> String.format("FAILED transition | details: %s", event.body()));
 					}
 				}
 			});
 		} else {
+			logger.info(e -> "START import without transition");
 			validateAndImport(message, feed, preDelete, structureExternalId, source);
 		}
 	}
 
 	private void validateAndImport(final Message<JsonObject> message, final Feed feed, final boolean preDelete,
 			final String structureExternalId, final String source) {
+		final FeederLogger logger = new FeederLogger(e -> String.format("Feeder.validateAndImport | preDelete: %s | source: %s | structure: %s", preDelete, source, structureExternalId));
+		logger.info(e -> "START validation");
 		launchImportValidation(message, new Handler<Report>() {
 			@Override
 			public void handle(final Report report) {
@@ -648,11 +657,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					if (report.isNotReverseFilesOrder()) {
 						message.body().put("notReverseFilesOrder", true);
 					}
+					logger.info(e -> "START import");
 					doImport(message, feed, new Handler<Report>() {
 						@Override
 						public void handle(final Report importReport) {
 							if (importReport == null) {
 								sendError(message, "import.error");
+								logger.error(e -> "FAILED import : "+ message.body());
 								return;
 							}
 							final JsonObject ir = importReport.getResult();
@@ -660,25 +671,32 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							final JsonArray profiles = ir.getJsonArray(Report.PROFILES);
 							if (preDelete && structureExternalId != null && existingUsers != null &&
 									existingUsers.size() > 0 && !importReport.containsErrors()) {
+								logger.info(e -> "START preDeleteTask");
 								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
 										structureExternalId, source, existingUsers, profiles, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> event) {
 										if (!"ok".equals(event.body().getString("status"))) {
 											importReport.addError("preDelete.error");
+											logger.error(e -> "FAILED preDeleteTask | details: "+event.body());
+										}else{
+											logger.info(e -> "SUCCEED preDeleteTask");
 										}
 										sendOK(message, new JsonObject().put("result", importReport.getResult()));
 									}
 								});
 							} else {
+								logger.info(e -> "SUCCEED validation and import without predelete");
 								sendOK(message, new JsonObject().put("result", importReport.getResult()));
 							}
 						}
 					});
 				} else if (report != null) {
 					sendOK(message, new JsonObject().put("result", report.getResult()));
+					logger.error(e -> "FAILED validation | details: "+report.getResult());
 				} else {
 					sendError(message, "validation.error");
+					logger.error(e -> "FAILED validation with error | details: "+message.body());
 				}
 			}
 		});
@@ -689,20 +707,23 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 		final boolean notReverseFilesOrder = message.body().getBoolean("notReverseFilesOrder", false);
-
+		final FeederLogger logger = new FeederLogger(t -> String.format("Feeder.doImport | withPostImport: %s", executePostImport));
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
+			logger.info(t -> "START init import with path: "+importPath, true);
 			final long start = System.currentTimeMillis();
 			importer.init(neo4j, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
 					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if (!"ok".equals(res.body().getString("status"))) {
-						logger.error(res.body().getString("message"));
+						logger.error(t -> "FAILED to init import | details: " + res.body().getString("message"));
 						h.handle(new Report(acceptLanguage).addError("init.importer.error"));
 						importer.clear();
 						checkEventQueue();
 						return;
+					}else{
+						logger.info(t -> "SUCCEED init import with path: "+importPath);
 					}
 					final Report report = importer.getReport();
 					if (notReverseFilesOrder) {
@@ -713,17 +734,17 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							@Override
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
-									logger.info(m.body().encode());
+									logger.info(t -> "SUCCEED to launch feeder | details: "+m.body().encode(), true);
 									if (executePostImport) {
 										postImport.execute(feed.getFeederSource());
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
 									if (m != null) {
-										logger.error(m.body().getString("message"));
+										logger.error(t -> "FAILED to launch feeder | details: "+m.body().getString("message"));
 										report.addError(m.body().getString("message"));
 									} else if (report.getResult().getJsonObject("errors").size() < 1) {
-										logger.error("Import return null value.");
+										logger.error(t -> "FAILED to launch feeder | details: Import return null value.");
 										report.addError("import.error");
 									}
 								}
@@ -733,21 +754,23 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								report.setEndTime(endTime);
 								report.setStartTime(start);
 								report.sendEmails(vertx, config,feed.getFeederSource());
-								logger.info("Elapsed time " + (endTime - start) + " ms.");
+								logger.info(t -> "Elapsed time " + (endTime - start) + " ms.", true);
 								importer.clear();
 								checkEventQueue();
 							}
 						};
 						if (importPath != null && !importPath.trim().isEmpty()) {
+							logger.info(t -> "START to launch feeder from path: "+importPath);
 							feed.launch(importer, importPath, message.body().getJsonObject(MAPPINGS), handler);
 						} else {
+							logger.info(t -> "START to launch feeder from default path");
 							feed.launch(importer, handler);
 						}
 					} catch (Exception e) {
 						Validator.initLogin(neo4j, vertx);
 						importer.clear();
 						h.handle(report.addError("import.error"));
-						logger.error(e.getMessage(), e);
+						logger.error(t -> "FAILED to launch feeder | details: "+e.getMessage(), e);
 						checkEventQueue();
 					}
 				}
