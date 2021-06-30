@@ -38,9 +38,6 @@ export class StructureInformationsService
 
   checkUAIs(structureId: string, uaiArray: string[]): Observable<StructureModel[]>
   {
-    let params = {
-      list: uaiArray
-    };
-    return this.httpClient.post(`/directory/structure/${structureId}/check/uai`, params) as Observable<StructureModel[]>;
+    return this.httpClient.post(`/directory/structure/${structureId}/check/uai`, {list: params}) as Observable<StructureModel[]>;
   }
 }

@@ -204,8 +204,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
             else
             {
               this.settings.lightboxTitle = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.title");
-              this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.message")
-              .replace("{{name}}", this.structure.name);
+              this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.message", {name: this.structure.name});
               this.settings.lightboxList = data.map(struc => `${struc.UAI} - ${struc.name}`);
               this.settings.lightboxCanValidate = true;
             }
