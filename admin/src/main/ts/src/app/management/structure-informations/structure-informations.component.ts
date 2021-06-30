@@ -7,6 +7,7 @@ import { StructureInformationsService } from './structure-informations.service';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { BundlesService } from 'ngx-ode-sijil';
 
 class UserMetric {
   active: number = 0;
@@ -32,12 +33,14 @@ class DuplicationSettings {
   canDuplicateSettings(): boolean
   {
     return this.uaiList && this.uaiListRegex.test(this.uaiList) &&
-      (this.applications ||
-      this.distribution ||
-      this.education ||
-      this.mobileapp ||
-      this.widgets)
+      (this.applications || this.distribution || this.education ||
+      this.mobileapp || this.widgets);
   }
+
+  lightboxTitle: string;
+  lightboxMessage: string;
+  lightboxList: string[] = [];
+  lightboxCanValidate: boolean = false;
 }
 
 @Component(
@@ -55,11 +58,15 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public structUAI: string;
   public structHasApp: boolean;
   public isADMC: boolean = false;
+  public showSettingsLightbox = false;
 
   public metrics: StructureMetrics = new StructureMetrics();
   public settings: DuplicationSettings = new DuplicationSettings();
 
-  constructor(injector: Injector, private infoService: StructureInformationsService, private notify: NotifyService)
+  constructor(injector: Injector,
+    private infoService: StructureInformationsService,
+    private notify: NotifyService,
+    private bundles: BundlesService)
   {
     super(injector);
   }
@@ -179,6 +186,44 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
 
   duplicateSettings(): void
   {
+    let uaiArray: string[] = this.settings.uaiList.match(/[0-9]{7}[a-zA-Z]/g);
+    let uaiSize = uaiArray.length;
+    if (uaiSize != 0) {
+      this.infoService.checkUAIs(this.structure.id, uaiArray).subscribe(
+        {
+          next: (data) =>
+          {
+            if (data.length != uaiSize) // means there are non-existent UAIs on the list
+            {
+              let uais = data.map(struc => struc.UAI);
+              this.settings.lightboxTitle = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.error.title");
+              this.settings.lightboxList = uaiArray.filter(uai => !uais.includes(uai.toUpperCase()));
+              this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.error.message");
+              this.settings.lightboxCanValidate = false;
+            }
+            else
+            {
+              this.settings.lightboxTitle = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.title");
+              this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.message")
+              .replace("{{name}}", this.structure.name);
+              this.settings.lightboxList = data.map(struc => `${struc.UAI} - ${struc.name}`);
+              this.settings.lightboxCanValidate = true;
+            }
+            this.showSettingsLightbox = true;
+            this.changeDetector.markForCheck();
+          },
+          error: (error) =>
+          {
+            this.notify.error("management.structure.informations.duplication.setting.uai.notify.error.content", "management.structure.informations.duplication.setting.uai.notify.error.title");
+          }
+        }
+      )
+    }
+  }
 
+  closeLightbox(): void
+  {
+    this.showSettingsLightbox = false;
+    this.changeDetector.markForCheck();
   }
 }
