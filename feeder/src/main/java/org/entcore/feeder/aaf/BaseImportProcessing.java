@@ -20,6 +20,7 @@
 package org.entcore.feeder.aaf;
 
 import org.apache.commons.lang3.text.translate.*;
+import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.dictionary.structures.Importer;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -39,10 +40,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class BaseImportProcessing implements ImportProcessing {
 
-	protected static final Logger log = LoggerFactory.getLogger(BaseImportProcessing.class);
+	protected final FeederLogger log;
 	protected final String path;
 	protected final Vertx vertx;
 	protected final Importer importer = Importer.getInstance();
@@ -60,9 +62,16 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
 		this.vertx = vertx;
+		log = new FeederLogger(e-> String.format("%s | prefix: %s", getTag(), academyPrefix));
 	}
 
+	protected String getTag(){
+		return getClass().getSimpleName();
+	}
+
+
 	protected void parse(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
+		log.info(e -> "START parsing directory : " + path);
 		initAcademyPrefix(path);
 		final List<String> files = vertx.fileSystem()
 				.readDirBlocking(path, getFileRegex());
@@ -70,6 +79,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 		handlers[handlers.length -1] = new Handler<Void>() {
 			@Override
 			public void handle(Void v) {
+				log.info(e -> "SUCCEED parsing directory : " + path);
 				next(handler, importProcessing);
 			}
 		};
@@ -79,9 +89,9 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 			handlers[i] = new Handler<Void>() {
 				@Override
 				public void handle(Void v) {
+					final String file = files.get(j);
 					try {
-						String file = files.get(j);
-						log.info("Parsing file : " + file);
+						log.info(e -> "START parsing file : " + file, true);
 						importer.getReport().loadedFile(file);
 						byte[] encoded = Files.readAllBytes(Paths.get(file));
 						String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
@@ -111,20 +121,24 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 							}
 						});
 						xr.parse(in);
+						log.info(e -> "START peristing file : " + file);
 						importer.persist(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {
 								if ("ok".equals(message.body().getString("status"))) {
+									log.info(e -> "SUCCEED persist successfully for file : " + file);
 									handlers[j + 1].handle(null);
 								} else {
+									log.error(e -> "FAILED persist for file : " + file);
 									error(message, handler);
 								}
 							}
 						});
 					} catch (Exception e) {
 						error(e, handler);
+						log.error(t -> "FAILED parsing file : " + file, e);
 					} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
-						log.error("OOM reading import files", err);
+						log.error(t -> "FAILED parsing file (OOM) : " + file, err);
 						error(new Exception("OOM"), handler);
 					}
 				}
@@ -134,34 +148,47 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	}
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
+		log.info(t -> "START precommit");
 		preCommit();
 		if (importProcessing != null) {
+			log.info(t -> "START precommit persist....");
 			importer.persist(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if ("ok".equals(message.body().getString("status"))) {
+						log.info(t -> "SUCCEED precommit persist");
 						importProcessing.start(handler);
 					} else {
+						log.error(t -> "FAILED precommit persist : "+ message.body().encode());
 						error(message, handler);
 					}
 				}
 			});
 		} else {
-			importer.persist(handler);
+			log.info(t -> "START precommit persist....");
+			importer.persist(e->{
+				//log
+				if ("ok".equals(e.body().getString("status"))) {
+					log.info(t -> "SUCCEED precommit persist");
+				} else {
+					log.error(t -> "FAILED precommit persist : "+ e.body().encode());
+				}
+				handler.handle(e);
+			});
 		}
 	}
 
 	protected void preCommit() {}
 
 	protected void error(Exception e, Handler<Message<JsonObject>> handler) {
-		log.error(e.getMessage(), e);
+		log.error(t -> e.getMessage(), e);
 		if (handler != null) {
 			handler.handle(null); // TODO return error message
 		}
 	}
 
 	protected void error(Message<JsonObject> message, Handler<Message<JsonObject>> handler) {
-		log.error(message.body().getString("message"));
+		log.error(t -> message.body().getString("message"));
 		if (handler != null) {
 			handler.handle(message);
 		}
@@ -187,7 +214,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 					academyPrefix = "";
 				}
 			} catch (RuntimeException e) {
-				log.error("Invalid import directories files.", e);
+				log.error(t-> "Invalid import directories files.", e);
 				academyPrefix = "";
 			}
 		} else {

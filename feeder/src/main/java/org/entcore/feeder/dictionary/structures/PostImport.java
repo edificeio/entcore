@@ -27,6 +27,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
@@ -46,13 +47,13 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class PostImport {
 
-	private static final Logger logger = LoggerFactory.getLogger(PostImport.class);
 	private final EventBus eb;
 	private final EventStore eventStore;
 	private final DuplicateUsers duplicateUsers;
 	private final Neo4j neo4j = TransactionManager.getNeo4jHelper();
 	private final JsonObject config;
 	private final Vertx vertx;
+	protected final FeederLogger logger = new FeederLogger(e -> "PostImport");
 
 	public PostImport(Vertx vertx, DuplicateUsers duplicateUsers, JsonObject config) {
 		this.vertx = vertx;
@@ -70,10 +71,33 @@ public class PostImport {
 		storeImportedEvent();
 		if (source == null || config.getJsonArray("exclude-mark-duplicates-by-source") == null ||
 				!config.getJsonArray("exclude-mark-duplicates-by-source").contains(source)) {
-			duplicateUsers.mergeSameINE(config.getBoolean("execute-merge-ine", false), voidAsyncResult ->
-					duplicateUsers.markDuplicates(event ->
-							duplicateUsers.autoMergeDuplicatesInStructure(mergedUsers -> applyComRules(getFinalHandler(source)))));
+			logger.info(e-> "START mergeSameIne");
+			duplicateUsers.mergeSameINE(config.getBoolean("execute-merge-ine", false), voidAsyncResult -> {
+				if(voidAsyncResult.succeeded()){
+					logger.info(e-> "SUCCEED mergeSameIne");
+				}else{
+					logger.error(e-> "FAILED mergeSameIne", voidAsyncResult.cause());
+				}
+				logger.info(e-> "START markDuplicates");
+				duplicateUsers.markDuplicates(event -> {
+					if(event != null && "ok".equals(event.getString("status"))){
+						logger.info(e-> "SUCCEED markDuplicates");
+					}else{
+						logger.error(e-> "FAILED markDuplicates: "+ event);
+					}
+					logger.info(e-> "START autoMergeDuplicatesInStructure");
+					duplicateUsers.autoMergeDuplicatesInStructure(mergedUsers -> {
+							if(mergedUsers.succeeded()){
+								logger.info(e-> "SUCCEED autoMergeDuplicatesInStructure");
+							}else{
+								logger.error(e-> "FAILED autoMergeDuplicatesInStructure", mergedUsers.cause());
+							}
+							applyComRules(getFinalHandler(source));
+						});
+					});
+				});
 		} else {
+			logger.info(e-> "SKIP mergeSameIne");
 			applyComRules(getFinalHandler(source));
 		}
 	}
@@ -131,11 +155,11 @@ public class PostImport {
 								.put("users-classes-update", r.getJsonArray(0)));
 					}
 				} else {
-					logger.error("Error in publish classes update transaction : " + res.body().getString("message"));
+					logger.error(t -> "Error in publish classes update transaction : " + res.body().getString("message"));
 				}
 			});
 		} catch (TransactionException e) {
-			logger.error("Error in publish classes update transaction.", e);
+			logger.error(t -> "Error in publish classes update transaction.", e);
 		}
 	}
 
@@ -166,12 +190,12 @@ public class PostImport {
 						@Override
 						public void handle(Void v) {
 							final JsonObject j = endpoints.getJsonObject(ji);
-							logger.info("endpoint : " + j.encode());
+							logger.info(t -> "endpoint : " + j.encode(), true);
 							final HttpClientRequest req = client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"), new Handler<HttpClientResponse>() {
 								@Override
 								public void handle(HttpClientResponse resp) {
 									if (resp.statusCode() >= 300) {
-										logger.warn("Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+										logger.warn(t -> "Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
 									}
 									handlers[ji + 1].handle(null);
 								}
@@ -182,7 +206,7 @@ public class PostImport {
 									req.putHeader(h, headers.getString(h));
 								}
 							}
-							req.exceptionHandler(e -> logger.error("Error in ws call post import : " + j.encode(), e));
+							req.exceptionHandler(e -> logger.error(t ->"Error in ws call post import : " + j.encode(), e));
 							if (j.getString("body") != null) {
 								req.end(j.getString("body"));
 							} else {
@@ -193,7 +217,7 @@ public class PostImport {
 				}
 				handlers[0].handle(null);
 			} catch (URISyntaxException e) {
-				logger.error("Invalid uri in ws call after import : " + url, e);
+				logger.error(t ->"Invalid uri in ws call after import : " + url, e);
 			}
 		}
 	}
@@ -211,7 +235,7 @@ public class PostImport {
 					eventStore.createAndStoreEvent(Feeder.FeederEvent.IMPORT.name(),
 							(UserInfos) null, res.getJsonObject(0));
 				} else {
-					logger.error(event.body().getString("message"));
+					logger.error(t -> "FAILED storeImportedEvent "+event.body());
 				}
 			}
 		});
@@ -219,6 +243,7 @@ public class PostImport {
 
 	private void applyComRules(final Handler<Void> handler) {
 		if (config.getBoolean("apply-communication-rules", false)) {
+			logger.info(e-> "START get ids for applyComRules");
 			String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
 			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
 				@Override
@@ -226,29 +251,32 @@ public class PostImport {
 					JsonArray ids = message.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
+						logger.info(e-> "SUCCEED get ids for applyComRules");
 						JsonObject j = new JsonObject()
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
 										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
+						logger.info(e-> "START apply applyComRules");
 						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
-									logger.error("Init rules error : " + event.body().getString("message"));
+									logger.error(e-> "FAILED to apply Communication rules"+ event.body().getString("message"));
 								} else {
-									logger.info("Communication rules applied.");
+									logger.info(e-> "SUCCEED to apply Communication rules", true);
 								}
 								handler.handle(null);
 							}
 						}));
 					} else {
-						logger.error(message.body().getString("message"));
+						logger.error(e-> "FAILED get ids for applyComRules: "+message.body().getString("message"));
 						handler.handle(null);
 					}
 				}
 			});
 		} else {
+			logger.info(e-> "SKIP applyComRules");
 			handler.handle(null);
 		}
 	}
