@@ -169,4 +169,19 @@
       </button>
     </div>
   </form>
+  <ode-lightbox-confirm
+    [show]="showSettingsLightbox"
+    [lightboxTitle]="settings.lightboxTitle"
+    [disableConfirm]="!settings.lightboxCanValidate"
+    (onCancel)="closeLightbox()"
+    (onConfirm)="closeLightbox()">
+    <p>
+      {{settings.lightboxMessage}}
+    </p>
+    <ul>
+      <li *ngFor="let struc of settings.lightboxList">
+        {{struc}}
+      </li>
+    </ul>
+  </ode-lightbox-confirm>
 </div>

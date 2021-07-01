@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 @Injectable({
   providedIn: 'root',
@@ -33,5 +34,10 @@ export class StructureInformationsService
   getMetrics(structureId: string): Observable<any>
   {
     return this.httpClient.get(`/directory/structure/${structureId}/metrics`);
+  }
+
+  checkUAIs(structureId: string, uaiArray: string[]): Observable<StructureModel[]>
+  {
+    return this.httpClient.post(`/directory/structure/${structureId}/check/uai`, {list: uaiArray}) as Observable<StructureModel[]>;
   }
 }

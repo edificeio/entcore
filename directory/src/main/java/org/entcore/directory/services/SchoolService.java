@@ -86,4 +86,6 @@ public interface SchoolService {
 
 	void getUsersActivity(JsonArray userIds, Handler<Either<String, JsonArray>> handler);
 
+	void getStructureNameByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler);
+
 }

@@ -542,5 +542,14 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query.toString(), params, validResultHandler(handler));
 	}
 
+	@Override
+	public void getStructureNameByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure) WHERE s.UAI IN {uais} ");
+		query.append("RETURN s.id AS id, s.name AS name, s.UAI as UAI");
+		JsonArray uaiUppercase = new JsonArray(uais.stream().map(uai -> uai.toString().toUpperCase()).collect(Collectors.toList()));
+		JsonObject params = new JsonObject().put("uais", uaiUppercase);
+		neo.execute(query.toString(), params, validResultHandler(handler));
+	}
 
 }
