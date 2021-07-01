@@ -37,6 +37,7 @@ import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -726,6 +727,22 @@ public class StructureController extends BaseController {
 			} else {
 				handler.handle(new Either.Left<>(result.cause().getMessage()));
 			}
+		});
+	}
+
+	@Post("/structure/:structureId/check/uai")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void checkUAIs(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray uais = body.getJsonArray("list");
+			structureService.getStructureNameByUAI(uais, handler -> {
+				if (handler.isLeft()) {
+					renderError(request, new JsonObject().put("error", handler.left().getValue()));
+				} else {
+					renderJson(request, handler.right().getValue());
+				}
+			});
 		});
 	}
 }
