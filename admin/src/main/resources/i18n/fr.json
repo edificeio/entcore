@@ -74,6 +74,12 @@
     "management.structure.informations.duplication.setting.uai.placeholder": "Copier votre liste ici...",
     "management.structure.informations.duplication.setting.uai.tooltip": "La liste doit être composée d'UAI avec comme séparateur une virgule, un point-virgule ou un saut de ligne.",
     "management.structure.informations.duplication.setting.uai.button": "Dupliquer",
+    "management.structure.informations.duplication.setting.uai.notify.error.title": "Erreur",
+    "management.structure.informations.duplication.setting.uai.notify.error.content": "Une erreur s'est produite à la détection des structures.",
+    "management.structure.informations.duplication.setting.lightbox.title": "Confirmation requise",
+    "management.structure.informations.duplication.setting.lightbox.message": "Vous allez dupliquer le paramétrage de la structure {{name}} à la liste des structures suivantes:",
+    "management.structure.informations.duplication.setting.lightbox.error.title": "Attention",
+    "management.structure.informations.duplication.setting.lightbox.error.message": "Les UAI suivants n'existent pas. Veuillez renouveler votre demande.",
 
     "management.message.flash": "Message Flash",
     "management.message.flash.edit": "Éditer un message flash",
