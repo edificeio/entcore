@@ -164,7 +164,7 @@
                            [open]="forceDuplicates">
   </ode-user-duplicates-section>
 
-  <ode-user-relatives-section [user]="user" [structure]="structure"
+  <ode-user-relatives-section [user]="user" [userRelatives]="user?.userDetails?.parents" [structure]="structure"
                           *ngIf="!user.deleteDate">
   </ode-user-relatives-section>
 
