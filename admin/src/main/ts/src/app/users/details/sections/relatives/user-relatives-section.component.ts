@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit} from '@angular/core';
 
 import {AbstractSection} from '../abstract.section';
 import {UserModel} from '../../../../core/store/models/user.model';
@@ -14,8 +14,10 @@ import { NotifyService } from 'src/app/core/services/notify.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserRelativesSectionComponent extends AbstractSection implements OnInit, OnChanges {
-    public showRelativesLightbox = false;
+    @Input()
+    userRelatives: UserModel[] = [];
 
+    public showRelativesLightbox = false;
     lightboxRelatives: UserModel[] = [];
 
     constructor(
@@ -35,12 +37,8 @@ export class UserRelativesSectionComponent extends AbstractSection implements On
     }
 
     private updateLightboxRelatives() {
-        this.lightboxRelatives = this.structure.users.data.filter(
-            u => u.type == 'Relative'
-                && !u.deleteDate
-                && this.details.parents
-                && !this.details.parents.find(p => p.id == u.id)
-        );
+        this.lightboxRelatives = this.structure.users.data.
+            filter(u => u.type == 'Relative' && !u.deleteDate && !this.userRelatives.find(p => p.id == u.id));
     }
 
     protected onUserChange() {}
