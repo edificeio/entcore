@@ -21,6 +21,8 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -28,6 +30,7 @@ import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import io.vertx.core.Handler;
@@ -473,36 +476,48 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void massDistributionEducationMobileApp(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
+	public void massDistributionEducationMobileApp(JsonArray data, Boolean setDistribution, Boolean setEducation, Boolean setHasApp,
+												   Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
+
+		if (!(setDistribution.booleanValue() || setEducation.booleanValue() || setHasApp.booleanValue())) {
+			// nothing to do
+			handler.handle(new Either.Right<>(new JsonObject().put("status", "ok")));
+			return;
+		}
 
 		StatementsBuilder s = new StatementsBuilder();
 
 		data.forEach(entry -> {
 
+			String query = "MATCH (s:Structure {id: {structureId}}) ";
 			JsonObject jo = (JsonObject) entry;
 			String structureId = jo.getString("ent_structure_id");
-			String distribution = jo.getString("distribution");
-			List<String> distributions = StringUtils.isEmpty(distribution) ? Collections.EMPTY_LIST :
-					Arrays.stream(distribution.split(",")).collect(Collectors.toList());
-			String education = jo.getString("education");
-			List<Long> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
-					Arrays.stream(education.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
-			Boolean hasApp = jo.getBoolean("hasApp");
-
-			if (structureId != null) {
-				String query = "MATCH (s:Structure {id: {structureId}}) " +
-						"SET s.levelsOfEducation = {levelsOfEducation} " +
-						"SET s.distributions = {distributions} " +
-						"SET s.hasApp = {hasApp}";
-
-				JsonObject params = new JsonObject().put("structureId", structureId)
-						.put("levelsOfEducation", education_levels)
-						.put("distributions", distributions)
-						.put("hasApp", hasApp);
-
-				s.add(query, params);
+			if (structureId == null) {
+				return;
 			}
-
+			JsonObject params = new JsonObject().put("structureId", structureId);
+			if (setDistribution.booleanValue()) {
+				String distribution = jo.getString("distribution");
+				List<String> distributions = StringUtils.isEmpty(distribution) ? Collections.EMPTY_LIST :
+						Arrays.stream(distribution.split(",")).collect(Collectors.toList());
+				query += "SET s.distributions = {distributions} ";
+				params.put("distributions", distributions);
+			}
+			if (setEducation.booleanValue()) {
+				String education = jo.getString("education");
+				List<Long> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
+						Arrays.stream(education.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
+				query += "SET s.levelsOfEducation = {levelsOfEducation} ";
+				params.put("levelsOfEducation", education_levels);
+			}
+			if (setHasApp.booleanValue()) {
+				Boolean hasApp = jo.getBoolean("hasApp");
+				if (hasApp != null) {
+					query += "SET s.hasApp = {hasApp}";
+					params.put("hasApp", hasApp);
+				}
+			}
+			s.add(query, params);
 		});
 
 		neo.executeTransaction(s.build(), transactionId, commit.booleanValue(), validEmptyHandler(handler));
@@ -550,6 +565,110 @@ public class DefaultSchoolService implements SchoolService {
 		JsonArray uaiUppercase = new JsonArray(uais.stream().map(uai -> uai.toString().toUpperCase()).collect(Collectors.toList()));
 		JsonObject params = new JsonObject().put("uais", uaiUppercase);
 		neo.execute(query.toString(), params, validResultHandler(handler));
+	}
+
+	@Override
+	public void duplicateStructureSettings(String structureId, JsonArray targetStructureIds, JsonObject options,
+										   Handler<Either<String, JsonObject>> handler) {
+		TransactionHelper helper = new TransactionHelper(neo, eventBus, true);
+
+		StatementsBuilder builder = new StatementsBuilder();
+		JsonObject params = new JsonObject().put("structureId", structureId);
+		String query1 = "MATCH (s:Structure {id:{structureId}}) RETURN " +
+				"REDUCE(acc = '', level IN s.levelsOfEducation | acc + CASE WHEN acc = '' THEN '' ELSE ',' END + level) AS education," +
+				"REDUCE(acc = '', distrib IN s.distributions | acc + CASE WHEN acc = '' THEN '' ELSE ',' END + distrib) AS distribution," +
+				"s.hasApp AS hasApp";
+		builder.add(query1, params);
+		String query2 = "MATCH (r:Role), (s:Structure {id:{structureId}}) " +
+				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) " +
+				"AND ((r)<-[:AUTHORIZED]-(:ProfileGroup)-[:DEPENDS]->(s) OR" +
+				"(r)<-[:AUTHORIZED]-(:FunctionGroup {filter: \"AdminLocal\"})-[:DEPENDS]->(s))" +
+				"RETURN r.id AS ent_role_id, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Teacher\"})-[:DEPENDS]->(s)) AS Teacher, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Student\"})-[:DEPENDS]->(s)) AS Student, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Relative\"})-[:DEPENDS]->(s)) AS Relative, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Personnel\"})-[:DEPENDS]->(s)) AS Personnel, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Guest\"})-[:DEPENDS]->(s)) AS Guest, " +
+				"EXISTS((r)<-[:AUTHORIZED]-(:FunctionGroup {filter: \"AdminLocal\"})-[:DEPENDS]->(s)) AS AdminLocal";
+		builder.add(query2, params);
+		String query3 = "MATCH (w:Widget), (s:Structure {id:{structureId}}) " +
+				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(w) " +
+				"AND ((w)<-[:AUTHORIZED]-(:ProfileGroup)-[:DEPENDS]->(s) OR" +
+				"(w)<-[:AUTHORIZED]-(:FunctionGroup {filter: \"AdminLocal\"})-[:DEPENDS]->(s))" +
+				"RETURN w.id AS ent_widget_id, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Teacher\"})-[:DEPENDS]->(s)) AS Teacher, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Student\"})-[:DEPENDS]->(s)) AS Student, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Relative\"})-[:DEPENDS]->(s)) AS Relative, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Personnel\"})-[:DEPENDS]->(s)) AS Personnel, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:ProfileGroup {filter: \"Guest\"})-[:DEPENDS]->(s)) AS Guest, " +
+				"EXISTS((w)<-[:AUTHORIZED]-(:FunctionGroup {filter: \"AdminLocal\"})-[:DEPENDS]->(s)) AS AdminLocal";
+		builder.add(query3, params);
+		helper.addStatements(builder.build(), message -> {
+			if ("ok".equals(message.body().getString("status"))) {
+				JsonObject resultSettings = message.body().getJsonArray("results").getJsonArray(0).getJsonObject(0);
+				JsonArray resultApplications = message.body().getJsonArray("results").getJsonArray(1);
+				JsonArray resultWidgets = message.body().getJsonArray("results").getJsonArray(2);
+				JsonArray dataSettings = new JsonArray(), dataApplicationsWidgets = new JsonArray();
+				for (int i = 0; i < targetStructureIds.size(); i++) {
+					String targetStructureId = targetStructureIds.getString(i);
+					JsonObject copySettings = resultSettings.copy();
+					copySettings.put("ent_structure_id", targetStructureId);
+					dataSettings.add(copySettings);
+					for (int j = 0; j < resultApplications.size(); j++) {
+						JsonObject copyRole = resultApplications.getJsonObject(j).copy();
+						copyRole.put("ent_structure_id", targetStructureId);
+						dataApplicationsWidgets.add(copyRole);
+					}
+					for (int k = 0; k < resultWidgets.size(); k++) {
+						JsonObject copyWidget = resultWidgets.getJsonObject(k).copy();
+						copyWidget.put("ent_structure_id", targetStructureId);
+						dataApplicationsWidgets.add(copyWidget);
+					}
+				}
+				Promise<Void> promise1 = Promise.promise();
+				JsonObject action1 = new JsonObject()
+						.put("action", "set-roles-and-profiles-by-structureId")
+						.put("data", dataApplicationsWidgets)
+						.put("setApplications", options.getBoolean("setApplications", true))
+						.put("setWidgets", options.getBoolean("setWidgets", true));
+				helper.addEventBusRequest("wse.app.registry.bus", action1, res -> {
+					if ("ok".equals(res.body().getString("status"))) {
+						promise1.complete();
+					} else {
+						promise1.fail(res.body().getString("message"));
+					}
+				});
+				Promise<Void> promise2 = Promise.promise();
+				JsonObject action2 = new JsonObject()
+						.put("action", "set-distrib-and-education-by-structureId")
+						.put("data", dataSettings)
+						.put("setDistribution", options.getBoolean("setDistribution", true))
+						.put("setEducation", options.getBoolean("setEducation", true))
+						.put("setHasApp", options.getBoolean("setHasApp", true));
+				helper.addEventBusRequest("directory", action2, res -> {
+					if ("ok".equals(res.body().getString("status"))) {
+						promise2.complete();
+					} else {
+						promise2.fail(res.body().getString("message"));
+					}
+				});
+				CompositeFuture.join(promise1.future(), promise2.future()).onComplete(result -> {
+					if (result.succeeded()) {
+						helper.commit(bool -> {
+							if (bool.booleanValue()) {
+								handler.handle(new Either.Right<>(new JsonObject().put("status", "ok")));
+							} else {
+								handler.handle(new Either.Left<>("Error duplicating settings"));
+							}
+						});
+					} else {
+						handler.handle(new Either.Left<>(result.cause().toString()));
+					}
+				});
+			} else {
+				handler.handle(new Either.Left<>(message.body().getString("message")));
+			}
+		});
 	}
 
 }

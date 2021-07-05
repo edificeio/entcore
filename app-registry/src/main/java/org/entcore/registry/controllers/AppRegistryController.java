@@ -624,7 +624,10 @@ public class AppRegistryController extends BaseController {
 				final JsonArray data = message.body().getJsonArray("data");
 				final Integer transactionId = message.body().getInteger("transactionId");
 				final Boolean commit = message.body().getBoolean("commit", true);
-				appRegistryService.massAuthorization(data, transactionId, commit, busResponseHandler(message));
+				final Boolean setApplications = message.body().getBoolean("setApplications", true);
+				final Boolean setWidgets = message.body().getBoolean("setWidgets", true);
+				appRegistryService.massAuthorization(data, setApplications, setWidgets,
+						transactionId, commit, busResponseHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { DuplicationSettings } from './structure-informations.component';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +37,22 @@ export class StructureInformationsService
     return this.httpClient.get(`/directory/structure/${structureId}/metrics`);
   }
 
-  checkUAIs(structureId: string, uaiArray: string[]): Observable<StructureModel[]>
+  checkUAIs(uaiArray: string[]): Observable<StructureModel[]>
   {
-    return this.httpClient.post(`/directory/structure/${structureId}/check/uai`, {list: uaiArray}) as Observable<StructureModel[]>;
+    return this.httpClient.put(`/directory/structure/check/uai`, {list: uaiArray}) as Observable<StructureModel[]>;
+  }
+  duplicate(structureId: string, options: DuplicationSettings): Observable<StructureModel[]>
+  {
+    let params = {
+      list: options.structuresIds,
+      options: {
+        setApplications: options.applications,
+        setWidgets: options.widgets,
+        setDistribution: options.distribution,
+        setEducation: options.education,
+        setHasApp: options.mobileapp
+      }
+    }
+    return this.httpClient.put(`/directory/structure/${structureId}/duplicate`, params) as Observable<any>;
   }
 }
