@@ -4,7 +4,7 @@ import http from 'axios';
 // === Type definitions
 type Hobby = { visibility: string, values: string, category: string, displayName: string };
 type Structure = { classes: string[], name: string, id: string };
-type StructureV2 = { classes: Array<{ name: string, id: string }>, name: string, id: string };
+type StructureV2 = { classes: Array<{ name: string, id: string }>, name: string, id: string, source?: string };
 export type UserTypes = "Student" | "Relative" | "Teacher" | "Personnel" | "Guest";
 export type EntityType = "User" | "Group";
 
@@ -23,6 +23,7 @@ export interface PersonApiResultV2 {
     schools: StructureV2[];
     hobbies: Hobby[];
     mood: string;
+    source?: string;
 }
 export type PersonApiResultsV2 = { result: { [key: string]: PersonApiResultV2 } };
 
@@ -332,6 +333,11 @@ export class School extends Model {
     parents: School[] = [];
     children: School[] = [];
     classrooms: ClassRoom[] = [];
+
+    source?: string;
+    static AUTOMATIC_SOURCES_REGEX = /AAF/;
+    get isSourceAutomatic() { return this.source && School.AUTOMATIC_SOURCES_REGEX.test(this.source) }
+
     constructor(data?: Partial<School>) {
         super(data);
     }
@@ -344,6 +350,7 @@ export class School extends Model {
         }
         this.id = data.id;
         this.name = data.name;
+        this.source = data.source;
         return this;
     }
     updateData(data?: Partial<School> | SchoolApiResult) {
