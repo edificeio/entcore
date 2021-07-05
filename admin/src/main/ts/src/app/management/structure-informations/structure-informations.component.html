@@ -4,19 +4,15 @@
   </h2>
   <form #updateForm="ngForm" (ngSubmit)="updateStructure()">
     <ode-form-field label="management.structure.informations.name">
-      <input type="text"
-            [(ngModel)]="structName"
-            name="name"
-            required
-            pattern=".*\S+.*"
-            (blur)="structName = structName.trim()"
-            #nameInput="ngModel"
-      >
+      <input type="text" [(ngModel)]="structName" name="name" required pattern=".*\S+.*"
+        (blur)="structName = structName.trim()" #nameInput="ngModel">
       <ode-form-errors [control]="nameInput"></ode-form-errors>
       <button type="button" class="cancel" (click)="resetManualName()" *ngIf="structure.manualName">
         <s5l>management.structure.informations.name.reset</s5l>
       </button>
-      <i class="fa is-info"><s5l class="info-label">management.structure.informations.help.label</s5l></i>
+      <i class="fa is-info">
+        <s5l class="info-label">management.structure.informations.help.label</s5l>
+      </i>
       <ode-message-sticker type="info" [messages]="['management.structure.informations.name.help']">
       </ode-message-sticker>
     </ode-form-field>
@@ -28,21 +24,11 @@
     <!-- For ADMCs -->
     <div *ngIf="isADMC == true">
       <ode-form-field label="management.structure.informations.UAI">
-        <input type="text"
-          [(ngModel)]="structUAI"
-          name="UAI"
-          required
-          pattern="[0-9]{7}[A-Z]"
-          #UAIInput="ngModel"
-        >
+        <input type="text" [(ngModel)]="structUAI" name="UAI" required pattern="[0-9]{7}[A-Z]" #UAIInput="ngModel">
       </ode-form-field>
       <ode-form-errors [control]="UAIInput"></ode-form-errors>
       <ode-form-field label="management.structure.informations.hasApp">
-        <input type="checkbox"
-          [(ngModel)]="structHasApp"
-          name="hasApp"
-          #hasAppInput="ngModel"
-        >
+        <input type="checkbox" [(ngModel)]="structHasApp" name="hasApp" #hasAppInput="ngModel">
       </ode-form-field>
       <ode-form-errors [control]="hasAppInput"></ode-form-errors>
     </div>
@@ -58,7 +44,21 @@
       </ode-form-field>
     </div>
 
-    <ode-form-field label="management.structure.informations.parents" *ngIf="structure.parents != null && structure.parents.length > 0">
+    <ode-form-field label="management.structure.informations.sourceType">
+      <span>
+        <s5l>{{structHasAutomaticSource
+          ? 'management.structure.informations.sourceType.automatic'
+          : 'management.structure.informations.sourceType.manual'}}
+        </s5l>
+        <ode-message-sticker gravity="right" type="info" [messages]="[structHasAutomaticSource
+                ? 'management.structure.informations.sourceType.automatic.help'
+                : 'management.structure.informations.sourceType.manual.help']">
+        </ode-message-sticker>
+      </span>
+    </ode-form-field>
+
+    <ode-form-field label="management.structure.informations.parents"
+      *ngIf="structure.parents != null && structure.parents.length > 0">
       <ul class="actions-list">
         <li *ngFor="let parent of structure.parents">
           <span>{{ parent.name }}</span>
@@ -70,8 +70,7 @@
     </ode-form-field>
 
     <div class="action">
-      <button class="create confirm"
-              [disabled]="updateForm.pristine || updateForm.invalid">
+      <button class="create confirm" [disabled]="updateForm.pristine || updateForm.invalid">
         <s5l>management.structure.informations.update</s5l>
       </button>
     </div>
@@ -85,41 +84,57 @@
     <div class="profile-column">
       <div class="profile-card">
         <div class="profile-number">{{metrics.students.active}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.students.active</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.students.active</s5l>
+        </div>
       </div>
       <div class="profile-card">
         <div class="profile-number">{{metrics.students.inactive}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.students.inactive</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.students.inactive</s5l>
+        </div>
       </div>
     </div>
     <div class="profile-column">
       <div class="profile-card">
         <div class="profile-number">{{metrics.relatives.active}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.relatives.active</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.relatives.active</s5l>
+        </div>
       </div>
       <div class="profile-card">
         <div class="profile-number">{{metrics.relatives.inactive}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.relatives.inactive</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.relatives.inactive</s5l>
+        </div>
       </div>
     </div>
     <div class="profile-column">
       <div class="profile-card">
         <div class="profile-number">{{metrics.teachers.active}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.teachers.active</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.teachers.active</s5l>
+        </div>
       </div>
       <div class="profile-card">
         <div class="profile-number">{{metrics.teachers.inactive}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.teachers.inactive</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.teachers.inactive</s5l>
+        </div>
       </div>
     </div>
     <div class="profile-column">
       <div class="profile-card">
         <div class="profile-number">{{metrics.personnels.active}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.personnels.active</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.personnels.active</s5l>
+        </div>
       </div>
       <div class="profile-card">
         <div class="profile-number">{{metrics.personnels.inactive}}</div>
-        <div class="profile-label"><s5l>management.structure.informations.stats.personnels.inactive</s5l></div>
+        <div class="profile-label">
+          <s5l>management.structure.informations.stats.personnels.inactive</s5l>
+        </div>
       </div>
     </div>
   </div>

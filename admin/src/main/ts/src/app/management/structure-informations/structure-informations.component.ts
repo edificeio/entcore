@@ -58,6 +58,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public structName: string;
   public structUAI: string;
   public structHasApp: boolean;
+  public structHasAutomaticSource: boolean;
   public isADMC: boolean = false;
   public showSettingsLightbox = false;
 
@@ -88,6 +89,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         this.structName = this.structure.name;
         this.structUAI = this.structure.UAI;
         this.structHasApp = this.structure.hasApp;
+        this.structHasAutomaticSource = this.structure.isSourceAutomatic;
         this.infoService.getMetrics(this.structure.id).subscribe(
           {
             next: (data) =>

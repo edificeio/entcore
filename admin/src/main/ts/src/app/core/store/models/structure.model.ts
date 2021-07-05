@@ -44,7 +44,8 @@ export class StructureModel extends Model<StructureModel> {
     subjects: SubjectCollection;
     applications: ApplicationCollection;
     connectors: ConnectorCollection;
-    sources: string[] = [];
+    userSources: string[] = [];
+    source?: string;
     profiles: { name: string, blocked: any }[] = [];
     aafFunctions: Array<Array<Array<string>>> = [];
     levelsOfEducation: number[];
@@ -54,6 +55,11 @@ export class StructureModel extends Model<StructureModel> {
     hasApp?: boolean;
     manualName?: boolean;
     feederName?: string;
+
+    static AUTOMATIC_SOURCES_REGEX = /AAF/;
+    get isSourceAutomatic() {
+        return this.source && StructureModel.AUTOMATIC_SOURCES_REGEX.test(this.source);
+    }
 
     quickSearchUsers(input: string) {
         return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {
@@ -84,11 +90,11 @@ export class StructureModel extends Model<StructureModel> {
     }
 
     syncSources(force?: boolean) {
-        if (this.sources.length < 1 || force === true) {
+        if (this.userSources.length < 1 || force === true) {
             return this.http.get(`/directory/structure/${this.id}/sources`)
                 .then(res => {
                     if (res.data && res.data.length > 0) {
-                        this.sources = res.data[0].sources;
+                        this.userSources = res.data[0].sources;
                     }
                 });
         }
