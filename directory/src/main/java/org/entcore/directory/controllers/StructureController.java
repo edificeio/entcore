@@ -730,13 +730,31 @@ public class StructureController extends BaseController {
 		});
 	}
 
-	@Post("/structure/:structureId/check/uai")
+	@Put("/structure/check/uai")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
 	public void checkUAIs(final HttpServerRequest request) {
 		bodyToJson(request, body -> {
 			JsonArray uais = body.getJsonArray("list");
 			structureService.getStructureNameByUAI(uais, handler -> {
+				if (handler.isLeft()) {
+					renderError(request, new JsonObject().put("error", handler.left().getValue()));
+				} else {
+					renderJson(request, handler.right().getValue());
+				}
+			});
+		});
+	}
+
+	@Put("/structure/:structureId/duplicate")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void duplicate(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		bodyToJson(request, body -> {
+			JsonArray structureIds = body.getJsonArray("list");
+			JsonObject options = body.getJsonObject("options");
+			structureService.duplicateStructureSettings(structureId, structureIds, options, handler -> {
 				if (handler.isLeft()) {
 					renderError(request, new JsonObject().put("error", handler.left().getValue()));
 				} else {

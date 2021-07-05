@@ -735,7 +735,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void massAuthorization(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
+	public void massAuthorization(JsonArray data, Boolean setApplications, Boolean setWidgets,
+								  Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
+
+		if (!(setApplications.booleanValue() || setWidgets.booleanValue())) {
+			// nothing to do
+			handler.handle(new Either.Right<>(new JsonObject().put("status", "ok")));
+		}
 
 		final Map<String,Map<String,List<String>>> map = new HashMap<>();
 
@@ -752,6 +758,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				//roleId and widgetId shouldn't be both null or not null
 				continue;
 			}
+			if ((roleId != null && !setApplications.booleanValue()) || (widgetId != null && !setWidgets.booleanValue())) {
+				continue;
+			}
 
 			if (!map.containsKey(structureId)) {
 				map.put(structureId, new HashMap<>());
@@ -765,12 +774,18 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 		final StatementsBuilder s = new StatementsBuilder();
 
-		final String deleteExistingAuthQuery = "MATCH (roleOrWidget)<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure {id: {structureId}}) "+
-				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(roleOrWidget) DELETE a";
+		final String deleteExistingRolesQuery = "MATCH (r:Role)<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure {id: {structureId}}) "+
+				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) DELETE a";
+		final String deleteExistingWidgetsQuery = "MATCH (w:Widget)<-[a:AUTHORIZED]-(Group)-[:DEPENDS]->(Class)-[:BELONGS*0..]->(s:Structure {id: {structureId}}) DELETE a";
 
 		map.entrySet().forEach(structure -> {
-			s.add(deleteExistingAuthQuery, new JsonObject().put("structureId", structure.getKey()));
+			if (setApplications.booleanValue()) {
+				s.add(deleteExistingRolesQuery, new JsonObject().put("structureId", structure.getKey()));
+			}
+			if (setWidgets.booleanValue()) {
+				s.add(deleteExistingWidgetsQuery, new JsonObject().put("structureId", structure.getKey()));
 
+			}
 			structure.getValue().entrySet().forEach(roleOrWidget -> {
 				final String query =
 						"MATCH (s:Structure {id: {structureId}}), " +

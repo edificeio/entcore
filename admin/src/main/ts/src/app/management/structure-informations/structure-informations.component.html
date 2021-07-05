@@ -174,7 +174,7 @@
     [lightboxTitle]="settings.lightboxTitle"
     [disableConfirm]="!settings.lightboxCanValidate"
     (onCancel)="closeLightbox()"
-    (onConfirm)="closeLightbox()">
+    (onConfirm)="launchDuplication()">
     <p>
       {{settings.lightboxMessage}}
     </p>
