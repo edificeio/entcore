@@ -21,7 +21,7 @@ class StructureMetrics {
   personnels: UserMetric = new UserMetric();
 };
 
-class DuplicationSettings {
+export class DuplicationSettings {
   applications: boolean = false;
   widgets: boolean = false;
   distribution: boolean = false;
@@ -41,6 +41,7 @@ class DuplicationSettings {
   lightboxMessage: string;
   lightboxList: string[] = [];
   lightboxCanValidate: boolean = false;
+  structuresIds: string[];
 }
 
 @Component(
@@ -189,7 +190,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
     let uaiArray: string[] = this.settings.uaiList.match(/[0-9]{7}[a-zA-Z]/g);
     let uaiSize = uaiArray.length;
     if (uaiSize != 0) {
-      this.infoService.checkUAIs(this.structure.id, uaiArray).subscribe(
+      this.infoService.checkUAIs(uaiArray).subscribe(
         {
           next: (data) =>
           {
@@ -206,6 +207,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
               this.settings.lightboxTitle = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.title");
               this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.message", {name: this.structure.name});
               this.settings.lightboxList = data.map(struc => `${struc.UAI} - ${struc.name}`);
+              this.settings.structuresIds = data.map(struc => struc.id);
               this.settings.lightboxCanValidate = true;
             }
             this.showSettingsLightbox = true;
@@ -218,6 +220,13 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         }
       )
     }
+  }
+
+  launchDuplication(): void
+  {
+    this.infoService.duplicate(this.structure.id, this.settings).subscribe({next: (data) => {}});
+    this.notify.notify("management.structure.informations.duplication.setting.notify.content", "management.structure.informations.duplication.setting.notify.title", null, "success", { timeout: 5000 });
+    this.showSettingsLightbox = false;
   }
 
   closeLightbox(): void
