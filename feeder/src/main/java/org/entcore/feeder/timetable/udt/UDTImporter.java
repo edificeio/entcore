@@ -775,8 +775,21 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	private String calculateTmpId(JsonObject entity) {
-		return entity.getString("div") + entity.getString("mat") + entity.getString("prof") +
+		return entity.getString("div") + "$" + entity.getString("mat") + entity.getString("prof") +
 				entity.getString("rgpmt") + getOrElse(entity.getString("gpe"), "_", false);
+	}
+
+	private String rewriteTmpIdToGroups(String tmpId, JsonArray groups)
+	{
+		List<String> gStrings = (List<String>) groups.getList();
+
+		String groupsId = "";
+		Collections.sort(gStrings);
+		for(String s : gStrings)
+			groupsId += s;
+
+		int ix = tmpId.indexOf("$");
+		return groupsId + tmpId.substring(ix);
 	}
 
 	private void generateCourses(int periodWeek, boolean theoretical) {
@@ -923,7 +936,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", day)
 				.put("teacherIds", teacherIds)
-				.put("recurrence", structureId + "_" + ligneFicheTTmpId + "_" + start + end)
+				.put("recurrence", structureId + "_" + ligneFicheTTmpId + "_" + start.substring(0, 3) + end.substring(0, 3))
 				.put("theoretical", theoretical);
 		if (!theoretical) {
 			c.put("periodWeek", periodWeek);
@@ -983,6 +996,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				}
 			}
 			if (!groups.isEmpty()) {
+				c.put("recurrence", structureId + "_" + rewriteTmpIdToGroups(ligneFicheTTmpId, groups) + "_" + start.substring(0, 3) + end.substring(0, 3));
 				c.put("classes", new JsonArray());
 				c.put("classesExternalIds", new JsonArray());
 			}
