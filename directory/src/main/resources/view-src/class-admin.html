@@ -18,6 +18,37 @@
 	<portal>
 		<!--HEADER-->
 		<h1 data-reload class="flex-row"><i class="settings-class"></i> <span class="horizontal-spacing" translate content="classAdmin.title"></span></h1>
+		
+		<div class="bottom-spacing-twice">
+			<i18n>classAdmin.structure.informations.sourceType</i18n>
+			<span ng-if="selectedSchool.isSourceAutomatic">
+				<i18n>classAdmin.structure.informations.sourceType.automatic</i18n>
+				<span class="tipbox relative">
+					<span>
+						<i class="help square-medium"></i>
+					</span>
+					<div class="tipbox-content" style="left: -30px; top: 5px; width: 32em">
+						<span class="small-text">
+							<i18n>classAdmin.structure.informations.sourceType.automatic.help</i18n>
+						</span>
+					</div>
+				</span>
+			</span>
+			<span ng-if="!selectedSchool.isSourceAutomatic">
+				<i18n>classAdmin.structure.informations.sourceType.manual</i18n>
+				<span class="tipbox relative">
+					<span>
+						<i class="help square-medium"></i>
+					</span>
+					<div class="tipbox-content" style="left: -30px; top: 5px; width: 32em">
+						<span class="small-text">
+							<i18n>classAdmin.structure.informations.sourceType.manual.help</i18n>
+						</span>
+					</div>
+				</span>
+			</span>
+		</div>
+		
 		<div class="centered twelve cell info vertical-spacing-twice" ng-if="classrooms.length === 0">
 			<i18n>classAdmin.noAttachment.message</i18n>
 		</div>
