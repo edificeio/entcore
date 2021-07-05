@@ -62,7 +62,7 @@ export class UsersListComponent extends OdeComponent {
         this.listFilters.resetFilters();
 
         this.listFilters.setClassesComboModel(structure.classes);
-        this.listFilters.setSourcesComboModel(structure.sources);
+        this.listFilters.setSourcesComboModel(structure.userSources);
 
         const filterAafFunctions: Array<Array<string>> = [];
         structure.aafFunctions.forEach(structureAafFunctions => {

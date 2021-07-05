@@ -82,6 +82,11 @@
     "management.structure.informations.duplication.setting.lightbox.error.message": "Les UAI suivants n'existent pas. Veuillez renouveler votre demande.",
     "management.structure.informations.duplication.setting.notify.title": "Duplication de paramétrage",
     "management.structure.informations.duplication.setting.notify.content": "La duplication de paramétrage a été lancée. Vous recevrez une notification lorsqu'elle sera terminée. Vous pouvez fermer la page.",
+    "management.structure.informations.sourceType": "Source d'alimentation des comptes",
+    "management.structure.informations.sourceType.automatic": "Automatique (annuaire académique)",
+    "management.structure.informations.sourceType.automatic.help": "Une source d'alimentation automatique signifie que les données sont transmises par votre académie. La vérification des comptes utilisateurs (ajout / mise à jour) doit donc se faire en priorité dans les logiciels académiques (SCONET / SIECLE / STSweb, ...).",
+    "management.structure.informations.sourceType.manual": "Manuelle",
+    "management.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de compte à l'aide d'un fichier csv dans la section Import/export.",
 
     "management.message.flash": "Message Flash",
     "management.message.flash.edit": "Éditer un message flash",
