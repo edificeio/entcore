@@ -566,7 +566,11 @@ public class DirectoryController extends BaseController {
 				final JsonArray data = message.body().getJsonArray("data");
 				final Integer transactionId = message.body().getInteger("transactionId");
 				final Boolean commit = message.body().getBoolean("commit", true);
-				schoolService.massDistributionEducationMobileApp(data, transactionId, commit, busResponseHandler(message));
+				final Boolean setDistribution = message.body().getBoolean("setDistribution", true);
+				final Boolean setEducation = message.body().getBoolean("setEducation", true);
+				final Boolean setHasApp = message.body().getBoolean("setHasApp", true);
+				schoolService.massDistributionEducationMobileApp(data, setDistribution, setEducation, setHasApp,
+						transactionId, commit, busResponseHandler(message));
 				break;
 			case "getActivationInfos" :
 				JsonArray structureIds = message.body().getJsonArray("structureIds");

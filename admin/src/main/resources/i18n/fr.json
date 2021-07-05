@@ -80,6 +80,8 @@
     "management.structure.informations.duplication.setting.lightbox.message": "Vous allez dupliquer le paramétrage de la structure {{name}} à la liste des structures suivantes:",
     "management.structure.informations.duplication.setting.lightbox.error.title": "Attention",
     "management.structure.informations.duplication.setting.lightbox.error.message": "Les UAI suivants n'existent pas. Veuillez renouveler votre demande.",
+    "management.structure.informations.duplication.setting.notify.title": "Duplication de paramétrage",
+    "management.structure.informations.duplication.setting.notify.content": "La duplication de paramétrage a été lancée. Vous recevrez une notification lorsqu'elle sera terminée. Vous pouvez fermer la page.",
 
     "management.message.flash": "Message Flash",
     "management.message.flash.edit": "Éditer un message flash",
