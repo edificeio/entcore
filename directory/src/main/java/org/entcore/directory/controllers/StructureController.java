@@ -33,6 +33,8 @@ import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
@@ -41,6 +43,7 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.security.AdminStructureFilter;
 import org.entcore.directory.security.AnyAdminOfUser;
@@ -81,6 +84,7 @@ public class StructureController extends BaseController {
 	private String assetsPath = "../..";
 	private Map<String, String> skins = new HashMap<>();
 
+	private static final Logger log = LoggerFactory.getLogger(StructureController.class);
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -754,12 +758,44 @@ public class StructureController extends BaseController {
 		bodyToJson(request, body -> {
 			JsonArray structureIds = body.getJsonArray("list");
 			JsonObject options = body.getJsonObject("options");
+			JsonObject infos = body.getJsonObject("infos");
 			structureService.duplicateStructureSettings(structureId, structureIds, options, handler -> {
-				if (handler.isLeft()) {
-					renderError(request, new JsonObject().put("error", handler.left().getValue()));
-				} else {
-					renderJson(request, handler.right().getValue());
-				}
+				final JsonObject res = handler.isRight() ? handler.right().getValue() : new JsonObject();
+				UserUtils.getUserInfos(eb, request, user -> {
+					eb.request("directory", new JsonObject().put("action", "getUser").put("userId", user.getUserId()),
+							handlerToAsyncHandler(event -> {
+								if (!"ok".equals(event.body().getString("status"))) {
+									log.error("[StructureController] Error getting user: " + event.body().getString("message"));
+								} else {
+									final String email = event.body().getJsonObject("result").getString("email");
+									if (StringUtils.isEmpty(email)) {
+										res.put("email", false);
+									} else {
+										JsonObject params = new JsonObject()
+												.put("username", user.getUsername())
+												.put("structurename", infos.getString("structure"))
+												.put("targets", infos.getJsonArray("targets"))
+												.put("error", handler.isLeft() ? handler.left().getValue() : "");
+										processTemplate(request, "email/duplicate.html", params, template -> {
+											Handler<AsyncResult<Message<JsonObject>>> asyncHandler = handlerToAsyncHandler(event2 -> {
+												if (!"ok".equals(event2.body().getString("status"))) {
+													log.error("[StructureController] Error reading template: " + event2.body().getString("message"));
+												}
+											});
+											notifHelper.sendEmail(request, email, null, null, "admin.duplicate.notify.subject",
+													template, null, true, asyncHandler);
+										});
+										res.put("email", true);
+									}
+									if (handler.isRight()) {
+										renderJson(request, res);
+									} else {
+										log.error("[StructureController] Error duplicating structure setting: " + handler.left().getValue());
+										renderError(request, new JsonObject().put("error", handler.left().getValue()));
+									}
+								}
+							}));
+				});
 			});
 		});
 	}

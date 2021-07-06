@@ -1,0 +1,16 @@
+<p>Bonjour {{username}},</p>
+
+{{^error}}
+<p>Le paramétrage de la structure "{{structurename}}" a bien été dupliqué aux structures suivantes:</p>
+<ul>
+{{#targets}}
+<li>{{name}}</li>
+{{/targets}}
+</ul>
+{{/error}}
+{{#error}}
+<p>Une erreur s'est produite pendant la duplication du paramétrage de la structure "{{structurename}}":</p>
+<p>{{error}}</p>
+{{/error}}
+
+<p>À bientôt</p>

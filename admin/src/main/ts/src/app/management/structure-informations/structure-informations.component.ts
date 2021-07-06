@@ -41,7 +41,7 @@ export class DuplicationSettings {
   lightboxMessage: string;
   lightboxList: string[] = [];
   lightboxCanValidate: boolean = false;
-  structuresIds: string[];
+  structures: StructureModel[];
 }
 
 @Component(
@@ -207,7 +207,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
               this.settings.lightboxTitle = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.title");
               this.settings.lightboxMessage = this.bundles.translate("management.structure.informations.duplication.setting.lightbox.message", {name: this.structure.name});
               this.settings.lightboxList = data.map(struc => `${struc.UAI} - ${struc.name}`);
-              this.settings.structuresIds = data.map(struc => struc.id);
+              this.settings.structures = data as StructureModel[];
               this.settings.lightboxCanValidate = true;
             }
             this.showSettingsLightbox = true;
@@ -224,7 +224,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
 
   launchDuplication(): void
   {
-    this.infoService.duplicate(this.structure.id, this.settings).subscribe({next: (data) => {}});
+    this.infoService.duplicate(this.structure, this.settings).subscribe({next: (data) => {}});
     this.notify.notify("management.structure.informations.duplication.setting.notify.content", "management.structure.informations.duplication.setting.notify.title", null, "success", { timeout: 5000 });
     this.showSettingsLightbox = false;
   }

@@ -41,18 +41,22 @@ export class StructureInformationsService
   {
     return this.httpClient.put(`/directory/structure/check/uai`, {list: uaiArray}) as Observable<StructureModel[]>;
   }
-  duplicate(structureId: string, options: DuplicationSettings): Observable<StructureModel[]>
+  duplicate(structure: StructureModel, options: DuplicationSettings): Observable<StructureModel[]>
   {
     let params = {
-      list: options.structuresIds,
+      list: options.structures.map(struc => struc.id),
       options: {
         setApplications: options.applications,
         setWidgets: options.widgets,
         setDistribution: options.distribution,
         setEducation: options.education,
         setHasApp: options.mobileapp
+      },
+      infos: {
+        structure: structure.name,
+        targets: options.structures.map(struc => { return { name: `${struc.UAI} - ${struc.name}`}; })
       }
     }
-    return this.httpClient.put(`/directory/structure/${structureId}/duplicate`, params) as Observable<any>;
+    return this.httpClient.put(`/directory/structure/${structure.id}/duplicate`, params) as Observable<any>;
   }
 }
