@@ -20,6 +20,7 @@
 package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
@@ -175,6 +176,10 @@ public abstract class GenericEventStore implements EventStore {
 			final String ua = request.headers().get("User-Agent");
 			if (ua != null) {
 				event.put("ua", ua);
+			}
+			final String ip = Renders.getIp(request);
+			if (ip != null) {
+				event.put("ip", ip);
 			}
 		}
 		return event;

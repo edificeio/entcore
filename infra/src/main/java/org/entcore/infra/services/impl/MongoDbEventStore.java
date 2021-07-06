@@ -21,6 +21,7 @@ package org.entcore.infra.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.http.HttpServerRequest;
 
@@ -99,6 +100,11 @@ public class MongoDbEventStore implements EventStoreService {
 		if (request != null) {
 			event.put("referer", request.headers().get("Referer"));
 			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+
+			final String ip = Renders.getIp(request);
+			if (ip != null) {
+				event.put("ip", ip);
+			}
 		}
 		store(event, handler);
 	}
