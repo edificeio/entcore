@@ -418,7 +418,7 @@ public class ManualFeeder extends BusModBase {
 						"MATCH u-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
 						"(pg:ProfileGroup)-[:DEPENDS]->s, " +
 						"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-						"CREATE UNIQUE dpg<-[:IN]-u " +
+						"MERGE dpg<-[:IN]-u " +
 						"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
 						"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
 						addToRemoved +
