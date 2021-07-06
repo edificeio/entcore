@@ -1,6 +1,7 @@
 package org.entcore.common.events;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -34,6 +35,10 @@ public class EventHelper {
             final JsonObject attrs = new JsonObject().put("resource-type", resourceType);
             if (ua != null) {
                 attrs.put("ua", ua);
+            }
+            final String ip = headers.get("X-Forwarded-For");
+            if (Utils.isNotEmpty(ip)) {
+                attrs.put("ip", ip);
             }
             store.createAndStoreEvent(CREATE_EVENT, user, attrs);
         } catch (Exception e) {
