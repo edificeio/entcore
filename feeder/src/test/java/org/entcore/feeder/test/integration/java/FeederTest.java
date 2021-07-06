@@ -2,13 +2,17 @@ package org.entcore.feeder.test.integration.java;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.Feeder;
+import org.entcore.feeder.ManualFeeder;
+import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -21,6 +25,7 @@ public class FeederTest {
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
+
     static {
         System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %5$s%6$s%n");
     }
@@ -54,9 +59,37 @@ public class FeederTest {
         eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "import"), (AsyncResult<Message<JsonObject>> message) -> {
             context.assertEquals("ok", message.result().body().getString("status"));
             //wait post import
-            test.vertx().setTimer(1000, e->{
+            test.vertx().setTimer(1000, e -> {
                 async.complete();
             });
         });
+    }
+
+    @Test
+    public void testShouldImportAafAndRemoveUser(final TestContext context) {
+        final Async async = context.async();
+        final EventBus eb = test.vertx().eventBus();
+        final String userId = "1";
+        final JsonObject params = new JsonObject().put("userId", userId).put("classId", "1").put("structureId", "1");
+        test.database().executeNeo4j("MERGE (u:User { id : {userId}})-[r:IN]->(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}})  WITH cpg,s, pg MERGE pg-[:HAS_PROFILE]->(p:Profile)<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) WITH cpg MERGE (cpg)-[:DEPENDS]->(c:Class  {id : {classId}}) RETURN cpg", params).onComplete(context.asyncAssertSuccess(res2 -> {
+            //remove user from class (attach user to defaultgroup
+            eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-remove-user").put("classId", "1").put("userId", userId), (AsyncResult<Message<JsonObject>> res3) -> {
+                context.assertEquals("ok", res3.result().body().getString("status"));
+                context.assertEquals(1, res3.result().body().getJsonArray("results").getJsonArray(0).size());
+                //wait for query
+                test.vertx().setTimer(300, e -> {
+                    //recreate the link between u AND cpg (when aaf)
+                    test.database().executeNeo4j("MATCH (u:User { id : {userId}})-[rr:IN]->(dpg:DefaultProfileGroup), (cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) MERGE u-[r:IN]->cpg RETURN ID(rr), ID(dpg), ID(u)", params).onComplete(context.asyncAssertSuccess(res20 -> {
+                        final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance());
+                        ManualFeeder.applyRemoveUserFromStructure(userId, null, "1", null, transaction);
+                        transaction.commit((Message<JsonObject> message2) -> {
+                            context.assertEquals("ok", message2.body().getString("status"));
+                            context.assertEquals(1, message2.body().getJsonArray("results").getJsonArray(0).size());
+                            async.complete();
+                        });
+                    }));
+                });
+            });
+        }));
     }
 }
