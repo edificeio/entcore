@@ -22,7 +22,8 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
     passwordResetMail: string;
     passwordResetMobile: string;
     smsModule: boolean | string;
-    showConfirmation = false;
+    showAddAdmlConfirmation: boolean = false;
+    showRemoveAdmlConfirmation: boolean = false;
     showMassMailConfirmation = false;
     downloadAnchor = null;
     downloadObjectUrl = null;
@@ -78,6 +79,7 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
     }
 
     addAdml() {
+        this.showAddAdmlConfirmation = false;
         this.spinner.perform('portal-content', this.details.addAdml(this.structure.id))
             .then(() => {
                 this.ns.success({
@@ -94,7 +96,7 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
     }
 
     removeAdml() {
-        this.showConfirmation = false;
+        this.showRemoveAdmlConfirmation = false;
         this.spinner.perform('portal-content', this.details.removeAdml())
             .then(() => {
                 this.ns.success({
