@@ -1,0 +1,10 @@
+.tipbox.class-admin-tipbox{
+    position: relative;
+    cursor: initial;
+    .tipbox-content {
+        left: -30px; top: 5px;
+    }
+    &:hover .tipbox-content {
+        width: 32em
+    }
+}
