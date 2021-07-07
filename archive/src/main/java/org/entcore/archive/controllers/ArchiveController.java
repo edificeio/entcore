@@ -198,6 +198,27 @@ public class ArchiveController extends BaseController {
 		});
 	}
 
+	@Get("/export/verify")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void verifyUserExport(final HttpServerRequest request)
+	{
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user != null) {
+				exportService.userExportExists(user, new Handler<Boolean>()
+				{
+					@Override
+					public void handle(Boolean exists)
+					{
+						renderJson(request, new JsonObject().put("exists", exists.booleanValue()));
+					}
+				});
+			}
+			else {
+				unauthorized(request);
+			}
+		});
+	}
+
 	@Get("/export/verify/:exportId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void verifyExport(final HttpServerRequest request) {

@@ -28,6 +28,19 @@ export let exportController = ng.controller('ExportController', ['$scope', ($sco
 		$scope.$apply();
 	});
 
+	http.get("/archive/export/verify").then(function(response)
+	{
+		$scope.loading = response.data.exists;
+		$scope.exportExists = response.data.exists;
+		$scope.$apply();
+	}).catch(function(error)
+	{
+		if(error.response != null && error.response.status == 404)
+			notify.error('archive.error.404');
+		else
+			notify.error('archive.error');
+	});
+
 	function getAppList(mode: string)
 	{
 		if (mode === "docsOnly")
