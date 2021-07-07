@@ -12,6 +12,8 @@ import { UserModel } from 'src/app/core/store/models/user.model';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { SpinnerService } from 'ngx-ode-ui';
 import { PlatformInfoService } from 'src/app/core/services/platform-info.service';
+import { SessionModel } from 'src/app/core/store/models/session.model';
+import { Session } from 'src/app/core/store/mappings/session';
 
 @Component({
     selector: 'ode-user-info-section',
@@ -32,6 +34,8 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
     userInfoSubscriber: Subscription;
 
     loginAliasPattern = /^[0-9a-z\-\.]+$/;
+
+    isAdmc: boolean = false;
 
     @Input() structure: StructureModel;
     @Input() user: UserModel;
@@ -58,7 +62,7 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
         super();
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         this.passwordResetMail = this.details.email;
         this.passwordResetMobile = this.details.mobile;
         PlatformInfoService.isSmsModule().then(res => {
@@ -68,6 +72,10 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
 
         this.userInfoSubscriber = this.userInfoService.getState()
             .subscribe(() => this.cdRef.markForCheck());
+
+        const session: Session = await SessionModel.getSession();
+        this.isAdmc = session.isADMC();
+        this.cdRef.markForCheck();
     }
 
     protected onUserChange() {
@@ -288,5 +296,15 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
 
     showLightbox() {
         this.showMassMailConfirmation = true;
+    }
+
+    showAddAdmlButton() {
+        if (this.details.isAdml(this.structure.id)) {
+            return false;
+        }
+        if (this.isAdmc) {
+            return true;
+        }
+        return this.user.type !== 'Student' && this.user.type !== 'Relative';
     }
 }
