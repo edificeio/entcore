@@ -67,13 +67,27 @@
           <div *ngIf="!details.isAdmc()">
             <button type="button"
                     *ngIf="!details.isAdml(this.structure.id)"
-                    (click)="addAdml()">
+                    (click)="showAddAdmlConfirmation = true">
               <s5l>adml.add</s5l>
               <i class="fa fa-cog"></i>
             </button>
+
+            <ode-lightbox-confirm
+                [show]="showAddAdmlConfirmation"
+                [lightboxTitle]="'warning'"
+                (onConfirm)="addAdml()"
+                (onCancel)="showAddAdmlConfirmation = false">
+                <p>
+                  <s5l [s5l-params]="{userName: user.displayName, userProfile: user.type, structureName: structure.name}">user.add.adml.disclaimer.info</s5l>
+                </p>
+                <p>
+                  <s5l>user.add.adml.disclaimer.confirm</s5l>
+                </p>
+            </ode-lightbox-confirm>
+
             <button type="button"
                     *ngIf="details.isAdml(this.structure.id)"
-                    (click)="showConfirmation = true">
+                    (click)="showRemoveAdmlConfirmation = true">
               <s5l>adml.remove</s5l>
               <i class="fa fa-cog"></i>
             </button>
@@ -87,10 +101,10 @@
             </div>
             <div *ngIf="func[0] == 'ADMIN_LOCAL'">
               <ode-lightbox-confirm
-                [show]="showConfirmation"
+                [show]="showRemoveAdmlConfirmation"
                 [lightboxTitle]="'warning'"
                 (onConfirm)="removeAdml()"
-                (onCancel)="showConfirmation = false">
+                (onCancel)="showRemoveAdmlConfirmation = false">
                 <p>{{ 'user.remove.adml.disclaimer.info' | translate:{username: user.displayName} }}</p>
                 <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
               </ode-lightbox-confirm>
