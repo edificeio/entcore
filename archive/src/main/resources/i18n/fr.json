@@ -4,6 +4,7 @@
     "archive.download.all": "Toutes vos données seront exportées.",
     "archive.title": "Mes données",
     "archive.waiting": "Le téléchargement va démarrer automatiquement dans quelques instants. L'attente peut prendre plusieurs minutes pour les fichiers volumineux. Si vous quittez cette page avant le début du téléchargement, un lien sera envoyé sur votre fil de nouveautés.",
+    "archive.exists": "Un export de vos données est déjà en cours. L'attente peut prendre plusieurs minutes pour les fichiers volumineux. Un lien sera envoyé sur votre fil de nouveautés lorsque l'export sera complété.",
     "archive.all": "Tous",
     "archive.error": "L'export de vos données n'a pas pu être réalisé. Vous allez être redirigé.",
     "archive.error.404": "L'export de vos données n'existe plus car il a expiré ou a déjà été téléchargé.",

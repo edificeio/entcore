@@ -44,7 +44,8 @@
                 </div>
             </div>
             <div class="row centered" ng-if="loading">
-                <i18n>archive.waiting</i18n>
+                <i18n ng-if="!exportExists">archive.waiting</i18n>
+                <i18n ng-if="exportExists">archive.exists</i18n>
             </div>
             <div class="row centered-text" ng-if="loadingSpinner">
                 <i class="loading loadingExport"></i>
