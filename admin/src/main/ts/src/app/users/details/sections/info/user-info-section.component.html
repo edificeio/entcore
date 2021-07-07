@@ -66,7 +66,7 @@
         <div>
           <div *ngIf="!details.isAdmc()">
             <button type="button"
-                    *ngIf="!details.isAdml(this.structure.id)"
+                    *ngIf="showAddAdmlButton()"
                     (click)="showAddAdmlConfirmation = true">
               <s5l>adml.add</s5l>
               <i class="fa fa-cog"></i>
