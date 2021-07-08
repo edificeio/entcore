@@ -47,7 +47,7 @@ export class StructureModel extends Model<StructureModel> {
     sources: string[] = [];
     profiles: { name: string, blocked: any }[] = [];
     aafFunctions: Array<Array<Array<string>>> = [];
-    levelsOfEducation: number[];
+    levelsOfEducation: number[] = [];
     distributions: string[];
     timetable: string;
     punctualTimetable?: string;
@@ -106,5 +106,15 @@ export class StructureModel extends Model<StructureModel> {
                 });
         }
         return Promise.resolve();
+    }
+
+    is1D(): boolean
+    {
+        return this.levelsOfEducation.indexOf(1) != -1;
+    }
+
+    is2D(): boolean
+    {
+        return this.levelsOfEducation.indexOf(2) != -1;
     }
 }
