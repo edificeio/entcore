@@ -29,7 +29,7 @@
          [title]="'delete.this.structure' | translate"
          [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
       <span class="direction-buttons"
-            *ngIf="!details.isDirectionFromAAF(structure.externalId)">
+            *ngIf="!details.isDirectionFromAAF(structure.externalId) && details.isEligibleForDirection(structure)">
                         <button class="noflex"
                                 *ngIf="!details.isDirectionManual(structure.externalId)"
                                 (click)="addDirectionManual(structure.id, structure.externalId)">

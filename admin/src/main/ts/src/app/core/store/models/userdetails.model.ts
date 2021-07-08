@@ -1,6 +1,16 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from '../../store/models/group.model';
 import { StructureModel } from './structure.model';
+import { globalStore } from '../global.store';
+
+export enum UserProfiles
+{
+    Student = "Student",
+    Relative = "Relative",
+    Teacher = "Teacher",
+    Personnel = "Personnel",
+    Guest = "Guest"
+}
 
 export class UserDetailsModel extends Model<UserDetailsModel> {
 
@@ -31,6 +41,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     address: string;
     homePhone: string;
     mobile?: string;
+    profiles: Array<String> = [];
     type?: Array<string>;
     functions?: Array<[string, Array<string>]>;
     teaches: boolean;
@@ -175,6 +186,26 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.functions && this.functions.find((f) => f[0] === 'SUPER_ADMIN');
     }
 
+    hasStudentProfile(): boolean {
+        return this.profiles.indexOf(UserProfiles.Student) != -1;
+    }
+
+    hasRelativeProfile(): boolean {
+        return this.profiles.indexOf(UserProfiles.Relative) != -1;
+    }
+
+    hasTeacherProfile(): boolean {
+        return this.profiles.indexOf(UserProfiles.Teacher) != -1;
+    }
+
+    hasPersonnelProfile(): boolean {
+        return this.profiles.indexOf(UserProfiles.Personnel) != -1;
+    }
+
+    hasGuestProfile(): boolean {
+        return this.profiles.indexOf(UserProfiles.Guest) != -1;
+    }
+
     /**
      * Détermine si l'utilisateur n'est pas un ensseignant ou professeur principal venant de l'AAF
      * @param {string} structureExternalId
@@ -234,6 +265,11 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         } else {
             return false;
         }
+    }
+
+    isEligibleForDirection(structure: StructureModel)
+    {
+        return (this.hasTeacherProfile() || this.hasPersonnelProfile()) && globalStore.structures.get(structure.id).is1D();
     }
 
     isDirectionManual(structureExternalId: string) {

@@ -34,4 +34,12 @@ export class StructureCollection extends Collection<StructureModel> {
         return result;
     }
 
+    public get(id: String): StructureModel
+    {
+        return this.data.find(function(s: StructureModel)
+        {
+            return s.id === id;
+        });
+    }
+
 }
