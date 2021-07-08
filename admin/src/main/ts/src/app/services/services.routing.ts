@@ -10,6 +10,7 @@ import {ConnectorsResolver} from './connectors/list/connectors.resolver';
 import {ApplicationRolesResolver} from './applications/application/application-roles.resolver';
 import {ConnectorRolesResolver} from './connectors/connector/connector-roles.resolver';
 import {SmartApplicationComponent} from './applications/application/smart-application/smart-application.component';
+import { WidgetsListComponent } from './widgets/list/widgets-list.component';
 
 export let routes: Routes = [
     {
@@ -48,6 +49,10 @@ export let routes: Routes = [
                         }
                     }
                 ]
+            },
+            {
+                path: 'widgets',
+                component: WidgetsListComponent
             }
         ]
     }
