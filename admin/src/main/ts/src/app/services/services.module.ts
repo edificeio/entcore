@@ -32,6 +32,7 @@ import { ServicesListComponent } from './shared/services-list/services-list.comp
 import { ServicesRoleComponent } from './shared/services-role/services-role.component';
 import { ServicesRoleAttributionComponent } from './shared/services-role-attribution/services-role-attribution.component';
 import { GroupPickerComponent } from './shared/services-role-attribution/group-picker/group-picker.component';
+import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
 
 @NgModule({
     imports: [
@@ -58,7 +59,8 @@ import { GroupPickerComponent } from './shared/services-role-attribution/group-p
         ConnectorPropertiesComponent,
         ConnectorMassAssignmentComponent,
         ConnectorExportComponent,
-        GroupPickerComponent
+        GroupPickerComponent,
+        WidgetsListComponent
     ],
     providers: [
         NgSwitch,
