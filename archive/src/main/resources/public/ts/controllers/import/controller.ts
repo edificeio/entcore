@@ -56,7 +56,10 @@ export let importController = ng.controller('ImportController', ['$scope', '$tim
                         $scope.cancelImport();
                     })
                 }).catch(err => {
-                    notify.error('archive.import.already');
+                    if(err.response.status == 413)
+                        notify.error("archive.import.toobig");
+                    else
+                        notify.error('archive.import.already');
                     $scope.cancelImport();
                 });
             }
