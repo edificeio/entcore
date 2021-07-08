@@ -199,7 +199,7 @@ public class ArchiveController extends BaseController {
 	}
 
 	@Get("/export/verify")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void verifyUserExport(final HttpServerRequest request)
 	{
 		UserUtils.getUserInfos(eb, request, user -> {
