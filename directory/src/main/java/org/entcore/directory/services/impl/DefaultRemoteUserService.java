@@ -84,9 +84,9 @@ public class DefaultRemoteUserService implements RemoteUserService {
 						final JsonObject m = new JsonObject().put("$set", j1)
 								.put("$setOnInsert", new JsonObject()
 									.put("created", importTimestamp)
-									.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED))
+									.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED)
 									.put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 0)
-									.put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 0);
+									.put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 0));
 						a.add(new JsonObject()
 								.put("operation", "upsert")
 								.put("document", m)
