@@ -33,6 +33,8 @@ import { ServicesRoleComponent } from './shared/services-role/services-role.comp
 import { ServicesRoleAttributionComponent } from './shared/services-role-attribution/services-role-attribution.component';
 import { GroupPickerComponent } from './shared/services-role-attribution/group-picker/group-picker.component';
 import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
+import { WidgetsResolver } from './widgets/list/widgets.resolver';
+import { SmartWidgetComponent } from './widgets/widget/smart-widget/smart-widget.component';
 
 @NgModule({
     imports: [
@@ -60,7 +62,8 @@ import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
         ConnectorMassAssignmentComponent,
         ConnectorExportComponent,
         GroupPickerComponent,
-        WidgetsListComponent
+        WidgetsListComponent,
+        SmartWidgetComponent
     ],
     providers: [
         NgSwitch,
@@ -68,7 +71,8 @@ import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
         ApplicationsResolver,
         ConnectorsResolver,
         ApplicationRolesResolver,
-        ConnectorRolesResolver
+        ConnectorRolesResolver,
+        WidgetsResolver
     ]
 })
 export class ServicesModule {

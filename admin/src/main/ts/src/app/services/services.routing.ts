@@ -11,6 +11,8 @@ import {ApplicationRolesResolver} from './applications/application/application-r
 import {ConnectorRolesResolver} from './connectors/connector/connector-roles.resolver';
 import {SmartApplicationComponent} from './applications/application/smart-application/smart-application.component';
 import { WidgetsListComponent } from './widgets/list/widgets-list.component';
+import { WidgetsResolver } from './widgets/list/widgets.resolver';
+import { SmartWidgetComponent } from './widgets/widget/smart-widget/smart-widget.component';
 
 export let routes: Routes = [
     {
@@ -52,7 +54,14 @@ export let routes: Routes = [
             },
             {
                 path: 'widgets',
-                component: WidgetsListComponent
+                component: WidgetsListComponent,
+                resolve: {widgets: WidgetsResolver},
+                children: [
+                    {
+                        path: ':widgetId',
+                        component: SmartWidgetComponent
+                    }
+                ]
             }
         ]
     }

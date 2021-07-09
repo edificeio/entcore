@@ -4,6 +4,7 @@ import { GroupCollection } from '../collections/group.collection';
 import { SubjectCollection } from '../collections/subject.collection';
 import { ApplicationCollection } from '../collections/application.collection';
 import { ConnectorCollection } from '../collections/connector.collection';
+import { WidgetCollection } from '../collections/widget.collection';
 
 export class StructureModel extends Model<StructureModel> {
 
@@ -15,6 +16,7 @@ export class StructureModel extends Model<StructureModel> {
         this.subjects = new SubjectCollection();
         this.applications = new ApplicationCollection();
         this.connectors = new ConnectorCollection();
+        this.widgets = new WidgetCollection();
     }
 
     _id?: string;
@@ -25,6 +27,7 @@ export class StructureModel extends Model<StructureModel> {
         this.subjects.structureId = id;
         this.applications.structureId = id;
         this.connectors.structureId = id;
+        this.widgets.structureId = id;
         this._id = id;
     }
 
@@ -44,6 +47,7 @@ export class StructureModel extends Model<StructureModel> {
     subjects: SubjectCollection;
     applications: ApplicationCollection;
     connectors: ConnectorCollection;
+    widgets: WidgetCollection;
     userSources: string[] = [];
     source?: string;
     profiles: { name: string, blocked: any }[] = [];
