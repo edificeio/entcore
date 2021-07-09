@@ -97,7 +97,7 @@ public class Archive extends BaseServer {
 		JsonObject reprise = config.getJsonObject("reprise", new JsonObject());
 		String reprisePath = reprise.getString("path", System.getProperty("java.io.tmpdir"));
 		ImportService repriseImportService = new DefaultImportService(vertx, config, storage, reprisePath, "reprise:import", verifyKey, forceEncryption);
-		RepriseService repriseService = new DefaultRepriseService(vertx, storage, config.getJsonObject("reprise"), config, repriseImportService);
+		RepriseService repriseService = new DefaultRepriseService(vertx, storage, reprise, config, repriseImportService);
 
 		RepriseController rc = new RepriseController(repriseService);
 		addController(rc);
