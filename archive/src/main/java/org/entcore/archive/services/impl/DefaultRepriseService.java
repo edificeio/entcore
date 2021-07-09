@@ -52,10 +52,12 @@ public class DefaultRepriseService implements RepriseService {
         this.archiveConfig = archiveConfig;
         this.importService = importService;
         final String limitHour = reprise.getString("limit-hour");
-        try {
-            this.limitHour = OffsetTime.parse(limitHour);
-        } catch (DateTimeParseException dtpe) {
-            log.error("[Reprise] Error parsing limit-hour: " + dtpe.toString());
+        if (!StringUtils.isEmpty(limitHour)) {
+            try {
+                this.limitHour = OffsetTime.parse(limitHour);
+            } catch (DateTimeParseException dtpe) {
+                log.error("[Reprise] Error parsing limit-hour: " + dtpe.toString());
+            }
         }
     }
 
