@@ -78,7 +78,7 @@
                 (onConfirm)="addAdml()"
                 (onCancel)="showAddAdmlConfirmation = false">
                 <p>
-                  <s5l [s5l-params]="{userName: user.displayName, userProfile: user.type, structureName: structure.name}">user.add.adml.disclaimer.info</s5l>
+                  <s5l [s5l-params]="{userName: user.displayName, userProfile: user.type | translate, structureName: structure.name}">user.add.adml.disclaimer.info</s5l>
                 </p>
                 <p>
                   <s5l>user.add.adml.disclaimer.confirm</s5l>
