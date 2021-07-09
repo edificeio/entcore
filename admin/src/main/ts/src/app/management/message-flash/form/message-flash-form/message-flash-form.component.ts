@@ -10,6 +10,13 @@ import { StructureModel } from '../../../../core/store/models/structure.model';
 import { FlashMessageModel } from '../../../../core/store/models/flashmessage.model';
 import { TrumbowygOptions } from 'ngx-trumbowyg';
 
+class StructureListItem {
+    name: string;
+    id: string;
+    children: StructureListItem[];
+    check: boolean;
+}
+
 @Component({
     selector: 'ode-message-flash-form',
     templateUrl: './message-flash-form.component.html',
@@ -33,6 +40,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     pushNotification = false;
     private lightboxSubStructures: string[];
     trumbowygOptions: TrumbowygOptions = {lang: this.bundles.currentLanguage};
+    itemList: StructureListItem[] = [];
 
     constructor(injector: Injector,
                 public bundles: BundlesService,
@@ -166,7 +174,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         this.changeDetector.detectChanges();
     }
 
-    addOrRemoveChild(child: { name: string, id: string, children: any[], check: boolean }): void {
+    addOrRemoveChild(child: StructureListItem): void {
         const index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
         if (index === -1) {
             this.lightboxSubStructures.push(child.id);
@@ -177,7 +185,15 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         }
     }
 
-    private checkAllChildren(children: { name: string, id: string, children: any[], check: boolean }[]) {
+    selectAll(): void {
+        this.checkAllChildren(this.itemList);
+    }
+
+    unselectAll(): void {
+        this.uncheckAllChildren(this.itemList);
+    }
+
+    private checkAllChildren(children: StructureListItem[]) {
         children.forEach(child => {
             child.check = true;
             if (this.lightboxSubStructures.findIndex(subId => subId === child.id) === -1) {
@@ -187,7 +203,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         });
     }
 
-    private uncheckAllChildren(children: { name: string, id: string, children: any[], check: boolean }[]) {
+    private uncheckAllChildren(children: StructureListItem[]) {
         children.forEach(child => {
             child.check = false;
             const index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
@@ -198,7 +214,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         });
     }
 
-    getItems(): { name: string, id: string, children: any[], check: boolean }[] {
+    getItems(): StructureListItem[] {
         const that = this;
         const myMap = (child: StructureModel) => {
             return {
@@ -209,7 +225,8 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             };
         };
         if (this.structure && this.structure.children) {
-            return this.structure.children.map(myMap);
+            this.itemList = this.structure.children.map(myMap);
+            return this.itemList;
         } else {
             return [];
         }

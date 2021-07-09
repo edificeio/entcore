@@ -100,6 +100,8 @@
               [show]="showLightbox" (onClose)="closeLightbox()">
       <h2><s5l>management.message.flash.lightbox.title</s5l></h2>
       <p><s5l>management.message.flash.lightbox.explanation</s5l></p>
+      <p><s5l class="select-link" (click)="selectAll()">management.message.flash.lightbox.select</s5l>
+       / <s5l class="select-link" (click)="unselectAll()">management.message.flash.lightbox.deselect</s5l></p>
       <div style="overflow: auto; max-height: 50%" class="has-bottom-margin-40">
         <ode-item-tree
           [items]="getItems()"
