@@ -44,7 +44,7 @@ export class StructureInformationsService
   duplicate(structure: StructureModel, options: DuplicationSettings): Observable<StructureModel[]>
   {
     let params = {
-      list: options.structures.map(struc => struc.id),
+      list: options.structures.map(struc => struc.UAI),
       options: {
         setApplications: options.applications,
         setWidgets: options.widgets,
