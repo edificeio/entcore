@@ -78,8 +78,7 @@ public interface SchoolService {
 
 	void getClasses(String structureId, Handler<Either<String, JsonObject>> handler);
 
-	void massDistributionEducationMobileApp(JsonArray data, Boolean setDistribution, Boolean setEducation, Boolean setHasApp,
-											Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
+	void massDistributionEducationMobileApp(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
 
 	void resetName(String string, Handler<Either<String, JsonObject>> defaultResponseHandler);
 
@@ -89,7 +88,7 @@ public interface SchoolService {
 
 	void getStructureNameByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
-	void duplicateStructureSettings(String structureId, JsonArray targetStructureIds, JsonObject options,
+	void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 									Handler<Either<String, JsonObject>> handler);
 
 }
