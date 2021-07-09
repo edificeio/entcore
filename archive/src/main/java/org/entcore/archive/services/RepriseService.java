@@ -17,6 +17,6 @@ public interface RepriseService {
 	public EventStore eventStore = EventStoreFactory.getFactory().getEventStore(RepriseService.class.getSimpleName());
 
     void launchExportForUsersFromOldPlatform(boolean relativePersonnelFirst);
-    void launchImportForUsersFromOldPlatform();
+    void launchImportForUsersFromOldPlatform(boolean relativePersonnelFirst);
     void imported(String importId, String app, JsonObject rapport);
 }

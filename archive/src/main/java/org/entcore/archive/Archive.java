@@ -117,7 +117,7 @@ public class Archive extends BaseServer {
 		if (repriseImportCron != null) {
 			try {
 				new CronTrigger(vertx, repriseImportCron).schedule(event -> {
-					repriseService.launchImportForUsersFromOldPlatform();
+					repriseService.launchImportForUsersFromOldPlatform(relativePersonnelFirst.booleanValue());
 				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);

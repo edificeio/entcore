@@ -1,9 +1,6 @@
 package org.entcore.archive.services.impl;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.buffer.Buffer;
@@ -21,8 +18,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import fr.wseduc.bus.BusAddress;
 import org.entcore.archive.services.ImportService;
+import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class DefaultRepriseService implements RepriseService {
     private final JsonObject reprise;
     private final JsonObject archiveConfig;
     private final ImportService importService;
+    private OffsetTime limitHour;
 
     public DefaultRepriseService(Vertx vertx, Storage storage, JsonObject reprise, JsonObject archiveConfig, ImportService importService) {
         this.eb = vertx.eventBus();
@@ -49,6 +51,12 @@ public class DefaultRepriseService implements RepriseService {
         this.reprise = reprise;
         this.archiveConfig = archiveConfig;
         this.importService = importService;
+        final String limitHour = reprise.getString("limit-hour");
+        try {
+            this.limitHour = OffsetTime.parse(limitHour);
+        } catch (DateTimeParseException dtpe) {
+            log.error("[Reprise] Error parsing limit-hour: " + dtpe.toString());
+        }
     }
 
     @Override
@@ -106,7 +114,10 @@ public class DefaultRepriseService implements RepriseService {
         }).onComplete(asyncUsers -> {
             if (asyncUsers.succeeded()) {
                 JsonArray users = asyncUsers.result();
+                List<Future> list = new ArrayList<>();
                 for (int i = 0; i < users.size(); i++) {
+                    Promise<Void> promise1 = Promise.promise();
+                    list.add(promise1.future());
                     final JsonObject user = users.getJsonObject(i);
                     final String userId = user.getString("_old_id");
                     final String login = user.getString("login");
@@ -131,17 +142,25 @@ public class DefaultRepriseService implements RepriseService {
                         eb.request(FEEDER_BUS_ADDRESS, action3, handlerToAsyncHandler(message -> {
                             JsonObject body = message.body();
                             if (!"ok".equals(body.getString("status"))) {
-                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
+                                final String errorMessage = body.getString("message");
+                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
                                 eventStore.createAndStoreEvent(RepriseEvent.EXPORT_ERROR.name(),
 								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
+                                promise1.fail(errorMessage);
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
                                 eventStore.createAndStoreEvent(RepriseEvent.EXPORT_OK.name(),
 								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
+                                promise1.complete();
                             }
                         }));
                     });
                 }
+                CompositeFuture.join(list).onComplete(onComplete -> {
+                    if (limitHour != null && OffsetTime.now().isBefore(limitHour)) {
+                        launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+                    }
+                });
             } else {
                 log.error("[Reprise] Error on export task: " + asyncUsers.cause().toString());
             }
@@ -213,8 +232,11 @@ public class DefaultRepriseService implements RepriseService {
     }
 
     @Override
-    public void launchImportForUsersFromOldPlatform() {
+    public void launchImportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
         final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED);
+        if (relativePersonnelFirst) {
+            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
+        }
         final JsonObject keys = new JsonObject().put("login", 1).put(UserDataSync.NEW_ID_FIELD, 1).put(UserDataSync.EXPORT_ID_FIELD, 1);
         final JsonObject sort = new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1);
         final Integer limit = this.reprise.getInteger("limit", 1);
@@ -229,7 +251,13 @@ public class DefaultRepriseService implements RepriseService {
         eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
-                promise.complete(body.getJsonArray("results"));
+                JsonArray users = body.getJsonArray("results");
+                if (users.isEmpty() && relativePersonnelFirst) {
+                    // There are no more teachers and relatives to export, we relaunch it for other profiles
+                    launchImportForUsersFromOldPlatform(false);
+                } else {
+                    promise.complete(users);
+                }
             } else {
                 promise.fail(body.getString("message"));
             }
@@ -259,7 +287,10 @@ public class DefaultRepriseService implements RepriseService {
         }).onComplete(asyncUsers -> {
             if (asyncUsers.succeeded()) {
                 JsonArray users = asyncUsers.result();
+                List<Future> list = new ArrayList<>();
                 for (int i = 0; i < users.size(); i++) {
+                    final Promise<Void> promise1 = Promise.promise();
+                    list.add(promise1.future());
                     final JsonObject user = users.getJsonObject(i);
                     final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
                     final String login = user.getString("login");
@@ -291,9 +322,11 @@ public class DefaultRepriseService implements RepriseService {
                         eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
                             JsonObject body = message2.body();
                             if (!"ok".equals(body.getString("status"))) {
-                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + body.getString("message"));
+                                final String errorMessage = body.getString("message");
+                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
                                 eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
 								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
+                                promise1.fail(errorMessage);
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
 
@@ -303,12 +336,18 @@ public class DefaultRepriseService implements RepriseService {
 
                                 eventStore.createAndStoreEvent(RepriseEvent.IMPORT_OK.name(),
 								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
+                                promise1.complete();
                             }
                         }));
                         consumer.unregister();
                     };
                     consumer.handler(importHandler);
                 }
+                CompositeFuture.join(list).onComplete(onComplete -> {
+                    if (limitHour != null && OffsetTime.now().isBefore(limitHour)) {
+                        launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+                    }
+                });
             } else {
                 log.error("[Reprise] Error on import task: " + asyncUsers.cause().toString());
             }
