@@ -191,7 +191,6 @@ public class Structure {
 					);
 			getTransaction().add(query, params);
 		}
-		this.createHeadTeacherGroupIfAbsent(classExternalId, name);
 	}
 
 	public void updateClassName(String classExternalId, String name) {
