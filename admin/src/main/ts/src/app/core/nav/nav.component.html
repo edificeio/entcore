@@ -71,12 +71,20 @@
                       [attr.placeholder]="'search.structure' | translate">
         </ode-search-input>
       </div>
+
+      <ng-template #customItemTreeTemplate let-structure="$implicit">
+         <span>
+            {{structure.name}}
+            <span *ngIf="structure.UAI" class="is-text-disabled">– {{structure.UAI}}</span>
+         </span>
+      </ng-template>
+
       <ode-item-tree
         [items]="structures"
         order="name"
-        display="name"
+        [displayTemplate]="customItemTreeTemplate"
         [flatten]="structureFilter && structureFilter.trim() ? ['children'] : []"
-        [filter]="{ name : structureFilter?.trim() }"
+        [filter]="structureFilterFunction"
         (onSelect)="currentStructure = $event; !currentStructure.children && openside = false;"
         [lastSelected]="currentStructure"></ode-item-tree>
     </ode-side-panel>
