@@ -756,10 +756,10 @@ public class StructureController extends BaseController {
 	public void duplicate(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		bodyToJson(request, body -> {
-			JsonArray structureIds = body.getJsonArray("list");
+			JsonArray targetUAIs = body.getJsonArray("list");
 			JsonObject options = body.getJsonObject("options");
 			JsonObject infos = body.getJsonObject("infos");
-			structureService.duplicateStructureSettings(structureId, structureIds, options, handler -> {
+			structureService.duplicateStructureSettings(structureId, targetUAIs, options, handler -> {
 				final JsonObject res = handler.isRight() ? handler.right().getValue() : new JsonObject();
 				UserUtils.getUserInfos(eb, request, user -> {
 					eb.request("directory", new JsonObject().put("action", "getUser").put("userId", user.getUserId()),
