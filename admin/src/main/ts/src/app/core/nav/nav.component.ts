@@ -1,10 +1,9 @@
-import { Component, ElementRef, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { Config } from '../resolvers/Config';
 import { globalStore } from '../store/global.store';
 import { StructureModel } from '../store/models/structure.model';
-
 
 @Component({
     selector: 'ode-app-nav',
@@ -25,6 +24,10 @@ export class NavComponent extends OdeComponent implements OnInit, OnDestroy {
     get currentStructure() { return this._currentStructure; }
     openside: boolean;
     structureFilter: string;
+    structureFilterFunction = (v: StructureModel) => {
+        const f = this.structureFilter && this.structureFilter.trim();
+        return !f || v.name.includes(f) || v.UAI && v.UAI.includes(f)
+    }
     structures: StructureModel[];
 
     @ViewChild('sidePanelOpener', { static: false }) sidePanelOpener: ElementRef;
