@@ -38,6 +38,16 @@
         },
         "structureId": {
             "type": "string"
+        },
+        "signature": {
+            "type": "string"
+        },
+        "signatureColor": {
+            "oneOf": [{
+                "type": "string"
+            }, {
+                "type": "null"
+            }]
         }
     },
     "required": [

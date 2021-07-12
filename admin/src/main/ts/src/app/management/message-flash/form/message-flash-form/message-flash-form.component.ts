@@ -77,6 +77,8 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 }
                 this.message.profiles = Object.assign([], this.originalMessage.profiles);
                 this.message.contents = JSON.parse(JSON.stringify(this.originalMessage.contents));
+                this.message.signature = this.originalMessage.signature;
+                this.message.signatureColor = this.originalMessage.signatureColor || '#ffffff';
                 MessageFlashService.getSubStructuresByMessageId(this.originalMessage.id)
                     .then(sdata => {
                         this.message.subStructures = sdata.map((item: any) => item.structure_id);
@@ -85,6 +87,8 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             }
             if (this.action === 'create') {
                 this.message.color = 'red';
+                this.message.signature = this.structure.name;
+                this.message.signatureColor = '#ffffff';
             }
             this.changeDetector.detectChanges();
         }));

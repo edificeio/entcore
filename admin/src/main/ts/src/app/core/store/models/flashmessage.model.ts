@@ -16,6 +16,8 @@ export class FlashMessageModel extends Model<FlashMessageModel> {
     _customColor?: string;
     lastModifier?: string;
     structureId?: string;
+    signature?: string;
+    signatureColor?: string;
 
     subStructures?: string[];
 

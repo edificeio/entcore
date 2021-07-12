@@ -68,6 +68,16 @@
         <i class="fa fa-exclamation-circle"></i>
         <s5l>management.message.flash.lightbox.warning.notification</s5l>
       </div>
+
+      <ode-form-field label="management.message.flash.signature">
+        <input type="text" [(ngModel)]="message.signature" class="is-flex-none">
+      </ode-form-field>
+
+      <ode-form-field label="management.message.flash.signature.color">
+        <span class="is-flex-none">
+          <input type="color" ng-model="message.signatureColor" [ngClass]="{ outlined: !!message.signatureColor }" [(ngModel)]="message.signatureColor">
+        </span>
+      </ode-form-field>
     </fieldset>
 
     <div class="has-top-margin-40" style="width: 100%; display : flex">
@@ -83,6 +93,8 @@
         [text]="message.contents[selectedLanguage]"
         [color]="message.color"
         [customColor]="message.customColor"
+        [signature]="message.signature"
+        [signatureColor]="message.signatureColor"
         style="width:50%;">
       </ode-message-flash-preview>
     </div>

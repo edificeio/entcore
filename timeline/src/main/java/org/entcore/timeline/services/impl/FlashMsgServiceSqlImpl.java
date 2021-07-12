@@ -138,7 +138,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 		} catch(Exception e) {
 			isADMLOfOneStructure = false;
 		}
-		String query = "SELECT id, contents, color, \"customColor\" FROM " + resourceTable + " m " +
+		String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
 			"WHERE contents -> '"+ lang +"' IS NOT NULL " +
 			"AND trim(contents ->> '"+ lang +"') <> '' " +
 			"AND (profiles ? '" + user.getType() + "' " +
