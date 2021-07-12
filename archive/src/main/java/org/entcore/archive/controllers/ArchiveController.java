@@ -141,7 +141,11 @@ public class ArchiveController extends BaseController {
 	public void export(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if(user != null) {
-				initExport(request, user.getLogin(), user.getUserId());
+				RequestUtils.bodyToJson(request, body -> {
+					body.put("userId", user.getUserId());
+					body.put("login", user.getLogin());
+					initExport(request, body);
+				});
 			}
 			else {
 				unauthorized(request);
@@ -150,52 +154,49 @@ public class ArchiveController extends BaseController {
 	}
 
 	@Post("/export/user")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void exportForUser(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, body -> {
-			final String login = body.getString("login");
-			final String userId = body.getString("id");
-			if (StringUtils.isEmpty(login) || StringUtils.isEmpty(userId)) {
-				renderError(request);
-				return;
-			}
-			initExport(request, login, userId);
+			JsonObject apps = getOrElse(getOrElse(this.config.getJsonObject("publicConf"), new JsonObject())
+					.getJsonObject("apps"), new JsonObject());
+			JsonArray appsAsJsonArray = new JsonArray(new ArrayList(apps.getMap().keySet()));
+			body.put("apps", appsAsJsonArray);
+			initExport(request, body);
 		});
 	}
 
-	private void initExport(final HttpServerRequest request, final String login, final String userId) {
-		request.bodyHandler(new Handler<Buffer>() {
-			@Override
-			public void handle(Buffer event) {
-				log.info("Début d'export par l'utilisateur " + login);
-				eb.send("entcore.export",
-						new JsonObject()
-								.put("action", "start")
-								.put("userId", userId)
-								.put("locale", I18n.acceptLanguage(request))
-								.put("apps", event.toJsonObject().getJsonArray("apps"))
-								.put("exportDocuments", event.toJsonObject().getBoolean("exportDocuments", true))
-								.put("exportSharedResources", event.toJsonObject().getBoolean("exportSharedResources", true))
-								.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
-						new Handler<AsyncResult<Message<JsonObject>>>() {
-							@Override
-							public void handle(AsyncResult<Message<JsonObject>> res) {
-								if(res.succeeded() == true) {
-									JsonObject msg = res.result().body();
-									if(msg.getString("status").equals("ok")) {
-										log.info("Fin d'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
-										renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
-									} else {
-										log.info("Echec de l'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
-										badRequest(request, msg.getString("message"));
-									}
-								} else {
-									log.info("Echec de l'export pour l'utilisateur " + login);
-									badRequest(request, res.cause().getMessage());
-								}
+	private void initExport(final HttpServerRequest request, final JsonObject body) {
+		final String login = body.getString("login");
+		final String userId = body.getString("userId");
+		log.info("Début d'export par l'utilisateur " + login);
+		eb.send("entcore.export",
+				new JsonObject()
+						.put("action", "start")
+						.put("userId", userId)
+						.put("locale", I18n.acceptLanguage(request))
+						.put("apps", body.getJsonArray("apps"))
+						.put("exportDocuments", body.getBoolean("exportDocuments", true))
+						.put("exportSharedResources", body.getBoolean("exportSharedResources", true))
+						.put("request", new JsonObject().put("headers", new JsonObject().put("Host", request.getHeader("Host")))),
+				new Handler<AsyncResult<Message<JsonObject>>>() {
+					@Override
+					public void handle(AsyncResult<Message<JsonObject>> res) {
+						if(res.succeeded() == true) {
+							JsonObject msg = res.result().body();
+							if(msg.getString("status").equals("ok")) {
+								log.info("Fin d'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
+								renderJson(request, new JsonObject().put("message", "export.in.progress").put("exportId", msg.getString("exportId")));
+							} else {
+								log.info("Echec de l'export pour l'utilisateur " + login + " exportId: " + msg.getString("exportId"));
+								badRequest(request, msg.getString("message"));
 							}
-						});
-			}
-		});
+						} else {
+							log.info("Echec de l'export pour l'utilisateur " + login);
+							badRequest(request, res.cause().getMessage());
+						}
+					}
+				});
 	}
 
 	@Get("/export/verify")

@@ -186,8 +186,13 @@ public class DefaultRepriseService implements RepriseService {
                 initExportPromise.fail(asyncResult.cause());
             } else {
                 HttpResponse<Buffer> httpResponse = asyncResult.result();
-                final String exportId = httpResponse.bodyAsJsonObject().getString("exportId");
-                initExportPromise.complete(exportId);
+                if (httpResponse.statusCode() == 200) {
+                    final String exportId = httpResponse.bodyAsJsonObject().getString("exportId");
+                    initExportPromise.complete(exportId);
+                }
+                else {
+                    initExportPromise.fail(httpResponse.statusMessage());
+                }
             }
         });
         initExportPromise.future().compose(exportId -> {
@@ -198,7 +203,12 @@ public class DefaultRepriseService implements RepriseService {
                 if (asyncResult.failed()) {
                     verifyExportPromise.fail(asyncResult.cause());
                 } else {
-                    verifyExportPromise.complete(exportId);
+                    HttpResponse<Buffer> httpResponse = asyncResult.result();
+                    if (httpResponse.statusCode() == 200) {
+                        verifyExportPromise.complete(exportId);
+                    } else {
+                        verifyExportPromise.fail(httpResponse.statusMessage());
+                    }
                 }
             });
             return verifyExportPromise.future();
@@ -210,16 +220,21 @@ public class DefaultRepriseService implements RepriseService {
                 if (asyncResult.failed()) {
                     downloadExportPromise.fail(asyncResult.cause());
                 } else {
-                    final Buffer archive = asyncResult.result().body();
-                    final String filename = exportId + ".zip";
-                    final String path = this.reprise.getString("path") + File.separator + filename;
-                    storage.writeBuffer(path, exportId, archive, "application/zip", filename, result -> {
-                        if ("ok".equals(result.getString("status"))) {
-                            downloadExportPromise.complete(exportId);
-                        } else {
-                            downloadExportPromise.fail(result.getString("message"));
-                        }
-                    });
+                    HttpResponse<Buffer> httpResponse = asyncResult.result();
+                    if (httpResponse.statusCode() == 200) {
+                        final Buffer archive = httpResponse.body();
+                        final String filename = exportId + ".zip";
+                        final String path = this.reprise.getString("path") + File.separator + filename;
+                        storage.writeBuffer(path, exportId, archive, "application/zip", filename, result -> {
+                            if ("ok".equals(result.getString("status"))) {
+                                downloadExportPromise.complete(exportId);
+                            } else {
+                                downloadExportPromise.fail(result.getString("message"));
+                            }
+                        });
+                    } else {
+                        downloadExportPromise.fail(httpResponse.statusMessage());
+                    }
                 }
             });
             return downloadExportPromise.future();
