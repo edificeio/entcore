@@ -62,7 +62,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
 		this.vertx = vertx;
-		log = new FeederLogger(e-> String.format("%s | prefix: %s", getTag(), academyPrefix));
+		log = new FeederLogger(e-> getTag(), e-> "academy: "+ academyPrefix);
 	}
 
 	protected String getTag(){
