@@ -114,6 +114,8 @@
     "management.message.flash.notification": "Notification",
     "management.message.flash.notification.email": "Notification mail",
     "management.message.flash.notification.mobile": "Notification mobile",
+    "management.message.flash.signature": "Signature",
+    "management.message.flash.signature.color": "Couleur Signature",
     "management.message.flash.chose.profiles": "Choisir un ou des profils",
     "management.message.flash.viewCount": "Nombre de vues",
     "management.message.flash.author": "Auteur",
