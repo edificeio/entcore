@@ -3,9 +3,17 @@
   <div class="twelve cell">
     <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
       <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
+      <div *ngIf="!!signature" style="font-style: italic;" [ngStyle]="{'color': signatureColor}">
+        <br />
+        {{ signature }}
+      </div>
     </div>
     <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
       <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
+      <div *ngIf="!!signature" style="font-style: italic;" [ngStyle]="{'color': signatureColor}">
+        <br />
+        {{ signature }}
+      </div>
     </div>
   </div>
 </article>

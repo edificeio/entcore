@@ -12,6 +12,8 @@ export class MessageFlashPreviewComponent extends OdeComponent implements OnInit
     @Input() text: string;
     @Input() color: string;
     @Input() customColor: string;
+    @Input() signature: string;
+    @Input() signatureColor: string;
 
     constructor(injector: Injector,
                 public domSanitizer: DomSanitizer) {

@@ -61,6 +61,8 @@ export class MessageFlashService {
                 color: message.color,
                 customColor: message.customColor,
                 structureId: message.structureId,
+                signature: message.signature,
+                signatureColor: message.signatureColor
             }).then( async (data) => {
                 response = await http.post(`timeline/flashmsg/${data.data.id}/substructures`,
                 {
@@ -86,6 +88,8 @@ export class MessageFlashService {
                 color: message.color,
                 customColor: message.customColor,
                 structureId: message.structureId,
+                signature: message.signature,
+                signatureColor: message.signatureColor
             });
             response2 = await http.post(`timeline/flashmsg/${message.id}/substructures`,
             {
