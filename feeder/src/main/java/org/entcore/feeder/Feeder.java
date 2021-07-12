@@ -648,7 +648,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private void validateAndImport(final Message<JsonObject> message, final Feed feed, final boolean preDelete,
 			final String structureExternalId, final String source) {
-		final FeederLogger logger = new FeederLogger(e -> String.format("Feeder.validateAndImport | preDelete: %s | source: %s | structure: %s", preDelete, source, structureExternalId));
+		final FeederLogger logger = new FeederLogger(e -> "Feeder.validateAndImport", e-> String.format("preDelete: %s | source: %s | structure: %s", preDelete, source, structureExternalId));
 		logger.info(e -> "START validation");
 		launchImportValidation(message, new Handler<Report>() {
 			@Override
@@ -707,7 +707,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 		final boolean notReverseFilesOrder = message.body().getBoolean("notReverseFilesOrder", false);
-		final FeederLogger logger = new FeederLogger(t -> String.format("Feeder.doImport | withPostImport: %s", executePostImport));
+		final FeederLogger logger = new FeederLogger(t -> "Feeder.doImport", t -> String.format("withPostImport: %s", executePostImport));
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
 			logger.info(t -> "START init import with path: "+importPath, true);

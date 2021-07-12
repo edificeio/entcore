@@ -816,7 +816,7 @@ public class Importer {
 	}
 
 	protected static FeederLogger logger(final String method, final String prefix){
-		return new FeederLogger(e -> String.format("%s | prefix: %s", method, prefix));
+		return new FeederLogger(e -> method, e-> "prefix: "+prefix);
 	}
 
 	public void applyRemoveRelativesFromStructure(String prefix, final Handler<Void> handler) {

@@ -52,7 +52,7 @@ public class AafFeeder implements Feed {
 		} else {
 			this.path = path;
 		}
-		log = new FeederLogger(e-> String.format("AAF2D | path: %s", path));
+		log = new FeederLogger(e-> "AAF2D", e -> "path: "+ path);
 	}
 
 	@Override
