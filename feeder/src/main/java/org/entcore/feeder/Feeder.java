@@ -368,6 +368,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "update-users-old-platform":
 				User.updateUsersFromOldPlatform(message);
 				break;
+			case "search-users-old-platform":
+				User.searchUserFromOldPlatform(vertx);
+				message.reply(new JsonObject().put("status", "ok"));
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}
