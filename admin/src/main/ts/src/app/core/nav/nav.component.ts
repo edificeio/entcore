@@ -25,8 +25,8 @@ export class NavComponent extends OdeComponent implements OnInit, OnDestroy {
     openside: boolean;
     structureFilter: string;
     structureFilterFunction = (v: StructureModel) => {
-        const f = this.structureFilter && this.structureFilter.trim();
-        return !f || v.name.includes(f) || v.UAI && v.UAI.includes(f)
+        const f = this.structureFilter && this.structureFilter.trim().toLocaleLowerCase();
+        return !f || v.name.toLocaleLowerCase().includes(f) || v.UAI && v.UAI.includes(f)
     }
     structures: StructureModel[];
 
