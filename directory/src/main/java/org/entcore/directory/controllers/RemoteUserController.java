@@ -27,9 +27,11 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.directory.services.RemoteUserService;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -44,6 +46,23 @@ public class RemoteUserController extends BaseController {
 		remoteUserService.oldPlatformsSync(request.params().get("level"), request.params().get("notLevel"),
 				request.params().get("profile"), request.params().get("structureId"), defaultResponseHandler(request));
 	}
+
+	@Put("/remote/user/search-old-platform")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void searchOldPlatform(HttpServerRequest request) {
+		final JsonObject action = new JsonObject().put("action", "search-users-old-platform");
+		eb.request("entcore.feeder", action, handlerToAsyncHandler(message -> {
+			JsonObject body = message.body();
+			if ("ok".equals(body.getString("status"))) {
+				request.response().setStatusCode(200).end();
+			} else {
+				renderError(request);
+			}
+		}));
+
+	}
+
 
 	public void setRemoteUserService(RemoteUserService remoteUserService) {
 		this.remoteUserService = remoteUserService;

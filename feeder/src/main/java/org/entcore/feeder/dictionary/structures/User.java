@@ -912,7 +912,8 @@ public class User {
 	{
 		JsonObject oldLogin = new JsonObject();
 		j.copy().fieldNames().forEach(s -> {
-			if (isEmpty(j.getString(s))) {
+			Object value = j.getValue(s);
+			if (value == null || isEmpty(value.toString())) {
 				j.remove(s);
 			} else if (("login".equals(s) || "loginAlias".equals(s)) &&
 					Validator.validLoginAlias(s, j.getString(s), "loginAlias", "fr", I18n.getInstance()) != null)
