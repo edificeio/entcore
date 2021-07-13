@@ -46,13 +46,13 @@
 
     <ode-form-field label="management.structure.informations.sourceType">
       <span>
-        <s5l>{{structHasAutomaticSource
-          ? 'management.structure.informations.sourceType.automatic'
-          : 'management.structure.informations.sourceType.manual'}}
-        </s5l>
-        <ode-message-sticker gravity="right" type="info" [messages]="[structHasAutomaticSource
-                ? 'management.structure.informations.sourceType.automatic.help'
-                : 'management.structure.informations.sourceType.manual.help']">
+        <s5l *ngIf="structure.isSourceAutomatic">management.structure.informations.sourceType.automatic</s5l>
+        <s5l *ngIf="!structure.isSourceAutomatic">management.structure.informations.sourceType.manual</s5l>
+        <ode-message-sticker *ngIf="structure.isSourceAutomatic"
+          gravity="right" type="info" messages="[management.structure.informations.sourceType.automatic.help]">
+        </ode-message-sticker>
+        <ode-message-sticker *ngIf="!structure.isSourceAutomatic"
+          gravity="right" type="info" messages="[management.structure.informations.sourceType.manual.help]">
         </ode-message-sticker>
       </span>
     </ode-form-field>
