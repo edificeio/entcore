@@ -25,8 +25,9 @@ export class NavComponent extends OdeComponent implements OnInit, OnDestroy {
     openside: boolean;
     structureFilter: string;
     structureFilterFunction = (v: StructureModel) => {
-        const f = this.structureFilter && this.structureFilter.trim().toLocaleLowerCase();
-        return !f || v.name.toLocaleLowerCase().includes(f) || v.UAI && v.UAI.includes(f)
+        const removeAccents = (str: string) => str.normalize("NFD").replace(/\p{Diacritic}/gu, '');
+        const f = this.structureFilter && removeAccents(this.structureFilter.trim().toLocaleLowerCase());
+        return !f || removeAccents(v.name.toLocaleLowerCase()).includes(f) || v.UAI && v.UAI.includes(f);
     }
     structures: StructureModel[];
 
