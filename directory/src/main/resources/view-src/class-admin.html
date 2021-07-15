@@ -21,17 +21,17 @@
 		
 		<div class="bottom-spacing-twice">
 			<i18n>classAdmin.structure.informations.sourceType</i18n>
-			<span>
-				<i18n ng-if="selectedSchoolSourceTypeIsAutomatic">classAdmin.structure.informations.sourceType.automatic</i18n>
-				<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic">classAdmin.structure.informations.sourceType.manual</i18n>
+			<span ng-if="selectedClass">
+				<i18n ng-if="selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.automatic</i18n>
+				<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.manual</i18n>
 				<span class="tipbox class-admin-tipbox">
 					<span>
 						<i class="help square-medium"></i>
 					</span>
 					<div class="tipbox-content">
 						<span class="small-text">
-							<i18n ng-if="selectedSchoolSourceTypeIsAutomatic">classAdmin.structure.informations.sourceType.automatic.help</i18n>
-							<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic">classAdmin.structure.informations.sourceType.manual.help</i18n>
+							<i18n ng-if="selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.automatic.help</i18n>
+							<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.manual.help</i18n>
 						</span>
 					</div>
 				</span>
