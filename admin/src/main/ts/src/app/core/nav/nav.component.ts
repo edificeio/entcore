@@ -1,6 +1,7 @@
 import { Component, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
+import { removeAccents } from 'ngx-ode-ui';
 import { Config } from '../resolvers/Config';
 import { globalStore } from '../store/global.store';
 import { StructureModel } from '../store/models/structure.model';
@@ -25,7 +26,6 @@ export class NavComponent extends OdeComponent implements OnInit, OnDestroy {
     openside: boolean;
     structureFilter: string;
     structureFilterFunction = (v: StructureModel) => {
-        const removeAccents = (str: string) => str.normalize("NFD").replace(/\p{Diacritic}/gu, '');
         const f = this.structureFilter && removeAccents(this.structureFilter.trim().toLocaleLowerCase());
         return !f || removeAccents(v.name.toLocaleLowerCase()).includes(f) || v.UAI && v.UAI.includes(f);
     }
