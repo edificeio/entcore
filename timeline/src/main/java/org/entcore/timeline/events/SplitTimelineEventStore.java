@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.webutils.Either;
@@ -37,7 +39,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
     private boolean combineResult;
     private final int maxRecipients;
     private final TimelineEventStore original;
-
+    public static Logger log = LoggerFactory.getLogger(SplitTimelineEventStore.class);
     public SplitTimelineEventStore(TimelineEventStore aStore, int maxRecipients) {
         this(aStore, maxRecipients, false);
     }
@@ -46,6 +48,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
         this.original = aStore;
         this.maxRecipients = maxRecipients;
         this.combineResult = combine;
+        log.info("using split timeline....");
     }
 
     private static class NotificationChunk {
