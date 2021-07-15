@@ -774,8 +774,10 @@ public class StructureController extends BaseController {
 										JsonObject params = new JsonObject()
 												.put("username", user.getUsername())
 												.put("structurename", infos.getString("structure"))
-												.put("targets", infos.getJsonArray("targets"))
-												.put("error", handler.isLeft() ? handler.left().getValue() : "");
+												.put("targets", infos.getJsonArray("targets"));
+										if (handler.isLeft()) {
+											params.put("error", handler.left().getValue());
+										}
 										processTemplate(request, "email/duplicate.html", params, template -> {
 											Handler<AsyncResult<Message<JsonObject>>> asyncHandler = handlerToAsyncHandler(event2 -> {
 												if (!"ok".equals(event2.body().getString("status"))) {
