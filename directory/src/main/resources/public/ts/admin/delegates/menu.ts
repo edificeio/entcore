@@ -10,6 +10,7 @@ export interface MenuDelegateScope extends EventDelegateScope {
     reloadClassroom(classroom: ClassRoom): void;
     selectedSchoolName(classroom: ClassRoom): string;
     selectedSchoolId(classroom: ClassRoom): string;
+    selectedSchoolSourceTypeIsAutomatic(classroom: ClassRoom): boolean;
     openClassList($event: any): void;
     closeClassList(): void;
     saveClassInfos(): void;
@@ -117,6 +118,10 @@ export function MenuDelegate($scope: MenuDelegateScope) {
     }
     $scope.saveClassInfos = function () {
         directoryService.saveClassInfos($scope.selectedClass);
+    }
+    $scope.selectedSchoolSourceTypeIsAutomatic = function (classroom) {
+        const school = selectedSchool(classroom);
+        return school.isSourceAutomatic;
     }
 
     $scope.belongsToMultipleSchools = function () {
