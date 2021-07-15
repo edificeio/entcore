@@ -19,6 +19,8 @@
 
 package org.entcore.timeline.controllers;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -73,6 +75,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class TimelineController extends BaseController {
+    public static Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
@@ -102,7 +105,6 @@ public class TimelineController extends BaseController {
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
-		store = new DefaultTimelineEventStore();
 		if(config.getBoolean("cache", false)){
 			final CacheService cacheService = CacheService.create(vertx, config);
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
