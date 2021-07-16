@@ -185,10 +185,10 @@ public class DefaultRepriseService implements RepriseService {
             } else {
                 log.error("[Reprise] Error on export task: " + asyncUsers.cause().toString());
             }
+            if (numberOfExports.get() < limit.intValue() && !hasLimitHourPassed()) {
+                launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+            }
         });
-        if (numberOfExports.get() < limit.intValue() && !hasLimitHourPassed()) {
-            launchExportForUsersFromOldPlatform(relativePersonnelFirst);
-        }
     }
 
     private Future<String> launchExportForUser(final String userId, final String login) {
@@ -302,7 +302,7 @@ public class DefaultRepriseService implements RepriseService {
                             launchImportForUsersFromOldPlatform(false);
                         }
                     } else {
-                        keepExporting.set(false);
+                        keepImporting.set(false);
                         log.info("[Reprise] Export task has terminated successfully");
                     }
                 } else {
@@ -394,10 +394,10 @@ public class DefaultRepriseService implements RepriseService {
             } else {
                 log.error("[Reprise] Error on import task: " + asyncUsers.cause().toString());
             }
+            if (numberOfImports.get() < limit.intValue() && !hasLimitHourPassed()) {
+                launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+            }
         });
-        if (numberOfImports.get() < limit.intValue() && !hasLimitHourPassed()) {
-            launchImportForUsersFromOldPlatform(relativePersonnelFirst);
-        }
     }
 
     @Override
