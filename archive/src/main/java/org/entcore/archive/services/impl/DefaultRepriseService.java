@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -43,6 +45,11 @@ public class DefaultRepriseService implements RepriseService {
     private final JsonObject archiveConfig;
     private final ImportService importService;
     private OffsetTime limitHour;
+    private final AtomicInteger numberOfExports;
+    private final AtomicBoolean keepExporting;
+    private final AtomicInteger numberOfImports;
+    private final AtomicBoolean keepImporting;
+    private final Integer limit;
 
     public DefaultRepriseService(Vertx vertx, Storage storage, JsonObject reprise, JsonObject archiveConfig, ImportService importService) {
         this.eb = vertx.eventBus();
@@ -59,10 +66,23 @@ public class DefaultRepriseService implements RepriseService {
                 log.error("[Reprise] Error parsing limit-hour: " + dtpe.toString());
             }
         }
+        numberOfExports = new AtomicInteger(0);
+        keepExporting = new AtomicBoolean(true);
+        numberOfImports = new AtomicInteger(0);
+        keepImporting = new AtomicBoolean(true);
+        limit = this.reprise.getInteger("limit", 1);
+    }
+
+    private boolean hasLimitHourPassed() {
+        return limitHour != null && OffsetTime.now().isAfter(limitHour);
     }
 
     @Override
     public void launchExportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
+        if (!keepExporting.get()) {
+            return;
+        }
+        numberOfExports.incrementAndGet();
         final Promise<JsonArray> promise = Promise.promise();
         final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED);
         if (relativePersonnelFirst) {
@@ -70,20 +90,26 @@ public class DefaultRepriseService implements RepriseService {
         }
         final JsonObject keys = new JsonObject().put("login", 1).put("_old_id", 1);
         final JsonObject sort = new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1).put("modified", 1);
-        final Integer limit = this.reprise.getInteger("limit", 1);
         final JsonObject action = new JsonObject()
                 .put("action", "find-users-old-platform")
                 .put("matcher", matcher)
                 .put("keys", keys)
                 .put("sort", sort)
-                .put("limit", limit);
+                .put("limit", 1);
         eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
                 JsonArray users = body.getJsonArray("results");
-                if (users.isEmpty() && relativePersonnelFirst) {
-                    // There are no more teachers and relatives to export, we relaunch it for other profiles
-                    launchExportForUsersFromOldPlatform(false);
+                if (users.isEmpty()) {
+                    if(relativePersonnelFirst) {
+                        // There are no more teachers and relatives to export, we relaunch it for other profiles
+                        if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                            launchExportForUsersFromOldPlatform(false);
+                        }
+                    } else {
+                        keepExporting.set(false);
+                        log.info("[Reprise] Export task has terminated successfully");
+                    }
                 } else {
                     promise.complete(users);
                 }
@@ -116,10 +142,7 @@ public class DefaultRepriseService implements RepriseService {
         }).onComplete(asyncUsers -> {
             if (asyncUsers.succeeded()) {
                 JsonArray users = asyncUsers.result();
-                List<Future> list = new ArrayList<>();
                 for (int i = 0; i < users.size(); i++) {
-                    Promise<Void> promise1 = Promise.promise();
-                    list.add(promise1.future());
                     final JsonObject user = users.getJsonObject(i);
                     final String userId = user.getString("_old_id");
                     final String login = user.getString("login");
@@ -148,25 +171,24 @@ public class DefaultRepriseService implements RepriseService {
                                 log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
                                 eventStore.createAndStoreEvent(RepriseEvent.EXPORT_ERROR.name(),
 								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
-                                promise1.fail(errorMessage);
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
                                 eventStore.createAndStoreEvent(RepriseEvent.EXPORT_OK.name(),
 								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
-                                promise1.complete();
+                            }
+                            if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                                launchExportForUsersFromOldPlatform(relativePersonnelFirst);
                             }
                         }));
                     });
                 }
-                CompositeFuture.join(list).onComplete(onComplete -> {
-                    if (limitHour != null && OffsetTime.now().isBefore(limitHour)) {
-                        launchExportForUsersFromOldPlatform(relativePersonnelFirst);
-                    }
-                });
             } else {
                 log.error("[Reprise] Error on export task: " + asyncUsers.cause().toString());
             }
         });
+        if (numberOfExports.get() < limit.intValue() && !hasLimitHourPassed()) {
+            launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+        }
     }
 
     private Future<String> launchExportForUser(final String userId, final String login) {
@@ -250,6 +272,10 @@ public class DefaultRepriseService implements RepriseService {
 
     @Override
     public void launchImportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
+        if (!keepImporting.get()) {
+            return;
+        }
+        numberOfImports.incrementAndGet();
         final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED);
         if (relativePersonnelFirst) {
             matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
@@ -262,16 +288,23 @@ public class DefaultRepriseService implements RepriseService {
                 .put("matcher", matcher)
                 .put("keys", keys)
                 .put("sort", sort)
-                .put("limit", limit);
+                .put("limit", 1);
 
         final Promise<JsonArray> promise = Promise.promise();
         eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
                 JsonArray users = body.getJsonArray("results");
-                if (users.isEmpty() && relativePersonnelFirst) {
-                    // There are no more teachers and relatives to export, we relaunch it for other profiles
-                    launchImportForUsersFromOldPlatform(false);
+                if (users.isEmpty()) {
+                    if(relativePersonnelFirst) {
+                        // There are no more teachers and relatives to import, we relaunch it for other profiles
+                        if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                            launchImportForUsersFromOldPlatform(false);
+                        }
+                    } else {
+                        keepExporting.set(false);
+                        log.info("[Reprise] Export task has terminated successfully");
+                    }
                 } else {
                     promise.complete(users);
                 }
@@ -304,10 +337,7 @@ public class DefaultRepriseService implements RepriseService {
         }).onComplete(asyncUsers -> {
             if (asyncUsers.succeeded()) {
                 JsonArray users = asyncUsers.result();
-                List<Future> list = new ArrayList<>();
                 for (int i = 0; i < users.size(); i++) {
-                    final Promise<Void> promise1 = Promise.promise();
-                    list.add(promise1.future());
                     final JsonObject user = users.getJsonObject(i);
                     final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
                     final String login = user.getString("login");
@@ -343,7 +373,6 @@ public class DefaultRepriseService implements RepriseService {
                                 log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
                                 eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
 								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
-                                promise1.fail(errorMessage);
                             } else {
                                 log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
 
@@ -353,22 +382,22 @@ public class DefaultRepriseService implements RepriseService {
 
                                 eventStore.createAndStoreEvent(RepriseEvent.IMPORT_OK.name(),
 								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
-                                promise1.complete();
+                            }
+                            if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                                launchImportForUsersFromOldPlatform(relativePersonnelFirst);
                             }
                         }));
                         consumer.unregister();
                     };
                     consumer.handler(importHandler);
                 }
-                CompositeFuture.join(list).onComplete(onComplete -> {
-                    if (limitHour != null && OffsetTime.now().isBefore(limitHour)) {
-                        launchImportForUsersFromOldPlatform(relativePersonnelFirst);
-                    }
-                });
             } else {
                 log.error("[Reprise] Error on import task: " + asyncUsers.cause().toString());
             }
         });
+        if (numberOfImports.get() < limit.intValue() && !hasLimitHourPassed()) {
+            launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+        }
     }
 
     @Override
