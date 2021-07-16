@@ -997,16 +997,16 @@ public class User {
 
 	}
 
-	public static void findUsersFromOldPlatform(final Message<JsonObject> message) {
+	public static void findAndModifyUserFromOldPlatform(final Message<JsonObject> message) {
 		final JsonObject matcher = message.body().getJsonObject("matcher");
+		final JsonObject update = message.body().getJsonObject("update");
 		final JsonObject sort = message.body().getJsonObject("sort");
 		final JsonObject keys = message.body().getJsonObject("keys");
-		final Integer limit = message.body().getInteger("limit");
 		// TO DO: ajouter une méthode dans le persisteur mongo qui prend la limit sans le skip ni le batchSize
-		MongoDb.getInstance().find(OLD_PLATFORM_USERS, matcher, sort, keys, -1, limit.intValue(), 2147483647, m -> {
+		MongoDb.getInstance().findAndModify(OLD_PLATFORM_USERS, matcher, update, sort, keys,  m -> {
 			if ("ok".equals(m.body().getString("status"))) {
-				final JsonArray res = m.body().getJsonArray("results");
-				message.reply(new JsonObject().put("results", res).put("status", "ok"));
+				final JsonObject res = m.body().getJsonObject("result");
+				message.reply(new JsonObject().put("result", res).put("status", "ok"));
 			} else {
 				final String errorMmessage = m.body().getString("message");
 				log.error("Error find user old platform : " + errorMmessage);

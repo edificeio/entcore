@@ -1,5 +1,6 @@
 package org.entcore.archive.services.impl;
 
+import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -83,24 +84,31 @@ public class DefaultRepriseService implements RepriseService {
             return;
         }
         numberOfExports.incrementAndGet();
-        final Promise<JsonArray> promise = Promise.promise();
+        final Promise<JsonObject> promise = Promise.promise();
         final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED);
         if (relativePersonnelFirst) {
             matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
         }
-        final JsonObject keys = new JsonObject().put("login", 1).put("_old_id", 1);
-        final JsonObject sort = new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1).put("modified", 1);
+        final JsonObject keys = new JsonObject()
+                .put("login", 1)
+                .put("_old_id", 1);
+        final JsonObject update = new JsonObject()
+                .put("$inc", new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1))
+                .put("$set", new JsonObject().put("modified", MongoDb.now()));
+        final JsonObject sort = new JsonObject()
+                .put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1)
+                .put("modified", 1);
         final JsonObject action = new JsonObject()
                 .put("action", "find-users-old-platform")
                 .put("matcher", matcher)
                 .put("keys", keys)
                 .put("sort", sort)
-                .put("limit", 1);
+                .put("update", update);
         eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
-                JsonArray users = body.getJsonArray("results");
-                if (users.isEmpty()) {
+                JsonObject user = body.getJsonObject("result");
+                if (user == null) {
                     if(relativePersonnelFirst) {
                         // There are no more teachers and relatives to export, we relaunch it for other profiles
                         if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
@@ -111,79 +119,54 @@ public class DefaultRepriseService implements RepriseService {
                         log.info("[Reprise] Export task has terminated successfully");
                     }
                 } else {
-                    promise.complete(users);
+                    promise.complete(user);
                 }
             } else {
                 promise.fail(body.getString("message"));
             }
         }));
-        promise.future().compose(users -> {
-            final Promise<JsonArray> incrementTryPromise = Promise.promise();
-            if (users.isEmpty()) {
-                incrementTryPromise.complete(users);
-            } else {
-                final List<String> userIds = users.stream().map(user -> ((JsonObject)user).getString("_old_id")).collect(Collectors.toList());
-                final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, new JsonObject().put("$in", userIds));
-                final JsonObject update = new JsonObject().put("$inc", new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1));
-                JsonObject action2 = new JsonObject()
-                        .put("action", "update-users-old-platform")
-                        .put("criteria", criteria)
-                        .put("update", update);
-                eb.request(FEEDER_BUS_ADDRESS, action2, handlerToAsyncHandler(message -> {
-                    JsonObject body = message.body();
-                    if ("ok".equals(body.getString("status"))) {
-                        incrementTryPromise.complete(users);
+        promise.future().onComplete(asyncUser -> {
+            if (asyncUser.succeeded()) {
+                JsonObject user = asyncUser.result();
+                final String userId = user.getString("_old_id");
+                final String login = user.getString("login");
+                log.info("[Reprise] Export for " + login + " (" + userId + ") has started");
+                Future<String> export = this.launchExportForUser(userId, login);
+                export.onComplete(asyncResult -> {
+                    final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
+                    final JsonObject set = new JsonObject();
+                    if (asyncResult.failed()) {
+                        set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_EXPORT);
+                        log.error("[Reprise] Export for " + login + " (" + userId + ") failed: " + asyncResult.cause().toString());
                     } else {
-                        incrementTryPromise.fail(body.getString("message"));
+                        final String exportId = asyncResult.result();
+                        set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED).put(UserDataSync.EXPORT_ID_FIELD, exportId);
+                        log.info("[Reprise] Export for " + login + " (" + userId + ") succeeded");
                     }
-                }));
-            }
-            return incrementTryPromise.future();
-        }).onComplete(asyncUsers -> {
-            if (asyncUsers.succeeded()) {
-                JsonArray users = asyncUsers.result();
-                for (int i = 0; i < users.size(); i++) {
-                    final JsonObject user = users.getJsonObject(i);
-                    final String userId = user.getString("_old_id");
-                    final String login = user.getString("login");
-                    log.info("[Reprise] Export for " + login + " (" + userId + ") has started");
-                    Future<String> export = this.launchExportForUser(userId, login);
-                    export.onComplete(asyncResult -> {
-                        final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
-                        final JsonObject set = new JsonObject();
-                        if (asyncResult.failed()) {
-                            set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_EXPORT);
-                            log.error("[Reprise] Export for " + login + " (" + userId + ") failed: " + asyncResult.cause().toString());
+                    final JsonObject update2 = new JsonObject().put("$set", set);
+                    JsonObject action3 = new JsonObject()
+                            .put("action", "update-users-old-platform")
+                            .put("criteria", criteria)
+                            .put("update", update2);
+                    eb.request(FEEDER_BUS_ADDRESS, action3, handlerToAsyncHandler(message -> {
+                        JsonObject body = message.body();
+                        if (!"ok".equals(body.getString("status"))) {
+                            final String errorMessage = body.getString("message");
+                            log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
+                            eventStore.createAndStoreEvent(RepriseEvent.EXPORT_ERROR.name(),
+                                    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
                         } else {
-                            final String exportId = asyncResult.result();
-                            set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED).put(UserDataSync.EXPORT_ID_FIELD, exportId);
-                            log.info("[Reprise] Export for " + login + " (" + userId + ") succeeded");
+                            log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+                            eventStore.createAndStoreEvent(RepriseEvent.EXPORT_OK.name(),
+                                    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
                         }
-                        final JsonObject update = new JsonObject().put("$set", set);
-                        JsonObject action3 = new JsonObject()
-                                .put("action", "update-users-old-platform")
-                                .put("criteria", criteria)
-                                .put("update", update);
-                        eb.request(FEEDER_BUS_ADDRESS, action3, handlerToAsyncHandler(message -> {
-                            JsonObject body = message.body();
-                            if (!"ok".equals(body.getString("status"))) {
-                                final String errorMessage = body.getString("message");
-                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
-                                eventStore.createAndStoreEvent(RepriseEvent.EXPORT_ERROR.name(),
-								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
-                            } else {
-                                log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
-                                eventStore.createAndStoreEvent(RepriseEvent.EXPORT_OK.name(),
-								    (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
-                            }
-                            if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
-                                launchExportForUsersFromOldPlatform(relativePersonnelFirst);
-                            }
-                        }));
-                    });
-                }
+                        if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                            launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+                        }
+                    }));
+                });
             } else {
-                log.error("[Reprise] Error on export task: " + asyncUsers.cause().toString());
+                log.error("[Reprise] Error on export task: " + asyncUser.cause().toString());
             }
             if (numberOfExports.get() < limit.intValue() && !hasLimitHourPassed()) {
                 launchExportForUsersFromOldPlatform(relativePersonnelFirst);
@@ -280,22 +263,29 @@ public class DefaultRepriseService implements RepriseService {
         if (relativePersonnelFirst) {
             matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
         }
-        final JsonObject keys = new JsonObject().put("login", 1).put(UserDataSync.NEW_ID_FIELD, 1).put(UserDataSync.EXPORT_ID_FIELD, 1);
-        final JsonObject sort = new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1);
-        final Integer limit = this.reprise.getInteger("limit", 1);
+        final JsonObject keys = new JsonObject()
+                .put("login", 1)
+                .put(UserDataSync.NEW_ID_FIELD, 1)
+                .put(UserDataSync.EXPORT_ID_FIELD, 1);
+        final JsonObject update = new JsonObject()
+                .put("$inc", new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1))
+                .put("$set", new JsonObject().put("modified", MongoDb.now()));
+        final JsonObject sort = new JsonObject()
+                .put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1)
+                .put("modified", 1);
         final JsonObject action = new JsonObject()
                 .put("action", "find-users-old-platform")
                 .put("matcher", matcher)
                 .put("keys", keys)
                 .put("sort", sort)
-                .put("limit", 1);
+                .put("update", update);
 
-        final Promise<JsonArray> promise = Promise.promise();
+        final Promise<JsonObject> promise = Promise.promise();
         eb.request(FEEDER_BUS_ADDRESS, action, handlerToAsyncHandler(message -> {
             JsonObject body = message.body();
             if ("ok".equals(body.getString("status"))) {
-                JsonArray users = body.getJsonArray("results");
-                if (users.isEmpty()) {
+                JsonObject user = body.getJsonObject("result");
+                if (user == null) {
                     if(relativePersonnelFirst) {
                         // There are no more teachers and relatives to import, we relaunch it for other profiles
                         if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
@@ -306,93 +296,68 @@ public class DefaultRepriseService implements RepriseService {
                         log.info("[Reprise] Export task has terminated successfully");
                     }
                 } else {
-                    promise.complete(users);
+                    promise.complete(user);
                 }
             } else {
                 promise.fail(body.getString("message"));
             }
         }));
-        promise.future().compose(users -> {
-            final Promise<JsonArray> incrementTryPromise = Promise.promise();
-            if (users.isEmpty()) {
-                incrementTryPromise.complete(users);
-            } else {
-                final List<String> userIds = users.stream().map(user -> ((JsonObject)user).getString(UserDataSync.NEW_ID_FIELD)).collect(Collectors.toList());
-                final JsonObject criteria = new JsonObject().put(UserDataSync.NEW_ID_FIELD, new JsonObject().put("$in", userIds));
-                final JsonObject update = new JsonObject().put("$inc", new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1));
-                JsonObject action2 = new JsonObject()
-                        .put("action", "update-users-old-platform")
-                        .put("criteria", criteria)
-                        .put("update", update);
-                eb.request(FEEDER_BUS_ADDRESS, action2, handlerToAsyncHandler(message -> {
-                    JsonObject body = message.body();
-                    if ("ok".equals(body.getString("status"))) {
-                        incrementTryPromise.complete(users);
-                    } else {
-                        incrementTryPromise.fail(body.getString("message"));
-                    }
-                }));
-            }
-            return incrementTryPromise.future();
-        }).onComplete(asyncUsers -> {
-            if (asyncUsers.succeeded()) {
-                JsonArray users = asyncUsers.result();
-                for (int i = 0; i < users.size(); i++) {
-                    final JsonObject user = users.getJsonObject(i);
-                    final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
-                    final String login = user.getString("login");
-                    final String exportId = user.getString(UserDataSync.EXPORT_ID_FIELD);
-                    importService.importFromFile(exportId, userId, login, login, reprise.getString("locale", "fr"), archiveConfig.getString("host"), archiveConfig);
+        promise.future().onComplete(asyncUser -> {
+            if (asyncUser.succeeded()) {
+                JsonObject user = asyncUser.result();
+                final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
+                final String login = user.getString("login");
+                final String exportId = user.getString(UserDataSync.EXPORT_ID_FIELD);
+                importService.importFromFile(exportId, userId, login, login, reprise.getString("locale", "fr"), archiveConfig.getString("host"), archiveConfig);
 
-                    final String address = importService.getImportBusAddress(exportId);
-                    final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+                final String address = importService.getImportBusAddress(exportId);
+                final MessageConsumer<JsonObject> consumer = eb.consumer(address);
 
-                    final Handler<Message<JsonObject>> importHandler = event ->
-                    {
-                        JsonObject update = new JsonObject();
-                        JsonObject action2 = new JsonObject()
+                final Handler<Message<JsonObject>> importHandler = event ->
+                {
+                    JsonObject update2 = new JsonObject();
+                    JsonObject action2 = new JsonObject()
                             .put("action", "update-users-old-platform")
                             .put("criteria", new JsonObject()
-                                .put(UserDataSync.NEW_ID_FIELD, userId)
+                                    .put(UserDataSync.NEW_ID_FIELD, userId)
                             )
                             .put("update", new JsonObject()
-                                .put("$set", update)
+                                    .put("$set", update2)
                             );
 
-                        if ("ok".equals(event.body().getString("status"))) {
-                            event.reply(new JsonObject().put("status", "ok"));
-                            update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
+                    if ("ok".equals(event.body().getString("status"))) {
+                        event.reply(new JsonObject().put("status", "ok"));
+                        update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
+                    } else {
+                        event.reply(new JsonObject().put("status", "error"));
+                        update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
+                    }
+                    eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
+                        JsonObject body = message2.body();
+                        if (!"ok".equals(body.getString("status"))) {
+                            final String errorMessage = body.getString("message");
+                            log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
+                            eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
+                                    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
                         } else {
-                            event.reply(new JsonObject().put("status", "error"));
-                            update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
+                            log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+
+                            int nbResources = 0;
+                            for(Map.Entry<String, Object> e : event.body().getJsonObject("result").getMap().entrySet())
+                                nbResources += Integer.parseInt(((JsonObject)e.getValue()).getString("resourcesNumber", "0"));
+
+                            eventStore.createAndStoreEvent(RepriseEvent.IMPORT_OK.name(),
+                                    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
                         }
-                        eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
-                            JsonObject body = message2.body();
-                            if (!"ok".equals(body.getString("status"))) {
-                                final String errorMessage = body.getString("message");
-                                log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
-                                eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
-								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
-                            } else {
-                                log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
-
-                                int nbResources = 0;
-                                for(Map.Entry<String, Object> e : event.body().getJsonObject("result").getMap().entrySet())
-                                    nbResources += Integer.parseInt(((JsonObject)e.getValue()).getString("resourcesNumber", "0"));
-
-                                eventStore.createAndStoreEvent(RepriseEvent.IMPORT_OK.name(),
-								    (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
-                            }
-                            if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
-                                launchImportForUsersFromOldPlatform(relativePersonnelFirst);
-                            }
-                        }));
-                        consumer.unregister();
-                    };
-                    consumer.handler(importHandler);
-                }
+                        if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
+                            launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+                        }
+                    }));
+                    consumer.unregister();
+                };
+                consumer.handler(importHandler);
             } else {
-                log.error("[Reprise] Error on import task: " + asyncUsers.cause().toString());
+                log.error("[Reprise] Error on import task: " + asyncUser.cause().toString());
             }
             if (numberOfImports.get() < limit.intValue() && !hasLimitHourPassed()) {
                 launchImportForUsersFromOldPlatform(relativePersonnelFirst);
