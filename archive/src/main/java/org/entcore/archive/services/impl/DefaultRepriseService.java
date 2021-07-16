@@ -85,7 +85,9 @@ public class DefaultRepriseService implements RepriseService {
         }
         numberOfExports.incrementAndGet();
         final Promise<JsonObject> promise = Promise.promise();
-        final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED);
+        final JsonObject matcher = new JsonObject()
+                .put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED)
+                .put(UserDataSync.IS_EXPORTING_FIELD, new JsonObject().put("$ne", true));
         if (relativePersonnelFirst) {
             matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
         }
@@ -94,7 +96,9 @@ public class DefaultRepriseService implements RepriseService {
                 .put("_old_id", 1);
         final JsonObject update = new JsonObject()
                 .put("$inc", new JsonObject().put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1))
-                .put("$set", new JsonObject().put("modified", MongoDb.now()));
+                .put("$set", new JsonObject()
+                        .put("modified", MongoDb.now())
+                        .put(UserDataSync.IS_EXPORTING_FIELD, true));
         final JsonObject sort = new JsonObject()
                 .put(UserDataSync.EXPORT_ATTEMPTS_FIELD, 1)
                 .put("modified", 1);
@@ -143,7 +147,8 @@ public class DefaultRepriseService implements RepriseService {
                         set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED).put(UserDataSync.EXPORT_ID_FIELD, exportId);
                         log.info("[Reprise] Export for " + login + " (" + userId + ") succeeded");
                     }
-                    final JsonObject update2 = new JsonObject().put("$set", set);
+                    final JsonObject unset = new JsonObject().put(UserDataSync.IS_EXPORTING_FIELD, "");
+                    final JsonObject update2 = new JsonObject().put("$set", set).put("$unset", unset);
                     JsonObject action3 = new JsonObject()
                             .put("action", "update-users-old-platform")
                             .put("criteria", criteria)
@@ -259,7 +264,9 @@ public class DefaultRepriseService implements RepriseService {
             return;
         }
         numberOfImports.incrementAndGet();
-        final JsonObject matcher = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED);
+        final JsonObject matcher = new JsonObject()
+                .put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED)
+                .put(UserDataSync.IS_IMPORTING_FIELD, new JsonObject().put("$ne", true));
         if (relativePersonnelFirst) {
             matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
         }
@@ -269,7 +276,9 @@ public class DefaultRepriseService implements RepriseService {
                 .put(UserDataSync.EXPORT_ID_FIELD, 1);
         final JsonObject update = new JsonObject()
                 .put("$inc", new JsonObject().put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1))
-                .put("$set", new JsonObject().put("modified", MongoDb.now()));
+                .put("$set", new JsonObject()
+                        .put("modified", MongoDb.now())
+                        .put(UserDataSync.IS_IMPORTING_FIELD, true));
         final JsonObject sort = new JsonObject()
                 .put(UserDataSync.IMPORT_ATTEMPTS_FIELD, 1)
                 .put("modified", 1);
@@ -315,22 +324,23 @@ public class DefaultRepriseService implements RepriseService {
 
                 final Handler<Message<JsonObject>> importHandler = event ->
                 {
-                    JsonObject update2 = new JsonObject();
+                    JsonObject set = new JsonObject(), unset = new JsonObject();
                     JsonObject action2 = new JsonObject()
                             .put("action", "update-users-old-platform")
                             .put("criteria", new JsonObject()
                                     .put(UserDataSync.NEW_ID_FIELD, userId)
                             )
                             .put("update", new JsonObject()
-                                    .put("$set", update2)
+                                    .put("$set", set)
+                                    .put("$unset", unset)
                             );
-
+                    unset.put(UserDataSync.IS_IMPORTING_FIELD, "");
                     if ("ok".equals(event.body().getString("status"))) {
                         event.reply(new JsonObject().put("status", "ok"));
-                        update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
+                        set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
                     } else {
                         event.reply(new JsonObject().put("status", "error"));
-                        update.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
+                        set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
                     }
                     eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
                         JsonObject body = message2.body();
