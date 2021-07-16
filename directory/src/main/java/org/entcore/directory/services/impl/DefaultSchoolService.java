@@ -562,7 +562,7 @@ public class DefaultSchoolService implements SchoolService {
 		TransactionHelper helper = new TransactionHelper(neo, eventBus,true);
 		List<String> list = targetUAIs.getList();
 		List<Future> futureList = new ArrayList<>();
-		for (int i = 0; i < Math.min(list.size(), 10); i+=10) {
+		for (int i = 0; i < list.size(); i+=10) {
 			List<String> sublist = list.subList(i, Math.min((i+10), list.size()));
 			Promise<Void> promise = Promise.promise();
 			futureList.add(promise.future());
