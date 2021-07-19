@@ -41,7 +41,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
     private final TimelineEventStore original;
     public static Logger log = LoggerFactory.getLogger(SplitTimelineEventStore.class);
     public SplitTimelineEventStore(TimelineEventStore aStore, int maxRecipients) {
-        this(aStore, maxRecipients, false);
+        this(aStore, maxRecipients, true);
     }
 
     public SplitTimelineEventStore(TimelineEventStore aStore, int maxRecipients, boolean combine) {
