@@ -948,7 +948,8 @@ public class User {
 				"WHERE LENGTH(users) = 1 " +
 				"UNWIND users as u " +
 				"SET u.activationCode = null, " + Neo4jUtils.nodeSetPropertiesFromJson(
-						"u", j, "ine", "profile", "lastName", "firstName", UserDataSync.OLD_ID_FIELD) +
+						"u", j, "ine", "profile", "lastName", "firstName", UserDataSync.OLD_ID_FIELD,
+						UserDataSync.EXPORT_ATTEMPTS_FIELD, UserDataSync.IMPORT_ATTEMPTS_FIELD) +
 				"RETURN u.id as userId,  head(u.profiles) as profile, u.login AS login";
 		Neo4j.getInstance().execute(query, j, r -> {
 			if ("ok".equals(r.body().getString("status"))) {

@@ -79,7 +79,7 @@ public class DefaultRepriseService implements RepriseService {
     }
 
     @Override
-    public void launchExportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
+    public void launchExportForUsersFromOldPlatform(final boolean teacherPersonnelFirst) {
         if (!keepExporting.get()) {
             return;
         }
@@ -88,8 +88,8 @@ public class DefaultRepriseService implements RepriseService {
         final JsonObject matcher = new JsonObject()
                 .put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED)
                 .put(UserDataSync.IS_EXPORTING_FIELD, new JsonObject().put("$ne", true));
-        if (relativePersonnelFirst) {
-            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
+        if (teacherPersonnelFirst) {
+            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.PERSONNEL_PROFILE})));
         }
         final JsonObject keys = new JsonObject()
                 .put("login", 1)
@@ -113,7 +113,7 @@ public class DefaultRepriseService implements RepriseService {
             if ("ok".equals(body.getString("status"))) {
                 JsonObject user = body.getJsonObject("result");
                 if (user == null) {
-                    if(relativePersonnelFirst) {
+                    if(teacherPersonnelFirst) {
                         // There are no more teachers and relatives to export, we relaunch it for other profiles
                         if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
                             launchExportForUsersFromOldPlatform(false);
@@ -166,7 +166,7 @@ public class DefaultRepriseService implements RepriseService {
                                     (UserInfos) null, new JsonObject().put("user-old-id", userId).put("user-login", login));
                         }
                         if (numberOfExports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
-                            launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+                            launchExportForUsersFromOldPlatform(teacherPersonnelFirst);
                         }
                     }));
                 });
@@ -174,7 +174,7 @@ public class DefaultRepriseService implements RepriseService {
                 log.error("[Reprise] Error on export task: " + asyncUser.cause().toString());
             }
             if (numberOfExports.get() < limit.intValue() && !hasLimitHourPassed()) {
-                launchExportForUsersFromOldPlatform(relativePersonnelFirst);
+                launchExportForUsersFromOldPlatform(teacherPersonnelFirst);
             }
         });
     }
@@ -258,7 +258,7 @@ public class DefaultRepriseService implements RepriseService {
     }
 
     @Override
-    public void launchImportForUsersFromOldPlatform(final boolean relativePersonnelFirst) {
+    public void launchImportForUsersFromOldPlatform(final boolean teacherPersonnelFirst) {
         if (!keepImporting.get()) {
             return;
         }
@@ -266,8 +266,8 @@ public class DefaultRepriseService implements RepriseService {
         final JsonObject matcher = new JsonObject()
                 .put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED)
                 .put(UserDataSync.IS_IMPORTING_FIELD, new JsonObject().put("$ne", true));
-        if (relativePersonnelFirst) {
-            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.RELATIVE_PROFILE})));
+        if (teacherPersonnelFirst) {
+            matcher.put(UserDataSync.PROFILE_FIELD, new JsonObject().put("$in", Arrays.asList(new String[]{UserDataSync.TEACHER_PROFILE, UserDataSync.PERSONNEL_PROFILE})));
         }
         final JsonObject keys = new JsonObject()
                 .put("login", 1)
@@ -294,14 +294,14 @@ public class DefaultRepriseService implements RepriseService {
             if ("ok".equals(body.getString("status"))) {
                 JsonObject user = body.getJsonObject("result");
                 if (user == null) {
-                    if(relativePersonnelFirst) {
+                    if(teacherPersonnelFirst) {
                         // There are no more teachers and relatives to import, we relaunch it for other profiles
                         if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
                             launchImportForUsersFromOldPlatform(false);
                         }
                     } else {
                         keepImporting.set(false);
-                        log.info("[Reprise] Export task has terminated successfully");
+                        log.info("[Reprise] Import task has terminated successfully");
                     }
                 } else {
                     promise.complete(user);
@@ -361,7 +361,7 @@ public class DefaultRepriseService implements RepriseService {
                                     (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login).put("nb-resources", nbResources));
                         }
                         if (numberOfImports.decrementAndGet() < limit.intValue() && !hasLimitHourPassed()) {
-                            launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+                            launchImportForUsersFromOldPlatform(teacherPersonnelFirst);
                         }
                     }));
                     consumer.unregister();
@@ -372,7 +372,7 @@ public class DefaultRepriseService implements RepriseService {
                 log.error("[Reprise] Error on import task: " + asyncUser.cause().toString());
             }
             if (numberOfImports.get() < limit.intValue() && !hasLimitHourPassed()) {
-                launchImportForUsersFromOldPlatform(relativePersonnelFirst);
+                launchImportForUsersFromOldPlatform(teacherPersonnelFirst);
             }
         });
     }

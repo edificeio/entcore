@@ -34,7 +34,7 @@ public interface UserDataSync
     public final String IS_IMPORTING_FIELD = "_isImporting";
     public final String PROFILE_FIELD = "profile";
 
-    public final String RELATIVE_PROFILE = "Relative";
+    public final String PERSONNEL_PROFILE = "Personnel";
     public final String TEACHER_PROFILE = "Teacher";
 
     public enum SyncState
