@@ -102,12 +102,12 @@ public class Archive extends BaseServer {
 		RepriseController rc = new RepriseController(repriseService);
 		addController(rc);
 
-		Boolean relativePersonnelFirst = reprise.getBoolean("relative-personnel-first", false);
+		Boolean teacherPersonnelFirst = reprise.getBoolean("teacher-personnel-first", false);
 		String repriseExportCron = reprise.getString("export-cron");
 		if (repriseExportCron != null) {
 			try {
 				new CronTrigger(vertx, repriseExportCron).schedule(event -> {
-					repriseService.launchExportForUsersFromOldPlatform(relativePersonnelFirst.booleanValue());
+					repriseService.launchExportForUsersFromOldPlatform(teacherPersonnelFirst.booleanValue());
 				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
@@ -117,7 +117,7 @@ public class Archive extends BaseServer {
 		if (repriseImportCron != null) {
 			try {
 				new CronTrigger(vertx, repriseImportCron).schedule(event -> {
-					repriseService.launchImportForUsersFromOldPlatform(relativePersonnelFirst.booleanValue());
+					repriseService.launchImportForUsersFromOldPlatform(teacherPersonnelFirst.booleanValue());
 				});
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
