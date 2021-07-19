@@ -454,7 +454,15 @@ public class DefaultImportService implements ImportService {
                 if(either.isRight())
                 {
                     JsonObject apps = either.right().getValue().getJsonObject("apps");
-                    launchImport(userId, userLogin, userName, importId, locale, host, apps);
+                    if (apps.isEmpty()) {
+                        final String address = getImportBusAddress(importId);
+                        JsonObject jo = new JsonObject()
+                                .put("status", "ok")
+                                .put("result", new JsonObject());
+                        eb.send(address, jo);
+                    } else {
+                        launchImport(userId, userLogin, userName, importId, locale, host, apps);
+                    }
                 }
                 else
                 {

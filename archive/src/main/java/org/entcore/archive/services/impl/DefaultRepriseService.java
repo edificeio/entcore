@@ -233,9 +233,8 @@ public class DefaultRepriseService implements RepriseService {
                     HttpResponse<Buffer> httpResponse = asyncResult.result();
                     if (httpResponse.statusCode() == 200) {
                         final Buffer archive = httpResponse.body();
-                        final String filename = exportId + ".zip";
-                        final String path = this.reprise.getString("path") + File.separator + filename;
-                        storage.writeBuffer(path, exportId, archive, "application/zip", filename, result -> {
+                        final String path = this.reprise.getString("path") + File.separator + exportId;
+                        storage.writeBuffer(path, exportId, archive, "application/zip", exportId, result -> {
                             if ("ok".equals(result.getString("status"))) {
                                 downloadExportPromise.complete(exportId);
                             } else {
@@ -317,7 +316,7 @@ public class DefaultRepriseService implements RepriseService {
                 final String userId = user.getString(UserDataSync.NEW_ID_FIELD);
                 final String login = user.getString("login");
                 final String exportId = user.getString(UserDataSync.EXPORT_ID_FIELD);
-                importService.importFromFile(exportId, userId, login, login, reprise.getString("locale", "fr"), archiveConfig.getString("host"), archiveConfig);
+                log.info("[Reprise] Import for " + login + " (" + userId + ") has started");
 
                 final String address = importService.getImportBusAddress(exportId);
                 final MessageConsumer<JsonObject> consumer = eb.consumer(address);
@@ -338,19 +337,21 @@ public class DefaultRepriseService implements RepriseService {
                     if ("ok".equals(event.body().getString("status"))) {
                         event.reply(new JsonObject().put("status", "ok"));
                         set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.IMPORTED);
+                        log.info("[Reprise] Import for " + login + " (" + userId + ") succeeded");
                     } else {
                         event.reply(new JsonObject().put("status", "error"));
                         set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_IMPORT);
+                        log.error("[Reprise] Export for " + login + " (" + userId + ") failed");
                     }
                     eb.request("entcore.feeder", action2, handlerToAsyncHandler(message2 -> {
                         JsonObject body = message2.body();
                         if (!"ok".equals(body.getString("status"))) {
                             final String errorMessage = body.getString("message");
-                            log.error("[Reprise] Error updating " + login + " (" + userId + ") export status on \"oldplatformusers\":" + errorMessage);
+                            log.error("[Reprise] Error updating " + login + " (" + userId + ") import status on \"oldplatformusers\":" + errorMessage);
                             eventStore.createAndStoreEvent(RepriseEvent.IMPORT_ERROR.name(),
                                     (UserInfos) null, new JsonObject().put("user-new-id", userId).put("user-login", login));
                         } else {
-                            log.info("[Reprise] " + login + " (" + userId + ") export status has been updated on \"oldplatformusers\"");
+                            log.info("[Reprise] " + login + " (" + userId + ") import status has been updated on \"oldplatformusers\"");
 
                             int nbResources = 0;
                             for(Map.Entry<String, Object> e : event.body().getJsonObject("result").getMap().entrySet())
@@ -366,6 +367,7 @@ public class DefaultRepriseService implements RepriseService {
                     consumer.unregister();
                 };
                 consumer.handler(importHandler);
+                importService.importFromFile(exportId, userId, login, login, reprise.getString("locale", "fr"), archiveConfig.getString("host"), archiveConfig);
             } else {
                 log.error("[Reprise] Error on import task: " + asyncUser.cause().toString());
             }
