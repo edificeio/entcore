@@ -24,6 +24,7 @@ import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.folders.impl.FolderImporterZip;
 import org.entcore.common.http.request.ActionsUtils;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfGenerator;
 import org.entcore.common.share.impl.GenericShareService;
@@ -224,6 +225,16 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	private Handler<AsyncResult<JsonObject>> eventBusHandler(Message<JsonObject> message) {
+		return ar -> {
+			if (ar.failed()) {
+				message.reply(new JsonObject().put("status", "error").put("message", ar.cause().getMessage()));
+			} else {
+				message.reply(ar.result().put("status", "ok"));
+			}
+		};
+	}
+
 	private void addFolder(Message<JsonObject> message) {
 		JsonObject body = message.body();
 		body.remove("action");
@@ -237,26 +248,18 @@ public class WorkspaceController extends BaseController {
 			return;
 		}
 
-		Handler<AsyncResult<JsonObject>> handler = ar -> {
-			if (ar.failed()) {
-				message.reply(new JsonObject().put("status", "error").put("message", ar.cause().getMessage()));
-			} else {
-				message.reply(ar.result().put("status", "ok"));
-			}
-		};
-
 		UserInfos user = new UserInfos();
 		user.setUserId(ownerId);
 		user.setUsername(ownerName);
 		if (externalId != null && !externalId.trim().isEmpty()) {
-			workspaceService.createExternalFolder(message.body(), user, externalId, handler);
+			workspaceService.createExternalFolder(message.body(), user, externalId, eventBusHandler(message));
 			return;
 		}
 
 		if (parentFolderId != null && !parentFolderId.trim().isEmpty()) {
-			workspaceService.createFolder(parentFolderId, user, message.body(), handler);
+			workspaceService.createFolder(parentFolderId, user, message.body(), eventBusHandler(message));
 		} else {
-			workspaceService.createFolder(message.body(), user, handler);
+			workspaceService.createFolder(message.body(), user, eventBusHandler(message));
 		}
 	}
 
@@ -567,6 +570,27 @@ public class WorkspaceController extends BaseController {
 				});
 			} else {
 				unauthorized(request);
+			}
+		});
+	}
+
+	private void delete(Message<JsonObject> message) {
+		String id = message.body().getString("id");
+
+		if (!message.body().containsKey("userId") || message.body().getString("userId").trim().isEmpty()) {
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.parameters"));
+			return;
+		}
+
+		UserInfos user = new UserInfos();
+		user.setUserId(message.body().getString("userId"));
+		user.setGroupsIds(message.body().getJsonArray("groupId", new JsonArray()).getList());
+
+		workspaceService.delete(id, user, ar -> {
+			if (ar.failed()) {
+				message.reply(new JsonObject().put("status", "error").put("message", ar.cause().getMessage()));
+			} else {
+				message.reply(new JsonObject().put("status", "ok").put("result", ar.result()));
 			}
 		});
 	}
@@ -1039,6 +1063,40 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	private void list(Message<JsonObject> message) {
+		if (!message.body().containsKey("userId") || message.body().getString("userId").trim().isEmpty()) {
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.parameters"));
+			return;
+		}
+
+		UserInfos user = new UserInfos();
+		user.setUserId(message.body().getString("userId"));
+		user.setGroupsIds(message.body().getJsonArray("groupId", new JsonArray()).getList());
+
+		ElementQuery query = queryFromRequest(new JsonHttpServerRequest(message.body()), user);
+		query.setType(FolderManager.FILE_TYPE);
+		query.setProjection(ElementQuery.defaultProjection());
+		query.getProjection().add("comments");
+		query.getProjection().add("application");
+		query.getProjection().add("trasher");
+		query.getProjection().add("protected");
+		query.getProjection().add("ancestors");
+		query.getProjection().add("externalId");
+		query.getProjection().add("isShared");
+		boolean includeAll = message.body().getBoolean("includeall", true);
+		if (includeAll) {
+			query.setType(null);
+		}
+
+		workspaceService.findByQuery(query, user, ar -> {
+			if (ar.failed()) {
+				message.reply(new JsonObject().put("status", "error").put("message", ar.cause().getMessage()));
+			} else {
+				message.reply(new JsonObject().put("status", "ok").put("result", ar.result()));
+			}
+		});
+	}
+
 	@Get("/documents/:folder")
 	@SecuredAction("workspace.documents.list.by.folder")
 	public void listDocumentsByFolder(final HttpServerRequest request) {
@@ -1254,6 +1312,22 @@ public class WorkspaceController extends BaseController {
 				log.error("Unable to send timeline notification : missing name on resource " + id);
 			}
 		});
+	}
+
+	private void rename(Message<JsonObject> message) {
+		if (!message.body().containsKey("userId") || message.body().getString("userId").trim().isEmpty()) {
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.parameters"));
+			return;
+		}
+
+		String id = message.body().getString("id");
+		String name = message.body().getString("name");
+
+		UserInfos user = new UserInfos();
+		user.setUserId(message.body().getString("userId"));
+		user.setGroupsIds(message.body().getJsonArray("groupId", new JsonArray()).getList());
+
+		workspaceService.rename(id, name, user, eventBusHandler(message));
 	}
 
 	@Put("/rename/:id")
@@ -1703,6 +1777,15 @@ public class WorkspaceController extends BaseController {
 			break;
 		case "addFolder":
 			addFolder(message);
+			break;
+		case "delete":
+			delete(message);
+			break;
+		case "rename":
+			rename(message);
+			break;
+		case "list":
+			list(message);
 			break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
