@@ -224,6 +224,42 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	private void addFolder(Message<JsonObject> message) {
+		JsonObject body = message.body();
+		body.remove("action");
+		String name = body.getString("name");
+		String parentFolderId = body.getString("parentFolderId");
+		String externalId = body.getString("externalId");
+		String ownerId = body.getString("owner");
+		String ownerName = body.getString("ownerName");
+		if (name == null || name.trim().isEmpty() || ownerId == null || ownerId.trim().isEmpty() || ownerName == null || ownerName.trim().isEmpty()) {
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.attribute"));
+			return;
+		}
+
+		Handler<AsyncResult<JsonObject>> handler = ar -> {
+			if (ar.failed()) {
+				message.reply(new JsonObject().put("status", "error").put("message", ar.cause().getMessage()));
+			} else {
+				message.reply(ar.result().put("status", "ok"));
+			}
+		};
+
+		UserInfos user = new UserInfos();
+		user.setUserId(ownerId);
+		user.setUsername(ownerName);
+		if (externalId != null && !externalId.trim().isEmpty()) {
+			workspaceService.createExternalFolder(message.body(), user, externalId, handler);
+			return;
+		}
+
+		if (parentFolderId != null && !parentFolderId.trim().isEmpty()) {
+			workspaceService.createFolder(parentFolderId, user, message.body(), handler);
+		} else {
+			workspaceService.createFolder(message.body(), user, handler);
+		}
+	}
+
 	private float checkQuality(String quality) {
 		float q;
 		if (quality != null) {
@@ -1653,9 +1689,9 @@ public class WorkspaceController extends BaseController {
 		case "copyDocument":
 			copyDocumentFromBus(message);
 			break;
-    case "moveDocument":
-      moveDocumentFromBus(message);
-      break;
+		case "moveDocument":
+		  moveDocumentFromBus(message);
+		  break;
 		case "changeVisibility":
 			changeVisibility(message);
 			break;
@@ -1664,6 +1700,9 @@ public class WorkspaceController extends BaseController {
 			break;
 		case "createThumbnails":
 			createThumbnails(message);
+			break;
+		case "addFolder":
+			addFolder(message);
 			break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
