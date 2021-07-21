@@ -38,5 +38,7 @@
   "MilliwebRegisteredService.name" : "Milliweb",
   "MilliwebRegisteredService.description" : "Milliweb",
   "IjboxRegisteredService.name" : "IJBOX",
-  "IjboxRegisteredService.description" : "IJBOX"
+  "IjboxRegisteredService.description" : "IJBOX",
+  "PmbRegisteredService.name" : "PMB",
+  "PmbRegisteredService.description" : "PMB"
 }

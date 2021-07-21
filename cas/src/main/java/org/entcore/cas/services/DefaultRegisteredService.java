@@ -120,7 +120,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		}));
 	}
 
-	private void createStatsEvent(AuthCas authCas, JsonObject res, String service) {
+	void createStatsEvent(AuthCas authCas, JsonObject res, String service) {
 		final String userId = authCas.getUser();
 		final Optional<Mapping> mapping = foundMappingByService(authCas.getStructureIds(), service);
 		UserInfos user = new UserInfos();

@@ -48,5 +48,7 @@
   "MilliwebRegisteredService.name" : "Milliweb",
   "MilliwebRegisteredService.description" : "Service CAS spécifique <a href='https://milliweb.fr/' target='_blank'>Milliweb</a>, L'ÉDUCATION NUMÉRIQUE MOBILE.",
   "IjboxRegisteredService.name" : "IJBOX",
-  "IjboxRegisteredService.description" : "Service CAS 3.0 retournant le principalAttributeName et l'UAI de l'établissement auquel appartient l'utilisateur."
+  "IjboxRegisteredService.description" : "Service CAS 3.0 retournant le principalAttributeName et l'UAI de l'établissement auquel appartient l'utilisateur.",
+  "PmbRegisteredService.name" : "PMB",
+  "PmbRegisteredService.description" : "Service CAS spécifique pour Pmb retournant le principalAttributeName et les UAIs des établissements principaux (cités scolaires) auquel appartient l'utilisateur."
 }
