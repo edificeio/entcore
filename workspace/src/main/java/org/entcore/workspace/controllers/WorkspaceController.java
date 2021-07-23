@@ -1073,7 +1073,8 @@ public class WorkspaceController extends BaseController {
 		user.setUserId(message.body().getString("userId"));
 		user.setGroupsIds(message.body().getJsonArray("groupId", new JsonArray()).getList());
 
-		ElementQuery query = queryFromRequest(new JsonHttpServerRequest(message.body()), user);
+		JsonHttpServerRequest request = new JsonHttpServerRequest(new JsonObject().put("params", message.body()));
+		ElementQuery query = queryFromRequest(request, user);
 		query.setType(FolderManager.FILE_TYPE);
 		query.setProjection(ElementQuery.defaultProjection());
 		query.getProjection().add("comments");
