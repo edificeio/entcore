@@ -242,7 +242,7 @@ public class Structure {
 		if (isNotEmpty(label) && groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " : "WHERE s.timetable = s.source ") +
+					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '' OR s.timetable = 'NOP') " : "WHERE s.timetable = s.source ") +
 					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) " +
 					"SET c.source = coalesce({source}, s.source)";
 			JsonObject params = new JsonObject()
