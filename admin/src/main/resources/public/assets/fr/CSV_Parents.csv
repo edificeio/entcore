@@ -1,6 +1,9 @@
-externalId;PrÃ©nom*;Nom*;telephone;telephonetravail;email;adresse;cp;ville;pays;Childexternalid*;Childexternalid;Childexternalid;Childexternalid;Childexternalid
-CSV_Numero-RNE_R00005;AmÃ©lie;RAISON;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00005;;;;
-CSV_Numero-RNE_R00003;Nathanael;RAISON;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00005;;;;
-CSV_Numero-RNE_R00001;Marie;POULARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00002;;;;
-CSV_Numero-RNE_R00004;Jean-Pierre;PALARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00003;CSV_Numero-RNE_S00002;;;
-CSV_Numero-RNE_R00002;Bernadette;PALARD;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France;CSV_Numero-RNE_S00003;;;;
+Nom*;Prénom*;Adresse;Code postal;Ville;Pays;Courriel;Téléphone;Nom de l'élève;Prénom de l'élève;Classes de l'élève;Nom de l'élève;Prénom de l'élève;Classes de l'élève;Nom de l'élève;Prénom de l'élève;Classes de l'élève
+DUPUIS;Nathalie;;;;;;;DUPONT-DUPUIS;Lyvia;CE2 de Mme LAMBERT;;;;;;
+MOULIN;Valérie;;;;;;;MEUNIER;Alice;CE2 de Mme LAMBERT;MEUNIER;Antoine;CP de Mme BROSSARD;;;
+MEUNIER;Stéphane;;;;;;;MEUNIER;Alice;CE2 de Mme LAMBERT;MEUNIER;Antoine;CP de Mme BROSSARD;;;
+COLIN;Julie;;;;;;;COLIN;Léa;CP de Mme BROSSARD;COLIN;Zoé;PS de Carole;COLIN;Théo;CM2 de M. ARNOULD
+COLIN;Mathieu;;;;;;;COLIN;Léa;CP de Mme BROSSARD;COLIN;Zoé;PS de Carole;COLIN;Théo;CM2 de M. ARNOULD
+DUPONT;Julien;;;;;;;DUPONT-DUPUIS;Lyvia;CE2 de Mme LAMBERT;;;;;;
+LEGRAND;Marc;;;;;;;LEGRAND;Mathias;CM2 de M. ARNOULD;;;;;;
+BLANC-LEGRAND;Marion;;;;;;;LEGRAND;Mathias;CM2 de M. ARNOULD;;;;;;
