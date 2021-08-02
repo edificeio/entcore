@@ -1,5 +1,8 @@
-externalid;PrÃ©nom*;Nom*;Classe;Date de naissance*;telephone;telephonetravail;email;adresse;cp;ville;pays
-CSV_Numero-RNE_S00005;Pablo;RAISON;CSV1;13/08/2000;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
-CSV_Numero-RNE_S00002;HervÃ©;POULAD-MALIN;CSV2;02/01/2000;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
-CSV_Numero-RNE_S00003;NÃ©o;PALARD;CSV2;22/11/2001;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
-CSV_Numero-RNE_S00004;Malo;FORT;1COM1;28/09/2001;01 02 03 04 05;06 05 04 03 02;no-reply@entcore.org;21, Rue des Acacias;75017;PARIS;France
+Prénom*;Nom*;Date de naissance*;Classes*
+Léa;COLIN;13/08/2014;CP de Mme BROSSARD
+Théo;COLIN;02/01/2010;CM2 de M. ARNOULD
+Zoé;COLIN;22/11/2017;PS de Carole
+Lyvia;DUPONT-DUPUIS;28/09/2012;CE2 de Mme LAMBERT
+Alice;MEUNIER;03/11/2012;CE2 de Mme LAMBERT
+Antoine;MEUNIER;29/04/2014;CP de Mme BROSSARD
+Mathias;LEGRAND;17/08/2010;CM2 de M. ARNOULD
