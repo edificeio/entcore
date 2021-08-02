@@ -49,10 +49,10 @@
         <s5l *ngIf="structure.isSourceAutomatic">management.structure.informations.sourceType.automatic</s5l>
         <s5l *ngIf="!structure.isSourceAutomatic">management.structure.informations.sourceType.manual</s5l>
         <ode-message-sticker *ngIf="structure.isSourceAutomatic"
-          gravity="right" type="info" messages="[management.structure.informations.sourceType.automatic.help]">
+          gravity="right" type="info" [messages]="['management.structure.informations.sourceType.automatic.help']">
         </ode-message-sticker>
         <ode-message-sticker *ngIf="!structure.isSourceAutomatic"
-          gravity="right" type="info" messages="[management.structure.informations.sourceType.manual.help]">
+          gravity="right" type="info" [messages]="['management.structure.informations.sourceType.manual.help']">
         </ode-message-sticker>
       </span>
     </ode-form-field>
