@@ -19,12 +19,16 @@
 		<!--HEADER-->
 		<h1 data-reload class="flex-row"><i class="settings-class"></i> <span class="horizontal-spacing" translate content="classAdmin.title"></span></h1>
 		
-		<div class="bottom-spacing-twice">
-			<i18n>classAdmin.structure.informations.sourceType</i18n>
+		<div class="bottom-spacing-three horizontal-spacing">
+			<span class="indication italic-text">
+				<i18n>classAdmin.structure.informations.sourceType</i18n>
+			</span>
 			<span ng-if="selectedClass">
-				<i18n ng-if="selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.automatic</i18n>
-				<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.manual</i18n>
-				<span class="tipbox class-admin-tipbox">
+				<span class="indication italic-text">
+					<i18n ng-if="selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.automatic</i18n>
+					<i18n ng-if="!selectedSchoolSourceTypeIsAutomatic(selectedClass)">classAdmin.structure.informations.sourceType.manual</i18n>
+				</span>
+				<span class="tipbox class-admin-tipbox v-middle left-spacing-small">
 					<span>
 						<i class="help square-medium"></i>
 					</span>
