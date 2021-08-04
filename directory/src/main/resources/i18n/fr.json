@@ -153,7 +153,7 @@
     "classAdmin.structure.informations.sourceType.automatic": "Automatique (annuaire académique)",
     "classAdmin.structure.informations.sourceType.automatic.help": "Une source d'alimentation automatique signifie que les données sont transmises par votre académie. La vérification des comptes utilisateurs (ajout / mise à jour) doit donc se faire en priorité dans les logiciels académiques (ONDE / SIECLE / STSweb, ...).",
     "classAdmin.structure.informations.sourceType.manual": "Manuelle",
-    "classAdmin.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de compte à l'aide d'un fichier csv dans la section Import/export de la console d'administration.",
+    "classAdmin.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de comptes à l'aide d'un fichier CSV dans la section \"Ajouter des utilisateurs\". ",
     "directory": "Annuaire",
     "directory.Guest": "Invité",
     "directory.Personnel": "Personnel",
