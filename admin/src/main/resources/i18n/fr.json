@@ -86,7 +86,7 @@
     "management.structure.informations.sourceType.automatic": "Automatique (annuaire académique)",
     "management.structure.informations.sourceType.automatic.help": "Une source d'alimentation automatique signifie que les données sont transmises par votre académie. La vérification des comptes utilisateurs (ajout / mise à jour) doit donc se faire en priorité dans les logiciels académiques (SCONET / SIECLE / STSweb, ...).",
     "management.structure.informations.sourceType.manual": "Manuelle",
-    "management.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de compte à l'aide d'un fichier csv dans la section Import/export.",
+    "management.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de comptes à l'aide d'un fichier CSV dans la section \"Import/export\" de la console d'administration.",
 
     "management.message.flash": "Message Flash",
     "management.message.flash.edit": "Éditer un message flash",
