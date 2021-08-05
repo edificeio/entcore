@@ -35,6 +35,7 @@ import java.util.Set;
 
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL_PROFILE_EXTERNAL_ID;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
@@ -70,7 +71,21 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		String profile = detectProfile(object);
+		final String externalId = object.getString("externalId");
+		final JsonObject supportPers1D2D;
+		if (isNotEmpty(externalId) && importer.getToSupportPerseducnat1D2D().containsKey(externalId)) {
+			supportPers1D2D = importer.getToSupportPerseducnat1D2D().get(externalId);
+			log.info(x -> "Use 1D2D support for user : " + externalId);
+		} else {
+			supportPers1D2D = null;
+		}
+
+		final String profile;
+		if (supportPers1D2D != null) {
+			profile = "Teacher".equals(supportPers1D2D.getString("profile")) ? TEACHER_PROFILE_EXTERNAL_ID : PERSONNEL_PROFILE_EXTERNAL_ID;
+		} else {
+			profile = detectProfile(object);
+		}
 		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
@@ -87,6 +102,12 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 			for (Object o: functions) {
 				if (!(o instanceof String) || !o.toString().contains("$")) continue;
 				s.add(o.toString().substring(0, o.toString().indexOf('$')));
+			}
+			if (supportPers1D2D != null) {
+				final JsonArray structures2d = supportPers1D2D.getJsonArray("structuresExternalIds");
+				if (structures2d != null) {
+					structures2d.forEach(x -> s.add(x.toString()));
+				}
 			}
 			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
 		}
