@@ -29,6 +29,7 @@ import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,7 +39,6 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -64,6 +64,7 @@ public class Importer {
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
+	private ConcurrentMap<String, JsonObject> toSupportPerseducnat1D2D = new ConcurrentHashMap<>();
 	private Set<String> blockedIne;
 	private Report report;
 
@@ -86,7 +87,7 @@ public class Importer {
 	}
 
 	public void init(final Neo4j neo4j, final String source, String acceptLanguage, boolean blockCreateByIne,
-			final Handler<Message<JsonObject>> handler) {
+			boolean supportPersEducnat1D2D, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
@@ -108,8 +109,11 @@ public class Importer {
 					if (blockCreateByIne) {
 						futures.add(loadUsedIne());
 					}
+					if (supportPersEducnat1D2D && "AAF1D".equals(source)) {
+						futures.add(loadPersEducnat2D());
+					}
 					if (!futures.isEmpty()) {
-						CompositeFuture.all(futures).setHandler(ar -> {
+						CompositeFuture.all(futures).onComplete(ar -> {
 							if (handler != null) {
 								handler.handle(event);
 							}
@@ -122,6 +126,29 @@ public class Importer {
 				}
 			}
 		});
+	}
+
+	private Future<Void> loadPersEducnat2D() {
+		final Promise<Void> promise = Promise.promise();
+		final String query =
+			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(:ProfileGroup)<-[r:IN]-(u:User) " +
+			"WHERE u.source = 'AAF' and head(u.profiles) IN ['Personnel','Teacher'] and not(has(r.source)) " +
+			"RETURN DISTINCT u.externalId as externalId, u.source as source, head(u.profiles) as profile, " +
+			"COLLECT(distinct s.externalId) as structuresExternalIds";
+		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
+			final JsonArray res = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status")) && res != null) {
+				for (Object o : res) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject j = (JsonObject) o;
+					toSupportPerseducnat1D2D.putIfAbsent(j.getString("externalId"), j);
+				}
+				promise.complete();
+			} else {
+				promise.fail("Error when load perseducnat 2D");
+			}
+		});
+		return promise.future();
 	}
 
 	private Future<Void> loadFieldOfStudy() {
@@ -1027,6 +1054,10 @@ public class Importer {
 
 	public boolean blockedIne(JsonObject user) {
 		return blockedIne != null && user != null && blockedIne.contains(user.getString("ine"));
+	}
+
+	public ConcurrentMap<String, JsonObject> getToSupportPerseducnat1D2D() {
+		return toSupportPerseducnat1D2D;
 	}
 
 }
