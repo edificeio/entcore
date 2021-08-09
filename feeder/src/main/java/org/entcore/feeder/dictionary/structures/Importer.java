@@ -653,12 +653,12 @@ public class Importer {
 						}
 					}
 					String query =
-							"MATCH (g), (u:User { externalId : {userExternalId}}) " +
-							"WHERE (g:FunctionalGroup OR g:FunctionGroup) " +
-							"AND g.externalId IN {groups} " +
-							"AND NOT(HAS(u.mergedWith)) " +
-							"AND g.source = {source} " +
-							"MERGE u-[:IN]->g";
+							"MATCH (u:User { externalId: {userExternalId}}) " +
+							"WHERE NOT(HAS(u.mergedWith)) " +
+							"WITH u " +
+							"MATCH (g:Group) " +
+							"WHERE (g:FunctionalGroup OR g:FunctionGroup) AND g.externalId IN {groups} AND g.source = {source} " +
+							"MERGE (u)-[:IN]->(g) ";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
