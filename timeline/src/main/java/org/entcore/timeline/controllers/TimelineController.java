@@ -61,7 +61,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.timeline.services.TimelinePushNotifService;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
@@ -80,7 +79,6 @@ public class TimelineController extends BaseController {
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
-	private TimelinePushNotifService pushNotifService;
 	private Map<String, String> registeredNotifications;
 	private LocalMap<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n;
@@ -872,10 +870,6 @@ public class TimelineController extends BaseController {
 
 	public void setRegisteredNotifications(Map<String, String> registeredNotifications) {
 		this.registeredNotifications = registeredNotifications;
-	}
-
-	public void setPushNotifService(TimelinePushNotifService pushNotifService) {
-		this.pushNotifService = pushNotifService;
 	}
 
 	public void setNotificationHelper(NotificationHelper notificationHelper) {

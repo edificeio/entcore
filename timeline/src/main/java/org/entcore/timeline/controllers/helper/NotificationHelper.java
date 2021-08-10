@@ -32,13 +32,16 @@ import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
 import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+
+import java.util.List;
+
 import org.entcore.common.notification.NotificationUtils;
 
 
 public class NotificationHelper {
     private static final Logger log = LoggerFactory.getLogger(NotificationHelper.class);
     private static final String USERBOOK_ADDRESS = "userbook.preferences";
-    private TimelinePushNotifService pushNotifService;
+    private List<TimelinePushNotifService> pushNotifServices;
     private TimelineMailerService mailerService;
     private TimelineConfigService configService;
     private final EventBus eb;
@@ -72,11 +75,15 @@ public class NotificationHelper {
                             mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
                         }
 
-                        if(pushNotifService != null && json.containsKey("pushNotif") && notificationProperties.getBoolean("push-notif") &&
-                                !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction")) &&
-                                !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction")))
-
-                            pushNotifService.sendImmediateNotifs(notificationName, json, userList, notificationProperties);
+                        if(pushNotifServices != null && pushNotifServices.size() > 0
+                                && json.containsKey("pushNotif")
+                                && notificationProperties.getBoolean("push-notif")
+                                && !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction"))
+                                && !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction"))) {
+                            pushNotifServices.forEach( pushNotifService -> {
+                                pushNotifService.sendImmediateNotifs(notificationName, json, userList, notificationProperties);
+                            });
+                        }
                     }
                 });
             }
@@ -84,8 +91,8 @@ public class NotificationHelper {
     }
 
 
-    public void setPushNotifService(TimelinePushNotifService pushNotifService) {
-        this.pushNotifService = pushNotifService;
+    public void setPushNotifServices(List<TimelinePushNotifService> pushNotifServices) {
+        this.pushNotifServices = pushNotifServices;
     }
 
     public void setMailerService(TimelineMailerService mailerService) {

@@ -23,7 +23,9 @@ import fr.wseduc.cron.CronTrigger;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.vertx.core.shareddata.LocalMap;
@@ -32,12 +34,16 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.services.FlashMsgService;
+import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.timeline.services.impl.*;
 import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.common.notification.ws.OssFcm;
+
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
@@ -61,8 +67,6 @@ public class Timeline extends BaseServer {
 		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
 		notificationHelper.setMailerService(mailerService);
 
-		JsonObject pushNotif = config.getJsonObject("push-notif");
-
 		final TimelineController timelineController = new TimelineController();
 		timelineController.setConfigService(configService);
 		timelineController.setMailerService(mailerService);
@@ -70,21 +74,10 @@ public class Timeline extends BaseServer {
 		timelineController.setEventsI18n(eventsI18n);
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
 
-		if(pushNotif != null){
 
-			OAuth2Client googleOAuth2SSO = new OAuth2Client(URI.create(pushNotif.getString("uri")),
-					null, null, null,
-					pushNotif.getString("tokenUrn"), null, vertx,
-					pushNotif.getInteger("poolSize", 16), true);
-			OssFcm oss = new OssFcm(googleOAuth2SSO, pushNotif.getString("client_mail") , pushNotif.getString("scope"),
-					pushNotif.getString("aud"), pushNotif.getString("url"), pushNotif.getString("key"));
+		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(eventsI18n,configService);
+		notificationHelper.setPushNotifServices(pushNotifServices);
 
-			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
-			pushNotifService.setEventsI18n(eventsI18n);
-			pushNotifService.setConfigService(configService);
-			timelineController.setPushNotifService(pushNotifService);
-			notificationHelper.setPushNotifService(pushNotifService);
-		}
 
 		timelineController.setNotificationHelper(notificationHelper);
 
@@ -127,4 +120,88 @@ public class Timeline extends BaseServer {
 		}
 	}
 
+	/**
+	 * Read and apply the "push-notif" configuration.
+	 * It can be a single JsonObject, or a JsonArray of JsonObject.
+	 * @see pushNotifServiceFactory() below
+	 */
+	protected List<TimelinePushNotifService> startPushNotifServices(
+			final LocalMap<String,String> eventsI18n,
+			final TimelineConfigService configService
+		) {
+		List<TimelinePushNotifService> list = new ArrayList<TimelinePushNotifService>();
+		try { // reading a JsonArray
+			JsonArray pushNotifs = config.getJsonArray("push-notif");
+			if( pushNotifs != null ) {
+				pushNotifs.forEach( o -> {
+					if( o!=null && JsonObject.class.isAssignableFrom(o.getClass()) ) {
+						final JsonObject pushNotif = (JsonObject) o;
+						final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService);
+						if( pushNotifService != null ) {
+							list.add( pushNotifService );
+						}
+					}
+				});
+				return list;
+			}
+		} catch(ClassCastException e) {
+			// void
+		}
+
+		try { // reading a JsonObject
+			JsonObject pushNotif = config.getJsonObject("push-notif");
+			if(pushNotif != null){
+				final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService);
+				if( pushNotifService != null ) {
+					list.add( pushNotifService );
+				}
+			}
+		} catch(ClassCastException e) {
+		// void
+		}
+
+		return list;
+	}
+
+	/**
+	 * Instantiate a service from a "push-notif" configuration object, which looks like :
+	 * @param pushNotif
+	 * <code>
+	 *	{
+	 *		"uri": "https://accounts.google.com:443",
+	 *		"tokenUrn": "/o/oauth2/token",
+	 *		"scope": "https://www.googleapis.com/auth/firebase.messaging",
+	 *		"url": "https://fcm.googleapis.com/v1/projects/{{project_id}}/messages:send",
+	 *		"client_mail": {{client_mail}},
+	 *		"aud": "https://accounts.google.com/o/oauth2/token",
+	 *		"key": {{private_key}}
+	 *	}
+	 * </code>
+	 * @return a new service, or null when the parameter is not a valid configuration.
+	 */
+	protected TimelinePushNotifService pushNotifServiceFactory(
+			final JsonObject pushNotif,
+			final LocalMap<String,String> eventsI18n,
+			final TimelineConfigService configService
+		) {
+		try {
+			OAuth2Client googleOAuth2SSO = new OAuth2Client(URI.create(pushNotif.getString("uri")),
+					null, null, null,
+					pushNotif.getString("tokenUrn"), null, vertx,
+					pushNotif.getInteger("poolSize", 16), true);
+			OssFcm oss = new OssFcm(googleOAuth2SSO, pushNotif.getString("client_mail") , pushNotif.getString("scope"),
+					pushNotif.getString("aud"), pushNotif.getString("url"), pushNotif.getString("key"));
+
+			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
+			pushNotifService.setEventsI18n(eventsI18n);
+			pushNotifService.setConfigService(configService);
+
+			log.info("[timeline] will push-notif to "+ pushNotif.getString("url"));
+			return pushNotifService;
+		}
+		catch( Exception e ) {
+			log.error("[timeline] Invalid \"push-notif\" JSON configuration.", e);
+		}
+		return null;
+	}
 }
