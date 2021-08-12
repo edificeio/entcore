@@ -273,7 +273,6 @@ public class PersEducNat extends AbstractUser {
 						transactionHelper.add(q2, pdfg.copy().put("groups", fgm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
-				ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
 			}
 		}
 	}
