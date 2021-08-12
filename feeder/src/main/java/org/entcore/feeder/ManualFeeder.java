@@ -400,15 +400,17 @@ public class ManualFeeder extends BusModBase {
 	public static void applyRemoveUserFromStructure(String userId, String userExternalId,
 		String newStructureId, String newStructureExternalId, TransactionHelper tx)
 	{
+		boolean addNewStruct = newStructureId != null || newStructureExternalId != null;
 		JsonObject params = new JsonObject()
 				.put("structureId", newStructureId != null ? newStructureId : newStructureExternalId)
 				.put("userId", userId != null ? userId : userExternalId);
-		final String matchUser = "MATCH (u:User { " + (userId != null ? "id" : "externalId") + " : {userId}}) ";
-		final String matchStructure = newStructureId != null || newStructureExternalId != null
+		final String matchUser = "MATCH (u:User { " + (userId != null ? "id" : "externalId") + " : {userId}}) " +
+								(addNewStruct == false ? "WHERE HAS(u.removedFromStructures) AND u.removedFromStructures <> [] WITH u " : "");
+		final String matchStructure = addNewStruct == true
 		  ? "MATCH (s:Structure { " + (newStructureId != null ? "id" : "externalId") + ": {structureId} }) "
 			: "MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.removedFromStructures ";
-		final String addToRemoved = (newStructureId != null || newStructureExternalId != null)
+		final String addToRemoved = addNewStruct == true
 			? "WITH u, r, MAX(CASE WHEN type(r) = 'IN' AND coalesce(r.source, '') <> 'MANUAL' THEN s.externalId ELSE null END) AS sID " +
 			"SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(sID, '')] + coalesce(sID, []) "
 			: "";
