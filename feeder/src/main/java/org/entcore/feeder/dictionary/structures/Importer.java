@@ -724,7 +724,6 @@ public class Importer {
 						transactionHelper.add(query, p);
 					}
 				}
-				ManualFeeder.applyRemoveUserFromStructure(null, externalId, null, null, transactionHelper);
 			}
 		}
 	}
@@ -846,7 +845,7 @@ public class Importer {
 		return new FeederLogger(e -> method, e-> "prefix: "+prefix);
 	}
 
-	public void applyRemoveRelativesFromStructure(String prefix, final Handler<Void> handler) {
+	public void applyRemoveUsersFromStructure(String prefix, final Handler<Void> handler) {
 		final FeederLogger log = logger("applyRemoveRelativesFromStructure" ,prefix);
 		log.info(t -> "START to get relative removed from structure | source: "+currentSource, true);
 		JsonObject params = new JsonObject().put("currentSource", currentSource);
@@ -858,7 +857,7 @@ public class Importer {
 
 		final String query =
 				"MATCH (u:User) " +
-				"WHERE u.source = {currentSource} AND head(u.profiles) = 'Relative' AND HAS(u.removedFromStructures) " + filter +
+				"WHERE u.source = {currentSource} AND HAS(u.removedFromStructures) AND u.removedFromStructures <> [] " + filter +
 				"RETURN u.externalId as externalId";
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
