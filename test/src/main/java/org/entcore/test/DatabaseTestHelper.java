@@ -31,11 +31,16 @@ public class DatabaseTestHelper {
     }
 
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema) {
-        return initPostgreSQL(context, postgreSQLContainer, schema, 2000L);
+        return initPostgreSQL(context, postgreSQLContainer, schema, true);
     }
 
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
-                                long delay) {
+                                boolean loadScripts) {
+        return initPostgreSQL(context, postgreSQLContainer, schema, loadScripts, 2000L);
+    }
+
+    public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
+                                boolean loadScripts, long delay) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "sql.persistor")
                 .put("url", postgreSQLContainer.getJdbcUrl()).put("username", postgreSQLContainer.getUsername())
@@ -48,7 +53,9 @@ public class DatabaseTestHelper {
             if (ar.succeeded()) {
                 Sql sql = Sql.getInstance();
                 sql.init(vertx.eventBus(), "sql.persistor");
-                DB.loadScripts(schema, vertx, "sql");
+                if (loadScripts) {
+                    DB.loadScripts(schema, vertx, "sql");
+                }
                 vertx.setTimer(delay, t -> async.complete());
             } else {
                 context.fail();
