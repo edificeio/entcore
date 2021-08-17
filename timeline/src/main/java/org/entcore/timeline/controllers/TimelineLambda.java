@@ -70,7 +70,8 @@ public final class TimelineLambda {
 					timelineI18n = lazyEventsI18n.get(language);
 				}
 
-				String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), language);
+				// #46383, translations from the theme takes precedence over those from the domain
+				String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
 				if (translatedContents.equals(key)) {
 					translatedContents = timelineI18n.getString(key, key);
 				}
