@@ -250,14 +250,9 @@ public class PortalController extends BaseController {
 		if (isNotEmpty(overrideTheme)) {
 			return overrideTheme;
 		}
-		if (request instanceof SecureHttpServerRequest && ((SecureHttpServerRequest) request).getSession() != null) {
-			JsonObject cache = ((SecureHttpServerRequest) request).getSession().getJsonObject("cache");
-			if (cache != null && cache.getJsonObject("preferences") != null) {
-				final String theme = cache.getJsonObject("preferences").getString("theme");
-				if (isNotEmpty(theme)) {
-					return theme;
-				}
-			}
+		final String theme = I18n.getTheme(request);
+		if (isNotEmpty(theme)) {
+			return theme;
 		}
 		String skin = hostSkin.get(getHost(request));
 		return (skin != null && !skin.trim().isEmpty()) ? skin : defaultSkin;
