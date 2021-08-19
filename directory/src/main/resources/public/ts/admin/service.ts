@@ -199,7 +199,7 @@ export const directoryService = {
                 || testFullName.indexOf(searchTerm) !== -1 || testFullNameReversed.indexOf(searchTerm) !== -1;
         });
     },
-    async importFile(file: File, oType: UserTypes, clazz: ClassRoom): Promise<ClassRoom> {
+    async importFile(file: File, oType: UserTypes, clazz: ClassRoom): Promise<void> {
         const type = oType.toLowerCase()
         //
         const form = new FormData();
@@ -226,6 +226,7 @@ export const directoryService = {
                             notify.error(error);
                         }
                     }
+                    return Promise.reject( error );
                 }
             }
         }

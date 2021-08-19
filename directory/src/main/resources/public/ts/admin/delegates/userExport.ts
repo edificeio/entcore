@@ -1,5 +1,5 @@
 import { _, idiom as lang, notify } from 'entcore';
-import { EventDelegateScope } from "./events";
+import { EventDelegateScope, TRACK } from "./events";
 import { ClassRoom, UserTypes, User, School } from '../model';
 import { directoryService, ReportType } from '../service';
 
@@ -90,6 +90,33 @@ export function ExportDelegate($scope: ExportDelegateScope) {
             return -1 * res;
         }
         return res;
+    }
+    const trackExport = (type:ExportTypes) => {
+        if( $scope.userExport.onlySelected ) {
+            // Generate event for checked users (action comes from the toaster)
+            switch( $scope.userExport.type ) {
+                case ExportTypes.Detail: $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.TAILORED_DETAIL) ); break;
+                case ExportTypes.Simple: $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.TAILORED_SIMPLE) ); break;
+                case ExportTypes.CSV:    $scope.tracker.trackEvent( TRACK.event, TRACK.CSV_EXPORT.action, TRACK.name(TRACK.CSV_EXPORT.CONNECTION) ); break;
+                case ExportTypes.Mail:  // tracked elsewhere (userExportSend/userExportPrint)
+                default: break;
+            }
+        } else {
+            let name;
+            // Generate event for selected type (action comes from the top-level button)
+            switch( $scope.userExport.type ) {
+                case ExportTypes.Detail: name = TRACK.PUBLIPOSTAGE.BATCH_DETAIL; break;
+                case ExportTypes.Simple: name = TRACK.PUBLIPOSTAGE.BATCH_SIMPLE; break;
+                case ExportTypes.CSV:    name = TRACK.PUBLIPOSTAGE.BATCH_CSV; break;
+                case ExportTypes.Mail:  // tracked elsewhere (userExportSend)
+                default: break;
+            }
+            if( name ) {
+                for( const profile of $scope.userExport.profiles ) {
+                    $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(name, profile), _usersForMailing.filter(u=>u.type===profile).length );
+                }
+            }
+        }
     }
     const onSelectedType = () => {
         if ($scope.userExport.type == ExportTypes.Mail) {
@@ -251,6 +278,8 @@ export function ExportDelegate($scope: ExportDelegateScope) {
             return;
         }
         $scope.userExport.type = type;
+        // #47174, Track this event
+        trackExport(type);
         onSelectedType();
     }
     $scope.userExportCanSubmitProfile = () => {
@@ -261,10 +290,22 @@ export function ExportDelegate($scope: ExportDelegateScope) {
         next("admin/export/types");
     }
     $scope.userExportPrint = () => {
+        // #47174, Track this event
+        if( $scope.userExport.onlySelected ) {
+            $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.TAILORED_MAIL_PRINT) );
+        }
         printForUsersWithoutMail();
     }
     $scope.userExportSend = (confirm = false) => {
         if (confirm) {
+            // #47174, Track this event
+            if( $scope.userExport.onlySelected ) {
+                $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.TAILORED_MAIL_SEND) );
+            } else {
+                for( const profile of $scope.userExport.profiles ) {
+                    $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.BATCH_MAIL, profile), _usersWithMails.filter(u=>u.type===profile).length );
+                }
+            }
             sendForUsersWithMail();
             $scope.closeLightbox();
         } else {
@@ -323,6 +364,8 @@ export function ExportDelegate($scope: ExportDelegateScope) {
     $scope.printResetPasswordUsers = function() {
         $scope.userExport.type = ExportTypes.Simple;
         _usersForMailing = _selected;
+        // #47174, Track this event
+        $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.CODE_RENEW) );
         printForAllUsers();
         $scope.closeLightbox();
     }

@@ -1,4 +1,4 @@
-import { EventDelegateScope } from "./events";
+import { EventDelegateScope, TRACK } from "./events";
 import { User, UserTypes, Mood, ClassRoom, School } from "../model";
 import { notify, model } from "entcore";
 import { directoryService } from "../service";
@@ -32,7 +32,7 @@ export interface UserFindDelegateScope extends EventDelegateScope {
         selectedUserHavingClass: UserSelection[]
         selectedUsersWithRelatives: User[]
     }
-    userFindSelect(user: User): void;
+    userFindSelect(user: User, trackEvent?:boolean): void;
     userFindUnSelect(user: User): void;
     userFindSelectAll(): void;
     userFindUnSelectAll(): void;
@@ -210,7 +210,10 @@ export async function UserFindDelegate($scope: UserFindDelegateScope) {
         setUsers(filteredBySearchAndSelected, true);
     }
     $scope.isUserTypeSelected = (type) => $scope.userFindModel.typefilter[type].selected;
-    $scope.userFindSelect = (user: User) => {
+    $scope.userFindSelect = (user: User, trackEvent?:boolean) => {
+        // #47174, Track this event
+        if( trackEvent )
+            $scope.tracker.trackEvent( TRACK.event, TRACK.ClASS_ATTACHMENT.action, TRACK.name(TRACK.ClASS_ATTACHMENT.ADD_USER) );
         //add current user
         const clazzName = $scope.userFindModel.selectedClassName;
         const clazzId = $scope.userFindModel.selectedClassId;
@@ -235,6 +238,8 @@ export async function UserFindDelegate($scope: UserFindDelegateScope) {
         $scope.safeApply();
     }
     $scope.userFindSelectAll = () => {
+        // #47174, Track this event
+        $scope.tracker.trackEvent( TRACK.event, TRACK.ClASS_ATTACHMENT.action, TRACK.name(TRACK.ClASS_ATTACHMENT.ADD_ALL) );
         if (_typefilter.Student.selected)
             $scope.userFindModel.students.forEach(s => $scope.userFindSelect(s));
         if (_typefilter.Relative.selected)
@@ -252,6 +257,8 @@ export async function UserFindDelegate($scope: UserFindDelegateScope) {
     $scope.userFindCanSubmit = () => _selectedUsers.length > 0;
     $scope.userFindSubmit = () => {
         if (_lockSubmit) return;
+        // #47174, Track this event
+        $scope.tracker.trackEvent( TRACK.event, TRACK.ClASS_ATTACHMENT.action, TRACK.name(TRACK.ClASS_ATTACHMENT.ADD) );
         if (someSelectedUserHasClass()) {
             $scope.openLightbox("admin/find-users/confirm")
         } else {

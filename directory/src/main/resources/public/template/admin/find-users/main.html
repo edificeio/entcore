@@ -46,23 +46,23 @@
       <div class="class-admin__find-users--list">
         <!--Students-->
         <contact-chip ng-if="isUserTypeSelected('Student')" ng-model="user" class="block relative movable"
-          action="userFindSelect(user)" ng-repeat="user in userFindModel.students">
+          action="userFindSelect(user,true)" ng-repeat="user in userFindModel.students">
         </contact-chip>
         <!--Relatives-->
         <contact-chip ng-if="isUserTypeSelected('Relative')" ng-model="user" class="block relative movable"
-          action="userFindSelect(user)" ng-repeat="user in userFindModel.relatives">
+          action="userFindSelect(user,true)" ng-repeat="user in userFindModel.relatives">
         </contact-chip>
         <!--Personnels-->
         <contact-chip ng-if="isUserTypeSelected('Personnel')" ng-model="user" class="block relative movable"
-          action="userFindSelect(user)" ng-repeat="user in userFindModel.personnels">
+          action="userFindSelect(user,true)" ng-repeat="user in userFindModel.personnels">
         </contact-chip>
         <!--Teacher-->
         <contact-chip ng-if="isUserTypeSelected('Teacher')" ng-model="user" class="block relative movable"
-          action="userFindSelect(user)" ng-repeat="user in userFindModel.teachers">
+          action="userFindSelect(user,true)" ng-repeat="user in userFindModel.teachers">
         </contact-chip>
         <!--Guest-->
         <contact-chip ng-if="isUserTypeSelected('Guest')" ng-model="user" class="block relative movable"
-          action="userFindSelect(user)" ng-repeat="user in userFindModel.guests">
+          action="userFindSelect(user,true)" ng-repeat="user in userFindModel.guests">
         </contact-chip>
       </div>
     </div>

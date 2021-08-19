@@ -1,4 +1,4 @@
-import { EventDelegateScope } from "./events";
+import { EventDelegateScope, TRACK } from "./events";
 import { User, UserTypes, Mood, ClassRoom, School } from "../model";
 import { notify } from "entcore";
 import { directoryService } from "../service";
@@ -141,7 +141,9 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
             ids: [user.id],
             structureId: getSchool().id,
             type: "pdf"
-        })
+        });
+        // #47174, Track this event
+        $scope.tracker.trackEvent( TRACK.event, TRACK.PUBLIPOSTAGE.action, TRACK.name(TRACK.PUBLIPOSTAGE.DETAILED_PDF_ONE, user.type), 1 );
     }
     $scope.userInfoExportFamily = function (user) {
         const userIds = $scope.selectedUser.relatives.map(u => u.id);
@@ -149,7 +151,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
             ids: [...userIds, user.id],
             structureId: getSchool().id,
             type: "simplePdf"
-        })
+        });
     }
     let savingLogin = false;
     $scope.saveAndCloseLoginInput = async function () {
@@ -157,6 +159,8 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         try {
             savingLogin = true;
             if ($scope.selectedUser.login !== $scope.selectedUser.tempLoginAlias) {
+                // #47174, Track this event
+                $scope.tracker.trackEvent( TRACK.event, TRACK.AUTH_MODIFICATION.action, TRACK.name(TRACK.AUTH_MODIFICATION.ID_USER, $scope.selectedUser.type), 1 );
                 await directoryService.updateUserLoginAlias($scope.selectedUser);
                 $scope.showLoginInput = false;
                 if ($scope.selectedUser.tempLoginAlias.length === 0) {

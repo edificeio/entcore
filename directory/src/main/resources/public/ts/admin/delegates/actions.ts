@@ -1,5 +1,5 @@
-import { User, ClassRoom } from "../model";
-import { EventDelegateScope } from "./events";
+import { User, ClassRoom, UserTypes } from "../model";
+import { EventDelegateScope, TRACK } from "./events";
 import { template, notify, idiom } from "entcore";
 import { directoryService } from '../service';
 
@@ -13,12 +13,13 @@ export interface ActionsDelegateScope extends EventDelegateScope {
     canRemoveSelection(): boolean
     blockUsers(): void;
     unblockUsers(): void;
-    unlinkSelectedUsers(): void;
+    unlinkSelectedUsers(trackEvent?:boolean): void;
     unlinkTextAction(): string;
     deleteTextAction(): string;
     generateTemporaryPasswords(): void;
     resetPasswordUsers: User[];
     // from others
+    userList: { selectedTab: UserTypes, selectAll: boolean, search: string, list: User[] };
     selectedClass: ClassRoom;
     reloadClassroom(classroom: ClassRoom): void;
     openLightbox(name: string): void
@@ -56,6 +57,8 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         }).length == 0;
     }
     $scope.confirmRemove = function () {
+        // #47174, Track this event
+        $scope.tracker.trackEvent(TRACK.event, TRACK.USER_BLOCK.action, TRACK.name(TRACK.USER_BLOCK.SUPPRESS_SUPPRESS, $scope.userList.selectedTab), selection.length );
         directoryService.removeUsers(selection).then(() => {
             $scope.reloadClassroom($scope.selectedClass);
             // selection is emptied as all selected users were removed
@@ -65,6 +68,8 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         template.close('lightbox');
     }
     $scope.blockUsers = function () {
+        // #47174, Track this event
+        $scope.tracker.trackEvent(TRACK.event, TRACK.USER_BLOCK.action, TRACK.name(TRACK.USER_BLOCK.BLOCK) );
         directoryService.blockUsers(true, selection).then(() => {
             $scope.reloadClassroom($scope.selectedClass);
             selection.splice(0, selection.length);
@@ -88,8 +93,15 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         const text = idiom.translate("classAdmin.unlink.text") as string;
         return text.replace("[[selectionCount]]", selection.length + "").replace("[[currentClass]]", $scope.selectedClass.name);
     }
-    $scope.unlinkSelectedUsers = async () => {
+    $scope.unlinkSelectedUsers = async (trackEvent?:boolean) => {
         try {
+            // #47174, Track this event
+            trackEvent && $scope.tracker.trackEvent(
+                TRACK.event, 
+                TRACK.USER_BLOCK.action, 
+                TRACK.name(TRACK.USER_BLOCK.SUPPRESS_REMOVE_CLASS, $scope.userList.selectedTab),
+                selection.length
+            );
             const classid = $scope.selectedClass.id;
             const promise = directoryService.unlinkUsersFromClass(selection, classid, { withRelative: true });
             template.close('lightbox');
@@ -104,6 +116,8 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
     $scope.generateTemporaryPasswords = async function() {
 		let resetUsers = selection.filter((u) => !u.activationCode);
 		if (resetUsers.length != 0) {
+            // #47174, Track this event
+            $scope.tracker.trackEvent( TRACK.event, TRACK.AUTH_MODIFICATION.action, TRACK.name(TRACK.AUTH_MODIFICATION.CODE) );
 			let resetCodes = (await directoryService.generateResetCodes(resetUsers)).data;
             resetUsers.forEach(u => {
                 u.resetCode = resetCodes[u.id].code;
