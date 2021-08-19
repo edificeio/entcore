@@ -1,7 +1,7 @@
 import { ng, template, $, model, notify, ui } from 'entcore';
 import { UserListDelegate, UserListDelegateScope } from './delegates/userList';
 import { MenuDelegate, MenuDelegateScope } from './delegates/menu';
-import { EventDelegate } from "./delegates/events";
+import { EventDelegate, ITracker, TRACK } from "./delegates/events";
 import { directoryService } from './service';
 import { ActionsDelegate, ActionsDelegateScope } from './delegates/actions';
 import { UserInfosDelegate, UserInfosDelegateScope } from './delegates/userInfos';
@@ -13,6 +13,7 @@ import { UserFindDelegate, UserFindDelegateScope } from './delegates/userFind';
 
 export interface ClassAdminControllerScope extends UserListDelegateScope, UserInfosDelegateScope, MenuDelegateScope, ActionsDelegateScope, UserCreateDelegateScope, ExportDelegateScope, UserFindDelegateScope {
 	safeApply(a?);
+	onToasterUnlinkUsers();
 	closeLightbox(): void;
 	openLightbox(path: string): void;
 	lightboxDelegateClose: () => boolean;
@@ -28,9 +29,9 @@ export interface ClassAdminControllerScope extends UserListDelegateScope, UserIn
 	importCSV();
 	hasONDE():boolean
 }
-export const classAdminController = ng.controller('ClassAdminController', ['$scope', ($scope: ClassAdminControllerScope) => {
+export const classAdminController = ng.controller('ClassAdminController', ['$scope', 'tracker', ($scope: ClassAdminControllerScope, tracker:ITracker) => {
 	// === Init delegates
-	EventDelegate($scope);//must be init first
+	EventDelegate($scope, tracker);//must be init first
 	UserListDelegate($scope);
 	MenuDelegate($scope);
 	ActionsDelegate($scope);
@@ -65,6 +66,12 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 		template.close("lightbox");
 	}
 
+	$scope.onToasterUnlinkUsers = function () {
+		// #47174, Track this event
+		$scope.tracker.trackEvent(TRACK.event, TRACK.USER_BLOCK.action, TRACK.name(TRACK.USER_BLOCK.REMOVE_CLASS));
+		$scope.openLightbox('admin/actions/unlink');
+	}
+
 	$scope.smoothScrollTo = function (path) {
 		const speed = 750; // Durée de l'animation (en ms)
 		$('html, body').animate({ scrollTop: $(path).offset().top }, speed);
@@ -86,8 +93,12 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 		}
 		try {
 			if (user) {
+                // #47174, Track this event
+                $scope.tracker.trackEvent( TRACK.event, TRACK.AUTH_MODIFICATION.action, TRACK.name(TRACK.AUTH_MODIFICATION.PWD_USER, user.type), 1 );
 				await directoryService.resetPassword([user])
 			} else {
+                // #47174, Track this event //TODO user.type ??
+				$scope.tracker.trackEvent( TRACK.event, TRACK.AUTH_MODIFICATION.action, TRACK.name(TRACK.AUTH_MODIFICATION.PWD, $scope.userList.selectedTab), _selection.length );
 				await directoryService.resetPassword(_selection)
 			}
 			notify.success("directory.admin.reset.code.sent")
@@ -105,6 +116,11 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 			await directoryService.importFile($scope.import.csv[0], $scope.userList.selectedTab, $scope.selectedClass);
 			$scope.queryClassRefresh.next($scope.selectedClass);
 			$scope.closeLightbox();
+			// #47174, Track this event
+			$scope.tracker.trackEvent( TRACK.event, TRACK.USERS_IMPORT.action, TRACK.USERS_IMPORT.IMPORT );
+		} catch(e) {
+			// #47174, Track this event
+			$scope.tracker.trackEvent( TRACK.event, TRACK.USERS_IMPORT.action, TRACK.name(TRACK.USERS_IMPORT.ERROR) );
 		} finally {
 			$scope.display.importing = false;
 			$scope.safeApply();

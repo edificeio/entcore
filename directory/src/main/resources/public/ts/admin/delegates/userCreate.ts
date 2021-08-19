@@ -1,7 +1,7 @@
 import { User, ClassRoom, UserTypes, School, Network } from "../model";
 import { directoryService } from "../service";
 import { template, idiom as lang, notify } from "entcore";
-import { EventDelegateScope } from "./events";
+import { EventDelegateScope, TRACK } from "./events";
 import { Subject, Observable } from "rxjs";
 import moment = require("moment");
 
@@ -254,6 +254,10 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
                     return;
                 }
             }
+            // #47174, Track this event
+            $scope.tracker.trackEvent( TRACK.event, TRACK.ACCOUNT_CREATION.action, 
+                TRACK.name( thenAdd ? TRACK.ACCOUNT_CREATION.ADD : TRACK.ACCOUNT_CREATION.CREATE, $scope.userCreate.form.type) 
+            );
             // === there is no duplicate create the user
             const user = await createUserAndAttach();
             afterSubmit(user);
