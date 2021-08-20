@@ -1,6 +1,7 @@
 package org.entcore.workspace.controllers;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 
+import fr.wseduc.rs.*;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -39,10 +41,6 @@ import org.entcore.workspace.service.WorkspaceService;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
@@ -1689,6 +1687,9 @@ public class WorkspaceController extends BaseController {
 	public void view(final HttpServerRequest request) {
 		final JsonObject context = new JsonObject();
 		context.put("enableLool", config.getBoolean("enable-lool", false));
+		if(config.containsKey("scratch-url") && config.getValue("scratch-url") instanceof String && isNotEmpty(config.getString("scratch-url"))){
+			context.put("scratchUrl", config.getString("scratch-url")+"#"+config.getString("host"));
+		}
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
@@ -1701,6 +1702,38 @@ public class WorkspaceController extends BaseController {
 				} else {
 					unauthorized(request);
 				}
+			}
+		});
+	}
+
+	@Get("/document/base64/:id")
+	@ApiDoc("Get base64 document")
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
+	public void getDocumentBase64(HttpServerRequest request) {
+		final String documentId = request.params().get("id");
+		workspaceService.findById(documentId, resDocument->{
+			try{
+				final String status = resDocument.getString("status");
+				final JsonObject res = resDocument.getJsonObject("result");
+				if (!"ok".equals(status) || res == null) {
+					notFound(request);
+					return;
+				}
+				final String file = res.getString("file");
+				if(StringUtils.isEmpty(file)) {
+					badRequest(request, "document.error.missing.fileid");
+					return;
+				}
+				storage.readFile(file, buffer->{
+					if(buffer==null){
+						notFound(request);
+					} else {
+						String base64File = Base64.getEncoder().encodeToString(buffer.getBytes());
+						renderJson(request,new JsonObject().put("base64File",base64File).put("title",res.getString("name")));
+					}
+				});
+			} catch (Exception e){
+				renderError(request, new JsonObject().put("error", e.getMessage()));
 			}
 		});
 	}
