@@ -14,14 +14,20 @@
 				<button ng-click="editImage()" ng-if="ngModel.isEditableImage"><i18n>editImage</i18n></button>
 			</resource-right>
 			<button ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
-				<i18n>workspace.lool.open</i18n>
+				<i18n>workspace.external.open</i18n>
+			</button>
+			<button ng-if="canEditInScratch()" ng-click="openOnScratch()">
+				<i18n>workspace.external.open</i18n>
 			</button>
 		</div>
 	</div>
 	<div class="controls" ng-if="isFullscreen">
 		<i class="close" ng-click="fullscreen(false)"></i>
 		<button class="right-magnet top-spacing-twice right-spacing" ng-if="canEditInLool()" workflow="lool.openFile" ng-click="openOnLool()">
-			<i18n>workspace.lool.open</i18n>
+			<i18n>workspace.external.open</i18n>
+		</button>
+		<button class="right-magnet top-spacing-twice right-spacing" ng-if="canEditInScratch()" ng-click="openOnScratch()">
+			<i18n>workspace.external.open</i18n>
 		</button>
 		<button class="right-magnet cancel top-spacing-twice right-spacing" ng-click="download()"><i18n>download</i18n></button>
 	</div>

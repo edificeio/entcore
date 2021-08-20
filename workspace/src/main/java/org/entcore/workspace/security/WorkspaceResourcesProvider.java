@@ -64,6 +64,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				break;
 			case "getDocumentProperties":
 			case "getDocument":
+			case "getDocumentBase64":
 			case "getPreview":
 				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 				break;
