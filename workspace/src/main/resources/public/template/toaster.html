@@ -7,10 +7,15 @@
 			<button ng-if="canOpenFolder()" ng-click="openFolderRoute(selectedFolders()[0])" class="cell">
 				<i18n>workspace.open</i18n>
 			</button>
-            <button ng-disabled="!canBeOpenOnLool(selectedDocuments()[0])" ng-if="selectedDocuments().length === 1 && ENABLE_LOOL"
+            <button ng-disabled="!canBeOpenOnLool(selectedDocuments()[0])"
+					ng-if="selectedDocuments().length === 1 && ENABLE_LOOL && !(SCRATCH_URL && canBeOpenOnScratch(selectedDocuments()[0]))"
                     workflow="lool.openFile" ng-click="openOnLool(selectedDocuments()[0])">
-                <i18n>workspace.lool.open</i18n>
+                <i18n>workspace.external.open</i18n>
             </button>
+			<button ng-if="selectedDocuments().length === 1 && SCRATCH_URL && canBeOpenOnScratch(selectedDocuments()[0])"
+					ng-click="openOnScratch(selectedDocuments()[0],SCRATCH_URL)">
+				<i18n>workspace.external.open</i18n>
+			</button>
 			<button ng-if="showOpenLocation()" ng-click="openLocation()" class="cell">
 				<i18n>workspace.open.location</i18n>
 			</button>

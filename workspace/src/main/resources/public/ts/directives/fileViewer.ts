@@ -4,6 +4,8 @@ import { workspaceService, models } from "../services";
 import { CsvDelegate, CsvFile, CsvController } from './csvViewer';
 import { TxtDelegate, TxtController, TxtFile } from './txtViewer';
 declare var ENABLE_LOOL: boolean;
+declare var SCRATCH_URL: string;
+
 
 interface FileViewerScope {
 	contentType: string;
@@ -22,7 +24,9 @@ interface FileViewerScope {
 	previewUrl(): string;
 	closeViewFile(): void;
 	canEditInLool(): boolean;
+	canEditInScratch(): boolean;
 	openOnLool(): void;
+	openOnScratch(): void;
 	$parent: {
 		display: {
 			editedImage: any;
@@ -176,10 +180,20 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 				ENABLE_LOOL && Behaviours.applicationsBehaviours.lool.openOnLool(scope.ngModel);
 			}
 
+			scope.openOnScratch = () => {
+				SCRATCH_URL && window.open(`${SCRATCH_URL}/workspace/document/base64/${scope.ngModel._id}`);
+			}
+
 			scope.canEditInLool = () => {
 				const ext = ['doc', 'ppt', "xls"];
 				const isoffice = ext.includes(scope.contentType);
 				return isoffice && ENABLE_LOOL && Behaviours.applicationsBehaviours.lool.canBeOpenOnLool(scope.ngModel);
+			}
+
+			scope.canEditInScratch = () => {
+				return SCRATCH_URL &&
+					["sb","sb2","sb3"].includes(scope.ngModel.metadata.extension) &&
+					scope.ngModel.metadata["content-type"] === "application/octet-stream";
 			}
 
 			scope.fullscreen = (allow) => {

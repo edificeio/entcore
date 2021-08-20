@@ -27,11 +27,14 @@ import { KeyboardDelegate, KeyboardDelegateScope } from './delegates/keyboard';
 import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
 import { models, workspaceService, DocumentCursor, Document, DocumentCursorParams, CursorUpdate } from "./services";
 import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
+import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 
 
 declare var ENABLE_LOOL: boolean;
-export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope {
+declare var SCRATCH_URL: string;
+export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope {
 	ENABLE_LOOL: boolean;
+	SCRATCH_URL: string;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
 	//new
@@ -153,7 +156,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	RevisionDelegate($scope);
 	KeyboardDelegate($scope);
 	ENABLE_LOOL && LoolDelegate($scope, $route);
+	SCRATCH_URL && ScratchDelegate($scope, $route);
 	$scope.ENABLE_LOOL = ENABLE_LOOL;
+	$scope.SCRATCH_URL = SCRATCH_URL;
+
 	/**
 	 * INIT
 	 */
