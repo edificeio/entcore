@@ -81,7 +81,7 @@ public class Directory extends BaseServer {
 		UserBookService userBookService = new DefaultUserBookService(eb, storageAvatar, wsHelper, userBookData);
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		ClassService classService = new DefaultClassService(eb);
-		SchoolService schoolService = new DefaultSchoolService(eb);
+		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService();
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
