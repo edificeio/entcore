@@ -60,11 +60,17 @@ public class DefaultSchoolService implements SchoolService {
 
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EventBus eventBus;
+	private String listUserMode = "multi";
 
 	static final String EXCLUDE_ADMC_QUERY_FILTER = " NOT((u)-[:HAS_FUNCTION]->(:Function {externalId:'SUPER_ADMIN'})) ";
 
 	public DefaultSchoolService(EventBus eventBus) {
 		this.eventBus = eventBus;
+	}
+
+	public DefaultSchoolService setListUserMode(String listUserMode) {
+		this.listUserMode = listUserMode;
+		return this;
 	}
 
 	@Override
@@ -393,19 +399,34 @@ public class DefaultSchoolService implements SchoolService {
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures AS removedFromStructures, " +
 			"EXTRACT(function IN u.functions | split(function, \"$\")) as aafFunctions," +
 			" classes, functionalGroups, manualGroups, functions, duplicates, structures " +
-			"ORDER BY lastName, firstName " +
-			"UNION " +
-			"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
-			"WHERE {structureId} IN b.structureIds AND EXISTS(u.deleteDate)" +
-			"MATCH (s: Structure) " +
-			"WHERE s.id IN b.structureIds " +
-			"WITH u, b, s " +
-			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
-			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
-			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
-			"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
 			"ORDER BY lastName, firstName ";
-
+		if("none".equals(listUserMode)){
+			//do not include presuppressed user
+		}else if("mono".equals(listUserMode)){
+			//include presuppressed (mono etab)
+			query += " UNION " +
+					"MATCH (s: Structure) WHERE s.id = {structureId} WITH s " +
+					"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) WHERE {structureId} IN b.structureIds AND EXISTS(u.deleteDate)" +
+					"WITH u, b, s " +
+					"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
+					"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
+					"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
+					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
+					"ORDER BY lastName, firstName ";
+		}else{
+			//include presuppressed (multi etab)
+			query += " UNION " +
+					"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+					"WHERE {structureId} IN b.structureIds AND EXISTS(u.deleteDate)" +
+					"MATCH (s: Structure) " +
+					"WHERE s.id IN b.structureIds " +
+					"WITH u, b, s " +
+					"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
+					"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
+					"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
+					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
+					"ORDER BY lastName, firstName ";
+		}
 		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
