@@ -179,6 +179,39 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, String> studentsIdStrings = new HashMap<>();
 	protected String academyPrefix = "";
 
+	protected static class EducNatPerson
+	{
+		public enum Profile {
+			TEACHER ("Teacher"),
+			PERSONNEL ("Personnel");
+
+			private String value;
+			private Profile(String value) { this.value = value; }
+			public String toString() { return this.value; }
+		};
+		public String id;
+		public JsonArray classes = new JsonArray();
+		public JsonArray groups = new JsonArray();
+		public Profile profile;
+
+		public EducNatPerson(String id, Profile profile)
+		{
+			this.id = id;
+			this.profile = profile;
+		}
+
+		private void _add(JsonArray a, String element)
+		{
+			if(element != null && a.contains(element) == false)
+				a.add(element);
+		}
+
+		public void addClasse(String classeName) { this._add(this.classes, classeName); }
+		public void addGroup(String groupName) { this._add(this.groups, groupName); }
+	}
+	protected final Map<String, EducNatPerson> educNatPersonsLinks = new HashMap<String, EducNatPerson>();
+	protected final Map<String, Map<String, EducNatPerson>> teachersTeachesBySubject = new HashMap<String, Map<String, EducNatPerson>>();
+
 	protected PersEducNat persEducNat;
 	protected TransactionHelper txXDT;
 	private final MongoDb mongoDb = MongoDb.getInstance();
@@ -403,6 +436,69 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
+	private void populateEducNatPersonLinks(JsonObject course)
+	{
+		JsonArray teachersArray = course.getJsonArray("teacherIds", new JsonArray());
+		JsonArray personnelsArray = course.getJsonArray("personnelIds", new JsonArray());
+		JsonArray classesArray = course.getJsonArray("classes", new JsonArray());
+		JsonArray groupsArray = course.getJsonArray("groups", new JsonArray());
+		String subjectId = course.getString("timetableSubjectId");
+
+		for(String tId : ((List<String>) teachersArray.getList()))
+		{
+			EducNatPerson teacher = educNatPersonsLinks.get(tId);
+			if(teacher == null)
+			{
+				teacher = new EducNatPerson(tId, EducNatPerson.Profile.TEACHER);
+				educNatPersonsLinks.put(tId, teacher);
+			}
+
+			for(String cName : ((List<String>) classesArray.getList()))
+				teacher.addClasse(cName);
+			for(String gName : ((List<String>) groupsArray.getList()))
+				teacher.addGroup(gName);
+		}
+
+		for(String pId : ((List<String>) personnelsArray.getList()))
+		{
+			EducNatPerson personnel = educNatPersonsLinks.get(pId);
+			if(personnel == null)
+			{
+				personnel = new EducNatPerson(pId, EducNatPerson.Profile.PERSONNEL);
+				educNatPersonsLinks.put(pId, personnel);
+			}
+
+			for(String cName : ((List<String>) classesArray.getList()))
+				personnel.addClasse(cName);
+			for(String gName : ((List<String>) groupsArray.getList()))
+				personnel.addGroup(gName);
+		}
+
+		if(isNotEmpty(subjectId))
+		{
+			Map<String, EducNatPerson> teachersForSubject = teachersTeachesBySubject.get(subjectId);
+			if(teachersForSubject == null)
+			{
+				teachersForSubject = new HashMap<String, EducNatPerson>();
+				teachersTeachesBySubject.put(subjectId, teachersForSubject);
+			}
+			for(String tId : ((List<String>) teachersArray.getList()))
+			{
+				EducNatPerson teacher = teachersForSubject.get(tId);
+				if(teacher == null)
+				{
+					teacher = new EducNatPerson(tId, EducNatPerson.Profile.TEACHER);
+					teachersForSubject.put(tId, teacher);
+				}
+
+				for(String cName : ((List<String>) classesArray.getList()))
+					teacher.addClasse(cName);
+				for(String gName : ((List<String>) groupsArray.getList()))
+					teacher.addGroup(gName);
+			}
+		}
+	}
+
 	protected void persistCourse(JsonObject object)
 	{
 		if (object == null)
@@ -412,9 +508,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			return;
 		}
 
-		persEducNatToClasses(object);
-		persEducNatToGroups(object);
-		persEducNatToSubjects(object);
+		this.populateEducNatPersonLinks(object);
 
 		if(authoriseUpdateTimetable == false)
 			return;
@@ -470,48 +564,49 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
-	private void persEducNatToClasses(JsonObject object) {
-		final JsonArray classes = object.getJsonArray("classes");
-		if (classes != null) {
-			final JsonObject params = new JsonObject()
-					.put("structureExternalId", structureExternalId)
-					.put("classes", classes)
-					.put("source", getTimetableSource())
-					.put("outDate", DateTime.now().plusDays(1).getMillis())
-					.put("now", importTimestamp);
-			final JsonArray teacherIds = object.getJsonArray("teacherIds");
-			if (teacherIds != null && teacherIds.size() > 0) {
-				params.put("profile", "Teacher");
-				for (Object id : teacherIds) {
-					if (id != null) {
-						txXDT.add(PERSEDUCNAT_TO_CLASSES, params.copy().put("id", id.toString()));
-					}
-				}
-			}
-			final JsonArray personnelIds = object.getJsonArray("personnelIds");
-			if (personnelIds != null && personnelIds.size() > 0) {
-				params.put("profile", "Personnel");
-				for (Object id : personnelIds) {
-					if (id != null) {
-						txXDT.add(PERSEDUCNAT_TO_CLASSES, params.copy().put("id", id.toString()));
-					}
-				}
+	private void persEducNatToClassesAndGroups() {
+		final JsonObject params = new JsonObject()
+				.put("structureExternalId", structureExternalId)
+				.put("source", getTimetableSource())
+				.put("outDate", DateTime.now().plusDays(1).getMillis())
+				.put("now", importTimestamp);
+		for(EducNatPerson pers : educNatPersonsLinks.values())
+		{
+			JsonObject pc = params.copy();
+			pc.put("id", pers.id);
+			pc.put("profile", pers.profile);
+			pc.put("classes", pers.classes);
+			txXDT.add(PERSEDUCNAT_TO_CLASSES, pc);
+
+			if(authorizeUpdateGroups == true)
+			{
+				JsonObject pg = params.copy();
+				pg.put("id", pers.id);
+				pg.put("groups", getExternalIdGroups(pers.groups));
+				txXDT.add(PERSEDUCNAT_TO_GROUPS, pg);
+
+				if(foundTeachers.containsKey(pers.id))
+					for(String g : (List<String>)pers.groups.getList())
+						ttReport.validateGroupCreated(g);
 			}
 		}
 	}
 
 
-	private void persEducNatToSubjects(JsonObject object) {
-		final String subjectId = object.getString("timetableSubjectId");
-		final JsonArray teacherIds = object.getJsonArray("teacherIds");
-		if (isNotEmpty(subjectId) && teacherIds != null && teacherIds.size() > 0) {
-			final JsonObject params = new JsonObject()
-					.put("subjectId", subjectId)
-					.put("teacherIds", teacherIds)
-					.put("classes", getExternalIdClasses(object.getJsonArray("classes")))
-					.put("groups", getExternalIdGroups(object.getJsonArray("groups")))
+	private void persEducNatToSubjects() {
+		for(Map.Entry<String, Map<String, EducNatPerson>> e : teachersTeachesBySubject.entrySet())
+		{
+			for(Map.Entry<String, EducNatPerson> tEntry : e.getValue().entrySet())
+			{
+				EducNatPerson teacher = tEntry.getValue();
+				final JsonObject params = new JsonObject()
+					.put("subjectId", e.getKey())
+					.put("teacherIds", new JsonArray().add(teacher.id))
+					.put("classes", getExternalIdClasses(teacher.classes))
+					.put("groups", getExternalIdGroups(teacher.groups))
 					.put("source", getTimetableSource()).put("now", importTimestamp);
-			txXDT.add(LINK_SUBJECT, params);
+				txXDT.add(LINK_SUBJECT, params);
+			}
 		}
 	}
 
@@ -534,7 +629,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if (groups != null && groups.size() > 0) {
 			for (Object g: groups) {
 				if (!(g instanceof String)) continue;
-				a.add(structureExternalId + "$" + g);
+				a.add(this.getMappedGroupExternalId((String)g));
 			}
 		}
 		return a;
@@ -548,44 +643,6 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String getMappedGroupExternalId(String groupName)
 	{
 		return getOrElse(functionalGroupNames.get(this.getMappedGroupName(groupName)), structureExternalId + "$" + groupName, false);
-	}
-
-	private void persEducNatToGroups(JsonObject object) {
-		final JsonArray groups = object.getJsonArray("groups");
-		if (groups != null && authorizeUpdateGroups == true) {
-			final JsonArray teacherIds = object.getJsonArray("teacherIds");
-			final List<String> ids = new ArrayList<>();
-			if (teacherIds != null) {
-				ids.addAll(teacherIds.getList());
-			}
-			final JsonArray personnelIds = object.getJsonArray("personnelIds");
-			if (personnelIds != null) {
-				ids.addAll(personnelIds.getList());
-			}
-			if (!ids.isEmpty()) {
-				final JsonArray g = new fr.wseduc.webutils.collections.JsonArray();
-				for (Object o : groups) {
-					g.add(this.getMappedGroupExternalId(o.toString()));
-
-					for(String id : ids)
-					{
-						if(foundTeachers.containsKey(id))
-						{
-							ttReport.validateGroupCreated(o.toString());
-							break;
-						}
-					}
-				}
-				for (String id : ids) {
-					txXDT.add(PERSEDUCNAT_TO_GROUPS, new JsonObject()
-							.put("groups", g)
-							.put("id", id)
-							.put("source", getTimetableSource())
-							.put("outDate", DateTime.now().plusDays(1).getMillis())
-							.put("now", importTimestamp));
-				}
-			}
-		}
 	}
 
 	protected void updateUser(JsonObject user) {
@@ -698,6 +755,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected void commit(final Handler<AsyncResult<Report>> handler)
 	{
+		persEducNatToSubjects();
+		persEducNatToClassesAndGroups();
+
 		final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId)
 				.put("source", getTimetableSource()).put("now", importTimestamp);
 
