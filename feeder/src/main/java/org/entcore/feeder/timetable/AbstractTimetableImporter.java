@@ -66,8 +66,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"SET sub.lastUpdated = {now}, sub.source = {source} " +
 			"MERGE (sub)-[:SUBJECT]->(s) ";
 	private static final String LINK_SUBJECT =
-			"MATCH (s:TimetableSubject {id : {subjectId}}), (u:User) " +
-			"WHERE u.id IN {teacherIds} " +
+			"MATCH (s:TimetableSubject {id : {subjectId}}), (u:User {id: {teacherId}}) " +
 			"MERGE u-[r:TEACHES]->s " +
 			"SET r.classes = FILTER(c IN coalesce(r.classes, []) where NOT(c IN {classes})) + {classes}, " +
 			"r.groups = FILTER(g IN coalesce(r.groups, []) where NOT(g IN {groups})) + {groups}, " +
@@ -601,7 +600,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				EducNatPerson teacher = tEntry.getValue();
 				final JsonObject params = new JsonObject()
 					.put("subjectId", e.getKey())
-					.put("teacherIds", new JsonArray().add(teacher.id))
+					.put("teacherId", teacher.id)
 					.put("classes", getExternalIdClasses(teacher.classes))
 					.put("groups", getExternalIdGroups(teacher.groups))
 					.put("source", getTimetableSource()).put("now", importTimestamp);
@@ -772,47 +771,58 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 		txXDT.add(UNSET_OLD_GROUPS, params);
 		txXDT.add(SET_GROUPS, params);
-		Importer.markMissingUsers(structureExternalId, getTimetableSource(), userImportedExternalId, txXDT, new Handler<Void>() {
+
+		if(authorizeUserCreation)
+		{
+			Importer.markMissingUsers(structureExternalId, getTimetableSource(), userImportedExternalId, txXDT, new Handler<Void>() {
+				@Override
+				public void handle(Void event) {
+					Importer.restorePreDeletedUsers(getTimetableSource(), txXDT);
+					afterImporter(handler);
+				}
+			});
+		}
+		else
+			this.afterImporter(handler);
+	}
+
+	private void afterImporter(final Handler<AsyncResult<Report>> handler)
+	{
+		txXDT.commit(new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Void event) {
-				Importer.restorePreDeletedUsers(getTimetableSource(), txXDT);
-				txXDT.commit(new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				if (!"ok".equals(event.body().getString("status"))) {
+					report.addError("error.commit.timetable.transaction");
+				} else {
+					txSuccess = true;
+				}
+				endHandler = new Handler<AsyncResult<Report>>()
+				{
 					@Override
-					public void handle(Message<JsonObject> event) {
-						if (!"ok".equals(event.body().getString("status"))) {
-							report.addError("error.commit.timetable.transaction");
-						} else {
-							txSuccess = true;
-						}
-						endHandler = new Handler<AsyncResult<Report>>()
+					public void handle(AsyncResult<Report> report)
+					{
+						ttReport.end();
+						ttReport.persist(new Handler<String>()
 						{
 							@Override
-							public void handle(AsyncResult<Report> report)
+							public void handle(String ttReportID)
 							{
-								ttReport.end();
-								ttReport.persist(new Handler<String>()
+								AsyncResult<Report> mapped = report.map(new java.util.function.Function<Report, Report>()
 								{
 									@Override
-									public void handle(String ttReportID)
+									public Report apply(Report rp)
 									{
-										AsyncResult<Report> mapped = report.map(new java.util.function.Function<Report, Report>()
-										{
-											@Override
-											public Report apply(Report rp)
-											{
-												rp.result.put("timetableReport", ttReportID);
-												return rp;
-											}
-										});
-
-										handler.handle(mapped);
+										rp.result.put("timetableReport", ttReportID);
+										return rp;
 									}
 								});
+
+								handler.handle(mapped);
 							}
-						};
-						end();
+						});
 					}
-				});
+				};
+				end();
 			}
 		});
 	}
