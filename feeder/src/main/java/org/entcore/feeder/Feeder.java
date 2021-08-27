@@ -353,11 +353,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-edt":
 				EDTImporter.launchImport(vertx, storage, edtUtils, config.getString("mode", "prod"), message, postImport,
-						config.getBoolean("edt-user-creation", false));
+						config.getBoolean("edt-user-creation", false), config.getLong("edt-udt-force-timestamp"));
 				break;
 			case "manual-udt":
 				UDTImporter.launchImport(vertx, storage, message, postImport,
-						config.getBoolean("udt-user-creation", false));
+						config.getBoolean("udt-user-creation", false), config.getLong("edt-udt-force-timestamp"));
 				break;
 			case "reinit-logins" :
 				Validator.initLogin(neo4j, vertx);
