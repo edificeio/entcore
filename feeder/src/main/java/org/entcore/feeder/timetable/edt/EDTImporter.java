@@ -25,6 +25,7 @@ import fr.wseduc.webutils.security.Md5;
 
 import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.common.utils.DateUtils;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
@@ -90,8 +91,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private int maxYearWeek;
 
 	public EDTImporter(Vertx vertx, Storage storage, EDTUtils edtUtils, String uai, String path, String acceptLanguage,
-			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable) {
-		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups, updateTimetable);
+			String mode, boolean authorizeUserCreation, boolean isManualImport, boolean updateGroups, boolean updateTimetable, Long forceTimestamp) {
+		super(vertx, storage, uai, path, acceptLanguage, authorizeUserCreation, isManualImport, updateGroups, updateTimetable, forceTimestamp);
 		this.edtUtils = edtUtils;
 		this.mode = mode;
 	}
@@ -700,10 +701,10 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	}
 
 	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
-		launchImport(vertx, storage, edtUtils, "prod", message, null, edtUserCreation);
+		launchImport(vertx, storage, edtUtils, "prod", message, null, edtUserCreation, null);
 	}
 
-	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation) {
+	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport, boolean edtUserCreation, Long forceDateTimestamp) {
 		final I18n i18n = I18n.getInstance();
 		final String acceptLanguage = message.body().getString("language", "fr");
 		if (edtUtils == null) {
@@ -725,14 +726,16 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		}
 
 		try {
+			String forceDateStr = (forceDateTimestamp == null) ? "" : " with forced date " + DateUtils.format(DateUtils.parseLongDate(forceDateTimestamp), "dd/MM/yyyy HH:mm:ss");
 			final long start = System.currentTimeMillis();
-			log.info("Launch EDT import : " + uai);
+			log.info("Launch EDT import : " + uai + forceDateStr);
 
-			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport, updateGroups, updateTimetable).launch(new Handler<AsyncResult<Report>>() {
+			new EDTImporter(vertx, storage, edtUtils, uai, path, acceptLanguage, mode, edtUserCreation, isManualImport, updateGroups, updateTimetable, forceDateTimestamp)
+			.launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if(event.succeeded()) {
-						log.info("Import EDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+						log.info("Import EDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
 						message.reply(new JsonObject().put("status", "ok")
 								.put("result", event.result().getResult()));
 						if (postImport != null && edtUserCreation) {
@@ -740,7 +743,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						}
 					} else {
 						log.error("Error import EDT : " + uai + " elapsed time " +
-								(System.currentTimeMillis() - start) + " ms.");
+								(System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
 						log.error(event.cause().getMessage(), event.cause());
 						JsonObject json = new JsonObject().put("status", "error")
 								.put("message",

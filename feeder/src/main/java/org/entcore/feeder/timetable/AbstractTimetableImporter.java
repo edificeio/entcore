@@ -148,6 +148,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static final long CLEARANCE_TIME = 2 * 60 * 60 * 1000;
 
 	protected long importTimestamp;
+	protected Long forceTimestamp;
 	protected final Storage storage;
 	protected final String UAI;
 	protected final Report report;
@@ -225,7 +226,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final boolean authoriseUpdateTimetable;
 
 	protected AbstractTimetableImporter(Vertx vertx, Storage storage, String uai, String path, String acceptLanguage,
-																				boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups, boolean authoriseUpdateTimetable)
+										boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups, boolean authoriseUpdateTimetable,
+										Long forceTimestamp)
 	{
 		this.storage = storage;
 		UAI = uai;
@@ -234,6 +236,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		this.authorizeUserCreation = authorizeUserCreation;
 		this.authorizeUpdateGroups = authorizeUpdateGroups;
 		this.authoriseUpdateTimetable = authoriseUpdateTimetable;
+		this.forceTimestamp = forceTimestamp;
 
 		this.ttReport = new TimetableReport(vertx);
 		this.ttReport.setSource(this.getTimetableSource());
@@ -256,7 +259,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected void init(final Handler<AsyncResult<Void>> handler) throws TransactionException
 	{
 		this.ttReport.start();
-		importTimestamp = System.currentTimeMillis();
+		importTimestamp = forceTimestamp != null ? forceTimestamp.longValue() : System.currentTimeMillis();
 		final String externalIdFromUAI = "MATCH (s:Structure {UAI : {UAI}}) " +
 				"return s.externalId as externalId, s.id as id, s.timetable as timetable ";
 		final String tma = getTeacherMappingAttribute();

@@ -140,6 +140,10 @@ public final class DateUtils {
         return new Date(Long.parseLong(longStr));
     }
 
+    public static Date parseLongDate(Long timestamp) {
+        return new Date(timestamp);
+    }
+
     public static Long parseLongDateToLong(String longStr) {
         return new Date(Long.parseLong(longStr)).getTime();
     }
