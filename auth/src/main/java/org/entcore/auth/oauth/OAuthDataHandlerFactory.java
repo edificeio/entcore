@@ -39,10 +39,11 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final long pwBanDelay;
 	private final EventStore eventStore;
 	private final String passwordEventMinDate;
+	private final int defaultSyncValue;
 
 	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay,
-			String passwordEventMinDate, EventStore eventStore) {
+			String passwordEventMinDate, int defaultSyncValue, EventStore eventStore) {
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
@@ -52,12 +53,13 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 		this.pwBanDelay = pwBanDelay;
 		this.eventStore = eventStore;
 		this.passwordEventMinDate = passwordEventMinDate;
+		this.defaultSyncValue = defaultSyncValue;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
 		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
-				pwMaxRetry, pwBanDelay, passwordEventMinDate, eventStore);
+				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, eventStore);
 	}
 
 }
