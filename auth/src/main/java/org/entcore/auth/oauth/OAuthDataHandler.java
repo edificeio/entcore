@@ -75,10 +75,11 @@ public class OAuthDataHandler extends DataHandler {
 	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
 	private final int pwMaxRetry;
 	private final long pwBanDelay;
+	private final int defaultSyncValue;
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
-			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, EventStore eventStore) {
+			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, int defaultSyncValue, EventStore eventStore) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
@@ -89,6 +90,7 @@ public class OAuthDataHandler extends DataHandler {
 		this.pwBanDelay = pwBanDelay;
 		this.passwordEventMinDate = passwordEventMinDate;
 		this.eventStore = eventStore;
+		this.defaultSyncValue = defaultSyncValue;
 	}
 
 	@Override
@@ -266,6 +268,9 @@ public class OAuthDataHandler extends DataHandler {
 							.put("password", NTLM.ntHash(password));
 							if (isNotEmpty(r.getString("loginAlias"))) {
 								pEvent.put("login_alias", r.getString("loginAlias"));
+							}
+							if (defaultSyncValue > 0) {
+								pEvent.put("sync", defaultSyncValue);
 							}
 							eventStore.storeCustomEvent("auth", pEvent);
 						} catch (NoSuchAlgorithmException ex) {

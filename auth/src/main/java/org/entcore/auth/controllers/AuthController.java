@@ -149,7 +149,7 @@ public class AuthController extends BaseController {
 		checkFederatedLogin = config.getBoolean("check-federated-login", false);
 		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), Redis.getClient(),
 				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
-				config.getString("password-event-min-date"), eventStore);
+				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0), eventStore);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
