@@ -290,15 +290,21 @@ public class ImportController extends BaseController {
 		schoolService.getByClassId(request.params().get("classId"), new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> s) {
+				JsonObject structure = new JsonObject();
 				if (s.isRight()) {
-					final JsonObject structure = s.right().getValue();
+					structure = s.right().getValue();
+				}
+
+				if(structure.isEmpty() == false)
+				{
 					request.setExpectMultipart(true);
 					request.formAttributes().add("structureId", structure.getString("id"));
 					request.formAttributes().add("structureExternalId", structure.getString("externalId"));
 					request.formAttributes().add("predelete", "false");
 					request.formAttributes().add("transition", "false");
 					request.formAttributes().add("structureName", structure.getString("name"));
-					request.formAttributes().add("UAI", structure.getString("UAI"));
+					if(structure.getString("UAI") != null)
+						request.formAttributes().add("UAI", structure.getString("UAI"));
 					request.formAttributes().add("type", "CSV");
 					request.resume();
 					uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
