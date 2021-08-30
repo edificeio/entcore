@@ -213,7 +213,11 @@ export const directoryService = {
             })
         } catch (e) {
             if (e.response && e.response.data) {
-                const error = JSON.parse(e.response.data).message;
+                let error;
+                if(e.response.data instanceof String == true)
+                    error = JSON.parse(e.response.data).message;
+                else
+                    error = e.response.data.error;
                 if (error) {
                     const errWithIdx = error.split(/\s/);
                     if (errWithIdx.length === 2) {
