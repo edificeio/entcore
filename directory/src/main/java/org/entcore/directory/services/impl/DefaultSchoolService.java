@@ -469,7 +469,7 @@ public class DefaultSchoolService implements SchoolService {
 
 		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) ");
 		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) ");
-		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(dirg:DirectionGroup) ");
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(dirg:DirectionGroup) WHERE {1d} IN COALESCE(s.levelsOfEducation, {defLoe})");
 		query.append("RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, ");
 
 		if (getClassesForMonoEtabOnly) {
@@ -487,7 +487,8 @@ public class DefaultSchoolService implements SchoolService {
 		query.append("['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, ");
 		query.append("['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes");
 
-		neo.execute(query.toString(), new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
+		JsonObject params = new JsonObject().put("structures", new JsonArray(structures)).put("1d", firstLevel).put("defLoe", defaultStructureLevelsOfEducation);
+		neo.execute(query.toString(), params, validUniqueResultHandler(handler));
 	}
 
 	@Override
