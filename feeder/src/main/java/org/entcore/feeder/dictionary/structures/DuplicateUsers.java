@@ -1004,7 +1004,7 @@ public class DuplicateUsers {
 				sp1 = Integer.MIN_VALUE;
 			if(sp2 == null)
 				sp2 = Integer.MIN_VALUE;
-			final int c = sp1.compareTo(sp2);
+			final int c = sp2.compareTo(sp1);
 			String cr1 = o1.getString("created");
 			String cr2 = o2.getString("created");
 			if(cr1 == null)
