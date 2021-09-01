@@ -238,7 +238,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     public void translateMessage(String language, Handler<JsonObject> handler){
         String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
         final JsonObject translations;
-        if (i18n == null) {
+        if (i18n == null || i18n.length() == 0) {
             translations = new JsonObject();
         } else {
             translations = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
