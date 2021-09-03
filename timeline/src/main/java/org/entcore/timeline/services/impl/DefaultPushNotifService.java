@@ -173,7 +173,6 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     log.error("[sendNotificationToTopic] Issue while sending notification (" + notificationName + ").", e);
 
                 }
-
             }
         });
     }
@@ -201,7 +200,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
             public void handle(JsonObject keys) {
                 final JsonObject notif = new JsonObject();
                 final JsonObject data = new JsonObject();
-                final JsonObject pushNotif = notification.getJsonObject("pushNotif");
+                final JsonObject pushNotif = notification.getJsonObject("pushNotif", new JsonObject());
                 String body = pushNotif.getString("body", "");
                 body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
 
