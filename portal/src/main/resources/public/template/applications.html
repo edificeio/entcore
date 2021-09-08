@@ -40,13 +40,14 @@
 			<article
 				ng-repeat="application in filteredBookmarks = (bookmarks | filter:searchDisplayName)"
 				id="[[application.name]]"
-				class="position-relative"				
+				class="position-relative"
 			>
 				<!-- links for applications (not connector) -->
 				<a
 					ng-if="!application.isExternal"
 					ng-href="[[application.address]]"  
 					class="application__item"
+					target="[[application.target]]"
 					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 				>
 					<i ng-if="isIconUrl(application)" class="application">
@@ -127,7 +128,8 @@
 			<a
 				ng-if="!application.isExternal"
 				ng-href="[[application.address]]"
-				class="application__item" 
+				class="application__item"
+				target="[[application.target]]"
 				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 			>
 			<i ng-if="isIconUrl(application)" class="application">
