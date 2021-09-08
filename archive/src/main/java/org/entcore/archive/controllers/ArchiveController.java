@@ -266,14 +266,11 @@ public class ArchiveController extends BaseController {
 
 	private void verifyExport(final HttpServerRequest request, final String exportId) {
 		exportService.setDownloadInProgress(exportId);
-		storage.readFile(exportId, new Handler<Buffer>() {
-			@Override
-			public void handle(Buffer event) {
-				if (event != null && request.response().getStatusCode() == 200) {
-					renderJson(request, new JsonObject().put("status", "ok"));
-				} else if (!request.response().ended()) {
-					notFound(request);
-				}
+		storage.fileStats(exportId, ar -> {
+			if (ar.succeeded() && ar.result().getSizeInBytes() > 0 && request.response().getStatusCode() == 200) {
+				renderJson(request, new JsonObject().put("status", "ok"));
+			} else if (!request.response().ended()) {
+				notFound(request);
 			}
 		});
 	}
