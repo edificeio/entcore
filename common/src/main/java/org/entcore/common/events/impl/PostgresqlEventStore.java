@@ -179,6 +179,14 @@ public class PostgresqlEventStore extends GenericEventStore {
 	}
 
 	private void insertEvent(final JsonObject e, final String tableName, final Handler<Either<String, Void>> handler) {
+		final String ip = e.getString("ip");
+		if (ip != null) {
+			final int idxComma = ip.indexOf(',');
+			if (idxComma > 0) {
+				logger.warn("Remove proxy ip part in ip : " + ip);
+				e.put("ip", ip.substring(0, idxComma));
+			}
+		}
 		final String query = Sql.insertQuery(tableName, e);
 		pgClient.query(query, ar -> {
 			if (ar.succeeded()) {
