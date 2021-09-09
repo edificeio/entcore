@@ -61,7 +61,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			"SET HEAD(user).IDPN = {IDPN} " +
 			"RETURN DISTINCT HEAD(user).id as id, HEAD(user).IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
-			"MATCH (u:User {attachmentId : {IDPN}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
+			"MATCH (u:User {id : {id}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
 	private static final String CLEAN_IDPN =
@@ -218,9 +218,6 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		final String externalId = this.getMappedGroupExternalId(name);
 		currentEntity.put("externalId", externalId);
 
-		// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
-		txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
-
 		if(authorizeUpdateGroups == true)
 		{
 			if(functionalGroupExternalId.containsKey(externalId) == false)
@@ -236,6 +233,11 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 				functionalGroupExternalIdCopy.remove(externalId);
 				ttReport.groupUpdated(name);
 			}
+		}
+		else
+		{
+			// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
+			txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 		}
 	}
 
@@ -306,7 +308,10 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					report.addError("update.user.error");
 				}
 			} else
-			  ttReport.addUnknownTeacher(teacher);
+			{
+				foundTeachers.put(teacherId[0], new Boolean(true));
+				ttReport.teacherFound();
+			}
 		} else {
 			idpnIdent.put(idPronote, id);
 			findPersEducNat(currentEntity, idPronote, "Teacher");
@@ -445,8 +450,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			if(studentsIdStrings.containsKey(idStr) == true)
 			{
 				ttReport.userFound();
-				studentToGroups(idpn, classes, this.classes);
-				studentToGroups(idpn, pcs, this.subClasses);
+				String userId = studentsIdStrings.get(idStr);
+				studentToGroups(userId, classes, this.classes);
+				studentToGroups(userId, pcs, this.subClasses);
 			}
 				else
 				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
@@ -458,7 +464,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		// Nothing to do
 	}
 
-	private void studentToGroups(String idpn, JsonArray classes, Map<String, JsonObject> ref) {
+	private void studentToGroups(String id, JsonArray classes, Map<String, JsonObject> ref) {
 		if (classes != null && authorizeUpdateGroups == true) {
 			for (Object o : classes) {
 				if (o instanceof JsonObject) {
@@ -475,7 +481,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 								if (group != null) {
 									String name = group.getString("Nom");
 									txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-											.put("IDPN", idpn)
+											.put("id", id)
 											.put("externalId", this.getMappedGroupExternalId(name))
 											.put("source", EDT)
 											.put("inDate", DateTime.parse(inDate).getMillis())
