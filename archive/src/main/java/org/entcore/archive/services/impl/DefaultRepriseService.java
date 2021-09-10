@@ -4,33 +4,32 @@ import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.codec.BodyCodec;
+
+import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.RepriseService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import fr.wseduc.bus.BusAddress;
-import org.entcore.archive.services.ImportService;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -40,7 +39,6 @@ public class DefaultRepriseService implements RepriseService {
     private static final String FEEDER_BUS_ADDRESS = "entcore.feeder";
 
     private final EventBus eb;
-    private final Storage storage;
     private final WebClient client;
     private final JsonObject reprise;
     private final JsonObject archiveConfig;
@@ -51,10 +49,11 @@ public class DefaultRepriseService implements RepriseService {
     private final AtomicInteger numberOfImports;
     private final AtomicBoolean keepImporting;
     private final Integer limit;
+    private final Vertx vertx;
 
     public DefaultRepriseService(Vertx vertx, Storage storage, JsonObject reprise, JsonObject archiveConfig, ImportService importService) {
+        this.vertx = vertx;
         this.eb = vertx.eventBus();
-        this.storage = storage;
         this.client = WebClient.create(vertx);
         this.reprise = reprise;
         this.archiveConfig = archiveConfig;
@@ -223,27 +222,27 @@ public class DefaultRepriseService implements RepriseService {
             });
             return verifyExportPromise.future();
         }).compose(exportId -> {
-            HttpRequest<Buffer> httpRequest3 = client.getAbs(reprisePlatformURL + "/archive/export/" + exportId);
-            httpRequest3.putHeader("Authorization", "Basic " + basicAuthCredential);
             final Promise<String> downloadExportPromise = Promise.promise();
-            httpRequest3.send(asyncResult -> {
-                if (asyncResult.failed()) {
-                    downloadExportPromise.fail(asyncResult.cause());
-                } else {
-                    HttpResponse<Buffer> httpResponse = asyncResult.result();
-                    if (httpResponse.statusCode() == 200) {
-                        final Buffer archive = httpResponse.body();
-                        final String path = this.reprise.getString("path") + File.separator + exportId;
-                        storage.writeBuffer(path, exportId, archive, "application/zip", exportId, result -> {
-                            if ("ok".equals(result.getString("status"))) {
-                                downloadExportPromise.complete(exportId);
-                            } else {
-                                downloadExportPromise.fail(result.getString("message"));
-                            }
-                        });
+            final String path = this.reprise.getString("path") + File.separator + exportId;
+            final AsyncFile exportFile = vertx.fileSystem().openBlocking(path, new OpenOptions());
+            exportFile.exceptionHandler(except -> {
+                downloadExportPromise.fail(except);
+            });
+
+            final HttpRequest<Void> httpRequest3 = client.getAbs(reprisePlatformURL + "/archive/export/" + exportId)
+                    .as(BodyCodec.pipe(exportFile));
+            httpRequest3.putHeader("Authorization", "Basic " + basicAuthCredential);
+            httpRequest3.send(ar -> {
+                if (ar.succeeded()) {
+                    HttpResponse<Void> resp = ar.result();
+                    if (resp.statusCode() == 200) {
+                        log.info("export get succeeded : " + exportId);
+                        downloadExportPromise.complete(exportId);
                     } else {
-                        downloadExportPromise.fail(httpResponse.statusMessage());
+                        downloadExportPromise.fail(resp.statusMessage());
                     }
+                } else {
+                    downloadExportPromise.fail(ar.cause());
                 }
             });
             return downloadExportPromise.future();
