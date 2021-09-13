@@ -159,7 +159,7 @@ public class DefaultUserService implements UserService {
 				.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level")
 				.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
 				.add("email").add("emailAcademy").add("emailInternal").add("lastName").add("firstName");
-		get(id, true, filter, result -> {
+		get(id, true, filter, true, result -> {
 			if (result.isRight()) {
 				JsonObject resultJson = result.right().getValue();
 				JsonArray structures = resultJson.getJsonArray("structureNodes");
@@ -180,12 +180,13 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
-		get(id, getManualGroups, new JsonArray(), result);
+	public void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), filterNullReturn, result);
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, Handler<Either<String, JsonObject>> result) {
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn,
+					Handler<Either<String, JsonObject>> result) {
 
 		String getMgroups = "";
 		String resultMgroups = "";
@@ -202,14 +203,25 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
-				getMgroups +
-				"RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
-				"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
-				"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
-				"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
-				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
-				"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, " +
-				resultMgroups +
+				getMgroups;
+		if(filterNullReturn){
+			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
+					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) + u.functions as functions," +
+					"CASE WHEN children IS NULL THEN [] ELSE filter(x IN children WHERE x.id IS NOT NULL) END as children, " +
+					"CASE WHEN parents IS NULL THEN [] ELSE filter(x IN parents WHERE x.id IS NOT NULL) END as parents, " +
+					"CASE WHEN admGroups IS NULL THEN [] ELSE filter(x IN admGroups WHERE x.id IS NOT NULL) END as functionalGroups, " +
+					"CASE WHEN admStruct IS NULL THEN [] ELSE filter(x IN admStruct WHERE x.id IS NOT NULL) END as administrativeStructures, " +
+					"CASE WHEN subjectCodes IS NULL THEN [] ELSE filter(x IN subjectCodes WHERE x IS NOT NULL) END as subjectCodes, ";
+		} else {
+			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
+					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
+					"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
+					"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
+					"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
+					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
+		}
+
+		query += resultMgroups +
 				"u";
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
 			if (event.isRight()) {
