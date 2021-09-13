@@ -210,9 +210,9 @@ public class UserController extends BaseController {
 					.add("lastLogin").add("created").add("modified").add("ine").add("email").add("emailAcademy")
 					.add("workPhone").add("homePhone").add("country").add("zipCode").add("address").add("postbox")
 					.add("city").add("otherNames").add("title");
-			userService.get(userId, getManualGroups, filter, notEmptyResponseHandler(request));
+			userService.get(userId, getManualGroups, filter, false, notEmptyResponseHandler(request));
 		} else {
-			userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
+			userService.get(userId, getManualGroups, false, notEmptyResponseHandler(request));
 		}
 	}
 
@@ -228,7 +228,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
 	public void myinfos(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user ->
-				userService.get(user.getUserId(), true, defaultResponseHandler(request))
+				userService.get(user.getUserId(), true, true, defaultResponseHandler(request))
 		);
 	}
 
