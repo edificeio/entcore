@@ -18,7 +18,9 @@ public class TermsRevalidationFilter implements Filter {
 
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
-        if (!"XMLHttpRequest".equals(request.headers().get("X-Requested-With"))) {
+
+        if (!"XMLHttpRequest".equals(request.headers().get("X-Requested-With"))
+            && !request.headers().contains("Authorization")) {
             UserUtils.getUserInfos(this.eventBus, request, userInfos -> {
                 if (userInfos != null) {
                     boolean needRevalidateTerms = false;
