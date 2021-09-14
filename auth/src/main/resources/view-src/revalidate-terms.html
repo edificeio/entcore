@@ -13,8 +13,8 @@
 
 <body class="login" ng-controller="TermsRevalidationController">
     <default-styles>
-        <div class="centered container row">
-            <section class="main">
+        <div class="row">
+            <section class="center-component">
                 <div class="login panel">
                     <div class="rigid-grid panels-container">
                         <form>
@@ -23,7 +23,7 @@
                             <p><i18n>terms.revalidate.chartAndCguLinks</i18n></p>
 
                             <input id="revalidate" type="checkbox" ng-model="checked">
-                            <label for="revalidate" style="display: inline;"><i18n>terms.revalidate.checkbox</i18n></label>
+                            <label for="revalidate" style="display: inline; float: none; line-height: 30px;"><i18n>terms.revalidate.checkbox</i18n></label>
                             
                             <div class="flex-row justify-end">
                                 <button ng-click="validate()" ng-disabled="!checked" class="vertical-spacing-four">
