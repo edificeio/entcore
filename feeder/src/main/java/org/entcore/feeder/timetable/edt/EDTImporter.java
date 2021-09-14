@@ -267,7 +267,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		final String className = (classesMapping != null && ocn != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
 		final String classExternalId = classNameExternalId.get(className);
 		currentEntity.put("className", className);
-		currentEntity.put("classExternalId", classExternalId);
+		currentEntity.put("classExternalId", classExternalId == null ? "" : classExternalId);
 		if (pcs != null) {
 			for (Object o : pcs) {
 				if (o instanceof JsonObject) {
