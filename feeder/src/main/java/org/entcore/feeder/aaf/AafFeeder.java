@@ -30,13 +30,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class AafFeeder implements Feed {
 
@@ -65,6 +62,7 @@ public class AafFeeder implements Feed {
 					final JsonArray importSubDirectories;
 					try {
 						importSubDirectories = new fr.wseduc.webutils.collections.JsonArray(f.result().toString());
+						importer.setPrefixToImportList(importSubDirectories);
 					} catch (RuntimeException e) {
 						handler.handle(new ResultMessage().error("invalid.importDirectories.file"));
 						log.error(t -> "FAILED launch because of invalid importDirectories file.", e);
@@ -121,6 +119,7 @@ public class AafFeeder implements Feed {
 					});
 				} else {
 					log.info(t -> "START import process for current path");
+					importer.setPrefixToImportList(new JsonArray());
 					new StructureImportProcessing(path, vertx).start(handler);
 				}
 			}

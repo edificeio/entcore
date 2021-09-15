@@ -67,6 +67,7 @@ public class Importer {
 	private ConcurrentMap<String, JsonObject> toSupportPerseducnat1D2D = new ConcurrentHashMap<>();
 	private Set<String> blockedIne;
 	private Report report;
+	private JsonArray importsPrefixList;
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -1057,6 +1058,14 @@ public class Importer {
 
 	public ConcurrentMap<String, JsonObject> getToSupportPerseducnat1D2D() {
 		return toSupportPerseducnat1D2D;
+	}
+
+	public void setPrefixToImportList(JsonArray importSubDirectories) {
+		this.importsPrefixList = importSubDirectories.copy();
+	}
+
+	public JsonArray getPrefixToImportList() {
+		return this.importsPrefixList;
 	}
 
 }
