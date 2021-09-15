@@ -403,9 +403,10 @@ public class DefaultTimetableService implements TimetableService {
 				final JsonObject ge = new JsonObject().put("error.global", errors);
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")))
 				{
+					String dbTimetable = event.right().getValue().getString("timetable");
 					String ttType = timetableType;
 					if(ttType == null)
-						ttType = event.right().getValue().getString("timetable");
+						ttType = dbTimetable;
 
 					if (!("EDT".equals(ttType) && !path.endsWith("\\.xml")) &&
 							!("UDT".equals(ttType) && !path.endsWith("\\.zip"))) {
@@ -413,7 +414,7 @@ public class DefaultTimetableService implements TimetableService {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						return;
 					}
-					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null, groupsOnly, path, acceptLanguage, handler);
+					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null && (timetableType.equals(dbTimetable) == false), groupsOnly, path, acceptLanguage, handler);
 				} else {
 					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
 					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
