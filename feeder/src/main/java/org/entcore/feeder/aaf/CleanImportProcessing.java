@@ -22,6 +22,7 @@ package org.entcore.feeder.aaf;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class CleanImportProcessing extends BaseImportProcessing {
@@ -47,12 +48,20 @@ public class CleanImportProcessing extends BaseImportProcessing {
 	@Override
 	protected void preCommit() {
 		log.info(e-> "clean import process", true);
-		importer.removeOldFunctionalGroup();
-		importer.removeEmptyClasses();
-		importer.restorePreDeletedUsers();
+		final JsonArray importPrefixList = importer.getPrefixToImportList();
+		if (importPrefixList != null && !importPrefixList.isEmpty() && getAcademyPrefix() != null && !getAcademyPrefix().isEmpty()) {
+			importPrefixList.remove(getAcademyPrefix().substring(0, getAcademyPrefix().length() - 1));
+		}
+
+		if (importPrefixList == null || importPrefixList.isEmpty()) {
+			log.info(e-> "Global method calls in clean import process", true);
+			importer.removeOldFunctionalGroup();
+			importer.removeEmptyClasses();
+			importer.restorePreDeletedUsers();
+			importer.countUsersInGroups();
+			importer.deleteOldProfileAttachments();
+		}
 		importer.addStructureNameInGroups(getAcademyPrefix());
-		importer.countUsersInGroups();
-		importer.deleteOldProfileAttachments();
 	}
 
 	@Override

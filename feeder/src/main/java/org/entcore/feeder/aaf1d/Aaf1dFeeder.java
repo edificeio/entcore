@@ -66,6 +66,7 @@ public class Aaf1dFeeder implements Feed {
 					final JsonArray importSubDirectories;
 					try {
 						importSubDirectories = new fr.wseduc.webutils.collections.JsonArray(f.result().toString());
+						importer.setPrefixToImportList(importSubDirectories);
 					} catch (RuntimeException e) {
 						handler.handle(new ResultMessage().error("invalid.importDirectories.file"));
 						log.error(t -> "FAILED launch because of invalid importDirectories file.", e);
@@ -122,6 +123,7 @@ public class Aaf1dFeeder implements Feed {
 					});
 				} else {
 					log.info(t -> "START import process for current path");
+					importer.setPrefixToImportList(new JsonArray());
 					new StructureImportProcessing1d(path, vertx).start(handler);
 				}
 			}
