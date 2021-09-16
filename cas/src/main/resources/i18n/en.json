@@ -40,5 +40,7 @@
   "IjboxRegisteredService.name" : "IJBOX",
   "IjboxRegisteredService.description" : "IJBOX",
   "PmbRegisteredService.name" : "PMB",
-  "PmbRegisteredService.description" : "PMB"
+  "PmbRegisteredService.description" : "PMB",
+  "EnseignoRegisteredService.name" : "Enseigno",
+  "EnseignoRegisteredService.description" : "Enseigno"
 }
