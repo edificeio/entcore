@@ -937,7 +937,7 @@ public class User {
 		else
 		{
 			query = "MATCH (u:User) " +
-							"WHERE LOWER(u.firstName) = {firstName} AND LOWER(u.lastName) = {lastName} AND u.birthDate = {birthDate} AND ";
+					"WHERE u.firstNameSearchField = {firstName} AND u.lastNameSearchField = {lastName} AND u.birthDate = {birthDate} AND ";
 			j.put("firstName", Validator.sanitize((String) j.remove("firstName")));
 			j.put("lastName", Validator.sanitize((String) j.remove("lastName")));
 		}
