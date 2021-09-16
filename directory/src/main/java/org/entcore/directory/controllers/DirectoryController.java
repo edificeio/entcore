@@ -527,6 +527,9 @@ public class DirectoryController extends BaseController {
 			case "getUser" :
 				userService.get(userId, false, false, BusResponseHandler.busResponseHandler(message));
 				break;
+			case "getUserGoups" :
+				userService.getGroups(userId, BusResponseHandler.busArrayHandler(message));
+				break;
 			case "getUserInfos" :
 				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
 				break;
