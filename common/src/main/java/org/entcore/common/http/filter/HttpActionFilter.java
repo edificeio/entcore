@@ -23,6 +23,8 @@ import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.response.DefaultPages;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -46,7 +48,7 @@ public class HttpActionFilter extends AbstractActionFilter {
 
 	private final HttpClient httpClient;
 	private final Vertx vertx;
-
+	private static final Logger log = LoggerFactory.getLogger(HttpActionFilter.class);
 	public HttpActionFilter(Set<Binding> bindings, JsonObject conf, Vertx vertx,
 			ResourcesProvider provider) {
 		super(bindings, provider);
@@ -99,6 +101,7 @@ public class HttpActionFilter extends AbstractActionFilter {
 							((SecureHttpServerRequest) request).setSession(session);
 							userIsAuthorized(request, session, handler);
 						} else {
+							log.warn("HTTP action failed:"+body.toString()+ "/"+ response.headers()+"/"+response.statusCode());
 							UserAuthFilter.redirectLogin(vertx, request);
 						}
 					}
