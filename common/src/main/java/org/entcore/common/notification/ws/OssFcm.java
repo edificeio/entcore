@@ -36,7 +36,7 @@ public class OssFcm {
     private OAuth2Client client;
     private String accessToken;
     private long tokenExpiresDate;
-    private static String url;
+    private String url;
     private Logger log = LoggerFactory.getLogger(OssFcm.class);
     private JsonObject payload = new JsonObject();
     private PrivateKey key;
@@ -69,7 +69,7 @@ public class OssFcm {
                             @Override
                             public void handle(HttpClientResponse response) {
                                 if(response.statusCode() != 200){
-                                    log.error("[OssFcm.sendNotifications] request failed : " + response.statusMessage());
+                                    log.error("[OssFcm.sendNotifications] request failed : status=" + response.statusCode()+ "/ message="+response.statusMessage()+"/ url="+url+"/ token="+token);
                                 }
                             }
                         });
