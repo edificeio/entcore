@@ -333,11 +333,11 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void createOrUpdateAuthInfo(String clientId, String userId,
 			String scope, Handler<AuthInfo> handler) {
-		createOrUpdateAuthInfo(clientId, userId, scope, null, handler);
+		createOrUpdateAuthInfo(clientId, userId, scope, null, null, handler);
 	}
 
 	public void createOrUpdateAuthInfo(final String clientId, final String userId,
-			final String scope, final String redirectUri, final Handler<AuthInfo> handler) {
+			final String scope, final String redirectUri, String nonce, final Handler<AuthInfo> handler) {
 		if (clientId != null && userId != null &&
 				!clientId.trim().isEmpty() && !userId.trim().isEmpty()) {
 			if (scope != null && !scope.trim().isEmpty()) {
@@ -354,7 +354,7 @@ public class OAuthDataHandler extends DataHandler {
 							if (j != null &&
 								j.getJsonArray("scope", new fr.wseduc.webutils.collections.JsonArray()).getList()
 										.containsAll(Arrays.asList(scope.split("\\s")))) {
-								createAuthInfo(clientId, userId, scope, redirectUri, handler);
+								createAuthInfo(clientId, userId, scope, redirectUri, nonce, handler);
 							} else {
 								handler.handle(null);
 							}
@@ -364,7 +364,7 @@ public class OAuthDataHandler extends DataHandler {
 					}
 				});
 			} else {
-				createAuthInfo(clientId, userId, scope, redirectUri, handler);
+				createAuthInfo(clientId, userId, scope, redirectUri, nonce, handler);
 			}
 		} else {
 			handler.handle(null);
@@ -372,7 +372,7 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	private void createAuthInfo(String clientId, String userId, String scope,
-			String redirectUri, final Handler<AuthInfo> handler) {
+			String redirectUri, String nonce, final Handler<AuthInfo> handler) {
 		final JsonObject auth = new JsonObject()
 				.put("clientId", clientId)
 				.put("userId", userId)
@@ -382,6 +382,9 @@ public class OAuthDataHandler extends DataHandler {
 		if (redirectUri != null) {
 			auth.put("redirectUri", redirectUri)
 			.put("code", UUID.randomUUID().toString());
+		}
+		if (nonce != null) {
+			auth.put("nonce", nonce);
 		}
 		mongo.save(AUTH_INFO_COLLECTION, auth, new io.vertx.core.Handler<Message<JsonObject>>() {
 
@@ -420,7 +423,7 @@ public class OAuthDataHandler extends DataHandler {
 								.put("expiresIn", 3600);
 						if (openIdConnectService != null && authInfo.getScope() != null && authInfo.getScope().contains("openid")) {
 						//"2.0".equals(RequestUtils.getAcceptVersion(getRequest().getHeader("Accept")))) {
-							openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(), new io.vertx.core.Handler<AsyncResult<String>>() {
+							openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(), authInfo.getNonce(), new io.vertx.core.Handler<AsyncResult<String>>() {
 								@Override
 								public void handle(AsyncResult<String> ar) {
 									if (ar.succeeded()) {
