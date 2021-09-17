@@ -29,6 +29,6 @@ public interface OpenIdConnectService {
 
 	String getIss();
 
-	void generateIdToken(String userId, String clientId, Handler<AsyncResult<String>> handler);
+	void generateIdToken(String userId, String clientId, String nonce, Handler<AsyncResult<String>> handler);
 
 }

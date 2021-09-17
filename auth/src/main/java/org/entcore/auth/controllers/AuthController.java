@@ -244,7 +244,7 @@ public class AuthController extends BaseController {
 								public void handle(UserInfos user) {
 									if (user != null && user.getUserId() != null) {
 										((OAuthDataHandler) data).createOrUpdateAuthInfo(clientId, user.getUserId(),
-												scope, redirectUri, new Handler<AuthInfo>() {
+												scope, redirectUri, nonce, new Handler<AuthInfo>() {
 
 													@Override
 													public void handle(AuthInfo auth) {
