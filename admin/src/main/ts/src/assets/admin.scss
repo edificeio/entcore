@@ -274,6 +274,11 @@ select:disabled {
 
 input:invalid {box-shadow: none}
 
+// Generic Cursor Pointer Attribute
+[cursor] {
+  cursor: pointer;
+}
+
 // STYLING SELECT
 ode-mono-select {
   display: inline-block;
