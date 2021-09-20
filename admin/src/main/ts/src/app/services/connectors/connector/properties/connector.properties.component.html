@@ -93,10 +93,10 @@
       <div>
         <input type="checkbox"
                [(ngModel)]="connector.hasCas"
-               name="hasCas"
-               class="has-no-margin"
-               (change)="toggleCasType()">
-        <s5l>services.connector.cas.hasCas</s5l>
+               (change)="toggleCasType()"
+               id="hasCas"
+               name="hasCas">
+        <label for="hasCas" cursor class="has-margin-5"><s5l>services.connector.cas.hasCas</s5l></label>
       </div>
 
       <div *ngIf="connector.hasCas && connector.casTypeId"
@@ -116,8 +116,13 @@
           </option>
         </select>
         <div>
-          <i class='fa fa-plus' (click)="openCasType()" *ngIf="admc"></i>
-          <i class='fa fa-times' (click)="removeCasType()" *ngIf="admc"></i>
+<<<<<<< HEAD
+          <i cursor class='fa fa-plus has-margin-5' (click)="openCasType()" *ngIf="admc"></i>
+          <i cursor class='fa fa-times has-margin-5' (click)="removeCasType()" *ngIf="admc"></i>
+=======
+          <i cursor class="fa fa-plus has-margin-5 fa-lg" (click)="openCasType()" *ngIf="admc"></i>
+          <i cursor class="fa fa-times has-margin-5 fa-lg" (click)="removeCasType()" *ngIf="admc"></i>
+>>>>>>> f77681bdf (fix(cas): #48178, disabled statCasType when input hasCas checked)
         </div>
       </ode-form-field>
 

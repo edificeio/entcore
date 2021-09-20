@@ -172,9 +172,8 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     }
 
     public toggleCasType(): void {
-        if (this.connector.hasCas) {
-            this.connector.casTypeId = this.CAS_DEFAULT_CAS_TYPE_ID;
-        } else {
+        if (!this.connector.hasCas) {
+            this.connector.statCasType = null;
             this.connector.casTypeId = null;
             this.connector.casPattern = null;
         }
