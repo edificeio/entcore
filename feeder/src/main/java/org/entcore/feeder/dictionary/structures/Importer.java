@@ -909,6 +909,10 @@ public class Importer {
 		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, null, handler);
 	}
 
+	public void markMissingUsers(String structureExternalId, String currentSource, String prefix, final Handler<Void> handler) {
+		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, prefix, handler);
+	}
+
 	public static void markMissingUsers(String structureExternalId, String currentSource,
 			final Set<String> userImportedExternalId, final TransactionHelper transactionHelper,
 			final Handler<Void> handler) {

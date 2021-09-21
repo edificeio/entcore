@@ -419,7 +419,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				new TimetableReport.SchoolClass(getOrElse(currentEntity.getString("libelle"), currentEntity.getString("className"), false)));
 	}
 
-	// Origine: Groupe
+	// Origine: Groupes
 	void addGroup(JsonObject currentEntity)
 	{
 		String code = currentEntity.getString("code");

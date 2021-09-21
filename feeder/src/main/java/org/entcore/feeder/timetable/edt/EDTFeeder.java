@@ -549,18 +549,25 @@ public class EDTFeeder implements Feed, EDTReader
 
   private void end(Importer importer, Structure structure, Handler<Message<JsonObject>> handler)
   {
-    // Pour les professeurs
-    importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
+    importer.markMissingUsers(structure.getExternalId(), this.getFeederSource(), null, new Handler<Void>()
+    {
+      @Override
+      public void handle(Void v)
+      {
+        // Pour les professeurs
+        importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
 
-    // Pour les responsables
-    importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
-    importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
-    importer.addRelativeProperties(getFeederSource());
+        // Pour les responsables
+        importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
+        importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
+        importer.addRelativeProperties(getFeederSource());
 
-    // Finalisation
-    importer.restorePreDeletedUsers();
-    importer.addStructureNameInGroups(structure.getExternalId(), null);
-    importer.persist(handler);
+        // Finalisation
+        importer.restorePreDeletedUsers();
+        importer.addStructureNameInGroups(structure.getExternalId(), null);
+        importer.persist(handler);
+      }
+    });
   }
 
   @Override
