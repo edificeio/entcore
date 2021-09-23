@@ -112,7 +112,8 @@ public class ConversationController extends BaseController {
 		this.conversationService = new DefaultConversationService(vertx,
 				config.getString("app-name", Conversation.class.getSimpleName()));
 				*/
-		this.conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"));
+		this.conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"))
+				.setSendTimeout(config.getInteger("send-timeout",SqlConversationService.DEFAULT_SENDTIMEOUT));
 		this.neoConversationService = new Neo4jConversationService();
 		notification = new TimelineHelper(vertx, eb, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -49,7 +51,7 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.Either.Right;
 
 public class SqlConversationService implements ConversationService{
-
+	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
 	private final EventBus eb;
 	private final Sql sql;
 
@@ -61,6 +63,7 @@ public class SqlConversationService implements ConversationService{
 	private final String userMessageTable;
 	private final String userMessageAttachmentTable;
 	private final boolean optimizedThreadList;
+	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
 	public SqlConversationService(Vertx vertx, String schema) {
 		this.eb = Server.getEventBus(vertx);
@@ -72,6 +75,11 @@ public class SqlConversationService implements ConversationService{
 		userMessageTable = schema + ".usermessages";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
+	}
+
+	public SqlConversationService setSendTimeout(int sendTimeout) {
+		this.sendTimeout = sendTimeout;
+		return this;
 	}
 
 	@Override
@@ -242,7 +250,7 @@ public class SqlConversationService implements ConversationService{
 					}
 				}
 
-				sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
+				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
 			}
 		});
 	}

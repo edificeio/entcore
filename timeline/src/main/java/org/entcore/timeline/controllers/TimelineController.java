@@ -96,6 +96,9 @@ public class TimelineController extends BaseController {
 		super.init(vertx, config, rm, securedActions);
 		store = new DefaultTimelineEventStore();
 		final Integer maxRecipientLength = config.getInteger("maxRecipientLength");
+		if(config.getBoolean("isolate-mobile", false)){
+			store = new MobileTimelineEventStore(store);
+		}
 		if(maxRecipientLength != null){
 			store = new SplitTimelineEventStore(store, maxRecipientLength);
 		}
@@ -107,9 +110,6 @@ public class TimelineController extends BaseController {
 			final CacheService cacheService = CacheService.create(vertx, config);
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
-		}
-		if(config.getBoolean("isolate-mobile", false)){
-			store = new MobileTimelineEventStore(store);
 		}
 	}
 

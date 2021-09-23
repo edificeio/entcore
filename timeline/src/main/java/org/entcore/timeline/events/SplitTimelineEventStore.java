@@ -99,10 +99,14 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                 chunks.add(chunk);
             }
             final List<Future> futures = new ArrayList<>();
+            final JsonObject base = event.copy();
+            base.remove("recipients");
+            base.remove("recipientsIds");
             for (final NotificationChunk part : chunks) {
-                final JsonObject copy = event.copy();
+                final JsonObject copy = base.copy();
                 copy.put("recipients", new JsonArray(part.recipients));
                 copy.put("recipientsIds", new JsonArray(part.recipients));
+                log.info("Save chunk. recipients="+ copy.getJsonArray("recipients").size()+ " | "+copy.fieldNames());
                 final Future<JsonObject> future = Future.future();
                 original.add(copy, res -> {
                     future.complete(res);
