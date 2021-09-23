@@ -356,29 +356,31 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         }
 
         //Admin check
-        if (performCheck && !userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
-                !userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
-                !userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
-            results.handle(new Either.Left<String, JsonArray>("forbidden"));
-            return;
-        } else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
-            UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
-            List<String> scope = f.getScope();
-            if (scope != null && !scope.isEmpty()) {
-                condition += "AND s.id IN {scope} ";
-                params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
-            }
-        } else if (userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
-            if (filterObj.getJsonArray("classes").size() < 1) {
+        if(performCheck){
+            if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+                    !userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+                    !userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
                 results.handle(new Either.Left<String, JsonArray>("forbidden"));
                 return;
-            }
+            } else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+                UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+                List<String> scope = f.getScope();
+                if (scope != null && !scope.isEmpty()) {
+                    condition += "AND s.id IN {scope} ";
+                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                }
+            } else if (userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+                if (filterObj.getJsonArray("classes").size() < 1) {
+                    results.handle(new Either.Left<String, JsonArray>("forbidden"));
+                    return;
+                }
 
-            UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
-            List<String> scope = f.getScope();
-            if (scope != null && !scope.isEmpty()) {
-                condition = "AND c.id IN {scope} ";
-                params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+                List<String> scope = f.getScope();
+                if (scope != null && !scope.isEmpty()) {
+                    condition = "AND c.id IN {scope} ";
+                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                }
             }
         }
 
