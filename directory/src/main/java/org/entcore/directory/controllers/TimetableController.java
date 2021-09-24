@@ -233,8 +233,10 @@ public class TimetableController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetable(final HttpServerRequest request) {
 		String structAttr = request.params().get("structAttr");
+		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, false);
+		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, false, reportAsAutomatic);
 	}
 
 	@Post("/timetable/import/:timetableType/:structureId")
@@ -243,8 +245,10 @@ public class TimetableController extends BaseController {
 	public void importSpecificTimetable(final HttpServerRequest request)
 	{
 		String structAttr = request.params().get("structAttr");
+		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), isUAI, false, false);
+		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), isUAI, false, false, reportAsAutomatic);
 	}
 
 	@Post("/timetable/import/groups/:structureId")
@@ -252,11 +256,14 @@ public class TimetableController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void importTimetableGroupsOnly(final HttpServerRequest request) {
 		String structAttr = request.params().get("structAttr");
+		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, true);
+		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, false, true, reportAsAutomatic);
 	}
 
-	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean identifierIsUAI, boolean feederImport, boolean groupsOnly)
+	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType,
+										boolean identifierIsUAI, boolean feederImport, boolean groupsOnly, boolean setReportAsAutomatic)
 	{
 		if(importInProgress.containsKey(structureIdentifier) == true)
 		{
@@ -301,13 +308,13 @@ public class TimetableController extends BaseController {
 							timetableService.importTimetable(structureIdentifier, filename,
 									getHost(request), I18n.acceptLanguage(request),
 									identifierIsUAI, timetableType, groupsOnly,
-									hnd);
+									setReportAsAutomatic, hnd);
 						}
 						else
 						{
 							timetableService.feederPronote(structureIdentifier, filename,
 									getHost(request), I18n.acceptLanguage(request),
-									identifierIsUAI,
+									identifierIsUAI, setReportAsAutomatic,
 									hnd);
 						}
 					}
@@ -334,8 +341,10 @@ public class TimetableController extends BaseController {
 	public void launchPronoteImport(final HttpServerRequest request)
 	{
 		String structAttr = request.params().get("structAttr");
+		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
 		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, true, false);
+		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+		this.receiveTimetableFile(request, request.params().get("structureId"), null, isUAI, true, false, reportAsAutomatic);
 	}
 
 	@Get("/timetable/import/:structureId/reports")
