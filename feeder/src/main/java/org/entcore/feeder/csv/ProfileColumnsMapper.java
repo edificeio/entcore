@@ -272,18 +272,26 @@ public class ProfileColumnsMapper {
 
 	JsonArray getColumsNames(String profile, String[] strings, List<String> columns) {
 		JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+		int nbTrailingIgnoredErrors = 0;
 		for (int j = 0; j < strings.length; j++) {
 			String cm = columnsNameMapping(profile, strings[j]);
 			if (profilesNamesMapping.get(profile).containsValue(cm)) {
+				if(nbTrailingIgnoredErrors > 0)
+					return errors;
 				columns.add(j, cm);
 			} else if ("Student".equals(profile) && "relative".equals(cm)) {
+				if(nbTrailingIgnoredErrors > 0)
+					return errors;
 				columns.add(j, cm);
 			} else {
 				errors.add(cm);
-				return errors;
+				if(strings[j].isEmpty()) // Ignore trailing empty strings
+					++nbTrailingIgnoredErrors;
+				else
+					return errors;
 			}
 		}
-		return errors;
+		return errors.size() == nbTrailingIgnoredErrors ? new fr.wseduc.webutils.collections.JsonArray() : errors;
 	}
 
 	String columnsNameMapping(String profile, String columnName) {
