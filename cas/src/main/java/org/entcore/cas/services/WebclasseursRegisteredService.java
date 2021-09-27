@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,7 +40,14 @@ public class WebclasseursRegisteredService extends AbstractCas20ExtensionRegiste
 
 	@Override
 	protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionnalAttributes) {
-		user.setUser(data.getString(principalAttributeName));
+		final List<String> lExtId = StringUtils.split(data.getString(principalAttributeName), "-");
+		//uuid contains five -
+		if (lExtId != null && !lExtId.isEmpty() && lExtId.size() < 5) {
+			//ext id without prefix
+			user.setUser(lExtId.get(lExtId.size() - 1));
+		} else {
+			user.setUser(data.getString(principalAttributeName));
+		}
 
 		try {
 			// Lastname
