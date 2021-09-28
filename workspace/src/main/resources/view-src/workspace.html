@@ -100,7 +100,7 @@
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
 					<a ng-click="confirmDelete()" ng-if="canEmptyTrash()" ng-hide="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
                     <div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-                        <sniplet application="lool" template="create"></sniplet>
+                        <sniplet application="lool" template="create" source="{type: 'secondary'}"></sniplet>
                     </div>
 					<div class="row" ng-hide="canEmptyTrash() && isTrashEmpty()">
 						<h2>
@@ -178,9 +178,14 @@
 						<p ng-if="openedFolder.folder === currentTree" class="emptyscreen-footer">
 							<i18n>empty.workspace</i18n>
 						</p>
-						<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()" workflow="[[currentTree.buttons[0].workflow]]">
-							 <i18n>workspace.create.workspace</i18n>
-						</button>
+						<div style="display: grid; grid-template-columns: 1fr 1fr">
+							<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()" workflow="[[currentTree.buttons[0].workflow]]">
+								<i18n>workspace.create.workspace</i18n>
+							</button>
+							<div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+								<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
+							</div>
+						</div>
 					</div>
 					<!-- Empty screen partagé avec moi -->
 					<div class="emptyscreen" ng-if="currentTree.filter === 'shared' && !openedFolder.all.length && !reloadingContent">
