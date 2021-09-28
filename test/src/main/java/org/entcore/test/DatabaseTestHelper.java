@@ -11,6 +11,7 @@ import org.entcore.common.sql.SqlResult;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.vertx.mods.MongoPersistor;
 
 import fr.wseduc.mongodb.MongoDb;
@@ -23,7 +24,26 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 
+import java.util.Collections;
+import java.util.Map;
+
 public class DatabaseTestHelper {
+
+    private class PostgreSQLContainerWithParams extends PostgreSQLContainer {
+
+        public PostgreSQLContainerWithParams(String dockerImageName) {
+            this(dockerImageName, null);
+        }
+
+        public PostgreSQLContainerWithParams(String dockerImageName, Map<String,String> params) {
+            super(DockerImageName.parse(dockerImageName));
+            if (params != null) {
+                this.urlParameters.putAll(params);
+            }
+        }
+
+    }
+
     private final Vertx vertx;
 
     public DatabaseTestHelper(Vertx v) {
@@ -99,11 +119,11 @@ public class DatabaseTestHelper {
     }
 
     public PostgreSQLContainer<?> createPostgreSQLContainer() {
-        return new PostgreSQLContainer("postgres:9.5");
+        return new PostgreSQLContainerWithParams("postgres:9.5", Collections.singletonMap("stringtype", "unspecified"));
     }
 
     public PostgreSQLContainer<?> createPostgreSQL96Container() {
-        return new PostgreSQLContainer("postgres:9.6");
+        return new PostgreSQLContainerWithParams("postgres:9.6", Collections.singletonMap("stringtype", "unspecified"));
     }
 
     public Neo4jContainer<?> createNeo4jContainer() {
