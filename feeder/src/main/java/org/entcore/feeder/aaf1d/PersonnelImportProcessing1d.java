@@ -123,7 +123,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 					Structure s = importer.getStructure(g[0]);
 
 					if(s != null && DIRECTION_FONCTIONS.contains(g[4]) == true)
-							createDirectionGroups(new JsonArray().add(g[0]), null);
+							createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
 				}
 			}
 		}
