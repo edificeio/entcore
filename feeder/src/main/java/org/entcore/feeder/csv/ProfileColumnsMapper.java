@@ -338,4 +338,9 @@ public class ProfileColumnsMapper {
 		return j;
 	}
 
+	public boolean profileExists(String profile)
+	{
+		return this.profilesNamesMapping.containsKey(profile);
+	}
+
 }
