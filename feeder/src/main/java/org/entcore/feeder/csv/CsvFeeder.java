@@ -171,6 +171,13 @@ public class CsvFeeder implements Feed {
 					try {
 						log.info("Parsing file : " + file);
 						final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
+
+						if(columnsMapper.profileExists(profile) == false)
+						{
+							log.info("No profile found, ignoring file " + file);
+							handlers[j + 1].handle(null);
+							return;
+						}
 						CSVUtil.getCharset(vertx, file, new Handler<String>(){
 
 							@Override
@@ -216,6 +223,14 @@ public class CsvFeeder implements Feed {
 				public void handle(String charset) {
 					try {
 						final String profile = file.substring(file.lastIndexOf(File.separator) + 1).replaceFirst(".csv", "");
+						if(columnsMapper.profileExists(profile) == false)
+						{
+							log.info("No profile found, ignoring file " + file);
+							if (count.decrementAndGet() == 0) {
+								queryNotModifiableIds(handler, externalIds);
+							}
+							return;
+						}
 						CSVReader csvReader = getCsvReader(file, charset);
 						String[] strings;
 						int i = 0;
