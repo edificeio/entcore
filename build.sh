@@ -20,7 +20,7 @@ esac
 
 # options
 SPRINGBOARD="recette"
-MODULE="conversation"
+MODULE=""
 for i in "$@"
 do
 case $i in
@@ -36,6 +36,14 @@ case $i in
     ;;
 esac
 done
+
+if [ "$MODULE" = "" ]; then
+    GRADLE_OPTION=""
+    NODE_OPTION=""
+else
+  GRADLE_OPTION=":$MODULE:"
+  NODE_OPTION="--module $MODULE"
+fi
 
 #try jenkins branch name => then local git branch name => then jenkins params
 echo "[buildNode] Get branch name from jenkins env..."
@@ -62,59 +70,63 @@ clean () {
 }
 
 buildNode () {
-  #try jenkins branch name => then local git branch name => then jenkins params
-  echo "[buildNode] Get branch name from jenkins env..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-  fi
-  if [ ! -z "$FRONT_TAG" ]; then
-    echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
-    BRANCH_NAME="$FRONT_TAG"
-  fi
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
-  fi
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]; then
+    #try jenkins branch name => then local git branch name => then jenkins params
+    echo "[buildNode] Get branch name from jenkins env..."
+    BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Get branch name from git..."
+      BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+    fi
+    if [ ! -z "$FRONT_TAG" ]; then
+      echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
+      BRANCH_NAME="$FRONT_TAG"
+    fi
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Branch name should not be empty!"
+      exit -1
+    fi
 
-  if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]; then
-      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
-      esac
-  else
-      echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
-      esac
+    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]; then
+        echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
+        case `uname -s` in
+          MINGW*)
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            ;;
+          *)
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+        esac
+    else
+        echo "[buildNode] Use entcore tag $BRANCH_NAME"
+        case `uname -s` in
+          MINGW*)
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            ;;
+          *)
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+        esac
+    fi
   fi
 }
 
 buildAdminNode() {
-  case `uname -s` in
-    MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$next ngx-ode-sijil@$next ngx-ode-ui@$next && npm run build-docker-prod"
-      ;;
-    *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$next ngx-ode-sijil@$next ngx-ode-ui@$next && npm run build-docker-prod"
-  esac
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    case `uname -s` in
+      MINGW*)
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$next ngx-ode-sijil@$next ngx-ode-ui@$next && npm run build-docker-prod"
+        ;;
+      *)
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$next ngx-ode-sijil@$next ngx-ode-ui@$next && npm run build-docker-prod"
+    esac
+  fi
 }
 
 buildGradle () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle shadowJar install publishToMavenLocal
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install "$GRADLE_OPTION"publishToMavenLocal
 }
 
 testGradle () {
-  ./gradlew test
+  ./gradlew "$GRADLE_OPTION"test
 }
 
 watch () {
@@ -137,7 +149,7 @@ publish () {
     echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"publish
 }
 
 for param in "$@"

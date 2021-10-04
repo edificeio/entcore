@@ -12,6 +12,11 @@ var argv = require('yargs').argv;
 var fs = require('fs');
 
 var apps = ['auth', 'timeline', 'conversation', 'archive', 'workspace', 'directory', 'portal'];
+var i = process.argv.indexOf("--module");
+// check if a module is specified and if it matches one of apps
+if (i > -1 && process.argv.length > (i+1) && apps.indexOf(process.argv[i+1]) > -1) {
+    apps = [process.argv[i+1]];
+}
 
 var paths = {
     infra: '../infra-front'
