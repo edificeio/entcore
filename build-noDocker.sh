@@ -7,7 +7,7 @@ fi
 
 # options
 SPRINGBOARD="recette"
-MODULE="conversation"
+MODULE=""
 for i in "$@"
 do
 case $i in
@@ -23,6 +23,14 @@ case $i in
     ;;
 esac
 done
+
+if [ "$MODULE" = "" ]; then
+    GRADLE_OPTION=""
+    NODE_OPTION=""
+else
+  GRADLE_OPTION=":$MODULE:"
+  NODE_OPTION="--module $MODULE"
+fi
 
 BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
 if [ "$BRANCH_NAME" = "" ]; then
@@ -43,43 +51,47 @@ clean () {
 }
 
 buildNode () {
-  if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]; then
-      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-      case `uname -s` in
-        MINGW*)
-          npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build
-          ;;
-        *)
-          npm install && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD
-      esac
-  else
-      echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      case `uname -s` in
-        MINGW*)
-          npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build
-          ;;
-        *)
-          npm install && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD
-      esac
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]; then
+    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]; then
+        echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
+        case `uname -s` in
+          MINGW*)
+            npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION
+            ;;
+          *)
+            npm install && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
+        esac
+    else
+        echo "[buildNode] Use entcore tag $BRANCH_NAME"
+        case `uname -s` in
+          MINGW*)
+            npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION
+            ;;
+          *)
+            npm install && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
+        esac
+    fi
   fi
 }
 
 buildAdminNode() {
-  DEFAULT_PATH=$PWD
-  cd admin/src/main/ts
-  case `uname -s` in
-    MINGW*)
-      cd admin/src/main/ts
-      npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
-      ;;
-    *)
-      npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
-  esac
-  cd $DEFAULT_PATH
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    DEFAULT_PATH=$PWD
+    cd admin/src/main/ts
+    case `uname -s` in
+      MINGW*)
+        cd admin/src/main/ts
+        npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
+        ;;
+      *)
+        npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
+    esac
+    cd $DEFAULT_PATH
+  fi
 }
 
 buildGradle () {
-  gradle shadowJar install publishToMavenLocal
+  gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install "$GRADLE_OPTION"publishToMavenLocal
 }
 
 localDep () {
