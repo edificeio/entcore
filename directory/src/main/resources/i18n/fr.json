@@ -333,6 +333,7 @@
     "directory.isolatedUsers": "Personnes non rattachées",
     "directory.isolatedUsersInStructure": "Personnes sans classe",
     "directory.kilobyte": "Kilo-octet(s)",
+    "directory.lastLogin": "Dernière connexion",
     "directory.lastName": "Nom",
     "directory.launchImport": "Lancer l'import de personnes.",
     "directory.launchUserExport": "Lancer l'export",

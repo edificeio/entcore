@@ -68,6 +68,7 @@ export class User extends Model {
     login: string;
     tempLoginAlias: string;
     originalLogin: string;
+    lastLogin: string;
     blocked: boolean;
     type: UserTypes;
     profile: UserTypes;
