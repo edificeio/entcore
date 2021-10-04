@@ -1,13 +1,14 @@
 import { User, ClassRoom, UserTypes } from "../model";
 import { directoryService } from "../service";
-import { template, idiom as lang } from "entcore";
+import { template, idiom as lang, currentLanguage } from "entcore";
 import { EventDelegateScope } from "./events";
 
 enum Column {
     Name,
     Birthdate,
     Login,
-    Activation
+    Activation,
+    LastLogin
 }
 export interface UserListDelegateScope extends EventDelegateScope {
     kinds: {
@@ -25,6 +26,7 @@ export interface UserListDelegateScope extends EventDelegateScope {
     isSelectedTab(kind: UserTypes): boolean;
     displayCode(user: User): string
     displayCodeCss(user: User): string
+    displayLastLogin(user: User): string;
     sortAsc(column: Column, e: MouseEvent);
     sortDesc(column: Column, e: MouseEvent);
     onUserSelected()
@@ -43,6 +45,13 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
     let schoolClass: ClassRoom;
     let currentSortDir: "desc" | "asc" = "asc";
     let currentSort: Column = Column.Name;
+    let dateFormat: Intl.DateTimeFormat = Intl.DateTimeFormat(currentLanguage, {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
     $scope.columns = Column;
     $scope.kinds = {
         Personnel: "Personnel",
@@ -94,6 +103,29 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
             if (res == 0) {
                 return getterName(u1).localeCompare(getterName(u2));
             } if (currentSortDir == "desc") {
+                return -1 * res;
+            } else {
+                return res;
+            }
+        }
+        if (currentSort == Column.LastLogin) {
+            const getterName = (u: User) => {
+                return u.safeDisplayName || "";
+            }
+            let res;
+            if (u1.lastLogin && u2.lastLogin) {
+                let d1: Date = new Date(u1.lastLogin);
+                let d2: Date = new Date(u2.lastLogin);
+                res = d1 < d2 ? -1 : d1 > d2 ? 1 : 0;
+            } else if (u1.lastLogin && !u2.lastLogin) {
+                res = 1;
+            } else if (!u1.lastLogin && u2.lastLogin) {
+                res = -1;
+            } else {
+                // default sort by name asc
+                res = getterName(u1).localeCompare(getterName(u2));
+            }
+            if (currentSortDir == "desc") {
                 return -1 * res;
             } else {
                 return res;
@@ -220,6 +252,11 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
         } else {
             return "activated";
         }
+    }
+    $scope.displayLastLogin = function (user) {
+        if (user.lastLogin) {
+            return dateFormat.format(new Date(user.lastLogin));
+        } else return "";
     }
     $scope.openInfosIfNotSelected = function (user) {
         if (!isTextSelected()) {
