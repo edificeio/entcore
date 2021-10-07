@@ -640,7 +640,7 @@ public class SqlConversationService implements ConversationService{
 							"MATCH (v:Visible) " +
 							"WHERE (v.id = visibles.id OR v.id IN {to} OR v.id IN {cc}) " +
 							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+							"visibles.displayName as displayName, visibles.displayNameSearchField as displayNameSearchField, visibles.groupDisplayName as groupDisplayName, " +
 							"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile ";
 					callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 				}
@@ -648,7 +648,7 @@ public class SqlConversationService implements ConversationService{
 		} else {
 			String customReturn =
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+					"visibles.displayName as displayName, visibles.displayNameSearchField as displayNameSearchField, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile";
 			callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 		}
