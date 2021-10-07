@@ -68,7 +68,7 @@
                               </th>
                         </tr>
                         <tr>
-                            <th colspan="6">
+                            <th colspan="[[isSelectedTab(kinds.Student) ? '6' : '5']]">
                               <div class="searchbar ten relative">
                                 <input type="text" class="class-admin__input--no-border twelve" i18n-placeholder="userBook.search" ng-model="userList.search" ng-focus="smoothScrollTo('#searchUser')"/>
                                 <i class="search" ng-click="search(searchField.words)"></i>
@@ -92,7 +92,7 @@
                             </td>
                             <td ng-if="isSelectedTab(kinds.Student)"><span ng-if="user.hasBirthDate">[[user.shortBirthDate]]</span></td>
                             <td>[[user.login]]</td>
-                            <td ng-class="displayCodeCss(user)" style="width: 230px">
+                            <td ng-class="displayCodeCss(user)">
                                 [[displayCode(user)]]
                                 <span class="tipbox left left-spacing" ng-if="user.resetCode">
                                     <i class="help" style="color: #3889c1"></i>
