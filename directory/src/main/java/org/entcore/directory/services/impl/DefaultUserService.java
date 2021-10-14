@@ -460,7 +460,9 @@ public class DefaultUserService implements UserService {
 				"HEAD(TAIL(COLLECT(distinct parent.externalId))) as parent2ExternalId, " + // Hack for GEPI export
 				"COUNT(distinct class.id) > 0 as hasClass, " + // Hack for Esidoc export
 				"CASE WHEN p.name = 'Teacher' THEN 'PROFS' ELSE 'ELEVES' END as chamiloProfile, " + // Hack for chamilo export
-				"CASE WHEN p.name = 'Teacher' THEN collect(distinct {name: sub.label}) ELSE collect(distinct {name: class.name}) END as allClassesSubject " + // Hack for chamilo export
+				"CASE WHEN p.name = 'Teacher' THEN collect(distinct {name: sub.label}) ELSE collect(distinct {name: class.name}) END as allClassesSubject, " + // Hack for chamilo export
+				"split(u.birthDate, '-')[0] as birthYear, " + // Hack for Pmb export
+				"REPLACE(u.address,';',' ') as safeAddress " + // Hack for Pmb export
 				"ORDER BY type DESC, displayName ASC ";
 
 		neo.execute(query, params, validResultHandler(results));
