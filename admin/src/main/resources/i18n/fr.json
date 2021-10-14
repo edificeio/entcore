@@ -905,6 +905,8 @@
     "services.connector.export.type.chamilo": "Export Chamilo",
     "services.connector.export.type.sacoche": "Export Sacoche",
     "services.connector.export.type.gepi": "Export Gepi",
+    "services.connector.export.type.pmb.student": "Export PMB élève",
+    "services.connector.export.type.pmb.teacher": "Export PMB enseignant/personnel",
     "services.connector.export.type.proeps.student": "Export ProEPS élève",
     "services.connector.export.type.proeps.relative": "Export ProEPS parent",
     "services.connector.export.type.transition": "Export Transition d'année",

@@ -729,6 +729,24 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			format: 'csv'
 		},
 		{
+        	key: 'Pmb-teacher',
+        	label: 'directory.admin.export.type.pmb.teacher',
+        	format: 'csv',
+        	profiles: ['Teacher'],
+            show: function(){
+            	return $scope.exportData.params.profile === 'Teacher'
+            }
+        },
+        {
+            key: 'Pmb-student',
+            label: 'directory.admin.export.type.pmb.student',
+            format: 'csv',
+            profiles: ['Student'],
+            show: function(){
+                return $scope.exportData.params.profile === 'Student'
+            }
+        },
+		{
 			key: "ProEPS-student",
 			label: 'directory.admin.export.type.proeps.student',
 			format: 'csv',

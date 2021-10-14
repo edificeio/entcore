@@ -195,6 +195,8 @@
     "directory.admin.export.type.proeps.student": "Export ProEPS élève",
     "directory.admin.export.type.proeps.relative": "Export ProEPS parent",
     "directory.admin.export.type.chamilo": "Export Chamilo",
+    "directory.admin.export.type.pmb.student": "Export PMB élève",
+    "directory.admin.export.type.pmb.teacher": "Export PMB enseignant/personnel",
     "directory.admin.export.type.transition": "Export Transition d'année",
     "directory.admin.exportTitle": "Export",
     "directory.admin.exports": "Exporter les données d'authentification",
