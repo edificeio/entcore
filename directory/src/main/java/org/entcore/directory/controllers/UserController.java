@@ -370,12 +370,14 @@ public class UserController extends BaseController {
 					final String format = request.params().get("format");
 					Handler<Either<String, JsonArray>> handler;
 
-					//hack Chamilo
+					//hack Chamilo and PMB
 					if ("Chamilo".equals(exportType)) {
 						types.clear();
 						types.add("Teacher").add("Student");
+					} else if ("Pmb-teacher".equals(exportType)) {
+						types.clear();
+						types.add("Teacher").add("Personnel");
 					}
-
 					if(format == null){
 						handler = arrayResponseHandler(request);
 					} else {
@@ -407,8 +409,8 @@ public class UserController extends BaseController {
 													request.response().putHeader("Content-Disposition",
 															"attachment; filename="+filename);
 
-													//hack Chamilo, without bom
-													if ("Chamilo".equals(exportType)) {
+													//hack Chamilo, PMB without bom
+													if ("Chamilo".equals(exportType) || "Pmb-teacher".equals(exportType) || "Pmb-student".equals(exportType)) {
 														request.response().end(export);
 													} else {
 														request.response().end('\ufeff' + export);

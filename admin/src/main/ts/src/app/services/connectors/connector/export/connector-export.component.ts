@@ -70,6 +70,18 @@ export class ConnectorExportComponent extends OdeComponent {
             profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
         },
         {
+            value: 'Pmb-teacher',
+            label: 'services.connector.export.type.pmb.teacher',
+            format: 'csv',
+            profiles: ['Teacher']
+        },
+        {
+            value: 'Pmb-student',
+            label: 'services.connector.export.type.pmb.student',
+            format: 'csv',
+            profiles: ['Student']
+        },
+        {
             value: 'ProEPS-student',
             label: 'services.connector.export.type.proeps.student',
             format: 'csv',

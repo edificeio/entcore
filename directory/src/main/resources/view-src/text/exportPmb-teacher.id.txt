@@ -1,0 +1,3 @@
+{{#list}}
+{{externalId}};{{lastName}};{{firstName}};{{safeAddress}};;{{zipCode}};{{city}};{{phone}};{{birthYear}};;{{email}};{{originalLogin}};
+{{/list}}
