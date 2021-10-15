@@ -120,7 +120,11 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 		if (window.location.href.split('callback=').length > 1) {
 			let details = window.location.href.split('callback=')[1].split('&')[0].split('#');
 			_callback = details[0];
-			$scope.details = details.length > 0 ? details[1] : "";
+			$scope.details = details.length > 1 ? details[1] : "";
+		} else if (window.location.href.split('callBack=').length > 1) {
+			let details = window.location.href.split('callBack=')[1].split('&')[0].split('#');
+			_callback = details[0];
+			$scope.details = details.length > 1 ? details[1] : "";
 		}
 	}
 
