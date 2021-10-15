@@ -28,6 +28,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
@@ -36,6 +37,7 @@ import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.ImportsLauncher;
+import org.entcore.feeder.timetable.UDTWebDAVImportsLauncher;
 import org.entcore.feeder.timetable.TimetableReport;
 import org.entcore.feeder.timetable.edt.EDTFeeder;
 import org.entcore.feeder.timetable.edt.EDTImporter;
@@ -51,6 +53,8 @@ import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
 
 import java.text.ParseException;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -180,32 +184,16 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						config.getString("pronote-partner-name", "NEO-Open"));
 
 				feeds.put("PRONOTE", new EDTFeeder(edtUtils, config.getString("mode", "prod")));
-				final String edtPath = edt.getString("path");
-				final String edtCron = edt.getString("cron");
-				if (isNotEmpty(edtPath) && isNotEmpty(edtCron)) {
-					try {
-						new CronTrigger(vertx, edtCron).schedule(
-								new ImportsLauncher(vertx, storage, edtPath, postImport, edtUtils,
-										config.getBoolean("edt-user-creation", false), false));
-					} catch (ParseException e) {
-						logger.error("Error in cron edt", e);
-					}
-				}
+				setupImportCron(edt, new ImportsLauncher(vertx, storage, null, postImport, edtUtils, config.getBoolean("edt-user-creation", false), false));
 			}
 		}
 		final JsonObject udt = config.getJsonObject("udt");
 		if (udt != null) {
-			final String udtPath = udt.getString("path");
-			final String udtCron = udt.getString("cron");
-			if (isNotEmpty(udtPath) && isNotEmpty(udtCron)) {
-				try {
-					new CronTrigger(vertx, udtCron).schedule(
-							new ImportsLauncher(vertx, storage, udtPath, postImport, edtUtils,
-									config.getBoolean("udt-user-creation", false), false));
-				} catch (ParseException e) {
-					logger.error("Error in cron udt", e);
-				}
-			}
+			setupImportCron(udt, new ImportsLauncher(vertx, storage, null, postImport, edtUtils, config.getBoolean("udt-user-creation", false), false));
+
+			final JsonObject udtWebdav = udt.getJsonObject("webdav");
+			setupImportCron(udtWebdav, new UDTWebDAVImportsLauncher(vertx, storage, null, postImport, null, false, false));
+
 		}
 		final JsonObject csv = config.getJsonObject("csv");
 		if (csv != null) {
@@ -223,6 +211,59 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		I18n.getInstance().init(vertx);
 		validatorFactory = new ValidatorFactory(vertx);
+	}
+
+	private void setupImportCron(JsonObject cronConf, ImportsLauncher launcher)
+	{
+		if(cronConf != null)
+		{
+			final String path = cronConf.getString("path");
+			final String cron = cronConf.getString("cron");
+			final String from = cronConf.getString("from");
+			final String to   = cronConf.getString("to");
+
+			OffsetTime timeFromTmp = null;
+			OffsetTime timeToTmp   = null;
+			boolean toBeforeFromTmp = false;
+
+			if (!StringUtils.isEmpty(from) && ! StringUtils.isEmpty(to)) {
+				try {
+					timeFromTmp = OffsetTime.parse(from);
+					timeToTmp = OffsetTime.parse(to);
+					toBeforeFromTmp = timeFromTmp.isAfter(timeToTmp);
+				} catch (DateTimeParseException dtpe) {
+					logger.error("Error in webdav from/to: " + dtpe.toString());
+				}
+			}
+
+			final OffsetTime timeFrom = timeFromTmp;
+			final OffsetTime timeTo = timeToTmp;
+			final boolean toBeforeFrom = toBeforeFromTmp;
+
+			if (isNotEmpty(path) && isNotEmpty(cron)) {
+				try {
+					launcher.setPath(path);
+					new CronTrigger(vertx, cron).schedule(new Handler<Long>()
+					{
+						@Override
+						public void handle(Long l)
+						{
+							if(timeFrom != null && timeTo != null)
+							{
+								OffsetTime now = OffsetTime.now();
+								if(toBeforeFrom == true && (now.isAfter(timeTo) && now.isBefore(timeFrom)))
+									return;
+								else if(toBeforeFrom == false && (now.isAfter(timeTo) || now.isBefore(timeFrom)))
+									return;
+							}
+							launcher.handle(l);
+						}
+					});
+				} catch (ParseException e) {
+					logger.error("Error in feeder cron " + e);
+				}
+			}
+		}
 	}
 
 	private String getFilesDirectory(String feeder) {
