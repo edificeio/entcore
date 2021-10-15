@@ -39,15 +39,15 @@ import java.util.regex.Pattern;
 
 public class ImportsLauncher implements Handler<Long> {
 
-	private static final Logger log = LoggerFactory.getLogger(ImportsLauncher.class);
-	private static final Pattern UAI_PATTERN = Pattern.compile(".*([0-9]{7}[A-Z]).*");
-	private final Vertx vertx;
-	private final Storage storage;
-	private final String path;
-	private final PostImport postImport;
-	private EDTUtils edtUtils;
-	private final boolean timetableUserCreation;
-	private final boolean isManualImport;
+	protected static final Logger log = LoggerFactory.getLogger(ImportsLauncher.class);
+	protected static final Pattern UAI_PATTERN = Pattern.compile(".*([0-9]{7}[A-Z]).*");
+	protected final Vertx vertx;
+	protected final Storage storage;
+	protected String path;
+	protected final PostImport postImport;
+	protected EDTUtils edtUtils;
+	protected final boolean timetableUserCreation;
+	protected final boolean isManualImport;
 
 	public ImportsLauncher(Vertx vertx, Storage storage, String path, PostImport postImport, boolean timetableUserCreation, boolean isManualImport) {
 		this.vertx = vertx;
@@ -64,9 +64,14 @@ public class ImportsLauncher implements Handler<Long> {
 		this.edtUtils = edtUtils;
 	}
 
+	public void setPath(String path)
+	{
+		this.path = path;
+	}
+
 	@Override
 	public void handle(Long event) {
-		vertx.fileSystem().readDir(path, (edtUtils != null ? ".*.xml": ".*.zip"), new Handler<AsyncResult<List<String>>>() {
+		listFiles(new Handler<AsyncResult<List<String>>>() {
 			@Override
 			public void handle(final AsyncResult<List<String>> event) {
 				if (event.succeeded()) {
@@ -83,41 +88,49 @@ public class ImportsLauncher implements Handler<Long> {
 						handlers[i] = new Handler<Void>() {
 							@Override
 							public void handle(Void v) {
-								final String file = event.result().get(j);
-								log.info("Parsing file : " + file);
-								Matcher matcher;
-								if (file != null && (matcher = UAI_PATTERN.matcher(file)).find()) {
-
-									ResultMessage m = new ResultMessage(new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject event) {
-											if (!"ok".equals(event.getString("status"))) {
-												log.error("Error in import : " + file + " - " + event.getString("message"));
-											}
-											handlers[j + 1].handle(null);
-										}
-									})
-											.put("path", file)
-											.put("UAI", matcher.group(1))
-											.put("isManualImport", isManualImport)
-											.put("language", "fr");
-									if (edtUtils != null) {
-										EDTImporter.launchImport(vertx, storage, edtUtils, m, timetableUserCreation);
-									} else {
-										UDTImporter.launchImport(vertx, storage, m, timetableUserCreation);
-									}
-								} else {
-									log.error("UAI not found in filename : " + file);
-								}
+								importFile(event.result().get(j), handlers[j + 1]);
 							}
 						};
 					}
 					handlers[0].handle(null);
 				} else {
-					log.error("Error reading directory.");
+					log.error("Error reading files.");
 				}
 			}
 		});
 	}
 
+	protected void listFiles(Handler<AsyncResult<List<String>>> handler)
+	{
+		vertx.fileSystem().readDir(path, (edtUtils != null ? ".*.xml": ".*.zip"), handler);
+	}
+
+	protected void importFile(String file, Handler<Void> handler)
+	{
+		log.info("Parsing file " + file);
+		Matcher matcher;
+		if (file != null && (matcher = UAI_PATTERN.matcher(file)).find()) {
+
+			ResultMessage m = new ResultMessage(new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject event) {
+					if (!"ok".equals(event.getString("status"))) {
+						log.error("Error in import : " + file + " - " + event.getString("message"));
+					}
+					handler.handle(null);
+				}
+			})
+					.put("path", file)
+					.put("UAI", matcher.group(1))
+					.put("isManualImport", isManualImport)
+					.put("language", "fr");
+			if (edtUtils != null) {
+				EDTImporter.launchImport(vertx, storage, edtUtils, m, timetableUserCreation);
+			} else {
+				UDTImporter.launchImport(vertx, storage, m, timetableUserCreation);
+			}
+		} else {
+			log.error("UAI not found in filename " + file);
+		}
+	}
 }
