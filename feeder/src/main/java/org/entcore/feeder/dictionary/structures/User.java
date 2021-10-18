@@ -108,14 +108,14 @@ public class User {
 		protected void delete() {
 			try {
 				TransactionHelper tx = TransactionManager.getInstance().begin();
-				User.getDelete(delay, LIMIT, tx);
 				User.deleteNullId(delay, tx);
+				User.getDelete(delay, LIMIT, tx);
 				tx.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
 						JsonArray results = m.body().getJsonArray("results");
 						if ("ok".equals(m.body().getString("status")) && results != null) {
-							final JsonArray r = results.getJsonArray(0);
+							final JsonArray r = results.getJsonArray(1);
 							if (r != null && r.size() > 0) {
 								final JsonArray deleteUsers = new fr.wseduc.webutils.collections.JsonArray();
 								for (Object o : r) {
