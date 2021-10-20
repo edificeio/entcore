@@ -81,10 +81,7 @@ public class WebDAVImportsLauncher extends ImportsLauncher {
                             public void handle(List<String> validFiles)
                             {
                                 if(validFiles == null || validFiles.size() == 0)
-                                {
-                                    folders.remove(j);
                                     next();
-                                }
                                 else
                                 {
                                     chooseFileToImport(validFiles, new Handler<String>()
