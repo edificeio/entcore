@@ -1663,6 +1663,24 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 	}
 }]);
 
+module.directive('xiti', function(){
+	return {
+		restrict: 'E',
+		compile: function(element, attributes) {
+			return function(scope) {
+				jQuery.getScript('/xiti/public/js/directive.js', function() {
+					element.on('run.script', function(event, url){
+						window.xiti(url);
+					})
+					scope.$on("$destroy", function() {
+						element.off();
+					});
+				});
+			}
+		}
+	}
+});
+
 module.directive('adminPortal', function($compile) {
     skin.skin = 'admin';
     skin.theme = '/public/admin/default/';
