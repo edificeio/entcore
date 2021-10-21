@@ -279,6 +279,10 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
             console.warn("[Directory][UserCreate.attachUserToMyClass] should select at least one user to attach:", user);
             return;
         }
+        // #47174, Track this event (addendum 10-2021)
+        $scope.tracker.trackEvent( TRACK.event, TRACK.ACCOUNT_CREATION.action, 
+            TRACK.name( TRACK.ACCOUNT_CREATION.ATTACH, $scope.userCreate.form.type) 
+        );
         await directoryService.addExistingUserToClass(classroom.id, user);
         afterSubmit(user);
     }
@@ -288,6 +292,10 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
             console.warn("[Directory][UserCreate.attachUserToMyClassOnly] should select at least one user to attach:", user);
             return;
         }
+        // #47174, Track this event (addendum 10-2021)
+        $scope.tracker.trackEvent( TRACK.event, TRACK.ACCOUNT_CREATION.action, 
+            TRACK.name( TRACK.ACCOUNT_CREATION.MOVE, $scope.userCreate.form.type) 
+        );
         await directoryService.changeUserClass(user, {
             fromClasses: user.classIds,
             toClass: classroom.id,
@@ -296,6 +304,10 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         afterSubmit(user);
     }
     $scope.createAndAttacheUserToMyClass = async function () {
+        // #47174, Track this event (addendum 10-2021)
+        $scope.tracker.trackEvent( TRACK.event, TRACK.ACCOUNT_CREATION.action, 
+            TRACK.name( TRACK.ACCOUNT_CREATION.DOUBLE, $scope.userCreate.form.type) 
+        );
         const user = await createUserAndAttach();
         afterSubmit(user);
     }
