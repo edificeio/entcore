@@ -75,15 +75,17 @@ public class ImportsLauncher implements Handler<Long> {
 			@Override
 			public void handle(final AsyncResult<List<String>> event) {
 				if (event.succeeded()) {
-					final Handler[] handlers = new Handler[event.result().size() + 1];
+					int nbFiles = event.result().size();
+					final Handler[] handlers = new Handler[nbFiles + 1];
 					handlers[handlers.length -1] = new Handler<Void>() {
 						@Override
 						public void handle(Void v) {
-							postImport.execute();
+							if(nbFiles > 0)
+								postImport.execute();
 						}
 					};
 					Collections.sort(event.result());
-					for (int i = event.result().size() - 1; i >= 0; i--) {
+					for (int i = nbFiles - 1; i >= 0; i--) {
 						final int j = i;
 						handlers[i] = new Handler<Void>() {
 							@Override

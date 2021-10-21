@@ -107,7 +107,10 @@ public class WebDAVImportsLauncher extends ImportsLauncher {
                             handler.handle(Future.succeededFuture(filesToImport));
                         }
                     };
-                    listFilesInDirectory(folders.get(0), false, true, folderHandlers[0]);
+                    if(folders.size() > 0)
+                        listFilesInDirectory(folders.get(0), false, true, folderHandlers[0]);
+                    else
+                        folderHandlers[0].handle(new LinkedList<String>());
                 }
             }
         });
