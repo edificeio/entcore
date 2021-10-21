@@ -35,6 +35,9 @@ export const TRACK = {
     ,ACCOUNT_CREATION: { action: "Créer un compte", 
          CREATE: "[profil]AjoutUtilisateur_CréerCompte"
         ,ADD: "[profil]AjoutUtilisateur_CréerAjouterAutreCompte"
+        ,MOVE: "[profil]AjoutUtilisateur_Doublon_DéplacerDansMaClasse"
+        ,ATTACH: "[profil]AjoutUtilisateur_Doublon_RattacherDeuxClasses"
+        ,DOUBLE: "[profil]AjoutUtilisateur_Doublon_CréerleDoublon"
     }
     ,USERS_IMPORT: { action: "Importer des utilisateurs", 
          IMPORT: "AjoutUtilisateur_ImporterFichier_Importer"
@@ -53,6 +56,7 @@ export const TRACK = {
     }
     ,USER_BLOCK: { action: "Restreindre un utilisateur", 
          BLOCK: "Bloquer (toaster)"
+        ,UNBLOCK: "Débloquer (toaster)"
         ,SUPPRESS_SUPPRESS: "[profil]_Supprimer_Supprimer"
         ,SUPPRESS_REMOVE_CLASS: "[profil]_Supprimer_RetirerClasse"
         ,REMOVE_CLASS: "RetirerClasse"
