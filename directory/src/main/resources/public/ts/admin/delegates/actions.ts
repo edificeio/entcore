@@ -78,6 +78,8 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         template.close('lightbox');
     }
     $scope.unblockUsers = function () {
+        // #47174, Track this event (addendum 10-2021)
+        $scope.tracker.trackEvent(TRACK.event, TRACK.USER_BLOCK.action, TRACK.name(TRACK.USER_BLOCK.UNBLOCK) );
         directoryService.blockUsers(false, selection).then(() => {
             $scope.reloadClassroom($scope.selectedClass);
             selection.splice(0, selection.length);
