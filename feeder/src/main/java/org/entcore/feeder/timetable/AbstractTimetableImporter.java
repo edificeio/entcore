@@ -145,7 +145,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static final String COURSES = "courses";
 
 	public static final boolean ALLOW_PAST_MODIFICATIONS = false;
-	public static final long CLEARANCE_TIME = 2 * 60 * 60 * 1000;
+	public static final long CLEARANCE_TIME = 15 * 60 * 1000;
 
 	protected long importTimestamp;
 	protected Long forceTimestamp;
