@@ -99,7 +99,7 @@
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
 					<a ng-click="confirmDelete()" ng-if="canEmptyTrash()" ng-hide="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
-                    <div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+                    <div class="classic-link centered-bloc-text vertical-spacing-twice-1d" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
                         <sniplet application="lool" template="create" source="{type: 'secondary'}"></sniplet>
                     </div>
 					<div class="row" ng-hide="canEmptyTrash() && isTrashEmpty()">
