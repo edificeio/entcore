@@ -260,7 +260,8 @@ public class DefaultUserService implements UserService {
 			if (event.isRight()) {
 				final JsonObject r = event.right().getValue();
 				filterAttributes.add("password").add("resetCode").add("lastNameSearchField").add("firstNameSearchField")
-						.add("displayNameSearchField").add("checksum").add("emailSearchField");
+						.add("displayNameSearchField").add("checksum").add("emailSearchField")
+						.add("emailInternal").add("resetDate").add("lastScheme").add("lastDomain");
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
