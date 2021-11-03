@@ -102,8 +102,10 @@ export class Users {
                 return includeUser === undefined;
             })
             .concat(include), function (user) {
-                let titleTest = lang.removeAccents(user.displayNameSearchField);
-                return titleTest.indexOf(lang.removeAccents(searchTermWithoutSpaces).toLowerCase()) !== -1;
+                let titleTest = lang.removeAccents(user.displayNameSearchField || user.displayName || "").toLowerCase();
+                let nameTest = lang.removeAccents(user.name || "").toLowerCase();
+                return titleTest.indexOf(lang.removeAccents(searchTermWithoutSpaces).toLowerCase()) !== -1 ||
+                nameTest.indexOf(lang.removeAccents(searchTermWithoutSpaces).toLowerCase()) !== -1;
             });
 
         return _.reject(found, function (element) {
