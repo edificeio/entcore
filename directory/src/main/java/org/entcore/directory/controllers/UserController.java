@@ -209,7 +209,16 @@ public class UserController extends BaseController {
 					.add("activationCode").add("firstName").add("lastName").add("mobile").add("mobilePhone")
 					.add("lastLogin").add("created").add("modified").add("ine").add("email").add("emailAcademy")
 					.add("workPhone").add("homePhone").add("country").add("zipCode").add("address").add("postbox")
-					.add("city").add("otherNames").add("title");
+					.add("city").add("otherNames").add("title").add("surname").add("functions").add("headTeacher")
+					.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
+					.add("joinKey").add("isTeacher").add("structures").add("type").add("children").add("parents")
+					.add("functionalGroups").add("startDateStruct").add("endDateStruct")
+					.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
+					.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
+					.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level");
+			if (!config.getBoolean("enable-birthdate-in-get-user", false)) {
+				filter.add("birthDate");
+			}
 			userService.get(userId, getManualGroups, filter, false, notEmptyResponseHandler(request));
 		} else {
 			userService.get(userId, getManualGroups, false, notEmptyResponseHandler(request));
