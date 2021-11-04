@@ -28,8 +28,6 @@
 	"ENTPersonCodePostal" : { "attribute" : "zipCode", "type" : "string" },
 	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
 	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
-	"ENTPersonMail" : { "attribute" : "email", "type" : "string" },
-	"Mail" : { "attribute" : "email", "type" : "string" },
 	"mail" : { "attribute" : "email", "type" : "string" },
 	"homePhone" : { "attribute" : "homePhone", "type" : "string" },
 	"ENTEleveAdresseRel" : { "attribute" : "relativeAddress", "type" : "array-string" },

@@ -18,7 +18,7 @@
 	"ENTEtablissementStructRattachFctl" : { "attribute" : "functionalAttachment", "type" : "array-string", "prefix" : true },
 	"ENTEtablissementBassin" : { "attribute" : "area", "type" : "string", "prefix" : true },
 	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
-	"ENTServCodeAcAcademie" : { "attribute" : "academyCode", "type" : "string" },
+	"ENTServAcCodeAcademie" : { "attribute" : "academyCode", "type" : "string" },
 	"ENTStructureClasses" : { "attribute" : "classes", "type" : "array-string" },
 	"ENTStructureGroupes" : { "attribute" : "groups", "type" : "array-string" },
 	"ENTStructureMailSI" : { "attribute" : "email", "type" : "string" },
