@@ -1,12 +1,14 @@
 import { IIdiom, IUserInfo } from 'ode-ts-client';
 import { session, conf } from 'ode-ngjs-front';
+import { IController } from 'angular';
 
-export class AppController {
+export class AppController implements IController {
 	me: IUserInfo;
 	currentLanguage: string;
 	lang: IIdiom;
 
-	constructor(){
+	// IController implementation
+	$onInit(): void {
 		this.initialize();
 	}
 

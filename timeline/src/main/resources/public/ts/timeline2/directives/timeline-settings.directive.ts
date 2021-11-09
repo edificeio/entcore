@@ -1,8 +1,9 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { IIdiom, IThemeDesc, IWidget, WidgetFrameworkFactory } from "ode-ts-client";
-import { ThemeHelperService, session, conf } from "ode-ngjs-front";
+import { ThemeHelperService, session, conf, TrackingService } from "ode-ngjs-front";
 import * as $ from "jquery";
 import { TimelineController } from "./timeline.directive";
+import { TRACK } from "../tracking/events";
 
 /* Controller for the directive */
 export class Controller implements IController {
@@ -14,7 +15,8 @@ export class Controller implements IController {
 	public safeApply:()=>void;
 
     constructor(
-		public themeSvc:ThemeHelperService
+		public themeSvc:ThemeHelperService,
+		public tracker:TrackingService
 		) {
 		this.widgets = WidgetFrameworkFactory.instance().list;
     }
@@ -31,17 +33,38 @@ export class Controller implements IController {
 
 	togglePanel($event) {
 		this.showPanel = !this.showPanel;
+
+		// #50542: Track this event.
+		const evt = TRACK.SETTINGS;
+		if( this.showPanel && this.tracker.willTrackEvent(evt.OPEN) ) {
+			this.tracker.trackEvent( TRACK.event, evt.action, evt.OPEN );
+		}
 	}
 
 	async saveTheme(skin:IThemeDesc, $event) {
 		this.currentSkinName = skin.displayName;
 		await this.themeSvc.setTheme( skin );
+
+		// #50542: Track this event.
+		const evt = TRACK.SETTINGS;
+		if( this.tracker.willTrackEvent(evt.SKIN_CHANGE) ) {
+			const skinName = conf().Platform.idiom.translate(skin.displayName);
+			this.tracker.trackEvent( TRACK.event, evt.action, TRACK.nameForSkin(evt.SKIN_CHANGE, skinName) );
+		}
 	}
 
 	toggleWidget( widget:IWidget, $event) {
 		if( ! widget.platformConf.mandatory ) {
 			widget.userPref.show = !widget.userPref.show;
 			WidgetFrameworkFactory.instance().saveUserPrefs();
+
+			// #50542: Track this event.
+			const evt = TRACK.SETTINGS;
+			const evtName = widget.userPref.show ? evt.WIDGET_SHOW : evt.WIDGET_HIDE;
+			if( this.tracker.willTrackEvent(evtName) ) {
+				const widgetName = conf().Platform.idiom.translate('timeline.settings.'+widget.platformConf.name);
+				this.tracker.trackEvent( TRACK.event, evt.action, TRACK.nameForWidget(evtName, widgetName) );
+			}
     	}
 	}
 
@@ -59,8 +82,14 @@ export class Controller implements IController {
 		conf().User.saveLanguage( language ).then( () => {
 			location.reload();
 		});
-	};
 
+		// #50542: Track this event.
+		const evt = TRACK.SETTINGS;
+		if( this.tracker.willTrackEvent(evt.CHANGE_LANG) ) {
+			const langName = conf().Platform.idiom.translate('language.' + language);
+			this.tracker.trackEvent( TRACK.event, evt.action, TRACK.nameForLang(evt.CHANGE_LANG, langName) );
+		}
+	};
 };
 
 interface LocalScope extends IScope {
@@ -78,7 +107,7 @@ class Directive implements IDirective<LocalScope,JQLite,IAttributes,IController[
     scope = {
     };
 	bindToController = true;
-	controller = ["odeThemeHelperService", Controller];
+	controller = ["odeThemeHelperService", "odeTracking", Controller];
 	controllerAs = 'ctrl';
 	require = ['timelineSettings', '^timeline'];
 
