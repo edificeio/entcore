@@ -1,8 +1,9 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
-import { L10n, conf, http, session } from "ode-ngjs-front";
+import { L10n, conf, http, session, TrackingService, TrackedAction, TrackedActionFromWidget } from "ode-ngjs-front";
 import  gsap = require("gsap");
 import { ITimelineFactory, ITimelineNotification } from "ode-ts-client";
 import * as $ from "jquery";
+import { TRACK } from "../tracking/events";
 
 /* Controller for the directive */
 export class TimelineController implements IController {
@@ -12,7 +13,7 @@ export class TimelineController implements IController {
 	public savePrefsAndReload: () => Promise<void>;
 	public handleLoadPageClick: (force: boolean) => Promise<void>;
 
-    constructor() {
+	constructor( public tracker:TrackingService ) {
         if (this.userStructures && this.userStructures.length == 1) {
             this.userStructure = this.userStructures[0];
         }
@@ -74,6 +75,12 @@ export class TimelineController implements IController {
 			if( idx >= 0 ) {
 				this.app.notifications.splice( idx, 1 );
 				notif.discard();
+
+				// #50542: Track this event.
+				const evt = TRACK.NOTIF_DELETE;
+				if( this.tracker.willTrackEvent(evt.CLICK) ) {
+					this.tracker.trackEvent( TRACK.event, evt.action, evt.CLICK );
+				}
 			}
 		}
 	}
@@ -95,6 +102,12 @@ export class TimelineController implements IController {
 		}
 	}
 	public doReport() {
+		// #50542: Track this event.
+		const evt = TRACK.NOTIF_SIGNAL;
+		if( this.tracker.willTrackEvent(evt.CLICK) ) {
+			this.tracker.trackEvent( TRACK.event, evt.action, evt.CLICK );
+		}
+
 		this.currentNotification.report().then( () => {
 			this.currentNotification.model.reported = true;
 			this.currentNotification = null;
@@ -248,14 +261,26 @@ export class TimelineController implements IController {
 	switchFilter( type:string ) {
 		const isSelected = this.selectedFilter[type]; // has just been updated by ng-model
 		const savedIndex = this.app.selectedNotificationTypes.findIndex( t=>t===type );
+		let evtName = "";
 		if( isSelected && savedIndex===-1 ) {
 			this.app.selectedNotificationTypes.push( type );
 			this.savePrefsAndReload();
+			if( this.tracker.willTrackEvent(TRACK.FILTER.SHOW_TYPE) ) {
+				evtName = TRACK.nameForModule(TRACK.FILTER.SHOW_TYPE, this.translateType(type));
+			}
 		} else if( !isSelected && savedIndex!==-1 ) {
 			this.app.selectedNotificationTypes.splice(savedIndex,1);
 			this.savePrefsAndReload();
+			if( this.tracker.willTrackEvent(TRACK.FILTER.HIDE_TYPE) ) {
+				evtName = TRACK.nameForModule(TRACK.FILTER.HIDE_TYPE, this.translateType(type));
+			}
 		}
 		this.updateSelectAllChip();
+
+		// #50542: Track this event.
+		if( evtName.length > 0 ) {
+			this.tracker.trackEvent( TRACK.event, TRACK.FILTER.action, evtName );
+		}
 	}
 
 //	public switchingFilters = false;
@@ -278,6 +303,12 @@ export class TimelineController implements IController {
 			this.isAllSelected = true;
 		}
 		this.savePrefsAndReload();
+
+		// #50542: Track this event.
+		const evt = TRACK.FILTER;
+		if( this.tracker.willTrackEvent(this.isAllSelected ? evt.SHOW_TYPE : evt.HIDE_TYPE) ) {
+			this.tracker.trackEvent( TRACK.event, evt.action, TRACK.nameForModule(this.isAllSelected ? evt.SHOW_TYPE : evt.HIDE_TYPE, "Tout") );
+		}
 	}
 
 	areAllFiltersOn(): boolean {
@@ -324,6 +355,193 @@ export class TimelineController implements IController {
 		return this.lang.translate(notifType === 'timeline' ? notifType + '.notification' : notifType);
 	}
 
+	/** #50542: Track widgets events. 
+	 * Widgets emit custom events (see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent)
+	 * that are listened to and treated for tracking statistics here. 
+	 */
+	public trackWidgetActions( wrapper:Element ) {
+		const open:any = TRACK.OPEN_APP;
+		// Last-infos widget tracking
+		if( this.tracker.willTrackEvent(open.FROM_NEWS_LINK) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.lastInfos, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="app" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_NEWS_LINK );
+				} else if( e.detail?.open==="info" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_NEWS_LINK );
+				}
+			});
+		}
+		// Agenda widget
+		if( this.tracker.willTrackEvent(open.FROM_AGENDA_MORE) 
+			|| this.tracker.willTrackEvent(open.FROM_AGENDA_EVENT) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.agenda, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="app" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_AGENDA_MORE );
+				} else if( e.detail?.open==="event" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_AGENDA_EVENT );
+				}
+			});
+		}
+		// Myapps widget
+		if( this.tracker.willTrackEvent(open.FROM_MYAPPS_WIDGET) 
+			|| this.tracker.willTrackEvent(open.FROM_MYAPPS_WIDGET_MORE) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.myApps, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="app" && e.detail?.app?.name ) {
+					const appName = this.lang.translate(e.detail?.app?.name);
+					this.tracker.trackEvent( TRACK.event, open.action, TRACK.nameForModule(open.FROM_MYAPPS_WIDGET, appName) );
+				} else if( e.detail?.open==="more" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_MYAPPS_WIDGET_MORE );
+				}
+			});
+		}
+		// School widget
+		if( this.tracker.willTrackEvent(open.FROM_SCHOOL_MY_CLASSES)
+			|| this.tracker.willTrackEvent(open.FROM_SCHOOL_TEAM)
+			|| this.tracker.willTrackEvent(open.FROM_SCHOOL_DIRECTION) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.school, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="student.class" || e.detail?.open==="teacher.students" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_SCHOOL_MY_CLASSES );
+				} else if( e.detail?.open==="relative.direction" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_SCHOOL_DIRECTION );
+				} else if( e.detail?.open==="student.teachers"
+						|| e.detail?.open==="teacher.teachers"
+						|| e.detail?.open==="relative.teachers" ) {
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_SCHOOL_TEAM );
+				}
+			});
+		}
+
+		// School-widget and navbar menu
+		const profile = TRACK.PROFILE;
+		if( this.tracker.willTrackEvent(profile.FROM_SCHOOL_WIDGET) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.school, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="profile" ) {
+					this.tracker.trackEvent( TRACK.event, profile.action, profile.FROM_SCHOOL_WIDGET );
+				}
+			});
+		}
+
+		// Record-me widget (audio-recorder)
+		const record = TRACK.RECORD_SOUND;
+		if( this.tracker.willTrackEvent(record.START) ) {
+			wrapper.addEventListener( 'ode-recorder', (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="audio" ) {
+					this.tracker.trackEvent( TRACK.event, record.action, record.START );
+				}
+			});
+		}
+
+		// carnet-de-bord widget
+		const carnet = TRACK.CARNET_DE_BORD;
+		if( this.tracker.willTrackEvent(carnet.NAVIGATE) || this.tracker.willTrackEvent(carnet.REDIRECT) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.carnetDeBord, (e:CustomEventInit<TrackedAction>) => {
+				if( typeof e.detail?.open==="string" ) {
+					this.tracker.trackEvent( TRACK.event, carnet.action, carnet.REDIRECT );
+				} else if( typeof e.detail?.properties==="string" ) {
+					this.tracker.trackEvent( TRACK.event, carnet.action, carnet.NAVIGATE );
+				}
+			});
+		}
+
+		// Navigation events from Bookmarks widget and more
+		const navigate = TRACK.NAVIGATE;
+		if( this.tracker.willTrackEvent(navigate.FROM_BOOKMARK) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.bookmark, (e:CustomEventInit<TrackedAction>) => {
+				if( typeof e.detail?.open==="string" ) {
+					this.tracker.trackEvent( TRACK.event, navigate.action, navigate.FROM_BOOKMARK );
+				}
+			});
+		}
+		if( this.tracker.willTrackEvent(navigate.FROM_RSS) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.rss, (e:CustomEventInit<TrackedAction>) => {
+				if( typeof e.detail?.open==="string" ) {
+					this.tracker.trackEvent( TRACK.event, navigate.action, navigate.FROM_RSS );
+				}
+			});
+		}
+		if( this.tracker.willTrackEvent(navigate.FROM_QWANT) ) {
+			wrapper.addEventListener( TrackedActionFromWidget.qwant, (e:CustomEventInit<TrackedAction>) => {
+				if( e.detail?.open==="qwant" || typeof e.detail?.search==='string' ) {
+					this.tracker.trackEvent( TRACK.event, navigate.action, navigate.FROM_QWANT );
+				}
+			});
+		}
+
+		// Drag'n'drop events
+		const settings = TRACK.SETTINGS;
+		if( this.tracker.willTrackEvent(settings.MOVE_WIDGET) ) {
+			wrapper.addEventListener( "ode-widget-container", (e:CustomEventInit<TrackedAction>) => {
+				if( typeof e.detail?.move==="string" && typeof e.detail?.to==="number" ) {
+					this.tracker.trackEvent( TRACK.event, settings.action, settings.MOVE_WIDGET, e.detail.to );
+				}
+			});
+		}
+	}
+	/** #50542: Track navbar events. 
+	 * Navbar emit custom events (see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent)
+	 * that are listened to and treated for tracking statistics here.
+	 */
+	public trackNavbarActions( wrapper:Element ) {
+		if( this.tracker.willTrackEvent(TRACK.OPEN_APP.FROM_MENU_MYAPPS) 
+		 || this.tracker.willTrackEvent(TRACK.OPEN_APP.FROM_MENU_MYAPPS_MORE) 
+		 || this.tracker.willTrackEvent(TRACK.OPEN_APP.FROM_MENU_MYAPPS_APP) 
+		 || this.tracker.willTrackEvent(TRACK.OPEN_APP.FROM_MENU_MAIL) 
+		 || this.tracker.willTrackEvent(TRACK.OPEN_APP.FROM_MENU_COMMUNITY) 
+		 || this.tracker.willTrackEvent(TRACK.HOME.FROM_MENU_HOME) 
+		 || this.tracker.willTrackEvent(TRACK.HOME.FROM_LOGO) 
+		 || this.tracker.willTrackEvent(TRACK.PROFILE.FROM_MENU_PROFILE) 
+		 || this.tracker.willTrackEvent(TRACK.SEARCH.GO) 
+		) {
+			wrapper.addEventListener( "ode-navbar", (e:CustomEventInit<TrackedAction>) => {
+				let track:any = TRACK.OPEN_APP;	// "Accéder à une appli"
+				if( e.detail?.open==="welcome" && e.detail?.from==="more" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_MYAPPS_MORE );
+				} else if( e.detail?.open==="welcome" && e.detail?.from==="menu" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_MYAPPS );
+				} else if( e.detail?.open==="app" && e.detail?.app?.name ) {
+					const appName = this.lang.translate(e.detail?.app?.name);
+					this.tracker.trackEvent( TRACK.event, track.action, TRACK.nameForModule(track.FROM_MENU_MYAPPS_APP, appName) );
+				} else if( e.detail?.open==="conversation" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_MAIL );
+				} else if( e.detail?.open==="community" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_COMMUNITY );
+				}
+
+				track = TRACK.HOME;	// "Revenir à la page d'accueil"
+				if( e.detail?.open==="timeline" && e.detail?.from==='menu' ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_HOME );
+				} else if( e.detail?.open==="timeline" && e.detail?.from==='logo' ) {
+					const appName = this.lang.translate(e.detail?.app?.name);
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_LOGO );
+				}
+
+				track = TRACK.PROFILE;	// "Accéder à mon compte"
+				if( e.detail?.open==="myaccount" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.FROM_MENU_PROFILE );
+				}
+
+				track = TRACK.SEARCH;	// "Lancer une recherche"
+				if( e.detail?.open==="searchengine" ) {
+					this.tracker.trackEvent( TRACK.event, track.action, track.GO );
+				}
+			});
+		}
+	}
+	/** #50542: Track pulsar events. */
+	public trackPulsarActions() {
+		if( this.tracker.willTrackEvent(TRACK.DISCOVER.QUICKSTART_START) 
+		 || this.tracker.willTrackEvent(TRACK.DISCOVER.QUICKSTART_END)
+		) {
+			document.addEventListener( "pulsar", (e:CustomEventInit<TrackedAction>) => {
+				const discover:any = TRACK.DISCOVER;	// "Home - Quickstart - Clique"
+				if( e.detail?.open=="true") {
+					this.tracker.trackEvent( TRACK.event, discover.action, discover.QUICKSTART_START );
+				} else if( e.detail?.open=="false") {
+					this.tracker.trackEvent( TRACK.event, discover.action, discover.QUICKSTART_END );
+				}
+			});
+		}
+	}
 };
 
 interface TimelineScope extends IScope {
@@ -344,7 +562,7 @@ class Directive implements IDirective<TimelineScope,JQLite,IAttributes,IControll
 		pickTheme: "="
     };
 	bindToController = true;
-	controller = [TimelineController];
+	controller = ["odeTracking", TimelineController];
 	controllerAs = 'ctrl';
 	require = ['timeline'];
 
@@ -391,6 +609,15 @@ class Directive implements IDirective<TimelineScope,JQLite,IAttributes,IControll
 					return ctrl.loadPage(force).then(() => scope.$apply());
 				}
 
+				// #50542: Track widgets events :
+				const wrapper = document.querySelector("div.container-advanced-wrapper");
+				wrapper && ctrl.trackWidgetActions( wrapper );
+				// #50542: Track navbar events :
+				const navbar = document.querySelector("ode-navbar");
+				navbar && ctrl.trackNavbarActions( navbar );
+				// #50542: Track pulsar events :
+				ctrl.trackPulsarActions();
+
 				// Only once the UI is up-to-date can we use the gsap animations.
 				// Advanced transitions for filters
 				$('.filter-button').each(function (i) {
@@ -411,11 +638,22 @@ class Directive implements IDirective<TimelineScope,JQLite,IAttributes,IControll
 				});
 
 				$('.filter-button').on('click', function (e) {
+					const evt = TRACK.FILTER;
 					var target = '#' + $(this).data('target');
 					if ($(target).data("tween").reversed()) {
 						$(target).data("tween").play();
+
+						// #50542: Track this event.
+						if( ctrl.tracker.willTrackEvent(evt.SHOW) ) {
+							ctrl.tracker.trackEvent( TRACK.event, evt.action, evt.SHOW );
+						}
 					} else {
-						$(target).data("tween").reverse()
+						$(target).data("tween").reverse();
+
+						// #50542: Track this event.
+						if( ctrl.tracker.willTrackEvent(evt.HIDE) ) {
+							ctrl.tracker.trackEvent( TRACK.event, evt.action, evt.HIDE );
+						}
 					}
 				});
 			});
