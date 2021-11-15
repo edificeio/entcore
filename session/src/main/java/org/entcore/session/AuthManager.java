@@ -78,13 +78,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			doFind(message);
 			break;
 		case "findByUserId":
-			doFindByUserId(message);
+			doFindByUserId(message, null);
 			break;
 		case "create":
 			doCreate(message);
 			break;
 		case "drop":
 			doDrop(message);
+			break;
+		case "dropByUserId":
+			doDropByUserId(message);
 			break;
 		case "dropCacheSession":
 			doDropCacheSession(message);
@@ -177,31 +180,46 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 	}
 
-	private void doFindByUserId(final Message<JsonObject> message) {
+	private void doFindByUserId(final Message<JsonObject> message, final Handler<JsonObject> callHandlerInsteadOfMessageReply) {
 		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "[doFindByUserId] Invalid userId : " + message.body().encode());
+			if(callHandlerInsteadOfMessageReply != null)
+				callHandlerInsteadOfMessageReply.handle(null);
+			else
+				sendError(message, "[doFindByUserId] Invalid userId : " + message.body().encode());
 			return;
 		}
 
 		sessionStore.getSessionByUserId(userId, ar -> {
 			if (ar.succeeded()) {
-				sendOK(message, new JsonObject().put("status", "ok").put("session", ar.result()));
+				if(callHandlerInsteadOfMessageReply != null)
+					callHandlerInsteadOfMessageReply.handle(ar.result());
+				else
+					sendOK(message, new JsonObject().put("status", "ok").put("session", ar.result()));
 			} else if (getOrElse(message.body().getBoolean("allowDisconnectedUser"), false)) {
 				generateSessionInfos(userId, new Handler<JsonObject>() {
 
 					@Override
 					public void handle(JsonObject infos) {
 						if (infos != null) {
-							sendOK(message, new JsonObject().put("status", "ok")
+							if(callHandlerInsteadOfMessageReply != null)
+								callHandlerInsteadOfMessageReply.handle(infos);
+							else
+								sendOK(message, new JsonObject().put("status", "ok")
 									.put("session", infos));
 						} else {
-							sendError(message, "Invalid userId : " + userId);
+							if(callHandlerInsteadOfMessageReply != null)
+								callHandlerInsteadOfMessageReply.handle(null);
+							else
+								sendError(message, "Invalid userId : " + userId);
 						}
 					}
 				});
 			} else {
-				sendError(message, "[doFindByUserId] info is null - Invalid userId : " + message.body().encode());
+				if(callHandlerInsteadOfMessageReply != null)
+					callHandlerInsteadOfMessageReply.handle(null);
+				else
+					sendError(message, "[doFindByUserId] info is null - Invalid userId : " + message.body().encode());
 			}
 		});
 	}
@@ -349,6 +367,24 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		} else {
 			dropSession(message, sessionId, null);
 		}
+	}
+
+	private void doDropByUserId(final Message<JsonObject> message)
+	{
+		doFindByUserId(message, new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(JsonObject session)
+			{
+				if(session != null)
+				{
+					message.body().put("sessionId", session.getJsonObject("sessionMetadata").getString("_id"));
+					doDrop(message);
+				}
+				else
+					sendOK(message);
+			}
+		});
 	}
 
 	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta) {

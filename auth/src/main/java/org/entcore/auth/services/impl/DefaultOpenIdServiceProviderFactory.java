@@ -46,6 +46,8 @@ public class DefaultOpenIdServiceProviderFactory implements OpenIdServiceProvide
 			OpenIdConnectServiceProvider provider;
 			if ("France-Connect".equals(c.getString("provider"))) {
 				provider = new FranceConnectServiceProvider(c.getString("iss"));
+			} else if ("City-Connect".equals(c.getString("provider"))) {
+				provider = new CityConnectServiceProvider(c.getString("iss"), c.getString("clientId"), c.getString("secret"), vertx.eventBus());
 			} else {
 				provider = new DefaultOpendIdConnectService(c.getString("iss"));
 			}

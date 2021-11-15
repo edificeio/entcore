@@ -37,9 +37,13 @@ import java.util.UUID;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+
 public class OpenIdConnectController extends AbstractFederateController {
 
-	private static final String SCOPE_OPENID = "openid profile";
 	private OpenIdServiceProviderFactory openIdConnectServiceProviderFactory;
 	private JsonObject certificates = new JsonObject();
 	private boolean subMapping;
@@ -52,13 +56,15 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
+		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
+		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
 		if (oic == null) return;
 		final String state = UUID.randomUUID().toString();
 		CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
 		final String nonce = UUID.randomUUID().toString();
 		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
-		oic.authorizeRedirect(request, state, nonce, SCOPE_OPENID);
+		oic.authorizeRedirect(request, state, nonce, openIdConnectServiceProvider.getScope());
 	}
 
 	@Get("/openid/authenticate")
@@ -155,6 +161,16 @@ public class OpenIdConnectController extends AbstractFederateController {
 	@Get("/openid/slo")
 	public void slo(final HttpServerRequest request) {
 		sloUser(request);
+	}
+
+	@Post("/openid/webhook")
+	public void webhookLogout(final HttpServerRequest request)
+	{
+		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
+		if (openIdConnectServiceProvider == null)
+			forbidden(request, "invalid.webhook.service");
+		else
+			openIdConnectServiceProvider.webhook(request);
 	}
 
 	@Override
