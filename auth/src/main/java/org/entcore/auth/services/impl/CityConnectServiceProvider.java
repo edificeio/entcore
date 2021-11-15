@@ -20,48 +20,68 @@
 package org.entcore.auth.services.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.security.BCrypt;
-import fr.wseduc.webutils.security.Md5;
-import fr.wseduc.webutils.security.Sha256;
+
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.auth.services.HawkAuthorizationService;
+import org.entcore.auth.services.HawkAuthorizationServiceImpl;
+
 import io.vertx.core.Handler;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 
 import java.security.NoSuchAlgorithmException;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
-public class FranceConnectServiceProvider implements OpenIdConnectServiceProvider {
+public class CityConnectServiceProvider implements OpenIdConnectServiceProvider {
+
+	protected static final Logger log = LoggerFactory.getLogger(CityConnectServiceProvider.class);
 
 	private final String iss;
 	private final Neo4j neo4j = Neo4j.getInstance();
-	private static final String QUERY_SUB_FC = "MATCH (u:User {subFC : {sub}}) " + AbstractSSOProvider.RETURN_QUERY;
-	private static final String QUERY_PIVOT_FC =
-			"MATCH (u:User) WHERE (lower(u.lastName) = lower({family_name}) OR lower(u.lastName) = lower({preferred_username})) " +
-			"AND lower({given_name}) CONTAINS lower(u.firstName) AND u.birthDate = {birthdate} AND NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = {setFederated} " +
+	private final HawkAuthorizationService hawkService;
+	private final EventBus eb;
+
+	public static final String SCOPE_OPENID = "openid%20profile%20email";
+
+	private static final String SESSION_ADDRESS = "wse.session";
+	private static final String LOGOUT_ACTION = "LOGOUT_CIT";
+
+
+	private static final String QUERY_SUB_CC = "MATCH (u:User {subCC : {sub}}) " + AbstractSSOProvider.RETURN_QUERY;
+	private static final String QUERY_PIVOT_CC =
+			"MATCH (u:User) WHERE lower(u.email) = lower({email}) AND NOT(HAS(u.subCC)) " +
+			"SET u.subCC = {sub}, u.federated = {setFederated} " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
-	private static final String QUERY_MAPPING_FC =
+	private static final String QUERY_MAPPING_CC =
 			"MATCH (n:User {login:{login}}) " +
-			"WHERE NOT(HAS(n.subFC)) " +
+			"WHERE NOT(HAS(n.subCC)) " +
 			"RETURN n.password as password, n.activationCode as activationCode ";
-	private static final String QUERY_SET_MAPPING_FC =
+	private static final String QUERY_SET_MAPPING_CC =
 			"MATCH (u:User {login:{login}}) " +
-			"WHERE NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = {setFederated} " +
+			"WHERE NOT(HAS(u.subCC)) " +
+			"SET u.subCC = {sub}, u.federated = {setFederated} " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private boolean setFederated = true;
 
-	public FranceConnectServiceProvider(String iss) {
+	public CityConnectServiceProvider(String iss, String clientId, String secret, EventBus eb)
+	{
 		this.iss = iss;
+		this.hawkService = new HawkAuthorizationServiceImpl(clientId, secret);
+		this.eb = eb;
 	}
 
 	@Override
 	public void executeFederate(final JsonObject payload, final Handler<Either<String, Object>> handler) {
 		if (this.isPayloadValid(payload, this.iss) == true) {
-			neo4j.execute(QUERY_SUB_FC, payload, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+			neo4j.execute(QUERY_SUB_CC, payload, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 				@Override
 				public void handle(final Either<String, JsonObject> event) {
 					if (event.isRight() && event.right().getValue().getBoolean("blockedProfile", false)) {
@@ -79,11 +99,8 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	}
 
 	private void federateWithPivot(JsonObject payload, final Handler<Either<String, Object>> handler) {
-		if (!payload.containsKey("preferred_username")) {
-			payload.put("preferred_username", "");
-		}
 		payload.put("setFederated", setFederated);
-		neo4j.execute(QUERY_PIVOT_FC, payload, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+		neo4j.execute(QUERY_PIVOT_CC, payload, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(final Either<String, JsonObject> event) {
 				if (event.isRight() && event.right().getValue().getBoolean("blockedProfile", false)) {
@@ -100,7 +117,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	@Override
 	public void mappingUser(String login, final String password, final JsonObject payload, final Handler<Either<String, Object>> handler) {
 		final JsonObject params = new JsonObject().put("login", login).put("password", password);
-		neo4j.execute(QUERY_MAPPING_FC, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+		neo4j.execute(QUERY_MAPPING_CC, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
@@ -108,7 +125,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 					try {
                         if (checkPassword(password, res.getString("password"), res.getString("activationCode")) == true) {
                             params.put("setFederated", setFederated);
-                            neo4j.execute(QUERY_SET_MAPPING_FC, params.put("sub", payload.getString("sub")),
+                            neo4j.execute(QUERY_SET_MAPPING_CC, params.put("sub", payload.getString("sub")),
                                     validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
                                 @Override
                                 public void handle(final Either<String, JsonObject> event) {
@@ -132,6 +149,71 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 				}
 			}
 		}));
+	}
+
+	@Override
+	public void webhook(HttpServerRequest request)
+	{
+		this.hawkService.authorize(request, new Handler<Boolean>()
+		{
+			@Override
+			public void handle(Boolean isAuthorized)
+			{
+				if(isAuthorized.booleanValue() == true)
+				{
+					request.bodyHandler(new Handler<Buffer>()
+					{
+						@Override
+						public void handle(Buffer b)
+						{
+							JsonObject body = new JsonObject(b.toString("UTF-8"));
+							String action = body.getString("action");
+							String subject = body.getString("subject");
+
+							if(LOGOUT_ACTION.equals(action))
+								webhookLogout(request, subject);
+							else
+								log.error("Unsupported CC webhook " + action);
+						}
+					});
+				}
+				else
+					request.response().setStatusCode(401).end();
+			}
+		});
+	}
+
+	public void webhookLogout(HttpServerRequest request, String subject)
+	{
+		neo4j.execute(QUERY_SUB_CC, new JsonObject().put("sub", subject), validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(final Either<String, JsonObject> event) {
+				if (event.isRight() && event.right().getValue().size() > 0)
+				{
+					String userId = event.right().getValue().getString("id");
+
+					JsonObject sessionMessage = new JsonObject().put("action", "dropByUserId").put("userId", userId);
+					eb.send(SESSION_ADDRESS, sessionMessage, new Handler<AsyncResult<Message<JsonObject>>>()
+					{
+						@Override
+						public void handle(AsyncResult<Message<JsonObject>> message)
+						{
+							if (message.succeeded() == false)
+								log.error("Unable to remove session for CC user " + userId + " (subject " + subject + ")");
+						}
+					});
+				}
+				else
+					log.error("Unable to find CC user (subject " + subject + ")");
+				request.response().setStatusCode(200).end();
+			}
+		}));
+	}
+
+	@Override
+	public String getScope()
+	{
+		return SCOPE_OPENID;
 	}
 
 	public void setSetFederated(boolean setFederated) {
