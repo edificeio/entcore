@@ -39,19 +39,39 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class VisiblesFilter implements ResourcesProvider{
 
 	private Neo4j neo;
 	private Sql sql;
+	private final MessageOwnerFilter messageOwnerFilter;
 
 	public VisiblesFilter() {
 		neo = Neo4j.getInstance();
 		sql = Sql.getInstance();
+		this.messageOwnerFilter = new MessageOwnerFilter();
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void authorize(HttpServerRequest request, Binding binding,
+			final UserInfos user, final Handler<Boolean> handler) {
+		if (isNotEmpty(request.params().get("id"))) {
+			messageOwnerFilter.authorize(request, binding, user, res -> {
+				if (Boolean.TRUE.equals(res)) {
+					checkVisibles(request, binding, user, handler);
+				} else {
+					handler.handle(false);
+				}
+			});
+		} else {
+			checkVisibles(request, binding, user, handler);
+		}
+	}
+
+
+	@SuppressWarnings("unchecked")
+	private void checkVisibles(HttpServerRequest request, Binding binding,
 			final UserInfos user, final Handler<Boolean> handler) {
 
 		final String parentMessageId = request.params().get("In-Reply-To");

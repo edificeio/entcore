@@ -141,9 +141,7 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(final JsonObject message) {
 
-							if(!message.containsKey("from")){
-								message.put("from", user.getUserId());
-							}
+							message.put("from", user.getUserId());
 
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								@Override
@@ -340,9 +338,7 @@ public class ConversationController extends BaseController {
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject message) {
-							if(!message.containsKey("from")){
-								message.put("from", user.getUserId());
-							}
+							message.put("from", user.getUserId());
 							neoConversationService.addDisplayNames(message, null, new Handler<JsonObject>() {
 								public void handle(JsonObject message) {
 									conversationService.updateDraft(messageId, message, user,
@@ -431,9 +427,7 @@ public class ConversationController extends BaseController {
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(final JsonObject message) {
-							if(!message.containsKey("from")){
-								message.put("from", user.getUserId());
-							}
+							message.put("from", user.getUserId());
 
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
@@ -1733,9 +1727,7 @@ public class ConversationController extends BaseController {
 		final UserInfos user = new UserInfos();
 		user.setUserId(message.body().getString("userId"));
 		user.setUsername(message.body().getString("username"));
-		if(!m.containsKey("from")){
-			m.put("from", user.getUserId());
-		}
+		m.put("from", user.getUserId());
 		neoConversationService.addDisplayNames(m, null, new Handler<JsonObject>() {
 			public void handle(final JsonObject m) {
 				saveAndSend(null, m, user, null, null,
