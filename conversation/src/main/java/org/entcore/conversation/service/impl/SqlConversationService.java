@@ -126,7 +126,8 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	private void update(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		message.put("date", System.currentTimeMillis());
+		message.put("date", System.currentTimeMillis())
+				.put("from", user.getUserId());
 		JsonObject m = Utils.validAndGet(message, UPDATE_DRAFT_FIELDS, UPDATE_DRAFT_REQUIRED_FIELDS);
 		if (validationError(user, m, result, messageId))
 			return;
