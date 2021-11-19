@@ -147,31 +147,63 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void getForExternalService(String id, Handler<Either<String, JsonObject>> handler) {
-		final JsonArray filter = new JsonArray()
+		final JsonArray filter = createExternalFilter();
+		get(id, true, filter, true, result -> {
+			if (result.isRight()) {
+				JsonObject resultJson = result.right().getValue();
+				JsonArray structuresInfos = new JsonArray().add("UAI").add("name").add("externalId");
+				extractInfosFromStructures(resultJson, structuresInfos);
+				handler.handle(new Either.Right<>(resultJson));
+			} else {
+				handler.handle(new Either.Left<>("Problem with get in DefaultUserService : " + result.left().getValue()));
+			}
+		});
+	}
+
+	private void extractInfosFromStructures(JsonObject resultJson, JsonArray structuresInfos) {
+		JsonArray structures = resultJson.getJsonArray("structureNodes");
+		JsonArray reformatStructures = new JsonArray();
+		for(Object structure : structures){
+			JsonObject structureJson = (JsonObject) structure;
+			JsonObject infos = new JsonObject();
+			for(Object info : structuresInfos){
+				infos.put((String) info,structureJson.getString((String) info));
+			}
+			reformatStructures.add(infos);
+		}
+		resultJson.put("structures",reformatStructures);
+		resultJson.remove("structureNodes");
+	}
+
+	private JsonArray createExternalFilter() {
+		return new JsonArray()
 				.add("activationCode").add("mobile").add("mobilePhone").add("surname").add("lastLogin").add("created")
 				.add("modified").add("ine").add("workPhone").add("homePhone").add("country").add("zipCode")
 				.add("address").add("postbox").add("city").add("otherNames").add("title").add("functions")
 				.add("lastDomain").add("displayName").add("source").add("login").add("teaches").add("headTeacher")
-				.add("externalId").add("joinKey").add("birthDate").add("modules").add("lastScheme")
+				.add("externalId").add("joinKey").add("birthDate").add("modules").add("lastScheme").add("addressDiffusion")
 				.add("isTeacher").add("structures").add("type").add("children").add("parents").add("functionalGroups")
 				.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
 				.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
 				.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level")
 				.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
 				.add("email").add("emailAcademy").add("emailInternal").add("lastName").add("firstName");
+	}
+
+	@Override
+	public void getForETude(String id, Handler<Either<String, JsonObject>> handler) {
+		final JsonArray filter = createExternalFilter();
+		filter.remove("children");
+		filter.remove("parents");
+		filter.remove("functionalGroups");
+		filter.remove("level");
+		filter.remove("lastName");
+		filter.remove("firstName");
 		get(id, true, filter, true, result -> {
 			if (result.isRight()) {
 				JsonObject resultJson = result.right().getValue();
-				JsonArray structures = resultJson.getJsonArray("structureNodes");
-				JsonArray reformatStructures = new JsonArray();
-				for(Object structure : structures){
-					JsonObject structureJson = (JsonObject) structure;
-					reformatStructures.add(new JsonObject().put("UAI",structureJson.getString("UAI"))
-							.put("name",structureJson.getString("name"))
-							.put("externalId",structureJson.getString("externalId")));
-				}
-				resultJson.put("structures",reformatStructures);
-				resultJson.remove("structureNodes");
+				JsonArray structuresInfos = new JsonArray().add("UAI");
+				extractInfosFromStructures(resultJson, structuresInfos);
 				handler.handle(new Either.Right<>(resultJson));
 			} else {
 				handler.handle(new Either.Left<>("Problem with get in DefaultUserService : " + result.left().getValue()));

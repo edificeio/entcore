@@ -41,6 +41,8 @@ public interface UserService {
 
 	void getForExternalService(String id, Handler<Either<String, JsonObject>> result);
 
+	void getForETude(String id, Handler<Either<String, JsonObject>> result);
+
 	void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result);
 
 	void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, Handler<Either<String, JsonObject>> result);
