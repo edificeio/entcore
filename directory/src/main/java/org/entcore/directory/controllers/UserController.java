@@ -240,6 +240,14 @@ public class UserController extends BaseController {
 		);
 	}
 
+	@Get("/e-tude")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void myinfosETude(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user ->
+				userService.getForETude(user.getUserId(), defaultResponseHandler(request))
+		);
+	}
+
 	@Get("/myclasses")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void myclasses(final HttpServerRequest request) {
