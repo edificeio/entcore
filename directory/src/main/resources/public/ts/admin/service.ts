@@ -371,8 +371,8 @@ export const directoryService = {
 }
 function downloadBlob(name: string, type: string, content: any) {
     const blobData = new Blob([content], { type });
-    if (window.navigator && window.navigator.msSaveOrOpenBlob) { // for IE
-        window.navigator.msSaveOrOpenBlob(blobData, name);
+    if (window.navigator && (window.navigator as any).msSaveOrOpenBlob) { // for IE
+        (window.navigator as any).msSaveOrOpenBlob(blobData, name);
     } else { // for Non-IE (chrome, firefox etc.)
         const a = document.createElement("a");
         document.body.appendChild(a);

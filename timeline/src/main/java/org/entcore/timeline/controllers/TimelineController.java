@@ -19,6 +19,10 @@
 
 package org.entcore.timeline.controllers;
 
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.bus.BusAddress;
@@ -41,11 +45,13 @@ import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
@@ -70,6 +76,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -91,6 +99,11 @@ public class TimelineController extends BaseController {
 	private NotificationHelper notificationHelper;
 	protected I18n i18n = I18n.getInstance();
 
+	// TEMPORARY to handle both timeline and timeline2 view
+	private String defaultSkin;
+	private Map<String, String> hostSkin;
+	private JsonObject skinLevels;
+
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -111,6 +124,18 @@ public class TimelineController extends BaseController {
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
 		}
+		if(config.getBoolean("isolate-mobile", false)){
+			store = new MobileTimelineEventStore(store);
+		}
+
+		// TEMPORARY to handle both timeline and timeline2 view
+		this.defaultSkin = config.getString("skin", "raw");
+		this.hostSkin = new HashMap<>();
+		JsonObject skins = new JsonObject(vertx.sharedData().getLocalMap("skins"));
+		for (final String domain: skins.fieldNames()) {
+			this.hostSkin.put(domain, skins.getString(domain));
+		}
+		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -149,6 +174,35 @@ public class TimelineController extends BaseController {
 	@Get("/timeline")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
+		// =================
+		// /!\ TEMPORARY /!\
+		// =================
+		// handle both new and old timeline app depending on user theme
+		// if 2D then new timeline else default timeline
+		if (this.skinLevels == null) {
+			renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+			return;
+		}
+
+		UserUtils.getTheme(eb, request, this.hostSkin, userTheme -> {
+			if (isEmpty(userTheme)) {
+				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+				return;
+			}
+
+			JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
+			if (userSkinLevels != null && userSkinLevels.contains("2d")) {
+				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+			} else {
+				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+			}
+		});
+
+	}
+
+	@Get("/timeline2")
+	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
+	public void view2(HttpServerRequest request) {
 		final boolean cache = config.getBoolean("cache", false);
 		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
 	}

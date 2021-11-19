@@ -311,11 +311,11 @@ public class UserController extends BaseController {
 						.put("motto", motto)
 						.put("moodImg", mood);
 				if (mood != null && !mood.trim().isEmpty() && !mood.equals("default")) {
-					notification.notifyTimeline(request, "userbook.userbook_mood", user, userIds,
+					notification.notifyTimeline(request, "userbook_mood.userbook_mood", user, userIds,
 						user.getUserId() + System.currentTimeMillis() + "mood", params);
 				}
 				if (motto != null && !motto.trim().isEmpty()) {
-					notification.notifyTimeline(request, "userbook.userbook_motto", user, userIds,
+					notification.notifyTimeline(request, "userbook_motto.userbook_motto", user, userIds,
 							user.getUserId() + System.currentTimeMillis() + "motto", params);
 				}
 			}

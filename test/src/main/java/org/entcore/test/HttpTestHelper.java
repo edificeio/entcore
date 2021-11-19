@@ -1,10 +1,18 @@
 package org.entcore.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 import fr.wseduc.webutils.security.ActionType;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import fr.wseduc.webutils.validation.JsonSchemaValidator;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -23,31 +31,39 @@ public class HttpTestHelper {
         helper = h;
     }
 
-    public HttpServerRequest put(String url) {
+    public TestHttpServerRequest put(String url) {
         return put(url, new JsonObject());
     }
 
-    public HttpServerRequest put(String url, JsonObject params) {
+    public TestHttpServerRequest put(String url, JsonObject params) {
         return request(HttpMethod.PUT, url, params);
     }
 
-    public HttpServerRequest post(String url) {
+    public TestHttpServerRequest put(String url, JsonObject params, JsonObject body) {
+        return request(HttpMethod.PUT, url, params, body);
+    }
+
+    public TestHttpServerRequest post(String url) {
         return post(url, new JsonObject());
     }
 
-    public HttpServerRequest post(String url, JsonObject params) {
+    public TestHttpServerRequest post(String url, JsonObject params) {
         return request(HttpMethod.POST, url, params);
     }
 
-    public HttpServerRequest get(String url) {
+    public TestHttpServerRequest post(String url, JsonObject params, JsonObject body) {
+            return request(HttpMethod.POST, url, params, body);
+    }
+
+    public TestHttpServerRequest get(String url) {
         return get(url, new JsonObject());
     }
 
-    public HttpServerRequest get(String url, JsonObject params) {
+    public TestHttpServerRequest get(String url, JsonObject params) {
         return request(HttpMethod.GET, url, params);
     }
 
-    public HttpServerRequest request(HttpMethod method, String url, JsonObject params) {
+    public TestHttpServerRequest request(HttpMethod method, String url, JsonObject params) {
         final URI uri = URI.create(url);
         JsonObject json = new JsonObject();
         json.put("method", method.name());
@@ -58,6 +74,28 @@ public class HttpTestHelper {
         json.put("uri", uri.toString());
         json.put("params", params);
         return new TestHttpServerRequest(json);
+    }
+
+    public TestHttpServerRequest request(final HttpMethod method, final String url, final JsonObject params, final JsonObject body) {
+        final URI uri = URI.create(url);
+        JsonObject json = new JsonObject();
+        json.put("method", method.name());
+        json.put("ssl", "https".equals(uri.getScheme()));
+        json.put("scheme", uri.getScheme());
+        json.put("path", uri.getPath());
+        json.put("query", uri.getQuery());
+        json.put("uri", uri.toString());
+        json.put("params", params);
+        return new TestHttpServerRequest(json, body);
+    }
+
+    public HttpTestHelper mockJsonValidator(){
+        JsonSchemaValidator.getInstance().setEventBus(helper.vertx.eventBus());
+        JsonSchemaValidator.getInstance().setAddress("json.schema.validator");
+        helper.vertx.eventBus().consumer("json.schema.validator").handler(e->{
+            e.reply(new JsonObject().put("status", "ok"));
+        });
+        return this;
     }
 
     public Binding binding(HttpMethod httpMethod, Class<?> clazz, String method) {
@@ -97,11 +135,22 @@ public class HttpTestHelper {
         return helper.directory().generateUser("a1234");
     }
 
-    static class TestHttpServerRequest extends JsonHttpServerRequest {
+    public static class TestHttpServerRequest extends JsonHttpServerRequest {
         MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        JsonObject body = new JsonObject();
 
         public TestHttpServerRequest(JsonObject object) {
             super(object, new TestHttpServerResponse());
+        }
+
+        public TestHttpServerRequest(JsonObject object, JsonObject body) {
+            super(object, new TestHttpServerResponse());
+            this.body = body;
+        }
+
+        @Override
+        public TestHttpServerResponse response() {
+            return (TestHttpServerResponse)super.response();
         }
 
         @Override
@@ -109,9 +158,82 @@ public class HttpTestHelper {
             return headers;
         }
 
+        @Override
+        public TestHttpServerRequest bodyHandler(Handler<Buffer> bufferHandler) {
+            bufferHandler.handle(Buffer.buffer(body.encode()));
+            return this;
+        }
+        
+        public HttpServerRequest withSession(final UserInfos user) throws Exception {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SecureHttpServerRequest req = new SecureHttpServerRequest(this);
+            req.setSession(new JsonObject(mapper.writeValueAsString(user)));
+            return req;
+        }
     }
 
-    static class TestHttpServerResponse extends JsonHttpResponse {
+    public static class TestHttpServerResponse extends JsonHttpResponse {
+        Handler<Object> bodyHandler = e -> {};
+
+        public TestHttpServerResponse bodyHandler(Handler<Object> bufferHandler) {
+            bodyHandler = bufferHandler;
+            return this;
+        }
+
+        public TestHttpServerResponse jsonHandler(Handler<JsonObject> bufferHandler) {
+            bodyHandler = e->{
+                bufferHandler.handle(new JsonObject(e.toString()));
+            };
+            return this;
+        }
+
+
+        public TestHttpServerResponse endJsonHandler(Handler<JsonObject> bufferHandler) {
+            final JsonObject res = new JsonObject();
+            jsonHandler(json ->{
+                res.mergeIn(json);
+            });
+            endHandler(e->{
+                bufferHandler.handle(res);
+            });
+            return this;
+        }
+
+        @Override
+        public HttpServerResponse write(Buffer buffer) {
+            bodyHandler.handle(buffer);
+            return this;
+        }
+
+        @Override
+        public HttpServerResponse write(String s, String s2) {
+            bodyHandler.handle(s);
+            return this;
+        }
+
+        @Override
+        public HttpServerResponse write(String s) {
+            bodyHandler.handle(s);
+            return this;
+        }
+
+        @Override
+        public void end(String s) {
+            bodyHandler.handle(s);
+            super.end(s);
+        }
+
+        @Override
+        public void end(String s, String s2) {
+            bodyHandler.handle(s);
+            super.end(s, s2);
+        }
+
+        @Override
+        public void end(Buffer buffer) {
+            bodyHandler.handle(buffer);
+            super.end(buffer);
+        }
 
     }
 }

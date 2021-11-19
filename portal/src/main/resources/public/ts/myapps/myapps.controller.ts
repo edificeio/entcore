@@ -23,6 +23,8 @@ export interface AppControllerScope {
     removeBookmark: (app: App, $index: number, $event: Event) => void;
     showConnectorSection: () => boolean;
     isIconUrl: (app: App) => boolean;
+    getIconClass: (app: App) => string;
+    getIconCode: (app: App) => string;
     $apply: () => any;
 }
 
@@ -40,6 +42,38 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
     $scope.isIconUrl = (app: App): boolean => {
         return app.icon && (app.icon.startsWith("/") || app.icon.startsWith("http://") || app.icon.startsWith("https://"));
     }
+
+    $scope.getIconClass = (app:App):string => {
+		const appCode = $scope.getIconCode(app);
+		return `ic-app-${appCode} color-app-${appCode}`;
+	}
+
+    $scope.getIconCode = (app:App):string => {
+        let appCode = app.icon.trim().toLowerCase() || "";
+        if( appCode && appCode.length > 0 ) {
+            if(appCode.endsWith("-large"))  appCode = appCode.replace("-large", "");
+        } else {
+            appCode = app.displayName.trim().toLowerCase();
+        }
+        appCode = lang.removeAccents(appCode);
+		// @see distinct values for app's displayName is in query /auth/oauth2/userinfo
+		switch( appCode ) {
+			case "admin.title": 	    appCode = "admin"; break;
+            case "banques des savoirs": appCode = "banquesavoir"; break;
+            case "collaborativewall":   appCode = "collaborative-wall"; break;
+            case "communautés":         appCode = "community"; break;
+			case "directory.user":	    appCode = "userbook"; break;
+            case "emploi du temps":     appCode = "edt"; break;
+			case "messagerie": 		    appCode = "conversation"; break;
+            case "news":                appCode = "actualites"; break;
+            case "homeworks":
+            case "cahier de texte":     appCode = "cahier-de-texte"; break;
+            case "diary":
+            case "cahier de texte 2d":  appCode = "cahier-textes"; break;
+			default: break;
+		}
+		return appCode;
+	}
 
     const connectorsThreshold: number = await AppsService.getInstance().getConnectorsThresold();
 

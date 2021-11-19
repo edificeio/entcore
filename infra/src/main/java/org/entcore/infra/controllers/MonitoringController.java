@@ -99,6 +99,18 @@ public class MonitoringController extends BaseController {
 		}
 	}
 
+	@Get("/monitoring/versions/all")
+	@SecuredAction(value = "",  type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void checkVersionsAll(final HttpServerRequest request) {
+		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
+		LocalMap<String, JsonObject> versionMap = vertx.sharedData().getLocalMap("modsInfoMap");
+		for (Map.Entry<String,JsonObject> entry : versionMap.entrySet()) {
+			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));
+		}
+		Renders.renderJson(request, versions);
+	}
+
 	@Get("/monitoring/versions")
 	@SecuredAction(value = "",  type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)

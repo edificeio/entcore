@@ -21,14 +21,10 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
@@ -581,45 +577,21 @@ public class DefaultSchoolService implements SchoolService {
 	@Override
 	public void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 					 Handler<Either<String, JsonObject>> handler) {
-		TransactionHelper helper = new TransactionHelper(neo, eventBus,true);
 		List<String> list = targetUAIs.getList();
-		List<Future> futureList = new ArrayList<>();
+		StatementsBuilder builder = new StatementsBuilder();
 		for (int i = 0; i < list.size(); i+=10) {
 			List<String> sublist = list.subList(i, Math.min((i+10), list.size()));
-			Promise<Void> promise = Promise.promise();
-			futureList.add(promise.future());
-			duplicate(structureId, new JsonArray(sublist), options, helper, message -> {
-				if ("ok".equals(message.body().getString("status"))) {
-					promise.complete();
-				} else {
-					promise.fail(message.body().getString("message"));
-				}
-			});
+			duplicate(structureId, new JsonArray(sublist), options, builder);
 		}
-		CompositeFuture.join(futureList).onComplete(event -> {
-			if (event.succeeded()) {
-				helper.commit(bool -> {
-					if (bool) {
-						handler.handle(new Either.Right<>(new JsonObject().put("status", "ok")));
-					} else {
-						handler.handle(new Either.Left<>("[Admin] Error: couldn't commit transaction"));
-					}
-				});
-			} else {
-				helper.rollback(null);
-				handler.handle(new Either.Left<>(event.cause().toString()));
-			}
-		});
+		neo.executeTransaction(builder.build(), null, true, validEmptyHandler(handler));
 	}
 
-	public void duplicate(String structureId, JsonArray targetUAIs, JsonObject options, TransactionHelper helper,
-						  Handler<Message<JsonObject>> handler) {
+	private void duplicate(String structureId, JsonArray targetUAIs, JsonObject options, StatementsBuilder builder) {
 		final boolean setApplications = options.getBoolean("setApplications", true),
 				setWidget = options.getBoolean("setWidgets", true),
 				setDistribution = options.getBoolean("setDistribution", true),
 				setEducation = options.getBoolean("setEducation", true),
 				setHasApp = options.getBoolean("setHasApp", true);
-		StatementsBuilder builder = new StatementsBuilder();
 		if (setApplications) {
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "ProfileGroup");
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "FunctionGroup");
@@ -646,7 +618,6 @@ public class DefaultSchoolService implements SchoolService {
 			final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
 			builder.add(structureUpdateQuery, params);
 		}
-		helper.addStatements(builder.build(), handler);
 	}
 
 	private void buildDuplicateQuery(String structureId, JsonArray targetUAIs, StatementsBuilder builder, String nodeType, String groupType) {
