@@ -23,7 +23,7 @@
 						<div ng-repeat="widget in widgets.all" ng-click="switchHide(widget, $event)" class="widget-picker four cell" 
 							ng-class="{ inactive: widget.hide, locked: widget.mandatory }">
 							<i class="[[widget.name]]-icon" ng-class="{ selected: !widget.hide }"></i>
-							<span class="widget-picker__name">[[lang.translate(widget.name)]]</span>
+							<span class="widget-picker__name">[[lang.translate('timeline.settings.' + widget.name)]]</span>
 						</div>
 					</div>
 				</div>

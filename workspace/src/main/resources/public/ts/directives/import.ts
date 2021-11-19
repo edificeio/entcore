@@ -270,7 +270,7 @@ export const importFiles = ng.directive('importFiles', () => {
 				scope.upload.documents.map(async doc => {
 					if (doc.hiddenBlob) {
 						await workspaceService.updateDocument(doc.hiddenBlob, doc);
-						this.hiddenBlob = undefined;
+						doc.hiddenBlob = undefined;
 					}
 				});
 				const copies = [...scope.upload.documents]

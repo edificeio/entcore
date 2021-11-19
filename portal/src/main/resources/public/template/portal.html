@@ -52,6 +52,7 @@
             <a 
                 href=""
                 title="[[lang.translate('navbar.help')]]" 
+                aria-label="[[lang.translate('navbar.help')]]" 
                 pulsar="{ index: 6, i18n: 'portal.pulsar.help', position: 'bottom center'}" 
             >
                 <i18n>help.icon</i18n>
@@ -93,72 +94,75 @@
 </div>
 
 <!-- Theme 2D -->
-<header class="no-1d navbar navbar-dark bg-secondary">
-    <a class="d-mobile-none" href="/timeline/timeline?token=[[rand]]">
-        <img class="logo" src="/assets/themes/[[skin.skin]]/img/illustrations/logo.png" alt="Logo de l'ENT">
-    </a>
-    
-    <a href="/welcome" class="application__title d-desktop-none text-truncate">
-        <i18n>portal.header.navigation.myapps</i18n>
-    </a>
-    
-    <nav class="navigation">
-        <div class="navigation__item">
-            <a href="/timeline/timeline" title="[[lang.translate('navbar.home')]]"><i class="ic-home"></i></a>
-        </div>
-        
-        <div class="navigation__item" ng-if="me.hasWorkflow('net.atos.entng.community.controllers.CommunityController|view')">
-            <a href="/community" class="zero-mobile" title="[[lang.translate('navbar.community')]]">
-                <i class="ic-community"></i>
+<header class="no-1d navbar sticky-top bg-secondary">
+    <div class="container">
+        <a class="navbar-brand d-mobile-none" href="/timeline/timeline?token=[[rand]]">
+            <img class="logo" src="/assets/themes/[[skin.skin]]/img/illustrations/logo.png" alt="Logo de l'ENT">
+        </a>
+
+        <a href="/welcome" class="navbar-title d-desktop-none text-truncate">
+            <i18n>navbar.applications</i18n>
+        </a>
+
+        <nav class="navbar-nav">
+            <a href="/timeline/timeline" class="nav-link" i18n-title="navbar.home">
+                <i class="ic-home" aria-hidden="true"></i>
+                <span class="sr-only"><i18n>navbar.home</i18n></span>
             </a>
-        </div>
-        
-        <div class="navigation__item">
-            <popover>
-                <a 
-                    href="/welcome"
-                    title="[[lang.translate('navbar.applications')]]" 
-                    pulsar="{ index: 3, i18n: 'portal.pulsar.apps', position: 'bottom center'}" 
-                    ng-click="openApps($event)"
-                    popover-opener
-                >
-                    <i class="ic-apps"></i>
+
+            <a href="/community" data-community class="nav-link d-none d-sm-inline-block" i18n-title="navbar.community"
+                ng-if="me.hasWorkflow('net.atos.entng.community.controllers.CommunityController|view')">
+                <i class="ic-community" aria-hidden="true"></i>
+                <span class="sr-only"><i18n>navbar.community</i18n></span>
+            </a>
+
+            <popover
+                title="[[lang.translate('navbar.applications')]]" 
+                pulsar="{ index: 3, i18n: 'portal.pulsar.apps', position: 'bottom center'}" >
+                <a href="/welcome" class="nav-link pe-mobile" i18n-title="navbar.applications"
+                popover-opener>
+                    <i class="ic-apps" aria-hidden="true"></i>
+                    <span class="sr-only"><i18n>navbar.applications</i18n></span>
                 </a>
-                
-                <popover-content class="d-none">
-                    <div class="content">
-                        <div class="my-apps row">
+                <popover-content class="widget">
+                    <div class="widget-applications">
+                        <div class="widget-body d-flex flex-wrap">
                             <div ng-if="me.bookmarkedApps.length === 0">
                                 <i18n>navbar.myapps.more</i18n>
                             </div>
                             <div class="bookmarked-app" ng-repeat="app in me.bookmarkedApps">
                                 <a href="[[app.address]]" target="[[app.target]]" title="[[translatedDisplayName(app)]]">
-                                    <i class="application [[app.icon]]" ng-if="app.icon.indexOf('/') === -1"></i>
+                                    <i class="application" ng-class="getIconClass(app)" ng-if="app.icon.indexOf('/') === -1"></i>
                                     <img skin-src="[[app.icon]]" ng-if="app.icon.indexOf('/') !== -1" />
                                 </a>
                             </div>
                         </div>
-                        <div class="more">
-                            <a href="/welcome"><i18n>plus</i18n></a>
+                        <div class="widget-footer border-top border-ghost">
+                            <div class="widget-footer-action">
+                                <a class="link" href="/welcome"><i18n>plus</i18n></a>
+                            </div>
                         </div>
                     </div>
                 </popover-content>
             </popover>
-        </div>
-        
-        <div class="navigation__item">
-            <span ng-include="template.containers.portal.conversationUnread"></span>
-        </div>
-        
-        <div class="navigation__item" ng-if="me.hasWorkflow('fr.openent.searchengine.controllers.SearchEngineController|view')">
-            <popover class="searchengine">
-                <a href="/searchengine" popover-opener ng-click="openApps($event)" title="[[lang.translate('navbar.search')]]">
-                    <i class="ic-search"></i>
+
+            <div class="nav-link" ng-include="template.containers.portal.conversationUnread"></div>
+
+            <popover class="nav-link d-none d-sm-inline-block"
+                ng-if="me.hasWorkflow('fr.openent.searchengine.controllers.SearchEngineController|view')">
+                <a
+                    href="/searchengine" 
+                    i18n-title="navbar.search"
+                    popover-opener
+                    class="pe-mobile">
+                    <i class="ic-search" aria-hidden="true"></i>
+                    <span class="sr-only"><i18n>navbar.search</i18n></span>
                 </a>
-                <popover-content class="searchPortal" ng-controller="SearchPortal">
+                <popover-content class="widget searchPortal">
                     <div class="content searchContent">
                         <div class="search-text row">
-                            <input type="text" class="searchInput" name="mysearch" ng-model="mysearch"
+                            <label class="sr-only" for="searchInput">mysearch</label>
+                            <input type="text" class="searchInput" id="searchInput" name="mysearch" ng-model="mysearch"
                                 ng-keyup="launchSearch($event);" />
                             <button class="searchButton" ng-click="launchSearch('link');">
                                 <i18n>ok</i18n>
@@ -167,38 +171,59 @@
                     </div>
                 </popover-content>
             </popover>
-        </div>
-        
-        <div ng-if="currentLanguage == 'fr'" class="navigation__item">
-            <a 
-                href=""
-                title="[[lang.translate('navbar.help')]]" 
-                pulsar="{ index: 5, i18n: 'portal.pulsar.help', position: 'bottom center'}" 
-            >
-                <i18n>help.icon</i18n>
+
+            <a href="#" i18n-title="navbar.help" class="nav-link" aria-label="navbar.help"
+                pulsar="{ index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}"
+                ng-if="currentLanguage == 'fr'">
+                <help></help><!-- i18n>help.icon</i18n -->
             </a>
-        </div>
-        
-        <div class="navigation__item">
-            <a 
-                href="/userbook/mon-compte" 
-                class="avatar" 
-                title="[[lang.translate('navbar.myaccount')]]" 
-                pulsar="{ index: 4, i18n: 'portal.pulsar.account', position: 'bottom center'}"
-            >
-                <img data-ng-src="[[avatar ? avatar+'?thumbnail=48x48' : '']]" id="my-photo" />
+
+            <a href="/userbook/mon-compte" i18n-title="navbar.myaccount" class="nav-link d-none d-sm-block"
+                pulsar="{ index:4, style:{zIndex:1021}, i18n:'portal.pulsar.account', position:'bottom center'}">
+                <img class="avatar" width="30" height="30" data-ng-src="[[avatar ? avatar+'?thumbnail=48x48' : '']]" alt="avatar" />
+                <span class="sr-only"><i18n>navbar.myaccount</i18n></span>
             </a>
-        </div>
-        
-        <div class="navigation__item">
-            <a href="" logout title="[[lang.translate('navbar.disconnect')]]">
-                <i class="ic-disconnect"></i>
+
+            <a href="#" class="nav-link d-none d-sm-inline-flex" logout i18n-title="navbar.disconnect">
+                <i class="ic-disconnect" aria-hidden="true"></i>
+                <span class="sr-only"><i18n>navbar.disconnect</i18n></span>
             </a>
-        </div>
-    </nav>
+
+            <div class="dropdown d-inline-block d-sm-none">
+                <button id="dropdown-label" type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                <ul class="dropdown-menu dropdown-menu-end" data-bs-popper aria-labelledby="dropdown-label">
+                  <li ng-if="me.hasWorkflow('fr.openent.searchengine.controllers.SearchEngineController|view')">
+                    <a class="dropdown-item" href="/searchengine" i18n-title="navbar.search">
+                        <i class="ic-search"></i>
+                        &nbsp;<i18n>navbar.search</i18n>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="/userbook/mon-compte" i18n-title="navbar.myaccount">
+                        <img class="avatar" width="20" height="20" data-ng-src="[[avatar ? avatar+'?thumbnail=48x48' : '']]" alt="avatar" />
+                        &nbsp;<i18n>navbar.myaccount</i18n>
+                    </a>
+                  </li>
+                  <li data-community ng-if="me.hasWorkflow('net.atos.entng.community.controllers.CommunityController|view')">
+                    <a class="dropdown-item" href="/community" i18n-title="navbar.community">
+                        <i class="ic-community" aria-hidden="true"></i>
+                        &nbsp;<i18n>navbar.community</i18n>
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" href="" logout i18n-title="navbar.disconnect">
+                        <i class="ic-disconnect"></i>
+                        &nbsp;<i18n>navbar.disconnect</i18n>
+                    </a>
+                  </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
 </header>
 
-<main class="main" role="main">
+<main class="container container-applications" role="main">
     <div id="directory"></div>
     <div ng-transclude></div>
 </main>

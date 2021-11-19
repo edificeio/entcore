@@ -84,7 +84,7 @@ export class Mail implements Selectable {
                 content
             }
         });
-        const res = await Promise.all(contents);
+        const res = await Promise.all(contents) as { action: string, title: string, content: Blob }[];
         return res;
     }
     isUserAuthor(): boolean {

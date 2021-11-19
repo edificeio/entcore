@@ -15,10 +15,10 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { template, notify, idiom as lang, ng, ui, model, moment, $ } from 'entcore';
+import { template, notify, idiom as lang, ng, ui, model, moment, $, angular } from 'entcore';
 import { directory } from '../model';
 
-export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', ($scope, $window, route) => {
+export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', '$location', ($scope, $window, route, $location) => {
 	$scope.template = template;
 	template.open('userActions', 'user-actions');
 	$scope.users = {};
@@ -158,9 +158,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 			$scope.classesOrder = ['structId', 'label'];
 
-			/* RM#30674 FEAT (JCBE) : applies only to wide screens. */
-			if (!ui.breakpoints.checkMaxWidth("wideScreen"))
-				await $scope.selectDefaultValues();
+			// Pre-apply filters that are specified in the url parameters :
+			$scope.preApplyFilters();
 
 			template.open('page', 'directory');
 			template.close('list');
@@ -928,5 +927,96 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.getTarget = function(target, type) {
 		return {...target, type}
+	}
+
+	/* Check and apply the URL parameters.
+	 * @param filters		"users" | "groups"
+	 * @param class			string | string[]
+	 * @param profile		an ID
+	 * @param structure		an ID
+	 * 
+	 * Example URL : /userbook/annuaire#/search?filters=groups&structure=an_id&profile=Teacher&class=TP1&class=TP2
+	 */
+	$scope.preApplyFilters = async function() {
+		const params:{
+			filters?:"users"|"groups",
+			class?:string|Array<string>,
+			profile?:string,
+			structure?:string
+		} = $location.search();
+
+		let filters;
+
+		switch( params.filters ) {
+			case 'users': $scope.search.index = 0; break;
+			case 'groups': $scope.search.index = 1; break;
+			default: params.filters = 'users'; break;
+		}
+
+		if( typeof params.profile === "string" ) {
+			filters = filters || {};
+			filters.profiles = [params.profile];
+		}
+
+		if( typeof params.structure === "string" ) {
+			filters = filters || {};
+			filters.structures = [params.structure];
+		}
+
+		if( typeof params.class === "string" ) {
+			filters = filters || {};
+			filters.classes = [params.class];
+		} else if( angular.isArray(params.class) ) {
+			filters = filters || {};
+			filters.classes = params.class;
+		}
+
+		if( filters ) {
+			// In responsive, display the results panel directly (not the search form)
+			let showResultsPanel = ui.breakpoints.checkMaxWidth("wideScreen");
+			$scope.showDefaultValue = false;
+			$scope.defaultValueTitle = "";
+
+			// Check the corresponding options in the search panel.
+			// Let's do some typings to make this clear as water.
+			type FilterOption = { label:string, type:/*id*/string, available?:boolean, checked?:boolean };
+			const options:{
+				structures:FilterOption[],
+				classes:FilterOption[],
+				profiles:FilterOption[],
+//				functions:FilterOption[], 	// unused
+//				types:FilterOption[]		// unused
+			} = $scope.search.index === 0 ? $scope.filtersOptions.users : $scope.filtersOptions.groups;
+			const checks = $scope.search.index === 0 ? $scope.filters.users : $scope.filters.groups;
+			// Check the option if it exists in the array of ids.
+			const checkIfExists = ( e:FilterOption, ids:string[], checkedFilters:string[] ) => {
+				if( (typeof e.available==="undefined" || e.available) && angular.isArray(ids) && ids.indexOf(e.type)!==-1 ) {
+					checkedFilters.push( e.type );
+				}
+			}
+			options.structures?.forEach( e => checkIfExists(e, filters.structures, checks.structures) );
+			options.classes?.forEach( e => checkIfExists(e, filters.classes, checks.classes) );
+			options.profiles?.forEach( e => checkIfExists(e, filters.profiles, checks.profiles) );
+
+			// Search directory for filtered results and display them.
+			await directory.directory[params.filters].searchDirectory("", filters, null, false);
+			if ($scope.search.index === 0) {
+				$scope.users = directory.directory.users;
+				$scope.allUsers = Object.assign([], $scope.users);
+				template.open('dominosUser', 'dominos-user');
+				showResultsPanel = showResultsPanel && $scope.users.all.length > 0;
+			} else {
+				$scope.groups = directory.directory.groups;
+				template.open('dominosGroup', 'dominos-group');
+				showResultsPanel = showResultsPanel && $scope.groups.all.length > 0; 
+			}
+			if( showResultsPanel ) {
+				$scope.display.searchmobile = true;
+			}
+		} else {
+			/* RM#30674 FEAT (JCBE) : applies only to wide screens. */
+			if (!ui.breakpoints.checkMaxWidth("wideScreen"))
+				await $scope.selectDefaultValues();
+		}
 	}
 }]);

@@ -1,0 +1,14 @@
+<div class="widget widget-flash" 
+        ng-repeat="message in ctrl.messages track by message.id" 
+        ng-class="message.color" 
+        ng-style="{ 'background-color': message.customColor, '--custom-message-color': message.customColor}">
+    <div class="widget-body">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close" ng-click="ctrl.dismiss(message)"></button>
+        <div class="flash-content">
+            <p flash-message-content="message"></p>
+            <div ng-if="message.signature" class="flash-content-signature mt-3 font-italic" ng-style="{'color': message.signatureColor}">
+                {{ message.signature }}
+            </div>
+        </div>
+    </div>
+</div>

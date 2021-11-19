@@ -72,6 +72,7 @@ subprojects {
     testCompile "org.testcontainers:testcontainers:$testContainerVersion"
     testCompile "org.testcontainers:mongodb:$testContainerVersion"
     testCompile "org.testcontainers:postgresql:$testContainerVersion"
+    testCompile "org.testcontainers:elasticsearch:$testContainerVersion"
     testCompile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
     testCompile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"
   }
@@ -343,6 +344,7 @@ project(':test') {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "org.testcontainers:neo4j:$testContainerVersion"
     compile "org.testcontainers:mongodb:$testContainerVersion"
+    compile "org.testcontainers:elasticsearch:$testContainerVersion"
     compile "org.testcontainers:postgresql:$testContainerVersion"
     compile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
     compile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"

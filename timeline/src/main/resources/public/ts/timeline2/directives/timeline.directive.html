@@ -1,0 +1,195 @@
+<div ng-if="canRenderUi">
+
+    <div ng-if="ctrl.lightmode" class="emptyscreen">
+        <h2 class="emptyscreen-header">
+            <i18n>lightmode.timeline.notifications.title</i18n>
+        </h2>
+        <img class="emptyscreen-image__mini" src="/timeline/public/img/lightmode-timeline.svg">
+        <p class="emptyscreen-footer">
+            <i18n>lightmode.timeline.notifications</i18n>
+        </p>
+    </div>
+
+    <div ng-if="!ctrl.lightmode">
+        <div pulsar-highlight="1">
+            <a class="filter-button" href="#" data-target="timeline-filter"
+                pulsar="{ index: 1, i18n: 'timeline.pulsar.filters', position: 'bottom center', className: 'pulse-filters'}">
+            <i18n>filters.title</i18n></a>
+        </div>
+
+        <div class="filters filters-chips" id="timeline-filter">
+            <label class="filter color-app-multiselect"
+                    ng-class="{active: ctrl.isAllSelected}"
+                    ng-if="ctrl.app.notificationTypes.length > 0">
+                <input type="checkbox" class="hidden-checkbox" value="test"
+                    ng-model="ctrl.isAllSelected" 
+                    ng-change="ctrl.switchAll()">
+                <!-- div class="icon">
+                    <i class="ic-app-multiselect"></i>
+                </div -->
+                <div class="label"><i18n>filters.all.none</i18n></div>
+            </label>
+
+            <label ng-repeat="notifType in ctrl.app.notificationTypes"
+                ng-class="ctrl.getFilterClass(notifType)">
+                <input type="checkbox" class="hidden-checkbox" value="test"
+                    ng-model="ctrl.selectedFilter[notifType]"
+                    ng-change="ctrl.switchFilter(notifType)">
+                <div class="icon">
+                    <i class="ic-app-[[ctrl.getCssType(notifType)]]"></i>
+                </div>
+                <div class="label">[[ctrl.translateType(notifType)]]</div>
+            </label>
+        </div>
+
+        <div class="feed-list">
+
+            <!--EMPTY BUT NOT ALL FILTERS SELECTED-->
+            <div ng-if="ctrl.app.notifications.length === 0 && !ctrl.isAllSelected">
+                <div class="emptyscreen" ng-if="ctrl.isCache && !ctrl.showSeeMoreOnEmpty()">
+                    <h2 class="emptyscreen-header">
+                        <i18n>empty.timeline.notifications.noresults.title</i18n>
+                    </h2>
+                    <img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg" alt="[['empty.timeline.notifications.noresults.title'|i18n]]">
+                    <p class="emptyscreen-footer">
+                        <i18n>empty.timeline.notifications.noresults</i18n>
+                    </p>
+                </div>
+                <div class="info tuto" ng-if="ctrl.isCache && ctrl.showSeeMoreOnEmpty()">
+                    <b ><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+                </div>
+            </div>
+            <!--EMPTY BUT ALL FILTERS SELECTED-->
+            <div ng-if="ctrl.app.notifications.length === 0 && ctrl.isAllSelected && !ctrl.app.hasMorePage">
+                <div class="emptyscreen" ng-if="ctrl.isCache && !ctrl.showSeeMoreOnEmpty()">
+                    <h2 class="emptyscreen-header">
+                        <i18n>empty.timeline.notifications.title</i18n>
+                    </h2>
+                    <img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg" alt="[['empty.timeline.notifications.title'|i18n]]">
+                    <p class="emptyscreen-footer">
+                        <i18n>empty.timeline.notifications</i18n>
+                    </p>
+                </div>
+                <div class="info tuto" ng-if="ctrl.isCache && ctrl.showSeeMoreOnEmpty()">
+                    <b ><span><i></i><i18n>timeline.empty.cache</i18n></span></b>
+                </div>
+            </div>
+            <!-- Emptyscreen: no notifications -->
+            <div class="emptyscreen" ng-if="ctrl.isEmpty() && !ctrl.isCache">
+                <h2 class="emptyscreen-header">
+                    <i18n>empty.timeline.notifications.title</i18n>
+                </h2>
+                <img class="emptyscreen-image__mini" src="/timeline/public/img/empty-timeline.svg" alt="[['empty.timeline.notifications.title'|i18n]]">
+                <p class="emptyscreen-footer">
+                    <i18n>empty.timeline.notifications</i18n>
+                </p>
+            </div>
+
+            <!-- Emptyscreen: no results with filters -->
+            <div class="emptyscreen" ng-if="ctrl.noResultsWithFilters() && !ctrl.isCache">
+                <h2 class="emptyscreen-header">
+                    <i18n>empty.timeline.notifications.noresults.title</i18n>
+                </h2>
+                <img class="emptyscreen-image__mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg" alt="[['empty.timeline.notifications.noresults.title'|i18n]]">
+                <p class="emptyscreen-footer">
+                    <i18n>empty.timeline.notifications.noresults</i18n>
+                </p>
+            </div>
+
+            <!-- Emptyscreen: no filters selected -->
+            <div class="emptyscreen" ng-if="ctrl.noFiltersSelected() && !ctrl.isCache">
+                <h2 class="emptyscreen-header">
+                    <i18n>empty.timeline.notifications.nofilters.title</i18n>
+                </h2>
+                <img class="emptyscreen-image mini" src="/assets/themes/entcore-css-lib/images/empty-filters.svg" alt="[['empty.timeline.notifications.nofilters.title'|i18n]]">
+                <p class="emptyscreen-footer">
+                    <i18n>empty.timeline.notifications.nofilters</i18n>
+                </p>
+            </div>
+
+            <!-- Results -->
+            <div ng-repeat="notif in ctrl.app.notifications track by notif._id">
+                <div class="feed-item color-app-[[ctrl.getCssType(notif.model.type)]]">
+                    <div class="zone-avatar">
+            
+                        <div class="avatar-social">
+                            <div class="photo">
+                                <img alt="[[notif.model.params.username]]" ng-src="/userbook/avatar/[[notif.model.sender]]?thumbnail=100x100" loading="lazy" width="60" height="60" ng-if="notif.model.sender" />
+                                <img alt="system" skin-src="/img/illustrations/system-avatar.svg" ng-if="!notif.model.sender" />
+                            </div>
+            
+                            <div class="circle bg-app-[[ctrl.getCssType(notif.model.type)]]">
+                                <i class="ic-app-[[ctrl.getCssType(notif.model.type)]]"></i>
+                            </div>
+                        </div>
+            
+                    </div>
+
+                    <div class="zone-text">
+            
+                        <div class="meta">
+                            <div class="app-name">[[ctrl.translateType(notif.model.type)]]</div>
+                            <div class="date">[[ctrl.formatDate(notif.model.date.$date)]]</div>
+                        </div>
+            
+                        <!--
+                        <div class="username">
+                            <a class="link-discret" href="[[notif.model.params.uri]]">[[notif.model.params.username]]</a> - enseignant, Mathématiques
+                        </div>
+                        -->
+            
+                        <div class="report" bind-html="notif.model.message"></div>
+                    </div>
+
+                    <div class="zone-tools">
+                        <div class="control" ng-click="ctrl.toggleTools($event)"></div>
+                        <a href="" class="link" 
+                            ng-if="ctrl.canDiscard"
+                            ng-click="ctrl.doDiscard(notif)"><i class="ic-eye-slash"></i><i18n>timeline.action.discard</i18n></a>
+                        <a href="" class="link"
+                            ng-if="ctrl.canReport(notif)"
+                            ng-click="ctrl.confirmReport(notif)"><i class="ic-warning"></i><i18n>timeline.action.report</i18n></a>
+                    </div>
+
+                </div>        
+            </div>
+
+            <!--SHOW MORE -->
+            <div ng-if="ctrl.showSeeMore()" class="text-center">
+                <button type="button" class="btn btn-info" ng-click="ctrl.handleLoadPageClick()"><i18n>timeline.seeold</i18n></button>
+            </div>
+
+            <div ng-if="ctrl.showSeeMoreOnEmpty()" style="justify-content: center;display:flex;">
+                <button type="button" class="btn btn-info" ng-click="ctrl.handleLoadPageClick(true)"><i18n>timeline.historyold</i18n></button>
+            </div>
+
+            <ode-modal visible="ctrl.display.confirmReport" on-close="ctrl.display.confirmReport = false">
+                <ode-modal-title><i18n>timeline.confirm.report</i18n></ode-modal-title>
+                <ode-modal-body>
+                    <p>
+                        <i18n>timeline.confirm.report.text</i18n>
+                    </p>
+                </ode-modal-body>
+                <ode-modal-footer>
+                    <button type="button" class="btn btn-link" data-dismiss="modal"
+                            ng-click="ctrl.display.confirmReport=false"><i18n>cancel</i18n>
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                            ng-click="ctrl.doReport(); ctrl.display.confirmReport=false">
+                        <i18n>timeline.action.report</i18n>
+                    </button>
+                </ode-modal-footer>
+            </ode-modal>
+
+            <div ng-show="ctrl.app.isLoading" class="text-center">
+                <button class="btn btn-link" type="button" disabled>
+                    <span class="spinner-border" role="status" aria-hidden="true"></span>
+                    <span><i18n>loading</i18n></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+    
+    <timeline-settings></timeline-settings>
+</div>
