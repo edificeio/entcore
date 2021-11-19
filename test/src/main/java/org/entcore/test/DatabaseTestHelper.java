@@ -1,13 +1,15 @@
 package org.entcore.test;
 
 import com.mongodb.QueryBuilder;
-
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.junit.ClassRule;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -133,6 +135,14 @@ public class DatabaseTestHelper {
 
     public MongoDBContainer createMongoContainer() {
         return new MongoDBContainer("mongo:3.6.17");
+    }
+
+    public ElasticsearchContainer createElasticContainer() {
+        return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0");
+    }
+
+    public GenericContainer createRedisContainer() {
+        return new GenericContainer("redis:5.0.3-alpine");
     }
 
     public Future<JsonObject> executeSqlWithUniqueResult(String query, JsonArray values) {

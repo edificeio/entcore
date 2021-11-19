@@ -140,6 +140,12 @@ public class Starter extends BaseServer {
 
 			vertx.sharedData().getLocalMap("skins").putAll(config.getJsonObject("skins", new JsonObject()).getMap());
 
+			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
+
+			vertx.sharedData().getLocalMap("skin-levels").putAll(config.getJsonObject("skin-levels", new JsonObject()).getMap());
+
+			log.info("localMap skin-levels = " + vertx.sharedData().getLocalMap("skin-levels"));
+
 			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().localConsumer("app-registry.loaded");
 			messageConsumer.handler(message -> {
 //				JsonSchemaValidator validator = JsonSchemaValidator.getInstance();

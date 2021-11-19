@@ -1,0 +1,57 @@
+<div class="sticky-toolbox"
+		ng-show="ctrl.canTogglePanel()"
+		ng-class="{ open: ctrl.showPanel }">
+
+	<div class="link-tool toolbox"
+			i18n-title="navbar.tools"
+			pulsar="{ index: 2, i18n: 'timeline.pulsar.settings', position: 'center left', className: 'pulse-settings'}"
+			ng-click="ctrl.togglePanel($event)">
+		<i class="ic-tools"></i>
+	</div>
+
+
+	<div class="sticky-toolbox-content">
+	
+		<p class="sticky-toolbox-title"><i18n>panel.themes</i18n></p>
+		<div class="row buttons-theme">
+			<div class="col-6" ng-repeat="skin in ctrl.skins">
+				<a href="" class="sticky-toolbox-item skin-[[skin.displayName]]"
+						ng-class="{ selected: ctrl.currentSkinName==skin.displayName }"
+						ng-click="ctrl.saveTheme(skin, $event)" >
+					[[lang.translate(skin.displayName)]]
+				</a>
+			</div>
+		</div>
+
+		<p class="sticky-toolbox-title"><i18n>panel.widgets</i18n></p>
+		<div class="row buttons-widget">
+			<div class="text-center col-3" ng-repeat="widget in ctrl.widgets">
+				<a href="" class="sticky-toolbox-item"
+						title="[[lang.translate('timeline.settings.'+widget.platformConf.name)]]"
+						ng-class="{ selected: widget.userPref.show, locked: widget.platformConf.mandatory }"
+						ng-click="ctrl.toggleWidget(widget, $event)">
+					<span class="inner">
+						<i ng-class="ctrl.themeSvc.getWidgetIconClass(widget)"></i>
+					</span>
+				</a>
+				<small>[[lang.translate('timeline.settings.'+widget.platformConf.name)]]</small>
+			</div>
+		</div>
+
+		<div ng-if="ctrl.languages.length && me.hasWorkflow('org.entcore.timeline.controllers.TimelineController|allowLanguages')">
+			<p class="sticky-toolbox-title"><i18n>panel.languages</i18n></p>
+			<div class="row buttons-countries">
+				<div class="col-3" 
+						ng-repeat="language in ctrl.languages" 
+						ng-click="ctrl.saveLang(language, $event)">
+					<a href="#" class="sticky-toolbox-country"
+							ng-class="{ selected: ctrl.languagePreference===language}">
+						<img loading="lazy" class="flag" width="100" height="75" ng-src="[[ctrl.getFlagUrlFor(language)]]" alt="">
+						<div>[[lang.translate('language.' + language)]]</div>
+					</a>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>

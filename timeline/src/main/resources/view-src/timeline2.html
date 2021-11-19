@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
+	<head>
+		<title>{{#i18n}}timeline.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.9/angular.min.js" integrity="sha512-CjpXuCK2f47gfxIjQvOwKRVGj01yHWI5qdMTO0qzERireNL30uf+fXLeZ5OxKGDj7r8xpRK4XVxgqXhBbW8Tbg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.7.9/angular-route.min.js" integrity="sha512-xI+5CA/dWcCSEtcnBohNOo6SuqCjePmu4fOqPYOp70rhpbzd+KBYJPclQCsSX3iBc/Qe3s8LITKixOy1gZCGwg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.7.9/angular-sanitize.min.js" integrity="sha512-eY2WqVT7O50HLSp/1/tZOUWYlAcPUl+WH3wu5NynvKNV5l/sKowxffGe1I91y3AuMvpyVvevOBOA3LEOBaemTw==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.1/gsap.min.js"></script>
+
+		<script>if(typeof window!=='undefined'){window.entcore=window.entcore||{};window.entcore["deploymentTag"]='{{#modVersion}}deployment-tag{{/modVersion}}';}</script>
+		<script src="/assets/js/ode-ts-client/ode-ts-client.js?version={{#modVersion}}ode-ts-client{{/modVersion}}" type="text/javascript"></script>
+		<script src="/assets/js/ode-ngjs-front/ode-ngjs-front.js?version={{#modVersion}}ode-ngjs-front{{/modVersion}}" type="text/javascript"></script>
+		<script type="text/javascript" src="/timeline/public/dist/timeline2/application.js"></script>
+	</head>
+	<body>
+		<ode-portal app="timeline" name="{{#i18n}}timeline.title.responsive{{/i18n}}" ode-modal-container>
+			
+			<div class="container-advanced-nav d-lg-none">
+				<div class="list-trigger">
+					<div class="trigger" ng-click="app.toggleContainer($event, 'left')">
+						<div translate content="timeline.col.left"></div>
+					</div>
+					<div class="trigger on" ng-click="app.toggleContainer($event, 'center')">
+						<div translate content="timeline"></div>
+					</div>
+					<div class="trigger" ng-click="app.toggleContainer($event, 'right')">
+						<div translate content="timeline.col.right"></div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="container-advanced focus-center">
+				<div class="container-advanced-wrapper">
+					<div class="container-advanced-left" ode-widget-container="[[{position:'left'}]]"></div>
+					<div class="container-advanced-center">
+						<div class="feed" pulsar-highlight="0">
+							<h2 app-title class="subtitle d-inline-block" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'center right', className: 'pulse-notifications'}">{{#i18n}}timeline.title{{/i18n}}</h2>
+		
+							<flash-messages></flash-messages>
+							
+							<timeline lightmode="{{{lightMode}}}" cache="{{{cache}}}" pick-theme="[[app.pickTheme]]"></timeline>
+						</div>
+					</div>
+					<div class="container-advanced-right" ode-widget-container="[[{position:'right'}]]"></div>
+				</div>
+			</div>
+
+			<smart-banner></smart-banner>
+
+			<ode-infotips></ode-infotips>
+			
+		</ode-portal>
+
+		<assistant></assistant>
+
+	</body>
+</html>

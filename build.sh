@@ -129,8 +129,25 @@ testGradle () {
   ./gradlew "$GRADLE_OPTION"test
 }
 
+localDep () {
+  for dep in ode-ts-client ode-ngjs-front ; do
+    if [ -e $PWD/../$dep ]; then
+      rm -rf $dep.tar $dep.tar.gz
+      mkdir $dep.tar && mkdir $dep.tar/dist \
+        && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
+      tar cfzh $dep.tar.gz $dep.tar
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
+      rm -rf $dep.tar $dep.tar.gz
+    fi
+  done
+}
+
 watch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/$SPRINGBOARD"
+  docker-compose run \
+    --rm \
+    -u "$USER_UID:$GROUP_GID" \
+    -v $PWD/../$SPRINGBOARD:/home/node/springboard \
+    node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/springboard"
 }
 
 ngWatch () {
@@ -169,6 +186,9 @@ do
       ;;
     install)
       buildNode && buildAdminNode && buildGradle
+      ;;
+    localDep)
+      localDep
       ;;
     watch)
       watch

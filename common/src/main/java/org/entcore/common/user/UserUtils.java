@@ -22,6 +22,7 @@ package org.entcore.common.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
@@ -34,13 +35,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.neo4j.Neo4j;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.*;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class UserUtils {
 
@@ -768,6 +770,56 @@ public class UserUtils {
 			} else {
 				handler.handle(Future.failedFuture(ar.cause()));
 			}
+		});
+	}
+
+	public static void getTheme(EventBus eb, HttpServerRequest request, Map<String, String> hostSkin, final Handler<String> handler) {
+		if (request instanceof SecureHttpServerRequest) {
+			JsonObject session = ((SecureHttpServerRequest) request).getSession();
+			if (session != null) {
+				JsonObject cache = session.getJsonObject("cache");
+				if (cache != null) {
+					JsonObject preferences = cache.getJsonObject("preferences");
+					if (preferences != null) {
+						String theme = preferences.getString("theme");
+						if (Utils.isNotEmpty(theme)) {
+							handler.handle(theme);
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			String query = "MATCH (u: User {id: {userId}})-[:PREFERS]->(uac: UserAppConf) RETURN uac.theme as theme";
+			Map<String, Object> params = new HashMap<>();
+			params.put("userId", userInfos.getUserId());
+
+			Neo4j.getInstance().execute(query, params, event -> {
+				if ("ok".equals(event.body().getString("status"))) {
+					JsonArray result = event.body().getJsonArray("result");
+					if (result != null && result.size() == 1) {
+						String theme = result.getJsonObject(0).getString("theme");
+						if (isNotEmpty(theme)) {
+							handler.handle(theme);
+							return;
+						}
+					}
+				}
+
+				String themeFromCookie = CookieHelper.get("theme", request);
+				if (isNotEmpty(themeFromCookie)) {
+					handler.handle(themeFromCookie);
+					return;
+				}
+
+				String themeFromHost = hostSkin.get(Renders.getHost(request));
+				if (isNotEmpty(themeFromHost)) {
+					handler.handle(themeFromHost);
+					return;
+				}
+			});
 		});
 	}
 

@@ -34,6 +34,21 @@ public class DirectoryTestHelper {
         return this;
     }
 
+
+    public DirectoryTestHelper mockUserPreferences(final JsonObject pref) {
+        vertx.eventBus().consumer("userbook.preferences", (Message<JsonObject> e) ->{
+            switch (e.body().getString("action")){
+                case "get.currentuser":
+                    e.reply(new JsonObject().put("status", "ok").put("value", pref));
+                    break;
+                default:
+                    e.fail(500, "notimplemented");
+                    break;
+            }
+        });
+        return this;
+    }
+
     public UserInfos generateUser(String id, String... groupIds) {
         final UserInfos user = new UserInfos();
         user.setChildrenIds(new ArrayList<>());
