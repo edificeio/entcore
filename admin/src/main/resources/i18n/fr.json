@@ -954,7 +954,7 @@
     "user.block.disclaimer.info": "Voulez-vous vraiment bloquer l'utilisateur <strong>{{ username ? $username : null }}</strong>? Il sera bloqué sur <b>TOUS</b> les établissements.",
     "user.block.disclaimer.alternative": "Si vous ne connaissez pas cet utilisateur, nous vous conseillons plutôt de le retirer de la liste des utilisateurs de cet établissement.",
     "user.block.disclaimer.alternative.button": "Retirer de cet établissement.",
-    "user.add.adml.disclaimer.info": "L'utilisateur {{userName}} ({{userProfile}}) va devenir Administrateur local de l'établissement {{structureName}}. Il aura donc accès à toutes les fonctionnalités de la console d'administration pour cette établissement.",
+    "user.add.adml.disclaimer.info": "L'utilisateur {{userName}} ({{userProfile}}) va devenir Administrateur local de l'établissement {{structureName}}. Il aura donc accès à toutes les fonctionnalités de la console d'administration pour cet établissement.",
     "user.add.adml.disclaimer.confirm": "Confirmez-vous cette action ?",
     "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
     "user.remove.adml.disclaimer.confirm": "Confirmez-vous cette action ?",
