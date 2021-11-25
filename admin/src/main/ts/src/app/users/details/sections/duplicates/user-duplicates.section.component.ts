@@ -71,7 +71,7 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
                     this.usersStore.structure.users.data.findIndex(u => u.id === this.user.id), 1
                 );
                 const resUser = this.usersStore.structure.users.data.find(u => u.id === res.id);
-                resUser.duplicates = resUser.duplicates.filter(d => d.id !== this.user.id);
+                if (resUser) resUser.duplicates = resUser.duplicates.filter(d => d.id !== this.user.id);
                 this.router.navigate(['/admin', res.structure.id, 'users', 'list', res.id, 'details']);
                 this.userListService.$updateSubject.next();
                 this.ns.success({
