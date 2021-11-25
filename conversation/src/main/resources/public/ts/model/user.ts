@@ -6,7 +6,6 @@ import http from 'axios';
 
 export class User implements Selectable {
     displayName: string;
-    displayNameSearchField: string;
     name: string;
     profile: string;
     id: string;
@@ -93,7 +92,6 @@ export class Users {
             this.searchCachedMap[startText] = await this.sync(startText);
         }
         var searchTerm = lang.removeAccents(search.text).toLowerCase();
-        let searchTermWithoutSpaces = searchTerm.replace(/\s/g, '');
         var found = _.filter(
             this.searchCachedMap[startText].filter(function (user) {
                 var includeUser = _.findWhere(include, { id: user.id });
@@ -102,11 +100,22 @@ export class Users {
                 return includeUser === undefined;
             })
             .concat(include), function (user) {
-                let titleTest = lang.removeAccents(user.displayNameSearchField || user.displayName || "").toLowerCase();
-                let nameTest = lang.removeAccents(user.name || "").toLowerCase();
-                return titleTest.indexOf(lang.removeAccents(searchTermWithoutSpaces).toLowerCase()) !== -1 ||
-                nameTest.indexOf(lang.removeAccents(searchTermWithoutSpaces).toLowerCase()) !== -1;
-            });
+                var testDisplayName = '', testNameReversed = '';
+                if (user.displayName) {
+                    testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
+                    testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
+                        + user.displayName.split(' ')[0]).toLowerCase();
+                }
+                var testName = '';
+                if (user.name) {
+                    testName = lang.removeAccents(user.name).toLowerCase();
+                }
+
+                return testDisplayName.indexOf(searchTerm) !== -1 ||
+                    testNameReversed.indexOf(searchTerm) !== -1 ||
+                    testName.indexOf(searchTerm) !== -1;
+            }
+        );
 
         return _.reject(found, function (element) {
             return _.findWhere(exclude, { id: element.id });
