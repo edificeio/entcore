@@ -24,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.buffer.Buffer;
 
@@ -42,7 +43,7 @@ public class HawkAuthorizationServiceImpl extends HawkAuthorizationService
     public void authorize(HttpServerRequest request, Handler<Boolean> handler)
     {
         String authHeader = request.getHeader("Authorization");
-        HawkAuthorizationComponents comps = this.extractAuthorizationComponents(authHeader);
+        HawkAuthorizationComponents comps = this.extractAuthorizationComponents(authHeader, new JsonArray().add("ext"));
 
         if(comps == null)
         {
@@ -57,13 +58,15 @@ public class HawkAuthorizationServiceImpl extends HawkAuthorizationService
             {
                 String contentType = request.getHeader("Content-Type");
                 String pathAndQuery = request.path() + (request.query() != null ? "?" + request.query() : "");
-                String port = ("https".equals(request.scheme()) ? "443" : "80");
+                String forwardedScheme = request.getHeader("X-Forwarded-Proto");
+                String originalScheme = forwardedScheme != null ? forwardedScheme : request.scheme();
+                String port = ("https".equals(originalScheme) ? "443" : "80");
                 String body = b.toString("UTF-8");
 
                 try
                 {
                     String hash = generateDataHash(contentType != null ? contentType : "application/json", body);
-                    String mac = generateMAC(comps.timestamp, comps.nonce, request.method().name(), pathAndQuery, request.host(), port, hash);
+                    String mac = generateMAC(comps.timestamp, comps.nonce, request.method().name(), pathAndQuery, request.host(), port, hash, comps.data("ext"));
 
                     handler.handle(clientId.equals(comps.id) && mac.equals(comps.mac) && hash.equals(comps.hash));
                 }
