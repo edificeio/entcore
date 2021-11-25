@@ -57,7 +57,7 @@
                                   <span translate content="directory.activation"></span>
                               </span>
                             </th>
-                            <th  ng-click="toggleSort(columns.LastLogin)">
+                            <!--<th  ng-click="toggleSort(columns.LastLogin)">
                                 <span class="sortable">
                                     <span class="icons right-spacing">
                                         <i ng-class="{'icon-off':!isSortAsc(columns.LastLogin)}" ng-click="sortAsc(columns.LastLogin,$event)" class="arrow"></i>
@@ -65,10 +65,10 @@
                                     </span>
                                     <span translate content="directory.lastLogin"></span>
                                 </span>
-                              </th>
+                              </th>-->
                         </tr>
                         <tr>
-                            <th colspan="[[isSelectedTab(kinds.Student) ? '6' : '5']]">
+                            <th colspan="[[isSelectedTab(kinds.Student) ? '5' : '4']]">
                               <div class="searchbar ten relative">
                                 <input type="text" class="class-admin__input--no-border twelve" i18n-placeholder="userBook.search" ng-model="userList.search" ng-focus="smoothScrollTo('#searchUser')"/>
                                 <i class="search" ng-click="search(searchField.words)"></i>
@@ -101,7 +101,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td>[[displayLastLogin(user)]]</td>
+                            <!--<td>[[displayLastLogin(user)]]</td>-->
                         </tr>
                     </tbody>
                 </table>
