@@ -24,6 +24,8 @@ export class MappingModel {
     type: string;
     pattern: string;
     casType: string;
+    xitiOutil: string;
+    xitiService: string;
     connectorsInStruct?: string[] = [];
     connectorsOutsideStruct?:number;
     get id(){
