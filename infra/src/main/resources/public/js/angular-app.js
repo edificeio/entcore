@@ -1670,11 +1670,12 @@ module.directive('xiti', function(){
 			return function(scope) {
 				jQuery.getScript('/xiti/public/js/directive.js', function() {
 					element.on('run.script', function(event, url){
-						window.xiti(url);
+						window.xiti.run(url);
 					})
 					scope.$on("$destroy", function() {
 						element.off();
 					});
+					window.xiti.run();
 				});
 			}
 		}
@@ -6411,7 +6412,9 @@ module.directive('assistant', function(){
         return {
             restrict: 'A',
             link: function (scope, element, attributes) {
+                if (!scope.app.isExternal) return; // Don't do anything for internal apps
                 var app = scope.$eval(attributes.connectorLightboxTrigger);
+                app.element = element;
                 //private functions
                 function init ()  {
                     //event
@@ -6489,6 +6492,10 @@ module.directive('assistant', function(){
                     scope.display.showAuthenticatedConnectorLightbox = false;
                     _MUTEX = false;
                 }
+                async function open(address, target){
+                    if (window.xiti && window.xiti.click) await window.xiti.click(_app.name, _app.element[0]);
+                    window.open(address, target);
+                }
                 scope.onConfirm = function () {
                     scope.onClose();
                     if (scope.authenticatedConnectorsAccessed) {
@@ -6501,12 +6508,12 @@ module.directive('assistant', function(){
     
                     if (target != '_self') {
                         http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
-                        window.open(_app.address, target);
+                        open(_app.address, target);
                     } else {
                         (function()
                         {
                             http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed).done(function(){
-                                window.open(_app.address, target);
+                                open(_app.address, target);
                             });
                         })();
                     }
@@ -6514,9 +6521,9 @@ module.directive('assistant', function(){
                 function openAppWithCheck (app) {
                     if(_SKIP){
                         if (app.target) {
-                            window.open(app.address, app.target);
+                            open(app.address, app.target);
                         } else {
-                            window.open(app.address, '_self');
+                            open(app.address, '_self');
                         }
                         return;
                     }
@@ -6530,9 +6537,9 @@ module.directive('assistant', function(){
                         scope.$apply();
                     } else {
                         if (app.target) {
-                            window.open(app.address, app.target);
+                            open(app.address, app.target);
                         } else {
-                            window.open(app.address, '_self');
+                            open(app.address, '_self');
                         }
                     }
                 };

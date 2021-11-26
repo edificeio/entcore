@@ -170,6 +170,20 @@
                   name="casPattern"
                   [placeholder]="'form.optional' | translate">
         </ode-form-field>
+        <ode-form-field label="services.connector.cas.xiti.outil">
+          <input type="text"
+                  [(ngModel)]="newCasType.xitiOutil"
+                  [required]="true"
+                  name="newCasType_xitiOutil"
+                  [placeholder]="'form.optional' | translate">
+        </ode-form-field>
+        <ode-form-field label="services.connector.cas.xiti.service">
+          <input type="text"
+                  [(ngModel)]="newCasType.xitiService"
+                  [required]="true"
+                  name="newCasType_xitiService"
+                  [placeholder]="'form.optional' | translate">
+        </ode-form-field>
   </ode-lightbox-confirm>
   <!--/END LIGHTBOX-->
   <!--REMOVE LIGHTBOX-->

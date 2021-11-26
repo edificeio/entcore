@@ -829,6 +829,8 @@
     "services.connector.cas.hasCas": "Activer le champs spécifique CAS",
     "services.connector.cas.type": "Cible",
     "services.connector.cas.pattern": "Pattern",
+    "services.connector.cas.xiti.outil": "Type d'outil Xiti",
+    "services.connector.cas.xiti.service": "Type de service Xiti",
     "services.connector.cas.newMapping": "Ajouter un type",
     "services.connector.cas.removeMapping": "Supprimer un type",
     "services.connector.cas.removeMapping.warning": "Il n'est possible de supprimer un type de CAS que si il n'est utilisé par aucun connecteur. Cette suppression est définitive.",
