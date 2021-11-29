@@ -496,8 +496,9 @@ export let conversationController = ng.controller('ConversationController', [
             var signature = $scope.getSignature();
             if (body.filter('.new-signature').length > 0) {
                 body.filter('.new-signature').text('');
-                if (use)
+                if (use) {
                     body.filter('.new-signature').append(signature);
+                }
                 $scope.state.newItem.body = _.map(body, function (el) { return el.outerHTML; }).join('');
             } else {
                 $scope.state.newItem.setMailSignature(signature);

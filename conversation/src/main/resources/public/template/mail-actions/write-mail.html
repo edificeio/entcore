@@ -181,10 +181,12 @@
 					<i18n class="medium-importance">add.signature</i18n>
 				</label>
 
-				<!-- <input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/> -->
-
-                <label class="checkbox" ng-click="refreshSignature(conversation.preference.useSignature)">
-                    <input type="checkbox" ng-disabled="!conversation.preference.useSignature && !conversation.preference.signature" ng-model="conversation.preference.useSignature">
+                <label class="checkbox">
+                    <input
+                        type="checkbox"
+                        ng-change="refreshSignature(conversation.preference.useSignature)"
+                        ng-disabled="!conversation.preference.useSignature && !conversation.preference.signature"
+                        ng-model="conversation.preference.useSignature">
                     <span></span>
                 </label>
 
