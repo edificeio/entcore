@@ -42,7 +42,9 @@ public interface UserAuthAccount {
 
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
-	void changePassword(String login, String password, Handler<Boolean> handler);
+	void changePassword(String login, String password, HttpServerRequest request, Handler<Boolean> handler);
+
+	void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, final Handler<Either<String, JsonObject>> handler);
 
 	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest,boolean checkFederatedLogin , Handler<Boolean> handler);
 

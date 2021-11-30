@@ -1,4 +1,5 @@
 {
+    "project.name": "ENT",
     "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
     "wayf.label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
     "activation.error": "Erreur lors de l'activation, veuillez vérifier votre identifiant et votre code d'activation.",
@@ -60,6 +61,8 @@
     "email.hi.withname": "Bonjour {{displayName}},",
     "email.login": "Votre identifiant ",
     "email.regards": "Cordialement,",
+    "email.changed.warning": "Si vous n’êtes pas à l’origine de cette action, nous vous conseillons de contacter votre administrateur local ou l'équipe de direction de votre établissement.",
+    "email.changed.pw.infos": "Le mot de passe de votre compte {{#i18n}}project.name{{/i18n}} a été réinitialisé.",
     "email.reset.infos": "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.",
     "email.reset.pw.infos": "Vous avez demandé la réinitialisation du mot de passe.",
     "email.reset.id.infos": "Vous avez demandé un rappel de votre identifiant de connexion.",
@@ -75,6 +78,7 @@
     "invalid.cgu": "Vous devez accepter les conditions générales d'utilisation",
     "label.accept.cgu": "J'accepte les conditions générales d'utilisation.",
     "mail.reset.pw.subject": "Réinitialisation de votre mot de passe",
+    "mail.change.pw.subject": "Modification de votre mot de passe",
     "missing.password": "Mot de passe oublié",
     "missing.id": "Identifiant oublié",
     "need.help": "Besoin d'aide ?",
