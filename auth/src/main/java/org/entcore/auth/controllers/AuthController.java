@@ -1361,7 +1361,7 @@ public class AuthController extends BaseController {
 									final String userId = tryUserId.get();
 									if (userId != null && !userId.trim().isEmpty()) {
 										if ("force".equals(forceChange)) {
-											userAuthAccount.changePassword(login, password, reseted -> {
+											userAuthAccount.changePassword(login, password, request, reseted -> {
 												if (Boolean.TRUE.equals(reseted)) {
 													trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
 													UserUtils.deleteCacheSession(eb, userId,
@@ -1372,7 +1372,7 @@ public class AuthController extends BaseController {
 												}
 											});
 										} else {
-											userAuthAccount.changePassword(login, password, resultHandler);
+											userAuthAccount.changePassword(login, password, request, resultHandler);
 										}
 									} else {
 										error(request, null);
