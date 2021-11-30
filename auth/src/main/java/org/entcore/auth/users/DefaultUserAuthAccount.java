@@ -401,6 +401,41 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
+	public void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, final Handler<Either<String, JsonObject>> handler)
+	{
+		if (email == null || email.trim().isEmpty())
+		{
+			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+			return;
+		}
+
+		log.info("Sending changedPassword by email: "+login+"/"+email);
+		JsonObject json = new JsonObject()
+				.put("host", notification.getHost(request))
+				.put("displayName", displayName);
+
+		notification.sendEmail(
+				request,
+				email,
+				config.getString("email", "noreply@one1d.fr"),
+				null,
+				null,
+				"mail.change.pw.subject",
+				"email/changedPassword.html",
+				json,
+				true,
+				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					public void handle(Message<JsonObject> event) {
+						if("error".equals(event.body().getString("status"))){
+							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+						} else {
+							handler.handle(new Either.Right<String, JsonObject>(event.body()));
+						}
+					}
+				}));
+	}
+
+	@Override
 	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String displayName,
 									  String login, final Handler<Either<String, JsonObject>> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
@@ -540,20 +575,49 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		params.put("login", login);
 		params.put("resetCode", resetCode);
 		params.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		updatePassword(handler, query, password, login, params);
+		updatePassword(new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(JsonObject user)
+			{
+				handler.handle(user != null);
+			}
+		}, query, password, login, params);
 	}
 
 	@Override
-	public void changePassword(String login, String password, final Handler<Boolean> handler) {
+	public void changePassword(String login, String password, HttpServerRequest request, final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"SET n.password = {password}, n.changePw = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
-				"n.login as login, n.loginAlias as loginAlias";
+				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName as displayName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
-		updatePassword(handler, query, password, login, params);
+		updatePassword(new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(JsonObject user)
+			{
+				if(request != null && user != null)
+				{
+					String email = user.getString("email");
+					String dName = user.getString("displayName");
+					String login = user.getString("login");
+					sendChangedPasswordMail(request, email, dName, login, new Handler<Either<String, JsonObject>>()
+					{
+						@Override
+						public void handle(Either<String, JsonObject> res)
+						{
+							handler.handle(true); // Ignore email failures: email is optional
+						}
+					});
+				}
+				else
+					handler.handle(user != null);
+			}
+		}, query, password, login, params);
 	}
 
 	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {
@@ -769,29 +833,31 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
-	private void updatePassword(final Handler<Boolean> handler, String query, String password, String login, Map<String, Object> params) {
+	private void updatePassword(final Handler<JsonObject> handler, String query, String password, String login, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		params.put("password", pw);
 		neo.send(query, params, res -> {
 			JsonObject r = res.body().getJsonObject("result");
+			JsonObject user = r.getJsonObject("0");
 			boolean updated = "ok".equals(res.body().getString("status"))
-					&& r.getJsonObject("0") != null
-					&& pw.equals(r.getJsonObject("0").getString("pw"));
+					&& user != null
+					&& pw.equals(user.getString("pw"));
 			if (updated) {
-				storePasswordEvent(r.getJsonObject("0").getString("login"), r.getJsonObject("0").getString("loginAlias"),
-						password, r.getJsonObject("0").getString("id"), r.getJsonObject("0").getString("profile"));
-				handler.handle(true);
+				storePasswordEvent(user.getString("login"), user.getString("loginAlias"),
+						password, user.getString("id"), user.getString("profile"));
+				handler.handle(user);
 			} else {
 				neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
 					JsonObject r2 = event.body().getJsonObject("result");
+					JsonObject user2 = r2.getJsonObject("0");
 					if ("ok".equals(event.body().getString("status"))
-							&& r2.getJsonObject("0") != null
-							&& pw.equals(r2.getJsonObject("0").getString("pw"))) {
-						storePasswordEvent(r2.getJsonObject("0").getString("login"), r2.getJsonObject("0").getString("loginAlias"),
-								password, r2.getJsonObject("0").getString("id"), r2.getJsonObject("0").getString("profile"));
-						handler.handle(true);
+							&& user2 != null
+							&& pw.equals(user2.getString("pw"))) {
+						storePasswordEvent(user2.getString("login"), user2.getString("loginAlias"),
+								password, user2.getString("id"), user2.getString("profile"));
+						handler.handle(user2);
 					} else {
-						handler.handle(false);
+						handler.handle(null);
 					}
 				});
 			}
