@@ -28,6 +28,7 @@ import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.file.FileSystemException;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -39,6 +40,9 @@ import org.entcore.portal.utils.ThemeUtils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +67,7 @@ import static org.entcore.common.user.SessionAttributes.*;
 public class PortalController extends BaseController {
 
 	private LocalMap<String, String> staticRessources;
+	private Map<String, String> fixResources = new HashMap<>();
 	private boolean dev;
 	private Map<String, List<String>> themes;
 	private Map<String, JsonArray> themesDetails;
@@ -224,7 +229,7 @@ public class PortalController extends BaseController {
 				}
 			});
 		} else {
-			sendWithLastModified(request, path);
+			sendWithLastModified(request, path, true);
 		}
 	}
 
@@ -238,7 +243,7 @@ public class PortalController extends BaseController {
 				}
 			});
 		} else {
-			sendWithLastModified(request, path);
+			sendWithLastModified(request, path, true);
 		}
 	}
 
@@ -262,29 +267,31 @@ public class PortalController extends BaseController {
 		return "/assets/themes/" + getSkinFromConditions(request);
 	}
 
-	private void sendWithLastModified(final HttpServerRequest request, final String path) {
+	private void sendWithLastModified(final HttpServerRequest request, final String path, final boolean decodeIfNeeded) {
 		if (staticRessources.containsKey(request.uri())) {
-			StaticResource.serveRessource(request,
-					path,
-					staticRessources.get(request.uri()), dev);
+			final String safePath = fixResources.getOrDefault(request.uri(), path);
+			final String modifiedDate = staticRessources.get(request.uri());
+			StaticResource.serveRessource(request,safePath,modifiedDate, dev);
 		} else {
-			vertx.fileSystem().props(path,
-					new Handler<AsyncResult<FileProps>>(){
-				@Override
-				public void handle(AsyncResult<FileProps> af) {
-					if (af.succeeded()) {
-						String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
-						staticRessources.put(request.uri(), lastModified);
-						StaticResource.serveRessource(request,
-								path,
-								lastModified, dev);
-					} else {
-						request.response().sendFile(path, ar -> {
-							if (ar.failed() && !request.response().ended()) {
-								notFound(request);
-							}
-						});
+			vertx.fileSystem().props(path, af -> {
+				if (af.succeeded()) {
+					final String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
+					staticRessources.put(request.uri(), lastModified);
+					StaticResource.serveRessource(request,path,lastModified, dev);
+				} else {
+					if(decodeIfNeeded && af.cause() instanceof FileSystemException && af.cause().getCause() != null && af.cause().getCause() instanceof NoSuchFileException){
+						try {
+							final String decoded = URLDecoder.decode(path, "UTF-8");
+							fixResources.put(request.uri(), decoded);
+							sendWithLastModified(request, decoded, false);
+							return;
+						} catch (UnsupportedEncodingException e) {}
 					}
+					request.response().sendFile(path, ar -> {
+						if (ar.failed() && !request.response().ended()) {
+							notFound(request);
+						}
+					});
 				}
 			});
 		}
