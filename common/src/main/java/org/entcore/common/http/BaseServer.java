@@ -67,6 +67,7 @@ import java.io.File;
 import java.util.*;
 
 public abstract class BaseServer extends Server {
+	public static final String ONDEPLOY_I18N = "ondeploy.i18n";
 	private static String moduleName;
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler;
@@ -134,6 +135,11 @@ public abstract class BaseServer extends Server {
 
 		final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 		Renders.getAllowedHosts().addAll(skins.keySet());
+		//listen for i18n deploy
+		vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
+			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
+			this.loadI18nAssetsFiles();
+		});
 	}
 
 	protected void initFilters() {
@@ -245,47 +251,42 @@ public abstract class BaseServer extends Server {
 	private void loadI18nAssetsFiles() {
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String className = this.getClass().getSimpleName();
-		readI18n(I18n.DEFAULT_DOMAIN, assetsDirectory + File.separator + "i18n" + File.separator + className,
-				new Handler<Void>() {
-			@Override
-			public void handle(Void v) {
-				final String themesDirectory = assetsDirectory + File.separator + "themes";
-				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
-				final Map<String, String> reverseSkins = new HashMap<>();
-				for (Map.Entry<String, String> e: skins.entrySet()) {
-					reverseSkins.put(e.getValue(), e.getKey());
-				}
-				vertx.fileSystem().exists(themesDirectory, new Handler<AsyncResult<Boolean>>() {
-					@Override
-					public void handle(AsyncResult<Boolean> event) {
-						if (event.succeeded() && event.result()) {
-							vertx.fileSystem().readDir(themesDirectory, new Handler<AsyncResult<List<String>>>() {
-								@Override
-								public void handle(AsyncResult<List<String>> themes) {
-									if (themes.succeeded()) {
-										for (String theme : themes.result()) {
-											final String themeName = theme.substring(theme.lastIndexOf(File.separator) + 1);
-											final String domain = reverseSkins.get(themeName);
-											if (domain == null) {
-												log.warn("Missing domain for theme : " + theme);
-												continue;
-											}
-											final String i18nDirectory = theme + File.separator + "i18n" + File.separator + className;
-											readI18n(domain, i18nDirectory, null, themeName);
-										}
-									} else {
-										log.error("Error listing themes directory.", themes.cause());
-									}
-								}
-							});
-						} else {
-							log.error("Missing themes directory.", event.cause());
+		readI18n(I18n.DEFAULT_DOMAIN, assetsDirectory + File.separator + "i18n" + File.separator + className, v -> {
+			this.loadI18nThemesFiles();
+		});
+	}
+
+	private void loadI18nThemesFiles(){
+		final String className = this.getClass().getSimpleName();
+		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
+		final String themesDirectory = assetsDirectory + File.separator + "themes";
+		final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+		final Map<String, String> reverseSkins = new HashMap<>();
+		for (Map.Entry<String, String> e: skins.entrySet()) {
+			reverseSkins.put(e.getValue(), e.getKey());
+		}
+		vertx.fileSystem().exists(themesDirectory, event -> {
+			if (event.succeeded() && event.result()) {
+				vertx.fileSystem().readDir(themesDirectory, themes -> {
+					if (themes.succeeded()) {
+						for (String theme : themes.result()) {
+							final String themeName = theme.substring(theme.lastIndexOf(File.separator) + 1);
+							final String domain = reverseSkins.get(themeName);
+							if (domain == null) {
+								log.warn("Missing domain for theme : " + theme);
+								continue;
+							}
+							final String i18nDirectory = theme + File.separator + "i18n" + File.separator + className;
+							readI18n(domain, i18nDirectory, null, themeName);
 						}
+					} else {
+						log.error("Error listing themes directory.", themes.cause());
 					}
 				});
+			} else {
+				log.error("Missing themes directory.", event.cause());
 			}
 		});
-
 	}
 
 	private void readI18n(final String domain, final String i18nDirectory, final Handler<Void> handler) {
