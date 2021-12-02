@@ -1,0 +1,3 @@
+db.authcas.createIndex( { "flagTTL": 1 }, { expireAfterSeconds: 60 } )
+db.authorizations.createIndex( { "flagTTL": 1 }, { expireAfterSeconds: 60 } )
+db.tokens.createIndex( { "flagTTL": 1 }, { expireAfterSeconds: 60 } )
