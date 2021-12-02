@@ -23,6 +23,8 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
+import org.entcore.common.mongodb.MongoDbResult;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;
@@ -39,6 +41,9 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public static final String SESSIONS_COLLECTION = "sessions";
+	public static final String OAUTH_AUTH_INFO_COLLECTION = "authorizations";
+	public static final String OAUTH_ACCESS_TOKEN_COLLECTION = "tokens";
+	public static final String CAS_COLLECTION = "authcas";
 
 	protected MongoDb mongo;
 	protected Neo4j neo4j;
@@ -155,11 +160,24 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		Handler<Message<JsonObject>> handler = event -> {
-			if ("ok".equals(event.body().getString("status"))) {
+		Handler<Either<String, Void>> finalHandler = event ->
+		{
+			if (event.isRight()) {
 				sendOK(message);
 			} else {
-				sendError(message, event.body().getString("message"));
+				sendError(message, event.left().getValue());
+			}
+		};
+
+		Handler<Message<JsonObject>> dropSessionsHandler = new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> msg)
+			{
+				if("ok".equals(msg.body().getString("status")) == false)
+					finalHandler.handle(new Either.Left<String, Void>(msg.body().getString("message")));
+				else
+					dropOAuth2Tokens(userId, immediate, finalHandler);
 			}
 		};
 
@@ -168,7 +186,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			if (currentSessionId != null) {
 				query.put("_id", new JsonObject().put("$ne", currentSessionId));
 			}
-			mongo.delete(SESSIONS_COLLECTION, query, handler);
+			mongo.delete(SESSIONS_COLLECTION, query, dropSessionsHandler);
 		} else {
 			// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
 			mongo.update(SESSIONS_COLLECTION,
@@ -176,8 +194,89 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build(),
 					false,
 					true,
-					handler);
+					dropSessionsHandler);
 		}
+	}
+
+	private void dropOAuth2Tokens(String userId, boolean immediate, Handler<Either<String, Void>> handler)
+	{
+		JsonObject userFilter = new JsonObject().put("userId", userId);
+		JsonObject setTTL = new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build();
+		mongo.find(OAUTH_AUTH_INFO_COLLECTION, userFilter, new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> result)
+			{
+				if("ok".equals(result.body().getString("status")) == false)
+					handler.handle(new Either.Left<String, Void>(result.body().getString("message")));
+				else
+				{
+					JsonArray resArray = result.body().getJsonArray("results");
+					JsonArray authIds = new JsonArray();
+					JsonObject authIdFilter = new JsonObject().put("authId", new JsonObject().put("$in", authIds));
+					for(int i = resArray.size(); i-- > 0;)
+						authIds.add(resArray.getJsonObject(i).getString("_id"));
+
+					Handler<Message<JsonObject>> authHandler = new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> authRes)
+						{
+							if("ok".equals(authRes.body().getString("status")) == false)
+								handler.handle(new Either.Left<String, Void>(authRes.body().getString("message")));
+							else
+								dropCASTokens(userId, immediate, handler);
+						}
+					};
+					Handler<Message<JsonObject>> tokenHandler = new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> tokenRes)
+						{
+							if("ok".equals(tokenRes.body().getString("status")) == false)
+								handler.handle(new Either.Left<String, Void>(tokenRes.body().getString("message")));
+							else
+							{
+								if(immediate)
+									mongo.delete(OAUTH_AUTH_INFO_COLLECTION, userFilter, authHandler);
+								else
+									// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
+									mongo.update(OAUTH_AUTH_INFO_COLLECTION, userFilter, setTTL, false, true, authHandler);
+							}
+						}
+					};
+
+					if(immediate)
+						mongo.delete(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, tokenHandler);
+					else
+						// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
+						mongo.update(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, setTTL, false, true, tokenHandler);
+				}
+			}
+		});
+	}
+
+	private void dropCASTokens(String userId, boolean immediate, Handler<Either<String, Void>> handler)
+	{
+		JsonObject userFilter = new JsonObject().put("user", userId);
+
+		Handler<Message<JsonObject>> casHandler = new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> authRes)
+			{
+				if("ok".equals(authRes.body().getString("status")) == false)
+					handler.handle(new Either.Left<String, Void>(authRes.body().getString("message")));
+				else
+					handler.handle(new Either.Right<String, Void>(null));
+			}
+		};
+
+		if (immediate)
+			mongo.delete(CAS_COLLECTION, userFilter, casHandler);
+		else
+			// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
+			mongo.update(CAS_COLLECTION, userFilter, new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build(), false, true, casHandler);
 	}
 
 	private void doFindByUserId(final Message<JsonObject> message, final Handler<JsonObject> callHandlerInsteadOfMessageReply) {
