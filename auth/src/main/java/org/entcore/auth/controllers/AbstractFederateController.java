@@ -42,6 +42,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public abstract class AbstractFederateController extends BaseController {
 
 	public static final String LOGIN_PAGE = "/auth/login";
+	public static final String WAYF_PAGE = "/auth/saml/wayf";
 	private UserAuthAccount userAuthAccount;
 	private EventStore eventStore;
 	protected String signKey;
@@ -91,6 +92,7 @@ public abstract class AbstractFederateController extends BaseController {
 					}
 					final String callback = CookieHelper.getInstance().getSigned("callback", request);
 					if (isNotEmpty(callback)) {
+						CookieHelper.getInstance().setSigned("callback", "", 0, request);
 						redirectionService.redirect(request, callback, "");
 					} else {
 						redirectionService.redirect(request, "/");
