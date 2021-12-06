@@ -562,6 +562,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('details', 'user-infos');
 	};
 
+	$scope.hasSubject = function(user): boolean {
+		return user && user.profile == 'Teacher' && user.subjects && user.subjects.length > 0;
+	}
+
+	$scope.getSubject = function(user): string {
+		if ($scope.hasSubject) {
+			return user.subjects[0];
+		} else return "";
+	}
+
 	$scope.deleteFavorite = function(favorite) {
 		if (!$scope.display.creatingFavorite) {
 			$scope.tryRemoveFavorite(favorite);

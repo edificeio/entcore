@@ -3,8 +3,7 @@
 
     <div class="center">
         <p class="nomargin" translate content="directory.[[getType(user.profile != null ? user.profile : user.type).toLowerCase()]]"></p>
-        <!-- TODO : Afficher la matière et l'ajouter dans le tooltip : attention, user.type ne ressort pas visiblement dans la page annuaire alors que ça ressort dans la page "ma classe", j'ai laissé le user.type pour débug -->
-        <p ng-if="user.type == 'Teacher'" class="nomargin discipline cell-ellipsis" tooltip="Nom de la matière">Matière : [[user.type]]</p>
+        <p ng-if="hasSubject(user)" class="nomargin discipline cell-ellipsis" tooltip="[[getSubject(user)]]">Matière : [[getSubject(user)]]</p>
     </div>
 
     <div class="bottom">
