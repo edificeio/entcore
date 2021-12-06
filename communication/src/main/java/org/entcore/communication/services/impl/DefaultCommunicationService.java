@@ -601,11 +601,15 @@ public class DefaultCommunicationService implements CommunicationService {
 				union.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
 			}
 		}
+		query.append("OPTIONAL MATCH (sub:Subject)<-[:TEACHES]-m ");
+		if (union != null) {
+			union.append("OPTIONAL MATCH (sub:Subject)<-[:TEACHES]-m ");
+		}
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
-			query.append("WITH DISTINCT m as visibles").append(pcr);
+			query.append("WITH DISTINCT m as visibles, COLLECT(DISTINCT sub.label) AS subjects ").append(pcr);
 			query.append(customReturn);
 			if (union != null) {
-				union.append("WITH DISTINCT m as visibles").append(pcr);
+				union.append("WITH DISTINCT m as visibles, COLLECT(DISTINCT sub.label) AS subjects ").append(pcr);
 				union.append(customReturn);
 			}
 		} else {
