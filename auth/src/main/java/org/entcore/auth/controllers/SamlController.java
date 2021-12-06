@@ -418,14 +418,49 @@ public class SamlController extends AbstractFederateController {
 			String authnRequestB64 = URLEncoder.encode(ZLib.deflateAndEncode(SAMLAuthnRequest), StandardCharsets.UTF_8.toString());
 			String rs = URLEncoder.encode(relayState, StandardCharsets.UTF_8.toString());
 			String callback = URLEncoder.encode(String.format(path, authnRequestB64, rs), StandardCharsets.UTF_8.toString());
-			location = String.format("%s?callback=%s", LOGIN_PAGE, callback);
+			String cookieCallback = getScheme(request) + "://" + getHost(request) + String.format(path, authnRequestB64, rs);
+			if (config.containsKey("authLocations")) {
+				final String host = Renders.getHost(request);
+				final String authLocation = config.getJsonObject("authLocations", new JsonObject()).getJsonObject(host, new JsonObject()).getString("loginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback);
+			} else if (config.containsKey("loginUri")) {
+				final String authLocation = config.getString("loginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback);
+			}
+
+			if (location == null || location.isEmpty()) {
+				location = String.format("%s?callback=%s", LOGIN_PAGE, callback);
+			}
 		} catch (UnsupportedEncodingException e) {
 			log.error("Encoding exception in redirectToLogin method", e);
 		} catch (IOException e) {
 			log.error("IOException during deflating and encoding SAMLAuthnRequest: " + SAMLAuthnRequest, e);
 		}
 
-		redirect(request, location);
+		if (location.startsWith("http")) {
+			redirect(request, location, "");
+		} else {
+			redirect(request, location);
+		}
+	}
+
+	/**
+	 * Extract location and set cookie for external login page.
+	 * @param authLocation authLocation
+	 * @return location
+	 */
+	private String extractLocation(final String authLocation, HttpServerRequest request, String callback, String cookieCallback) {
+		String location = null;
+		if (authLocation != null && !LOGIN_PAGE.equals(authLocation)) {
+			if (WAYF_PAGE.equals(authLocation)) {
+				location = String.format("%s?callback=%s", WAYF_PAGE, callback);
+			} else {
+				//external login page
+				CookieHelper.getInstance().setSigned("callback", cookieCallback, 600, request);
+				location = authLocation;
+			}
+		}
+		return location;
 	}
 
 	/**
