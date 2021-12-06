@@ -135,8 +135,15 @@ export class MessageFlashListComponent extends OdeComponent implements OnInit {
     }
 
     removeSelection(): void {
-        const ids: string[] = this.displayedMessages.filter(mess => this.checkboxes[mess.id]).map(mess => mess.id);
-        MessageFlashService.deleteMessages(ids)
+        let structureId: string = null;
+        const ids: string[] = this.displayedMessages.filter(mess =>
+        {
+            let isChecked = this.checkboxes[mess.id];
+            if(structureId == null && isChecked == true)
+                structureId = mess.structureId;
+            return isChecked == true && mess.structureId == structureId;
+        }).map(mess => mess.id);
+        MessageFlashService.deleteMessages(ids, structureId)
         .then(() => {
             this.messages = this.messages.filter(mess => !ids.includes(mess.id));
             this.messageStore.messages = this.messageStore.messages.filter(mess => !ids.includes(mess.id));
