@@ -249,7 +249,7 @@ public class CommunicationController extends BaseController {
 				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes;
+						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
 						preFilter, customReturn, params, user.getType(), visibles -> {
 							if (visibles.isRight()) {
