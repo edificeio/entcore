@@ -55,7 +55,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	}
 
 	@Override
-	public void update(String id, JsonObject data, Handler<Either<String, JsonObject>> handler){
+	public void update(String id, String structureId, JsonObject data, Handler<Either<String, JsonObject>> handler){
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : data.fieldNames()) {
@@ -71,14 +71,29 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 		String query =
 				"UPDATE " + resourceTable +
 				" SET " + sb.toString() + "modified = NOW() " +
-				"WHERE id = ? ";
-		sql.prepared(query, values.add(parseId(id)), validRowsResultHandler(handler));
+				"WHERE id = ? " + (structureId != null ? "AND \"structureId\" = ? " : "AND \"structureId\" IS NULL ");
+		values.add(parseId(id));
+		if(structureId != null)
+			values.add(structureId);
+		sql.prepared(query, values, validRowsResultHandler(handler));
+	}
+	
+	@Override
+	public void delete(String id, String structureId, Handler<Either<String, JsonObject>> handler)
+	{
+		String query = "DELETE FROM " + resourceTable + " WHERE id = ? " + (structureId != null ? "AND \"structureId\" = ? " : "AND \"structureId\" IS NULL ");
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(parseId(id));
+		if(structureId != null)
+			values.add(structureId);
+		sql.prepared(query, values, validRowsResultHandler(handler));
 	}
 
 	@Override
-	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler) {
-		String query = "DELETE FROM " + resourceTable + " WHERE id IN " + Sql.listPrepared(ids.toArray());
+	public void deleteMultiple(List<String> ids, String structureId, Handler<Either<String, JsonObject>> handler) {
+		String query = "DELETE FROM " + resourceTable + " WHERE " + (structureId != null ? "\"structureId\" = ? " : "\"structureId\" IS NULL ") + " AND id IN " + Sql.listPrepared(ids.toArray());
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		if(structureId != null)
+			values.add(structureId);
 		for(String id : ids){
 			try {
 				long idNb = Long.parseLong(id);
@@ -167,9 +182,11 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	}
 
 	@Override
-	public void setSubstructuresByMessageId(String messageId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
+	public void setSubstructuresByMessageId(String messageId, String structureId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
         final SqlStatementsBuilder s = new SqlStatementsBuilder();
-        s.raw("DELETE FROM " + STRUCT_JOIN_TABLE + " WHERE message_id = '" + messageId + "'");
+		String checkStruct = (structureId != null ? "\"structureId\" = '" + structureId + "' " : "\"structureId\" IS NULL ");
+		s.raw("DELETE FROM " + STRUCT_JOIN_TABLE + " WHERE message_id IN " +
+				"(SELECT id FROM " + resourceTable + " WHERE id = '" + messageId + "' AND " + checkStruct + ")");
         JsonArray subs = subStructures.getJsonArray("subStructures");
         if (subs != null && !subs.isEmpty()) {
             String query = "INSERT INTO " + STRUCT_JOIN_TABLE + " VALUES ";

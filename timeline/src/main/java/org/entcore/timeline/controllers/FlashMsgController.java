@@ -28,6 +28,8 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructure;
+import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -122,8 +124,20 @@ public class FlashMsgController extends BaseController {
 
 	@Post("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void create(final HttpServerRequest request) {
+		createFlashMsg(request, null);
+	}
+
+	@Post("/flashmsg/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void createADML(final HttpServerRequest request) {
+		createFlashMsg(request, request.params().get("structureId"));
+	}
+
+	private void createFlashMsg(final HttpServerRequest request, String structureId)
+	{
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
@@ -137,6 +151,8 @@ public class FlashMsgController extends BaseController {
 						body.put("domain", getHost(request));
 						body.put("author", user.getUsername());
 						body.put("lastModifier", user.getUsername());
+						if(structureId != null)
+							body.put("structureId", structureId);
 						final Handler<Either<String,JsonObject>> resultHandler = defaultResponseHandler(request);
 						service.create(body, eventHelper.onCreateResource(request, RESOURCE_NAME, resultHandler));
 					}
@@ -147,28 +163,57 @@ public class FlashMsgController extends BaseController {
 
 	@Delete("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void delete(final HttpServerRequest request) {
-		service.delete(request.params().get("id"), defaultResponseHandler(request));
+		service.delete(request.params().get("id"), null, defaultResponseHandler(request));
 	}
+
+	@Delete("/flashmsg/:structureId/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void deleteADML(final HttpServerRequest request) {
+		service.delete(request.params().get("id"), request.params().get("structureId"), defaultResponseHandler(request));
+	}
+
 	@Delete("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(AdmlOfStructure.class)
 	public void deleteMultiple(final HttpServerRequest request) {
-		service.deleteMultiple(request.params().getAll("id"), defaultResponseHandler(request));
+		service.deleteMultiple(request.params().getAll("id"), null, defaultResponseHandler(request));
+	}
+
+	@Delete("/flashmsg/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void deleteMultipleADML(final HttpServerRequest request) {
+		service.deleteMultiple(request.params().getAll("id"), request.params().get("structureId"), defaultResponseHandler(request));
 	}
 
 	@Put("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void update(final HttpServerRequest request) {
+		updateFlashMsg(request, null);
+	}
+
+	@Put("/flashmsg/:structureId/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void updateADML(final HttpServerRequest request) {
+		updateFlashMsg(request, request.params().get("structureId"));
+	}
+
+	private void updateFlashMsg(final HttpServerRequest request, String structureId)
+	{
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
 				RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", new Handler<JsonObject>() {
 					public void handle(JsonObject body) {
 						body.put("lastModifier", user.getUsername());
-						service.update(request.params().get("id"), body, defaultResponseHandler(request));
+						if(structureId != null)
+							body.put("structureId", structureId);
+						service.update(request.params().get("id"), structureId, body, defaultResponseHandler(request));
 					}
 				});
 			}
@@ -198,11 +243,22 @@ public class FlashMsgController extends BaseController {
 
 	@Post("/flashmsg/:messageId/substructures")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void setSubstructuresByMessageId(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject body) {
-				service.setSubstructuresByMessageId(request.params().get("messageId"), body, arrayResponseHandler(request));
+				service.setSubstructuresByMessageId(request.params().get("messageId"), null, body, arrayResponseHandler(request));
+			}
+		});
+	}
+
+	@Post("/flashmsg/:structureId/:messageId/substructures")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void setSubstructuresByMessageIdADML(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			public void handle(JsonObject body) {
+				service.setSubstructuresByMessageId(request.params().get("messageId"), request.params().get("structureId"), body, arrayResponseHandler(request));
 			}
 		});
 	}

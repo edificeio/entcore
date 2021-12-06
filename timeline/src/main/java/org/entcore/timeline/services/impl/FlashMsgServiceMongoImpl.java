@@ -57,6 +57,22 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	}
 
 	@Override
+	public void update(String id, String structureId, JsonObject data, Handler<Either<String, JsonObject>> handler)
+	{
+		throw new UnsupportedOperationException("MongoDB Flash msg structureId security not implemented yet");
+	}
+	@Override
+	public void delete(String id, String structureId, Handler<Either<String, JsonObject>> handler)
+	{
+		throw new UnsupportedOperationException("MongoDB Flash msg structureId security not implemented yet");
+	}
+	@Override
+	public void deleteMultiple(List<String> ids, String structureId, Handler<Either<String, JsonObject>> handler)
+	{
+		throw new UnsupportedOperationException("MongoDB Flash msg structureId security not implemented yet");
+	}
+
+	// Legacy
 	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler) {
 		QueryBuilder q = QueryBuilder.start("_id").in(new fr.wseduc.webutils.collections.JsonArray(ids));
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
@@ -123,7 +139,7 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	}
 
 	@Override
-	public void setSubstructuresByMessageId(String messageId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
+	public void setSubstructuresByMessageId(String messageId, String structureId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
 		// Not implemented
 	}
 
