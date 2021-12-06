@@ -25,8 +25,8 @@
 
 		<p class="sticky-toolbox-title"><i18n>panel.widgets</i18n></p>
 		<div class="row buttons-widget">
-			<div class="text-center col-3" ng-repeat="widget in ctrl.widgets">
-				<a href="" class="sticky-toolbox-item"
+			<div class="text-center col-3" ng-repeat="widget in ctrl.widgets" ng-if="!widget.platformConf.mandatory">
+				<a href="#" class="sticky-toolbox-item"
 						title="[[lang.translate('timeline.settings.'+widget.platformConf.name)]]"
 						ng-class="{ selected: widget.userPref.show, locked: widget.platformConf.mandatory }"
 						ng-click="ctrl.toggleWidget(widget, $event)">
