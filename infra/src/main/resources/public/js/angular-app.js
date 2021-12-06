@@ -6412,7 +6412,6 @@ module.directive('assistant', function(){
         return {
             restrict: 'A',
             link: function (scope, element, attributes) {
-                if (!scope.app.isExternal) return; // Don't do anything for internal apps
                 var app = scope.$eval(attributes.connectorLightboxTrigger);
                 app.element = element;
                 //private functions
@@ -6493,7 +6492,7 @@ module.directive('assistant', function(){
                     _MUTEX = false;
                 }
                 async function open(address, target){
-                    if (window.xiti && window.xiti.click) await window.xiti.click(_app.name, _app.element[0]);
+                    if (_app.isExternal && window.xiti && window.xiti.click) await window.xiti.click(_app.name, _app.element[0]);
                     window.open(address, target);
                 }
                 scope.onConfirm = function () {
