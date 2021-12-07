@@ -48,10 +48,22 @@ public class DefaultServiceProviderFactory implements SamlServiceProviderFactory
 
 	@Override
 	public SamlServiceProvider serviceProvider(Assertion assertion) {
-		if (assertion == null || assertion.getSubject() == null || assertion.getSubject().getNameID() == null) {
-			return null;
+		SamlServiceProvider samlServiceProvider = null;
+		if (assertion != null) {
+			//check subject
+			if (assertion.getSubject() != null && assertion.getSubject().getNameID() != null && assertion.getSubject().getNameID().getNameQualifier() != null) {
+				samlServiceProvider = services.get(assertion.getSubject().getNameID().getNameQualifier());
+			//check issuer
+			} else if (assertion.getIssuer() != null && assertion.getIssuer().getValue() != null) {
+				samlServiceProvider = services.get(assertion.getIssuer().getValue());
+			}
+
+			if (samlServiceProvider == null) {
+				logger.error("Error finding saml service provider.");
+			}
 		}
-		return services.get(assertion.getSubject().getNameID().getNameQualifier());
+
+		return samlServiceProvider;
 	}
 
 
