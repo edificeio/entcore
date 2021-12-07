@@ -365,7 +365,7 @@ export class TimelineController implements IController {
 		if( this.tracker.willTrackEvent(open.FROM_NEWS_LINK) ) {
 			wrapper.addEventListener( TrackedActionFromWidget.lastInfos, (e:CustomEventInit<TrackedAction>) => {
 				if( e.detail?.open==="app" ) {
-					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_NEWS_LINK );
+					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_NEWS_MORE );
 				} else if( e.detail?.open==="info" ) {
 					this.tracker.trackEvent( TRACK.event, open.action, open.FROM_NEWS_LINK );
 				}
