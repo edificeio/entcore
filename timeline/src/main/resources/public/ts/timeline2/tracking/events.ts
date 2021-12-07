@@ -55,6 +55,7 @@ export const TRACK = {
         ,START: "Home - Widget Dictaphone - Captation son"
     }
     ,OPEN_APP: { action: "Accéder à une appli"
+        ,FROM_NEWS_MORE: "Home - Widget Actualité - Vers module Actualité"
         ,FROM_NEWS_LINK: "Home - Widget Actualité - Redirection"
         ,FROM_AGENDA_MORE: "Home - Widget Agenda - Vers module Agenda"
         ,FROM_AGENDA_EVENT: "Home - Widget Agenda - Redirection évènement"
