@@ -951,7 +951,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		const params:{
 			filters?:"users"|"groups",
 			class?:string|Array<string>,
-			profile?:string,
+			profile?:string|Array<string>,
 			structure?:string
 		} = $location.search();
 
@@ -966,6 +966,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		if( typeof params.profile === "string" ) {
 			filters = filters || {};
 			filters.profiles = [params.profile];
+		} else if (angular.isArray(params.profile)) {
+			filters = filters || {};
+			filters.profiles = params.profile;
 		}
 
 		if( typeof params.structure === "string" ) {
