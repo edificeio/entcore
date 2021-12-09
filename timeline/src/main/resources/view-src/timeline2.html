@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
 	<head>
-		<title>{{#i18n}}timeline.title{{/i18n}}</title>
+		<title>[[app.lang.translate('timeline.title')]]</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
@@ -16,7 +16,7 @@
 		<script type="text/javascript" src="/timeline/public/dist/timeline2/application.js"></script>
 	</head>
 	<body>
-		<ode-portal app="timeline" name="{{#i18n}}timeline.title.responsive{{/i18n}}" ode-modal-container>
+		<ode-portal app="timeline" name="[[app.lang.translate('timeline.title.responsive')]]" ode-modal-container>
 			
 			<div class="container-advanced-nav d-lg-none">
 				<div class="list-trigger">
@@ -37,7 +37,7 @@
 					<div class="container-advanced-left" ode-widget-container="[[{position:'left'}]]"></div>
 					<div class="container-advanced-center">
 						<div class="feed" pulsar-highlight="0">
-							<h2 app-title class="subtitle d-inline-block" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'center right', className: 'pulse-notifications'}">{{#i18n}}timeline.title{{/i18n}}</h2>
+							<h2 app-title class="subtitle d-inline-block" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'center right', className: 'pulse-notifications'}"><i18n>timeline.title</i18n></h2>
 		
 							<flash-messages></flash-messages>
 							
