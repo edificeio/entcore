@@ -307,7 +307,16 @@ public class AuthController extends BaseController {
 								"refresh_token".equals(req.getParameter("grant_type")))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
 							if ("password".equals(req.getParameter("grant_type"))) {
-								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), req.getParameter("username"), clientCredential.getClientId(), request);
+								String login = req.getParameter("username");
+								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, clientCredential.getClientId(), request);
+								userAuthAccount.storeDomainByLogin(login, getHost(request), getScheme(request), new io.vertx.core.Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (Boolean.FALSE.equals(event)) {
+											log.error("[OAUTH] Error while storing last known domain for user " + login);
+										}
+									}
+								});
 							} else if ("refresh_token".equals(req.getParameter("grant_type"))) {
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
