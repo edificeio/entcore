@@ -814,6 +814,40 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
+	public void storeDomainByLogin(String login, String domain, String scheme, final Handler<Boolean> handler) {
+		String querySet =
+				"SET u.lastDomain = {domain}, u.lastScheme = {scheme}, u.lastLogin = {now} " +
+				"return count(*) = 1 as exists";
+		JsonObject params = new JsonObject()
+			.put("login", login)
+			.put("domain", domain)
+			.put("scheme", scheme)
+			.put("now", DateTime.now().toString());
+		neo.execute("MATCH (u:User{login:{login}}) " + querySet, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				Boolean isOk = "ok".equals(r.body().getString("status")) &&
+					r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
+					(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false);
+
+				if(isOk.booleanValue() == true)
+					handler.handle(isOk);
+				else
+				{
+					neo.execute("MATCH (u:User{loginAlias:{login}}) " + querySet, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r2) {
+							handler.handle("ok".equals(r2.body().getString("status")) &&
+									r2.body().getJsonArray("result") != null && r2.body().getJsonArray("result").getValue(0) != null &&
+									(r2.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
+						}
+					});
+				}
+			}
+		});
+	}
+
+	@Override
 	public void generateOTP(String id, Handler<Either<String, JsonObject>> handler) {
 		final String query =
 				"MATCH (u:User {id:{id}}) " +
