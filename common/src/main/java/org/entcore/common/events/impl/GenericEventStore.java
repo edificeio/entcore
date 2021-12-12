@@ -111,10 +111,13 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void createAndStoreEvent(final String eventType, final String attr, final String value,
 			final String clientId, final HttpServerRequest request) {
-		String query = "MATCH (n:User {" + attr + ": {login}}) " + "OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) "
+		final boolean isLoginEvent = "LOGIN".equals(eventType); // hack for security device change notification
+		final String query = "MATCH (n:User {" + attr + ": {login}}) " + "OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) "
 				+ "OPTIONAL MATCH gp-[:DEPENDS]->(s:Structure) " + "OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) "
+				+ (isLoginEvent? "OPTIONAL MATCH (n)-[r:HAS_FUNCTION]->(f:Function) " : "")
 				+ "RETURN distinct n.id as userId,  head(n.profiles) as type, COLLECT(distinct gp.id) as profilGroupsIds, "
-				+ "COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
+				+ "COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures"
+				+ (isLoginEvent ? ", head(collect(distinct f.name)) as useradmin " : "");
 		Neo4j.getInstance().execute(query, new JsonObject().put("login", value), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -124,6 +127,15 @@ public abstract class GenericEventStore implements EventStore {
 					if (clientId != null) {
 						customAttributes = new JsonObject();
 						customAttributes.put("override-module", clientId);
+					}
+					if (isLoginEvent) { // hack for security device change notification
+						final Object userAdmin = res.getJsonObject(0).remove("useradmin");
+						if (userAdmin != null && !userAdmin.toString().isEmpty()) {
+							if (customAttributes == null) {
+								customAttributes = new JsonObject();
+							}
+							customAttributes.put("useradmin", userAdmin);
+						}
 					}
 					execute(UserUtils.sessionToUserInfos(res.getJsonObject(0)), eventType, request, customAttributes);
 				} else {
