@@ -46,8 +46,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -238,7 +238,7 @@ public class DefaultUserService implements UserService {
 				getMgroups;
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
-					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) + u.functions as functions," +
+					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) as functions, u.functions as aafFunctions," +
 					"CASE WHEN children IS NULL THEN [] ELSE filter(x IN children WHERE x.id IS NOT NULL) END as children, " +
 					"CASE WHEN parents IS NULL THEN [] ELSE filter(x IN parents WHERE x.id IS NOT NULL) END as parents, " +
 					"CASE WHEN admGroups IS NULL THEN [] ELSE filter(x IN admGroups WHERE x.id IS NOT NULL) END as functionalGroups, " +
@@ -291,10 +291,57 @@ public class DefaultUserService implements UserService {
 						}
 					}
 				}
+				if(r.containsKey("aafFunctions")) {
+					extractReformatUserFunctions(r);
+				}
 			}
 			result.handle(event);
 		};
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
+	}
+
+	private void extractReformatUserFunctions(JsonObject r) {
+		//reformat functions
+		JsonObject functions = new JsonObject();
+		for (Object o : getOrElse(r.getJsonArray("aafFunctions"), new fr.wseduc.webutils.collections.JsonArray())) {
+			if (o == null) continue;
+			String[] sf = o.toString().split("\\$");
+			if (sf.length == 5) {
+				JsonObject jo = functions.getJsonObject(sf[1]);
+				if (jo == null) {
+					jo = new JsonObject().put("code", sf[1])
+							.put("functionName", sf[2])
+							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
+							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray())
+							.put("subjects", new JsonObject());
+					functions.put(sf[1], jo);
+				}
+				JsonObject subject = jo.getJsonObject("subjects").getJsonObject(sf[3]);
+				if (subject == null) {
+					subject = new JsonObject()
+							.put("subjectCode", sf[3])
+							.put("subjectName", sf[4])
+							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
+							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray());
+					jo.getJsonObject("subjects").put(sf[3], subject);
+				}
+				jo.getJsonArray("structureExternalIds").add(sf[0]);
+				subject.getJsonArray("structureExternalIds").add(sf[0]);
+			}
+		}
+		r.remove("aafFunctions");
+		for (Object o : getOrElse(r.getJsonArray("functions"), new fr.wseduc.webutils.collections.JsonArray())) {
+			if (!(o instanceof JsonArray)) continue;
+			JsonArray a = (JsonArray) o;
+			String code = a.getString(0);
+			if (code != null) {
+				functions.put(code, new JsonObject()
+						.put("code", code)
+						.put("scope", a.getJsonArray(1))
+				);
+			}
+		}
+		r.put("functions", functions);
 	}
 
     @Override
