@@ -19,12 +19,14 @@
 
 package org.entcore.feeder.timetable.edt;
 
-import org.entcore.feeder.Feed;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.joda.time.LocalDate;
+
+import fr.wseduc.webutils.security.Md5;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -41,11 +43,9 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.security.NoSuchAlgorithmException;
 
-import fr.wseduc.webutils.security.Md5;
+import org.joda.time.LocalDate;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-public class EDTFeeder implements Feed, EDTReader
+public class EDTFeeder implements EDTReader
 {
   // ================================================ Groups classes ================================================
 
@@ -366,8 +366,7 @@ public class EDTFeeder implements Feed, EDTReader
 	public static final String IDENT = "Ident";
   protected static final Logger log = LoggerFactory.getLogger(EDTFeeder.class);
 
-  private EDTUtils edtUtils;
-  private String mode;
+  private String sourceString;
   private Structure structure;
 
   private Map<String, Teacher> teachers = new HashMap<String, Teacher>();
@@ -379,44 +378,19 @@ public class EDTFeeder implements Feed, EDTReader
   private Map<String, PartieClasse> subclasses =  new HashMap<String, PartieClasse>();
   private Map<String, Group> groups = new HashMap<String, Group>();
 
-  public EDTFeeder(EDTUtils edtUtils, String mode)
+  public EDTFeeder(Structure structure, String sourceString)
   {
-    this.edtUtils = edtUtils;
-    this.mode = mode;
-  }
-
-  @Override
-  public void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception
-  {
-		throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception
-  {
-    JsonObject structureInfos = new JsonObject();
-		final String content = this.edtUtils.getContent(path, mode, structureInfos);
-    this.structure = importer.createOrUpdateStructure(structureInfos);
-
-    // This method is synchronous
-    this.edtUtils.parseContent(content, this);
-
-    this.runImport(importer, this.structure, handler);
-  }
-
-  @Override
-  public void launch(Importer importer, String path, JsonObject mappings, Handler<Message<JsonObject>> handler) throws Exception
-  {
-		this.launch(importer, path, handler);
+    this.structure = structure;
+    this.sourceString = sourceString;
   }
 
   // -------------------------------------------- IMPORT --------------------------------------------
 
-  private void runImport(Importer importer, Structure structure, Handler<Message<JsonObject>> handler)
+  public void persistImport(Importer importer, Handler<Message<JsonObject>> handler)
   {
     this.runDefaults(importer);
-    this.importGroups(importer, structure);
-    this.importSubjects(importer, structure);
+    this.importGroups(importer);
+    this.importSubjects(importer);
 
     importer.flush(new Handler<Message<JsonObject>>()
     {
@@ -425,9 +399,9 @@ public class EDTFeeder implements Feed, EDTReader
       {
         if ("ok".equals(message.body().getString("status")))
         {
-          importTeachers(importer, structure);
-          importPersonnels(importer, structure);
-          importStudents(importer, structure);
+          importTeachers(importer);
+          importPersonnels(importer);
+          importStudents(importer);
 
           importer.flush(new Handler<Message<JsonObject>>()
           {
@@ -436,7 +410,7 @@ public class EDTFeeder implements Feed, EDTReader
             {
               if ("ok".equals(message.body().getString("status")))
               {
-                importParents(importer, structure);
+                importParents(importer);
 
                 importer.flush(new Handler<Message<JsonObject>>()
                 {
@@ -445,7 +419,7 @@ public class EDTFeeder implements Feed, EDTReader
                   {
                     if ("ok".equals(message.body().getString("status")))
                     {
-                      end(importer, structure, handler);
+                      end(importer, handler);
                     }
                     else
                     {
@@ -482,13 +456,13 @@ public class EDTFeeder implements Feed, EDTReader
     DefaultFunctions.createOrUpdateFunctions(importer);
   }
 
-  private void importGroups(Importer importer, Structure structure)
+  private void importGroups(Importer importer)
   {
     for(Classe c : this.classes.values())
       this.structure.createClassIfAbsent(c.externalId, c.name);
 
     for(Group g : this.groups.values())
-      this.structure.createFunctionalGroupIfAbsent(g.externalId, g.name, this.getFeederSource());
+      this.structure.createFunctionalGroupIfAbsent(g.externalId, g.name, this.sourceString);
 
     // Create HeadTeacher groups
     for(Teacher t : this.teachers.values())
@@ -504,13 +478,13 @@ public class EDTFeeder implements Feed, EDTReader
     }
   }
 
-  private void importSubjects(Importer importer, Structure structure)
+  private void importSubjects(Importer importer)
   {
     for(Subject s : this.subjects.values())
       importer.createOrUpdateFieldOfStudy(s.get(importer));
   }
 
-  private void importTeachers(Importer importer, Structure structure)
+  private void importTeachers(Importer importer)
   {
     for(Teacher t : this.teachers.values())
     {
@@ -520,7 +494,7 @@ public class EDTFeeder implements Feed, EDTReader
     }
   }
 
-  private void importPersonnels(Importer importer, Structure structure)
+  private void importPersonnels(Importer importer)
   {
     String[][] emptyLink = new String[0][];
     for(Personnel p : this.personnels.values())
@@ -531,7 +505,7 @@ public class EDTFeeder implements Feed, EDTReader
     }
   }
 
-  private void importStudents(Importer importer, Structure structure)
+  private void importStudents(Importer importer)
   {
     for(Student s : this.students.values())
     {
@@ -541,15 +515,15 @@ public class EDTFeeder implements Feed, EDTReader
     }
   }
 
-  private void importParents(Importer importer, Structure structure)
+  private void importParents(Importer importer)
   {
     for(Parent p : this.parents.values())
       importer.createOrUpdateUser(p.get(), p.getChildrenIds(), true);
   }
 
-  private void end(Importer importer, Structure structure, Handler<Message<JsonObject>> handler)
+  private void end(Importer importer, Handler<Message<JsonObject>> handler)
   {
-    importer.markMissingUsers(structure.getExternalId(), this.getFeederSource(), null, new Handler<Void>()
+    importer.markMissingUsers(this.structure.getExternalId(), this.sourceString, null, new Handler<Void>()
     {
       @Override
       public void handle(Void v)
@@ -560,7 +534,7 @@ public class EDTFeeder implements Feed, EDTReader
         // Pour les responsables
         importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
         importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
-        importer.addRelativeProperties(getFeederSource());
+        importer.addRelativeProperties(sourceString);
 
         // Finalisation
         importer.restorePreDeletedUsers();
@@ -568,12 +542,6 @@ public class EDTFeeder implements Feed, EDTReader
         importer.persist(handler);
       }
     });
-  }
-
-  @Override
-  public String getFeederSource()
-  {
-    return "EDT";
   }
 
   // --------- PROFESSEUR ---------
