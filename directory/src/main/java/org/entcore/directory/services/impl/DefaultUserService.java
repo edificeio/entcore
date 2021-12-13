@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
@@ -979,7 +980,7 @@ public class DefaultUserService implements UserService {
 
 	private void streamList(String query, JsonObject params, int skip, int limit, Handler<Either<String, JsonArray>> handler) {
 		neo.execute(query, params.copy().put("skip", skip), res -> {
-			Either<String, JsonArray> r = validResult(res);
+			Either<String, JsonArray> r = Neo4jResult.validResult(res);
 			handler.handle(r);
 			if (r.isRight()) {
 				if (r.right().getValue().size() == limit) {
