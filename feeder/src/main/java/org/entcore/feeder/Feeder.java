@@ -39,7 +39,7 @@ import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.ImportsLauncher;
 import org.entcore.feeder.timetable.UDTWebDAVImportsLauncher;
 import org.entcore.feeder.timetable.TimetableReport;
-import org.entcore.feeder.timetable.edt.EDTFeeder;
+import org.entcore.feeder.timetable.edt.EDTFeederLauncher;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.export.Exporter;
@@ -183,7 +183,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				edtUtils = new EDTUtils(vertx, pronotePrivateKey,
 						config.getString("pronote-partner-name", "NEO-Open"));
 
-				feeds.put("PRONOTE", new EDTFeeder(edtUtils, config.getString("mode", "prod")));
+				feeds.put("PRONOTE", new EDTFeederLauncher(edtUtils, config.getString("mode", "prod")));
 				setupImportCron(edt, new ImportsLauncher(vertx, storage, null, postImport, edtUtils, config.getBoolean("edt-user-creation", false), false));
 			}
 		}
