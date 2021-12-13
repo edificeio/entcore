@@ -118,6 +118,8 @@ public class TransactionHelper {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if (handler != null) {
+					if(handler == flushHandler)
+						flushHandler = null;
 					handler.handle(message);
 				}
 				if ("ok".equals(message.body().getString("status"))) {
