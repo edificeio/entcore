@@ -1,0 +1,155 @@
+{ 
+    "name": "{{ entcoreInfraVersion }}",
+    "waitDeploy" : true,
+    "config" : {
+        "main": "org.entcore.infra.Starter",
+        "port": 8001,
+        "mode": "prod",
+	    "sameSiteValue": "{{ cookieSameSiteValue  | default('None') }}",
+	    "encoding-available": ["Cp858", "Cp1250", "ISO-8859-1"],
+	    "neo4jMetricsEnable": {{ neo4jMetricsEnable  | default('true') }},
+        {% if infraNeo4jCheck is defined %}
+	    "neo4jConfigOverride": {
+        	"optimized-check-active": true
+	    },
+        {% endif %}
+        {% if infraInstance is defined %}
+        "instances": {{ infraInstance }},
+        {% endif %}
+        "auto-redeploy": false,
+        "path-prefix": "infra",
+        "ssl": true,
+        {% if antivirus is defined and antivirus %}
+        "antivirus": true,
+        {% endif %}
+        {% if overrideTheme %} "override-theme": {}, {% endif %}
+        {% if csp is defined %}"content-security-policy": "{{ csp }}",{% endif %}
+        {% if csrfToken %}"csrf-token": true,{% endif %}
+        "sql": true,
+        {% if hardBounceCron is defined and hardBounceCron %}
+        "hard-bounces-cron" : "0 0 6 * * ? *",
+        {% else %}
+        "hard-bounces-cron" : "0 0 1 * * ? 2099",
+        {% endif %}
+        "key": "{{ key }}",
+        {% if skinLevels is defined %}
+        "skin-levels": {{skinLevels}},
+        {% endif %}
+        "skins": {{ skins }} ,
+        {% if gridfs is defined and gridfs %}
+        "gridfs-address" : "wse.gridfs.persistor",
+        {% else %}
+        "file-system": {
+            {% if fsStorages is defined %}
+            "path": "{{storagePath |default('/srv/storage')}}",
+            "paths" : {{ fsStorages }},
+            {% else %}
+            "path": "{{storagePath |default('/srv/storage')}}",
+            {% endif %}
+            "flat": false
+            {% if antivirusCall is defined %}
+            , "antivirus" : {{ antivirusCall }}
+            {% endif %}
+            {% if blockedExtensions is defined %},
+            "blockedExtensions" : {{ blockedExtensions }}
+            {% endif %}
+        },
+        {% endif %}
+        "sharedConf": {
+            {% if smsProvider is defined and smsProvider == 'OVH' %}
+            "smsProvider": "OVH"
+            {% endif %}
+        },
+        "emailConfig":
+        {% if emailConfig is defined %}
+        {{ emailConfig }}
+        {% else %}
+        {
+            "email": "{{fromEmail}}",
+            "host": "https://{{ host }}",
+            "type": "SendInBlue",
+            "api-key": "{{sendInBlueApiKey}}",
+            "uri": "https://api.sendinblue.com:443",
+            "split-recipients" : true,
+            "ip": "{{sendInBlueApiIp}}"
+            {% if emailConfigPg is defined %},
+            "tracking-image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P//PwAGBAL/VJiKjgAAAABJRU5ErkJggg==",
+            "postgresql":{
+                "port": {{emailConfigPgPort |default('5432')}},
+                "host": "{{emailConfigPg}}",
+                "database": "{{emailConfigPgDb}}",
+                "user": "{{emailConfigPgUser}}",
+                "password": "{{emailConfigPgPwd}}"
+            }
+            {% endif %}
+        }
+        {% endif %}
+        {% if eventStoreConfig is defined %}, 
+        "event-store" : {{ eventStoreConfig }}
+        {% endif %},
+        "eventConfig": {
+		    "event-whitelist": {{ eventWhitelist|default([]) }},
+            "user-blacklist": {{ usersBlacklist|default([]) }}
+        },
+        "node-pdf-generator" : {
+            "pdf-connector-id": "exportpdf",
+            "auth": "{{ nodePdfToken }}",
+            "url" : "{{ nodePdfUrl }}"
+        },
+        {% if redisHost is defined %}
+        "redisConfig": {
+            "host": "{{ redisHost }}",
+            "port": {{ redisPort|default('6379') }}
+            {% if redis_password is defined %},
+            "auth": "{{ redis_password }}"
+            {% endif %}
+        },
+        {% endif %}
+        {% if oauthCache is defined %}
+        "oauthCache":{
+            "enabled": {{oauthCache}}
+        },
+        {% endif %}
+        {% if webviewFilter is defined %}
+        "webviewConfig": {
+            "enabled": {{webviewFilter}},
+            "whitelist": {{ webviewFilterWhitelist|default([]) }},
+            "illegal-page": "{{ webviewFilterPage|default('/illegal-app.html') }}",          
+	        "blacklist": {{ webviewFilterBlacklist|default([]) }}
+        },
+        {% endif %}
+        "neo4jConfig": {
+            "poolSize": 100, "checkDelay": 30000,
+	        "optimized-check-enable": {{ neo4jOptimizedEnable | default('true') }},
+	        "optimized-check-delay": {{ neo4jOptimizedDelay | default('10000') }},
+            {% if neo4j_password is defined %}
+            "username": "{{ neo4j_user }}",
+            "password": "{{ neo4j_password }}",
+            {% endif %}
+            "server-uris": [
+                {% if ha %}
+                    {% if ipNeo4j is defined %}
+                        {% for ip in ipNeo4j %}
+                "http://{{ ip }}:7474/db/data/"{% if not(loop.last) %},{% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% for ip in dbip %}
+                "http://{{ ip }}:7474/db/data/"{% if not(loop.last) %},{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
+                "http://{{ ipNeo4j|default('localhost') }}:7474/db/data/"
+                {% endif %}
+            ],
+            {% if ha %}
+                {% if ipNeo4j is defined %}
+            "slave-readonly": {% if ipNeo4j|length > 1 %}true{% else %}false{% endif %}
+                {% else %}
+            "slave-readonly": {% if dbip|length > 1 %}true{% else %}false{% endif %}
+                {% endif %}
+            {% else %}
+            "slave-readonly": false
+            {% endif %}
+        }
+    }
+}
