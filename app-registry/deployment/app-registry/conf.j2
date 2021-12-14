@@ -1,0 +1,31 @@
+{
+    "name": "{{ entcoreAppRegistryVersion }}",
+    "waitDeploy" : true,
+    "config": {
+        "main": "org.entcore.registry.AppRegistry",
+        "auto-redeploy": false,
+        "app-type" : "SYSTEM",
+        {% if csrfToken %}"csrf-token": true,{% endif %}
+        "mode": "prod",
+        "ssl": true,
+        {% if bprEnabled is defined %}
+        "library-enabled": true,
+        "library-api-url": "{{ bprUrl }}",
+        "library-token": "{{ bprToken }}",
+        "library-structures-blacklist": {{ libraryStructuresBlacklist|default([]) }},
+        {% endif %}
+        {% if overrideTheme %} "override-theme": {}, {% endif %}
+        "port": 8012,
+        "publicConf": {
+            "xiti": {
+                "ID_SERVICE": {
+                    "default": "",
+                    "/admin-console": ""
+                },
+                "LIBELLE_SERVICE": {
+                    "default": "PAGE_ENT"
+                }
+            }
+        }
+    }
+}
