@@ -1,0 +1,68 @@
+{
+    "name": "{{ entcoreDirectoryVersion }}",
+        "config": {
+            "main": "org.entcore.directory.Directory",
+            "auto-redeploy": false,
+            "ssl": true,
+            {% if ha and directoryInstance is defined %}
+            "instances": {{ directoryInstance }},
+            {% endif %}
+            {% if overrideTheme %} "override-theme": {}, {% endif %}
+            {% if csrfToken %}"csrf-token": true,{% endif %}
+            "wizard-path": "{{storagePath |default('/srv/storage')}}/wizard",
+            "timetable-path": "{{storagePath |default('/srv/storage')}}/timetable",
+            "mode": "prod",
+            "app-type" : "SYSTEM",
+            "host": "https://{{ host }}",
+            "port": 8003,
+            "email": "{{fromEmail}}",
+            "app-name": "Directory",
+            "workspace-url": "localhost",
+            "workspace-port": 8011,
+            "workspace-prefix": "/workspace",
+            "activation-welcome-message": {{ activationWelcomeMessage|default('true') }},
+            "createdUserEmail": {{ createdUserEmail|default('false') }},
+            "classDefaultRoles": {{ classDefaultRoles|default('false') }},
+		    "listUserMode": "{{ listUserMode | default('mono') }}",
+            "visible-check" : {{ visibleCheck|default('true') }},
+            "user-book-data": {
+                "default-theme": "{{ defaultTheme|default('default') }}",
+                "default-avatar": "no-avatar.jpg",
+                "default-mood": "default",
+                "moods": ["default", "happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad"],
+                "hobbies": [
+                    "sport",
+                    "cinema",
+                    "animals",
+                    "music",
+                    "places",
+                    "books"
+                ]
+            },
+            "avatar-path":"/srv/avatars/",
+            {% if and remoteNodes is defined %}
+            "remote-nodes": {{remoteNodes}}, 
+            {% endif %}
+            "publicConf": {
+                "feeders": ["CSV"],
+                "federatedAddress": {{ federatedAddress|default('{}') }},
+                {% if disabledFederatedAdress is defined %}
+                "disabledFederatedAdress": {{ disabledFederatedAdress }},
+                {% endif %}
+                "xiti": {
+                    "ID_SERVICE": {
+                        "default": 2,
+                        "/userbook/mon-compte": "",
+                        "/admin-console": ""
+                    },
+                    "LIBELLE_SERVICE": {
+                        "default": "COURRIER_ELECTRONIQUE",
+                        "/userbook/mon-compte": "PRODUCTION_COLLABORATIVE",
+                        "/admin-console": "PAGE_ENT",
+                        "/class-admin#/myClass": "PRODUCTION_COLLABORATIVE",
+                        "/userbook/annuaire": "PRODUCTION_COLLABORATIVE"
+                    }
+                }
+            }
+        }
+    }
