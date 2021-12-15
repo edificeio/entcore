@@ -1,5 +1,6 @@
 {
     "name": "{{ entcoreFeederVersion }}",
+    "priority": 59,
     "worker": true,
     "config": {
         "mode": "{{ modeFeeder|default('prod') }}",
@@ -28,55 +29,56 @@
         "feeder" : "BE1D",
         {% else %}
         "feeder": "AAF",
-         {% if feederImport is defined and feederImport %}
+            {% if feederImport is defined and feederImport %}
         "imports":{
-            {% if aafCron is defined %}
+                {% if aafCron is defined %}
             "AAF": {
                 "files" : "{{aafHome}}",
                 "auto-export": false,
                 "cron" : "{{ aafCron }}"
             }
-            {% endif %}
+                {% endif %}
             {% if aafCron is defined and aaf1dCron is defined %},{% endif %}
-            {% if aaf1dCron is defined %}
+                {% if aaf1dCron is defined %}
             "AAF1D": {
                 "files" : "{{aaf1dHome}}",
                 "cron" : "{{ aaf1dCron }}"
             }
-            {% endif %}
+                {% endif %}
         },
-        {% endif %}
-        {% if ha and wsCallAfterImport is defined %}
+            {% endif %}
+            {% if ha and wsCallAfterImport is defined %}
         "ws-call-after-import": {{ wsCallAfterImport }},
-        {% endif %}
-        {% if edtKey is defined %}
+            {% endif %}
+            {% if edtKey is defined %}
         "edt" : {
             "pronote-private-key" : "{{ edtKey }}"
         },
-        {% endif %}
-        {% if udtAutoImport is defined %}
+            {% endif %}
+            {% if udtAutoImport is defined %}
         "udt": {{ udtAutoImport }},
-        {% endif %}
-		{% if crossSourceFunctionalGroup is defined %}
+            {% endif %}
+		    {% if crossSourceFunctionalGroup is defined %}
         "cross-source-functional-group-match": {{ crossSourceFunctionalGroup }},
-        {% endif %}
-        {% if not(ha) or item == 'jobs' %}
+            {% endif %}
+            {% if not(ha) or item == 'jobs' %}
         "ignore-empty-statements-error": true,
         "timetable-report-erase-cron": "0 45 0 * * ? *",
         "timetable-report-erase-after-seconds": 7776000,
 		"log-details": {{ feederLogDetails | default('false') }},
-            {% if preDeleteByProfile is defined %}
+                {% if preDeleteByProfile is defined %}
         "pre-delete" : {{ preDeleteByProfile }},
-            {% else %}
+                {% else %}
         "pre-delete-cron" : "0 0 5 * * ? *",
-                {% if deleteUserDelay is defined %}
+                    {% if deleteUserDelay is defined %}
         "delete-user-delay": {{ deleteUserDelay }},
+                    {% endif %}
                 {% endif %}
-            {% endif %}
         "delete-cron" : "{{ deleteCron|default('0 30 5 * * ? *') }}",
-        {% else %}
+            {% else %}
         "pre-delete-cron" : "0 0 3 11 11 ? 2099",
         "delete-cron" : "0 30 5 * * ? 2099",
+            {% endif %}
         {% endif %}
         "mongodb": true,
         {% if sendReport is defined %}"sendReport": {{ sendReport }},{% endif %}
