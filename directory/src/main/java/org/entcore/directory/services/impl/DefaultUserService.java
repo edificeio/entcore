@@ -46,7 +46,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static fr.wseduc.webutils.Utils.*;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
