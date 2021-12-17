@@ -37,6 +37,7 @@ import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.auth.users.NewDeviceWarningTask;
+import org.entcore.auth.users.AuthRepositoryEvents;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -172,6 +173,7 @@ public class Auth extends BaseServer {
 		}
 
 		final JsonObject NDWConf = config.getJsonObject("new-device-warning");
+		NewDeviceWarningTask NDWTask = null;
 		if(NDWConf != null)
 		{
 			String cron = NDWConf.getString("cron");
@@ -183,11 +185,13 @@ public class Auth extends BaseServer {
 				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
 				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
 				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
-				NewDeviceWarningTask NDW = new NewDeviceWarningTask(vertx, emailFactory.getSender(), config.getString("email"),
-																	warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit);
-				new CronTrigger(vertx, cron).schedule(NDW);
+				NDWTask = new NewDeviceWarningTask(vertx, emailFactory.getSender(), config.getString("email"),
+													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit);
+				new CronTrigger(vertx, cron).schedule(NDWTask);
 			}
 		}
+
+		setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
 	}
 
 }
