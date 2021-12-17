@@ -19,6 +19,7 @@
 
 package org.entcore.auth;
 
+import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.security.JWT;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.shareddata.LocalMap;
@@ -32,6 +33,8 @@ import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
+import org.entcore.auth.users.NewDeviceWarningTask;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
@@ -141,6 +144,24 @@ public class Auth extends BaseServer {
 			final JsonArray authorizedHostsLogin = openidFederate.getJsonArray("authorizedHostsLogin");
 			if (authorizedHostsLogin != null && authorizedHostsLogin.size() > 0) {
 				authController.setAuthorizedHostsLogin(authorizedHostsLogin);
+			}
+		}
+
+		final JsonObject NDWConf = config.getJsonObject("new-device-warning");
+		if(NDWConf != null)
+		{
+			String cron = NDWConf.getString("cron");
+			if(cron != null)
+			{
+				EmailFactory emailFactory = new EmailFactory(vertx, config);
+				boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
+				boolean warnADML = NDWConf.getBoolean("warn-adml", false);
+				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
+				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
+				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
+				NewDeviceWarningTask NDW = new NewDeviceWarningTask(vertx, emailFactory.getSender(), config.getString("email"),
+																	warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit);
+				new CronTrigger(vertx, cron).schedule(NDW);
 			}
 		}
 	}
