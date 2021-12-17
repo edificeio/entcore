@@ -345,6 +345,24 @@ public class NewDeviceWarningTask implements Handler<Long>
             }));
     }
 
+    public void clearUsersDevices(String[] userIds)
+    {
+        String removeKnownDevices = "DELETE FROM " + DEVICE_CHECK_TABLE + " WHERE " + PLATFORM_ID_FIELD + " = $1 AND "+ USER_ID_FIELD + " = ANY($2)";
+
+        Tuple removeUsersTuple = Tuple.of(this.platformId);
+        removeUsersTuple.addStringArray(userIds);
+
+        this.pgClient.preparedQuery(removeKnownDevices, removeUsersTuple, new Handler<AsyncResult<PgRowSet>>()
+        {
+            @Override
+            public void handle(AsyncResult<PgRowSet> pgRes)
+            {
+                if(pgRes.succeeded() == false)
+                    log.error("Failed to remove known devices for users " + userIds);
+            }
+        });
+    }
+
     private JsonArray pgRowSetToJsonArray(PgRowSet rows)
     {
         final List<String> columns = rows.columnsNames();
