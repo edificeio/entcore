@@ -1363,7 +1363,7 @@ public class AuthController extends BaseController {
 						}
 					};
 					if (resetCode != null && !resetCode.trim().isEmpty()) {
-						userAuthAccount.resetPassword(login, resetCode, password, resultHandler);
+						userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
 					} else {
 						DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 						data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
