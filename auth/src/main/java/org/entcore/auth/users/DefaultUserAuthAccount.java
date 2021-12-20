@@ -563,14 +563,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void resetPassword(String login, String resetCode, String password, final Handler<Boolean> handler) {
+	public void resetPassword(String login, String resetCode, String password, HttpServerRequest request, final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
-				"n.login as login, n.loginAlias as loginAlias";
+				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
@@ -580,7 +580,22 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			@Override
 			public void handle(JsonObject user)
 			{
-				handler.handle(user != null);
+				if(request != null && user != null)
+				{
+					String email = user.getString("email");
+					String dName = user.getString("displayName");
+					String login = user.getString("login");
+					sendChangedPasswordMail(request, email, dName, login, new Handler<Either<String, JsonObject>>()
+					{
+						@Override
+						public void handle(Either<String, JsonObject> res)
+						{
+							handler.handle(true); // Ignore email failures: email is optional
+						}
+					});
+				}
+				else
+					handler.handle(user != null);
 			}
 		}, query, password, login, params);
 	}
