@@ -224,7 +224,7 @@ public class UserAuthAccountTest {
             return test.directory().resetUser(resAcUser, "resetCode12");
         }).setHandler(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.resetPassword("user12", "resetCode12", "password12", resActiv -> {
+            authAccount.resetPassword("user12", "resetCode12", "password12", null, resActiv -> {
                 context.assertTrue(resActiv);
                 async.complete();
             });
@@ -238,7 +238,7 @@ public class UserAuthAccountTest {
             return test.directory().resetUser(resAcUser, "resetCode13");
         }).setHandler(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.resetPassword("user13", "bad", "password13", resActiv -> {
+            authAccount.resetPassword("user13", "bad", "password13", null, resActiv -> {
                 context.assertFalse(resActiv);
                 async.complete();
             });
