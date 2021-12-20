@@ -614,7 +614,7 @@
   "video.header.upload": "Charger",
   "video.header.browse": "Espace documentaire",
   "video.onboarding.headline": "Nouveau",
-  "video.onboarding.text": "Vous pouvez désormais vous enregistrer en vidéo et charger vos propres fichiers vidéos directement depuis l’éditeur !",
+  "video.onboarding.text": "Vous pouvez désormais vous enregistrer en vidéo et charger vos propres fichiers vidéo directement depuis l’éditeur !",
   "video.file.too.large": "Quota de stockage : espace disponible insuffisant",
   "video.capture": "Capturer une vidéo",
   "video.capture.guard.text": "Etes-vous sûr de vouloir sortir de cette page? Votre captation ne sera pas sauvegardée.",
