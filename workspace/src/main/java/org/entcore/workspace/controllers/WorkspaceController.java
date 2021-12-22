@@ -1758,26 +1758,36 @@ public class WorkspaceController extends BaseController {
 
 	private void createThumbnails(final Message<JsonObject> message)
 	{
-		JsonObject document = message.body().getJsonObject("document");
-		JsonObject requestedThumbnails = message.body().getJsonObject("thumbnails");
+		final JsonObject document = message.body().getJsonObject("document");
+		final JsonObject requestedThumbnails = message.body().getJsonObject("thumbnails");
 
-		if(document == null || requestedThumbnails == null)
+		if(document == null || requestedThumbnails == null) {
 			message.reply(new JsonObject().put("status", "error").put("message", "missing.attribute"));
-		else
-		{
-			this.folderManager.createThumbnailIfNeeded(document, requestedThumbnails, new Handler<AsyncResult<JsonObject>>()
-			{
-				@Override
-				public void handle(AsyncResult<JsonObject> thumbnails)
-				{
-					if(thumbnails.succeeded() == true)
-					{
-						JsonObject reply = new JsonObject().put("status", "ok").put("result", thumbnails.result());
-						message.reply(reply);
-					}
-					else
-						message.reply(new JsonObject().put("status", "error").put("message", thumbnails.cause().getMessage()));
-				}
+		} else {
+			this.folderManager.createThumbnailIfNeeded(document, requestedThumbnails, thumbnails -> {
+				final JsonObject reply = new JsonObject();
+				if(thumbnails.succeeded() == true)
+					message.reply(reply.put("status", "ok").put("result", thumbnails.result()));
+				else
+					message.reply(reply.put("status", "error").put("message", thumbnails.cause().getMessage()));
+			});
+		}
+	}
+
+	private void addThumbnails(final Message<JsonObject> message)
+	{
+		final JsonObject document = message.body().getJsonObject("document");
+		final JsonObject addedThumbnails = message.body().getJsonObject("thumbnails");
+
+		if(document == null || addedThumbnails == null) {
+			message.reply(new JsonObject().put("status", "error").put("message", "missing.attribute"));
+		} else {
+			this.folderManager.addThumbnails(document, addedThumbnails, thumbnails -> {
+				final JsonObject reply = new JsonObject();
+				if(thumbnails.succeeded() == true)
+					message.reply(reply.put("status", "ok").put("result", thumbnails.result()));
+				else
+					message.reply(reply.put("status", "error").put("message", thumbnails.cause().getMessage()));
 			});
 		}
 	}
@@ -1808,6 +1818,9 @@ public class WorkspaceController extends BaseController {
 			break;
 		case "createThumbnails":
 			createThumbnails(message);
+			break;
+		case "addThumbnails":
+			addThumbnails(message);
 			break;
 		case "addFolder":
 			addFolder(message);
