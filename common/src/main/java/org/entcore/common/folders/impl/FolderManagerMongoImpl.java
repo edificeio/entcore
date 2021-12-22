@@ -38,6 +38,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
@@ -1018,32 +1019,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 							if ("ok".equals(event.body().getString("status")) && thumbnails != null)
 							{
-								JsonObject oldThumbnails = document.getJsonObject("thumbnails");
-								JsonObject mongoUpdate = new JsonObject().put("$set",
-										new JsonObject().put("thumbnails", oldThumbnails == null ? thumbnails : oldThumbnails.mergeIn(thumbnails, true)));
-
-								if(documentId != null)
-								{
-									Future<Void> update = queryHelper.update(documentId, mongoUpdate);
-									update.setHandler(new Handler<AsyncResult<Void>>()
-									{
-										@Override
-										public void handle(AsyncResult<Void> result)
-										{
-											if (result.succeeded() == false)
-												future.fail(result.cause());
-											else
-												future.complete(DocumentHelper.setThumbnails(document, thumbnails));
-
-											handler.handle(future);
-										}
-									});
-								}
-								else
-								{
-									future.complete(DocumentHelper.setThumbnails(document, thumbnails));
-									handler.handle(future);
-								}
+								addThumbnails( document, thumbnails, handler );
 								return;
 							}
 						}
@@ -1063,6 +1039,35 @@ public class FolderManagerMongoImpl implements FolderManager {
 		{
 			future.complete(document);
 			handler.handle(future);
+		}
+	}
+
+	@Override
+	public void addThumbnails(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler)
+	{
+		final Promise<JsonObject> promise = Promise.promise();
+		final String documentId = DocumentHelper.getId(document);
+		final JsonObject mergedThumbnails = document.getJsonObject("thumbnails", new JsonObject()).mergeIn(thumbnails, true);
+		if(documentId != null)
+		{
+			// Document is already stored in Mongo, so we update it.
+			JsonObject mongoUpdate = new JsonObject().put("$set", new JsonObject().put("thumbnails", mergedThumbnails));
+
+			queryHelper.update(documentId, mongoUpdate)
+			.onComplete( result -> {
+				if (result.succeeded() == false) {
+					promise.fail(result.cause());
+				} else {
+					promise.complete(DocumentHelper.setThumbnails(document, thumbnails));
+				}
+				handler.handle( promise.future() );
+			});
+		}
+		else
+		{
+			// Document does not exists in Mongo and will be stored later, so we just attach its thumbnails.
+			promise.complete(DocumentHelper.setThumbnails(document, mergedThumbnails));
+			handler.handle( promise.future() );
 		}
 	}
 
