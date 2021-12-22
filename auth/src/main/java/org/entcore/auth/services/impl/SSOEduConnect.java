@@ -37,13 +37,18 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class SSOEduConnect extends AbstractSSOProvider {
 
 	private final boolean noPrefix;
+	private final boolean privateEtabsPrefix;
 
 	public SSOEduConnect() {
-		this(Vertx.currentContext().config().getBoolean("not-prefix-educonnect", false));
+		this(
+			Vertx.currentContext().config().getBoolean("not-prefix-educonnect", false),
+			Vertx.currentContext().config().getBoolean("private-etabs-prefix-educonnect", false)
+		);
 	}
 
-	public SSOEduConnect(boolean noPrefix) {
+	public SSOEduConnect(boolean noPrefix, boolean privateEtabsPrefix) {
 		this.noPrefix = noPrefix;
+		this.privateEtabsPrefix = privateEtabsPrefix;
 	}
 
 	private static final Map<String, String> academiesMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
@@ -123,6 +128,9 @@ public class SSOEduConnect extends AbstractSSOProvider {
 				final String joinKey = getJoinKey(vector);
 				if (isNotEmpty(joinKey)) {
 					joinKeys.add(joinKey);
+					if (!noPrefix && privateEtabsPrefix) {
+						joinKeys.add("P"+joinKey);
+					}
 				}
 			}
 			if (joinKeys.isEmpty()) {
@@ -139,8 +147,18 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		} else {
 			final String joinKey = getJoinKey(vectors.get(0));
 			if (isNotEmpty(joinKey)) {
-				executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", joinKey),
-						assertion, handler);
+				final String querySingle;
+				final JsonObject params = new JsonObject();
+				if (!noPrefix && privateEtabsPrefix) {
+					querySingle =
+							"MATCH (u:User) " +
+							"WHERE u.externalId IN {joinKeys} ";
+					params.put("joinKeys", new JsonArray().add(joinKey).add("P"+joinKey));
+				} else {
+					querySingle = "MATCH (u:User {externalId:{joinKey}}) ";
+					params.put("joinKey", joinKey);
+				}
+				executeQuery(querySingle, params, assertion, handler);
 			} else {
 				handler.handle(new Either.Left<>("invalid.joinKey"));
 			}
