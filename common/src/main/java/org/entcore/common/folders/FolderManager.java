@@ -15,7 +15,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -108,13 +107,26 @@ public interface FolderManager {
 	}
 
 	/**
-		* Create the file's thumbnails if applicable
-		*
-		* @param document		the document to update
-		* @param thumbnails	the thumbnails object
-		* @param handler		the handler that emits the saved file
-		*/
+	 * Create the file's thumbnails if applicable
+	 *
+	 * @param document		the image document to update
+	 * @param thumbnails	the thumbnails object, 
+	 * 						where keys are strings formatted like "WIDTHxHEIGHT" (WIDTH and HEIGHT being integers).
+	 * 						Values are not used.
+	 * @param handler		the handler that emits the saved file
+	 */
 	public void createThumbnailIfNeeded(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler);
+
+	/**
+	 * Add thumbnails to the file
+	 *
+	 * @param document		the document to update
+	 * @param thumbnails	the thumbnails object, 
+* 							where keys are strings formatted like "WIDTHxHEIGHT" (WIDTH and HEIGHT being integers),
+	 * 						and values are the filename (UUID) of the corresponding thumbnail image in storage.
+	 * @param handler		the handler that emits the saved file
+	 */
+	public void addThumbnails(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * Create an external folder that will be displayed at the root of tree (edumedia for example)
