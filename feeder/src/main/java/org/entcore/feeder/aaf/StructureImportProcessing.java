@@ -65,6 +65,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 	public void process(JsonObject object) {
 		Structure structure = importer.createOrUpdateStructure(object);
 		if (structure != null) {
+			importer.forceStructureSource(structure);
 			structure.addAttachment();
 		}
 	}

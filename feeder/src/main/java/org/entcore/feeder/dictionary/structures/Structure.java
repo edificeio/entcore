@@ -129,6 +129,13 @@ public class Structure {
 		this.createDirectionGroupIfAbsent();
 	}
 
+	public void setSource(String source)
+	{
+		String query = "MATCH (s:Structure { externalId : {externalId}}) " +
+						"SET s.source = {source} ";
+		JsonObject params = new JsonObject().put("externalId", getExternalId()).put("source", source);
+		getTransaction().add(query, params);
+	}
 
 	public synchronized Object[] addJointure(String externalId) {
 		if (struct != null) {
