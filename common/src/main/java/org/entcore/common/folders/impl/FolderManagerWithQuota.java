@@ -446,6 +446,12 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
+	public void addThumbnails(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<JsonObject>> handler)
+	{
+		this.folderManager.addThumbnails(document, thumbnails, handler);
+	}
+
+	@Override
 	public void updateShared(String id, UserInfos user, Handler<AsyncResult<Void>> handler) {
 		// do not need to check
 		this.folderManager.updateShared(id, user, handler);
