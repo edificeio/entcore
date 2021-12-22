@@ -290,6 +290,7 @@ public class Importer {
 							externalIdMapping.putIfAbsent(key.toString(), origExternalId);
 						}
 					}
+					s.update(struct);
 				} else {
 					try {
 						s = new Structure(externalId, struct);
@@ -302,6 +303,11 @@ public class Importer {
 			}
 		}
 		return s;
+	}
+
+	public void forceStructureSource(Structure s)
+	{
+		s.setSource(currentSource);
 	}
 
 	public Profile createOrUpdateProfile(JsonObject profile) {
