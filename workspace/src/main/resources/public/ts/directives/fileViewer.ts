@@ -4,7 +4,7 @@ import { workspaceService, models } from "../services";
 import { CsvDelegate, CsvFile, CsvController } from './csvViewer';
 import { TxtDelegate, TxtController, TxtFile } from './txtViewer';
 declare var ENABLE_LOOL: boolean;
-declare var SCRATCH_URL: string;
+declare var ENABLE_SCRATCH: boolean;
 
 
 interface FileViewerScope {
@@ -181,7 +181,7 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 			}
 
 			scope.openOnScratch = () => {
-				SCRATCH_URL && window.open(`${SCRATCH_URL}/workspace/document/base64/${scope.ngModel._id}`);
+				ENABLE_SCRATCH && window.open(`/scratch/open?ent_id=${scope.ngModel._id}`);
 			}
 
 			scope.canEditInLool = () => {
@@ -191,7 +191,7 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 			}
 
 			scope.canEditInScratch = () => {
-				return SCRATCH_URL &&
+				return ENABLE_SCRATCH &&
 					["sb","sb2","sb3"].includes(scope.ngModel.metadata.extension) &&
 					scope.ngModel.metadata["content-type"] === "application/octet-stream";
 			}
