@@ -78,14 +78,20 @@
 					<a class="author" ng-if="canShowOwner()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				<!--LEGEND MUST BE BEFORE container-->
-				<a class="[[document.role()]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
-					<i class="[[document.role()]]-large" ng-if="document.role() !== 'img'">
-					</i>
-					<div ng-if="document.role() === 'img'" class="twelve cell">
+				<a class="[[document.role()]] container cell"
+						ng-class="{'highlight-border-3s':isHighlighted(document)}"
+						ng-switch="document.role()">
+					<div ng-switch-when="img" class="twelve cell">
 						<div class="clip">
 							<img lazy-load-img="getImageUrl(document)" alt="thumbnail" />
 						</div>
 					</div>
+					<div ng-switch-when="video" class="twelve cell video"
+							ng-style="{'background-image': videoThumbUrl(document)}">
+						<i class="video-large"></i>
+					</div>
+					<i ng-switch-default class="[[document.role()]]-large">
+					</i>
 				</a>
 
 				<i ng-if="document.isShared && isSearchResult()" class="shared inline"></i>
