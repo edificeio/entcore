@@ -28,6 +28,7 @@ export interface NavigationDelegateScope {
     removeHighlight(el: models.Element[]);
     //
     getImageUrl(doc: models.Element)
+    videoThumbUrl(doc: models.Element): string
     //
     canOpenFolder(): boolean
     canOpenFile(): boolean
@@ -122,6 +123,16 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     }
     $scope.getImageUrl = function (document) {
         return document.thumbUrl;
+    }
+    $scope.videoThumbUrl = (doc: models.Element) => {
+        const thumbnails = doc['thumbnails'] as {[thumbSize:string]:string};
+        if( doc._id && typeof thumbnails==="object" ) {
+            const thumbSizes = Object.getOwnPropertyNames(thumbnails);
+            if( thumbSizes && thumbSizes.length>0 ) {
+                return `url('/workspace/document/${doc._id}?thumbnail=${thumbSizes[0]}')`;
+            }
+        }
+        return null;
     }
     //order
     $scope.order = {
