@@ -1687,9 +1687,7 @@ public class WorkspaceController extends BaseController {
 	public void view(final HttpServerRequest request) {
 		final JsonObject context = new JsonObject();
 		context.put("enableLool", config.getBoolean("enable-lool", false));
-		if(config.containsKey("scratch-url") && config.getValue("scratch-url") instanceof String && isNotEmpty(config.getString("scratch-url"))){
-			context.put("scratchUrl", config.getString("scratch-url")+"#"+config.getString("host"));
-		}
+		context.put("enableScratch", config.getBoolean("enable-scratch", false));
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));

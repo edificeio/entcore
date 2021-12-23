@@ -31,10 +31,10 @@ import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 
 
 declare var ENABLE_LOOL: boolean;
-declare var SCRATCH_URL: string;
+declare var ENABLE_SCRATCH: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope {
 	ENABLE_LOOL: boolean;
-	SCRATCH_URL: string;
+	ENABLE_SCRATCH: boolean;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
 	//new
@@ -156,9 +156,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	RevisionDelegate($scope);
 	KeyboardDelegate($scope);
 	ENABLE_LOOL && LoolDelegate($scope, $route);
-	SCRATCH_URL && ScratchDelegate($scope, $route);
+	ENABLE_SCRATCH && ScratchDelegate($scope, $route);
 	$scope.ENABLE_LOOL = ENABLE_LOOL;
-	$scope.SCRATCH_URL = SCRATCH_URL;
+	$scope.ENABLE_SCRATCH = ENABLE_SCRATCH;
 
 	/**
 	 * INIT
