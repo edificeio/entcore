@@ -319,7 +319,7 @@ public class ProfileColumnsMapper {
 				.replaceFirst(CSVUtil.UTF8_BOM, "");
 		final byte[] bytes = cleanKey.getBytes();
 		if (bytes.length > 3 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
-			cleanKey = new String(Arrays.copyOfRange(bytes, 3, bytes.length));
+			cleanKey = cleanKey(new String(Arrays.copyOfRange(bytes, 3, bytes.length))); // Recurse to handle multiple BOMs
 		}
 		return cleanKey;
 
