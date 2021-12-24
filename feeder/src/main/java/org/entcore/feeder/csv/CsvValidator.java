@@ -349,7 +349,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			int i = 0;
 			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
+					JsonArray invalidColumns = columnsMapper.getMappedColumsNames(profile, strings, columns);
 					if (invalidColumns.size() > 0 ) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 						return;
@@ -449,7 +449,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						enableRelativeStudentLinkCheck = false;
 					}
 					addHeader(profile, new JsonArray(stringsHeader));
-					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
+					JsonArray invalidColumns = columnsMapper.getMappedColumsNames(profile, strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {
