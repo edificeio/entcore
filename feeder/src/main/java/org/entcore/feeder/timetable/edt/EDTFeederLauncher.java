@@ -56,7 +56,6 @@ public class EDTFeederLauncher implements Feed
     // This method is synchronous
     this.edtUtils.parseContent(content, context);
 
-    System.out.println("PERSIST >>>");
     context.persistImport(importer, handler);
   }
 
