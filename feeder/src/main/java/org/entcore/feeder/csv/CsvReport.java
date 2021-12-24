@@ -109,92 +109,62 @@ public class CsvReport extends Report {
 		return result.getJsonObject(CLASSES_MAPPING);
 	}
 
-	public void exportFiles(final Handler<AsyncResult<String>> handler) {
+	public void exportFiles(final Handler<AsyncResult<String>> handler)
+	{
 		final String originalPath = result.getString("path");
 		final String structureName = result.getString("structureName");
 		final JsonObject headers = result.getJsonObject(HEADERS);
 		final JsonObject files = result.getJsonObject(FILES);
+	
 		if (files == null || isEmpty(originalPath) || isEmpty(structureName) || headers == null) {
 			handler.handle(new DefaultAsyncResult<String>(new ValidationException("missing.arguments")));
 			return;
 		}
+
 		FileSystem fs = vertx.fileSystem();
 		final String structureExternalId = result.getString("structureExternalId");
 		final String UAI = result.getString("UAI");
 
 		//clean directory if exists
-		FileUtils.deleteImportPath(vertx, originalPath, resDel ->{
-			if(resDel.failed()){
+		FileUtils.deleteImportPath(vertx, originalPath, resDel ->
+		{
+			String basePath;
+
+			if(resDel.failed())
+			{			
 				log.error("[CsvReport] could not clean path before exporting: "+ resDel.cause().getMessage());
+
+				//#30406 use another folder
+				basePath = originalPath + File.separator + "exported";
+				result.put("path", basePath);
+
+				log.info("[CsvReport] change exportDir to: "+ basePath);
 			}
-			//#30406 use another folder
-			final String path = resDel.failed()? originalPath + File.separator + "exported" : originalPath;
-			if(!originalPath.equals(path)){
-				log.info("[CsvReport] change exportDir to: "+ path);
-				result.put("path", path);
-			}
-			final String p = (path + File.separator + structureName +
+			else
+				basePath = originalPath;
+
+			final String dirPath = (basePath + File.separator + structureName +
 					(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
 					(isNotEmpty(UAI) ? "_" + UAI : ""));
-			fs.mkdirs(p, new Handler<AsyncResult<Void>>() {
+
+			// Create the new directory
+			fs.mkdirs(dirPath, new Handler<AsyncResult<Void>>()
+			{
 				@Override
-				public void handle(AsyncResult<Void> event) {
+				public void handle(AsyncResult<Void> event)
+				{
 					try {
-						if (event.succeeded()) {
-							for (String file : files.fieldNames()) {
-								final JsonArray header = headers.getJsonArray(file);
-								final JsonArray lines = files.getJsonArray(file);
-								if (lines == null || lines.size() == 0 || header == null || header.size() == 0) {
-									handler.handle(new DefaultAsyncResult<String>(new ValidationException("missing.file." + file)));
-									return;
-								}
-								final CSVWriter writer = CSVUtil.getCsvWriter(p + File.separator + file, "UTF-8");
-								final String[] strings = new ArrayList<String>(header.getList()).toArray(new String[header.size()]);
-								final List<String> columns = new ArrayList<>();
-								writer.writeNext(strings);
-								columnsMapper.getColumsNames(file, strings, columns);
-								for (Object o : lines) {
-									if (!(o instanceof JsonObject)) continue;
-									final JsonObject line = (JsonObject) o;
-									if (Report.State.DELETED.name().equals(line.getString("oState"))) {
-										continue;
-									}
-									final Map<String, Integer> columnCount = new HashMap<>();
-									final String [] l = new String[strings.length];
-									int i = 0;
-									for (String column : columns) {
-										Object v = line.getValue(column);
-										Integer count = getOrElse(columnCount.get(column), 0);
-										if (v instanceof String) {
-											if (count == 0) {
-												//if (column.startsWith("child")) {
-													l[i] = cleanStructure((String) v);
-	//											} else {
-	//												l[i] = (String) v;
-	//											}
-											}
-										} else if (v instanceof JsonArray) {
-											if (((JsonArray) v).size() > count) {
-												//if (column.startsWith("child")) {
-													l[i] = cleanStructure(((JsonArray) v).getString(count));
-	//											} else {
-	//												l[i] = ((JsonArray) v).<String>get(count);
-	//											}
-											}
-										} else if (v instanceof  Boolean) {
-											l[i] = String.valueOf(v);
-										} else {
-											l[i] = "";
-										}
-										columnCount.put(column, ++count);
-										i++;
-									}
-									writer.writeNext(l);
-								}
-								writer.close();
-							}
-							handler.handle(new DefaultAsyncResult<>(path));
-						} else {
+						if (event.succeeded())
+						{
+							JsonArray writeErrors = new JsonArray();
+							writeFiles(dirPath, writeErrors);
+
+							if(writeErrors.size() == 0)
+								handler.handle(new DefaultAsyncResult<>(basePath));
+							else
+								handler.handle(new DefaultAsyncResult<String>(new ValidationException("missing.file." + writeErrors.getString(0))));
+						}
+						else {
 							handler.handle(new DefaultAsyncResult<String>(event.cause()));
 						}
 					} catch (IOException e) {
@@ -204,6 +174,93 @@ public class CsvReport extends Report {
 				}
 			});
 		});
+	}
+
+	private void writeFiles(String dirPath, JsonArray errors) throws IOException
+	{
+		final JsonObject headers = result.getJsonObject(HEADERS);
+		final JsonObject files = result.getJsonObject(FILES);
+
+		for (String file : files.fieldNames())
+		{
+			final JsonArray header = headers.getJsonArray(file);
+			final JsonArray lines = files.getJsonArray(file);
+
+			if (lines == null || lines.size() == 0 || header == null || header.size() == 0)
+			{
+				errors.add(file);
+				return;
+			}
+
+			final CSVWriter fileOut = CSVUtil.getCsvWriter(dirPath + File.separator + file, "UTF-8");
+
+			final String[] headerStrings = new ArrayList<String>(header.getList()).toArray(new String[header.size()]);
+			final List<String> columns = new ArrayList<>();
+
+			// Write the header to the new file
+			fileOut.writeNext(headerStrings);
+
+			columnsMapper.getMappedColumsNames(file, headerStrings, columns);
+			
+			for (Object o : lines)
+			{
+				if (!(o instanceof JsonObject)) continue;
+
+				final JsonObject line = (JsonObject) o;
+				if (Report.State.DELETED.name().equals(line.getString("oState"))) {
+					continue;
+				}
+
+				fileOut.writeNext(jsonLineToFile(line, headerStrings.length, columns));
+			}
+			fileOut.close();
+		}
+	}
+
+	private String[] jsonLineToFile(JsonObject line, int lineLength, List<String> columns)
+	{
+		final Map<String, Integer> columnCount = new HashMap<>();
+		final String [] lineValues = new String[lineLength];
+		int i = 0;
+
+		for (String column : columns)
+		{
+			Object value = line.getValue(column);
+			Integer count = getOrElse(columnCount.get(column), 0);
+
+			if (value instanceof String)
+			{
+				// In case there are multiple columns with the same name, fill the first one and leave others empty
+				if (count == 0) {
+					//if (column.startsWith("child")) {
+						lineValues[i] = cleanStructure((String) value);
+//					} else {
+//						lineValues[i] = (String) value;
+//					}
+				}
+			}
+			else if (value instanceof JsonArray)
+			{
+				if (((JsonArray) value).size() > count) {
+					//if (column.startsWith("child")) {
+						lineValues[i] = cleanStructure(((JsonArray) value).getString(count));
+//					} else {
+//						lineValues[i] = ((JsonArray) value).<String>get(count);
+//					}
+				}
+			}
+			else if (value instanceof  Boolean) {
+				lineValues[i] = String.valueOf(value);
+			}
+			else {
+				lineValues[i] = "";
+			}
+
+			columnCount.put(column, ++count);
+			i++;
+		}
+
+		return lineValues;
 	}
 
 	private String cleanStructure(String v) {
