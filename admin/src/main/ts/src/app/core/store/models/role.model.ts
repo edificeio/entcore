@@ -1,6 +1,12 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from './group.model';
 
+export type RoleActionModel = {
+    name: string;
+    displayName: string;
+    type: string;
+}
+
 export class RoleModel extends Model<RoleModel> {
 
     constructor() {

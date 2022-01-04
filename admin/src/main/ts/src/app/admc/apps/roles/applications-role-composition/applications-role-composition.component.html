@@ -1,0 +1,58 @@
+<div class="panel-section">
+
+  <div class="applications-role-composition"
+       [class.panel-section-header]="!editMode">
+
+    <div class="name-group is-display-flex has-space-between">
+      <div class="role-name" *ngIf="!editMode">{{role.name | translate}}</div>
+
+      <mat-form-field *ngIf="editMode" class="role-name">
+        <mat-label>{{role.name | translate}}</mat-label>
+        <input type="text" matInput 
+            [formControl]="nameCtl" 
+            [(ngModel)]="role.name">
+      </mat-form-field>
+
+      <div class="buttons">
+        <button type="button" [class.edit]="editMode" (click)="onToggleEdit($event)">
+          <i class='fa' [ngClass]="{'fa-edit':!editMode, 'fa-save':editMode}"></i>
+        </button>
+        <button type="button" [class.edit]="editMode" (click)="onRemove.emit(role)">
+          <i class='fa fa-trash'></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="distributions" *ngIf="distributions.length>0">
+      <s5l *ngIf="!editMode" [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
+      <mat-form-field *ngIf="editMode">
+        <mat-select multiple
+            [formControl]="distributionsCtl"
+            [disabled]="!editMode"
+            (selectionChange)="withDistributions=true">
+          <mat-select-trigger>
+            <s5l [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
+          </mat-select-trigger>
+          <mat-option *ngFor="let distrib of distributions" [value]="distrib">{{distrib}}</mat-option>
+        </mat-select>
+      </mat-form-field>      
+    </div>
+
+  </div>
+
+  <div class="form">
+    <div class="form__row select-all" *ngIf="editMode">
+        <label>
+          <span>{{'ux.multiselect.select-all'|translate}}</span>
+          <input type="checkbox" [checked]="areAllChecked()" (change)="toggleAll()" />
+        </label>
+      </div>
+
+    <div class="form__row" [class.checked]="isChecked(action)" *ngFor="let action of actions">
+      <label>
+        <span>{{action.displayName}}</span>
+        <input *ngIf="editMode" type="checkbox" [checked]="isChecked(action)" (change)="check(action, $event.target.checked)"/>
+      </label>
+    </div>
+  </div>
+</div>
