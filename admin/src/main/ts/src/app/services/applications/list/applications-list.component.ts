@@ -3,7 +3,7 @@ import { OdeComponent } from 'ngx-ode-core';
 
 @Component({
     selector: 'ode-apps-list',
-    templateUrl: './application-list.component.html'
+    templateUrl: './applications-list.component.html'
 })
 export class ApplicationsListComponent extends OdeComponent {
 
