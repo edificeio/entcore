@@ -12,7 +12,7 @@
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$admin-app-primary: mat-palette($mat-indigo);
+$admin-app-primary: mat-palette($mat-grey);
 $admin-app-accent: mat-palette($mat-pink, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
@@ -1311,7 +1311,8 @@ ode-user-list {
   }
 }
 
-ode-services-list {
+ode-services-list, 
+.admc-apps-roles {
   .panel-section {
       min-height: 50px;
   }
@@ -1890,6 +1891,27 @@ ode-services-root {
         margin: 5px 10px 5px 10px;
       }
     }
+  }
+}
+
+/* Services */
+ode-admc-apps-roles-root {
+  div.flex-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      button {
+          background-color: $accent;
+          color: white;
+          padding: 10px 10px;
+          display: flex;
+          align-items: center;
+
+          &:hover {
+              background-color: $accent-dark;
+          }
+      }
   }
 }
 

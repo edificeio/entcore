@@ -6,7 +6,6 @@ import { NgxOdeSijilModule } from "ngx-ode-sijil";
 import { NgxOdeUiModule } from "ngx-ode-ui";
 import { AdmcAppsComponent } from "./admc-apps.component";
 import { routes } from "./admc-apps.routing";
-import { AdmcAppsRolesComponent } from "./roles/admc-apps-roles.component";
 
 @NgModule({
     imports: [
@@ -18,7 +17,6 @@ import { AdmcAppsRolesComponent } from "./roles/admc-apps-roles.component";
     ],
     declarations: [
         AdmcAppsComponent,
-        AdmcAppsRolesComponent
     ],
     exports: [
     ]

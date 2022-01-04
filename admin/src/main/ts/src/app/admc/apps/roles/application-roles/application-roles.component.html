@@ -1,0 +1,26 @@
+<h2>
+  <span>{{ application.displayName }}</span>
+  <button (click)="newRole()">
+    <s5l>roles.create.button</s5l>
+    <i class="fa fa-plus is-size-5"></i>
+  </button>
+</h2>
+
+<div *ngIf="application.roles.length == 0" class="message is-warning has-margin-10">
+  <div class="message-body">
+    {{ 'services.application.roles.list.empty' | translate }}
+  </div>
+</div>
+
+<div *ngFor="let role of application.roles">
+  <ode-applications-role-composition
+    [role]="role"
+    [actions]="actions"
+    [checkedActions]="actionsOfRole(role)"
+    (onActionChange)="toggleAction($event.role, $event.action, $event.active)"
+    [distributions]="distributions"
+    [checkedDistributions]="distributionsOfRole(role)"
+    (onSave)="save($event.role, $event.withDistributions)"
+    (onRemove)="delete($event)">
+  </ode-applications-role-composition>
+</div>
