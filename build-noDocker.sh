@@ -111,6 +111,13 @@ watch () {
   node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=$SPRINGBOARD
 }
 
+ngWatch () {
+  DEFAULT_PATH=$PWD
+  cd admin/src/main/ts
+  npm run start
+  cd $DEFAULT_PATH
+}
+
 for param in "$@"
 do
   case $param in
@@ -134,6 +141,9 @@ do
       ;;
     watch)
       watch
+      ;;
+    ngWatch)
+      ngWatch
       ;;
     *)
       echo "Invalid argument : $param"
