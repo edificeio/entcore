@@ -27,8 +27,11 @@ import org.entcore.auth.controllers.AuthController;
 import org.entcore.auth.controllers.ConfigurationController;
 import org.entcore.auth.controllers.OpenIdConnectController;
 import org.entcore.auth.controllers.SamlController;
+import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.security.AuthResourcesProvider;
+import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.security.SamlValidator;
+import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
@@ -48,6 +51,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -62,9 +66,22 @@ public class Auth extends BaseServer {
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
+
+		final JsonObject oic = config.getJsonObject("openid-connect");
+		final OpenIdConnectService openIdConnectService = (oic != null)
+				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
+				: null;
+		final boolean checkFederatedLogin = config.getBoolean("check-federated-login", false);
+		final OAuthDataHandlerFactory oauthDataFactory = new OAuthDataHandlerFactory(
+				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
+				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
+				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore);
+
 		AuthController authController = new AuthController();
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
+		authController.setOauthDataFactory(oauthDataFactory);
+		authController.setCheckFederatedLogin(checkFederatedLogin);
 		addController(authController);
 
 		final ConfigurationController configurationController = new ConfigurationController();
@@ -78,6 +95,14 @@ public class Auth extends BaseServer {
 				public void handle(AsyncResult<List<String>> event) {
 					if (event.succeeded() && event.result().size() > 0) {
 						try {
+							final String signKey = (String) vertx.sharedData().getLocalMap("server").get("signKey");
+							final SamlHelper samlHelper = new SamlHelper(vertx,
+									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")),
+									signKey,
+									config.getString("custom-token-encrypt-key", UUID.randomUUID().toString())
+							);
+							oauthDataFactory.setSamlHelper(samlHelper);
+
 							SamlController samlController = new SamlController();
 							JsonObject conf = config;
 
@@ -85,9 +110,8 @@ public class Auth extends BaseServer {
 									new DeploymentOptions().setConfig(conf).setWorker(true));
 							samlController.setEventStore(eventStore);
 							samlController.setUserAuthAccount(userAuthAccount);
-							samlController.setServiceProviderFactory(
-									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")));
-							samlController.setSignKey((String) vertx.sharedData().getLocalMap("server").get("signKey"));
+							samlController.setSamlHelper(samlHelper);
+							samlController.setSignKey(signKey);
 							samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
 							samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
 							addController(samlController);
