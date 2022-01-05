@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs';
 import { CommunicationRulesService } from '../../communication/communication-rules.service';
 import { routing } from '../../core/services/routing.service';
 import { GroupsStore } from '../groups.store';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 
 
 @Component({
@@ -25,7 +27,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
         {label: 'FunctionalGroup', view: 'functionalGroup'},
         {label: 'FunctionGroup', view: 'functionGroup'}
     ];
-
+    isADMC: boolean = false;
     groupsError: any;
     
     constructor(
@@ -33,12 +35,12 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
         public groupsStore: GroupsStore) {
             super(injector);
     }
-
+    
     ngOnInit(): void {
         super.ngOnInit();
         // Watch selected structure
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
-            if (data.structure) {
+            if (data.structure) {                
                 this.groupsStore.structure = data.structure;
                 this.changeDetector.markForCheck();
             }
@@ -49,6 +51,8 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
                 this.changeDetector.markForCheck();
             }
         }));
+
+        this.showBroadcastTab();
     }
 
     onError(error: Error) {
@@ -56,8 +60,21 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
         this.groupsError = error;
     }
 
-    createButtonHidden() {
-        return !this.router.isActive('/admin/' + this.groupsStore.structure.id + '/groups/manualGroup', false)
-            || this.router.isActive('/admin/' + this.groupsStore.structure.id + '/groups/manualGroup/create', true);
+    // For ADMC users. When ADML users will have access,
+    // Add the object {label: 'BroadcastGroup', view: 'broadcastGroup'} into the original array
+    // => We could also add it first and then filter the array (if not ADMC ...)
+    async showBroadcastTab() {
+        const session: Session = await SessionModel.getSession();
+        this.isADMC = session.isADMC();
+        
+        if (this.isADMC) {
+            this.tabs.push({label: 'BroadcastGroup', view: 'broadcastGroup'});
+            this.changeDetector.markForCheck();
+        }
+    }
+
+    createButtonHidden(groupType) {
+        return !this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${groupType}`, false)
+            || this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${groupType}/create`, true);
     }
 }

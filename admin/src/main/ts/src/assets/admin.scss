@@ -701,6 +701,9 @@ i.group_add {
       color: white;
       border-bottom-color: white;
     }
+    &.hide {
+      display: none;
+    }
     &.active {
       font-weight: bold;
       background-color: white;

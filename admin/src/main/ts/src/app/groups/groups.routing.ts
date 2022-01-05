@@ -2,6 +2,7 @@ import {Routes} from '@angular/router';
 
 import {GroupsComponent} from './groups/groups.component';
 import {GroupCreateComponent} from './create/group-create/group-create.component';
+import {GroupBroadcastCreateComponent} from './create/group-broadcast-create/group-broadcast-create.component';
 import {GroupDetailsComponent} from './details/group-details/group-details.component';
 import {GroupsTypeViewComponent} from './type-view/groups-type-view.component';
 import {GroupsResolver} from './groups.resolver';
@@ -19,6 +20,14 @@ export let routes: Routes = [
                     {
                         path: 'create',
                         component: GroupCreateComponent
+                    },
+                    {
+                        path: 'create',
+                        component: GroupBroadcastCreateComponent
+                    },
+                    {
+                        path: '/',
+                        component: GroupDetailsComponent,
                     },
                     {
                         path: ':groupId/details',

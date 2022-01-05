@@ -26,9 +26,11 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
         this.subscriptions.add(this.route.params.subscribe(params => {
             this.groupsStore.group = null;
             const type = params.groupType;
-            const allowedTypes = ['manualGroup', 'profileGroup', 'functionalGroup', 'functionGroup'];
+            const allowedTypes = ['manualGroup', 'profileGroup', 'functionalGroup', 'functionGroup', 'broadcastGroup'];
             if (type && allowedTypes.indexOf(type) >= 0) {
+                console.log("route");
                 this.groupType = params.groupType;
+                console.log(this.groupType);
                 this.changeDetector.markForCheck();
             } else {
                 this.router.navigate(['..'], {relativeTo: this.route});

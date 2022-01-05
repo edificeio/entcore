@@ -15,6 +15,7 @@ import {UserlistFiltersService} from '../core/services/userlist.filters.service'
 
 import {GroupsComponent} from './groups/groups.component';
 import {GroupCreateComponent} from './create/group-create/group-create.component';
+import {GroupBroadcastCreateComponent} from './create/group-broadcast-create/group-broadcast-create.component';
 import {GroupDetailsComponent} from './details/group-details/group-details.component';
 import {GroupManageUsersComponent} from './details/manage-users/group-manage-users/group-manage-users.component';
 import {GroupInputUsersComponent} from './details/manage-users/input/group-input-users/group-input-users.component';
@@ -39,6 +40,7 @@ import {globalStoreProvider} from '../core/store/global.store';
     declarations: [
         GroupsComponent,
         GroupCreateComponent,
+        GroupBroadcastCreateComponent,
         GroupDetailsComponent,
         GroupManageUsersComponent,
         GroupInputUsersComponent,
