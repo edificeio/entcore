@@ -30,11 +30,11 @@ import fr.wseduc.webutils.data.ZLib;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
+
+import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.FederationService;
 import org.entcore.auth.services.SafeRedirectionService;
-import org.entcore.auth.services.SamlServiceProvider;
-import org.entcore.auth.services.SamlServiceProviderFactory;
 import org.entcore.auth.services.impl.FederationServiceImpl;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
@@ -43,7 +43,6 @@ import org.entcore.common.utils.StringUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
-import org.opensaml.saml2.core.Response;
 import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.io.MarshallingException;
 import io.vertx.core.Handler;
@@ -79,7 +78,6 @@ import static fr.wseduc.webutils.Utils.*;
 
 public class SamlController extends AbstractFederateController {
 
-	private SamlServiceProviderFactory spFactory;
 	private FederationService federationService;
 	private JsonObject samlWayfParams;
 	private JsonObject samlWayfMustacheFormat = new JsonObject();
@@ -88,6 +86,7 @@ public class SamlController extends AbstractFederateController {
 	private boolean federatedAuthenticateError = false;
 	private JsonObject activationThemes;
 	private long sessionsLimit;
+	private SamlHelper samlHelper;
 	final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
 	// regex used to find namequalifier in session nameid (Mongo)
@@ -98,7 +97,7 @@ public class SamlController extends AbstractFederateController {
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 
 		// load soft-slo property : true = normal slo, false = redirect instead of slo
@@ -112,7 +111,7 @@ public class SamlController extends AbstractFederateController {
 
 		// load nameQualifierRegex (in-case mongoDb NameId format change)
 		String nameQualifierRegex = config.getString("nameQualifierRegex");
-		if(nameQualifierRegex != null && !nameQualifierRegex.trim().isEmpty()) {
+		if (nameQualifierRegex != null && !nameQualifierRegex.trim().isEmpty()) {
 			if (log.isDebugEnabled()) {
 				log.debug("Using nameQualifierRegex specified : " + nameQualifierRegex);
 			}
@@ -525,8 +524,7 @@ public class SamlController extends AbstractFederateController {
 		validateResponseAndGetAssertion(request, new Handler<Assertion>() {
 			@Override
 			public void handle(final Assertion assertion) {
-				SamlServiceProvider sp = spFactory.serviceProvider(assertion);
-				sp.execute(assertion, new Handler<Either<String, Object>>() {
+				samlHelper.getUserFromAssertion(assertion, new Handler<Either<String, Object>>() {
 					@Override
 					public void handle(final Either<String, Object> event) {
 						if (event.isLeft()) {
@@ -609,7 +607,7 @@ public class SamlController extends AbstractFederateController {
 			}
 		} else if (event.right().getValue() != null && event.right().getValue() instanceof JsonArray && isNotEmpty(signKey)) {
 			try {
-				JsonObject params = getUsersWithSignatures((JsonArray) event.right().getValue(), sessionIndex, nameId);
+				JsonObject params = samlHelper.getUsersWithSignatures((JsonArray) event.right().getValue(), sessionIndex, nameId);
 				renderView(request, params, "selectFederatedUser.html", null);
 			} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
 				log.error("Error signing federated users.", e);
@@ -721,18 +719,6 @@ public class SamlController extends AbstractFederateController {
 		});
 	}
 
-	private JsonObject getUsersWithSignatures(JsonArray array, String sessionIndex, String nameId)
-			throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-		for (Object o : array) {
-			if (!(o instanceof JsonObject)) continue;
-			JsonObject j = (JsonObject) o;
-			j.put("key", HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey));
-			j.put("nameId", nameId);
-			j.put("sessionIndex", sessionIndex);
-		}
-		return new JsonObject().put("users", array);
-	}
-
 	private String getSessionId(Assertion assertion) {
 		if (assertion != null && assertion.getAuthnStatements() != null) {
 			for (AuthnStatement ans: assertion.getAuthnStatements()) {
@@ -748,52 +734,13 @@ public class SamlController extends AbstractFederateController {
 		getSamlResponse(request, new Handler<String>() {
 			@Override
 			public void handle(final String samlResponse) {
-				if (samlResponse != null && samlResponse.contains("EncryptedAssertion")) {
-					JsonObject j = new JsonObject()
-							.put("action", "validate-signature-decrypt").put("response", samlResponse);
-					vertx.eventBus().send("saml", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							String assertion = event.body().getString("assertion");
-							if ("ok".equals(event.body().getString("status")) && event.body().getBoolean("valid", false) &&
-									assertion != null) {
-								try {
-									handler.handle(SamlUtils.unmarshallAssertion(assertion));
-								} catch (Exception e) {
-									log.error(e.getMessage(), e);
-									redirectionService.redirect(request, LOGIN_PAGE);
-								}
-							} else {
-								redirectionService.redirect(request, LOGIN_PAGE);
-							}
-						}
-					}));
-				} else if (samlResponse != null) {
-					JsonObject j = new JsonObject()
-							.put("action", "validate-signature").put("response", samlResponse);
-					vertx.eventBus().send("saml", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status")) && event.body().getBoolean("valid", false)) {
-								try {
-									Response response = SamlUtils.unmarshallResponse(samlResponse);
-									if (response.getAssertions() == null || response.getAssertions().size() != 1) {
-										redirectionService.redirect(request, LOGIN_PAGE);
-										return;
-									}
-									handler.handle(response.getAssertions().get(0));
-								} catch (Exception e) {
-									log.error(e.getMessage(), e);
-									redirectionService.redirect(request, LOGIN_PAGE);
-								}
-							} else {
-								redirectionService.redirect(request, LOGIN_PAGE);
-							}
-						}
-					}));
-				} else {
-					redirectionService.redirect(request, LOGIN_PAGE);
-				}
+				samlHelper.validateSamlResponseAndGetAssertion(samlResponse, ar -> {
+					if (ar.succeeded()) {
+						handler.handle(ar.result());
+					} else {
+						redirectionService.redirect(request, LOGIN_PAGE);
+					}
+				});
 			}
 		});
 	}
@@ -825,10 +772,6 @@ public class SamlController extends AbstractFederateController {
 		});
 	}
 
-	public void setServiceProviderFactory(SamlServiceProviderFactory spFactory) {
-		this.spFactory = spFactory;
-	}
-
 	public void setSamlWayfParams(JsonObject samlWayfParams) {
 		this.samlWayfParams = samlWayfParams;
 	}
@@ -839,4 +782,9 @@ public class SamlController extends AbstractFederateController {
 	public void setFederationService(FederationService federationService) {
 		this.federationService = federationService;
 	}
+
+	public void setSamlHelper(SamlHelper samlHelper) {
+		this.samlHelper = samlHelper;
+	}
+
 }

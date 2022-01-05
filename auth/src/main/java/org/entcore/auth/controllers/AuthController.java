@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import fr.wseduc.bus.BusAddress;
-import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -58,13 +57,9 @@ import io.vertx.core.shareddata.LocalMap;
 import jp.eisbahn.oauth2.server.async.Handler;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
-import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.SafeRedirectionService;
-import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.redis.Redis;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.validation.StringValidation;
 
@@ -99,7 +94,6 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
-import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.users.UserAuthAccount;
 
@@ -142,14 +136,7 @@ public class AuthController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		JsonObject oic = config.getJsonObject("openid-connect");
-		OpenIdConnectService openIdConnectService = (oic != null)
-				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
-				: null;
-		checkFederatedLogin = config.getBoolean("check-federated-login", false);
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), Redis.getClient(),
-				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
-				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0), eventStore);
+
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -1489,6 +1476,14 @@ public class AuthController extends BaseController {
 
 	public void setAuthorizedHostsLogin(JsonArray authorizedHostsLogin) {
 		this.authorizedHostsLogin = authorizedHostsLogin;
+	}
+
+	public void setOauthDataFactory(DataHandlerFactory oauthDataFactory) {
+		this.oauthDataFactory = oauthDataFactory;
+	}
+
+	public void setCheckFederatedLogin(boolean checkFederatedLogin) {
+		this.checkFederatedLogin = checkFederatedLogin;
 	}
 
 }

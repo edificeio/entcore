@@ -24,7 +24,6 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
-import java.util.UUID;
 
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
