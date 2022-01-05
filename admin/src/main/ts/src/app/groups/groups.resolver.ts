@@ -16,6 +16,7 @@ export class GroupsResolver implements Resolve<GroupModel[]> {
         const currentStructure = globalStore.structures.data.find(
             s => s.id === routing.getParam(route, 'structureId')
         );
+        
         if (currentStructure.groups.data.length > 0) {
             return Promise.resolve(currentStructure.groups.data);
         } else {

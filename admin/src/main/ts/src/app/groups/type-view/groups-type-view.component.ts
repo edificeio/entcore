@@ -23,14 +23,16 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
 
     ngOnInit() {
         super.ngOnInit();
+        this.route.params.subscribe(params => {
+            console.log(params);
+            
+        });
         this.subscriptions.add(this.route.params.subscribe(params => {
             this.groupsStore.group = null;
             const type = params.groupType;
             const allowedTypes = ['manualGroup', 'profileGroup', 'functionalGroup', 'functionGroup', 'broadcastGroup'];
             if (type && allowedTypes.indexOf(type) >= 0) {
-                console.log("route");
                 this.groupType = params.groupType;
-                console.log(this.groupType);
                 this.changeDetector.markForCheck();
             } else {
                 this.router.navigate(['..'], {relativeTo: this.route});
@@ -65,9 +67,13 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
             '/groups/' + this.groupType;
 
         let res: boolean = this.router.isActive(groupTypeRoute + '/create', true);
+
         if (this.groupsStore.group) {
             res = res || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/details', true)
                 || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/communication', true);
+        }
+        if (this.groupType === "broadcastGroup") {
+            res = this.router.isActive(groupTypeRoute + '/index', true);
         }
         return res;
     }

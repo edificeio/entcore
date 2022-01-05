@@ -2,13 +2,13 @@ import {Routes} from '@angular/router';
 
 import {GroupsComponent} from './groups/groups.component';
 import {GroupCreateComponent} from './create/group-create/group-create.component';
-import {GroupBroadcastCreateComponent} from './create/group-broadcast-create/group-broadcast-create.component';
 import {GroupDetailsComponent} from './details/group-details/group-details.component';
 import {GroupsTypeViewComponent} from './type-view/groups-type-view.component';
 import {GroupsResolver} from './groups.resolver';
 import {GroupDetailsResolver} from './details/group-details.resolver';
 import {GroupInternalCommunicationRuleResolver} from './details/group-internal-communication-rule.resolver';
 import {SmartGroupCommunicationComponent} from './communication/smart-group-communication/smart-group-communication.component';
+import { GroupInfoComponent } from './info/group-info.component';
 
 export let routes: Routes = [
     {
@@ -22,12 +22,14 @@ export let routes: Routes = [
                         component: GroupCreateComponent
                     },
                     {
-                        path: 'create',
-                        component: GroupBroadcastCreateComponent
-                    },
-                    {
-                        path: '/',
-                        component: GroupDetailsComponent,
+                        path: 'index',
+                        component: GroupInfoComponent,
+                        children: [
+                            {
+                                path: 'add',
+                                component: GroupInfoComponent
+                            }
+                        ]
                     },
                     {
                         path: ':groupId/details',
@@ -45,6 +47,7 @@ export let routes: Routes = [
                         }
                     }
                 ]
-            }]
+            }
+        ]
     }
 ];
