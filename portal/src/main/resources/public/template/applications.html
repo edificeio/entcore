@@ -117,18 +117,20 @@
 					class="applications-item"
 					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 				>
-					<i ng-if="isIconUrl(application)" class="application">
-						<img
-							skin-src="[[application.icon]]"
-							alt="[[application.name]]"
-							width="80"
-							height="80"
-							ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						/>
-					</i>
+					<img
+						ng-if="isIconUrl(application)" 
+						class="application"
+						skin-src="[[application.icon]]"
+						alt="[[application.name]]"
+						width="80"
+						height="80"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+					/>
 					<i 
 						ng-if="!isIconUrl(application)" 
-						class="application" ng-class="getIconClass(application)"
+						class="application" 
+						ng-class="getIconClass(application)"
 						ng-class="{'opacity-50': display.modeBookmarkEdition}"
 					>
 					</i>
@@ -143,15 +145,16 @@
 					class="applications-item"
 					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 				>
-					<i ng-if="isIconUrl(application)" class="application">
-						<img
-							skin-src="[[application.icon]]"
-							alt="[[application.name]]"
-							width="80"
-							height="80"
-							ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						/>
-					</i>
+					<img
+						ng-if="isIconUrl(application)" 
+						class="application"
+						skin-src="[[application.icon]]"
+						alt="[[application.name]]"
+						width="80"
+						height="80"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+					/>
 					<i 
 						ng-if="!isIconUrl(application)"
 						class="application" ng-class="getIconClass(application)"
@@ -204,15 +207,16 @@
 				class="applications-item"
 				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 			>
-			<i ng-if="isIconUrl(application)" class="application">
 				<img
+					ng-if="isIconUrl(application)" 
+					class="application"
 					skin-src="[[application.icon]]"
 					alt="[[application.name]]"
 					width="80"
 					height="80"
 					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
 				/>
-			</i>
 				<i 
 					ng-if="!isIconUrl(application)" 
 					class="application" ng-class="getIconClass(application)"
@@ -230,15 +234,16 @@
 				class="applications-item"
 				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 			>
-				<i ng-if="isIconUrl(application)" class="application">
-					<img
-						skin-src="[[application.icon]]"
-						alt="[[application.name]]"
-						width="80"
-						height="80"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					/>
-				</i>
+				<img
+					ng-if="isIconUrl(application)" 
+					class="application"
+					skin-src="[[application.icon]]"
+					alt="[[application.name]]"
+					width="80"
+					height="80"
+					ng-class="{'opacity-50': display.modeBookmarkEdition}"
+					img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+				/>
 				<i 
 					ng-if="!isIconUrl(application)" 
 					class="application" ng-class="getIconClass(application)"
@@ -280,15 +285,16 @@
 					class="applications-item connector"
 					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
 				>
-					<i ng-if="isIconUrl(connector)" class="application">
-						<img 
-							skin-src="[[connector.icon]]"
-							alt="[[connector.name]]"
-							width="80"
-							height="80"
-							ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						/>
-					</i>
+					<img 
+						ng-if="isIconUrl(connector)" 
+						class="application"
+						skin-src="[[connector.icon]]"
+						alt="[[connector.name]]"
+						width="80"
+						height="80"
+						ng-class="{'opacity-50': display.modeBookmarkEdition}"
+						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+					/>
 					<i 
 						ng-if="!isIconUrl(connector)" 
 						class="application"
