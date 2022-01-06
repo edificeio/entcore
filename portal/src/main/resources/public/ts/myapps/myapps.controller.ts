@@ -1,5 +1,5 @@
 import http from "axios";
-import { ng, idiom as lang, model, notify } from 'entcore';
+import { ng, idiom as lang, model, notify, skin } from 'entcore';
 import { create } from 'sortablejs';
 import { App } from "./myapps.types";
 import { AppsService } from './myapps.service';
@@ -16,6 +16,7 @@ export interface AppControllerScope {
     bookmarks: Array<App>;
     applications: Array<App>;
     connectors: Array<App>;
+    themeAssetsPath: string;
     searchDisplayName: (app: App) => boolean;
     translatedDisplayName: (app: App) => string;
     toggleBookmarkEdition: () => void;
@@ -74,6 +75,8 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
 		}
 		return appCode;
 	}
+
+    $scope.themeAssetsPath = skin.getBootstrapAssetsPath();
 
     const connectorsThreshold: number = await AppsService.getInstance().getConnectorsThresold();
 
