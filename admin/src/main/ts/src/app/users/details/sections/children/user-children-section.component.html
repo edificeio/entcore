@@ -26,7 +26,7 @@
     <li *ngFor="let child of details?.children">
       <div *ngIf="child.id">
         <a class="action" [routerLink]="['/admin', structure.id ,'users', child.id, 'details']">
-          {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
+          {{ child.displayName }}
         </a>
         <i  class="fa fa-times action" (click)="removeChild(child)"
             [title]="'delete.this.child' | translate"
