@@ -161,7 +161,7 @@
     "timeline.send-flash-message-push": "Publication d'un nouveau message flash",
     "timeline.notification.is.deleted": "La demande a été supprimée",
     "timeline.pulsar.notifications": "Votre espace fonctionne comme un réseau social. Voici le Fil de nouveautés qui présente vos dernières notifications. Accédez aux ressources partagées en un clic !",
-    "timeline.pulsar.settings": "Personnalisez votre page d’accueil en choisissant une langue et des outils pratiques à positionner à gauche.",
+    "timeline.pulsar.settings": "Personnalisez votre page d’accueil en choisissant une langue et des outils pratiques qui viendront se positionner à gauche ou à droite.",
     "timeline.pulsar.widgets": "Personnalisez vos widgets (outils) et placez-les comme vous le souhaitez par simple glisser-déposer.",
     "timeline.pulsar.filters": "Trop de nouveautés ? Filtrez les notifications par application.",
     "timeline.flash.message.seemore": "Afficher le message complet",
