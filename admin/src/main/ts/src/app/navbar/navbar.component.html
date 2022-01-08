@@ -1,0 +1,197 @@
+<nav class="navbar">
+    <!-- Hamburger Menu -->
+    <div class="navbar--menu">
+        <i 
+            class="navbar--icon fa" 
+            aria-hidden="true"
+            [ngClass]="{'fa-times': openside, 'fa-bars': !openside, 'is-hidden': structures.length == 1 && !structures[0].children}"
+            (click)="openside = !openside" 
+            #sidePanelOpener
+        >
+        </i>
+
+        <ode-side-panel 
+            [toggle]="openside" 
+            (onClose)="openside = false" 
+            [opener]="sidePanelOpener"
+        >
+            <div *ngIf="isAdmc" class="admc-link">
+                <a href="/admin/admc/dashboard">
+                    <i class="fa fa-chevron-left" aria-hidden="true"></i> <s5l>admc.navbar.title</s5l>
+                </a>
+            </div>
+
+            <div class="side-search">
+                <ode-search-input 
+                    (onChange)="structureFilter = $event" 
+                    [attr.placeholder]="'search.structure' | translate"
+                >
+                </ode-search-input>
+            </div>
+
+            <ng-template #customItemTreeTemplate let-structure="$implicit">
+                <span>{{structure.name}} <span *ngIf="structure.UAI" class="is-text-disabled">– {{structure.UAI}}</span></span>
+            </ng-template>
+
+            <ode-item-tree 
+                [items]="structures" 
+                order="name" 
+                [displayTemplate]="customItemTreeTemplate"
+                [flatten]="structureFilter && structureFilter.trim() ? ['children'] : []" 
+                [filter]="structureFilterFunction"
+                (onSelect)="handleOnSelectStructure($event)"
+                [lastSelected]="currentStructure"
+            >
+            </ode-item-tree>
+        </ode-side-panel>
+    </div>
+
+    <!-- Navbar Title -->
+    <div class="navbar--title">
+        <h1 *ngIf="currentStructure" [routerLink]="'/admin/' + currentStructure?.id">
+            {{ currentStructure?.name }}
+        </h1>
+        <h1 *ngIf="!currentStructure && isAdmc" routerLink="/admin/admc/dashboard">
+            <s5l>admc.navbar.title</s5l>
+        </h1>
+    </div>
+
+    <!-- Navbar Links -->
+    <div class="navbar--links">
+        <!-- Links for ADML -->
+        <ul *ngIf="currentStructure">
+            <li>
+                <i 
+                    class="navbar--icon dashboard" 
+                    aria-hidden="true" 
+                    [title]="'nav.structure' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon school" 
+                    aria-hidden="true" 
+                    [title]="'management.structure' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/management/infos'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-user" 
+                    aria-hidden="true" 
+                    [title]="'users' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/users/list/filter'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-users" 
+                    aria-hidden="true" 
+                    [title]="'groups' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/groups/manualGroup'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-th" 
+                    aria-hidden="true" 
+                    [title]="'services' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-exchange" 
+                    aria-hidden="true"  
+                    [title]="'imports.exports' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/import-csv'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-exclamation-triangle" 
+                    [title]="'reports' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/alertes/signalements'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/alertes', false)"
+                >
+                </i>
+            </li>
+        </ul>
+
+        <!-- Links for ADMC -->
+        <ul *ngIf="!currentStructure && isAdmc">
+            <li>
+                <i 
+                    class="navbar--icon dashboard" 
+                    aria-hidden="true" 
+                    [title]="'admc.nav.dashboard' | translate"
+                    routerLink="/admin/admc/dashboard"
+                    [class.active]="router.isActive('/admin/admc/dashboard', true)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-commenting" 
+                    aria-hidden="true" 
+                    [title]="'admc.nav.communications' | translate"
+                    routerLink="/admin/admc/communications"
+                    [class.active]="router.isActive('/admin/admc/communications', true)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-search" 
+                    aria-hidden="true" 
+                    [title]="'admc.nav.search' | translate"
+                    routerLink="/admin/admc/search"
+                    [class.active]="router.isActive('/admin/admc/search', true)"
+                >
+                </i>
+            </li>
+            <li>
+                <i 
+                    class="navbar--icon fa fa-th" 
+                    aria-hidden="true" 
+                    [title]="'admc.nav.apps' | translate"
+                    routerLink="/admin/admc/apps"
+                    [class.active]="router.isActive('/admin/admc/apps', true)"
+                >
+                </i>
+            </li>
+        </ul>
+
+        <!-- Logout and Console v1 Links -->
+        <ul>
+            <li>
+                <a href="/auth/logout" [title]="'logout' | translate">
+                    <i class="navbar--icon fa fa-power-off" aria-hidden="true"></i>
+                </a>
+            </li>
+            <li>
+                <a 
+                    *ngIf="!hideAdminV1Link" 
+                    class="old-console" 
+                    href="/directory/admin-console"
+                    [title]="'switch.old.admin.console.tooltip' | translate"
+                >
+                    <i class="navbar--icon fa fa-step-backward"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

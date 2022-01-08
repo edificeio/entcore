@@ -1,6 +1,35 @@
 {
     "message.new.console": "Bienvenue sur la nouvelle version de la nouvelle console d'administration. Pour revenir à l'ancienne version de la console d'administration, veuillez cliquer ici : ",
+    
     "admin.title": "Console d'administration",
+
+    "admc.navbar.title": "Console d'administration centrale",
+    "admc.home.title": "Console d'administration centrale",
+    
+    "admc.communications": "Communications",
+    "admc.communications.welcome-message": "Message d'accueil",
+    "admc.communications.flash-message": "Message flash ADMC",
+    "admc.communications.notifications": "Notifications (fil, mail, push)",
+    
+    "admc.search": "Trouver un utilisateur",
+    "admc.search.transverse": "Recherche transverse",
+    "admc.search.unlinked": "Personnes non rattachées",
+    
+    "admc.apps": "Gérer les applications",
+    "admc.apps.configuration": "Paramétrage des applications",
+    "admc.apps.roles": "Rôles applicatifs",
+    "admc.apps.calendar": "Calendrier",
+
+    "admc.misc": "Autres",
+    "admc.misc.xiti": "Paramétrage Xiti",
+    "admc.misc.keys": "Trousseau",
+    "admc.misc.multimedia": "Ressources multimedia",
+
+    "admc.nav.dashboard": "Dashboard",
+    "admc.nav.communications": "Communications",
+    "admc.nav.search": "Trouver un utilisateur",
+    "admc.nav.apps": "Gérer les applications",
+    
     "search.structure": "Rechercher un établissement",
     "search.user": "Rechercher un utilisateur",
     "search.group": "Rechercher un groupe",
