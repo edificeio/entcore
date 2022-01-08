@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Injector, Type } from '@angular/core';
-import http from 'axios';
+import { Component } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 
 
@@ -7,15 +6,6 @@ import { OdeComponent } from 'ngx-ode-core';
     selector: 'ode-admin-app',
     template: '<router-outlet></router-outlet>'
 })
-export class AppComponent extends OdeComponent implements AfterViewInit {
-    private elementRef: ElementRef;
-
-    constructor(injector: Injector) {
-        super(injector);
-        this.elementRef = injector.get<ElementRef>(ElementRef as Type<ElementRef>);
-    }
-
-    ngAfterViewInit() {
-        super.ngAfterViewInit();
-    }
+export class AppComponent extends OdeComponent {
+    
 }
