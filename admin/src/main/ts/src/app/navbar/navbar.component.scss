@@ -1,0 +1,128 @@
+@import "../../assets/variables";
+
+.navbar {
+  display: flex;
+  align-items: center;
+  top: 0;
+  color: white;
+  position: fixed !important;
+  z-index: 100;
+  background-color: $grey-dark;
+  padding: 15px 0;
+  box-sizing: border-box;
+  height: 50px;
+  width: 100%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.26);
+
+  .navbar--menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ode-side-panel {
+      input[type="search"] {
+        color: white;
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4);}
+        &::placeholder{color:rgba(250,250,250,0.4);}
+        &:-ms-input-placeholder{color:rgba(250,250,250,0.4);}
+        &::-moz-placeholder {color:rgba(250,250,250,0.4);}
+      }
+    }
+
+    .admc-link {
+      a {
+        font-size: 1em;
+        color: $accent;
+        font-weight: bold;
+        padding: 12px 10px 10px 10px;
+        display: block;
+        text-decoration: none;
+        transition: all 0.25s;
+        background-color: rgba(255, 255, 255, 0.09);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+
+        &:hover {
+          background-color: $main-light;
+          color: white;
+        }
+      }
+
+      i {
+        padding-right: 10px;
+      }
+    }
+  }
+
+  .navbar--title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    
+    h1 {
+      padding: 0px;
+      font-size: 1.6em;
+      color: white;
+    }
+  }
+  
+  .navbar--links {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    align-items: center;
+
+    ul {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 0px;
+    }
+
+    i {
+      display: inline-block;
+    }
+
+    a {
+      color: white;
+    }
+
+    .old-console {
+      i {
+        background-color: $contrast;
+      }
+
+      i:hover {
+        background-color: $contrast-hover !important;
+        transition: all 0.25s;
+      }
+    }
+  }
+}
+
+.navbar i.navbar--icon {
+  font-size: 1.5em;
+  height: 50px;
+  width: 60px;
+  line-height: 50px;
+  cursor: pointer;
+  transition: color 0.25s, background-color 0.25s;
+  text-align: center;
+  &:not([disabled]):hover {
+    background-color: $main-light;
+    color: white;
+  }
+  &[disabled]:hover {
+    background-color: #666;
+    cursor: not-allowed;
+  }
+  &.active {
+    background-color: $accent;
+    &:hover {
+      background-color: $accent;
+    }
+  }
+}

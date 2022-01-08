@@ -5,7 +5,9 @@ import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
 import {CoreModule} from './core/core.module';
 import {AppComponent} from './app.component';
-import {AppHomeComponent} from './app-home.component';
+import {AdmlHomeComponent} from './adml-home.component';
+import { NavbarComponent } from "./navbar/navbar.component";
+import { AppRootComponent } from "./app-root.component";
 import {HttpClientModule} from '@angular/common/http';
 import { COMPONENT_LIFECYCLE_DEBUG_MODE } from 'ngx-ode-core';
 
@@ -16,6 +18,8 @@ import localeFr from '@angular/common/locales/fr';
 import localeIt from '@angular/common/locales/it';
 import localePt from '@angular/common/locales/pt';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { LabelsService, NgxOdeUiModule } from 'ngx-ode-ui';
+import { SijilLabelsService } from './core/services/sijil.labels.service';
 
 registerLocaleData(localeDe);
 registerLocaleData(localeEs);
@@ -30,11 +34,17 @@ registerLocaleData(localePt);
         CoreModule,
         HttpClientModule,
         NgxOdeSijilModule.forRoot(),
+        NgxOdeUiModule.forRoot({
+            provide: LabelsService,
+            useExisting: SijilLabelsService
+        }),
         BrowserAnimationsModule
     ],
     declarations: [
         AppComponent,
-        AppHomeComponent
+        AdmlHomeComponent,
+        NavbarComponent,
+        AppRootComponent
     ],
     bootstrap: [AppComponent],
     providers: [
