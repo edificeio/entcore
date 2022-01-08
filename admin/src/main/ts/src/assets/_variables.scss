@@ -1,0 +1,57 @@
+/* Variables */
+// COLOR PALETTE
+$grey-light:              #eaedf2;
+$grey-dark:               #5b6472;
+
+$main:                    rgb(42, 156, 200);
+$main-light:              lighten($main, 10%);
+$main-dark:               darken($main, 5%);
+
+$accent:                  rgb(255, 131, 82);
+$accent-light:            lighten($accent, 10%);
+$accent-dark:             darken($accent, 5%);
+
+$contrast:                indianred;
+$contrast-hover:          darken($contrast, 5%);
+
+$validate:                mediumseagreen;
+$validate-hover:          darken($validate, 5%);
+
+$button-bg:               rgba($grey-light, 0.1);
+$button-bg-hover:         rgba($grey-light, 0.1);
+
+// SHADOW
+$shadow-light:            rgba(0,0,0,0.1);
+$shadow-dark:             rgba(0,0,0,0.5);
+$white-transparent:       rgba(255,255,255,0.75);
+
+// STATUS COLOR
+$info:                    $main;
+$info-dark:               darken($info, 5%);
+
+$success:                 $validate;
+$success-dark:            darken($success, 5%);
+
+$warning:                 #ffdf76;
+$warning-dark:            darken($warning, 5%);
+
+$danger:                  darken($contrast, 5%);
+$danger-dark:             darken($danger, 5%);
+
+// PROFIL COLOR
+$cyan:                    #46afe6;      // PARENT
+$green:                   #6fbe2e;      // TEACHER
+$orange:                  #ff8500;      // STUDENT
+$purple:                  #a348c0;      // RELATIVE
+$pink:                    #ff3a55;      // GUEST
+
+// VARIABLE SIZE
+$user-profile-img-width:  220px;
+$fontawesome-size:        1.5em;
+
+// MESSAGE FLASH
+$flash-red:               #C74848;
+$flash-orange:            #FF9057;
+$flash-green:             #3CB371;
+$flash-blue:              #2A9CC8;
+$flash-grey:              #5B6472;

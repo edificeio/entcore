@@ -5,7 +5,6 @@ import { RouterModule } from '@angular/router';
 import { NgxOdeSijilModule } from 'ngx-ode-sijil';
 import { LabelsService, NgxOdeUiModule, SpinnerService } from 'ngx-ode-ui';
 import { throwIfAlreadyLoaded } from './module-import.guard';
-import { NavComponent } from './nav/nav.component';
 import { ConfigResolver } from './resolvers/config.resolver';
 import { I18nResolver } from './resolvers/i18n.resolver';
 import { SessionResolver } from './resolvers/session.resolver';
@@ -24,8 +23,6 @@ import { SijilLabelsService } from './services/sijil.labels.service';
         }),
         RouterModule
     ],
-    exports: [NavComponent],
-    declarations: [NavComponent],
     providers: [
         SessionResolver,
         StructuresResolver,
