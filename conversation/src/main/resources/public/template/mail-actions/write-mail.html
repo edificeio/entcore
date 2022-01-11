@@ -100,7 +100,7 @@
             <i18n>at</i18n>
             <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
         </div>
-		<editor class="no-margin-all" ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
+		<editor onboardingvideo class="no-margin-all" ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
         <div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
             <div class="hidden-content">
                 <input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
