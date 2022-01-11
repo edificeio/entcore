@@ -1,5 +1,39 @@
-.panel-section-header{padding:10px;font-size: 1.1em;}
-.container{font-size: 1.1em;}
-.zimbra-group-list{ columns: 3;}
+.panel-section-header {
+  padding: 10px;
+  font-size: 1.1em;
+}
+
+.container {
+  font-size: 1.1em;
+}
+
+.zimbra-group-list {
+  columns: 3;
+}
+
+.action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bullet-list {
+  list-style: disc !important;
+}
+
+.width10 {
+  width: 10%;
+}
+
+.width20 {
+  width: 20%;
+}
+
+.removed-icon {
+  color: #63D602;
+}
+
+.progress-icon {
+  color: orange;
+}
 
 

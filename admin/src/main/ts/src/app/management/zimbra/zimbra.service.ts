@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {GroupModel} from '../../core/store/models/group.model';
 import {RoleModel} from '../../core/store/models/role.model';
-import {TraceResponse} from "../../types/trace";
+import {ReturnedMail, ReturnedMailStatut} from './ReturnedMail';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,34 @@ export class ZimbraService {
   public getGroups(structureId: string): Observable<GroupModel[]> {
     return this.httpClient.get<GroupModel[]>(`/appregistry/groups/roles?structureId=${structureId}`);
   }
+
+  /**
+   * Get the list of all returned mails.
+   * @param structureId Id for the current structure.
+   */
+  public getReturnedMails(structureId: string): Observable<ReturnedMail[]> {
+    return this.httpClient.get<ReturnedMail[]>(`/zimbra/return/list?structureId=${structureId}`);
+  }
+
+  /**
+   * Delete the selected returned mail.
+   * @param id Id of the selected returnedMail.
+   */
+  public deleteReturnedMail(id: number) {
+    return this.httpClient.delete<ReturnedMailStatut>(`/zimbra/return/delete/${id}`);
+  }
+
+  /**
+   * Remove selected mails.
+   * @param mailIds List of mails ids to be removed from mailbox.
+   */
+  public removeReturnedMails(mailIds: number[]): Observable<ReturnedMailStatut[]> {
+    let params = '';
+    mailIds.forEach(id => params += `id=${id}&`);
+    return this.httpClient.delete<ReturnedMailStatut[]>(`/zimbra/delete/sent?${params}`);
+  }
+
+
     /**
      * Get the role id of the zimbra component.
      */
