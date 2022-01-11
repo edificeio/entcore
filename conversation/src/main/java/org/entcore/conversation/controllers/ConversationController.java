@@ -505,7 +505,7 @@ public class ConversationController extends BaseController {
 				.put("subject", subject)
 				.put("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		params.put("resourceUri", params.getString("messageUri"));
-		params.put("pushNotif", new JsonObject().put("title", "push.notif.new.message").put("body", user.getUsername()+ " : "+ sentMessage.getString("body")));
+		params.put("pushNotif", new JsonObject().put("title", user.getUsername()).put("body", subject + "\n" + sentMessage.getString("body")));
 		List<String> recipients = new ArrayList<>();
 		String idTmp;
 		for (Object o : r) {
