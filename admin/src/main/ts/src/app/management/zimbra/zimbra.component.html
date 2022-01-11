@@ -1,19 +1,152 @@
 <div class="panel-section-header">
-      <span><s5l>management.zimbra.panel.content</s5l></span>
+    <span><s5l>management.zimbra.panel.opening</s5l></span>
+</div>
+<div class="container">
+    <div class="flashmsg red">
+        <i class=" fa fa-exclamation-triangle" tabindex="0" style="color: white;"></i>
+        <span style="color: white;"><s5l>management.zimbra.warning.content</s5l></span>
     </div>
-    <div class="container">
-        <div class="flashmsg red">
-            <i class=" fa fa-exclamation-triangle" tabindex="0" style="color: white;"></i>
-            <span style="color: white;"><s5l>management.zimbra.warning.content</s5l></span>
-        </div>
 
-        <ul class="zimbra-group-list">
-            <li *ngFor="let group of groups; let i= index">
-                <div class="checkbox__item">
-                    <input id="group-checkbox-{{i}}" type="checkbox" [(ngModel)]="checkboxes[i]" (change)="updatePermission(i)">
-                    <label for="group-checkbox-{{i}}" [ngClass]="{'is-bold' : this.checkboxes[i]}">{{ group.name }} </label>
-                </div>
-            </li>
-        </ul>
+    <ul class="zimbra-group-list">
+        <li *ngFor="let group of groups; let i= index">
+            <div class="checkbox__item">
+                <input id="group-checkbox-{{i}}" type="checkbox" [(ngModel)]="checkboxes[i]"
+                       (change)="updatePermission(i)">
+                <label for="group-checkbox-{{i}}"
+                       [ngClass]="{'is-bold' : this.checkboxes[i]}"> {{ group.name }} </label>
+            </div>
+        </li>
+    </ul>
+</div>
 
+<div class="panel-section-header">
+    <span><s5l>management.zimbra.panel.returning</s5l></span>
+</div>
+
+<div class="container">
+    <div class="action has-top-margin-10 has-bottom-margin-10">
+        <button [disabled]="getSelectedReturnedMail().length == 0" (click)="openPopUpRemoveConfirmation()">
+            <i class="fa fa-paper-plane is-size-5"></i>
+            <s5l>management.zimbra.return.button</s5l>
+        </button>
     </div>
+    <table>
+        <thead>
+        <tr>
+            <th class="table__checkbox checkbox__item" (click)="checkAll()">
+                <input type="checkbox" [checked]="areAllChecked()"
+                       [disabled]="returnedMails.length == 0"><label></label>
+            </th>
+            <th>
+                <s5l>management.zimbra.return.tab.user</s5l>
+            </th>
+            <th>
+                <s5l>management.zimbra.return.tab.object</s5l>
+            </th>
+            <th>
+                <s5l>management.zimbra.return.tab.comment</s5l>
+            </th>
+            <th class="width10">
+                <s5l>management.zimbra.return.tab.message</s5l>
+            </th>
+            <th class="width20">
+                <s5l>management.zimbra.return.tab.statut</s5l>
+            </th>
+            <th>
+                <s5l>management.zimbra.return.tab.estimated</s5l>
+            </th>
+            <th class="width10"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let returnedMail of returnedMails">
+            <td [hidden]="returnedMail.statut == 'REMOVED' || returnedMail.statut == 'PROGRESS'" class="checkbox__item"
+                (click)="checkCheckBox(returnedMail); $event.stopPropagation();">
+                <input type="checkbox" [(ngModel)]="checkboxesMail[returnedMail.id]"><label></label>
+            </td>
+            <td [hidden]="returnedMail.statut != 'REMOVED' && returnedMail.statut != 'PROGRESS'"></td>
+            <td>{{ returnedMail.user_name }}</td>
+            <td (click)="openDetailLightBox(returnedMail)">{{ returnedMail.object }}</td>
+            <td (click)="openDetailLightBox(returnedMail)">{{ returnedMail.comment }}</td>
+            <td>{{ returnedMail.number_message }}</td>
+            <td [title]="returnedMail.statut === 'ERROR' ? ('management.zimbra.return.tooltip.error' | translate) : ''">
+                <span *ngIf="returnedMail.statut == 'ERROR'">
+                    <i class='fa fa-paper-plane is-danger is-size-5'></i>
+                </span>
+                <span *ngIf="returnedMail.statut == 'PROGRESS'">
+                    <i class='fa fa-paper-plane progress-icon is-size-5'></i>
+                </span>
+                <span *ngIf="returnedMail.statut == 'REMOVED'">
+                    <i class='fa fa-paper-plane removed-icon is-size-5'></i>
+                </span>
+                <span *ngIf="returnedMail.statut == 'WAITING'">
+                    <i class='fa fa-paper-plane  is-size-5'></i>
+                </span>
+                {{ returnedMail.statutDisplayed }}
+                <br>
+                {{ returnedMail.date | date: 'dd/MM/yyyy HH:mm:ss'}}
+            </td>
+            <td>{{ returnedMail.estimatedTime }} </td>
+            <td [title]="('management.zimbra.return.tooltip.remove' | translate)"
+                (click)="openDeleteLightBox(returnedMail)">
+                <span *ngIf="returnedMail.statut != 'PROGRESS'">
+                    <i class='fa fa-remove is-danger is-size-3'></i>
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!--Lightbox : Return mail confirmation -->
+<ode-lightbox-confirm lightboxTitle="management.zimbra.panel.returning"
+                      [show]="removeConfirmationDisplayed"
+                      (onCancel)="removeConfirmationDisplayed = false"
+                      (onConfirm)="removeSelectedReturnedMails(); removeConfirmationDisplayed = false">
+    <p>
+        <s5l>management.zimbra.return.lightbox.list</s5l>
+    </p>
+    <ul class="bullet-list">
+        <li *ngFor="let returnedMail of getSelectedReturnedMail();">
+            {{returnedMail.object}}
+        </li>
+    </ul>
+    <p>
+        <s5l>management.zimbra.return.lightbox.remove</s5l>
+    </p>
+</ode-lightbox-confirm>
+
+<!--Lightbox : Delete confirmation of a returned mail -->
+<ode-lightbox-confirm lightboxTitle="management.zimbra.panel.delete"
+                      [show]="deleteConfirmationDisplayed"
+                      (onCancel)="deleteConfirmationDisplayed = false"
+                      (onConfirm)="deleteReturnedMail(returnedMail); deleteConfirmationDisplayed = false">
+    <p>
+        <s5l>management.zimbra.return.lightbox.delete</s5l>
+    </p>
+    <ul class="bullet-list">
+        <li>
+            {{returnedMail.object}}
+        </li>
+    </ul>
+</ode-lightbox-confirm>
+
+<!--Lightbox : Detail of a returned mail -->
+<ode-lightbox lightboxTitle="management.zimbra.panel.comment"
+              [show]="detailLightboxDisplayed"
+              (onClose)="detailLightboxDisplayed = false">
+    <p>
+        <b>
+            <s5l>management.zimbra.return.tab.object</s5l>
+        </b>
+        <br>
+        {{returnedMail.object}}
+    </p>
+    <p>
+        <b>
+            <s5l>management.zimbra.return.tab.comment</s5l>
+        </b>
+        <br>
+        {{returnedMail.comment}}
+    </p>
+</ode-lightbox>
