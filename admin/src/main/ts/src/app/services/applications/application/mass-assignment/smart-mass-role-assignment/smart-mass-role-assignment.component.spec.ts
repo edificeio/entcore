@@ -1,17 +1,17 @@
-import {SmartMassRoleAssignment} from './smart-mass-role-assignment.component';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {MassAssignment, Profile, Role, Structure} from '../../../../shared/services-types';
+import {MassAssignment, Profile, Role, Structure} from '../../../../_shared/services-types';
 import {By} from '@angular/platform-browser';
 import {ServicesStore} from '../../../../services.store';
 import {ActivatedRoute} from '@angular/router';
 import {of} from 'rxjs';
-import {NotifyService} from '../../../../../core/services';
+import { SmartMassRoleAssignmentComponent } from './smart-mass-role-assignment.component';
+import { NotifyService } from 'src/app/core/services/notify.service';
 
 describe('SmartMassRoleAssignment', () => {
-    let component: SmartMassRoleAssignment;
-    let fixture: ComponentFixture<SmartMassRoleAssignment>;
+    let component: SmartMassRoleAssignmentComponent;
+    let fixture: ComponentFixture<SmartMassRoleAssignmentComponent>;
     let httpController: HttpTestingController;
     let massRoleAssignmentComponent: MockMassRoleAssignment;
     let servicesStore: ServicesStore;
@@ -28,14 +28,14 @@ describe('SmartMassRoleAssignment', () => {
                     {id: 'myRole3', name: 'myRole3', transverse: true}
                 ]
             })
-        } as ActivatedRoute;
+        } as unknown as ActivatedRoute;
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
     });
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [
-                SmartMassRoleAssignment,
+                SmartMassRoleAssignmentComponent,
                 MockMassRoleAssignment
             ],
             providers: [
@@ -48,7 +48,7 @@ describe('SmartMassRoleAssignment', () => {
             ]
 
         }).compileComponents();
-        fixture = TestBed.createComponent(SmartMassRoleAssignment);
+        fixture = TestBed.createComponent(SmartMassRoleAssignmentComponent);
         component = fixture.debugElement.componentInstance;
         httpController = TestBed.get(HttpTestingController);
         fixture.detectChanges();

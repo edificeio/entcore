@@ -15,7 +15,8 @@ export class ServicesComponent extends OdeComponent implements OnInit, OnDestroy
 
     tabs: Array<{ label: string, view: string, disabled: boolean }> = [
         {label: 'applications', view: 'applications', disabled: false},
-        {label: 'connectors', view: 'connectors', disabled: false}
+        {label: 'connectors', view: 'connectors', disabled: false},
+        {label: 'widgets', view: 'widgets', disabled: false}
     ];
 
     constructor(

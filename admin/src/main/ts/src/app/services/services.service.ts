@@ -3,7 +3,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ConnectorModel} from '../core/store/models/connector.model';
 import {CasType} from './connectors/connector/CasType';
-import {Profile} from './shared/services-types';
+import {Profile} from './_shared/services-types';
 import {ExportFormat} from './connectors/connector/export/connector-export.component';
 
 
