@@ -3,7 +3,7 @@ import { OdeComponent } from 'ngx-ode-core';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
-import { Assignment } from '../../../shared/services-types';
+import { Assignment } from '../../../_shared/services-types';
 
 @Component({
     selector: 'ode-application-assignment',

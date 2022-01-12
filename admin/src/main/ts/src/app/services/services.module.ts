@@ -28,10 +28,16 @@ import {ConnectorAssignmentComponent} from './connectors/connector/assignment/co
 import {ConnectorMassAssignmentComponent} from './connectors/connector/mass-assignment/connector-mass-assignment.component';
 import {ConnectorExportComponent} from './connectors/connector/export/connector-export.component';
 import {SmartMassRoleAssignmentComponent} from './applications/application/mass-assignment/smart-mass-role-assignment/smart-mass-role-assignment.component';
-import { ServicesListComponent } from './shared/services-list/services-list.component';
-import { ServicesRoleComponent } from './shared/services-role/services-role.component';
-import { ServicesRoleAttributionComponent } from './shared/services-role-attribution/services-role-attribution.component';
-import { GroupPickerComponent } from './shared/services-role-attribution/group-picker/group-picker.component';
+import { ServicesListComponent } from './_shared/services-list/services-list.component';
+import { ServicesRoleComponent } from './_shared/services-role/services-role.component';
+import { ServicesRoleAttributionComponent } from './_shared/services-role-attribution/services-role-attribution.component';
+import { GroupPickerComponent } from './_shared/services-role-attribution/group-picker/group-picker.component';
+
+import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
+import { WidgetsResolver } from './widgets/list/widgets.resolver';
+import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.component';
+import { WidgetAssignmentComponent } from './widgets/assignment/widget-assignment.component';
+import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 
 @NgModule({
     imports: [
@@ -58,7 +64,10 @@ import { GroupPickerComponent } from './shared/services-role-attribution/group-p
         ConnectorPropertiesComponent,
         ConnectorMassAssignmentComponent,
         ConnectorExportComponent,
-        GroupPickerComponent
+        GroupPickerComponent,
+        WidgetsListComponent,
+        SmartWidgetComponent,
+        WidgetAssignmentComponent
     ],
     providers: [
         NgSwitch,
@@ -66,7 +75,9 @@ import { GroupPickerComponent } from './shared/services-role-attribution/group-p
         ApplicationsResolver,
         ConnectorsResolver,
         ApplicationRolesResolver,
-        ConnectorRolesResolver
+        ConnectorRolesResolver,
+        WidgetsResolver,
+        WidgetRolesResolver
     ]
 })
 export class ServicesModule {

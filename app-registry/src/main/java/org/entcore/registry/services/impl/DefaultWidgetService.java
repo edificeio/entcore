@@ -85,7 +85,7 @@ public class DefaultWidgetService implements WidgetService {
 			"WHERE w.id = {widgetId} " +
 			"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) " +
 			"OPTIONAL MATCH (w)<-[rel:AUTHORIZED]-(g:Group)-[:DEPENDS]->()-[:BELONGS*0..1]->(s:Structure {id: {structureId}}) " +
-			"WITH w, a, COLLECT({id: g.id, mandatory: coalesce(rel.mandatory, false)}) as groups " +
+			"WITH w, a, COLLECT({id: g.id, name: g.name, mandatory: coalesce(rel.mandatory, false)}) as groups " +
 			"RETURN w, a, groups ";
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
