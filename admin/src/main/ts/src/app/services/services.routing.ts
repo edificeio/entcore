@@ -10,6 +10,10 @@ import {ConnectorsResolver} from './connectors/list/connectors.resolver';
 import {ApplicationRolesResolver} from './applications/application/application-roles.resolver';
 import {ConnectorRolesResolver} from './connectors/connector/connector-roles.resolver';
 import {SmartApplicationComponent} from './applications/application/smart-application/smart-application.component';
+import { WidgetsListComponent } from './widgets/list/widgets-list.component';
+import { WidgetsResolver } from './widgets/list/widgets.resolver';
+import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.component';
+import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 
 export let routes: Routes = [
     {
@@ -39,12 +43,29 @@ export let routes: Routes = [
                 component: ConnectorsListComponent,
                 resolve: {connectors: ConnectorsResolver},
                 children: [
-                    { path: 'create', component: SmartConnectorComponent },
+                    {   
+                        path: 'create', 
+                        component: SmartConnectorComponent 
+                    },
                     {
                         path: ':connectorId',
                         component: SmartConnectorComponent,
                         resolve: {
                             roles: ConnectorRolesResolver
+                        }
+                    }
+                ]
+            },
+            {
+                path: 'widgets',
+                component: WidgetsListComponent,
+                resolve: {widgets: WidgetsResolver},
+                children: [
+                    {
+                        path: ':widgetId',
+                        component: SmartWidgetComponent,
+                        resolve: {
+                            roles: WidgetRolesResolver
                         }
                     }
                 ]

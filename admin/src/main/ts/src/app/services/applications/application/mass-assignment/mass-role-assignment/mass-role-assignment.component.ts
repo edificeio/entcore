@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SelectOption } from 'ngx-ode-ui';
-import { MassAssignment, Profile, Role, Structure } from '../../../../shared/services-types';
+import { MassAssignment, Profile, Role, Structure } from '../../../../_shared/services-types';
 
 @Component({
     selector: 'mass-role-assignment',

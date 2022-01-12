@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SelectOption } from 'ngx-ode-ui';
-import { Profile, Structure } from '../../../shared/services-types';
+import { Profile, Structure } from '../../../_shared/services-types';
 
 @Component({
     selector: 'ode-connector-mass-assignment',

@@ -2,19 +2,21 @@ import {SmartConnectorComponent} from './smart-connector.component';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {Location} from '@angular/common';
 import {FormBuilder, FormsModule, NgForm} from '@angular/forms';
-import {BundlesService, SijilModule} from 'sijil';
-import {UxModule} from '../../../../shared/ux/ux.module';
 import {ServicesStore} from '../../../services.store';
-import {NotifyService, SpinnerService} from '../../../../core/services';
-import {ConnectorCollection, ConnectorModel, StructureModel} from '../../../../core/store';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ServicesService} from '../../../services.service';
 import {of} from 'rxjs';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CasType} from '../CasType';
-import {Assignment, Profile, Structure} from '../../../shared/services-types';
+import {Assignment, Profile, Structure} from '../../../_shared/services-types';
 import {ExportFormat} from '../export/connector-export.component';
 import {ConnectorPropertiesComponent} from '../properties/connector-properties.component';
+import { NotifyService } from 'src/app/core/services/notify.service';
+import { NgxOdeUiModule, SpinnerService } from 'ngx-ode-ui';
+import { BundlesService, NgxOdeSijilModule } from 'ngx-ode-sijil';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { ConnectorCollection } from 'src/app/core/store/collections/connector.collection';
+import { ConnectorModel } from 'src/app/core/store/models/connector.model';
 
 describe('SmartConnector', () => {
     let component: SmartConnectorComponent;
@@ -50,7 +52,7 @@ describe('SmartConnector', () => {
                     structure: {children: []}
                 })
             }]
-        } as ActivatedRoute;
+        } as unknown as ActivatedRoute;
 
         mockServicesStore = new ServicesStore();
         mockServicesStore.structure = new StructureModel();
@@ -87,9 +89,9 @@ describe('SmartConnector', () => {
                {provide: BundlesService, useValue: mockBundle}
             ],
             imports: [
-               SijilModule.forRoot(),
+               NgxOdeSijilModule.forRoot(),
                FormsModule,
-               UxModule.forRoot(null)
+               NgxOdeUiModule.forRoot(null)
             ]
        }).compileComponents();
 
