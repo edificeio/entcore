@@ -1,0 +1,28 @@
+<div class="panel-section">
+    <div *ngIf="!widget.roles || widget.roles.length == 0" class="message is-warning has-margin-10">
+        <div class="message-body">
+            {{ 'services.widget.roles.list.empty' | translate }}
+        </div>
+    </div>
+
+    <div *ngFor="let role of widget.roles">
+        <ode-services-role 
+            [role]="role" 
+            [disabled]="disabled" 
+            (openLightbox)="openRoleAttributionLightbox($event)"
+            (onRemove)="remove.emit({group: $event, role: role})"
+        >
+        </ode-services-role>
+    </div>
+</div>
+
+<ode-services-role-attribution
+  [show]="showRoleAttributionLightbox"
+  [assignmentGroupPickerList]="assignmentGroupPickerList"
+  (close)="showRoleAttributionLightbox = false"
+  sort="name"
+  searchPlaceholder="search.group"
+  noResultsLabel="list.results.no.groups"
+  (add)="add.emit({group: $event, role: selectedRole})"
+  [selectedRole]="selectedRole">
+</ode-services-role-attribution>
