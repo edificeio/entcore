@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Data, NavigationEnd } from '@angular/router';
+import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { routing } from '../../../../core/services/routing.service';
 import { SelectOption } from 'ngx-ode-ui';
@@ -8,7 +8,7 @@ import { ConnectorModel, MappingModel } from '../../../../core/store/models/conn
 import { CasType } from '../CasType';
 import { MappingCollection } from 'src/app/core/store/collections/connector.collection';
 import { NotifyService } from 'src/app/core/services/notify.service';
-import { Structure } from 'src/app/services/shared/services-types';
+import { Structure } from 'src/app/services/_shared/services-types';
 
 @Component({
     selector: 'ode-connector-properties',

@@ -13,15 +13,14 @@ import { GroupModel } from 'src/app/core/store/models/group.model';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { ServicesService, WorkspaceDocument } from '../../../services.service';
 import { ServicesStore } from '../../../services.store';
-import { Assignment, Profile } from '../../../shared/services-types';
+import { Assignment, Profile } from '../../../_shared/services-types';
 import { CasType } from '../CasType';
 import { ExportFormat } from '../export/connector-export.component';
 import { ConnectorPropertiesComponent } from '../properties/connector-properties.component';
 
 @Component({
     selector: 'ode-smart-connector',
-    templateUrl: './smart-connector.component.html',
-    styleUrls: ['./smart-connector.component.scss']
+    templateUrl: './smart-connector.component.html'
 })
 export class SmartConnectorComponent extends OdeComponent implements OnInit, OnDestroy {
     public casTypes: CasType[];

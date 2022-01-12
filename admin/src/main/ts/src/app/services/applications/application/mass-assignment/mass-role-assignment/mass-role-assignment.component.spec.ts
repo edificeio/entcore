@@ -1,11 +1,11 @@
 import {MassRoleAssignment} from './mass-role-assignment.component';
-import {MassAssignment, Profile, Role} from '../../../../shared/services-types';
+import {MassAssignment, Profile, Role} from '../../../../_shared/services-types';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {ReactiveFormsModule} from '@angular/forms';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {By} from '@angular/platform-browser';
-import {SijilModule} from 'sijil';
-import {MultiSelectComponent} from '../../../../../shared/ux/components';
+import { MultiSelectComponent } from 'ngx-ode-ui';
+import { NgxOdeSijilModule } from 'ngx-ode-sijil';
 
 describe('MassRoleAssignment', () => {
     let component: MassRoleAssignment;
@@ -24,7 +24,7 @@ describe('MassRoleAssignment', () => {
             ],
             providers: [],
             imports: [
-                SijilModule.forRoot(),
+                NgxOdeSijilModule.forRoot(),
                 ReactiveFormsModule
             ]
 

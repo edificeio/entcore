@@ -2,7 +2,7 @@ import {ServicesService} from './services.service';
 import {TestBed} from '@angular/core/testing';
 import {ConnectorModel} from '../core/store/models/connector.model';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {Profile} from './shared/services-types';
+import {Profile} from './_shared/services-types';
 
 describe('ServicesService', () => {
     let servicesService: ServicesService;
@@ -101,7 +101,7 @@ describe('ServicesService', () => {
     describe('massAssignConnector', () => {
         it('should call PUT /appregistry/application/external/${connector.id}/authorize?profile=Teacher with given connectorId and given profiles', () => {
             const profiles: Profile[] = ['Teacher'];
-            servicesService.massAssignConnector(connector, profiles).subscribe();
+            servicesService.massAssignConnector(structureId, connector, profiles).subscribe();
 
             const expectedProfilesParams = '?profile=Teacher';
             const request = httpTestingController.expectOne(
@@ -113,7 +113,7 @@ describe('ServicesService', () => {
     describe('massUnassignConnector', () => {
         it('should call DELETE /appregistry/application/external/${connector.id}/authorize?profile=Teacher with given connectorId and given profiles', () => {
             const profiles: Profile[] = ['Teacher'];
-            servicesService.massUnassignConnector(connector, profiles).subscribe();
+            servicesService.massUnassignConnector(structureId, connector, profiles).subscribe();
 
             const expectedProfilesParams = '?profile=Teacher';
             const request = httpTestingController.expectOne(

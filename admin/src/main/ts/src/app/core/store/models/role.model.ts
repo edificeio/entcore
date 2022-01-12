@@ -1,5 +1,6 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from './group.model';
+import { WidgetModel } from './widget.model';
 
 export type RoleActionModel = {
     name: string;

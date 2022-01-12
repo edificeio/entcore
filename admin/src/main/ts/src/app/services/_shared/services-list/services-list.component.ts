@@ -6,6 +6,7 @@ import { InputFileService } from 'ngx-ode-ui';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { ConnectorModel } from 'src/app/core/store/models/connector.model';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { WidgetModel } from 'src/app/core/store/models/widget.model';
 import { routing } from '../../../core/services/routing.service';
 import { ServicesStore } from '../../services.store';
 
@@ -32,9 +33,9 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
     }
     // TODO extract from router
     @Input()
-    serviceName: 'applications' | 'connectors';
+    serviceName: 'applications' | 'connectors' | 'widgets';
     @Input()
-    selectedItem: ApplicationModel | ConnectorModel;
+    selectedItem: ApplicationModel | ConnectorModel | WidgetModel;
 
     public collectionRef: { [serviceName: string]: ServiceInfo };
 
@@ -99,6 +100,13 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                 routeData: 'connectors',
                 searchPlaceholder: 'services.connector.search',
                 noResultsLabel: 'services.connector.list.empty'
+            },
+            widgets: {
+                collection: this.servicesStore.structure.widgets.data,
+                model: this.servicesStore.widget,
+                routeData: 'widgets',
+                searchPlaceholder: 'services.widget.search',
+                noResultsLabel: 'services.widget.list.empty'
             }
         };
     }

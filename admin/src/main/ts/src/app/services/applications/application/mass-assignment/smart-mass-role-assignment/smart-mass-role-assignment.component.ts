@@ -4,7 +4,7 @@ import { OdeComponent } from 'ngx-ode-core';
 import { NotifyService } from '../../../../../core/services/notify.service';
 import { RoleModel } from '../../../../../core/store/models/role.model';
 import { ServicesStore } from '../../../../services.store';
-import { MassAssignment, Profile, Role, Structure } from '../../../../shared/services-types';
+import { MassAssignment, Profile, Role, Structure } from '../../../../_shared/services-types';
 
 @Component({
     selector: 'ode-smart-mass-role-assignment',

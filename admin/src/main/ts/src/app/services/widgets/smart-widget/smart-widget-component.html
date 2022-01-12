@@ -1,0 +1,21 @@
+<div class="panel-header">
+    <span>{{ servicesStore.widget.displayName | translate }}</span>
+</div>
+
+<div class="tabs">
+    <button 
+        class="tab"
+        [ngClass]="{active: currentTab === 'assignment'}"
+        (click)="currentTab = 'assignment'"
+    >
+      {{ 'services.tab.assignment' | translate }}
+    </button>
+</div>
+
+<ode-widget-assignment
+    [widget]="servicesStore.widget"
+    [assignmentGroupPickerList]="assignmentGroupPickerList"
+    (remove)="onRemoveAssignment($event)"
+    (add)="onAddAssignment($event)"
+>
+</ode-widget-assignment>

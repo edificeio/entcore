@@ -2,6 +2,7 @@ import { AbstractStore } from '../core/store/abstract.store';
 import { StructureModel } from '../core/store/models/structure.model';
 import { ApplicationModel } from '../core/store/models/application.model';
 import { ConnectorModel } from '../core/store/models/connector.model';
+import { WidgetModel } from '../core/store/models/widget.model';
 
 export class ServicesStore extends AbstractStore {
 
@@ -12,4 +13,5 @@ export class ServicesStore extends AbstractStore {
     structure: StructureModel;
     application: ApplicationModel;
     connector: ConnectorModel;
+    widget: WidgetModel;
 }
