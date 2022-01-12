@@ -73,7 +73,7 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
                 || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/communication', true);
         }
         if (this.groupType === "broadcastGroup") {
-            res = this.router.isActive(groupTypeRoute + '/index', true);
+            res = this.router.isActive(groupTypeRoute + '/list', true);
         }
         return res;
     }

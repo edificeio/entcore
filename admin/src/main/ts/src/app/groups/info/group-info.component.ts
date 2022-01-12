@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
-import { routing } from '../../core/services/routing.service';
 import { GroupsStore } from '../groups.store';
 
 

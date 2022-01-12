@@ -22,14 +22,8 @@ export let routes: Routes = [
                         component: GroupCreateComponent
                     },
                     {
-                        path: 'index',
-                        component: GroupInfoComponent,
-                        children: [
-                            {
-                                path: 'add',
-                                component: GroupInfoComponent
-                            }
-                        ]
+                        path: 'list',
+                        component: GroupInfoComponent
                     },
                     {
                         path: ':groupId/details',
