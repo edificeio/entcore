@@ -30,8 +30,8 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
     distributionsCtl:FormControl;
 
     // Whether the component allows in-place edition or not.
-    private editMode = false;
-    private withDistributions:boolean = false;
+    public editMode = false;
+    public withDistributions:boolean = false;
 
     constructor(
             injector: Injector,
@@ -66,19 +66,19 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
         this.editMode = !this.editMode;
     }
 
-    protected check(action:RoleActionModel, active) {
+    public check(action:RoleActionModel, active) {
         this.onActionChange.emit({role:this.role, action:action, active:active});
     }
 
-    protected isChecked(action:RoleActionModel): boolean {
+    public isChecked(action:RoleActionModel): boolean {
         return this.checkedActions.findIndex( a => action.name===a.name )!==-1;
     }
 
-    protected areAllChecked() {
+    public areAllChecked() {
         return this.checkedActions.length === this.actions.length;
     }
 
-    protected toggleAll() {
+    public toggleAll() {
         let checkAll = (this.checkedActions.length < this.actions.length);
         this.actions.forEach( a => {
             if( (this.isChecked(a) && !checkAll) || (!this.isChecked(a) && checkAll) ) {
