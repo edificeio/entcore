@@ -23,6 +23,5 @@ export class GroupInfoComponent
 
   ngOnInit(): void {
     super.ngOnInit();
-    console.log("init");
   }
 }
