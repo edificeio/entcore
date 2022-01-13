@@ -62,14 +62,17 @@ export class GroupsTypeViewComponent
     // handle change detection from create button click of group-root.component
     this.subscriptions.add(
       this.route.url.subscribe(path => {
+        let isPath = path[0].path;
+        console.log(path[0].path);
+        if (isPath === 'broadcastGroup') {
+          this.router.navigate(["./info"], { relativeTo: this.route });
+        }
         this.changeDetector.markForCheck();
       })
     );
   }
 
   isSelected = (group: GroupModel) => {
-    console.log(group.subType);
-
     return this.selectedGroup && group && this.selectedGroup.id === group.id;
   };
 
