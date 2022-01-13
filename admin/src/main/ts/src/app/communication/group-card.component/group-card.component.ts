@@ -73,7 +73,8 @@ export class GroupCardComponent {
         .set('ManualGroup', 'manualGroup')
         .set('ProfileGroup', 'profileGroup')
         .set('FunctionalGroup', 'functionalGroup')
-        .set('FunctionGroup', 'functionGroup');
+        .set('FunctionGroup', 'functionGroup')
+        .set('BroadcastGroup', 'broadcastGroup');
 
 
     constructor(
