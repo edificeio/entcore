@@ -431,7 +431,7 @@ public class ManualFeeder extends BusModBase {
 				matchStructure +
 				"MATCH u-[r:HAS_FUNCTION]->() " +
 				"OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ss:Structure) " +
-						"WHERE s.id IN r.scope " +
+						"WHERE s.id IN r.scope AND r.source <> 'MANUAL' " +
 						"WITH s, r, count(CASE WHEN ss.id IN r.scope THEN 1 ELSE NULL END) as parentADML " +
 						"WHERE parentADML = 0 " +
 						"SET r.scope = FILTER(sId IN r.scope WHERE sId <> s.id) " +
@@ -442,6 +442,7 @@ public class ManualFeeder extends BusModBase {
 				matchUser +
 				matchStructure +
 				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->s " +
+						"WHERE r.source <> 'MANUAL' " +
 						"DELETE r";
 		final String removeDefaultGroup =
 				matchUser +
