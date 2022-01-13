@@ -25,7 +25,7 @@ export let routes: Routes = [
             component: GroupCreateComponent,
           },
           {
-            path: "info",
+            path: "list",
             component: GroupInfoComponent,
           },
           {

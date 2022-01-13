@@ -45,9 +45,6 @@ export class GroupsTypeViewComponent
         } else {
           this.router.navigate([".."], { relativeTo: this.route });
         }
-        if (type === "broadcastGroup") {
-          this.router.navigate(["./info"], { relativeTo: this.route });
-        }
       })
     );
     this.subscriptions.add(
@@ -62,11 +59,6 @@ export class GroupsTypeViewComponent
     // handle change detection from create button click of group-root.component
     this.subscriptions.add(
       this.route.url.subscribe(path => {
-        let isPath = path[0].path;
-        console.log(path[0].path);
-        if (isPath === 'broadcastGroup') {
-          this.router.navigate(["./info"], { relativeTo: this.route });
-        }
         this.changeDetector.markForCheck();
       })
     );
@@ -94,7 +86,7 @@ export class GroupsTypeViewComponent
 
     let res: boolean =
       this.router.isActive(groupTypeRoute + "/create", true) ||
-      this.router.isActive(groupTypeRoute + "/info", true);
+      this.router.isActive(groupTypeRoute + "/list", true);
     if (this.groupsStore.group) {
       res =
         res ||
