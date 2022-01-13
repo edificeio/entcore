@@ -15,9 +15,9 @@ const NEW_ROLE = "_NEW_ROLE";
 })
 export class ApplicationRolesComponent extends OdeComponent implements OnInit {
     public application: ApplicationModel;
-    protected roles:{[name:string]:Role};
-    protected actions: Array<RoleActionModel>;
-    protected distributions: Array<string>;
+    public roles:{[name:string]:Role};
+    public actions: Array<RoleActionModel>;
+    public distributions: Array<string>;
 
     constructor(
             injector: Injector,
@@ -64,11 +64,11 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
         this.roles[NEW_ROLE] = newRole;
     }
 
-    protected actionsOfRole(roleModel:RoleModel):Array<RoleActionModel> {
+    public actionsOfRole(roleModel:RoleModel):Array<RoleActionModel> {
         return this.roles[roleModel.id].actions || [];
     }
 
-    protected distributionsOfRole(roleModel:RoleModel):Array<string> {
+    public distributionsOfRole(roleModel:RoleModel):Array<string> {
         return roleModel.distributions || [];
     }
 
