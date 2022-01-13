@@ -40,19 +40,17 @@
 
   </div>
 
-  <div class="form">
-    <div class="form__row select-all" *ngIf="editMode">
-        <label>
-          <span>{{'ux.multiselect.select-all'|translate}}</span>
-          <input type="checkbox" [checked]="areAllChecked()" (change)="toggleAll()" />
-        </label>
-      </div>
+  <ode-list-checkable 
+      [readOnly]="!editMode"
+      [model]="actions"
+      [sort]="'+displayName'"
+      [isChecked]="isChecked"
+      [areAllChecked]="areAllChecked"
+      (onCheck)="check($event.item, $event.checked)">
 
-    <div class="form__row" [class.checked]="isChecked(action)" *ngFor="let action of actions">
-      <label>
-        <span>{{action.displayName|translate}}</span>
-        <input *ngIf="editMode" type="checkbox" [checked]="isChecked(action)" (change)="check(action, $event.target.checked)"/>
-      </label>
-    </div>
-  </div>
+    <ng-template let-item>
+      <span>{{item.displayName|translate}}</span>
+    </ng-template>
+
+  </ode-list-checkable>
 </div>

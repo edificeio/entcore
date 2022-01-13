@@ -70,11 +70,11 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
         this.onActionChange.emit({role:this.role, action:action, active:active});
     }
 
-    public isChecked(action:RoleActionModel): boolean {
+    public isChecked = (action:RoleActionModel) =>  {
         return this.checkedActions.findIndex( a => action.name===a.name )!==-1;
     }
 
-    public areAllChecked() {
+    public areAllChecked = () => {
         return this.checkedActions.length === this.actions.length;
     }
 
