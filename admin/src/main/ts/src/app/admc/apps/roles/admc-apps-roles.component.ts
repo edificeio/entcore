@@ -21,7 +21,7 @@ export class AdmcAppsRolesComponent extends OdeComponent implements OnInit {
     @Input() selectedItem: ApplicationModel;
 
     public collectionRef: Array<ApplicationModel>;
-    private itemInputFilter: string;
+    public itemInputFilter: string;
 
     ngOnInit(): void {
         super.ngOnInit();
