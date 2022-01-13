@@ -50,7 +50,7 @@
 
     <div class="form__row" [class.checked]="isChecked(action)" *ngFor="let action of actions">
       <label>
-        <span>{{action.displayName}}</span>
+        <span>{{action.displayName|translate}}</span>
         <input *ngIf="editMode" type="checkbox" [checked]="isChecked(action)" (change)="check(action, $event.target.checked)"/>
       </label>
     </div>
