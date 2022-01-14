@@ -965,6 +965,7 @@
     "services.connector.export.profile.all": "Export tous profils",
     "services.widget.roles.access": "Accès au widget",
     "services.widget.mandatory.icon.title": "Épingler le widget et le rendre obligatoire sur la page d'accueil",
+    "services.widget.search": "Rechercher un widget",
     "services.tab.properties": "Propriétés",
     "services.tab.assignment": "Attribution",
     "services.tab.mass-assignment": "Attribution en masse",
