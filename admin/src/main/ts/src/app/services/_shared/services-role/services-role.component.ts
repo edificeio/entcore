@@ -5,13 +5,16 @@ import { RoleModel } from 'src/app/core/store/models/role.model';
 
 @Component({
     selector: 'ode-services-role',
-    templateUrl: './services-role.component.html'
+    templateUrl: './services-role.component.html',
+    styleUrls: ['./services-role.component.scss']
 })
 export class ServicesRoleComponent extends OdeComponent {
     @Input() role: RoleModel;
     @Input() disabled: boolean;
+    @Input() mandatoryAction: boolean
 
     @Output() openLightbox: EventEmitter<{}> = new EventEmitter();
+    @Output() mandatoryToggle: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
     @Output() onRemove: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
 
     constructor(injector: Injector) {

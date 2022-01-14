@@ -15,6 +15,7 @@
 <ode-widget-assignment
     [widget]="servicesStore.widget"
     [assignmentGroupPickerList]="assignmentGroupPickerList"
+    (mandatoryToggle)="handleMandatoryToggle($event)"
     (remove)="onRemoveAssignment($event)"
     (add)="onAddAssignment($event)"
 >

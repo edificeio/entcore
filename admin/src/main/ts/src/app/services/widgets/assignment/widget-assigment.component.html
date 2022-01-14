@@ -8,7 +8,9 @@
     <div *ngFor="let role of widget.roles">
         <ode-services-role 
             [role]="role" 
+            [mandatoryAction]=true
             (openLightbox)="openRoleAttributionLightbox($event)"
+            (mandatoryToggle)="mandatoryToggle.emit({group: $event, role: role})"
             (onRemove)="remove.emit({group: $event, role: role})"
         >
         </ode-services-role>
