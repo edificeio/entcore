@@ -24,18 +24,20 @@
     </div>
 
     <div class="distributions" *ngIf="distributions.length>0">
-      <s5l *ngIf="!editMode" [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
-      <mat-form-field *ngIf="editMode">
-        <mat-select multiple
-            [formControl]="distributionsCtl"
-            [disabled]="!editMode"
-            (selectionChange)="withDistributions=true">
-          <mat-select-trigger>
-            <s5l [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
-          </mat-select-trigger>
-          <mat-option *ngFor="let distrib of distributions" [value]="distrib">{{distrib}}</mat-option>
-        </mat-select>
-      </mat-form-field>      
+      <small>
+        <s5l *ngIf="!editMode" [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
+        <mat-form-field *ngIf="editMode">
+          <mat-select multiple
+              [formControl]="distributionsCtl"
+              [disabled]="!editMode"
+              (selectionChange)="withDistributions=true">
+            <mat-select-trigger>
+              <s5l [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
+            </mat-select-trigger>
+            <mat-option *ngFor="let distrib of distributions" [value]="distrib">{{distrib}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </small>
     </div>
 
   </div>
