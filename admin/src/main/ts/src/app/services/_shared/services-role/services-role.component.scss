@@ -15,16 +15,20 @@
         padding: 10px 15px;
     }
 
-    i.fa-thumb-tack {
-        font-size: 1.3em;
-    }
-
-    i.mandatory {
-        color: $accent;
-    }
-
-    i.notmandatory {
-        color: #aaa;
+    i.action {
+        padding: 0 5px 0 15px;
+        
+        &.fa-thumb-tack {
+            font-size: 1.3em;
+        }
+    
+        &.mandatory {
+            color: $accent;
+        }
+    
+        &.notmandatory {
+            color: #aaa;
+        }
     }
 
     &__button--add {
