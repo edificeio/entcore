@@ -3,11 +3,16 @@
     <s5l>groups</s5l>
   </h1>
 
-  <button [routerLink]="['manualGroup', 'create']"
-          [class.hidden]="createButtonHidden()">
+  <button *ngIf="isADMC == true" [routerLink]="['manualGroup', 'create']"
+          [class.hidden]="createButtonHidden('manualGroup')">
     <s5l>create.group</s5l>
     <i class="fonticon group_add is-size-3"></i>
   </button>
+  <!-- <button *ngIf="isADMC == true" [routerLink]="['broadcastGroup', 'create']"
+          [class.hidden]="createButtonHidden('broadcastGroup')">
+    <s5l>create.broadcast.list</s5l>
+    <i class="fonticon group_add is-size-3"></i>
+  </button> -->
 </div>
 
 <div class="tabs">
