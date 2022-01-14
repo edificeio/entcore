@@ -17,6 +17,8 @@ export class WidgetAssignmentComponent extends OdeComponent {
     assignmentGroupPickerList: Array<GroupModel>;
 
     @Output()
+    mandatoryToggle: EventEmitter<Assignment> = new EventEmitter<Assignment>();
+    @Output()
     add: EventEmitter<Assignment> = new EventEmitter();
     @Output()
     remove: EventEmitter<Assignment> = new EventEmitter();
