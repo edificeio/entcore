@@ -1,10 +1,4 @@
 <ode-panel-section section-title="{{ role.name }}" [folded]="false">
-  <button *ngIf="!disabled"
-          (click)="openLightbox.emit(role)">
-    {{ 'add.groups' | translate }}
-    <i class="fonticon group_add is-size-3"></i>
-  </button>
-
   <div *ngIf="role.groups.length == 0" class="message is-warning">
     <div class="message-body">
       <s5l>services.roles.groups.empty</s5l>
@@ -18,10 +12,21 @@
       </h4>
       <ul class="actions-list">
         <li *ngFor="let group of role.groups">
-          <span>{{ group.name }}</span>
-          <i *ngIf="!disabled"
-             class="fa fa-times action"
-             (click)="onRemove.emit(group)"></i>
+          <div>{{ group.name }}</div>
+          <div>
+            <i
+              *ngIf="mandatoryAction"
+              class="fa fa-thumb-tack action"
+              [ngClass]="{'mandatory': group.mandatory, 'notmandatory': !group.mandatory}"
+              aria-hidden="true"
+              (click)="mandatoryToggle.emit(group)"
+              [title]="'services.widget.mandatory.icon.title' | translate"
+            >
+            </i>
+            <i *ngIf="!disabled"
+              class="fa fa-times action"
+              (click)="onRemove.emit(group)"></i>
+          </div>
         </li>
       </ul>
     </div>
@@ -34,5 +39,14 @@
         </li>
       </ul>
     </div>
+
+    <button 
+      *ngIf="!disabled"
+      (click)="openLightbox.emit(role)"
+      class="actions-list__button--add"
+    >
+      {{ 'add.groups' | translate }}
+      <i class="fonticon group_add is-size-3"></i>
+    </button>
   </div>
 </ode-panel-section>

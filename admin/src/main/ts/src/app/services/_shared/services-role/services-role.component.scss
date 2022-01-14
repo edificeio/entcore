@@ -1,0 +1,33 @@
+@import '../../../../assets/variables';
+
+:host ::ng-deep .panel-section-content {
+    padding: 0px !important;
+}
+
+.actions-list {
+    padding: 0px;
+    margin: 0px;
+
+    li {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+    }
+
+    i.fa-thumb-tack {
+        font-size: 1.3em;
+    }
+
+    i.mandatory {
+        color: $accent;
+    }
+
+    i.notmandatory {
+        color: #aaa;
+    }
+
+    &__button--add {
+        margin: 20px 15px;
+    }
+}

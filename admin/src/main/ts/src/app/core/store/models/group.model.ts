@@ -20,6 +20,7 @@ export class GroupModel extends Model<GroupModel> {
     users: UserModel[];
     internalCommunicationRule?: InternalCommunicationRule;
     roles?: string[];
+    mandatory?: boolean; // épinglage de widget
 
     constructor() {
         super({

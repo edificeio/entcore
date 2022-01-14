@@ -41,6 +41,63 @@ export class SmartWidgetComponent extends OdeComponent {
         }));
     }
 
+    public async handleMandatoryToggle(assignment: Assignment): Promise<void> {
+        // toggle to not mandatory
+        if (assignment.group.mandatory) {
+            this.spinnerService.perform(
+                'portal-content',
+                this.httpClient.delete(`/appregistry/widget/${this.servicesStore.widget.id}/mandatory/${assignment.group.id}`, {}).
+                toPromise().
+                then(() => {
+                    assignment.group.mandatory = false;
+                    this.notifyService.success(
+                        {
+                            key: 'notify.services.widgets.notmandatory.success.content', 
+                            parameters: {groupName: assignment.group.name}
+                        }, 
+                        'notify.services.widgets.notmandatory.success.title'
+                    );
+                }).
+                catch(err => {
+                    this.notifyService.error(
+                        {
+                            key: 'notify.services.widgets.notmandatory.error.content',
+                            parameters: {groupName: assignment.group.name}
+                        }, 
+                        'notify.services.widgets.notmandatory.error.title',
+                        err
+                    );
+                })
+            );
+        } else { // toggle to mandatory
+            this.spinnerService.perform(
+                'portal-content',
+                this.httpClient.put(`/appregistry/widget/${this.servicesStore.widget.id}/mandatory/${assignment.group.id}`, {}).
+                toPromise().
+                then(() => {
+                    assignment.group.mandatory = true;
+                    this.notifyService.success(
+                        {
+                            key: 'notify.services.widgets.mandatory.success.content', 
+                            parameters: {groupName: assignment.group.name}
+                        }, 
+                        'notify.services.widgets.mandatory.success.title'
+                    );
+                }).
+                catch(err => {
+                    this.notifyService.error(
+                        {
+                            key: 'notify.services.widgets.mandatory.error.content',
+                            parameters: {groupName: assignment.group.name}
+                        }, 
+                        'notify.services.widgets.mandatory.error.title',
+                        err
+                    );
+                })
+            );
+        }
+    }
+
     public async onAddAssignment(assignment: Assignment): Promise<void> {
         this.spinnerService.perform(
             'portal-content', 
