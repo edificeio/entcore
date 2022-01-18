@@ -3,12 +3,15 @@ import {UserModel} from './user.model';
 
 export type InternalCommunicationRule = 'BOTH' | 'INCOMING' | 'OUTGOING' | 'NONE';
 
-export type GroupType = 'ProfileGroup' | 'FunctionalGroup' | 'ManualGroup' | 'CommunityGroup' | 'FunctionGroup' | 'HTGroup' | 'DirectionGroup' | 'BroadcastGroup';
+export type GroupType = 'ProfileGroup' | 'FunctionalGroup' | 'ManualGroup' | 'CommunityGroup' | 'FunctionGroup' | 'HTGroup' | 'DirectionGroup';
 
 export class GroupModel extends Model<GroupModel> {
 
     id?: string;
     name?: string;
+    autolinkTargetAllStructs: boolean;
+    autolinkTargetStructs: string[];
+    autolinkUsersFromGroups: string[];
     displayName?: string;
     type?: GroupType;
     subType?: string;
@@ -20,7 +23,6 @@ export class GroupModel extends Model<GroupModel> {
     users: UserModel[];
     internalCommunicationRule?: InternalCommunicationRule;
     roles?: string[];
-    mandatory?: boolean; // épinglage de widget
 
     constructor() {
         super({

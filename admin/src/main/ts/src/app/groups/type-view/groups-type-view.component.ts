@@ -1,117 +1,116 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Injector,
-  OnDestroy,
-  OnInit,
-} from "@angular/core";
-import { OdeComponent } from "ngx-ode-core";
-import { GroupModel } from "../../core/store/models/group.model";
-import { GroupsStore } from "../groups.store";
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit, Input } from '@angular/core';
+import { OdeComponent } from 'ngx-ode-core';
+import { GroupModel } from '../../core/store/models/group.model';
+import { GroupsStore } from '../groups.store';
 
 @Component({
-  selector: "ode-groups-type-view",
-  templateUrl: "./groups-type-view.component.html",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'ode-groups-type-view',
+    templateUrl: './groups-type-view.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupsTypeViewComponent
-  extends OdeComponent
-  implements OnInit, OnDestroy
-{
-  groupType: string;
-  groupInputFilter: string;
-  selectedGroup: GroupModel;
 
-  constructor(public groupsStore: GroupsStore, injector: Injector) {
-    super(injector);
-  }
+export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnDestroy {
+    @Input() list: GroupModel[];
+    // @Input() list: any;
+    @Input() noResultsLabel: string;
+    @Input() filters: () => boolean;
 
-  ngOnInit() {
-    super.ngOnInit();
-    this.subscriptions.add(
-      this.route.params.subscribe(params => {
-        this.groupsStore.group = null;
-        const type = params.groupType;
-        const allowedTypes = [
-          "manualGroup",
-          "profileGroup",
-          "functionalGroup",
-          "functionGroup",
-          "broadcastGroup",
-        ];
-        if (type && allowedTypes.indexOf(type) >= 0) {
-          this.groupType = params.groupType;
-          this.changeDetector.markForCheck();
-        } else {
-          this.router.navigate([".."], { relativeTo: this.route });
-        }
-      })
-    );
-    this.subscriptions.add(
-      this.groupsStore.$onchange.subscribe(field => {
-        if (field === "structure") {
-          this.changeDetector.markForCheck();
-          this.changeDetector.detectChanges();
-        }
-      })
-    );
+    groupType: string;
+    groupSubType: string;
+    groupInputFilter: string;
+    selectedGroup: GroupModel;
 
-    // handle change detection from create button click of group-root.component
-    this.subscriptions.add(
-      this.route.url.subscribe(path => {
-        this.changeDetector.markForCheck();
-      })
-    );
-  }
-
-  isSelected = (group: GroupModel) => {
-    return this.selectedGroup && group && this.selectedGroup.id === group.id;
-  };
-
-  filterByInput = (group: GroupModel) => {
-    if (!this.groupInputFilter) {
-      return true;
+    constructor(
+        public groupsStore: GroupsStore,
+        injector: Injector) {
+            super(injector);
     }
-    return (
-      group.name.toLowerCase().indexOf(this.groupInputFilter.toLowerCase()) >= 0
-    );
-  };
 
-  showCompanion(): boolean {
-    const groupTypeRoute =
-      "/admin/" +
-      (this.groupsStore.structure ? this.groupsStore.structure.id : "") +
-      "/groups/" +
-      this.groupType;
+    ngOnInit() {
+        super.ngOnInit();
 
-    let res: boolean =
-      this.router.isActive(groupTypeRoute + "/create", true) ||
-      this.router.isActive(groupTypeRoute + "/list", true);
-    if (this.groupsStore.group) {
-      res =
-        res ||
-        this.router.isActive(
-          groupTypeRoute + "/" + this.groupsStore.group.id + "/details",
-          true
-        ) ||
-        this.router.isActive(
-          groupTypeRoute + "/" + this.groupsStore.group.id + "/communication",
-          true
-        );
+        // Store data into list
+        // Use it with [model] on ode-list component
+        this.list = this.groupsStore.structure.groups.data;
+
+        // Init trad label when no result (default group)
+        this.noResultsLabel = 'list.results.no.groups';
+
+        this.subscriptions.add(this.route.params.subscribe(params => {
+            this.groupsStore.group = null;
+            const type = params.groupType;
+            const allowedTypes = ['manualGroup', 'profileGroup', 'functionalGroup', 'functionGroup', 'broadcastGroup'];
+            if (type && allowedTypes.indexOf(type) >= 0) {
+                this.groupType = params.groupType;
+                this.changeDetector.markForCheck();
+            } else {
+                this.router.navigate(['..'], {relativeTo: this.route});
+            }
+        }));
+        this.subscriptions.add(this.groupsStore.$onchange.subscribe(field => {
+            if (field === 'structure') {
+                this.changeDetector.markForCheck();
+                this.changeDetector.detectChanges();
+            }
+        }));
+
+        // handle change detection from create button click of group-root.component
+        this.subscriptions.add(this.route.url.subscribe(path => {
+            this.changeDetector.markForCheck();
+        }));
+        
     }
-    return res;
-  }
 
-  closePanel() {
-    this.router.navigateByUrl(
-      "/admin/" +
-        (this.groupsStore.structure ? this.groupsStore.structure.id : "") +
-        "/groups/" +
-        this.groupType
-    );
-  }
+    // Need this method to get first letter uppercase to compare
+    // groupType (param from route) vs group.type from object group
+    capitalize = (s) => {
+        if (typeof s !== 'string') return '';
+        return s.charAt(0).toUpperCase() + s.slice(1)
+    }
 
-  routeToGroup(g: GroupModel) {
-    this.router.navigate([g.id, "details"], { relativeTo: this.route });
-  }
+    // Filter list using [filteres] depending on route's param (broadcastGroup)
+    // Return booleans
+    filterByGroup = (group: GroupModel) => {
+        if (this.groupType === 'broadcastGroup') {
+            this.noResultsLabel = 'list.results.no.broadcast';
+            return group.type === 'ManualGroup' && group.subType === 'BroadcastGroup';
+        }
+
+        this.noResultsLabel = 'list.results.no.groups';
+        return group.type === this.capitalize(this.groupType) && group.subType !== 'BroadcastGroup';
+    };
+
+    isSelected = (group: GroupModel) => {
+        return this.selectedGroup && group && this.selectedGroup.id === group.id;
+    }
+
+    filterByInput = (group: GroupModel) => {
+        if (!this.groupInputFilter) { return true; }
+        return group.name.toLowerCase()
+            .indexOf(this.groupInputFilter.toLowerCase()) >= 0;
+    }
+
+    showCompanion(): boolean {
+        const groupTypeRoute = '/admin/' +
+            (this.groupsStore.structure ? this.groupsStore.structure.id : '') +
+            '/groups/' + this.groupType;
+
+        let res: boolean = this.router.isActive(groupTypeRoute + '/create', true) ||
+        this.router.isActive(groupTypeRoute + "/list", true);
+
+        if (this.groupsStore.group) {
+            res = res || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/details', true)
+                || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/communication', true);
+        }
+        return res;
+    }
+
+    closePanel() {
+        this.router.navigateByUrl('/admin/' + (this.groupsStore.structure ? this.groupsStore.structure.id : '') +
+            '/groups/' + this.groupType);
+    }
+
+    routeToGroup(g: GroupModel) {
+        this.router.navigate([g.id, 'details'], {relativeTo: this.route});
+    }
 }
