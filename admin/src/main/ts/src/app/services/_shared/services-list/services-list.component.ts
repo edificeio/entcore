@@ -46,7 +46,7 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
 
         SessionModel.getSession().then(session => {
             if (!this.serviceName) {
-                throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors"');
+                throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"');
             }
             this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
                 if (data[this.collectionRef[this.serviceName].routeData]) {
@@ -66,6 +66,15 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                             this.collectionRef[this.serviceName].collection = filterApplicationsByRoles(
                                 this.collectionRef[this.serviceName].collection,
                                 this.servicesStore.structure.distributions
+                            );
+                        }
+                    } else if( this.serviceName === "widgets" ) {
+                        // A SUPER_ADMIN can see all widgets ;
+                        if( !session.functions.SUPER_ADMIN ) {
+                            // A non-SUPER_ADMIN can only see widgets with the same level of education than the current structure.
+                            this.collectionRef[this.serviceName].collection = filterWidgetsByLevelsOfEducation(
+                                this.collectionRef[this.serviceName].collection,
+                                this.servicesStore.structure.levelsOfEducation
                             );
                         }
                     }
@@ -162,4 +171,11 @@ export function filterApplicationsByRoles(apps: ApplicationModel[], structureDis
                 || structureDistributions.some(structureDistribution => role.distributions.indexOf(structureDistribution) > -1);
         });
     });
+}
+
+export function filterWidgetsByLevelsOfEducation(widgets: WidgetModel[], levelsOfEducation: number[]): WidgetModel[] {
+    if( !levelsOfEducation || levelsOfEducation.length===0 ) {
+        return widgets;
+    }
+    return widgets.filter(widget => levelsOfEducation.some(level => widget.levelsOfEducation.indexOf(level) >= 0));
 }
