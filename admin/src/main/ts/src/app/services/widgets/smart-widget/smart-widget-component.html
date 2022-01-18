@@ -13,6 +13,7 @@
 </div>
 
 <ode-widget-assignment
+    [structure]="currentStructure"
     [widget]="servicesStore.widget"
     [assignmentGroupPickerList]="assignmentGroupPickerList"
     (mandatoryToggle)="handleMandatoryToggle($event)"
