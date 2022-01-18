@@ -24,6 +24,8 @@ import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -37,6 +39,30 @@ import fr.wseduc.webutils.Either;
 public class DefaultWidgetService implements WidgetService {
 
 	private final Neo4j neo = Neo4j.getInstance();
+
+	private final int firstLevel = 1;
+	private final int secondLevel = 2;
+	private final JsonArray defaultLevelsOfEducation = new JsonArray()
+			.add(firstLevel)
+			.add(secondLevel);
+	/** Should be kept in sync in ode-ts-client too (@see ts/widgets/Frameworks.ts) */
+	private final JsonArray firstLevelWidgets = new JsonArray()
+			.add("birthday")
+			.add("mood")
+			.add("qwant-junior")
+			.add("calendar-widget")
+			.add("notes");
+	/** Should be kept in sync in ode-ts-client too (@see ts/widgets/Frameworks.ts) */
+	private final JsonArray secondLevelWidgets = new JsonArray()
+			.add("agenda-widget")
+			.add("carnet-de-bord")
+			.add("my-apps")
+			.add("rss-widget")
+			.add("bookmark-widget")
+			.add("qwant")
+			.add("cursus-widget")
+			.add("maxicours-widget")
+			.add("school-widget");
 
 	@Override
 	public void createWidget(String applicationName, JsonObject widget, final Handler<Either<String, JsonObject>> handler) {
@@ -72,8 +98,17 @@ public class DefaultWidgetService implements WidgetService {
 			"MATCH (w:Widget) OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) "+
 			"WITH w, a, length(a-[:PROVIDE]->(:WorkflowAction)) > 0 as workflowLinked " +
 			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, " +
-			"locked: w.locked, application: {id: a.id, name: a.name, address: a.address, strongLink: workflowLinked}}) as widgets";
-		neo.execute(query, new JsonObject(), Neo4jResult.validUniqueResultHandler(handler));
+			"levelsOfEducation: coalesce(w.levelsOfEducation, CASE " +
+				"WHEN w.name IN {1stLoeWidgets} THEN [1] " +
+				"WHEN w.name IN {2ndLoeWidgets} THEN [2] " +
+				"ELSE {defLoe} " +
+			"END), locked: w.locked, application: {id: a.id, name: a.name, address: a.address, strongLink: workflowLinked}}) as widgets";
+		JsonObject params = new JsonObject()
+				.put("1stLoeWidgets", firstLevelWidgets)
+				.put("2ndLoeWidgets", secondLevelWidgets)
+				.put("defLoe", defaultLevelsOfEducation);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler)
+		);
 	}
 
 	@Override
