@@ -1,11 +1,12 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, Injector } from "@angular/core";
+import { Component, Injector, Input } from "@angular/core";
 import { Data, Params } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
 import { NotifyService } from "src/app/core/services/notify.service";
 import { routing } from "src/app/core/services/routing.service";
 import { GroupModel } from "src/app/core/store/models/group.model";
+import { StructureModel } from "src/app/core/store/models/structure.model";
 import { ServicesStore } from "../../services.store";
 import { Assignment } from "../../_shared/services-types";
 
@@ -16,6 +17,7 @@ import { Assignment } from "../../_shared/services-types";
 export class SmartWidgetComponent extends OdeComponent {
     public currentTab: 'assignment' | 'massAssignment' = 'assignment';
     public assignmentGroupPickerList: Array<GroupModel>;
+    public currentStructure:StructureModel;
 
     constructor(
         injector: Injector,
@@ -36,6 +38,7 @@ export class SmartWidgetComponent extends OdeComponent {
 
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
+                this.currentStructure = data.structure;
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
             }
         }));
