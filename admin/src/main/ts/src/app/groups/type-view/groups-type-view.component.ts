@@ -23,7 +23,7 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
     constructor(
         public groupsStore: GroupsStore,
         injector: Injector) {
-            super(injector);
+        super(injector);
     }
 
     ngOnInit() {
@@ -44,7 +44,7 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
                 this.groupType = params.groupType;
                 this.changeDetector.markForCheck();
             } else {
-                this.router.navigate(['..'], {relativeTo: this.route});
+                this.router.navigate(['..'], { relativeTo: this.route });
             }
         }));
         this.subscriptions.add(this.groupsStore.$onchange.subscribe(field => {
@@ -58,7 +58,7 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
         this.subscriptions.add(this.route.url.subscribe(path => {
             this.changeDetector.markForCheck();
         }));
-        
+
     }
 
     // Need this method to get first letter uppercase to compare
@@ -68,16 +68,18 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
-    // Filter list using [filteres] depending on route's param (broadcastGroup)
+    // Filter list using [filters] depending on route's param (broadcastGroup)
     // Return booleans
     filterByGroup = (group: GroupModel) => {
+        const { type, subType } = group;
+
         if (this.groupType === 'broadcastGroup') {
             this.noResultsLabel = 'list.results.no.broadcast';
-            return group.type === 'ManualGroup' && group.subType === 'BroadcastGroup';
+            return type === 'ManualGroup' && subType === 'BroadcastGroup';
         }
 
         this.noResultsLabel = 'list.results.no.groups';
-        return group.type === this.capitalize(this.groupType) && group.subType !== 'BroadcastGroup';
+        return type === this.capitalize(this.groupType) && subType !== 'BroadcastGroup';
     };
 
     isSelected = (group: GroupModel) => {
@@ -96,7 +98,7 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
             '/groups/' + this.groupType;
 
         let res: boolean = this.router.isActive(groupTypeRoute + '/create', true) ||
-        this.router.isActive(groupTypeRoute + "/list", true);
+            this.router.isActive(groupTypeRoute + "/list", true);
 
         if (this.groupsStore.group) {
             res = res || this.router.isActive(groupTypeRoute + '/' + this.groupsStore.group.id + '/details', true)
@@ -111,6 +113,6 @@ export class GroupsTypeViewComponent extends OdeComponent implements OnInit, OnD
     }
 
     routeToGroup(g: GroupModel) {
-        this.router.navigate([g.id, 'details'], {relativeTo: this.route});
+        this.router.navigate([g.id, 'details'], { relativeTo: this.route });
     }
 }
