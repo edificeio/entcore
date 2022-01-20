@@ -44,7 +44,8 @@ public class HtmlUtils {
     private static Set<String> htmlEntitiesKeys = htmlEntities.keySet();
     private static final Pattern imageSrcPattern = Pattern.compile("<img(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
     private static final Pattern audioSrcPattern = Pattern.compile("<audio(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
-    private static final Pattern videoSrcPattern = Pattern.compile("<video(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
+    private static final Pattern videoTagPattern = Pattern.compile("<video(\\s+[^>]*)?>");
+    private static final Pattern videoFieldsPattern = Pattern.compile("(data-)?([^= ]+)=\"([^\"]+)\"");
     private static final Pattern iframeSrcPattern = Pattern.compile("<iframe(\\s+[^>]*)?\\ssrc=\"([^\"]+)\"");
     private static final Pattern attachmentsPattern = Pattern.compile("<div(\\s+[^>]*)?\\sclass=\"attachments\"(\\s+[^>]*)?>\\s*((<a(\\s+[^>]*)?>[\\s\\S]*?<\\/a>\\s*)+)<\\/div>");
     private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+[^>]*?)href=\"([^\"]+?)\"(\\s*[^>]*?)><div(\\s+[^>]*?)class=\"download\"><\\/div>([^<]+?)<\\/a>");
@@ -122,9 +123,10 @@ public class HtmlUtils {
 
     public static JsonArray extractMedias(String htmlContent, int limitEach){
         TreeMap<Integer, JsonObject> medias = new TreeMap();
+        Matcher matcher, subMatcher;
         // 1. Images
         int nbFound = 0;
-        Matcher matcher = imageSrcPattern.matcher(htmlContent);
+        matcher = imageSrcPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
             medias.put(matcher.start(2), new JsonObject()
                     .put("type", "image")
@@ -144,12 +146,15 @@ public class HtmlUtils {
         }
         // 3. Videos
         nbFound = 0;
-        matcher = videoSrcPattern.matcher(htmlContent);
+        matcher = videoTagPattern.matcher(htmlContent);
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
-            medias.put(matcher.start(2), new JsonObject()
-                    .put("type", "video")
-                    .put("src", matcher.group(2))
-            );
+            String videoAttrs = matcher.group(1);
+            subMatcher = videoFieldsPattern.matcher(videoAttrs);
+            JsonObject videoJson = new JsonObject().put("type", "video");
+            while (subMatcher.find()) {
+                videoJson.put(subMatcher.group(2), subMatcher.group(3));
+            }
+            medias.put(matcher.start(1), videoJson);
             nbFound++;
         }
         // 4. Iframes
@@ -165,7 +170,6 @@ public class HtmlUtils {
         // 5. Attachments
         nbFound = 0;
         matcher = attachmentsPattern.matcher(htmlContent);
-        Matcher subMatcher;
         while ((limitEach == 0 || nbFound < limitEach) && matcher.find()) {
             int start = matcher.start(3);
             String attachmentBlockContent = matcher.group(3);
