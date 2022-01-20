@@ -12,6 +12,9 @@
     "structureId": {
       "type": "string"
     },
+    "subType": {
+      "type": "string"
+    },
     "autolinkTargetAllStructs": {
       "type": "boolean"
     },

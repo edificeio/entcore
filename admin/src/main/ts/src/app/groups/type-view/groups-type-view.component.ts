@@ -4,6 +4,7 @@ import {
   Injector,
   OnDestroy,
   OnInit,
+  Input
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
 import { GroupModel } from "../../core/store/models/group.model";
@@ -18,6 +19,10 @@ export class GroupsTypeViewComponent
   extends OdeComponent
   implements OnInit, OnDestroy
 {
+  @Input() list: GroupModel[];
+  @Input() noResultsLabel: string;
+  @Input() filters: () => boolean;
+
   groupType: string;
   groupInputFilter: string;
   selectedGroup: GroupModel;
@@ -28,6 +33,13 @@ export class GroupsTypeViewComponent
 
   ngOnInit() {
     super.ngOnInit();
+    // Store data into list
+    // Use it with [model] on ode-list component
+    this.list = this.groupsStore.structure.groups.data;
+
+    // Init trad label when no result (default group)
+    this.noResultsLabel = 'list.results.no.groups';
+    
     this.subscriptions.add(
       this.route.params.subscribe(params => {
         this.groupsStore.group = null;
@@ -59,10 +71,34 @@ export class GroupsTypeViewComponent
     // handle change detection from create button click of group-root.component
     this.subscriptions.add(
       this.route.url.subscribe(path => {
+        if (this.groupType === 'broadcastGroup') {
+            this.noResultsLabel = 'list.results.no.broadcast';
+        } else {
+            this.noResultsLabel = 'list.results.no.groups';
+        }
         this.changeDetector.markForCheck();
       })
     );
   }
+
+  // Need this method to get first letter uppercase to compare
+    // groupType (param from route) vs group.type from object group
+    capitalize = (s) => {
+        if (typeof s !== 'string') return '';
+        return s.charAt(0).toUpperCase() + s.slice(1)
+    }
+
+    // Filter list using [filters] depending on route's param (broadcastGroup)
+    // Return booleans
+    filterByGroup = (group: GroupModel) => {
+        const { type, subType } = group;
+
+        if (this.groupType === 'broadcastGroup') {
+            return type === 'ManualGroup' && subType === 'BroadcastGroup';
+        }
+
+        return type === this.capitalize(this.groupType) && subType !== 'BroadcastGroup';
+    };
 
   isSelected = (group: GroupModel) => {
     return this.selectedGroup && group && this.selectedGroup.id === group.id;

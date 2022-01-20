@@ -99,7 +99,7 @@ public class DefaultGroupService implements GroupService {
 				"g.lockDelete AS lockDelete, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
-				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
+				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' ELSE CASE WHEN HAS(g.subType) THEN g.subType END END as subType";
 		neo.execute(query, params, validResultHandler(results));
 	}
 

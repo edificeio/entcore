@@ -12,7 +12,6 @@ import { GroupsService } from '../../groups.service';
 import { GroupsStore } from '../../groups.store';
 import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
 
-
 @Component({
     selector: 'ode-group-detail',
     templateUrl: './group-details.component.html',

@@ -30,7 +30,7 @@
 </div>
 
 <div class="padded">
-  <button (click)="showLightBox()" *ngIf="groupsStore.group?.type === 'ManualGroup'">
+  <button (click)="showLightBox()" *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup'">
     <s5l>group.details.add.users</s5l>
   </button>
 
@@ -43,7 +43,7 @@
     <i class="fa fa-podcast"></i>
   </button>
 
-  <ode-group-users-list [users]="groupsStore.group?.users">
+  <ode-group-users-list [users]="groupsStore.group?.users" *ngIf="groupsStore.group?.subType !== 'BroadcastGroup'">
                 <span class="lct-communication-rule"
                       *ngIf="internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'"
                       (click)="$toggleCommunicationRuleClicked.next(groupsStore.group)">

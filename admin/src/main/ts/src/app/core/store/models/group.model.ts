@@ -9,6 +9,9 @@ export class GroupModel extends Model<GroupModel> {
 
     id?: string;
     name?: string;
+    autolinkTargetAllStructs: boolean;
+    autolinkTargetStructs: string[];
+    autolinkUsersFromGroups: string[];
     displayName?: string;
     type?: GroupType;
     subType?: string;
