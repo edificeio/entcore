@@ -24,8 +24,8 @@ export class WidgetModel extends Model<WidgetModel> {
         super({});
     }
 
-    syncRoles = (structureId: string, widgetId: string): Promise<void> => {
-        return this.http.get(`/appregistry/widget/${widgetId}?structureId=${structureId}`)
+    syncRoles = (structureId: string): Promise<void> => {
+        return this.http.get(`/appregistry/widget/${this.id}?structureId=${structureId}`)
             .then(res => {
                 this.roles = new Array(Mix.castAs(RoleModel, res.data));
             });

@@ -11,6 +11,7 @@ import { SessionResolver } from './resolvers/session.resolver';
 import { StructuresResolver } from './resolvers/structures.resolver';
 import { NotifyService } from './services/notify.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
+import { WidgetService } from './services/widgets.service';
 
 @NgModule({
     imports: [
@@ -30,6 +31,7 @@ import { SijilLabelsService } from './services/sijil.labels.service';
         SijilLabelsService,
         NotifyService,
         SpinnerService,
+        WidgetService,
         ConfigResolver
     ],
 })
