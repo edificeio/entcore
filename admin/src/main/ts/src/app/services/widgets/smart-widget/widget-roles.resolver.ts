@@ -29,7 +29,7 @@ export class WidgetRolesResolver implements Resolve<Array<RoleModel>> {
         } else {
             return this.spinner.perform(
                 'portal-content', 
-                targetWidget.syncRoles(structure._id, widgetId)
+                targetWidget.syncRoles(structure._id)
                     .then(() => {
                         targetWidget.roles.forEach(role => {
                             role.name = `${this.bundlesService.translate('services.widget.roles.access')} ${this.bundlesService.translate(targetWidget.name)}`

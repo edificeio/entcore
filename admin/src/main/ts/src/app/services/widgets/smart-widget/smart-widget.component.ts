@@ -7,6 +7,7 @@ import { NotifyService } from "src/app/core/services/notify.service";
 import { routing } from "src/app/core/services/routing.service";
 import { GroupModel } from "src/app/core/store/models/group.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
+import { filterRolesByDistributions } from "../../applications/application/smart-application/smart-application.component";
 import { ServicesStore } from "../../services.store";
 import { Assignment } from "../../_shared/services-types";
 
@@ -154,5 +155,9 @@ export class SmartWidgetComponent extends OdeComponent {
                         err
                     );
                 }));
+    }
+
+    public onMassChange(): void {
+        this.servicesStore.widget.syncRoles(this.servicesStore.structure.id);
     }
 }
