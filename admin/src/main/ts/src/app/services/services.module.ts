@@ -37,6 +37,7 @@ import { WidgetsListComponent } from "./widgets/list/widgets-list.component";
 import { WidgetsResolver } from './widgets/list/widgets.resolver';
 import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.component';
 import { WidgetAssignmentComponent } from './widgets/assignment/widget-assignment.component';
+import { WidgetMassAssignmentComponent } from './widgets/mass-assignment/widget-mass-assignment.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 
 @NgModule({
@@ -67,7 +68,8 @@ import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolve
         GroupPickerComponent,
         WidgetsListComponent,
         SmartWidgetComponent,
-        WidgetAssignmentComponent
+        WidgetAssignmentComponent,
+        WidgetMassAssignmentComponent
     ],
     providers: [
         NgSwitch,
