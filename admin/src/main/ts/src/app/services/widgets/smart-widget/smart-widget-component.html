@@ -10,9 +10,15 @@
     >
       {{ 'services.tab.assignment' | translate }}
     </button>
+    <button class="tab"
+            [ngClass]="{active: currentTab === 'massAssignment'}"
+            (click)="currentTab = 'massAssignment'">
+        {{ 'services.tab.mass-assignment' | translate }}
+    </button>
 </div>
 
 <ode-widget-assignment
+    *ngIf="currentTab  === 'assignment'"
     [structure]="currentStructure"
     [widget]="servicesStore.widget"
     [assignmentGroupPickerList]="assignmentGroupPickerList"
@@ -21,3 +27,10 @@
     (add)="onAddAssignment($event)"
 >
 </ode-widget-assignment>
+
+<ode-widget-mass-assignment
+        *ngIf="currentTab  === 'massAssignment'"
+        [structure]="currentStructure"
+        [widget]="servicesStore.widget"
+        (massChange)="onMassChange()">
+</ode-widget-mass-assignment>

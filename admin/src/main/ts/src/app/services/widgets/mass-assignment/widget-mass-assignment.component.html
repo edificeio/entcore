@@ -1,0 +1,71 @@
+<div class="panel-section">
+  <form [formGroup]="assignmentForm">
+    <div class="form__row message is-info has-margin-10">
+        <div class="message-body">
+          {{ 'widget.mass-assignment.description' | translate }}
+        </div>
+    </div>
+
+    <div class="form__row">
+      <s5l>widget.mass-assignment.profiles</s5l>
+    </div>
+    <div class="form__row">
+      <ode-multi-select
+        class="lct-profiles-select"
+        [label]="'widget.mass-assignment.profiles-select-label'" formControlName="profiles"
+        [options]="profileOptions"
+        [trackByFn]="profileTrackByFn"
+        [preview]="true">
+      </ode-multi-select>
+    </div>
+
+    <div class="form__row">
+      <s5l>widget.mass-assignment.actions</s5l>
+    </div>
+    <div class="form__row form__row--last">
+      <div>
+        <button type="button" class="lct-assign-button submit" 
+                [disabled]="!assignmentForm.valid"
+                (click)="displayedLightbox = 'assignment'">
+          {{ 'widget.mass-assignment.assign-button' | translate }}
+          <i class="fa fa-plus is-size-5"></i>
+        </button>
+      </div>
+      <div>
+        <button type="button" class="lct-unassign-button submit"
+                [disabled]="!assignmentForm.valid"
+                (click)="displayedLightbox = 'unassignment'">
+          {{ 'widget.mass-assignment.unassign-button' | translate }}
+          <i class="fa fa-times is-size-5"></i>
+        </button>
+      </div>
+      <div>
+        <button type="button" class="lct-pin-button submit"
+                [disabled]="!assignmentForm.valid"
+                (click)="displayedLightbox = 'pin'">
+          {{ 'widget.mass-assignment.pin-button' | translate }}
+          <i class="fa fa-thumb-tack is-size-5"></i>
+        </button>
+      </div>
+      <div>
+        <button type="button" class="lct-unpin-button submit"
+                [disabled]="!assignmentForm.valid"
+                (click)="displayedLightbox = 'unpin'">
+          <span>{{ 'widget.mass-assignment.unpin-button' | translate }}</span>
+          <i class="fa fa-thumb-tack is-size-5"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <ode-lightbox-confirm lightboxTitle="widget.mass-assignment.confirm.title"
+      [show]="displayedLightbox !== 'none'"
+      (onCancel)="displayedLightbox = 'none'"
+      (onConfirm)="onConfirm()">
+    <span [innerHTML]="'widget.mass-assignment.confirm.'+displayedLightbox | translate: {
+          structure: structure.name,
+          profiles: translatedSelectedProfiles
+        }">
+    </span>
+  </ode-lightbox-confirm>
+</div>
