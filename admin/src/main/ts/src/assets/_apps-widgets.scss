@@ -1,0 +1,160 @@
+i.actualites-large,
+i.actualites {
+  @include fonticon;
+
+  &::before {
+    content: '\e85b';
+    color: #4bafd5;
+  }
+}
+
+i.agenda-large,
+i.agenda {
+  @include fonticon;
+
+  &::before {
+    content: '\e83c';
+    color: $yellow;
+  }
+}
+
+i.aide-devoirs-large,
+i.aide-devoirs {
+  @include fonticon;
+
+  &::before {
+    content: '\e818';
+    color: #214759;
+  }
+}
+
+i.apps-large,
+i.apps {
+  @include fonticon;
+
+  &::before {
+    content: '\e86c';
+    color: #214759;
+  }
+}
+
+i.birthday-large,
+i.birthday {
+  font-family: "FontAwesome";
+  font-style: normal;
+
+  &::before {
+    content: '\f1fd';
+    color: $pink;
+  }
+}
+
+i.calendar-large,
+i.calendar {
+  @include fonticon;
+
+  &::before {
+    content: '\e834';
+    color: $yellow;
+  }
+}
+
+i.carnet-de-bord-large,
+i.carnet-de-bord {
+  @include fonticon;
+
+  &::before {
+    content: '\e902';
+    color: #214759;
+  }
+}
+
+i.dicodelazone-large,
+i.dicodelazone {
+  @include fonticon;
+  font-size: 10rem !important;
+  &::before {
+    content: '\e938';
+    color: #ff3a54;
+  }
+}
+
+i.dictaphone-large,
+i.dictaphone {
+  @include fonticon;
+
+  &::before {
+    content: '\e864';
+    color: #ff3a54;
+  }
+}
+
+i.maxicours-large,
+i.maxicours {
+  @include fonticon;
+
+  &::before {
+    content: '\e825';
+    color: #214759;
+  }
+}
+
+i.mood-large,
+i.mood {
+  @include fonticon;
+
+  &::before {
+    content: '\e877';
+    color: #6fbe2e;
+  }
+}
+
+i.notes-large,
+i.notes {
+  @include fonticon;
+
+  &::before {
+    content: '\e806';
+    color: $yellow;
+  }
+}
+
+i.qwant-large,
+i.qwant {
+  @include fonticon;
+
+  &::before {
+    content: '\e93d';
+    color: #e13a3a;
+  }
+}
+
+i.rss-large,
+i.rss {
+  @include fonticon;
+
+  &::before {
+    content: '\e861';
+    color: #ff8500;
+  }
+}
+
+i.schoolbook-large,
+i.schoolbook {
+  @include fonticon;
+
+  &::before {
+    content: '\e95a';
+    color: #214759;
+  }
+}
+
+i.signets-large,
+i.signets {
+  @include fonticon;
+
+  &::before {
+    content: '\e80c';
+    color: #ff8500;
+  }
+}

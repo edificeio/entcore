@@ -39,6 +39,26 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
 
     public collectionRef: { [serviceName: string]: ServiceInfo };
 
+    private iconWidget: {[T: string]: string} = {
+        "agenda-widget":        "agenda",
+        "birthday":             "birthday",
+        "bookmark-widget":      "signets",
+        "calendar-widget":      "calendar",
+        "carnet-de-bord":       "carnet-de-bord",
+        "cursus-widget":        "aide-devoirs",
+        "last-infos-widget":    "actualites",
+        "maxicours-widget":     "maxicours",
+        "dicodelazone-widget":  "dicodelazone",
+        "mood":                 "mood",
+        "my-apps":              "apps",
+        "notes":                "notes",
+        "qwant":                "qwant",
+        "qwant-junior":         "qwant-junior",
+        "rss-widget":           "rss",
+        "record-me":            "dictaphone",
+        "school-widget":        "schoolbook",
+    }
+
     itemInputFilter: string;
 
     ngOnInit(): void {
@@ -75,19 +95,14 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                             this.collectionRef[this.serviceName].collection = filterWidgetsByLevelsOfEducation(
                                 this.collectionRef[this.serviceName].collection,
                                 this.servicesStore.structure.levelsOfEducation
-                            );
+                            )
                         }
-                    }
 
-                    this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
-                        .sort((a, b) => {
-                            if (a && a.displayName && b && b.displayName) {
-                                this.bundlesService.translate(a.displayName).localeCompare(this.bundlesService.translate(b.displayName));
-                            } else {
-                                return -1;
-                            }
-                        }
-                            );
+                        // We add icon property because doesn't exist on WidgetModel 
+                        this.collectionRef[this.serviceName].collection = addWidgetsIcons(this.collectionRef[this.serviceName].collection, this.iconWidget);
+
+                    }
+                    
                 }
             }));
         });
@@ -118,6 +133,7 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                 noResultsLabel: 'services.widget.list.empty'
             }
         };
+        
     }
 
     closePanel(): void {
@@ -127,6 +143,16 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
         return !!this.itemInputFilter ?
             this.bundlesService.translate(item.displayName).toLowerCase()
                 .indexOf(this.itemInputFilter.toLowerCase()) >= 0 : true;
+    }
+    sortByDisplayName = () => {
+        this.collectionRef[this.serviceName].collection
+        .sort((a, b) => {
+            if (a && a.displayName && b && b.displayName) {
+                return this.bundlesService.translate(a.displayName).localeCompare(this.bundlesService.translate(b.displayName));
+            } else {
+                return -1;
+            }
+        });
     }
 
     isSelected = (item): boolean => {
@@ -178,4 +204,8 @@ export function filterWidgetsByLevelsOfEducation(widgets: WidgetModel[], levelsO
         return widgets;
     }
     return widgets.filter(widget => levelsOfEducation.some(level => widget.levelsOfEducation.indexOf(level) >= 0));
+}
+
+export function addWidgetsIcons(widgets: WidgetModel[], iconWidget:{[T: string]: string}) {
+    return widgets.map(widget => ({ ...widget, icon: iconWidget[widget.displayName] }));
 }
