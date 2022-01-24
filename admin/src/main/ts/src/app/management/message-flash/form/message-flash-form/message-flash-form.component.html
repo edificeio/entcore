@@ -52,7 +52,6 @@
           <div class="legend-square orange" [ngClass]="{ outlined: message.color == 'orange' }" (click)="message.color = 'orange'"></div>
           <div class="legend-square green" [ngClass]="{ outlined: message.color == 'green'}" (click)="message.color = 'green'"></div>
           <div class="legend-square blue" [ngClass]="{ outlined: message.color == 'blue' }" (click)="message.color = 'blue'"></div>
-          <input type="color" ng-model="message.customColor" [ngClass]="{ outlined: !!message.customColor }" [(ngModel)]="message.customColor">
         </span>
       </ode-form-field>
 
@@ -71,12 +70,6 @@
 
       <ode-form-field label="management.message.flash.signature">
         <input type="text" [(ngModel)]="message.signature" class="is-flex-none">
-      </ode-form-field>
-
-      <ode-form-field label="management.message.flash.signature.color">
-        <span class="is-flex-none">
-          <input type="color" ng-model="message.signatureColor" [ngClass]="{ outlined: !!message.signatureColor }" [(ngModel)]="message.signatureColor">
-        </span>
       </ode-form-field>
     </fieldset>
 
