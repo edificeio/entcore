@@ -1,0 +1,58 @@
+
+<form (ngSubmit)="search()" class="search-input">
+   <input name="searchTerm" type="search" [(ngModel)]="searchTerm">
+   <button class="search-button">
+      <i class="fa fa-search is-size-4 search-icon"></i>
+   </button>
+</form>
+
+<ode-list
+   [model]="userlist"
+   [filters]="listFiltersService.getFormattedFilters()"
+   [inputFilter]="userListService.filterByInput"
+   [sort]="userListService.sorts"
+   searchPlaceholder="search.user"
+   noResultsLabel="list.results.no.users"
+   [isSelected]="isSelected"
+   [limit]="userListService.limit"
+   (inputChange)="userListService.inputFilter = $event"
+   (onSelect)="selectedUser = $event; onselect.emit($event)"
+   (scrolledDown)="userListService.addPageDown()"
+   (listChange)="refreshListCount($event)"
+   [searchInput]="false">
+   <div toolbar class="user-toolbar">
+      <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
+   </div>
+
+   <ng-template let-item>
+      <span class="is-display-flex">
+         <span class="display-name">
+            {{item.lastName?.toUpperCase()}} {{item.firstName}}
+         </span>
+         <span class="icons">
+            <i class="fa fa-lock"
+               *ngIf="item.code && item.code?.length > 0"
+               [title]="'user.icons.tooltip.inactive' | translate">
+            </i>
+            <i class="fa fa-ban"
+               *ngIf="item.blocked"
+               [title]="'user.icons.tooltip.blocked' | translate">
+            </i>
+            <i class="fonticon duplicates"
+               *ngIf="item.duplicates && item.duplicates?.length > 0"
+               [title]="'user.icons.tooltip.duplicated' | translate">
+            </i>
+            <i class="fa fa-times-circle"
+               *ngIf="item.deleteDate"
+               [title]="'user.icons.tooltip.deleted' | translate">
+            </i>
+            <i class="fonticon waiting-predelete"
+               *ngIf="!item.deleteDate && item.disappearanceDate"
+               [title]="'user.icons.tooltip.disappeared' | translate">
+            </i>
+         </span>    
+         <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+      </span>
+      <span class="structures">{{userStructures(item)}}</span>
+   </ng-template>
+</ode-list>

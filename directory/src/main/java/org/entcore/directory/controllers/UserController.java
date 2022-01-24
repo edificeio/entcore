@@ -443,7 +443,7 @@ public class UserController extends BaseController {
 							}
 						};
 					}
-					userService.listAdmin(structureId, classId, null, types, filterActive, null, user, handler);
+					userService.listAdmin(structureId, false, classId, null, types, filterActive, null, user, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -615,8 +615,9 @@ public class UserController extends BaseController {
 					final String groupId = request.params().get("groupId");
 					final String nameFilter = request.params().get("name");
 					final String filterActive = request.params().get("filterActive");
+					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
 
-					userService.listAdmin(structureId, classId, groupId, types, filterActive, nameFilter, user, arrayResponseHandler(request));
+					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, nameFilter, user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}

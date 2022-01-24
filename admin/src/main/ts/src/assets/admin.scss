@@ -1233,6 +1233,7 @@ ode-list {
 }
 
 ode-user-list,
+ode-tree-user-list,
 ode-group-users-list,
 ode-group-input-users,
 ode-group-output-users {
@@ -1306,8 +1307,17 @@ ode-group-output-users {
   }
 }
 
+ode-tree-user-list {
+  ode-list {
+    li {
+      display: block;
+    }
+  }
+}
+
 /* User list */
-ode-user-list {
+ode-user-list,
+ode-tree-user-list {
   .user-toolbar {
     display: flex;
     align-items: center;
@@ -1534,7 +1544,8 @@ ode-users-list {
   }
 }
 
-ode-user-detail {
+ode-user-detail,
+ode-simple-user-detail {
   .panel-header {
     div.panel-header-sub {
       padding-top: 0px !important;

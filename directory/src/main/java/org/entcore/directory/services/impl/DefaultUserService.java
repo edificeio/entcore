@@ -449,13 +449,13 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void listAdmin(String structureId, String classId, String groupId,
+	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
 						  JsonArray expectedProfiles, UserInfos userInfos, io.vertx.core.Handler<fr.wseduc.webutils.Either<String,JsonArray>> results) {
-		listAdmin(structureId, classId, groupId, expectedProfiles, null, null, userInfos, results);
+		listAdmin(structureId, includeSubStructure, classId, groupId, expectedProfiles, null, null, userInfos, results);
 	};
 
 	@Override
-	public void listAdmin(String structureId, String classId, String groupId,
+	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
 						  JsonArray expectedProfiles, String filterActivated, String nameFilter,
 						  UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
@@ -475,7 +475,8 @@ public class DefaultUserService implements UserService {
 			filter = "(n:Class {id : {classId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
 			params.put("classId", classId);
 		} else if (structureId != null && !structureId.trim().isEmpty()) {
-			filter = "(n:Structure {id : {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
+			filter = "(n:Structure {id : {structureId}})" + (includeSubStructure ? "<-[:HAS_ATTACHMENT*0..]-(:Structure)" : "") +
+					"<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
 			params.put("structureId", structureId);
 		} else if (groupId != null && !groupId.trim().isEmpty()) {
 			filter = "(n:Group {id : {groupId}})<-[:IN]-";

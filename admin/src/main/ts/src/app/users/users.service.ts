@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {UserOverview} from './user-overview/user-overview.component';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import { UserModel } from '../core/store/models/user.model';
 
 export interface BackendDirectoryUserResponse {
     zipCode: string;
@@ -54,5 +55,24 @@ export class UsersService {
                 structures: res.structureNodes.map(node => node.name)
             }))
         );
+    }
+
+    public async search(structureId: string, name: string): Promise<UserModel[]> {
+        if (!name) return []
+        let res: any = await this.http.get(`/directory/user/admin/list?structureId=${structureId}&includeSubStructures=true&name=${name}`)
+        .toPromise();
+        let result: UserModel[] = [];
+        res.forEach(user => {
+            let um: UserModel = new UserModel();
+            um.id = user.id;
+            um.displayName =  user.displayName;
+            um.firstName = user.firstName;
+            um.lastName = user.lastName;
+            um.login = user.login;
+            um.type = user.type;
+            um.structures = user.structures;
+            result.push(um);
+        })
+        return result;
     }
 }

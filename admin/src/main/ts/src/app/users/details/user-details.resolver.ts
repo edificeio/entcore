@@ -13,9 +13,9 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
 
     resolve(route: ActivatedRouteSnapshot): Promise<UserModel> {
         const structure = globalStore.structures.data.find(s => s.id === routing.getParam(route, 'structureId'));
-        const user = structure &&
+        let user = structure &&
             structure.users.data.find(u => u.id === route.params.userId);
-        const removedUser = structure &&
+        let removedUser = structure &&
             structure.removedUsers.data.find(u => u.id === route.params.userId);
 
         if (user && !removedUser) {
@@ -34,7 +34,19 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
                 }));
         } else
         {
-            this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false});
+            user = new UserModel();
+            user.userDetails.id = routing.getParam(route, 'userId');
+            return this.spinner.perform('portal-content', user.userDetails.sync()
+                .catch((err) => {
+                    this.router.navigate(['/admin', structure.id, 'users', 'list'], {replaceUrl: false});
+                }).then(() => {
+                    console.log("coucu")
+                    user.id = user.userDetails.id;
+                    user.displayName = user.userDetails.displayName;
+                    user.structures = user.userDetails.structureNodes.map(s => { return { id: s.id, name: s.name, externalId: s.externalId }});
+                    return user;
+                }));
+            //this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false});
         }
     }
 }

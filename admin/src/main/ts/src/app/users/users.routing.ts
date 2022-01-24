@@ -5,11 +5,14 @@ import {UsersComponent} from './users.component';
 import {UserCreateComponent} from './create/user-create.component';
 import {UserFiltersComponent} from './filters/user-filters.component';
 import {UserDetailsComponent} from './details/user-details.component';
+import {SimpleUserDetailsComponent} from './simple-details/simple-user-details.component';
 import {ConfigResolver} from '../core/resolvers/config.resolver';
 import {SmartUserCommunicationComponent} from './communication/smart-user-communication.component';
 import {UserGroupsResolver} from './communication/user-groups.resolver';
 import {UsersRelinkComponent} from './users-relink/users-relink.component';
 import { UsersListComponent } from './users-list/users-list.component';
+import { TreeUsersListComponent } from './tree-users-list/tree-users-list.component';
+import { EmptyScreenComponent } from './empty-screen/empty-screen.component';
 
 export let routes: Routes = [
     {
@@ -33,6 +36,19 @@ export let routes: Routes = [
                         }
                     },
                     {path:'',redirectTo:'filter'},
+                ]
+            },
+            {
+                path: 'tree-list', component: TreeUsersListComponent, resolve: {users: UsersResolver},
+                children: [
+                    {path: 'search', component: EmptyScreenComponent},
+                    {
+                        path: ':userId/details', component: SimpleUserDetailsComponent, resolve: {
+                            config: ConfigResolver,
+                            user: UserDetailsResolver
+                        }
+                    },
+                    {path:'',redirectTo:'search'},
                 ]
             },
             {
