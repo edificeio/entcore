@@ -17,9 +17,14 @@
     </button>
 </div>
 
+<div *ngIf="currentWidgetLevel" class="message is-warning has-margin-10 has-bottom-margin-30">
+    <div class="message-body">
+      {{ 'services.widget.message.targetWarning' | translate:{target: currentWidgetLevel} }}
+    </div>
+</div>
+  
 <ode-widget-assignment
     *ngIf="currentTab  === 'assignment'"
-    [structure]="currentStructure"
     [widget]="servicesStore.widget"
     [assignmentGroupPickerList]="assignmentGroupPickerList"
     (mandatoryToggle)="handleMandatoryToggle($event)"
