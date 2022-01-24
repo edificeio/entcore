@@ -13,6 +13,7 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
     // Tabs
     tabs = [
         {label: 'users.tabs.mainList', view: 'list'},
+        {label: 'users.tabs.treeList', view: 'tree-list'}
     ];
 
     constructor(
@@ -26,7 +27,7 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
         const session: Session = await SessionModel.getSession();
         if(session.isADMC() == true)
         {
-            this.tabs.push({label: 'users.tabs.removedList', view: 'relink'});
+            this.tabs.splice(1, 0, {label: 'users.tabs.removedList', view: 'relink'});
         }
     }
 }

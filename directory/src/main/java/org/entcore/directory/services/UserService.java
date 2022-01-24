@@ -60,10 +60,10 @@ public interface UserService {
 
 	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
 
-	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
+	void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId, JsonArray expectedProfiles,
 			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
-	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
+	void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId, JsonArray expectedProfiles,
 			String filterActivated, String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void delete(List<String> users, Handler<Either<String, JsonObject>> result);
