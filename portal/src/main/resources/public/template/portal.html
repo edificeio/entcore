@@ -131,7 +131,7 @@
                                 <i18n>navbar.myapps.more</i18n>
                             </div>
                             <div class="bookmarked-app" ng-repeat="app in me.bookmarkedApps">
-                                <a connector-lightbox-trigger="app" href="[[app.address]]" target="[[app.target]]" title="[[translatedDisplayName(app)]]">
+                                <a connector-lightbox-trigger="app" href="#" target="[[app.target]]" title="[[translatedDisplayName(app)]]">
                                     <i class="application" ng-class="getIconClass(app)" ng-if="app.icon.indexOf('/') === -1"></i>
                                     <img ng-src="[[app.icon]]" ng-if="app.icon.indexOf('/') !== -1" />
                                 </a>
