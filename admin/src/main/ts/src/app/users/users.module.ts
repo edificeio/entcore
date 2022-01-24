@@ -10,8 +10,12 @@ import {UsersResolver, RemovedUsersResolver} from './users.resolver';
 import {UsersComponent} from './users.component';
 import {UserCreateComponent} from './create/user-create.component';
 import {UserDetailsComponent} from './details/user-details.component';
+import {SimpleUserDetailsComponent} from './simple-details/simple-user-details.component';
 import {UserFiltersComponent} from './filters/user-filters.component';
 import {UserListComponent} from './list/user-list.component';
+import {EmptyScreenComponent} from './empty-screen/empty-screen.component';
+import {TreeUserListComponent} from './tree-list/tree-user-list.component';
+import {TreeUsersListComponent} from './tree-users-list/tree-users-list.component';
 import {UserInfoService} from './details/sections/info/user-info.service';
 import {HttpClientModule} from '@angular/common/http';
 import {globalStoreProvider} from '../core/store/global.store';
@@ -52,8 +56,12 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
         UsersComponent,
         UserCreateComponent,
         UserDetailsComponent,
+        SimpleUserDetailsComponent,
         UserFiltersComponent,
         UserListComponent,
+        TreeUserListComponent,
+        TreeUsersListComponent,
+        EmptyScreenComponent,
         UserChildrenSectionComponent,
         UserAafFunctionsComponent,
         UserAdministrativeSectionComponent,
