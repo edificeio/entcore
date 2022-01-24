@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, Injector, Input } from "@angular/core";
+import { Component, Injector, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { Data, Params } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
@@ -9,16 +9,24 @@ import { GroupModel } from "src/app/core/store/models/group.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
 import { filterRolesByDistributions } from "../../applications/application/smart-application/smart-application.component";
 import { ServicesStore } from "../../services.store";
+import { filterWidgetsByLevelsOfEducation } from "../../_shared/services-list/services-list.component";
 import { Assignment } from "../../_shared/services-types";
 
 @Component({
     selector: 'ode-smart-widget',
-    templateUrl: 'smart-widget-component.html'
+    templateUrl: 'smart-widget-component.html',
+    styles: [`
+        .has-bottom-margin-30 {
+            margin-bottom: 30px;
+        }
+    `]
 })
-export class SmartWidgetComponent extends OdeComponent {
+export class SmartWidgetComponent extends OdeComponent implements OnChanges {
     public currentTab: 'assignment' | 'massAssignment' = 'assignment';
     public assignmentGroupPickerList: Array<GroupModel>;
     public currentStructure:StructureModel;
+
+    public currentWidgetLevel:string = '';
 
     constructor(
         injector: Injector,
@@ -34,6 +42,7 @@ export class SmartWidgetComponent extends OdeComponent {
         this.subscriptions.add(this.route.params.subscribe((params: Params) => {
             if (params['widgetId']) {
                 this.servicesStore.widget = this.servicesStore.structure.widgets.data.find(a => a.id === params['widgetId']);
+                this.checkStructureLevelOfEducation();
             }
         }));
 
@@ -41,8 +50,21 @@ export class SmartWidgetComponent extends OdeComponent {
             if (data.structure) {
                 this.currentStructure = data.structure;
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
+                this.checkStructureLevelOfEducation();
             }
         }));
+    }
+
+    private checkStructureLevelOfEducation(): void {
+        if( this.currentStructure 
+                && this.servicesStore.widget.levelsOfEducation
+                && this.servicesStore.widget.levelsOfEducation.length
+                && filterWidgetsByLevelsOfEducation([this.servicesStore.widget], this.currentStructure.levelsOfEducation).length === 0
+            ) {
+            this.currentWidgetLevel = ''+this.servicesStore.widget.levelsOfEducation[0]+'D';
+        } else {
+            this.currentWidgetLevel = '';
+        }
     }
 
     public async handleMandatoryToggle(assignment: Assignment): Promise<void> {
