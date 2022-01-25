@@ -25,7 +25,7 @@
                 [selected]="isSelected('sending', group, selected)"
                 [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
                 [active]="isRelatedWithCell('sending', group, selected, communicationRules)"
-                (clickAddCommunication)="openGroupPicker()"></ode-group-card>
+                (clickAddCommunication)="showGroupPicker = true;"></ode-group-card>
         </div>
     </div>
     <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
@@ -42,7 +42,7 @@
                 [selected]="isSelected('receiving', group, selected)"
                 [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
                 [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"
-                (clickAddCommunication)="openGroupPicker()"></ode-group-card>
+                (clickAddCommunication)="showGroupPicker = true;"></ode-group-card>
         </div>
     </div>
 </div>

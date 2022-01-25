@@ -713,7 +713,9 @@ public class DefaultCommunicationService implements CommunicationService {
 			+ "type, "
 			+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
 			+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-			+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
+			+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
+			+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
+			+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
 
 	@Override
 	public void getOutgoingRelations(String id, Handler<Either<String, JsonArray>> results) {
@@ -980,6 +982,12 @@ public class DefaultCommunicationService implements CommunicationService {
 		return CommunicationService.Direction.valueOf(dbDirection.toUpperCase());
 	}
 
+	/**
+	 * Compute a warning message about the forecast (future) communication rules changes :
+	 * - adding INCOMING to the actual start direction,
+	 * - adding OUTGOING to the actual end direction,
+	 * as effectively done in computeNewDirectionAfterAddingLink() below.
+	 */
 	public String computeWarningMessageForAddLinkCheck(Direction startDirection, Direction endDirection) {
 		if (startDirection.equals(Direction.OUTGOING) && endDirection.equals(Direction.INCOMING)) {
 			return CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
@@ -999,7 +1007,9 @@ public class DefaultCommunicationService implements CommunicationService {
 	private void getGroupFilterAndSubType(String groupId, Handler<Either<String, JsonObject>> handler) {
 		String query = "MATCH (g:Group { id: {groupId} }) "
 				+ "RETURN g.filter as filter, "
-				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
+				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
+				+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
+				+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
 
 		JsonObject params = new JsonObject().put("groupId", groupId);
 

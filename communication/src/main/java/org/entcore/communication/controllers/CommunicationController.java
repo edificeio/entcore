@@ -86,8 +86,10 @@ public class CommunicationController extends BaseController {
 	public void addLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
-		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.addLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
+		bodyToJson(request, body -> {
+			CommunicationService.Direction direction = getDirection(body.getString("direction"));
+			communicationService.addLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
+		});
 	}
 
 	@Delete("/group/:groupId")
@@ -95,8 +97,10 @@ public class CommunicationController extends BaseController {
 	public void removeLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
-		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.removeLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
+		bodyToJson(request, body -> {
+			CommunicationService.Direction direction = getDirection(body.getString("direction"));
+			communicationService.removeLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
+		});
 	}
 
 	@Get("/group/:groupId")
@@ -124,8 +128,10 @@ public class CommunicationController extends BaseController {
 	public void addLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
-		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.addLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		bodyToJson(request, body -> {
+			CommunicationService.Direction direction = getDirection(body.getString("direction"));
+			communicationService.addLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		});
 	}
 
 	@Delete("/relative/:groupId")
@@ -133,8 +139,10 @@ public class CommunicationController extends BaseController {
 	public void removeLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
-		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.removeLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		bodyToJson(request, body -> {
+			CommunicationService.Direction direction = getDirection(body.getString("direction"));
+			communicationService.removeLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		});
 	}
 
 	@Get("/visible/:userId")
