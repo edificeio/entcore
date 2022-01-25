@@ -129,7 +129,7 @@ public class FlashMsgController extends BaseController {
 		createFlashMsg(request, null);
 	}
 
-	@Post("/flashmsg/:structureId")
+	@Post("/flashmsg/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
 	public void createADML(final HttpServerRequest request) {
@@ -168,7 +168,7 @@ public class FlashMsgController extends BaseController {
 		service.delete(request.params().get("id"), null, defaultResponseHandler(request));
 	}
 
-	@Delete("/flashmsg/:structureId/:id")
+	@Delete("/flashmsg/structure/:structureId/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
 	public void deleteADML(final HttpServerRequest request) {
@@ -182,7 +182,7 @@ public class FlashMsgController extends BaseController {
 		service.deleteMultiple(request.params().getAll("id"), null, defaultResponseHandler(request));
 	}
 
-	@Delete("/flashmsg/:structureId")
+	@Delete("/flashmsg/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
 	public void deleteMultipleADML(final HttpServerRequest request) {
@@ -196,7 +196,7 @@ public class FlashMsgController extends BaseController {
 		updateFlashMsg(request, null);
 	}
 
-	@Put("/flashmsg/:structureId/:id")
+	@Put("/flashmsg/structure/:structureId/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
 	public void updateADML(final HttpServerRequest request) {
@@ -252,7 +252,7 @@ public class FlashMsgController extends BaseController {
 		});
 	}
 
-	@Post("/flashmsg/:structureId/:messageId/substructures")
+	@Post("/flashmsg/structure/:structureId/:messageId/substructures")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
 	public void setSubstructuresByMessageIdADML(final HttpServerRequest request) {
