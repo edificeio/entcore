@@ -60,8 +60,7 @@ export class GroupCreateComponent extends OdeComponent {
 
         this.spinner.perform('portal-content', this.http.post<{ id: string }>('/directory/group', body).pipe(
           flatMap(groupIdHolder =>
-            this.http.post<{ number: number }>(`/communication/group/${groupIdHolder.id}`, {
-              direction: internalCommunicationRule
+            this.http.post<{ number: number }>(`/communication/group/${groupIdHolder.id}?direction=${internalCommunicationRule}`, {
             }).pipe(map(() => groupIdHolder))
           ),
           tap(groupIdHolder => {

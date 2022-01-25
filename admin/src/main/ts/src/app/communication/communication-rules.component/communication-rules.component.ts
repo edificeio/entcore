@@ -244,10 +244,6 @@ export class CommunicationRulesComponent  extends OdeComponent implements OnInit
             }, 'user.communication.remove-communication.error.title'));
     }
 
-    public openGroupPicker(): void {
-        this.showGroupPicker = true;
-    }
-
     public filterGroupPicker = (group: GroupModel) => {
         if (this.selected) {
             if (group.id === this.selected.group.id) {

@@ -388,8 +388,10 @@ public class DefaultUserService implements UserService {
 				+ "type, "
 				+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
 				+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
-        JsonObject params = new JsonObject().put("id", id);
+				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
+				+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
+				+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
+			JsonObject params = new JsonObject().put("id", id);
         neo.execute(query, params, validResultHandler(results));
     }
 
