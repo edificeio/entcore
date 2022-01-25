@@ -78,4 +78,23 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
             this.changeDetector.markForCheck();
         });
     }
+
+    public get titleLabel() {
+        return this.group.subType==='BroadcastGroup' ? 'broadcastlist.communication.title' : 'group.communication.title';
+    }
+    public get backButtonLabel() {
+        return this.group.subType==='BroadcastGroup' ? 'broadcastlist.communication.back-to-list-details' : 'group.communication.back-to-group-details';
+    }
+    public get sendingSectionTitle() {
+        return this.group.subType==='BroadcastGroup' ? '' : 'group.communication.section.title.sending-rules'; // empty string will hide the entire section
+    }
+    public get receivingSectionTitle() {
+        return this.group.subType==='BroadcastGroup' ? 'broadcastlist.communication.section.title.receiving-rules' : 'group.communication.section.title.receiving-rules';
+    }
+    public get receivingSectionSendingColumnLabel() {
+        return this.group.subType==='BroadcastGroup' ? 'broadcastlist.communication.groups-that-can-communicate-with-list' : 'group.communication.groups-that-can-communicate-with-group';
+    }
+    public get receivingSectionReceivingColumnLabel() {
+        return this.group.subType==='BroadcastGroup' ? 'broadcastlist.communication.current-list' : 'group.communication.current-group';
+    }
 }
