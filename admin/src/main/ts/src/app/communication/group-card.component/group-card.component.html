@@ -23,27 +23,39 @@
   </div>
   <hr class="group-card__separator"/>
   <span class="group-card__actions-on-self group-card__actions-on-self--can-communicate"
+        *ngIf="group.subType==='BroadcastGroup'; then broadcastGroup else nonBroadcastGroup">
+  </span>
+  <ng-template #broadcastGroup>
+    <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
+      <s5l class="group-card__switch-label">group.details.broadcast-group.never.communicate</s5l>
+      <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"></i>
+      <!--i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"></i-->
+    </span>
+  </ng-template>
+  <ng-template #nonBroadcastGroup>
+    <span class="group-card__actions-on-self group-card__actions-on-self--can-communicate"
         *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
-                <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l>
-                <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-on"
-                   *ngIf="active && manageable"
-                   (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
-                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
-                   *ngIf="!active && manageable"></i>
-                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
-                   *ngIf="!manageable"></i>
-            </span>
-  <ng-template #cannotCommunicateTogether>
-                <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
-                    <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l>
-                    <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-off"
-                       *ngIf="active && manageable"
-                       (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
-                    <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
-                       *ngIf="!active && manageable"></i>
-                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
-                   *ngIf="!manageable"></i>
-                </span>
+        <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l>
+        <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-on"
+            *ngIf="active && manageable"
+            (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+        <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
+            *ngIf="!active && manageable"></i>
+        <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+            *ngIf="!manageable"></i>
+    </span>
+    <ng-template #cannotCommunicateTogether>
+      <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
+          <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l>
+          <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-off"
+              *ngIf="active && manageable"
+              (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+          <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
+              *ngIf="!active && manageable"></i>
+      <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+          *ngIf="!manageable"></i>
+      </span>
+    </ng-template>
   </ng-template>
 </div>
 <ode-lightbox-confirm lightboxTitle="group.internal-communication-rule.change.confirm.title"
