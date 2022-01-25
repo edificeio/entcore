@@ -13,6 +13,7 @@ import {ServicesCardComponent} from './cards/services-card/services-card.compone
 import {ImportsExportsCardComponent} from './cards/imports-exports-card/imports-exports-card.component';
 import {QuickActionsCardComponent} from './cards/quick-actions-card/quick-actions-card.component';
 import {UserSearchCardComponent} from './cards/user-search-card/user-search-card.component';
+import { AdmlSearchCardComponent } from './cards/adml-search-card/adml-search-card.component';
 
 @NgModule({
     imports: [
@@ -28,7 +29,8 @@ import {UserSearchCardComponent} from './cards/user-search-card/user-search-card
         ServicesCardComponent,
         ImportsExportsCardComponent,
         QuickActionsCardComponent,
-        UserSearchCardComponent
+        UserSearchCardComponent,
+        AdmlSearchCardComponent
     ],
     providers: [
         StructureResolver
