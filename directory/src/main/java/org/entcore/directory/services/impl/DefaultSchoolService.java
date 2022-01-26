@@ -627,11 +627,12 @@ public class DefaultSchoolService implements SchoolService {
 				"AND NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) " +
 				"DELETE a";
 		builder.add(deleteExistingQuery, params);
-		final String duplicateQuery = "MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g1:"+groupType+")-[:AUTHORIZED]->(r:"+nodeType+"), " +
+		final String duplicateQuery = "MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g1:"+groupType+")-[a:AUTHORIZED]->(r:"+nodeType+"), " +
 				"(s2:Structure)<-[:DEPENDS]-(g2:"+groupType+") " +
 				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) " +
 				"AND s2.UAI IN {uais} AND g2.name ENDS WITH LAST(SPLIT(g1.name, '-')) AND g1.id <> g2.id " +
-				"MERGE (g2)-[:AUTHORIZED]->(r)";
+				"MERGE (g2)-[a2:AUTHORIZED]->(r)" +
+				"ON CREATE SET a2.mandatory = a.mandatory";
 		builder.add(duplicateQuery, params);
 	}
 
