@@ -1,8 +1,10 @@
 <div class="panel-header is-display-flex has-space-between">
   <div>
-                <span>
-                    {{ groupsStore.group.name }}
-                </span>
+    <div><s5l>{{ groupsStore.group.name }}</s5l></div>
+    <div class="members-count" *ngIf="groupsStore.group?.subType === 'BroadcastGroup'">
+        {{ groupsStore.group.users.length }}&nbsp;
+        <s5l [s5l-params]="{count: groupsStore.group.users.length||0}">members</s5l>
+    </div>
   </div>
   <div>
     <button type="button"
