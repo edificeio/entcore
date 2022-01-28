@@ -58,8 +58,9 @@ export class UsersService {
     }
 
     public async search(structureId: string, name: string): Promise<UserModel[]> {
-        if (!name) return []
-        let res: any = await this.http.get(`/directory/user/admin/list?structureId=${structureId}&includeSubStructures=true&name=${name}`)
+        if (!name) return [];
+        let term = name.replace(/[^-0-9a-zÀ-ÿ]/g, '');
+        let res: any = await this.http.get(`/directory/user/admin/list?structureId=${structureId}&includeSubStructures=true&name=${term}`)
         .toPromise();
         let result: UserModel[] = [];
         res.forEach(user => {
