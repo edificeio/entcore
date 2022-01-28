@@ -52,7 +52,6 @@ export class TreeUsersListComponent extends OdeComponent {
     openUserDetail(user) {
         this.usersStore.user = user;
         this.spinner.perform('portal-content', this.router.navigate([user.id, 'details'], {relativeTo: this.route}));
-        //this.spinner.perform('portal-content', this.router.navigate(['admin', user.structures[0].id, 'users', 'tree-list', user.id, 'details']));
     }
 
     openCompanionView(view) {
