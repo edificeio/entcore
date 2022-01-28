@@ -125,4 +125,10 @@
       background-color: $accent;
     }
   }
+  &.is-hidden {
+    display: inline-block !important;
+    margin-right: 4rem;
+    overflow: hidden;
+    width: 0;
+  }
 }

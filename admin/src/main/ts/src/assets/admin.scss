@@ -741,6 +741,7 @@ button.card-button {
 .card-layout {
   --min: 28rem;
   --gap: 1.5rem;
+  margin-bottom: 1.5rem;
   max-width: 1380px;
   display: grid;
   grid-gap: var(--gap);
