@@ -45,3 +45,9 @@ i.close {
     content: "\e866";
   }
 }
+
+.fa-open {
+  &::before {
+    content: "\f08e";
+  }
+}

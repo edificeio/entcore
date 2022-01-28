@@ -68,8 +68,15 @@
           <s5l>
             users.details.button.display.full
           </s5l>
-          <i class="fa fa-ban"></i>
+          <i class="fa fa-open"></i>
         </button>
+        <ode-lightbox [show]="showMultipleStructureLightbox">
+          <h2 class="lightbox-header"><i class="fa fa-open title-icon"></i><s5l>users.details.lightbox.title</s5l></h2>
+          <br>
+          <p *ngFor="let item of user.structures">
+            <a class="structure-link" (click)="goToUserDetails(item)">{{ item.name }}<i class="fa fa-arrow-right"></i></a>
+          </p>
+        </ode-lightbox>
       </div>
     </div>
   </div>
