@@ -349,6 +349,7 @@
   "users.details.button.comm.rules": "Règles de communication de l'utilisateur",
   "users.details.button.app.rights": "Droits applicatifs de l'utilisateur",
   "users.details.button.display.full": "Afficher dans son établissement",
+  "users.details.lightbox.title": "Sélectionner un établissement",
   "form.error.required": "Champ requis",
   "form.error.minlength": "{{requiredLength}} caractères minimum",
   "form.error.maxlength": "{{requiredLength}} caractères maximum",
