@@ -16,6 +16,7 @@ import { UsersStore } from '../users.store';
 @Component({
     selector: 'ode-simple-user-detail',
     templateUrl: './simple-user-details.component.html',
+    styleUrls: ['./simple-user-details.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
@@ -32,6 +33,7 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
 
     public showRemoveUserConfirmation = false;
     public showPersEducNatBlockingConfirmation = false;
+    public showMultipleStructureLightbox = false;
     forceDuplicates: boolean;
     details: UserDetailsModel;
     structure: StructureModel = this.usersStore.structure;
@@ -198,8 +200,15 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
     }
 
     displayFullUserDetails() {
-        this.spinner.perform('portal-content', this.router.navigate(['admin', this.user.structures[0].id, 'users', 'list', this.user.id, 'details']));
+        if (this.user.structures.length > 1) {
+            this.showMultipleStructureLightbox = true;
+        } else {
+            this.spinner.perform('portal-content', this.router.navigate(['admin', this.user.structures[0].id, 'users', 'list', this.user.id, 'details']));
+        }
+    }
 
+    goToUserDetails(structure: StructureModel) {
+        this.spinner.perform('portal-content', this.router.navigate(['admin', structure.id, 'users', 'list', this.user.id, 'details']));
     }
 
     toggleUserBlock(withLightbox: boolean) {
