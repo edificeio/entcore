@@ -9,6 +9,7 @@ import { UsersStore } from '../users.store';
 import { routing } from '../../core/services/routing.service';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { BundlesService } from 'ngx-ode-sijil';
+import { SpinnerService } from 'ngx-ode-ui';
 
 @Component({
     selector: 'ode-tree-user-list',
@@ -37,6 +38,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
         public usersService: UsersService,
         public userListService: UserListService,
         public listFiltersService: UserlistFiltersService,
+        public spinner: SpinnerService,
         injector: Injector) {
             super(injector);
         }
@@ -91,10 +93,12 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
     }
 
     search(): void {
-        this.usersService.search(this.structure.id, this.searchTerm).then(data => {
-            this.userlist = data;
-            this.refreshListCount(data);
-            this.changeDetector.markForCheck();
-        });
+        this.spinner.perform('portal-content',
+            this.usersService.search(this.structure.id, this.searchTerm).then(data => {
+                this.userlist = data;
+                this.refreshListCount(data);
+                this.changeDetector.markForCheck();
+            })
+        );
     }
 }
