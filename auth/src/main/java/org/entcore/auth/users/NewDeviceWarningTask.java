@@ -322,8 +322,8 @@ public class NewDeviceWarningTask implements Handler<Long>
     {
         JsonObject params = new JsonObject()
             .put("displayName", user.displayName)
-            .put("device", c.device.deviceType)
-            .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC))
+            .put("device", c.device.toString())
+            .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
             .put("ip", c.ip);
 		sender.sendEmail(
             new JsonHttpServerRequest(new JsonObject()),
@@ -415,6 +415,16 @@ public class NewDeviceWarningTask implements Handler<Long>
             this.clientType = clientType;
             this.clientName = clientName;
             this.clientVersion = clientVersion;
+        }
+
+        @Override
+        public String toString()
+        {
+            String deviceStr = this.deviceBrand != null ? (this.deviceBrand + (this.deviceModel != null ? " " + this.deviceModel : "")) : "Appareil inconnu";
+            String osStr = this.osName != null ? ("(" + this.osName + " " + this.osVersion + ")") : "OS inconnu";
+            String clientStr = this.clientName != null ? (this.clientName + (this.clientVersion != null ? " " + this.clientVersion : "") + " (" + this.clientType + ")") : "Client inconnu";
+
+            return (deviceStr + " " + osStr + " " + clientStr).replaceAll("null", "");
         }
 
         private boolean _cmp(String a, String b)
