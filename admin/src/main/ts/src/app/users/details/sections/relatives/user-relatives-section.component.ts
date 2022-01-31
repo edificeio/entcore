@@ -37,6 +37,8 @@ export class UserRelativesSectionComponent extends AbstractSection implements On
     }
 
     private updateLightboxRelatives() {
+        if(this.userRelatives == null)
+            this.userRelatives = [];
         this.lightboxRelatives = this.structure.users.data.
             filter(u => u.type == 'Relative' && !u.deleteDate && !this.userRelatives.find(p => p.id == u.id));
     }
