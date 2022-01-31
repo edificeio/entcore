@@ -15,6 +15,7 @@ export class GroupModel extends Model<GroupModel> {
     displayName?: string;
     type?: GroupType;
     subType?: string;
+    labels?: Array<string>;
     classes?: { id: string, name: string }[];
     structures?: { id: string, name: string }[];
     filter?: string;

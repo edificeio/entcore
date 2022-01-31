@@ -22,6 +22,7 @@ import { GroupInputFiltersComponent } from "./details/manage-users/input/group-i
 import { GroupOutputUsersComponent } from "./details/manage-users/output/group-output-users/group-output-users.component";
 import { GroupUsersListComponent } from "./details/users-list/group-users-list.component";
 import { GroupsTypeViewComponent } from "./type-view/groups-type-view.component";
+import { GroupAutolinkComponent } from "./details/group-details/autolink/group-autolink.component";
 import { GroupsService } from "./groups.service";
 import { CommunicationModule } from "../communication/communication.module";
 import { SmartGroupCommunicationComponent } from "./communication/smart-group-communication/smart-group-communication.component";
@@ -49,6 +50,7 @@ import { GroupInfoComponent } from "./info/group-info.component";
     GroupsTypeViewComponent,
     GroupInfoComponent,
     SmartGroupCommunicationComponent,
+    GroupAutolinkComponent
   ],
   providers: [
     GroupsResolver,
