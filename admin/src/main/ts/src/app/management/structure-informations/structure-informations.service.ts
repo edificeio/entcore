@@ -27,11 +27,6 @@ export class StructureInformationsService
     return this.httpClient.put(`/directory/structure/${structureId}/resetName`, null);
   }
 
-  detachParent(structureId: string, parentId: string): Observable<any>
-  {
-    return this.httpClient.delete(`/directory/structure/${structureId}/parent/${parentId}`)
-  }
-
   getMetrics(structureId: string): Observable<any>
   {
     return this.httpClient.get(`/directory/structure/${structureId}/metrics`);
