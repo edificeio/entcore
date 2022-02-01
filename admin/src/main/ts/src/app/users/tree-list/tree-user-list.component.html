@@ -1,25 +1,18 @@
-
-<form (ngSubmit)="search()" class="search-input">
-   <input name="searchTerm" type="search" [(ngModel)]="searchTerm">
-   <button class="search-button">
-      <i class="fa fa-search is-size-4 search-icon"></i>
-   </button>
-</form>
-
 <ode-list
    [model]="userlist"
    [filters]="listFiltersService.getFormattedFilters()"
-   [inputFilter]="userListService.filterByInput"
+   [inputFilter]="inputFilter"
    [sort]="userListService.sorts"
    searchPlaceholder="search.user"
    noResultsLabel="list.results.no.users"
    [isSelected]="isSelected"
    [limit]="userListService.limit"
-   (inputChange)="userListService.inputFilter = $event"
+   [onSearchSubmit]="search"
+   (inputChange)="searchTerm = $event"
    (onSelect)="selectedUser = $event; onselect.emit($event)"
    (scrolledDown)="userListService.addPageDown()"
    (listChange)="refreshListCount($event)"
-   [searchInput]="false">
+   [searchInput]="true">
    <div toolbar class="user-toolbar">
       <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
    </div>

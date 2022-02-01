@@ -1,0 +1,64 @@
+<ode-panel-section
+  section-title="management.structure.parent.attachment"
+  [folded]="false"
+>
+  <div class="structure-attachment-content">
+    <div>
+      <ul class="actions-list">
+        <li *ngFor="let parent of currentStructure.parents">
+          <span>{{ parent.name }}</span>
+          <i
+            class="fa fa-trash action"
+            (click)="detachParent(parent.id)"
+            *ngIf="isADMC"
+            [title]="
+              'management.structure.informations.parents.detach' | translate
+            "
+          >
+          </i>
+        </li>
+      </ul>
+    </div>
+
+    <button (click)="showLightBox()">
+      <i class="fa fa-plus"></i>
+      <s5l>management.structure.parent.lightbox</s5l>
+    </button>
+
+    <ode-lightbox
+      class="inner-list structure-attachment-list"
+      [show]="showAddStructuresLightBox"
+      (onClose)="closeLightBox()"
+    >
+      <div class="structure-attachment-container">
+        <h2>
+          <span><s5l>management.structure.parent.title</s5l></span>
+        </h2>
+        <ode-list
+          [model]="structures"
+          [filters]="filterByStructure"
+          [inputFilter]="inputFilter"
+          (inputChange)="searchTerm = $event"
+          [isSelected]="isSelected"
+          [searchInput]="true"
+          [onSearchSubmit]="onSubmit"
+          (onSelect)="selectStructure($event)"
+          noResultsLabel="management.structure.parent.result"
+          searchPlaceholder="management.structure.parent.search"
+        >
+          <ng-template let-item>
+            <div>{{ item.name }}</div>
+          </ng-template>
+        </ode-list>
+        <div class="structure-attachment-group">
+          <button (click)="cancelAttach()">
+            <s5l>management.structure.parent.cancel</s5l>
+          </button>
+          <button (click)="attachParent()" class="confirm">
+            <s5l>management.structure.parent.confirm</s5l>
+          </button>
+        </div>
+      </div>
+    </ode-lightbox>
+  </div>
+</ode-panel-section>
