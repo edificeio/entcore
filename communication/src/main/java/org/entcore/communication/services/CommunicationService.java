@@ -40,7 +40,30 @@ public interface CommunicationService {
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup", "DirectionGroup");
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
-	enum Direction { INCOMING, OUTGOING, BOTH, NONE }
+	enum Direction { 
+		INCOMING 	(0x01),
+		OUTGOING 	(0x10), 
+		BOTH 		(0x11),
+		NONE 		(0x00);
+
+		private Direction(int bitmask) {
+			this.bitmask = bitmask;
+		}
+		public int bitmask;
+		static public Direction fromString(String dbDirection) {
+			if ("".equals(dbDirection) || dbDirection == null) {
+				return Direction.NONE;
+			}
+			return Direction.valueOf(dbDirection.toUpperCase());
+		}
+		static public Direction fromBitmask(int bitmask) {
+			final Direction[] values = {INCOMING, OUTGOING, BOTH};
+			for( Direction value : values ) {
+				if( value.bitmask == bitmask ) return value;
+			}
+			return NONE;
+		}
+	}
 
 	void addLink(String startGroupId, String endGroupId,
 			Handler<Either<String, JsonObject>> handler);
