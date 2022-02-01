@@ -39,6 +39,7 @@ import {ZimbraService} from './zimbra/zimbra.service';
 import {CalendarService} from './calendar/calendar.service';
 import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
+import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
 
 @NgModule({
     imports: [
@@ -83,7 +84,9 @@ import {SubjectsGuardService} from './subjects/subjects-guard.service';
         SubjectsComponent,
         SubjectCreate,
         SubjectDetails,
-        CalendarComponent
+        CalendarComponent,
+        StructureAttachmentComponent
+
     ],
     exports: [
         RouterModule
