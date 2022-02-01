@@ -1,7 +1,7 @@
 <ode-list
    [model]="userlist"
    [filters]="listFiltersService.getFormattedFilters()"
-   [inputFilter]="inputFilter"
+   [inputFilter]="userListService.filterByInput"
    [sort]="userListService.sorts"
    searchPlaceholder="search.user"
    noResultsLabel="list.results.no.users"
