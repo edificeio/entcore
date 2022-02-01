@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from 
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { OdeComponent } from 'ngx-ode-core';
+import { routing } from '../core/services/routing.service';
+import { Data } from '@angular/router';
+import { StructureModel } from '../core/store/models/structure.model';
 
 @Component({
     selector: 'ode-users-root',
@@ -12,8 +15,8 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        {label: 'users.tabs.mainList', view: 'list'},
-        {label: 'users.tabs.treeList', view: 'tree-list'}
+        {label: 'users.tabs.mainList', view: 'list', active: 'list'},
+        {label: 'users.tabs.treeList', view: 'tree-list', active: 'tree-list'}
     ];
 
     constructor(
@@ -23,12 +26,27 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
         this.admcSpecific();
     }
 
+    structure: StructureModel;
+
+    async ngOnInit() {
+        this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
+            if (data.structure) {
+                this.structure = data.structure;
+                this.changeDetector.markForCheck();
+            }
+        }));
+    }
+
     async admcSpecific() {
         const session: Session = await SessionModel.getSession();
         if(session.isADMC() == true)
         {
-            this.tabs.splice(1, 0, {label: 'users.tabs.removedList', view: 'relink'});
+            this.tabs.splice(1, 0, {label: 'users.tabs.removedList', view: 'relink', active: 'relink'});
         }
+    }
+
+    isActive(path: string): boolean {
+        return this.router.isActive('/admin/' + this.structure.id + '/users/' + path, false);
     }
 }
 
