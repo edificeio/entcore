@@ -7,7 +7,8 @@
 <div class="tabs">
   <button class="tab" *ngFor="let tab of tabs"
           [routerLink]="tab.view"
-          routerLinkActive="active">
+          [ngClass]="{'active' : isActive(tab.active)}"
+          >
     {{ tab.label | translate }}
   </button>
 </div>
