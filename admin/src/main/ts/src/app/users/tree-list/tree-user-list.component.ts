@@ -94,7 +94,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     search(): void {
         this.spinner.perform('portal-content',
-            this.usersService.search(this.structure.id, this.searchTerm).then(data => {
+            this.usersService.search(this.searchTerm, this.structure.id).then(data => {
                 this.userlist = data;
                 this.refreshListCount(data);
                 this.changeDetector.markForCheck();
