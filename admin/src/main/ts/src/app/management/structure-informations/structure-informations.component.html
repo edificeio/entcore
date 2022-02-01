@@ -4,31 +4,60 @@
   </h2>
   <form #updateForm="ngForm" (ngSubmit)="updateStructure()">
     <ode-form-field label="management.structure.informations.name">
-      <input type="text" [(ngModel)]="structName" name="name" required pattern=".*\S+.*"
-        (blur)="structName = structName.trim()" #nameInput="ngModel">
+      <input
+        type="text"
+        [(ngModel)]="structName"
+        name="name"
+        required
+        pattern=".*\S+.*"
+        (blur)="structName = structName.trim()"
+        #nameInput="ngModel"
+      />
       <ode-form-errors [control]="nameInput"></ode-form-errors>
-      <button type="button" class="cancel" (click)="resetManualName()" *ngIf="structure.manualName">
+      <button
+        type="button"
+        class="cancel"
+        (click)="resetManualName()"
+        *ngIf="structure.manualName"
+      >
         <s5l>management.structure.informations.name.reset</s5l>
       </button>
       <i class="fa is-info">
-        <s5l class="info-label">management.structure.informations.help.label</s5l>
+        <s5l class="info-label"
+          >management.structure.informations.help.label</s5l
+        >
       </i>
-      <ode-message-sticker type="info" [messages]="['management.structure.informations.name.help']">
+      <ode-message-sticker
+        type="info"
+        [messages]="['management.structure.informations.name.help']"
+      >
       </ode-message-sticker>
     </ode-form-field>
 
     <ode-form-field label="management.structure.informations.id">
-      <span>{{structure.id}}</span>
+      <span>{{ structure.id }}</span>
     </ode-form-field>
 
     <!-- For ADMCs -->
     <div *ngIf="isADMC == true">
       <ode-form-field label="management.structure.informations.UAI">
-        <input type="text" [(ngModel)]="structUAI" name="UAI" required pattern="[0-9]{7}[A-Z]" #UAIInput="ngModel">
+        <input
+          type="text"
+          [(ngModel)]="structUAI"
+          name="UAI"
+          required
+          pattern="[0-9]{7}[A-Z]"
+          #UAIInput="ngModel"
+        />
       </ode-form-field>
       <ode-form-errors [control]="UAIInput"></ode-form-errors>
       <ode-form-field label="management.structure.informations.hasApp">
-        <input type="checkbox" [(ngModel)]="structHasApp" name="hasApp" #hasAppInput="ngModel">
+        <input
+          type="checkbox"
+          [(ngModel)]="structHasApp"
+          name="hasApp"
+          #hasAppInput="ngModel"
+        />
       </ode-form-field>
       <ode-form-errors [control]="hasAppInput"></ode-form-errors>
     </div>
@@ -36,46 +65,63 @@
     <!-- For ADMLs -->
     <div *ngIf="isADMC != true">
       <ode-form-field label="management.structure.informations.UAI">
-        <span>{{structure.UAI}}</span>
+        <span>{{ structure.UAI }}</span>
       </ode-form-field>
       <ode-form-field label="management.structure.informations.hasApp">
-        <s5l *ngIf="structure.hasApp == true">management.structure.informations.hasApp.true</s5l>
-        <s5l *ngIf="structure.hasApp == false">management.structure.informations.hasApp.false</s5l>
+        <s5l *ngIf="structure.hasApp == true"
+          >management.structure.informations.hasApp.true</s5l
+        >
+        <s5l *ngIf="structure.hasApp == false"
+          >management.structure.informations.hasApp.false</s5l
+        >
       </ode-form-field>
     </div>
 
     <ode-form-field label="management.structure.informations.sourceType">
       <span>
-        <s5l *ngIf="structure.isSourceAutomatic">management.structure.informations.sourceType.automatic</s5l>
-        <s5l *ngIf="!structure.isSourceAutomatic">management.structure.informations.sourceType.manual</s5l>
-        <ode-message-sticker *ngIf="structure.isSourceAutomatic"
-          gravity="right" type="info" [messages]="['management.structure.informations.sourceType.automatic.help']">
+        <s5l *ngIf="structure.isSourceAutomatic"
+          >management.structure.informations.sourceType.automatic</s5l
+        >
+        <s5l *ngIf="!structure.isSourceAutomatic"
+          >management.structure.informations.sourceType.manual</s5l
+        >
+        <ode-message-sticker
+          *ngIf="structure.isSourceAutomatic"
+          gravity="right"
+          type="info"
+          [messages]="[
+            'management.structure.informations.sourceType.automatic.help'
+          ]"
+        >
         </ode-message-sticker>
-        <ode-message-sticker *ngIf="!structure.isSourceAutomatic"
-          gravity="right" type="info" [messages]="['management.structure.informations.sourceType.manual.help']">
+        <ode-message-sticker
+          *ngIf="!structure.isSourceAutomatic"
+          gravity="right"
+          type="info"
+          [messages]="[
+            'management.structure.informations.sourceType.manual.help'
+          ]"
+        >
         </ode-message-sticker>
       </span>
     </ode-form-field>
 
-    <ode-form-field label="management.structure.informations.parents"
-      *ngIf="structure.parents != null && structure.parents.length > 0">
-      <ul class="actions-list">
-        <li *ngFor="let parent of structure.parents">
-          <span>{{ parent.name }}</span>
-          <i class="fa fa-times action" (click)="detachParent(parent.id)" *ngIf="isADMC == true"
-            [title]="'management.structure.informations.parents.detach' | translate">
-          </i>
-        </li>
-      </ul>
-    </ode-form-field>
-
     <div class="action">
-      <button class="create confirm" [disabled]="updateForm.pristine || updateForm.invalid">
+      <button
+        class="create confirm"
+        [disabled]="updateForm.pristine || updateForm.invalid"
+      >
         <s5l>management.structure.informations.update</s5l>
       </button>
     </div>
   </form>
+
+  <div *ngIf="isADMC" class="structure-attachment">
+    <ode-structure-attachment [currentStructure]="structure" [isADMC]="isADMC">
+    </ode-structure-attachment>
+  </div>
 </div>
+
 <div class="container has-shadow">
   <h2>
     <s5l>management.structure.informations.stats</s5l>
@@ -83,13 +129,13 @@
   <div class="profile-metrics">
     <div class="profile-column">
       <div class="profile-card">
-        <div class="profile-number">{{metrics.students.active}}</div>
+        <div class="profile-number">{{ metrics.students.active }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.students.active</s5l>
         </div>
       </div>
       <div class="profile-card">
-        <div class="profile-number">{{metrics.students.inactive}}</div>
+        <div class="profile-number">{{ metrics.students.inactive }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.students.inactive</s5l>
         </div>
@@ -97,13 +143,13 @@
     </div>
     <div class="profile-column">
       <div class="profile-card">
-        <div class="profile-number">{{metrics.relatives.active}}</div>
+        <div class="profile-number">{{ metrics.relatives.active }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.relatives.active</s5l>
         </div>
       </div>
       <div class="profile-card">
-        <div class="profile-number">{{metrics.relatives.inactive}}</div>
+        <div class="profile-number">{{ metrics.relatives.inactive }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.relatives.inactive</s5l>
         </div>
@@ -111,13 +157,13 @@
     </div>
     <div class="profile-column">
       <div class="profile-card">
-        <div class="profile-number">{{metrics.teachers.active}}</div>
+        <div class="profile-number">{{ metrics.teachers.active }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.teachers.active</s5l>
         </div>
       </div>
       <div class="profile-card">
-        <div class="profile-number">{{metrics.teachers.inactive}}</div>
+        <div class="profile-number">{{ metrics.teachers.inactive }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.teachers.inactive</s5l>
         </div>
@@ -125,13 +171,13 @@
     </div>
     <div class="profile-column">
       <div class="profile-card">
-        <div class="profile-number">{{metrics.personnels.active}}</div>
+        <div class="profile-number">{{ metrics.personnels.active }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.personnels.active</s5l>
         </div>
       </div>
       <div class="profile-card">
-        <div class="profile-number">{{metrics.personnels.inactive}}</div>
+        <div class="profile-number">{{ metrics.personnels.inactive }}</div>
         <div class="profile-label">
           <s5l>management.structure.informations.stats.personnels.inactive</s5l>
         </div>
@@ -147,40 +193,87 @@
     <div class="settings-bloc">
       <div>
         <h3>
-          <s5l>management.structure.informations.duplication.setting.select</s5l>
+          <s5l
+            >management.structure.informations.duplication.setting.select</s5l
+          >
         </h3>
-        <ode-form-field label="management.structure.informations.duplication.setting.applications">
-          <input type="checkbox" name="applications" [(ngModel)]="settings.applications" />
+        <ode-form-field
+          label="management.structure.informations.duplication.setting.applications"
+        >
+          <input
+            type="checkbox"
+            name="applications"
+            [(ngModel)]="settings.applications"
+          />
         </ode-form-field>
-        <ode-form-field label="management.structure.informations.duplication.setting.widgets">
-          <input type="checkbox" name="widgets" [(ngModel)]="settings.widgets" />
+        <ode-form-field
+          label="management.structure.informations.duplication.setting.widgets"
+        >
+          <input
+            type="checkbox"
+            name="widgets"
+            [(ngModel)]="settings.widgets"
+          />
         </ode-form-field>
-        <ode-form-field label="management.structure.informations.duplication.setting.distribution">
-          <input type="checkbox" name="distribution" [(ngModel)]="settings.distribution" />
+        <ode-form-field
+          label="management.structure.informations.duplication.setting.distribution"
+        >
+          <input
+            type="checkbox"
+            name="distribution"
+            [(ngModel)]="settings.distribution"
+          />
         </ode-form-field>
-        <ode-form-field label="management.structure.informations.duplication.setting.mobileapp">
-          <input type="checkbox" name="mobileapp" [(ngModel)]="settings.mobileapp" />
+        <ode-form-field
+          label="management.structure.informations.duplication.setting.mobileapp"
+        >
+          <input
+            type="checkbox"
+            name="mobileapp"
+            [(ngModel)]="settings.mobileapp"
+          />
         </ode-form-field>
-        <ode-form-field label="management.structure.informations.duplication.setting.education">
-          <input type="checkbox" name="education" [(ngModel)]="settings.education" />
+        <ode-form-field
+          label="management.structure.informations.duplication.setting.education"
+        >
+          <input
+            type="checkbox"
+            name="education"
+            [(ngModel)]="settings.education"
+          />
         </ode-form-field>
       </div>
       <div>
         <h3>
           <s5l>management.structure.informations.duplication.setting.uai</s5l>
-          <ode-message-sticker class="sticker" type="info" [messages]="['management.structure.informations.duplication.setting.uai.tooltip']">
+          <ode-message-sticker
+            class="sticker"
+            type="info"
+            [messages]="[
+              'management.structure.informations.duplication.setting.uai.tooltip'
+            ]"
+          >
           </ode-message-sticker>
         </h3>
         <textarea
-            name="uaiList"
-            [(ngModel)]="settings.uaiList"
-            [attr.placeholder]="'management.structure.informations.duplication.setting.uai.placeholder' | translate">
+          name="uaiList"
+          [(ngModel)]="settings.uaiList"
+          [attr.placeholder]="
+            'management.structure.informations.duplication.setting.uai.placeholder'
+              | translate
+          "
+        >
         </textarea>
       </div>
     </div>
     <div class="action">
-      <button class="create confirm" [disabled]="!settings.canDuplicateSettings()">
-        <s5l>management.structure.informations.duplication.setting.uai.button</s5l>
+      <button
+        class="create confirm"
+        [disabled]="!settings.canDuplicateSettings()"
+      >
+        <s5l
+          >management.structure.informations.duplication.setting.uai.button</s5l
+        >
       </button>
     </div>
   </form>
@@ -189,13 +282,14 @@
     [lightboxTitle]="settings.lightboxTitle"
     [disableConfirm]="!settings.lightboxCanValidate"
     (onCancel)="closeLightbox()"
-    (onConfirm)="launchDuplication()">
+    (onConfirm)="launchDuplication()"
+  >
     <p>
-      {{settings.lightboxMessage}}
+      {{ settings.lightboxMessage }}
     </p>
     <ul>
       <li *ngFor="let struc of settings.lightboxList">
-        {{struc}}
+        {{ struc }}
       </li>
     </ul>
   </ode-lightbox-confirm>

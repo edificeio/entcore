@@ -1,5 +1,4 @@
-.action
-{
+.action {
   display: flex;
   justify-content: flex-end;
 }
@@ -7,35 +6,30 @@
 input[type="checkbox"],
 button.cancel,
 ode-message-sticker,
-i
-{
+i {
   flex: none !important;
 }
 
-i.is-info
-{
+i.is-info {
   font: inherit;
   font-size: 10pt;
 }
 
-.actions-list > li
-{
+.actions-list > li {
   display: flex;
   align-items: center;
 }
 
-.profile-metrics
-{
+.profile-metrics {
   display: flex;
+  flex-wrap: wrap;
 
-  > .profile-column
-  {
+  > .profile-column {
     display: flex;
     flex-direction: column;
     flex: 1;
 
-    > .profile-card
-    {
+    > .profile-card {
       display: flex;
       flex-direction: column;
       text-align: center;
@@ -43,44 +37,41 @@ i.is-info
       margin: 8px 16px;
       padding: 12px;
 
-      > .profile-number
-      {
+      > .profile-number {
         font-size: 56;
         font-weight: bold;
       }
 
-      > .profile-label
-      {
+      > .profile-label {
         white-space: nowrap;
         margin-top: 4px;
       }
     }
   }
 }
-.settings
-{
-  > form > .settings-bloc
-  {
+.settings {
+  > form > .settings-bloc {
     display: flex;
     justify-content: space-between;
     height: 70%;
-    > div{
+    > div {
       width: 40%;
     }
-    .sticker
-    {
+    .sticker {
       float: right;
       font-size: 0.8cm;
     }
   }
-  textarea
-  {
+  textarea {
     resize: none;
     width: 100%;
     height: 75%;
   }
-  ode-lightbox-confirm ul
-  {
+  ode-lightbox-confirm ul {
     list-style: inside;
   }
+}
+
+.structure-attachment {
+  margin: 30px -30px 0;
 }

@@ -164,7 +164,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
     );
   }
 
-  detachParent(parentId: string): void
+  /* detachParent(parentId: string): void
   {
     this.infoService.detachParent(this.structure.id, parentId).subscribe(
       {
@@ -183,7 +183,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         }
       }
     );
-  }
+  } */
 
   duplicateSettings(): void
   {
