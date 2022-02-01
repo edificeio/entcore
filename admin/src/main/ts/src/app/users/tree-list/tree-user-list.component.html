@@ -7,7 +7,7 @@
    noResultsLabel="list.results.no.users"
    [isSelected]="isSelected"
    [limit]="userListService.limit"
-   [onSearchSubmit]="search"
+   [searchSubmit]="search"
    (inputChange)="searchTerm = $event"
    (onSelect)="selectedUser = $event; onselect.emit($event)"
    (scrolledDown)="userListService.addPageDown()"
