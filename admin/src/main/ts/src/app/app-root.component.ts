@@ -59,20 +59,22 @@ export class AppRootComponent extends OdeComponent {
             this.router.navigateByUrl(this.getNewPath(this.currentStructure.id));
         }
 
-        this.subscriptions.add(this.route.children[0].params.subscribe(params => {
-            if (params) {
-                const structureId = params.structureId;
-                if (structureId) {
-                    this.currentStructure = globalStore.structures.data.find(s => s.id === structureId);
-                    this.router.navigateByUrl(this.getNewPath(this.currentStructure.id));
-                }
-            }
-        }));
-
         this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             if (data && data.config) {
                 this.hideAdminV1Link = data.config['hide-adminv1-link'];
             }
+        }));
+
+        this.subscriptions.add(this.route.url.subscribe(url =>{
+            this.subscriptions.add(this.route.children[0].params.subscribe(params => {
+                if (params) {
+                    const structureId = params.structureId;
+                    if (structureId) {
+                        this.currentStructure = globalStore.structures.data.find(s => s.id === structureId);
+                        this.router.navigateByUrl(this.getNewPath(this.currentStructure.id));
+                    }
+                }
+            }));
         }));
 
         const session = await SessionModel.getSession();
