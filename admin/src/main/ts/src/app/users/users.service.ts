@@ -57,10 +57,11 @@ export class UsersService {
         );
     }
 
-    public async search(structureId: string, name: string): Promise<UserModel[]> {
+    public async search(name: string, structureId?: string): Promise<UserModel[]> {
         if (!name) return [];
         let term = name.replace(/[^-0-9a-zÀ-ÿ]/g, '');
-        let res: any = await this.http.get(`/directory/user/admin/list?structureId=${structureId}&includeSubStructures=true&name=${term}`)
+        let structureParam = structureId ? ("&structureId=" + structureId + "&includeSubStructures=true") : "";
+        let res: any = await this.http.get(`/directory/user/admin/list?name=${term}${structureParam}`)
         .toPromise();
         let result: UserModel[] = [];
         res.forEach(user => {
