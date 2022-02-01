@@ -38,18 +38,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.user.DefaultFunctions;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
-import org.entcore.communication.services.impl.DefaultCommunicationService;
 import org.entcore.communication.services.impl.XpCommunicationService;
 
 import java.util.List;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class CommunicationController extends BaseController {

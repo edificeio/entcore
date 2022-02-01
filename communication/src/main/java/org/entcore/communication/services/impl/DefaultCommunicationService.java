@@ -21,7 +21,9 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -763,71 +766,129 @@ public class DefaultCommunicationService implements CommunicationService {
     	neo4j.execute(query, params, validUniqueResultHandler(handler));
     }
 
+	/**
+	 * Get useful data of groups : id, name, filter, displayName, internalCommunicationRule (users), type, subType
+	 * @param groupIds An ordered list of group identifiers.
+	 * @return an array of Group data, in the same order as @param groupIds
+	 */
+	protected Future<JsonObject[]> getGroupInfos( String... groupIds ) {
+        final Promise<JsonObject[]> promise = Promise.promise();
+		String query = "UNWIND {groupIds} AS sortedId "
+			+ "WITH sortedId MATCH (g:Group {id: sortedId}) "
+			+ "WITH g, HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
+			+ "RETURN DISTINCT "
+			+ "g.id as id, "
+			+ "g.name as name, "
+			+ "g.filter as filter, "
+			+ "g.displayName as displayName, "
+			+ "g.users as internalCommunicationRule, "
+			+ "type, "
+			+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
+			+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
+			+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
+
+		JsonArray  groups = new JsonArray( Arrays.asList(groupIds) );
+		JsonObject params = new JsonObject().put("groupIds", groups);
+
+		neo4j.execute(query, params, validResultHandler(results -> {
+			if( results.isLeft() ) {
+				promise.fail( results.left().getValue() );
+			} else {
+				List rows = results.right().getValue().getList();
+				final JsonObject[] result = new JsonObject[ rows.size() ];
+				for( int idx=0; idx<rows.size(); idx++ )
+					result[idx] = (JsonObject) rows.get(idx);
+				promise.complete(result);
+			}
+		}));
+
+		return promise.future();
+	}
+
+	protected Direction computeDirectionForAddLinkCheck(JsonObject groupInfos, boolean isStartGroup) {
+		final Direction direction = Direction.fromString(groupInfos.getString("internalCommunicationRule"));
+
+		if( isStartGroup ) {
+			// Starting group of a new link will require the INCOMING communication rule.
+			return Direction.fromBitmask( direction.bitmask | Direction.INCOMING.bitmask );
+		} else {
+			// Ending group of a new link will require the OUTGOING communication rule.
+			// EXCEPT broadcast lists (previously knwown as "automatic manual groups")
+			// Broadcast lists must keep a NONE rule because no user should see members of those lists (too big !)
+			if( groupInfos.getString("type", "").equals("ManualGroup") 
+				&& groupInfos.getString("subType", "").equals("BroadcastGroup") ) {
+				// Broadcast lists
+				return Direction.NONE;
+			} else {
+				return Direction.fromBitmask( direction.bitmask | Direction.OUTGOING.bitmask );
+			}
+		}
+	}
+
+	protected Future<String> computeWarningMessageForAddLinkCheck( 
+			UserInfos userInfos, 
+			JsonObject startInfos, Direction toStartDirection, 
+			JsonObject endInfos, Direction toEndDirection
+		) {
+		final Direction fromStartDirection = Direction.fromString( startInfos.getString("internalCommunicationRule") );
+		final Direction fromEndDirection   = Direction.fromString( endInfos.getString("internalCommunicationRule") );
+
+		// Check if any rule was added to the start group
+		Direction addedStartRule = Direction.fromBitmask( toStartDirection.bitmask & ~fromStartDirection.bitmask );
+		// Check if any rule was added to the end group
+		Direction addedEndRule = Direction.fromBitmask( toEndDirection.bitmask & ~fromEndDirection.bitmask );
+
+		// Check if we are trying to make members of a broadcast list visibles by another group.
+		if( !toEndDirection.equals(Direction.NONE) && "BroadcastGroup".equals(endInfos.getString("subType","")) ) {
+			// This is forbidden.
+			return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+		}
+		
+		String warningMessage = null;
+		if (addedStartRule.equals(Direction.INCOMING)) {
+			// Check if the user can do this.
+			if( isImpossibleToChangeDirectionGroupForAddLink(
+					startInfos.getString("filter",""), startInfos.getString("subType",""), userInfos
+				)) {
+				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+			}
+			warningMessage = CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
+		}
+
+		if (addedEndRule.equals(Direction.OUTGOING)) {
+			// Check if the user can do this.
+			if( isImpossibleToChangeDirectionGroupForAddLink(
+					endInfos.getString("filter",""), endInfos.getString("subType",""), userInfos
+				)) {
+				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+			}
+			warningMessage = CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE;
+		}
+
+		if (addedStartRule.equals(Direction.INCOMING) && addedEndRule.equals(Direction.OUTGOING)) {
+			// This was previously checked, so just adapt the warning message.
+			warningMessage = CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
+		}
+
+		return Future.succeededFuture( warningMessage );
+	}
+
     @Override
 	public void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler) {
-		this.getDirections(startGroupId, endGroupId, getDirectionsRes -> {
-			if (getDirectionsRes.isLeft()) {
-				handler.handle(getDirectionsRes);
-			} else {
-				String warningMessage = this.computeWarningMessageForAddLinkCheck(
-						this.formatDirection(getDirectionsRes.right().getValue().getString("startDirection"))
-						, this.formatDirection(getDirectionsRes.right().getValue().getString("endDirection")));
-
-				if (CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
-					this.getGroupFilterAndSubType(startGroupId, res -> {
-						if (res.isLeft()) {
-							handler.handle(res);
-						} else {
-							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
-									, res.right().getValue().getString("subType"), userInfos)) {
-								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
-							} else {
-								handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
-							}
-						}
-					});
-				} else if (CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
-					this.getGroupFilterAndSubType(endGroupId, res -> {
-						if (res.isLeft()) {
-							handler.handle(res);
-						} else {
-							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
-									, res.right().getValue().getString("subType"), userInfos)) {
-								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
-							} else {
-								handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
-							}
-						}
-					});
-				} else if (CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
-					this.getGroupFilterAndSubType(startGroupId, res -> {
-						if (res.isLeft()) {
-							handler.handle(res);
-						} else {
-							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
-									, res.right().getValue().getString("subType"), userInfos)) {
-								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
-							} else {
-								this.getGroupFilterAndSubType(endGroupId, e -> {
-									if (e.isLeft()) {
-										handler.handle(e);
-									} else {
-										if (this.isImpossibleToChangeDirectionGroupForAddLink(e.right().getValue().getString("filter")
-												, e.right().getValue().getString("subType"), userInfos)) {
-											handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
-										} else {
-											handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
-										}
-									}
-								});
-							}
-						}
-					});
-				} else {
-					handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
-				}
-			}
-		});
+		// 1. Get group info (Direction, Type and Subtype)
+		getGroupInfos(startGroupId, endGroupId)
+		// 2. Compute next directions
+		// 3. Check for impossible direction changes
+		.compose( groupsInfos -> computeWarningMessageForAddLinkCheck(
+			userInfos, 
+			groupsInfos[0],
+			computeDirectionForAddLinkCheck(groupsInfos[0], true),
+			groupsInfos[1],
+			computeDirectionForAddLinkCheck(groupsInfos[1], false)
+		))
+		// 4. Compute warning message
+		.onSuccess( msg -> handler.handle(new Either.Right<>(new JsonObject().put("warning", msg))) )
+		.onFailure( err -> handler.handle(new Either.Left<String,JsonObject>(err.getMessage())) );
 	}
 
 	private CompletableFuture<JsonObject> getRelationsOfGroup(String groupId) {
@@ -915,29 +976,48 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-		this.getDirections(startGroupId, endGroupId, res -> {
-			if (res.isLeft()) {
-				handler.handle(res);
+		// 1. Get group info (Direction, Type and Subtype)
+		getGroupInfos(startGroupId, endGroupId)
+		// 2. Compute next directions
+		// 3. Apply direction changes
+		.compose( groupsInfos -> {
+			final Direction fromStartDirection = Direction.fromString( groupsInfos[0].getString("internalCommunicationRule") );
+			final Direction fromEndDirection   = Direction.fromString( groupsInfos[1].getString("internalCommunicationRule") );
+			final Direction toStartDirection = computeDirectionForAddLinkCheck(groupsInfos[0], true);
+			final Direction toEndDirection   = computeDirectionForAddLinkCheck(groupsInfos[1], false);
+	
+			// Check if any rule was added to the start group
+			Direction addedStartRule = Direction.fromBitmask( toStartDirection.bitmask & ~fromStartDirection.bitmask );
+			// Check if any rule was added to the end group
+			Direction addedEndRule = Direction.fromBitmask( toEndDirection.bitmask & ~fromEndDirection.bitmask );
+	
+			if (addedStartRule.equals(Direction.NONE) && addedEndRule.equals(Direction.NONE) ) {
+				return Future.succeededFuture( new JsonObject().put("ok", "no direction to change") );
 			} else {
-				Map<String, Direction> newDirection = this.computeNewDirectionAfterAddingLink(startGroupId
-						, this.formatDirection(res.right().getValue().getString("startDirection"))
-						, endGroupId
-						, this.formatDirection(res.right().getValue().getString("endDirection")));
-				if (newDirection.isEmpty()) {
-					handler.handle(new Either.Right<String, JsonObject>(new JsonObject().put("ok", "no direction to change")));
-				} else {
-					this.addLinkWithUsers(newDirection, addLinkWithUsers -> {
-						if (addLinkWithUsers.isLeft()) {
-							handler.handle(addLinkWithUsers);
-						} else {
-							JsonObject response = new JsonObject();
-							newDirection.forEach((groupId, direction) -> response.put(groupId, direction));
-							handler.handle(new Either.Right<String, JsonObject>(response));
-						}
-					});
+				final Map<String, Direction> newDirection = new HashMap<>();
+				if( !addedStartRule.equals(Direction.NONE) ) {
+					newDirection.put(startGroupId, toStartDirection);
 				}
+				if( !addedStartRule.equals(Direction.NONE) ) {
+					newDirection.put(endGroupId, toEndDirection);
+				}
+				
+				final Promise<JsonObject> promise = Promise.promise();
+				this.addLinkWithUsers(newDirection, addLinkWithUsers -> {
+					if (addLinkWithUsers.isLeft()) {
+						promise.fail( addLinkWithUsers.left().getValue() );
+					} else {
+						JsonObject response = new JsonObject();
+						newDirection.forEach((groupId, direction) -> response.put(groupId, direction));
+						promise.complete( response );
+					}
+				});
+				return promise.future();
 			}
-		});
+		})
+		// 4. Compute warning message
+		.onSuccess( result -> handler.handle(new Either.Right<String, JsonObject>(result)) )
+		.onFailure( err -> handler.handle(new Either.Left<String,JsonObject>(err.getMessage())) );
 	}
 
     public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
@@ -971,47 +1051,6 @@ public class DefaultCommunicationService implements CommunicationService {
         return null;
     }
 
-    private CommunicationService.Direction formatDirection(String dbDirection) {
-		if ("".equals(dbDirection) || dbDirection == null) {
-			return CommunicationService.Direction.NONE;
-		}
-		return CommunicationService.Direction.valueOf(dbDirection.toUpperCase());
-	}
-
-	/**
-	 * Compute a warning message about the forecast (future) communication rules changes :
-	 * - adding INCOMING to the actual start direction,
-	 * - adding OUTGOING to the actual end direction,
-	 * as effectively done in computeNewDirectionAfterAddingLink() below.
-	 */
-	public String computeWarningMessageForAddLinkCheck(Direction startDirection, Direction endDirection) {
-		if (startDirection.equals(Direction.OUTGOING) && endDirection.equals(Direction.INCOMING)) {
-			return CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
-		}
-
-		if (startDirection.equals(Direction.OUTGOING)) {
-			return CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
-		}
-
-		if (endDirection.equals(Direction.INCOMING)) {
-			return CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE;
-		}
-
-		return null;
-	}
-
-	private void getGroupFilterAndSubType(String groupId, Handler<Either<String, JsonObject>> handler) {
-		String query = "MATCH (g:Group { id: {groupId} }) "
-				+ "RETURN g.filter as filter, "
-				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
-				+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
-				+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
-
-		JsonObject params = new JsonObject().put("groupId", groupId);
-
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
-	}
-
 	public boolean isImpossibleToChangeDirectionGroupForAddLink(String filter, String subType, UserInfos userInfos) {
 		if (userInfos.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN)) {
 			return false;
@@ -1026,23 +1065,5 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 
 		return false;
-	}
-
-	public Map<String, Direction> computeNewDirectionAfterAddingLink(String startGroupId, Direction startDirection, String endGroupId, Direction endDirection) {
-		Map<String, Direction> resDirectionMap = new HashMap<>();
-
-		if (startDirection.equals(Direction.NONE)) {
-			resDirectionMap.put(startGroupId, Direction.INCOMING);
-		} else if (startDirection.equals(Direction.OUTGOING)) {
-			resDirectionMap.put(startGroupId, Direction.BOTH);
-		}
-
-		if (endDirection.equals(Direction.NONE)) {
-			resDirectionMap.put(endGroupId, Direction.OUTGOING);
-		} else if (endDirection.equals(Direction.INCOMING)) {
-			resDirectionMap.put(endGroupId, Direction.BOTH);
-		}
-
-		return resDirectionMap;
 	}
 }
