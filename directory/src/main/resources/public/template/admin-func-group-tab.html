@@ -12,7 +12,7 @@
     <nav class="vertical cell search-container-left">
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
         <ul>
-            <li ng-repeat="group in structure.functionalGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; refreshGroupUsers(group); setShowWhat('showCurrentGroup')" style="padding-left: 0">
+            <li ng-repeat="group in structure.functionalGroups.all | filter: broadcastGroupsFilter | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; refreshGroupUsers(group); setShowWhat('showCurrentGroup')" style="padding-left: 0">
                 [[group.name]]
             </li>
         </ul>

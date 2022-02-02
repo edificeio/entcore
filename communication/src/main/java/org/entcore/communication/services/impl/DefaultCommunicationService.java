@@ -852,7 +852,9 @@ public class DefaultCommunicationService implements CommunicationService {
 				)) {
 				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
 			}
-			warningMessage = CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
+			if( toStartDirection.equals(Direction.BOTH) ) {
+				warningMessage = CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
+			}
 		}
 
 		if (addedEndRule.equals(Direction.OUTGOING)) {
@@ -862,12 +864,11 @@ public class DefaultCommunicationService implements CommunicationService {
 				)) {
 				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
 			}
-			warningMessage = CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE;
-		}
-
-		if (addedStartRule.equals(Direction.INCOMING) && addedEndRule.equals(Direction.OUTGOING)) {
-			// This was previously checked, so just adapt the warning message.
-			warningMessage = CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
+			if( toEndDirection.equals(Direction.BOTH) ) {
+				warningMessage = warningMessage==null 
+					? CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE 
+					: CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
+			}
 		}
 
 		return Future.succeededFuture( warningMessage );

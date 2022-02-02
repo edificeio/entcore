@@ -6,7 +6,7 @@
 
 <!-- Manual group automatic link -->
 <script type="text/ng-template" id="manual-group-autolink">
-    <div class="twelve cell" ng-init="autolinkGroup = createdGroup != null ? createdGroup : groupSelected;" ng-if="isCentralAdmin()">
+    <div class="twelve cell" ng-init="autolinkGroup = createdGroup != null ? createdGroup : groupSelected;" ng-if="false">
         <h3 class="twelve cell" style="text-align: center;"><i18n>directory.manualgroup.autolink.title</i18n></h3>
         <label class="twelve cell">
             <input type="checkbox" ng-model="autolinkGroup.activateAutolink"/>
@@ -96,7 +96,7 @@
 
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
         <ul>
-            <li ng-repeat="group in structure.manualGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
+            <li ng-repeat="group in structure.manualGroups.all | filter: broadcastGroupsFilter | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
                 [[group.name]]
             </li>
         </ul>
