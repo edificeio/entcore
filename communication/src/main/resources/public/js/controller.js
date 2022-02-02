@@ -66,6 +66,10 @@ function CommunicationAdminController($scope, $http){
 		group.getCommunication()
 	}
 
+	$scope.broadcastGroupsFilter  = function(group){
+		return !!group && group.subType!=='BroadcastGroup'; // Never display broadcast lists in console v1
+	}
+
 	$scope.filterGroupsFunction = function(input){
 		return function(group){
 			return !input ? true : lang.removeAccents($scope.groupTranslation(group.name).toLowerCase()).indexOf(lang.removeAccents(input.toLowerCase())) >= 0
