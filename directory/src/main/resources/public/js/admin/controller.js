@@ -903,6 +903,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		$scope.structures.sync($scope.refreshScope)
 	};
 
+	$scope.broadcastGroupsFilter  = function(group){
+		return !!group && group.subType!=='BroadcastGroup'; // Never display broadcast lists in console v1
+	};
+
 	$scope.filterByName = function(userClass){
 		return lang.removeAccents(userClass.name).toLowerCase().indexOf(lang.removeAccents($scope.display.filterStructureClasses).toLowerCase()) !== -1;
 	};

@@ -121,3 +121,6 @@
 .group-card__actions-on-self.group-card__actions-on-self--cannot-communicate .group-card__switch.group-card__switch--clickable {
   color: indianred;
 }
+.group-card__broadcastGroup.group-card__switch-label {
+  opacity: .7;
+}
