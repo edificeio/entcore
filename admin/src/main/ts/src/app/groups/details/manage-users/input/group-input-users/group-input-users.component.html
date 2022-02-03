@@ -1,6 +1,26 @@
 <div class="filters is-display-flex">
-  <ode-mono-select [ngModel]="structure" (ngModelChange)="structureChange($event)" name="structure" [options]="structureOptions">
-  </ode-mono-select>
+  <!-- <ode-mono-select [ngModel]="structure" (ngModelChange)="structureChange($event)" name="structure" [options]="structureOptions">
+  </ode-mono-select> -->
+  <ode-dropdown
+      [name]="structure.name"
+      [isDropdownOpened]="isDropdownOpened"
+      (onDropdown)="onDropdown()"
+    >
+    <ode-list
+      *ngIf="isDropdownOpened"
+      [model]="structures"
+      [inputFilter]="filterByInput"
+      (onSelect)="structureChange($event)"
+      (inputChange)="structureFilter = $event"
+      (listChange)="storedElements = $event"
+      noResultsLabel="management.structure.parent.result"
+      searchPlaceholder="management.structure.parent.search"
+      >
+        <ng-template let-item>
+          <div>{{ item.name }}</div>
+        </ng-template>
+      </ode-list>
+    </ode-dropdown>
   <ode-group-input-filters-users [structure]="structure">
   </ode-group-input-filters-users>
 </div>

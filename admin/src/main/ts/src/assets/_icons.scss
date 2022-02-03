@@ -51,3 +51,9 @@ i.close {
     content: "\f08e";
   }
 }
+
+i.arrow-select {
+  &::before {
+    content: '\e841';
+  }
+}
