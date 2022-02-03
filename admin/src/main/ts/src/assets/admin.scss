@@ -179,10 +179,10 @@ input[type="search"] {
   &:focus {
       border-color: $accent;
   }
-  &::-webkit-input-placeholder{color:rgba(0,0,0,0.4);}
-  &::placeholder{color:rgba(0,0,0,0.4);}
-  &:-ms-input-placeholder{color:rgba(0,0,0,0.4);}
-  &::-moz-placeholder {color:rgba(0,0,0,0.4);}
+  &::-webkit-input-placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
+  &::placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
+  &:-ms-input-placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
+  &::-moz-placeholder {color:rgba(0,0,0,0.4); font-size: 14px;}
 }
 
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"], input[type="number"] {

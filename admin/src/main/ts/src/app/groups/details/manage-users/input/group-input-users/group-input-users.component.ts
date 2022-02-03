@@ -1,4 +1,4 @@
-import { Component, Injector, Input, OnDestroy, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Injector, Input, OnDestroy, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 import { OrderPipe, SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
@@ -9,7 +9,6 @@ import { UserModel } from 'src/app/core/store/models/user.model';
 import { DeleteFilter, UserlistFiltersService } from '../../../../../core/services/userlist.filters.service';
 import { GroupsStore } from '../../../../groups.store';
 
-
 @Component({
     selector: 'ode-group-input-users',
     templateUrl: './group-input-users.component.html',
@@ -17,6 +16,7 @@ import { GroupsStore } from '../../../../groups.store';
     providers: [UserListService]
 })
 export class GroupInputUsersComponent extends OdeComponent implements OnInit, OnDestroy, OnChanges {
+
     @Input() model: UserModel[] = [];
     @Output() selectUsers: EventEmitter<UserModel[]> = new EventEmitter();
 
@@ -33,6 +33,9 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
     structures: StructureModel[] = [];
 
     structureOptions: SelectOption<StructureModel>[] = [];
+    structureFilter: string = '';
+    isDropdownOpened: boolean = false;
+    show: boolean = false;
 
     constructor(private groupsStore: GroupsStore,
                 public userLS: UserListService,
@@ -53,6 +56,8 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
         this.structureOptions = this.orderPipe.transform(this.structures, '+name')
             .map(structure => ({value: structure, label: structure.name}));
 
+            console.log(this.structureOptions);
+            
         this.subscriptions.add(this.listFilters.$updateSubject.subscribe(() => {
             this.changeDetector.markForCheck();
         }));
@@ -103,6 +108,7 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
                         this.model = selectedStructure.users.data
                             .filter(u =>
                                 this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1);
+                        this.isDropdownOpened = false;
                         this.changeDetector.markForCheck();
                     })
                     .catch((err) => {
@@ -121,4 +127,17 @@ export class GroupInputUsersComponent extends OdeComponent implements OnInit, On
             this.changeDetector.markForCheck();
         }
     }
+
+    filterByInput = (structure: StructureModel): boolean => {
+        return !!this.structureFilter 
+            ? structure.name.toLowerCase().indexOf(this.structureFilter.toLowerCase()) >= 0 
+            : true;
+    }
+
+    onDropdown():void {
+        this.isDropdownOpened = !this.isDropdownOpened;
+        if (this.isDropdownOpened) this.structureFilter = '';
+        this.changeDetector.markForCheck();
+    }
 }
+
