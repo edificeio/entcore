@@ -63,6 +63,13 @@
                 </span>
   </ode-group-users-list>
 </div>
+
+<ode-group-autolink
+  [group]="groupsStore.group"
+  [structure]="groupsStore.structure"
+>
+</ode-group-autolink>
+
 <ode-lightbox-confirm *ngIf="groupsStore && groupsStore.group"
                   lightboxTitle="group.internal-communication-rule.change.confirm.title"
                   [show]="confirmationDisplayed"

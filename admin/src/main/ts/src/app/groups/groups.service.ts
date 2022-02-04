@@ -5,6 +5,13 @@ import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {GroupsStore} from './groups.store';
 
+export type GroupUpdatePayload = {
+    name?: string;
+    autolinkTargetAllStructs?: boolean;
+    autolinkTargetStructs?: Array<string>;
+    autolinkUsersFromGroups?: Array<string>;
+}
+
 @Injectable()
 export class GroupsService {
 
@@ -23,15 +30,21 @@ export class GroupsService {
         );
     }
 
-    public update(group: {id: string, name: string}): Observable<void> {
-        return this.httpClient.put<void>(`/directory/group/${group.id}`, {name: group.name})
+    public update(groupId: string, groupUpdatePayload: GroupUpdatePayload): Observable<void> {
+        return this.httpClient.put<void>(`/directory/group/${groupId}`, groupUpdatePayload)
         .pipe(
             tap(() => {
-                const sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === group.id);
+                const sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === groupId);
                 if (sGroup) {
-                    sGroup.name = group.name;
+                    sGroup.name = groupUpdatePayload.name;
+                    sGroup.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
+                    sGroup.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
+                    sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
                 }
-                this.groupsStore.group.name = group.name;
+                this.groupsStore.group.name = groupUpdatePayload.name;
+                this.groupsStore.group.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
+                this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
+                this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
             })
         );
     }

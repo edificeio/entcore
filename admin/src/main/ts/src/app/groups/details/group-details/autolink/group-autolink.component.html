@@ -1,0 +1,292 @@
+<ode-panel-section
+  *ngIf="group.subType === 'BroadcastGroup'"
+  section-title="group.details.broadcast.autoLink.mainSection.title"
+  [folded]="true"
+>
+  <form (ngSubmit)="onAutolinkSubmit()" #autoLinkForm="ngForm">
+    <!-- Autolink form submit button -->
+    <section class="is-display-flex has-flex-end">
+      <button type="submit">
+        <s5l>save</s5l>
+        <i class="fa fa-save"></i>
+      </button>
+    </section>
+
+    <!-- Structures Selection -->
+    <section
+      *ngIf="structure?.children && structure?.children?.length > 0"
+      class="is-display-flex has-direction-column"
+    >
+      <h2>
+        <s5l>group.details.broadcast.autoLink.structuresSection.title</s5l>
+      </h2>
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkStructures"
+          name="autolinkStructures"
+          value="autolinkSubStructures"
+          (click)="
+            showSubStructutresPickerButton = false;
+            autolinkSubStructureIds = [];
+            lightboxSubStructureIds = [];
+            this.checked = true
+          "
+          id="subStructures"
+        />
+        <label for="subStructures" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.structuresSection.includeSubStructuresLabel</s5l>
+        </label>
+      </div>
+
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkStructures"
+          name="autolinkStructures"
+          value="autolinkStructures"
+          (click)="showSubStructutresPickerButton = true; this.checked = true"
+          id="structuresSelect"
+        />
+        <label for="structuresSelect" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.structuresSection.pickStructuresLabel</s5l>
+        </label>
+      </div>
+      <!-- Substructures opening button -->
+      <div *ngIf="showSubStructutresPickerButton">
+        <button
+          (click)="openSubStructuresLightbox()"
+          type="button"
+          class="is-flex-none has-right-margin-10 has-left-margin-30"
+        >
+          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.select</s5l>
+        </button>
+        <span>
+          {{ lightboxSubStructureIds.length }}
+          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.selected</s5l>
+        </span>
+      </div>
+      <!-- Substructures lightbox -->
+      <ode-lightbox
+        [show]="showSubStructuresLightbox"
+        (onClose)="showSubStructuresLightbox = false"
+      >
+        <h2>
+          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresLightbox.title</s5l>
+        </h2>
+        <div class="has-vertical-margin-20" style="overflow: auto">
+          <ode-item-tree
+            [items]="getSubStructuresTreeItems()"
+            order="name"
+            display="name"
+            [checkboxMode]="true"
+            (onCheck)="addOrRemoveChild($event)"
+          >
+          </ode-item-tree>
+        </div>
+        <div>
+          <button
+            type="button"
+            class="is-pulled-right"
+            (click)="saveAndClose()"
+          >
+            <s5l>save</s5l>
+          </button>
+        </div>
+      </ode-lightbox>
+    </section>
+
+    <!-- Profiles Selection -->
+    <section>
+      <h2>
+        <s5l>group.details.broadcast.autoLink.profilesSection.title</s5l>
+      </h2>
+
+      <!-- Teacher -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          name="autolinkProfile"
+          value="Teacher"
+          id="autolinkTeachers"
+          (click)="
+            showTeachersSubSection = true;
+            showPersonnelSubSection = false;
+            this.checked = true;
+          "
+        />
+        <label for="autolinkTeachers" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers</s5l>
+        </label>
+      </div>
+
+      <div *ngIf="showTeachersSubSection" class="bordered-section">
+        <!-- Head Teacher -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="autolinkFormModel.autolinkTeachers"
+            name="autolinkTeachers"
+            value="autolinkHeadTeachers"
+            id="autolinkHeadTeachers"
+            (click)="
+              showDisciplinesPicker = false; 
+              this.checked = true;
+            "
+          />
+          <label for="autolinkHeadTeachers" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.headteachers</s5l>
+          </label>
+        </div>
+
+        <!-- Disciplines -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="autolinkFormModel.autolinkTeachers"
+            name="autolinkTeachers"
+            value="autolinkDisciplines"
+            id="autolinkDisciplines"
+            (click)="
+              showDisciplinesPicker = true; 
+              this.checked = true;
+            "
+          />
+          <label for="autolinkDisciplines" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.disciplines</s5l>
+          </label>
+        </div>
+        <div *ngIf="showDisciplinesPicker">
+          <ode-multi-combo
+            [comboModel]="autolinkFormModel.disciplines"
+            [(outputModel)]="autolinkFormModel.selectedDisciplines"
+            [title]="'disciplines.multi.combo.title' | translate"
+          >
+          </ode-multi-combo>
+          <div class="multi-combo-companion">
+            <div
+              *ngFor="let item of autolinkFormModel.selectedDisciplines"
+              (click)="unselectDiscipline(item)"
+            >
+              <s5l>{{ item }}</s5l>
+              <i class="fa fa-trash is-size-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Personnel -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          name="autolinkProfile"
+          value="Personnel"
+          id="autolinkPersonnel"
+          (click)="
+            showPersonnelSubSection = true;
+            showTeachersSubSection = false;
+            this.checked = true;
+          "
+        />
+        <label for="autolinkPersonnel" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.personnels</s5l>
+        </label>
+      </div>
+
+      <div *ngIf="showPersonnelSubSection" class="bordered-section">
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="autolinkFormModel.autolinkPersonnel"
+            name="autolinkPersonnel"
+            value="autolinkFunctions"
+            id="autolinkFunctions"
+            (click)="
+              showFunctionsPicker = true; 
+              this.checked = true
+            "
+          />
+          <label for="autolinkFunctions" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.functions</s5l>
+          </label>
+        </div>
+        <div *ngIf="showFunctionsPicker">
+          <ode-multi-combo
+            [comboModel]="autolinkFormModel.functions"
+            [(outputModel)]="autolinkFormModel.selectedFunctions"
+            [title]="'functionsgroup.multi.combo.title' | translate"
+          >
+          </ode-multi-combo>
+          <div class="multi-combo-companion">
+            <div
+              *ngFor="let item of autolinkFormModel.selectedFunctions"
+              (click)="unselectFunction(item)"
+            >
+              <s5l>{{ item }}</s5l>
+              <i class="fa fa-trash is-size-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          name="autolinkProfile"
+          value="Students"
+          id="autolinkStudents"
+          (click)="
+            showPersonnelSubSection = false;
+            showTeachersSubSection = false;
+            this.checked = true;
+          "
+        />
+        <label for="autolinkStudents" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.students</s5l>
+        </label>
+      </div>
+
+      <!-- Relatives -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          name="autolinkProfile"
+          value="Relatives"
+          id="autolinkRelatives"
+          (click)="
+            showPersonnelSubSection = false;
+            showTeachersSubSection = false;
+            this.checked = true;
+          "
+        />
+        <label for="autolinkRelatives" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.relatives</s5l>
+        </label>
+      </div>
+    </section>
+
+    <!-- Administrators Selection -->
+    <section>
+      <h2>
+        <s5l>group.details.broadcast.autoLink.adminSection.title</s5l>
+      </h2>
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="autolinkFormModel.autolinkAdml"
+          name="autolinkAdml"
+          value="true"
+          id="autolinkAdml"
+        />
+        <label for="autolinkAdml" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.adminSection.include.adml</s5l>
+        </label>
+      </div>
+    </section>
+  </form>
+</ode-panel-section>

@@ -2,7 +2,7 @@ import {GroupsService} from './groups.service';
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {GroupsStore} from './groups.store';
-import {generateMockGroupModel} from '../shared/utils';
+import {generateMockGroupModel} from '../utils/testing';
 import { StructureModel } from '../core/store/models/structure.model';
 import { GroupCollection } from '../core/store/collections/group.collection';
 import { GroupModel } from '../core/store/models/group.model';
@@ -50,7 +50,7 @@ describe('GroupsService', () => {
 
     describe('update', () => {
         it('should call PUT /directory/group/groupId1 when given group with id "groupId1" and update group name with "group1" in groupsStore.group and groupsStore.structure.groups', () => {
-            groupsService.update({id: 'groupId1', name: 'newName'}).subscribe();
+            groupsService.update('groupId1', {name: 'newName'}).subscribe();
             const request = httpTestingController.expectOne('/directory/group/groupId1');
             request.flush({});
             expect(request.request.method).toBe('PUT');
