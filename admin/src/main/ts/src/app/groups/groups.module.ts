@@ -28,6 +28,7 @@ import { CommunicationModule } from "../communication/communication.module";
 import { SmartGroupCommunicationComponent } from "./communication/smart-group-communication/smart-group-communication.component";
 import { globalStoreProvider } from "../core/store/global.store";
 import { GroupInfoComponent } from "./info/group-info.component";
+import { UsersService } from "../users/users.service";
 
 @NgModule({
   imports: [
@@ -60,6 +61,7 @@ import { GroupInfoComponent } from "./info/group-info.component";
     UserlistFiltersService,
     GroupNameService,
     GroupsService,
+    UsersService,
     globalStoreProvider,
   ],
   exports: [RouterModule],
