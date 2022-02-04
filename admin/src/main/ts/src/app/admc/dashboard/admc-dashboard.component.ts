@@ -4,7 +4,7 @@ import { OdeComponent } from "ngx-ode-core";
 @Component({
     selector: 'ode-admc-dashboard',
     template: `
-        <h1>
+        <h1 class="main-container">
             <i class="dashboard"></i><s5l>admc.home.title</s5l>
         </h1>
         <div class="card-layout"> 

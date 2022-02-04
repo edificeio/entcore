@@ -1,31 +1,8 @@
-<div class="filters is-display-flex">
-  <!-- <ode-mono-select [ngModel]="structure" (ngModelChange)="structureChange($event)" name="structure" [options]="structureOptions">
-  </ode-mono-select> -->
-  <ode-dropdown
-      [name]="structure.name"
-      [isDropdownOpened]="isDropdownOpened"
-      (onDropdown)="onDropdown()"
-    >
-    <ode-list
-      *ngIf="isDropdownOpened"
-      [model]="structures"
-      [inputFilter]="filterByInput"
-      (onSelect)="structureChange($event)"
-      (inputChange)="structureFilter = $event"
-      (listChange)="storedElements = $event"
-      noResultsLabel="management.structure.parent.result"
-      searchPlaceholder="management.structure.parent.search"
-      >
-        <ng-template let-item>
-          <div>{{ item.name }}</div>
-        </ng-template>
-      </ode-list>
-    </ode-dropdown>
-  <ode-group-input-filters-users [structure]="structure">
-  </ode-group-input-filters-users>
-</div>
+<strong class="title">
+  <s5l>search</s5l>
+</strong>
 
-<div class="flex-row-wrap">
+<div class="group-input-container flex-row-wrap">
   <ode-list
     [model]="model"
     [filters]="listFilters.getFormattedFilters(excludeDeletedUsers)"
@@ -35,42 +12,58 @@
     (inputChange)="userLS.inputFilter = $event"
     (onSelect)="selectUser($event)"
     (listChange)="storedElements = $event"
-    noResultsLabel="list.results.no.users">
+    searchPlaceholder="search.user"
+    noResultsLabel="list.results.no.users"
+  >
     <div toolbar class="user-toolbar">
-      <i class="fa" aria-hidden="true"
-         [ngClass]="{
-                            'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
-                            'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
-                            'selected': userLS.sortsMap.alphabetical.selected
-                        }"
-         [title]="'sort.alphabetical' | translate" position="top"
-         (click)="userLS.changeSorts('alphabetical')"></i>
+      <i
+        class="fa"
+        aria-hidden="true"
+        [ngClass]="{
+          'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
+          'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
+          selected: userLS.sortsMap.alphabetical.selected
+        }"
+        [title]="'sort.alphabetical' | translate"
+        position="top"
+        (click)="userLS.changeSorts('alphabetical')"
+      ></i>
 
-      <i class="fa" aria-hidden="true"
-         [ngClass]="{
-                            'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
-                            'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
-                            'selected': userLS.sortsMap.profile.selected
-                        }"
-         [title]="'sort.profile' | translate" position="top"
-         (click)="userLS.changeSorts('profile')"></i>
+      <i
+        class="fa"
+        aria-hidden="true"
+        [ngClass]="{
+          'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
+          'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
+          selected: userLS.sortsMap.profile.selected
+        }"
+        [title]="'sort.profile' | translate"
+        position="top"
+        (click)="userLS.changeSorts('profile')"
+      ></i>
 
-      <button class="select-all" (click)="selectAll()"
-              [title]="'select.all' | translate">
+      <button
+        class="select-all"
+        (click)="selectAll()"
+        [title]="'select.all' | translate"
+      >
         <s5l>select.all</s5l>
       </button>
 
-      <button class="deselect-all" (click)="deselectAll()"
-              [title]="'deselect.all' | translate">
+      <button
+        class="deselect-all"
+        (click)="deselectAll()"
+        [title]="'deselect.all' | translate"
+      >
         <s5l>deselect.all</s5l>
       </button>
     </div>
 
     <ng-template let-item>
-                    <span class="display-name">
-                        {{item?.lastName.toUpperCase()}} {{item?.firstName}}
-                    </span>
-      <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+      <span class="display-name">
+        {{ item?.lastName.toUpperCase() }} {{ item?.firstName }}
+      </span>
+      <i class="profile" [ngClass]="item.type">{{ item.type | translate }}</i>
     </ng-template>
   </ode-list>
 </div>
