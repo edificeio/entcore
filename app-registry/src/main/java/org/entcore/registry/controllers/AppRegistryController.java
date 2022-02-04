@@ -33,6 +33,7 @@ import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
@@ -529,6 +530,29 @@ public class AppRegistryController extends BaseController {
             }
         });
     }
+
+	@Get("/applications/:structureId/default-bookmarks")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void getDefaultBookmarks(final HttpServerRequest request){
+		final String structureId = request.params().get("structureId");
+		appRegistryService.getDefaultBookmarks(structureId, defaultResponseHandler(request));
+	}
+
+	@Put("/applications/:structureId/default-bookmarks")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
+	public void setDefaultBookmarks(final HttpServerRequest request){
+		final String structureId = request.params().get("structureId");
+		bodyToJson(request, body -> {
+			JsonArray apps = body.getJsonArray("apps");
+			if (structureId == null || structureId.trim().isEmpty() || apps == null || apps.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+			appRegistryService.setDefaultBookmarks(structureId, apps, defaultResponseHandler(request));
+		});
+	}
 
 	@BusAddress("wse.app.registry.applications")
 	public void applications(final Message<JsonObject> message) {
