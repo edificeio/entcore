@@ -89,4 +89,8 @@ public interface AppRegistryService {
 	void massUnauthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler);
 
 	void massAuthorization(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
+
+	void getDefaultBookmarks(final String structureId, Handler<Either<String, JsonObject>> handler);
+
+	void setDefaultBookmarks(final String structureId, JsonArray apps, Handler<Either<String, JsonObject>> handler);
 }
