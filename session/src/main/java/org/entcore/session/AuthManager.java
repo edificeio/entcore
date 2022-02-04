@@ -33,6 +33,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.utils.StringUtils;
 import org.vertx.java.busmods.BusModBase;
+import org.entcore.common.cache.CacheService;
+import io.vertx.core.AsyncResult;
+import org.entcore.common.redis.Redis;
 
 import java.util.*;
 
@@ -48,6 +51,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	protected MongoDb mongo;
 	protected Neo4j neo4j;
 	protected SessionStore sessionStore;
+	protected CacheService OAuthCacheService;
 	protected Boolean cluster;
 
 	public void start() {
@@ -64,6 +68,24 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 
 		sessionStore = new MapSessionStore(vertx, cluster, config);
+
+		try
+		{
+			Object oauthCacheConf = server.get("oauthCache");
+			if(oauthCacheConf != null)
+			{
+				JsonObject redisConfig = new JsonObject((String) server.get("redisConfig"));
+				if(new JsonObject((String)oauthCacheConf).getBoolean("enabled", false) == true)
+				{
+					Redis.getInstance().init(vertx, redisConfig);
+					this.OAuthCacheService = CacheService.create(vertx);
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			logger.error("Failed to create OAuthCacheService: " + e.getMessage());
+		}
 
 		final String address = getOptionalStringConfig("address", "wse.session");
 		eb.localConsumer(address, this);
@@ -246,11 +268,42 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						}
 					};
 
-					if(immediate)
-						mongo.delete(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, tokenHandler);
-					else
-						// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
-						mongo.update(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, setTTL, false, true, tokenHandler);
+					mongo.find(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> result)
+						{
+							if("ok".equals(result.body().getString("status")) == false)
+								handler.handle(new Either.Left<String, Void>(result.body().getString("message")));
+							else
+							{
+								JsonArray resArray = result.body().getJsonArray("results");
+
+								if(OAuthCacheService != null)
+								{
+									for(int i = resArray.size(); i-- > 0;)
+									{
+										String tokenKey = "AppOAuthResourceProvider:token:" + resArray.getJsonObject(i).getString("token");
+										OAuthCacheService.remove(tokenKey, new Handler<AsyncResult<Void>>()
+										{
+											@Override
+											public void handle(AsyncResult<Void> res)
+											{
+												if(res.succeeded() == false)
+													logger.error("[dropOAuth2Tokens] Failed to remove cached token " + tokenKey);
+											}
+										});
+									}
+								}
+
+								if(immediate)
+									mongo.delete(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, tokenHandler);
+								else
+									// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
+									mongo.update(OAUTH_ACCESS_TOKEN_COLLECTION, authIdFilter, setTTL, false, true, tokenHandler);
+							}
+						}
+					});
 				}
 			}
 		});
