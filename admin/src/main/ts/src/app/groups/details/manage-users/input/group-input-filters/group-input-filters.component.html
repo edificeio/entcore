@@ -1,12 +1,15 @@
-<div class="is-display-flex">
-  <a class="button is-primary has-left-margin-10" aria-hidden="true"
+<div class="is-display-flex group-input-filters">
+  <a
+    class="button is-primary has-left-margin-10"
+    aria-hidden="true"
     [title]="'filters' | translate"
-    [ngClass]="{'is-active': filtersOn()}"
-    (click)="toggleVisibility()">
+    [ngClass]="{ 'is-selected': filtersOn() }"
+    (click)="toggleVisibility()"
+  >
+    <i class="fa fa-filter" aria-hidden="true"></i>
     <s5l>filters</s5l>
-    <i class="fa fa-chevron-down" aria-hidden="true"></i>
   </a>
-  <div *ngIf="show" class="group-input-filters">
+  <div *ngIf="show" class="group-input-container">
     <div *ngFor="let filter of listFilters.filters">
       <div *ngIf="filter.comboModel.length > 0">
         <ode-multi-combo
@@ -15,17 +18,20 @@
           [title]="filter.label | translate"
           [display]="filter.display || translate"
           [orderBy]="filter.order || orderer"
-          [filter]="filter.filterProp">
+          [filter]="filter.filterProp"
+        >
         </ode-multi-combo>
         <div class="multi-combo-companion">
-          <div *ngFor="let item of filter.outputModel"
-              (click)="deselect(filter, item)">
-                              <span *ngIf="filter.display">
-                                  {{ item[filter.display] }}
-                              </span>
+          <div
+            *ngFor="let item of filter.outputModel"
+            (click)="deselect(filter, item)"
+          >
+            <span *ngIf="filter.display">
+              {{ item[filter.display] }}
+            </span>
             <span *ngIf="!filter.display">
-                                  {{ item | translate }}
-                              </span>
+              {{ item | translate }}
+            </span>
             <i class="fa fa-trash is-size-5"></i>
           </div>
         </div>

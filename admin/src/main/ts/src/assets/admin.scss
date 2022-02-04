@@ -1,7 +1,6 @@
-
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
-@import '~@angular/material/theming';
+@import "~@angular/material/theming";
 // Plus imports for other components in your app.
 
 // Include the common styles for Angular Material. We include this here so that you only
@@ -19,7 +18,11 @@ $admin-app-accent: mat-palette($mat-pink, A200, A100, A400);
 $admin-app-warn: mat-palette($mat-red);
 
 // Create the theme object (a Sass map containing all of the palettes).
-$admin-app-theme: mat-light-theme($admin-app-primary, $admin-app-accent, $admin-app-warn);
+$admin-app-theme: mat-light-theme(
+  $admin-app-primary,
+  $admin-app-accent,
+  $admin-app-warn
+);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
@@ -27,13 +30,19 @@ $admin-app-theme: mat-light-theme($admin-app-primary, $admin-app-accent, $admin-
 @include angular-material-theme($admin-app-theme);
 
 /* Google Font */
-@font-face {
-  font-family: 'Open Sans';
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+/* @font-face {
+  font-family: "Open Sans";
   font-style: normal;
   font-weight: 400;
-  src: local('Open Sans Regular'), local('OpenSans-Regular'), url(https://fonts.gstatic.com/s/opensans/v16/mem8YaGs126MiZpBA-UFVZ0b.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+  src: local("Open Sans Regular"), local("OpenSans-Regular"),
+    url(https://fonts.gstatic.com/s/opensans/v16/mem8YaGs126MiZpBA-UFVZ0b.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+} */
 
 @import "icons";
 @import "variables";
@@ -51,9 +60,15 @@ a {
   color: mix($grey-light, $grey-dark, 20%);
   text-decoration: none;
 }
-a:visited { color: initial; }
-a:active { color: initial; }
-a:hover { color: initial; }
+a:visited {
+  color: initial;
+}
+a:active {
+  color: initial;
+}
+a:hover {
+  color: initial;
+}
 
 h1 {
   margin: 0;
@@ -89,14 +104,17 @@ button {
     color: $accent;
   }
   &:disabled {
-    opacity: .5;
+    opacity: 0.5;
     cursor: not-allowed;
   }
-  &.active, &:hover:not(:disabled) {
+  &.active,
+  &:hover:not(:disabled) {
     background-color: $accent;
     color: white;
     border-color: $accent;
-    i { color: white!important; }
+    i {
+      color: white !important;
+    }
   }
   &.selected {
     background-color: $accent-dark;
@@ -105,7 +123,7 @@ button {
       background-color: $accent-dark;
     }
     i::before {
-      color: white!important;
+      color: white !important;
     }
   }
   &.confirm {
@@ -169,7 +187,7 @@ input[type="search"] {
   color: $grey-dark;
   font-size: 1em;
   display: block;
-  padding: 20px 10px;
+  padding: 0.7rem;
   background: none;
   outline: none;
   border: none;
@@ -177,15 +195,31 @@ input[type="search"] {
   transition: border-color 0.25s;
   -webkit-appearance: textfield;
   &:focus {
-      border-color: $accent;
+    border-color: $accent;
   }
-  &::-webkit-input-placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
-  &::placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
-  &:-ms-input-placeholder{color:rgba(0,0,0,0.4); font-size: 14px;}
-  &::-moz-placeholder {color:rgba(0,0,0,0.4); font-size: 14px;}
+  &::-webkit-input-placeholder {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+  }
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+  }
+  &:-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+  }
+  &::-moz-placeholder {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+  }
 }
 
-input[type="text"], input[type="tel"], input[type="email"], input[type="date"], input[type="number"] {
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+input[type="number"] {
   color: $grey-dark;
   border: none;
   border-bottom: 1px solid mix($grey-light, $grey-dark);
@@ -194,15 +228,17 @@ input[type="text"], input[type="tel"], input[type="email"], input[type="date"], 
   transition: border-color 0.25s;
   padding: 5px;
   font-size: 1em;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   -webkit-appearance: textfield;
-  &:focus { border-color: $accent; }
+  &:focus {
+    border-color: $accent;
+  }
   &.ng-invalid.ng-dirty {
     border-color: $contrast;
-    background-color: rgba($contrast,0.1);
+    background-color: rgba($contrast, 0.1);
   }
   &:disabled {
-    opacity: .5;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
@@ -215,7 +251,9 @@ select:disabled {
   cursor: not-allowed;
 }
 
-input:invalid {box-shadow: none}
+input:invalid {
+  box-shadow: none;
+}
 
 // Generic Cursor Pointer Attribute
 [cursor] {
@@ -287,7 +325,7 @@ ode-mono-select {
       border: 1px solid $grey-light;
       cursor: pointer;
       &:after {
-        content: '▼';
+        content: "▼";
         color: mix($grey-light, $grey-dark);
         font-size: 12px;
         display: inline-block;
@@ -387,9 +425,9 @@ ul {
 }
 
 i.group_add {
-    &:before {
-        content: '\e91d';
-    }
+  &:before {
+    content: "\e91d";
+  }
 }
 
 /* generic style
@@ -399,10 +437,10 @@ i.group_add {
 .button {
   cursor: pointer;
   text-align: left;
-  padding: 10px 10px;
+  padding: 0.6rem 0.7rem;
   border-radius: 3px;
   transition: background 0.25s, color 0.25s, border 0.25s;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 0.85rem;
   &.is-outlined {
     color: $accent;
@@ -434,7 +472,7 @@ i.group_add {
   &.is-selected {
     color: white;
     background-color: $accent;
-    cursor: default;
+    // cursor: default;
     i {
       cursor: default !important;
     }
@@ -486,12 +524,10 @@ i.group_add {
   padding: 10px 30px 40px 30px;
   margin-bottom: 40px;
 
-  & > .container
-  {
+  & > .container {
     margin: 25px -30px -40px -30px;
 
-    &.has-shadow
-    {
+    &.has-shadow {
       box-shadow: 0 -5px 5px -5px rgba(0, 0, 0, 0.2);
     }
   }
@@ -499,11 +535,13 @@ i.group_add {
 
 .message {
   margin: 15px 0px;
-  p {margin: 10px 0;}
+  p {
+    margin: 10px 0;
+  }
   .message-header {
     padding: 10px 20px;
     background: black;
-    color:white;
+    color: white;
     font-size: 1.1em;
     font-weight: bold;
   }
@@ -520,7 +558,9 @@ i.group_add {
       font-size: 20px;
       vertical-align: middle;
     }
-    ul {list-style: initial;}
+    ul {
+      list-style: initial;
+    }
   }
   &.is-success {
     color: $success;
@@ -554,107 +594,275 @@ i.group_add {
       content: "\f06a";
     }
   }
-  &.is-success .message-header {background: $success;}
-  &.is-info .message-header {background: $info;}
-  &.is-danger .message-header {background: $danger;}
-  &.is-warning .message-header {background: $warning;}
+  &.is-success .message-header {
+    background: $success;
+  }
+  &.is-info .message-header {
+    background: $info;
+  }
+  &.is-danger .message-header {
+    background: $danger;
+  }
+  &.is-warning .message-header {
+    background: $warning;
+  }
 }
 
-.is-size-1 {font-size: 3rem;}
-.is-size-2 {font-size: 2.5rem;}
-.is-size-3 {font-size: 2rem;}
-.is-size-4 {font-size: 1.5rem;}
-.is-size-5 {font-size: 1.25rem;}
-.is-size-6 {font-size: 1rem;}
-.is-size-7 {font-size: 0.75rem;}
+.is-size-1 {
+  font-size: 3rem;
+}
+.is-size-2 {
+  font-size: 2.5rem;
+}
+.is-size-3 {
+  font-size: 2rem;
+}
+.is-size-4 {
+  font-size: 1.5rem;
+}
+.is-size-5 {
+  font-size: 1.25rem;
+}
+.is-size-6 {
+  font-size: 1rem;
+}
+.is-size-7 {
+  font-size: 0.75rem;
+}
 
-.has-accent-color {color: $accent;}
-.has-shadow {box-shadow: 2px 2px 10px $shadow-light;}
+.has-accent-color {
+  color: $accent;
+}
+.has-shadow {
+  box-shadow: 2px 2px 10px $shadow-light;
+}
 
-.has-text-centered {text-align: center !important;}
-.has-text-right {text-align: right;}
+.has-text-centered {
+  text-align: center !important;
+}
+.has-text-right {
+  text-align: right;
+}
 
-.has-no-padding {padding: 0;}
+.has-no-padding {
+  padding: 0;
+}
 
-.has-padding-5 {padding: 5px;}
-.has-vertical-padding-5 {padding: 5px 0px;}
-.has-horizontal-padding-5 {padding: 0 5px;}
-.has-top-padding-5 {padding-top: 5px;}
-.has-bottom-padding-5 {padding-bottom: 5px;}
-.has-left-padding-5 {padding-left: 5px;}
-.has-right-padding-5 {padding-right: 5px;}
+.has-padding-5 {
+  padding: 5px;
+}
+.has-vertical-padding-5 {
+  padding: 5px 0px;
+}
+.has-horizontal-padding-5 {
+  padding: 0 5px;
+}
+.has-top-padding-5 {
+  padding-top: 5px;
+}
+.has-bottom-padding-5 {
+  padding-bottom: 5px;
+}
+.has-left-padding-5 {
+  padding-left: 5px;
+}
+.has-right-padding-5 {
+  padding-right: 5px;
+}
 
-.has-padding-10 {padding: 10px;}
-.has-vertical-padding-10 {padding: 10px 0px;}
-.has-horizontal-padding-10 {padding: 0 10px;}
-.has-top-padding-10 {padding-top: 10px;}
-.has-bottom-padding-10 {padding-bottom: 10px;}
-.has-left-padding-10 {padding-left: 10px;}
-.has-right-padding-10 {padding-right: 10px;}
+.has-padding-10 {
+  padding: 10px;
+}
+.has-vertical-padding-10 {
+  padding: 10px 0px;
+}
+.has-horizontal-padding-10 {
+  padding: 0 10px;
+}
+.has-top-padding-10 {
+  padding-top: 10px;
+}
+.has-bottom-padding-10 {
+  padding-bottom: 10px;
+}
+.has-left-padding-10 {
+  padding-left: 10px;
+}
+.has-right-padding-10 {
+  padding-right: 10px;
+}
 
-.has-padding-20 {padding: 20px;}
-.has-vertical-padding-20 {padding: 20px 0px;}
-.has-horizontal-padding-20 {padding: 0 20px;}
-.has-top-padding-20 {padding-top: 20px;}
-.has-bottom-padding-20 {padding-bottom: 20px;}
-.has-left-padding-20 {padding-left: 20px;}
-.has-right-padding-20 {padding-right: 20px;}
+.has-padding-20 {
+  padding: 20px;
+}
+.has-vertical-padding-20 {
+  padding: 20px 0px;
+}
+.has-horizontal-padding-20 {
+  padding: 0 20px;
+}
+.has-top-padding-20 {
+  padding-top: 20px;
+}
+.has-bottom-padding-20 {
+  padding-bottom: 20px;
+}
+.has-left-padding-20 {
+  padding-left: 20px;
+}
+.has-right-padding-20 {
+  padding-right: 20px;
+}
 
-.has-padding-30 {padding: 30px;}
-.has-vertical-padding-30 {padding: 30px 0px;}
-.has-horizontal-padding-30 {padding: 0 30px;}
-.has-top-padding-30 {padding-top: 30px;}
-.has-bottom-padding-30 {padding-bottom: 30px;}
-.has-left-padding-30 {padding-left: 30px;}
-.has-right-padding-30 {padding-right: 30px;}
+.has-padding-30 {
+  padding: 30px;
+}
+.has-vertical-padding-30 {
+  padding: 30px 0px;
+}
+.has-horizontal-padding-30 {
+  padding: 0 30px;
+}
+.has-top-padding-30 {
+  padding-top: 30px;
+}
+.has-bottom-padding-30 {
+  padding-bottom: 30px;
+}
+.has-left-padding-30 {
+  padding-left: 30px;
+}
+.has-right-padding-30 {
+  padding-right: 30px;
+}
 
-.has-no-margin {margin: 0;}
+.has-no-margin {
+  margin: 0;
+}
 
-.has-margin-5 {margin: 5px;}
-.has-vertical-margin-5 {margin: 5px 0px;}
-.has-horizontal-margin-5 {margin: 0 5px;}
-.has-top-margin-5 {margin-top: 5px;}
-.has-bottom-margin-5 {margin-bottom: 5px;}
-.has-left-margin-5 {margin-left: 5px;}
-.has-right-margin-5 {margin-right: 5px;}
+.has-margin-5 {
+  margin: 5px;
+}
+.has-vertical-margin-5 {
+  margin: 5px 0px;
+}
+.has-horizontal-margin-5 {
+  margin: 0 5px;
+}
+.has-top-margin-5 {
+  margin-top: 5px;
+}
+.has-bottom-margin-5 {
+  margin-bottom: 5px;
+}
+.has-left-margin-5 {
+  margin-left: 5px;
+}
+.has-right-margin-5 {
+  margin-right: 5px;
+}
 
-.has-margin-10 {margin: 10px;}
-.has-vertical-margin-10 {margin: 10px 0px;}
-.has-horizontal-margin-10 {margin: 0 10px;}
-.has-top-margin-10 {margin-top: 10px;}
-.has-bottom-margin-10 {margin-bottom: 10px;}
-.has-left-margin-10 {margin-left: 10px;}
-.has-right-margin-10 {margin-right: 10px;}
+.has-margin-10 {
+  margin: 10px;
+}
+.has-vertical-margin-10 {
+  margin: 10px 0px;
+}
+.has-horizontal-margin-10 {
+  margin: 0 10px;
+}
+.has-top-margin-10 {
+  margin-top: 10px;
+}
+.has-bottom-margin-10 {
+  margin-bottom: 10px;
+}
+.has-left-margin-10 {
+  margin-left: 10px;
+}
+.has-right-margin-10 {
+  margin-right: 10px;
+}
 
-.has-margin-20 {margin: 20px;}
-.has-vertical-margin-20 {margin: 20px 0px;}
-.has-horizontal-margin-20 {margin: 0 20px;}
-.has-top-margin-20 {margin-top: 20px;}
-.has-bottom-margin-20 {margin-bottom: 20px;}
-.has-left-margin-20 {margin-left: 20px;}
-.has-right-margin-20 {margin-right: 20px;}
+.has-margin-20 {
+  margin: 20px;
+}
+.has-vertical-margin-20 {
+  margin: 20px 0px;
+}
+.has-horizontal-margin-20 {
+  margin: 0 20px;
+}
+.has-top-margin-20 {
+  margin-top: 20px;
+}
+.has-bottom-margin-20 {
+  margin-bottom: 20px;
+}
+.has-left-margin-20 {
+  margin-left: 20px;
+}
+.has-right-margin-20 {
+  margin-right: 20px;
+}
 
-.has-margin-30 {margin: 30px;}
-.has-vertical-margin-30 {margin: 30px 0px;}
-.has-horizontal-margin-30 {margin: 0 30px;}
-.has-top-margin-30 {margin-top: 30px;}
-.has-bottom-margin-30 {margin-bottom: 30px;}
-.has-left-margin-30 {margin-left: 30px;}
-.has-right-margin-30 {margin-right: 30px;}
+.has-margin-30 {
+  margin: 30px;
+}
+.has-vertical-margin-30 {
+  margin: 30px 0px;
+}
+.has-horizontal-margin-30 {
+  margin: 0 30px;
+}
+.has-top-margin-30 {
+  margin-top: 30px;
+}
+.has-bottom-margin-30 {
+  margin-bottom: 30px;
+}
+.has-left-margin-30 {
+  margin-left: 30px;
+}
+.has-right-margin-30 {
+  margin-right: 30px;
+}
 
-.has-margin-40 {margin: 40px;}
-.has-vertical-margin-40 {margin: 40px 0px;}
-.has-horizontal-margin-40 {margin: 0 40px;}
-.has-top-margin-40 {margin-top: 40px;}
-.has-bottom-margin-40 {margin-bottom: 40px;}
-.has-left-margin-40 {margin-left: 40px;}
-.has-right-margin-40 {margin-right: 40px;}
+.has-margin-40 {
+  margin: 40px;
+}
+.has-vertical-margin-40 {
+  margin: 40px 0px;
+}
+.has-horizontal-margin-40 {
+  margin: 0 40px;
+}
+.has-top-margin-40 {
+  margin-top: 40px;
+}
+.has-bottom-margin-40 {
+  margin-bottom: 40px;
+}
+.has-left-margin-40 {
+  margin-left: 40px;
+}
+.has-right-margin-40 {
+  margin-right: 40px;
+}
 
-.has-left-margin-auto {margin-left: auto;}
-.has-min-width {min-width: 200px;}
+.has-left-margin-auto {
+  margin-left: auto;
+}
+.has-min-width {
+  min-width: 200px;
+}
 
-.is-pulled-left {float: left;}
-.is-pulled-right {float: right;}
+.is-pulled-left {
+  float: left;
+}
+.is-pulled-right {
+  float: right;
+}
 .is-clearfix::after {
   clear: both;
   content: ".";
@@ -663,37 +871,85 @@ i.group_add {
   line-height: 0;
   visibility: hidden;
 }
-.is-hidden {display: none !important;}
-.is-block {display: block;}
-
-.is-bold {font-weight: bold;}
-.is-italic {font-style: italic;}
-.is-text-disabled {opacity: .5;}
-
-.is-display-flex {display: flex;}
-.has-space-between {justify-content: space-between;}
-.has-flex-end {justify-content: flex-end;}
-.has-align-items-baseline {align-items: baseline;}
-.has-align-items-center {align-items: center;}
-.has-direction-column {flex-direction: column;}
-.is-flex-none {flex: none !important;}
-
-@mixin grid-cell-width($cell-size: 1) {
-	width: (100% / 12 * $cell-size);
+.is-hidden {
+  display: none !important;
+}
+.is-block {
+  display: block;
 }
 
-.one{@include grid-cell-width(1);}
-.two{@include grid-cell-width(2);}
-.three{@include grid-cell-width(3);}
-.four{@include grid-cell-width(4);}
-.five{@include grid-cell-width(5);}
-.six{@include grid-cell-width(6);}
-.seven{@include grid-cell-width(7);}
-.eight{@include grid-cell-width(8);}
-.nine{@include grid-cell-width(9);}
-.ten{@include grid-cell-width(10);}
-.eleven{@include grid-cell-width(11);}
-.twelve{@include grid-cell-width(12);}
+.is-bold {
+  font-weight: bold;
+}
+.is-italic {
+  font-style: italic;
+}
+.is-text-disabled {
+  opacity: 0.5;
+}
+
+.is-display-flex {
+  display: flex;
+}
+.has-space-between {
+  justify-content: space-between;
+}
+.has-flex-end {
+  justify-content: flex-end;
+}
+.has-align-items-baseline {
+  align-items: baseline;
+}
+.has-align-items-center {
+  align-items: center;
+}
+.has-direction-column {
+  flex-direction: column;
+}
+.is-flex-none {
+  flex: none !important;
+}
+
+@mixin grid-cell-width($cell-size: 1) {
+  width: (100% / 12 * $cell-size);
+}
+
+.one {
+  @include grid-cell-width(1);
+}
+.two {
+  @include grid-cell-width(2);
+}
+.three {
+  @include grid-cell-width(3);
+}
+.four {
+  @include grid-cell-width(4);
+}
+.five {
+  @include grid-cell-width(5);
+}
+.six {
+  @include grid-cell-width(6);
+}
+.seven {
+  @include grid-cell-width(7);
+}
+.eight {
+  @include grid-cell-width(8);
+}
+.nine {
+  @include grid-cell-width(9);
+}
+.ten {
+  @include grid-cell-width(10);
+}
+.eleven {
+  @include grid-cell-width(11);
+}
+.twelve {
+  @include grid-cell-width(12);
+}
 /* UX */
 .badge {
   font-size: 0.8em;
@@ -723,10 +979,10 @@ i.group_add {
     margin: 0px;
     outline: none;
     box-shadow: 1px 1px 5px $shadow-light;
-    &:first-child{
+    &:first-child {
       border-radius: 5px 0 0 0;
     }
-    &:last-child {
+    &:last-child  {
       border-radius: 0 5px 0 0;
     }
     &:hover {
@@ -741,19 +997,22 @@ i.group_add {
       border-bottom-color: $accent;
     }
     &[disabled] {
-      opacity: .5;
+      opacity: 0.5;
       color: $grey-dark;
       cursor: not-allowed;
       border-bottom-color: $grey-light;
       &:hover {
         background-color: white;
-        opacity: .25;
+        opacity: 0.25;
       }
     }
   }
 }
 
-.card {box-shadow: 2px 2px 10px $shadow-light; background: white;}
+.card {
+  box-shadow: 2px 2px 10px $shadow-light;
+  background: white;
+}
 
 button.card-button {
   padding: 10px 20px;
@@ -766,9 +1025,14 @@ button.card-button {
   &:not([disabled]):hover {
     background-color: $accent;
     i {
-        color: white;
+      color: white;
     }
   }
+}
+
+.main-container {
+  max-width: 1380px;
+  margin: auto;
 }
 
 .card-layout {
@@ -776,14 +1040,11 @@ button.card-button {
   --gap: 1.5rem;
   margin-bottom: 1.5rem;
   max-width: 1380px;
+  margin: auto;
   display: grid;
   grid-gap: var(--gap);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
-  /* display: flex;
-  flex-wrap: wrap;
-  justify-content: center; */
   font-size: 0.9em;
-  // gap: 20px;
   > * {
     @extend .card;
     gap: 2rem;
@@ -833,7 +1094,7 @@ button.card-button {
         margin-top: 0px;
         padding: 0px;
         li {
-          border-bottom: 1px solid #CCC;
+          border-bottom: 1px solid #ccc;
           transition: background 0.25s;
           a {
             padding: 5px;
@@ -845,7 +1106,9 @@ button.card-button {
         }
       }
     }
-    .card-big-margin {margin: 50px;}
+    .card-big-margin {
+      margin: 50px;
+    }
   }
 }
 
@@ -868,9 +1131,10 @@ i.top-right {
   }
 }
 
-i.disabled, tr.disabled {
+i.disabled,
+tr.disabled {
   pointer-events: none;
-  color: #AAA !important;
+  color: #aaa !important;
 }
 
 i.fa-toggle-on::before {
@@ -885,8 +1149,8 @@ i.opener {
   &:hover {
     color: $accent;
   }
-  &::after{
-    content: '\f105';
+  &::after {
+    content: "\f105";
     display: inline-block;
     margin-right: 10px;
     transition: transform 0.25s;
@@ -956,12 +1220,12 @@ i.fa-plus {
 ode-lightbox {
   font-size: 16px;
   div[content] {
-    padding: 20px 40px!important;
+    padding: 24px !important;
     border-radius: 3px;
     box-shadow: 2px 2px 10px $shadow-dark;
     & > i {
       &::after {
-        content: '\f00d';
+        content: "\f00d";
         font-family: "FontAwesome";
         position: absolute;
         top: 0;
@@ -978,7 +1242,11 @@ ode-lightbox {
     }
   }
   h2 {
-    margin-bottom: 0;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #212121;
   }
   button {
     text-align: center;
@@ -991,8 +1259,8 @@ ode-lightbox {
     }
     ode-list {
       ul {
-          max-height: 46vh;
-          overflow-y: auto;
+        max-height: 40vh;
+        overflow-y: auto;
       }
     }
   }
@@ -1004,7 +1272,7 @@ body > div.tooltip {
   font-size: 11px;
   border-radius: 5px;
   background-color: opacify($accent, 0.7);
-  color: #EEE;
+  color: #eee;
   opacity: 0;
   transition: opacity 0.35s;
 }
@@ -1048,7 +1316,7 @@ ode-item-tree {
         display: block;
         text-decoration: none;
         transition: all 0.25s;
-        background-color: rgba(255,255,255,.09);
+        background-color: rgba(255, 255, 255, 0.09);
         border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 5px;
         &:hover {
@@ -1071,7 +1339,7 @@ ode-item-tree {
       }
     }
   }
-  ul li.parent.unfolded>a>i.opener::after {
+  ul li.parent.unfolded > a > i.opener::after {
     transform: rotate(90deg);
   }
 }
@@ -1096,7 +1364,7 @@ ode-spinner-cube.portal-spinner {
 ode-spinner-cube.component-spinner {
   div.spinner-wrapper {
     position: absolute;
-    background: rgba(235,235,235,0.6);
+    background: rgba(235, 235, 235, 0.6);
     top: 0px !important;
     left: 0px !important;
   }
@@ -1105,7 +1373,7 @@ ode-spinner-cube.component-spinner {
 ode-spinner-cube.button-spinner {
   div.spinner-wrapper {
     position: absolute;
-    background: rgba(235,235,235,0.6);
+    background: rgba(235, 235, 235, 0.6);
     top: 0px !important;
     left: 0px !important;
     .spinner-cube {
@@ -1120,7 +1388,7 @@ ode-spinner-cube.button-spinner {
 .side-layout {
   .side-card {
     @extend .card;
-    position: sticky!important;
+    position: sticky !important;
     top: 75px;
     background-color: white;
     & div.toolbar {
@@ -1159,7 +1427,6 @@ ode-spinner-cube.button-spinner {
         border-bottom-color: $accent;
       }
     }
-    
   }
 }
 
@@ -1183,7 +1450,7 @@ div.panel-message {
       font-size: 1.5em;
       color: #fff;
       &::before {
-        content: '\e7fb';
+        content: "\e7fb";
       }
     }
   }
@@ -1215,7 +1482,7 @@ div.panel-message {
     i.waiting-predelete {
       font-size: 1.5em;
       &::before {
-        content: '\e936';
+        content: "\e936";
       }
     }
   }
@@ -1226,12 +1493,16 @@ div.panel-message {
   @extend .is-clearfix;
 }
 .panel-section-header {
-    color: white;
-    background: $grey-dark;
-    border-bottom: 1px solid $shadow-light;
+  color: white;
+  background: $grey-dark;
+  border-bottom: 1px solid $shadow-light;
 
-    i.opener{ font-size: 1.3em }
-    message-sticker i.fa.is-info { color: white; }
+  i.opener {
+    font-size: 1.3em;
+  }
+  message-sticker i.fa.is-info {
+    color: white;
+  }
 }
 .panel-section-content {
   font-size: 0.9em;
@@ -1269,7 +1540,7 @@ ode-list {
       }
     }
     &.disabled {
-      color: #CCC;
+      color: #ccc;
     }
     &.no-results {
       text-align: center;
@@ -1288,69 +1559,80 @@ ode-group-users-list,
 ode-group-input-users,
 ode-group-output-users {
   ode-list {
-      li {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        span.display-name {
-          flex: 1;
+    li {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      span.display-name {
+        flex: 1;
+        padding-right: 5px;
+      }
+      i {
+        &.profile {
+          color: $grey-dark;
+          border: 1px solid $shadow-light;
+          background-color: $white-transparent;
+          font-size: 1em;
+          font-style: normal;
+          border-radius: 3px;
+          padding: 5px 15px;
+          text-align: center;
+          &::before {
+            content: " ";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+          }
+        }
+        &.Student.profile::before {
+          background-color: $orange;
+        }
+        &.Teacher.profile::before {
+          background-color: $green;
+        }
+        &.Relative.profile::before {
+          background-color: $cyan;
+        }
+        &.Personnel.profile::before {
+          background-color: $purple;
+        }
+        &.Guest.profile::before {
+          background-color: $pink;
+        }
+        &.fa {
+          font-size: 1.3em;
           padding-right: 5px;
-        }
-        i {
-          &.profile {
-            color: $grey-dark;
-            border: 1px solid $shadow-light;
-            background-color: $white-transparent;
-            font-size: 1em;
-            font-style: normal;
-            border-radius: 3px;
-            padding: 5px 15px;
-            text-align: center;
-            &::before {
-              content: " ";
-              display: inline-block;
-              width: 10px;
-              height: 10px;
-              border-radius: 50%;
-              margin-right: 5px;
-            }
+          &.fa-lock {
+            color: #aaa;
           }
-          &.Student.profile::before {background-color: $orange;}
-          &.Teacher.profile::before {background-color: $green;}
-          &.Relative.profile::before {background-color: $cyan;}
-          &.Personnel.profile::before {background-color: $purple;}
-          &.Guest.profile::before {background-color: $pink;}
-          &.fa {
-            font-size: 1.3em;
-            padding-right: 5px;
-            &.fa-lock {
-              color: #aaa;
-            }
-            &.fa-times-circle, &.fa-ban {
-              color: $contrast;
-            }
-          }
-          &.duplicates {
-            padding-right: 5px;
-            font-size: 1.8em;
-            color: $accent;
-            &::before {
-              content: '\e7fb';
-            }
-          }
-          &.waiting-predelete {
-            padding-right: 5px;
-            font-size: 1.5em;
+          &.fa-times-circle,
+          &.fa-ban {
             color: $contrast;
-            &::before {
-              content: '\e936';
-            }
           }
         }
+        &.duplicates {
+          padding-right: 5px;
+          font-size: 1.8em;
+          color: $accent;
+          &::before {
+            content: "\e7fb";
+          }
+        }
+        &.waiting-predelete {
+          padding-right: 5px;
+          font-size: 1.5em;
+          color: $contrast;
+          &::before {
+            content: "\e936";
+          }
+        }
+      }
       &.selected {
         i.duplicates {
-            color: $accent-light;
+          color: $accent-light;
         }
       }
     }
@@ -1388,10 +1670,10 @@ ode-tree-user-list {
   }
 }
 
-ode-services-list, 
+ode-services-list,
 .admc-apps-roles {
   .panel-section {
-      min-height: 50px;
+    min-height: 50px;
   }
 
   .side-card {
@@ -1448,7 +1730,7 @@ ode-portal {
     padding: 15px 0;
     box-sizing: border-box;
     height: 50px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.26);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26);
     span {
       font-size: 1.6em;
     }
@@ -1467,13 +1749,22 @@ ode-portal {
       color: white;
       padding: 12px 10px;
       border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-      &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4);}
-      &::placeholder{color:rgba(250,250,250,0.4);}
-      &:-ms-input-placeholder{color:rgba(250,250,250,0.4);}
-      &::-moz-placeholder {color:rgba(250,250,250,0.4);}
+      &::-webkit-input-placeholder {
+        color: rgba(250, 250, 250, 0.4);
+      }
+      &::placeholder {
+        color: rgba(250, 250, 250, 0.4);
+      }
+      &:-ms-input-placeholder {
+        color: rgba(250, 250, 250, 0.4);
+      }
+      &::-moz-placeholder {
+        color: rgba(250, 250, 250, 0.4);
+      }
     }
   }
-  div[header-left], div[header-right] {
+  div[header-left],
+  div[header-right] {
     a {
       color: white;
     }
@@ -1605,7 +1896,7 @@ ode-simple-user-detail {
           font-size: 0.9em;
         }
         &.user-admin {
-            color: $accent;
+          color: $accent;
         }
         &.user-inactive {
           color: darkgrey;
@@ -1622,18 +1913,21 @@ ode-simple-user-detail {
       align-items: center;
       .left {
         button {
-        width: $user-profile-img-width;
+          width: $user-profile-img-width;
           &:hover {
-            i.fa-check, i.fa-upload {
+            i.fa-check,
+            i.fa-upload {
               color: $validate-hover;
             }
           }
         }
-        i.fa-ban, i.fa-times-circle {
+        i.fa-ban,
+        i.fa-times-circle {
           color: $contrast;
         }
 
-        i.fa-check, i.fa-upload {
+        i.fa-check,
+        i.fa-upload {
           color: $validate;
         }
       }
@@ -1742,7 +2036,7 @@ ode-user-create {
         }
       }
     }
-  div.action {
+    div.action {
       display: flex;
       justify-content: flex-end;
       button {
@@ -1761,7 +2055,7 @@ ode-user-create {
           background-color: $button-bg;
           color: $accent;
           &:hover {
-              background-color: $button-bg-hover;
+            background-color: $button-bg-hover;
           }
         }
       }
@@ -1785,7 +2079,7 @@ ode-groups-root {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-  button {
+    button {
       background-color: $accent;
       color: white;
       padding: 10px 10px;
@@ -1819,7 +2113,9 @@ ode-group-users-list {
       padding: 15px;
       position: relative;
       z-index: 10;
-      i { @extend .action; }
+      i {
+        @extend .action;
+      }
       .toolbar-right {
         font-size: 1.2em;
         float: right;
@@ -1864,10 +2160,10 @@ ode-group-create {
           background-color: $accent-dark;
         }
         &.cancel {
-            background-color: $button-bg;
-            color: $accent;
+          background-color: $button-bg;
+          color: $accent;
           &:hover {
-              background-color: $button-bg-hover;
+            background-color: $button-bg-hover;
           }
         }
       }
@@ -1944,27 +2240,27 @@ subjects-root {
 /* Services */
 ode-services-root {
   div.flex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    button {
+      background-color: $accent;
+      color: white;
+      padding: 10px 10px;
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
 
-      button {
-          background-color: $accent;
-          color: white;
-          padding: 10px 10px;
-          display: flex;
-          align-items: center;
-
-          &:hover {
-              background-color: $accent-dark;
-          }
+      &:hover {
+        background-color: $accent-dark;
       }
+    }
   }
 
   ode-app-details {
     .flex-container {
       display: flex;
-      >.flex-item {
+      > .flex-item {
         flex: none;
         margin: 5px 10px 5px 10px;
       }
@@ -1975,21 +2271,21 @@ ode-services-root {
 /* Services */
 ode-admc-apps-roles-root {
   div.flex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    button {
+      background-color: $accent;
+      color: white;
+      padding: 10px 10px;
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
 
-      button {
-          background-color: $accent;
-          color: white;
-          padding: 10px 10px;
-          display: flex;
-          align-items: center;
-
-          &:hover {
-              background-color: $accent-dark;
-          }
+      &:hover {
+        background-color: $accent-dark;
       }
+    }
   }
 }
 
@@ -2000,7 +2296,7 @@ ode-mass-mail {
     }
   }
   .filters-toggle {
-      font-size: 1.5em;
+    font-size: 1.5em;
   }
   .filters {
     position: absolute;
@@ -2025,7 +2321,7 @@ ode-export {
     background-color: $accent;
     border-color: $accent;
     padding: 10px 20px;
-    color: white ! important;
+    color: white !important;
     text-decoration: none;
     &:hover {
       background-color: $accent-dark;
@@ -2036,11 +2332,11 @@ ode-export {
 
 /* Multi-combo component */
 ode-multi-combo {
-  >button {
+  > button {
     min-width: 250px !important;
     outline: none;
     &::after {
-      content: '▼';
+      content: "▼";
       float: right;
       margin-left: 10px;
       transition: transform 0.25s;
@@ -2058,13 +2354,13 @@ ode-multi-combo {
     min-width: 400px;
     max-width: 800px;
     &:not(.hidden) {
-      border: 1px solid $shadow-light!important;
+      border: 1px solid $shadow-light !important;
     }
-    >div.options {
+    > div.options {
       margin-top: 10px;
-      >button {
+      > button {
         border: 1px solid #444;
-        background: #EEE;
+        background: #eee;
         border: 0;
         transition: all 0.25s;
         margin: 2px 0px;
@@ -2077,7 +2373,7 @@ ode-multi-combo {
         }
       }
     }
-    >div.filter {
+    > div.filter {
       input {
         width: 100%;
         line-height: 25px;
@@ -2112,7 +2408,7 @@ ode-multi-combo {
           background-color: transparentize($main, 0.5);
         }
         &:not(.selected)[disabled="true"] {
-          background-color: #CCC;
+          background-color: #ccc;
         }
       }
     }
@@ -2176,7 +2472,7 @@ div.flatpickr {
   a {
     cursor: pointer;
     i:hover {
-        color: $accent;
+      color: $accent;
     }
   }
   input.cursor-default {
@@ -2206,22 +2502,31 @@ div.flatpickr {
 }
 
 /* reset */
-div:focus { outline: 0; }
+div:focus {
+  outline: 0;
+}
 
 @media screen and (max-width: 860px) {
   .card-layout > *,
   .side-companion,
-  .side-card
-  {
+  .side-card {
     flex: 100%;
   }
 }
 
 i.fa {
-  &.is-succcess { color: $success; }
-  &.is-info { color: $info; }
-  &.is-danger { color: $danger; }
-  &.is-warning { color: $warning; }
+  &.is-succcess {
+    color: $success;
+  }
+  &.is-info {
+    color: $info;
+  }
+  &.is-danger {
+    color: $danger;
+  }
+  &.is-warning {
+    color: $warning;
+  }
 }
 
 @media screen and (max-width: 860px) {
@@ -2290,7 +2595,8 @@ i.fa {
       }
     }
   }
-  th, td {
+  th,
+  td {
     padding: 10px;
   }
   tr {
@@ -2329,10 +2635,12 @@ i.fa {
 
     [type="checkbox"]:not(:checked) + label:before,
     [type="checkbox"]:checked + label:before {
-      content: '';
+      content: "";
       position: absolute;
-      left:0; top: 0;
-      width: 17px; height: 17px;
+      left: 0;
+      top: 0;
+      width: 17px;
+      height: 17px;
       border: 1px solid mix($grey-light, $grey-dark, 85%);
       background: white;
       box-shadow: inset 0 1px 2px $shadow-light;
@@ -2340,12 +2648,13 @@ i.fa {
 
     [type="checkbox"]:not(:checked) + label:after,
     [type="checkbox"]:checked + label:after {
-      content: '✔';
+      content: "✔";
       position: absolute;
-      top: -2px; left: 4px;
+      top: -2px;
+      left: 4px;
       font-size: 16px;
       color: $accent;
-      transition: all .2s;
+      transition: all 0.2s;
     }
     [type="checkbox"]:not(:checked) + label:after {
       opacity: 0;
@@ -2383,7 +2692,8 @@ div.legend-square.blue {
 div.legend-square.grey-dark {
   background-color: $flash-grey;
 }
-div.legend-square.outlined, input.outlined {
+div.legend-square.outlined,
+input.outlined {
   box-shadow: 1px 1px 2px $shadow-dark;
   transform: scale(1.3);
 }
@@ -2391,49 +2701,70 @@ div.legend-square.outlined, input.outlined {
 /* <
 > */
 ode-message-sticker {
-    i.fa {
-        transition: color 0.25s;
-        &.is-succcess { color: green; }
-        &.is-info { color: $main-dark; }
-        &.is-danger { color: red; }
-        &.is-warning { color: orange; }
-        &:hover { color: $accent;}
+  i.fa {
+    transition: color 0.25s;
+    &.is-succcess {
+      color: green;
     }
+    &.is-info {
+      color: $main-dark;
+    }
+    &.is-danger {
+      color: red;
+    }
+    &.is-warning {
+      color: orange;
+    }
+    &:hover {
+      color: $accent;
+    }
+  }
 }
 
 // Message flash
 .flashmsg {
-    &.red {background: $flash-red}
-    &.orange {background: $flash-orange}
-    &.green {background: $flash-green}
-    &.blue {background: $flash-blue}
-    &.grey-dark {background: $flash-grey}
-    &__preview {
-      flex: 1 1;
-      margin: 30px 0 0 20px;
-    }
-    & .ql-container {
+  &.red {
+    background: $flash-red;
+  }
+  &.orange {
+    background: $flash-orange;
+  }
+  &.green {
+    background: $flash-green;
+  }
+  &.blue {
+    background: $flash-blue;
+  }
+  &.grey-dark {
+    background: $flash-grey;
+  }
+  &__preview {
+    flex: 1 1;
+    margin: 30px 0 0 20px;
+  }
+  & .ql-container {
+    height: unset;
+    font-size: 1em;
+    & .ql-editor {
       height: unset;
-      font-size: 1em;
-      & .ql-editor {
-        height: unset;
-      }
     }
+  }
 }
 div.flashmsg {
-    min-height: 20px;
-    padding: 15px 25px;
-    margin-bottom: 15px;
-    box-shadow: 1px 1px 5px $shadow-light;
-    color: #fff;
+  min-height: 20px;
+  padding: 15px 25px;
+  margin-bottom: 15px;
+  box-shadow: 1px 1px 5px $shadow-light;
+  color: #fff;
 }
 
-ode-message-flash, ode-message-flash-form {
+ode-message-flash,
+ode-message-flash-form {
   button.action {
     background-color: $accent;
     border-color: $accent;
     padding: 10px 20px;
-    color: white ! important;
+    color: white !important;
     text-decoration: none;
     &:hover {
       background-color: $accent-dark;
@@ -2482,7 +2813,7 @@ ode-message-flash, ode-message-flash-form {
     background-color: $accent;
     border: 1px solid $accent;
     right: 75px;
-    
+
     &:hover {
       background-color: $accent-dark;
     }
