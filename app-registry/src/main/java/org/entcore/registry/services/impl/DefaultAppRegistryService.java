@@ -799,4 +799,19 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 	}
 
+	@Override
+	public void getDefaultBookmarks(final String structureId, Handler<Either<String, JsonObject>> handler) {
+		final String query = "MATCH (s:Structure {id: {structureId}}) " +
+				"RETURN CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE [] END AS defaultBookmarks";
+		final JsonObject params = new JsonObject().put("structureId", structureId);
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void setDefaultBookmarks(final String structureId, JsonArray apps, Handler<Either<String, JsonObject>> handler) {
+		final String query = "MATCH (s:Structure {id: {structureId}}) SET s.defaultBookmarks = {apps}";
+		final JsonObject params = new JsonObject().put("structureId", structureId).put("apps", apps);
+		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
 }
