@@ -166,7 +166,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
             first(),
             tap(() => this.renameLightboxDisplayed = false),
             filter(choice => choice === 'confirm'),
-            mergeMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName})),
+            mergeMap(() => this.groupsService.update(this.groupsStore.group.id, {name: this.groupNewName})),
             tap(() => {
                 this.notifyService.success('group.rename.notify.success.content'
                     , 'group.rename.notify.success.title');
