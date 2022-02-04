@@ -5,25 +5,78 @@
   <span><s5l>group.manage.users</s5l></span>
 </h2>
 
-<div class="group-manage-users-container">
-  <div class="group-manage-users-input">
-    <ode-group-input-users [model]="inputUsers" (selectUsers)="onInputSelectUsers($event)" #inputUsersRef>
+<div class="group-manage-tabs" *ngIf="hasStructures">
+  <span
+    *ngFor="let tab of tabs; let i = index"
+    (click)="isSelectedTab(tab)"
+    class="group-manage-tab"
+    [ngClass]="{ active: selectedTab === tab.active }"
+    >{{ tab.label }}</span
+  >
+</div>
+
+<div class="group-manage-header is-display-flex" *ngIf="hasStructures">
+  <ode-dropdown
+    *ngIf="isDropdownVisible"
+    [name]="structure.name"
+    [isDropdownOpened]="isDropdownOpened"
+    (onDropdown)="onDropdown()"
+  >
+    <ode-list
+      *ngIf="isDropdownOpened"
+      [model]="structures"
+      [inputFilter]="filterByInput"
+      (onSelect)="structureChange($event)"
+      (inputChange)="structureFilter = $event"
+      noResultsLabel="management.structure.parent.result"
+      searchPlaceholder="management.structure.parent.search"
+    >
+      <ng-template let-item>
+        <div>{{ item.name }}</div>
+      </ng-template>
+    </ode-list>
+  </ode-dropdown>
+</div>
+<div class="group-manage-container">
+  <div class="group-manage-input">
+    <ode-group-input-filters-users
+      *ngIf="selectedTab !== 2"
+      [structure]="structure"
+    ></ode-group-input-filters-users>
+    <ode-group-input-users
+      [model]="inputUsers"
+      [searchInput]="selectedTab === 2"
+      (selectUsers)="onInputSelectUsers($event)"
+      #inputUsersRef
+    >
     </ode-group-input-users>
   </div>
 
-  <div class="group-manage-users-buttons">
-    <button (click)="addUsers()" 
-            [disabled]="isAddUsersButtonDisabled()" 
-            class="group-manage-users-buttons__add" 
-            [title]="'group.manage.users.button.add' | translate">+</button>
-    <button (click)="removeUsers()" 
-            [disabled]="isRemoveUsersButtonDisabled()" 
-            class="group-manage-users-buttons__remove" 
-            [title]="'group.manage.users.button.remove' | translate">-</button>
+  <div class="group-manage-buttons">
+    <button
+      class="group-manage-button group-manage-button--add"
+      (click)="addUsers()"
+      [disabled]="isAddUsersButtonDisabled()"
+      [title]="'group.manage.users.button.add' | translate"
+    >
+      +
+    </button>
+    <button
+      class="group-manage-button group-manage-button--remove"
+      (click)="removeUsers()"
+      [disabled]="isRemoveUsersButtonDisabled()"
+      [title]="'group.manage.users.button.remove' | translate"
+    >
+      -
+    </button>
   </div>
 
-  <div class="group-manage-users-output">
-    <ode-group-output-users [model]="groupsStore.group.users" (selectUsers)="onOutputSelectUsers($event)" #outputUsersRef>
+  <div class="group-manage-output">
+    <ode-group-output-users
+      [model]="groupsStore.group.users"
+      (selectUsers)="onOutputSelectUsers($event)"
+      #outputUsersRef
+    >
     </ode-group-output-users>
   </div>
 </div>
