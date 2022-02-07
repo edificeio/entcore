@@ -23,18 +23,18 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkStructures"
+          [(ngModel)]="form.subStructuresRadio"
           name="autolinkStructures"
-          value="autolinkSubStructures"
+          value="all"
           (click)="
             showSubStructutresPickerButton = false;
-            autolinkSubStructureIds = [];
+            form.subStructuresIds = [];
             lightboxSubStructureIds = [];
             this.checked = true
           "
-          id="subStructures"
+          id="allStructures"
         />
-        <label for="subStructures" class="has-left-padding-10">
+        <label for="allStructures" class="has-left-padding-10">
           <s5l>group.details.broadcast.autoLink.structuresSection.includeSubStructuresLabel</s5l>
         </label>
       </div>
@@ -42,10 +42,13 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkStructures"
+          [(ngModel)]="form.subStructuresRadio"
           name="autolinkStructures"
-          value="autolinkStructures"
-          (click)="showSubStructutresPickerButton = true; this.checked = true"
+          value="manual"
+          (click)="
+            showSubStructutresPickerButton = true; 
+            this.checked = true
+          "
           id="structuresSelect"
         />
         <label for="structuresSelect" class="has-left-padding-10">
@@ -53,7 +56,7 @@
         </label>
       </div>
       <!-- Substructures opening button -->
-      <div *ngIf="showSubStructutresPickerButton">
+      <div *ngIf="showSubStructutresPickerButton || form.subStructuresIds?.length > 0">
         <button
           (click)="openSubStructuresLightbox()"
           type="button"
@@ -62,7 +65,7 @@
           <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.select</s5l>
         </button>
         <span>
-          {{ lightboxSubStructureIds.length }}
+          {{ form.subStructuresIds?.length }}
           <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.selected</s5l>
         </span>
       </div>
@@ -84,7 +87,7 @@
           >
           </ode-item-tree>
         </div>
-        <div>
+        <div class="is-display-flex has-flex-end">
           <button
             type="button"
             class="is-pulled-right"
@@ -106,7 +109,7 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          [(ngModel)]="form.profile"
           name="autolinkProfile"
           value="Teacher"
           id="autolinkTeachers"
@@ -121,14 +124,14 @@
         </label>
       </div>
 
-      <div *ngIf="showTeachersSubSection" class="bordered-section">
+      <div *ngIf="showTeachersSubSection || form.profile === 'Teacher'" class="bordered-section">
         <!-- Head Teacher -->
         <div class="is-display-flex has-vertical-padding-10">
           <input
             type="radio"
-            [(ngModel)]="autolinkFormModel.autolinkTeachers"
-            name="autolinkTeachers"
-            value="autolinkHeadTeachers"
+            [(ngModel)]="form.teacherSubSectionRadio"
+            name="teacherSubSectionRadio"
+            value="HeadTeacher"
             id="autolinkHeadTeachers"
             (click)="
               showDisciplinesPicker = false; 
@@ -144,9 +147,9 @@
         <div class="is-display-flex has-vertical-padding-10">
           <input
             type="radio"
-            [(ngModel)]="autolinkFormModel.autolinkTeachers"
-            name="autolinkTeachers"
-            value="autolinkDisciplines"
+            [(ngModel)]="form.teacherSubSectionRadio"
+            name="teacherSubSectionRadio"
+            value="disciplines"
             id="autolinkDisciplines"
             (click)="
               showDisciplinesPicker = true; 
@@ -157,16 +160,16 @@
             <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.disciplines</s5l>
           </label>
         </div>
-        <div *ngIf="showDisciplinesPicker">
+        <div *ngIf="showDisciplinesPicker || form.teacherSubSectionRadio === 'disciplines'">
           <ode-multi-combo
-            [comboModel]="autolinkFormModel.disciplines"
-            [(outputModel)]="autolinkFormModel.selectedDisciplines"
+            [comboModel]="disciplines"
+            [(outputModel)]="form.selectedDisciplines"
             [title]="'disciplines.multi.combo.title' | translate"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
             <div
-              *ngFor="let item of autolinkFormModel.selectedDisciplines"
+              *ngFor="let item of form.selectedDisciplines"
               (click)="unselectDiscipline(item)"
             >
               <s5l>{{ item }}</s5l>
@@ -180,7 +183,7 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          [(ngModel)]="form.profile"
           name="autolinkProfile"
           value="Personnel"
           id="autolinkPersonnel"
@@ -195,33 +198,30 @@
         </label>
       </div>
 
-      <div *ngIf="showPersonnelSubSection" class="bordered-section">
+      <div *ngIf="showPersonnelSubSection || form.profile === 'Personnel'" class="bordered-section">
+        <!-- Functions -->
         <div class="is-display-flex has-vertical-padding-10">
           <input
-            type="radio"
-            [(ngModel)]="autolinkFormModel.autolinkPersonnel"
-            name="autolinkPersonnel"
-            value="autolinkFunctions"
+            type="checkbox"
+            [(ngModel)]="form.personnelSubSectionCheckbox"
+            name="personnelSubSectionCheckbox"
             id="autolinkFunctions"
-            (click)="
-              showFunctionsPicker = true; 
-              this.checked = true
-            "
+            (click)="handleFunctionsClick($event)"
           />
           <label for="autolinkFunctions" class="has-left-padding-10">
             <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.functions</s5l>
           </label>
         </div>
-        <div *ngIf="showFunctionsPicker">
+        <div *ngIf="showFunctionsPicker || form.personnelSubSectionCheckbox">
           <ode-multi-combo
-            [comboModel]="autolinkFormModel.functions"
-            [(outputModel)]="autolinkFormModel.selectedFunctions"
+            [comboModel]="functions"
+            [(outputModel)]="form.selectedFunctions"
             [title]="'functionsgroup.multi.combo.title' | translate"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
             <div
-              *ngFor="let item of autolinkFormModel.selectedFunctions"
+              *ngFor="let item of form.selectedFunctions"
               (click)="unselectFunction(item)"
             >
               <s5l>{{ item }}</s5l>
@@ -235,9 +235,9 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          [(ngModel)]="form.profile"
           name="autolinkProfile"
-          value="Students"
+          value="Student"
           id="autolinkStudents"
           (click)="
             showPersonnelSubSection = false;
@@ -254,9 +254,9 @@
       <div class="is-display-flex has-vertical-padding-10">
         <input
           type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkProfile"
+          [(ngModel)]="form.profile"
           name="autolinkProfile"
-          value="Relatives"
+          value="Relative"
           id="autolinkRelatives"
           (click)="
             showPersonnelSubSection = false;
@@ -277,10 +277,10 @@
       </h2>
       <div class="is-display-flex has-vertical-padding-10">
         <input
-          type="radio"
-          [(ngModel)]="autolinkFormModel.autolinkAdml"
+          type="checkbox"
+          [(ngModel)]="form.admlCheckbox"
           name="autolinkAdml"
-          value="true"
+          [value]="true"
           id="autolinkAdml"
         />
         <label for="autolinkAdml" class="has-left-padding-10">

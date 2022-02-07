@@ -6,16 +6,15 @@ import { GroupModel } from "src/app/core/store/models/group.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
 import { GroupsService, GroupUpdatePayload } from "src/app/groups/groups.service";
 
-type AutolinkFormModel = {
-    autolinkStructures: string;
-    autolinkProfile: string;
-    autolinkAdml: boolean;
-    autolinkTeachers: string;
-    autolinkPersonnel: string;
-    disciplines: Array<string>;
-    selectedDisciplines: Array<string>;
-    functions: Array<string>;
-    selectedFunctions: Array<string>;
+class AutolinkFormModel {
+    subStructuresRadio: string;
+    subStructuresIds: Array<string> = [];
+    profile: string;
+    teacherSubSectionRadio: string;
+    personnelSubSectionCheckbox: boolean;
+    selectedDisciplines: Array<string> = [];
+    selectedFunctions: Array<string> = [];
+    admlCheckbox: boolean;
 }
 
 type StructureListItem = {
@@ -37,9 +36,11 @@ export class GroupAutolinkComponent extends OdeComponent {
     @Input()
     structure: StructureModel;
 
-    public autolinkFormModel: AutolinkFormModel;
+    public form: AutolinkFormModel;
 
-    public autolinkSubStructureIds: Array<string>;
+    public disciplines: Array<string>;
+    public functions: Array<string>;
+
     public lightboxSubStructureIds: Array<string> = [];
     public showSubStructutresPickerButton: boolean;
     public showSubStructuresLightbox: boolean;
@@ -59,47 +60,87 @@ export class GroupAutolinkComponent extends OdeComponent {
     }
 
     ngOnInit(): void {
-        this.autolinkFormModel = {
-            autolinkStructures: '',
-            autolinkProfile: '',
-            autolinkAdml: false,
-            autolinkTeachers: '',
-            autolinkPersonnel: '',
-            disciplines: this.structure.groups.data.filter(g => g.labels && g.labels.includes('DisciplineGroup')).map(g => g.filter),
-            selectedDisciplines: [],
-            functions: this.structure.groups.data.filter(g => g.labels && g.labels.includes('FuncGroup')).map(g => g.filter),
-            selectedFunctions: []
-        }
+        this.initForm();
     }
 
+    ngOnChanges(): void {
+        this.initForm();
+    }
+
+    private initForm(): void {
+        this.form = new AutolinkFormModel();
+        this.disciplines = this.structure.groups.data.filter(g => g.labels && g.labels.includes('DisciplineGroup')).map(g => g.filter);
+        this.functions = this.structure.groups.data.filter(g => g.labels && g.labels.includes('FuncGroup')).map(g => g.filter);
+
+        if (this.group.autolinkTargetAllStructs) {
+            this.form.subStructuresRadio = 'all';
+        }
+
+        if (this.group.autolinkTargetStructs && this.group.autolinkTargetStructs.length > 0) {
+            this.form.subStructuresRadio = 'manual';
+            this.form.subStructuresIds = this.group.autolinkTargetStructs;
+            this.lightboxSubStructureIds = Object.assign([], this.form.subStructuresIds);
+        }
+        
+        if (this.group.autolinkUsersFromGroups && this.group.autolinkUsersFromGroups.length > 0) {
+            ['Teacher', 'Personnel', 'Student', 'Relative'].forEach(profile => {
+                if (this.group.autolinkUsersFromGroups.includes(profile)) {
+                    this.form.profile = profile;
+                }
+            });
+            if (this.group.autolinkUsersFromGroups.includes('AdminLocal')) {
+                this.form.admlCheckbox = true;
+            }
+            if (this.group.autolinkUsersFromGroups.includes('HeadTeacher')) {
+                this.form.teacherSubSectionRadio = 'HeadTeacher';
+            }
+            this.disciplines.forEach(d => {
+                if (this.group.autolinkUsersFromGroups.includes(d)) {
+                    this.form.teacherSubSectionRadio = 'disciplines';
+                    this.form.selectedDisciplines.push(d);
+                }
+            });
+            this.functions.forEach(f => {
+                if (this.group.autolinkUsersFromGroups.includes(f)) {
+                    this.form.personnelSubSectionCheckbox = true;
+                    this.form.selectedFunctions.push(f);
+                }
+            });
+        }
+    }
 
     public onAutolinkSubmit() {
         const groupUpdatePayload: GroupUpdatePayload = {
             name: this.group.name,
-            autolinkTargetAllStructs: this.autolinkFormModel.autolinkStructures === 'autolinkSubStructures'? true: false,
-            autolinkTargetStructs: this.autolinkSubStructureIds || [],
-            autolinkUsersFromGroups: new Array(this.autolinkFormModel.autolinkProfile) || []
+            autolinkTargetAllStructs: false,
+            autolinkTargetStructs: [],
+            autolinkUsersFromGroups: []
         };
 
+        // populate subStructures information
+        if (this.form.subStructuresRadio === 'all') {
+            groupUpdatePayload.autolinkTargetAllStructs = true;
+        } else if (this.form.subStructuresRadio === 'manual' && 
+            this.form.subStructuresIds && 
+            this.form.subStructuresIds.length > 0) {
+            groupUpdatePayload.autolinkTargetStructs = this.form.subStructuresIds;
+        }
+
         // populate autolinkUsersFromGroups from profiles selection
-        if (this.autolinkFormModel.autolinkAdml) {
-            groupUpdatePayload.autolinkUsersFromGroups.push('AdminLocal');
-        }
-        if (this.autolinkFormModel.autolinkProfile === 'Teacher' && 
-            this.autolinkFormModel.autolinkTeachers === 'autolinkHeadTeachers') {
-            groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
-        }
-        if (this.autolinkFormModel.autolinkProfile === 'Teacher' && 
-            this.autolinkFormModel.autolinkTeachers === 'autolinkDisciplines' &&
-            this.autolinkFormModel.selectedDisciplines && 
-            this.autolinkFormModel.selectedDisciplines.length > 0) {
-            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.autolinkFormModel.selectedDisciplines);
-        }
-        if (this.autolinkFormModel.autolinkProfile === 'Personnel' &&
-            this.autolinkFormModel.autolinkPersonnel === 'autolinkFunctions' &&
-            this.autolinkFormModel.selectedFunctions && 
-            this.autolinkFormModel.selectedFunctions.length > 0) {
-            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.autolinkFormModel.selectedFunctions);
+        this.form.profile && groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
+        this.form.admlCheckbox && groupUpdatePayload.autolinkUsersFromGroups.push('AdminLocal');
+        this.form.teacherSubSectionRadio === 'HeadTeacher' && groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
+
+        if (this.form.profile === 'Teacher' && 
+            this.form.teacherSubSectionRadio === 'disciplines' &&
+            this.form.selectedDisciplines && 
+            this.form.selectedDisciplines.length > 0) {
+            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedDisciplines);
+        } else if (this.form.profile === 'Personnel' &&
+            this.form.personnelSubSectionCheckbox &&
+            this.form.selectedFunctions && 
+            this.form.selectedFunctions.length > 0) {
+            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedFunctions);
         }
 
         this.groupsService.
@@ -122,7 +163,7 @@ export class GroupAutolinkComponent extends OdeComponent {
     }
 
     public openSubStructuresLightbox() {
-        this.lightboxSubStructureIds = Object.assign([], this.autolinkSubStructureIds);
+        this.lightboxSubStructureIds = Object.assign([], this.form.subStructuresIds);
         this.showSubStructuresLightbox = true;
     }
 
@@ -153,16 +194,25 @@ export class GroupAutolinkComponent extends OdeComponent {
     }
 
     public saveAndClose(): void {
-        this.autolinkSubStructureIds = this.lightboxSubStructureIds;
+        this.form.subStructuresIds = this.lightboxSubStructureIds;
         this.showSubStructuresLightbox = false;
     }
 
     public unselectDiscipline(item: string): void {
-        this.autolinkFormModel.selectedDisciplines.splice(this.autolinkFormModel.selectedDisciplines.indexOf(item), 1);
+        this.form.selectedDisciplines.splice(this.form.selectedDisciplines.indexOf(item), 1);
     }
 
     public unselectFunction(item: string): void {
-        this.autolinkFormModel.selectedFunctions.splice(this.autolinkFormModel.selectedFunctions.indexOf(item), 1);
+        this.form.selectedFunctions.splice(this.form.selectedFunctions.indexOf(item), 1);
+    }
+
+    public handleFunctionsClick($event): void {
+        if ($event.target.checked) {
+            this.showFunctionsPicker = true;
+        } else {
+            this.form.selectedFunctions = [];
+            this.showFunctionsPicker = false;
+        }
     }
 
     private checkAllChildren(children: Array<StructureListItem>) {
