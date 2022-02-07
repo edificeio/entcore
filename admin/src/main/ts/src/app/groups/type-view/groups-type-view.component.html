@@ -1,11 +1,11 @@
 <ode-side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion()">
   <div side-card>
     <ode-list
-      [model]="list"
+      [model]="groupsStore.structure?.groups.data"
       [filters]="filterByGroup"
       [inputFilter]="filterByInput"
       sort="name"
-      searchPlaceholder="search"
+      searchPlaceholder="search.group"
       [noResultsLabel]="noResultsLabel"
       [isSelected]="isSelected"
       (inputChange)="groupInputFilter = $event"
