@@ -19,10 +19,7 @@ export class GroupsTypeViewComponent
   extends OdeComponent
   implements OnInit, OnDestroy
 {
-  @Input() list: GroupModel[];
-  @Input() noResultsLabel: string;
-  @Input() filters: () => boolean;
-
+  noResultsLabel: string;
   groupType: string;
   groupInputFilter: string;
   selectedGroup: GroupModel;
@@ -33,10 +30,6 @@ export class GroupsTypeViewComponent
 
   ngOnInit() {
     super.ngOnInit();
-    // Store data into list
-    // Use it with [model] on ode-list component
-    this.list = this.groupsStore.structure.groups.data;
-
     // Init trad label when no result (default group)
     this.noResultsLabel = 'list.results.no.groups';
     
