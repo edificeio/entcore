@@ -4,10 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config=proxy.conf.json",
-    "build": "ng build --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js build",
-    "build-prod": "ng build --prod --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js build",
-    "build-docker": "ng build --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js buildWithDockerPath",
-    "build-docker-prod": "ng build --prod --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js buildWithDockerPath",
+    "build": "ng build --delete-output-path=true --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js build",
+    "build-prod": "ng build --prod --delete-output-path=true --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js build",
+    "build-docker": "ng build --delete-output-path=true --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js buildWithDockerPath",
+    "build-docker-prod": "ng build --prod --delete-output-path=true --deploy-url=admin/public/dist/ && ./node_modules/gulp/bin/gulp.js buildWithDockerPath",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
