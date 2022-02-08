@@ -14,7 +14,6 @@ class AutolinkFormModel {
     personnelSubSectionCheckbox: boolean;
     selectedDisciplines: Array<string> = [];
     selectedFunctions: Array<string> = [];
-    admlCheckbox: boolean;
 }
 
 type StructureListItem = {
@@ -85,23 +84,23 @@ export class GroupAutolinkComponent extends OdeComponent {
         }
         
         if (this.group.autolinkUsersFromGroups && this.group.autolinkUsersFromGroups.length > 0) {
-            ['Teacher', 'Personnel', 'Student', 'Relative'].forEach(profile => {
+            ['Teacher', 'Personnel', 'Student', 'Relative', 'AdminLocal'].forEach(profile => {
                 if (this.group.autolinkUsersFromGroups.includes(profile)) {
                     this.form.profile = profile;
                 }
             });
-            if (this.group.autolinkUsersFromGroups.includes('AdminLocal')) {
-                this.form.admlCheckbox = true;
-            }
+
             if (this.group.autolinkUsersFromGroups.includes('HeadTeacher')) {
                 this.form.teacherSubSectionRadio = 'HeadTeacher';
             }
+
             this.disciplines.forEach(d => {
                 if (this.group.autolinkUsersFromGroups.includes(d)) {
                     this.form.teacherSubSectionRadio = 'disciplines';
                     this.form.selectedDisciplines.push(d);
                 }
             });
+
             this.functions.forEach(f => {
                 if (this.group.autolinkUsersFromGroups.includes(f)) {
                     this.form.personnelSubSectionCheckbox = true;
@@ -130,7 +129,6 @@ export class GroupAutolinkComponent extends OdeComponent {
 
         // populate autolinkUsersFromGroups from profiles selection
         this.form.profile && groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
-        this.form.admlCheckbox && groupUpdatePayload.autolinkUsersFromGroups.push('AdminLocal');
         
         if (this.form.profile === 'Teacher' &&
             this.form.teacherSubSectionRadio === 'HeadTeacher') {

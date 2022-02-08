@@ -296,11 +296,16 @@
       </h2>
       <div class="is-display-flex has-vertical-padding-10">
         <input
-          type="checkbox"
-          [(ngModel)]="form.admlCheckbox"
-          name="autolinkAdml"
-          [value]="true"
+          type="radio"
+          [(ngModel)]="form.profile"
+          name="autolinkProfile"
+          value="AdminLocal"
           id="autolinkAdml"
+          (click)="
+            showPersonnelSubSection = false;
+            showTeachersSubSection = false;
+            this.checked = true;
+          "
         />
         <label for="autolinkAdml" class="has-left-padding-10">
           <s5l>group.details.broadcast.autoLink.adminSection.include.adml</s5l>
