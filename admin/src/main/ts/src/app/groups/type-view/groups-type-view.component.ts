@@ -94,7 +94,8 @@ export class GroupsTypeViewComponent
     };
 
   isSelected = (group: GroupModel) => {
-    return this.selectedGroup && group && this.selectedGroup.id === group.id;
+    return (this.selectedGroup && group && this.selectedGroup.id === group.id) ||
+      (this.groupsStore.group && group && this.groupsStore.group.id === group.id);
   };
 
   filterByInput = (group: GroupModel) => {
