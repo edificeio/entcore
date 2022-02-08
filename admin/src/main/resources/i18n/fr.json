@@ -563,6 +563,7 @@
   "group.details.broadcast.autoLink.profilesSection.include.personnels": "Inclure les personnels",
   "group.details.broadcast.autoLink.profilesSection.include.students": "Inclure les élèves",
   "group.details.broadcast.autoLink.profilesSection.include.relatives": "Inclure les parents",
+  "group.details.broadcast.autoLink.profilesSection.include.teachers.all": "Tous les enseignants",
   "group.details.broadcast.autoLink.profilesSection.include.teachers.headteachers": "Ajouter uniquement les professeurs principaux",
   "group.details.broadcast.autoLink.profilesSection.include.teachers.disciplines": "Filtrer par discipline",
   "group.details.broadcast.autoLink.profilesSection.include.teachers.functions": "Filtrer par fonction",

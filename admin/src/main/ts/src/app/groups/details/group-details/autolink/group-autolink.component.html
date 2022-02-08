@@ -125,6 +125,25 @@
       </div>
 
       <div *ngIf="showTeachersSubSection || form.profile === 'Teacher'" class="bordered-section">
+        <!-- All teachers -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="form.teacherSubSectionRadio"
+            name="teacherSubSectionRadio"
+            value="all"
+            id="autolinkTeachersAll"
+            [checked]="isAllTeachersRadioChecked()"
+            (click)="
+              showDisciplinesPicker = false; 
+              this.checked = true;
+            "
+          />
+          <label for="autolinkTeachersAll" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.all</s5l>
+          </label>
+        </div>
+
         <!-- Head Teacher -->
         <div class="is-display-flex has-vertical-padding-10">
           <input

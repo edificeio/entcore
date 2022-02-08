@@ -72,6 +72,8 @@ export class GroupAutolinkComponent extends OdeComponent {
         this.disciplines = this.structure.groups.data.filter(g => g.labels && g.labels.includes('DisciplineGroup')).map(g => g.filter);
         this.functions = this.structure.groups.data.filter(g => g.labels && g.labels.includes('FuncGroup')).map(g => g.filter);
 
+        this.form.teacherSubSectionRadio = 'all';
+
         if (this.group.autolinkTargetAllStructs) {
             this.form.subStructuresRadio = 'all';
         }
@@ -129,7 +131,11 @@ export class GroupAutolinkComponent extends OdeComponent {
         // populate autolinkUsersFromGroups from profiles selection
         this.form.profile && groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
         this.form.admlCheckbox && groupUpdatePayload.autolinkUsersFromGroups.push('AdminLocal');
-        this.form.teacherSubSectionRadio === 'HeadTeacher' && groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
+        
+        if (this.form.profile === 'Teacher' &&
+            this.form.teacherSubSectionRadio === 'HeadTeacher') {
+            groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
+        }
 
         if (this.form.profile === 'Teacher' && 
             this.form.teacherSubSectionRadio === 'disciplines' &&
@@ -213,6 +219,13 @@ export class GroupAutolinkComponent extends OdeComponent {
             this.form.selectedFunctions = [];
             this.showFunctionsPicker = false;
         }
+    }
+
+    public isAllTeachersRadioChecked(): boolean {
+        return this.form.profile === 'Teacher' && 
+            this.form.teacherSubSectionRadio != 'HeadTeacher' &&
+            this.form.teacherSubSectionRadio != 'disciplines';
+
     }
 
     private checkAllChildren(children: Array<StructureListItem>) {
