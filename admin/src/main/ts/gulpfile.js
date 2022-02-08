@@ -16,7 +16,7 @@ function renameIndexFile(srcIndexFile, newIndexFileBasename, destDir) {
 }
 
 gulp.task('clean', () => {
-    return gulp.src('../resources/public/dist', {read: false})
+    return gulp.src('../resources/public/dist', {read: false, allowEmpty: true})
         .pipe(clean({force: true}));
 });
 
