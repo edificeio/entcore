@@ -40,6 +40,7 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
     @Input() structure: StructureModel;
     @Input() user: UserModel;
     @Input() config: Config;
+    @Input() simpleUserDetails: boolean;
 
     @ViewChild('infoForm', {static: false}) infoForm: NgForm;
 
@@ -76,6 +77,9 @@ export class UserInfoSectionComponent extends AbstractSection implements OnInit 
         const session: Session = await SessionModel.getSession();
         this.isAdmc = session.isADMC();
         this.cdRef.markForCheck();
+
+        console.log(this.simpleUserDetails);
+        
     }
 
     protected onUserChange() {

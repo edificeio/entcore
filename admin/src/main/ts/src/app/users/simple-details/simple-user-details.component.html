@@ -83,7 +83,12 @@
 </div>
 
 <div>
-  <ode-user-info-section [user]="user" [structure]="structure" [config]="config">
+  <ode-user-info-section 
+    [user]="user" 
+    [structure]="structure" 
+    [config]="config"
+    [simpleUserDetails]="true"
+  >
   </ode-user-info-section>
 
   <ode-user-administrative-section [user]="user" [structure]="structure" [config]="config">
