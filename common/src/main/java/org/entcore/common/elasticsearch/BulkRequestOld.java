@@ -22,11 +22,11 @@ package org.entcore.common.elasticsearch;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
-public class BulkRequest {
+public class BulkRequestOld {
 
 	private final HttpClientRequest request;
 
-	BulkRequest(HttpClientRequest request) {
+	BulkRequestOld(HttpClientRequest request) {
 		this.request = request;
 	}
 

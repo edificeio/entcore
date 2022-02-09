@@ -167,7 +167,7 @@ public class ElasticSearch {
 		req.end(payload.encode());
 	}
 
-	public BulkRequest bulk(String type, Handler<AsyncResult<JsonObject>> handler) {
+	public BulkRequestOld bulk(String type, Handler<AsyncResult<JsonObject>> handler) {
 		final ElasticSearchClient esc = getClient();
 		final HttpClientRequest req = esc.client.post(defaultIndex + "/" + type + "/_bulk", event -> {
 			if (event.statusCode() == 200) {
@@ -181,7 +181,7 @@ public class ElasticSearch {
 		req.putHeader("Content-Type", "application/x-ndjson");
 		req.putHeader("Accept", "application/json; charset=UTF-8");
 		req.setChunked(true);
-		return new BulkRequest(req);
+		return new BulkRequestOld(req);
 	}
 
 	private void checkDisableClientAfterError(ElasticSearchClient esc, Throwable e) {
