@@ -9,7 +9,7 @@
       [noResultsLabel]="noResultsLabel"
       [isSelected]="isSelected"
       (inputChange)="groupInputFilter = $event"
-      (onSelect)="selectedGroup = $event; routeToGroup($event)">
+      (onSelect)="routeToGroup($event)">
       <ng-template let-item>
         {{ item.name }}
       </ng-template>

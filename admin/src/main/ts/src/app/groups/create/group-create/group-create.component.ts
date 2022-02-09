@@ -68,6 +68,7 @@ export class GroupCreateComponent extends OdeComponent {
             this.newGroup.type = 'ManualGroup';
             this.newGroup.subType = this.isBroadcastGroup && 'BroadcastGroup';
             this.groupsStore.structure.groups.data.push(this.newGroup);
+            this.groupsStore.group = this.newGroup;
 
             this.ns.success({
               key: 'notify.group.create.content',
