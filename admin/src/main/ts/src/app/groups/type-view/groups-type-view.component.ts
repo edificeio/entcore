@@ -3,8 +3,7 @@ import {
   Component,
   Injector,
   OnDestroy,
-  OnInit,
-  Input
+  OnInit
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
 import { GroupModel } from "../../core/store/models/group.model";
@@ -107,28 +106,26 @@ export class GroupsTypeViewComponent
   };
 
   showCompanion(): boolean {
+    if (this.groupType === 'broadcastGroup') {
+      return true;
+    }
+   
     const groupTypeRoute =
       "/admin/" +
       (this.groupsStore.structure ? this.groupsStore.structure.id : "") +
       "/groups/" +
       this.groupType;
 
-    let res: boolean =
-      this.router.isActive(groupTypeRoute + "/create", true) ||
-      this.router.isActive(groupTypeRoute + "/list", true);
-    if (this.groupsStore.group) {
-      res =
-        res ||
-        this.router.isActive(
-          groupTypeRoute + "/" + this.groupsStore.group.id + "/details",
-          true
-        ) ||
-        this.router.isActive(
-          groupTypeRoute + "/" + this.groupsStore.group.id + "/communication",
-          true
-        );
+    if (this.router.isActive(groupTypeRoute + "/create", true)) {
+      return true;
     }
-    return res;
+
+    if (this.groupsStore.group) {
+      return this.router.isActive(groupTypeRoute + "/" + this.groupsStore.group.id + "/details", true) ||
+        this.router.isActive(groupTypeRoute + "/" + this.groupsStore.group.id + "/communication", true);
+    }
+
+    return false;
   }
 
   closePanel() {

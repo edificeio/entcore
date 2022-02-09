@@ -84,7 +84,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     const session: Session = await SessionModel.getSession();
     this.isADMC = session.isADMC();
     if (this.isADMC) {
-      this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup/list" });
+      this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup" });
     }
     this.changeDetector.markForCheck();
   }
