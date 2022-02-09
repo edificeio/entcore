@@ -143,9 +143,13 @@ public class PersEducNat extends AbstractUser {
 
 					if (Boolean.FALSE.equals(isMultiEtab)) {
 						String qs =
-								"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
+								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
 										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r";
+										"DELETE r " +
+										"WITH u, g " +
+										"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+										"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+										"SET r.flagRemove = true";
 						JsonObject ps = new JsonObject()
 								.put("userExternalId", externalId)
 								.put("source", currentSource)
@@ -191,9 +195,13 @@ public class PersEducNat extends AbstractUser {
 				}
 				if (externalId != null) {
 					String q =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
+							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r";
+							"DELETE r " +
+							"WITH u, g " +
+							"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.flagRemove = true";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
@@ -246,10 +254,14 @@ public class PersEducNat extends AbstractUser {
 
 					if (Boolean.FALSE.equals(isMultiEtab)) {
 						final String qdfg =
-								"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:Group) " +
+								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group) " +
 										"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup) AND " +
 										"NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r";
+										"DELETE r " +
+										"WITH u, g " +
+										"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+										"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+										"SET r.flagRemove = true";
 
 						transactionHelper.add(qdfg, pdfg);
 					}
