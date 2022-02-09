@@ -15,46 +15,41 @@
     noResultsLabel="list.results.no.users"
   >
     <div toolbar class="user-toolbar">
-      <i
-        class="fa"
-        aria-hidden="true"
-        [ngClass]="{
-          'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
-          'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
-          selected: userLS.sortsMap.alphabetical.selected
-        }"
-        [title]="'sort.alphabetical' | translate"
-        position="top"
-        (click)="userLS.changeSorts('alphabetical')"
-      ></i>
-
-      <i
-        class="fa"
-        aria-hidden="true"
-        [ngClass]="{
-          'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
-          'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
-          selected: userLS.sortsMap.profile.selected
-        }"
-        [title]="'sort.profile' | translate"
-        position="top"
-        (click)="userLS.changeSorts('profile')"
-      ></i>
+      <div>
+        <i
+          class="fa"
+          aria-hidden="true"
+          [ngClass]="{
+            'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
+            'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
+            selected: userLS.sortsMap.alphabetical.selected
+          }"
+          [title]="'sort.alphabetical' | translate"
+          position="top"
+          (click)="userLS.changeSorts('alphabetical')"
+        ></i>
+        <i
+          class="fa"
+          aria-hidden="true"
+          [ngClass]="{
+            'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
+            'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
+            selected: userLS.sortsMap.profile.selected
+          }"
+          [title]="'sort.profile' | translate"
+          position="top"
+          (click)="userLS.changeSorts('profile')"
+        ></i>
+      </div>
 
       <button
-        class="select-all"
-        (click)="selectAll()"
+        class="check-all"
+        [ngClass]="{'users-checked': allUsersChecked}"
+        (click)="toggleSelectedUsers()"
         [title]="'select.all' | translate"
       >
         <s5l>select.all</s5l>
-      </button>
-
-      <button
-        class="deselect-all"
-        (click)="deselectAll()"
-        [title]="'deselect.all' | translate"
-      >
-        <s5l>deselect.all</s5l>
+        <i class="group-input-icon"></i>
       </button>
     </div>
 
@@ -63,6 +58,7 @@
         {{ item?.lastName.toUpperCase() }} {{ item?.firstName }}
       </span>
       <i class="profile" [ngClass]="item.type">{{ item.type | translate }}</i>
+      <i class="group-input-icon"></i>
     </ng-template>
   </ode-list>
 </div>

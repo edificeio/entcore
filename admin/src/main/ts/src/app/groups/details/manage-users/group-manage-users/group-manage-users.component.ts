@@ -92,10 +92,11 @@ export class GroupManageUsersComponent
       this.groupsStore.structure.users.data.length < 1
     ) {
       this.isLoading = true;
-      this.groupsStore.structure.users.sync().then(() => {
-        this.populateInputUsers(this.groupsStore.structure.users.data);
-        this.isLoading = false;
-      });
+      this.spinner.perform(
+        "group-manage-users", this.groupsStore.structure.users.sync().then(() => {
+          this.populateInputUsers(this.groupsStore.structure.users.data);
+          this.isLoading = false;
+        }));
     } else {
       this.populateInputUsers(this.groupsStore.structure.users.data);
     }
@@ -136,7 +137,7 @@ export class GroupManageUsersComponent
 
     if (session.functions && session.functions["ADMIN_LOCAL"]) {
       const { code, scope } = session.functions["ADMIN_LOCAL"];
-
+      
       this.hasStructures = scope && scope.length > 1;
       this.isADML = code === "ADMIN_LOCAL";
     } else {
