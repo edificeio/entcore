@@ -16,6 +16,10 @@
     </ode-list>
   </div>
   <div side-companion>
+    <ode-group-info
+      *ngIf="router.url.endsWith('/groups/broadcastGroup')"
+    >
+    </ode-group-info>
     <router-outlet></router-outlet>
   </div>
 </ode-side-layout>

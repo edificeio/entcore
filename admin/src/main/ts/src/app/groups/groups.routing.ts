@@ -25,10 +25,6 @@ export let routes: Routes = [
             component: GroupCreateComponent,
           },
           {
-            path: "list",
-            component: GroupInfoComponent,
-          },
-          {
             path: ":groupId/details",
             component: GroupDetailsComponent,
             resolve: {
