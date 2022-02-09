@@ -39,12 +39,9 @@
 </div>
 <div class="group-manage-container">
   <div class="group-manage-input">
-    <ode-group-input-filters-users
-      *ngIf="selectedTab !== 2"
-      [structure]="structure"
-    ></ode-group-input-filters-users>
     <ode-group-input-users
       [model]="inputUsers"
+      [structure]="structure"
       [searchInput]="selectedTab === 2"
       (selectUsers)="onInputSelectUsers($event)"
       #inputUsersRef
@@ -74,6 +71,7 @@
   <div class="group-manage-output">
     <ode-group-output-users
       [model]="groupsStore.group.users"
+      [showUserStructure]="selectedTab === 2"
       (selectUsers)="onOutputSelectUsers($event)"
       #outputUsersRef
     >

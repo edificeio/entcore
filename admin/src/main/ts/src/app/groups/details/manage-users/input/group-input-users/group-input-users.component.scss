@@ -2,12 +2,15 @@ ode-list {
   min-height: 60vh;
   max-height: 60vh;
   flex: 1;
+
   div.user-toolbar {
-    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 8px;
     background: #fafafa;
     box-sizing: border-box;
 
-    > i {
+    i {
       cursor: pointer;
       margin: 0 2px;
       color: #a9a9a9;
@@ -16,25 +19,100 @@ ode-list {
         color: #4a4a4a;
       }
     }
+
     .toolbar-right {
       font-size: 1.2em;
       float: right;
     }
+
     button {
-      display: none;
-      &.select-all {
-        padding: 10px 5px;
-        margin: 5px 2px;
+      &.check-all {
+        padding: 0;
+        color: #000;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        border: 0;
+        background-color: transparent;
+
+        i {
+          color: #4a4a4a;
+        }
+
+        &:hover {
+          i {
+            color: #4a4a4a !important;
+          }
+        }
       }
-      &.deselect-all {
-        padding: 10px 5px;
-        margin: 5px 2px;
+
+      &.users-checked {
+        .group-input-icon {
+          &::before {
+            content: "\e853";
+          }
+        }
       }
     }
   }
 }
 
+:host {
+  position: relative;
+  ode-group-input-filters-users {
+    box-sizing: border-box;
+    position: absolute;
+    text-align: center;
+    right: 0;
+    top: 0;
+  }
+
+  ::ng-deep ode-list {
+    li {
+      //display: block !important;
+    
+      .is-display-flex {
+        gap: 12px;
+        align-items: center;
+      }
+    
+      .structures {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+        font-size: 12px;
+      }
+    }
+
+    ode-search-input {
+      input[type="search"] {
+        height: 42px;
+      }
+
+      .search-button {
+        padding: 8px 10px;
+      }
+    }
+  }
+}
+
+.is-transverse-search {
+  li {
+    display: block;
+  }
+  .display-name {
+    width: 55%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .group-input-container {
+  position: relative;
   border: 1px solid #ddd;
 }
 

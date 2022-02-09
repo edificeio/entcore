@@ -50,10 +50,6 @@ export class StructureAttachmentComponent
 
   ngOnInit(): void {
     super.ngOnInit();
-
-    console.log(this.currentStructure);
-    
-
     this.init();
   }
 

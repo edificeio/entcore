@@ -57,3 +57,12 @@ i.arrow-select {
     content: '\e841';
   }
 }
+
+.group-input-icon {
+  @include fonticon;
+  font-size: 18px;
+
+  &::before {
+    content: "\e83d";
+  }
+}
