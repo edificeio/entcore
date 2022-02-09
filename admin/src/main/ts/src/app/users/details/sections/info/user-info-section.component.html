@@ -62,7 +62,10 @@
           </button>
         </div>
       </ode-form-field>
-      <ode-form-field label="functions" *ngIf="!user.deleteDate">
+      <ode-form-field 
+        label="functions" 
+        *ngIf="!user.deleteDate && !simpleUserDetails"
+      >
         <div>
           <div *ngIf="!details.isAdmc()">
             <button type="button"
