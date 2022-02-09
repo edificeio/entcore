@@ -496,9 +496,13 @@ public class Importer {
 						.put("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
 				transactionHelper.add(q1, p);
 				String qs =
-						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
+						"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
 						"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-						"DELETE r";
+						"DELETE r " +
+						"WITH u, g " +
+						"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+						"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+						"SET r.flagRemove = true";
 				JsonObject ps = new JsonObject()
 						.put("userExternalId", externalId)
 						.put("source", currentSource)
@@ -528,9 +532,13 @@ public class Importer {
 					}
 				}
 				String q =
-						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
+						"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(c:Class) " +
 						"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-						"DELETE r";
+						"DELETE r " +
+						"WITH u, g " +
+						"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+						"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+						"SET r.flagRemove = true";
 				JsonObject p = new JsonObject()
 						.put("userExternalId", externalId)
 						.put("source", currentSource)
@@ -608,9 +616,13 @@ public class Importer {
 					}
 					transactionHelper.add(query, p);
 					String qs =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
+							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
 							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r";
+							"DELETE r " +
+							"WITH u, g " +
+							"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.flagRemove = true";
 					JsonObject ps = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
@@ -643,9 +655,13 @@ public class Importer {
 				}
 				if (externalId != null) {
 					String q =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
+							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r";
+							"DELETE r " +
+							"WITH u, g " +
+							"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.flagRemove = true";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
@@ -674,10 +690,14 @@ public class Importer {
 				}
 				if (externalId != null) {
 					final String qdfg =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:FunctionalGroup) " +
+							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:FunctionalGroup) " +
 							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"AND (NOT(g.externalId IN {groups}) OR (g.source <> {source})) " +
-							"DELETE r";
+							"DELETE r " +
+							"WITH u, g " +
+							"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.flagRemove = true";
 					final JsonObject pdfg = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
@@ -797,16 +817,24 @@ public class Importer {
 		String query2 =
 				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " + additionalMatch2 +
 				"WITH u, COLLECT(distinct c.id) as cIds " +
-				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " + additionalMatch2 +
+				"MATCH u-[r:IN]-(g:Group)-[:DEPENDS]->(c:Class) " + additionalMatch2 +
 				"WHERE NOT(c.id IN cIds) " + filter +
-				"DELETE r";
+				"DELETE r " +
+				"WITH u, g " +
+				"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+				"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+				"SET r.flagRemove = true";
 		transactionHelper.add(query2, j);
 		String query3 =
 				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->" + filter3 +
 				"WITH u, COLLECT(distinct s.id) as sIds " +
-				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->" + filter3 +
+				"MATCH u-[r:IN]-(g:Group)-[:DEPENDS]->" + filter3 +
 				"WHERE NOT(s.id IN sIds) " + filter +
-				"DELETE r";
+				"DELETE r " +
+				"WITH u, g " +
+				"MATCH (u)-[r:COMMUNIQUE]-(g) " +
+				"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
+				"SET r.flagRemove = true";
 		transactionHelper.add(query3, j);
 	}
 
