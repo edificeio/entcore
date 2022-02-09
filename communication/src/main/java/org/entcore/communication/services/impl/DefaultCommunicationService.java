@@ -418,6 +418,9 @@ public class DefaultCommunicationService implements CommunicationService {
 								  Handler<Either<String, JsonObject>> handler) {
 		StatementsBuilder s = new StatementsBuilder();
 		JsonObject params = new JsonObject().put("structures", structureIds);
+		String removeOld =
+				"MATCH (u:User)-[r:COMMUNIQUE {flagRemove: true}]-(g:Group) DELETE r";
+		s.add(removeOld, params);
 		String query =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
 				"WHERE s.id IN {structures} AND HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
