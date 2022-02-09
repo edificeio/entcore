@@ -83,6 +83,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private final Map<String, JsonObject> notFoundPersEducNat = new HashMap<>();
 	private final Map<String, String> equipments = new HashMap<>();
 	private final Map<String, String> personnels = new HashMap<>();
+	private final Map<String, String> students = new HashMap<>();
 	private final Map<String, JsonObject> subClasses = new HashMap<>();
 	private final Set<String> userImportedPronoteId = new HashSet<>();
 	private final Map<String, String> idpnIdent = new HashMap<>();
@@ -453,6 +454,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 				String userId = studentsIdStrings.get(idStr);
 				studentToGroups(userId, classes, this.classes);
 				studentToGroups(userId, pcs, this.subClasses);
+				students.put(currentEntity.getString(IDENT), userId);
 			}
 				else
 				ttReport.addMissingUser(new TimetableReport.Student(currentEntity.getString("Prenom"), currentEntity.getString("Nom"), date));
@@ -520,7 +522,9 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					if (!(o instanceof JsonObject)) continue;
 					final JsonObject j = (JsonObject) o;
 					j.put("itemType", attr);
-					final String week = j.getString("Semaines");
+					String week = j.getString("Semaines");
+					if(week == null)
+						week = j.getString("SemainesInclusion");
 					if (week != null) {
 						weeks.add(Long.valueOf(week));
 						items.add(j);
@@ -678,6 +682,17 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						final String pId = personnels.get(ident);
 						if (isNotEmpty(pId)) {
 							personnelsArray.add(pId);
+						}
+						break;
+					case "Eleve":
+						final String studentId = students.get(ident);
+						if (isNotEmpty(studentId)) {
+							JsonArray studentsArray = c.getJsonArray("studentIds");
+							if (studentsArray == null) {
+								studentsArray = new fr.wseduc.webutils.collections.JsonArray();
+								c.put("studentIds", studentsArray);
+							}
+							studentsArray.add(studentId);
 						}
 						break;
 				}
