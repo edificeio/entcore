@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public abstract class BaseImportProcessing implements ImportProcessing {
 
@@ -58,6 +59,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 					new LookupTranslator(EntityArrays.HTML40_EXTENDED_UNESCAPE()),
 					new NumericEntityUnescaper()
 			);
+	private static final int MAX_DEADLOCK_RETRIES = 1;
 
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
@@ -76,9 +78,9 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 		final List<String> files = vertx.fileSystem()
 				.readDirBlocking(path, getFileRegex());
 		final Handler[] handlers = new Handler[files.size() + 1];
-		handlers[handlers.length -1] = new Handler<Void>() {
+		handlers[handlers.length -1] = new Handler<Integer>() {
 			@Override
-			public void handle(Void v) {
+			public void handle(Integer v) {
 				log.info(e -> "SUCCEED parsing directory : " + path);
 				next(handler, importProcessing);
 			}
@@ -86,9 +88,9 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 		Collections.sort(files);
 		for (int i = files.size() - 1; i >= 0; i--) {
 			final int j = i;
-			handlers[i] = new Handler<Void>() {
+			handlers[i] = new Handler<Integer>() {
 				@Override
-				public void handle(Void v) {
+				public void handle(Integer nbRetries) {
 					final String file = files.get(j);
 					try {
 						log.info(e -> "START parsing file : " + file, true);
@@ -127,10 +129,20 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 							public void handle(Message<JsonObject> message) {
 								if ("ok".equals(message.body().getString("status"))) {
 									log.info(e -> "SUCCEED persist successfully for file : " + file);
-									handlers[j + 1].handle(null);
+									handlers[j + 1].handle(0);
 								} else {
 									log.error(e -> "FAILED persist for file : " + file);
-									error(message, handler);
+
+									String msg = message.body().getString("message", "");
+									if(nbRetries < MAX_DEADLOCK_RETRIES && Pattern.compile("deadlock", Pattern.CASE_INSENSITIVE).matcher(msg).find() == true)
+									{
+										log.info(e -> "RETRY persist for file : " + file);
+										handlers[j].handle(nbRetries + 1);
+									}
+									else
+									{
+										error(message, handler);
+									}
 								}
 							}
 						});
@@ -144,7 +156,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 				}
 			};
 		}
-		handlers[0].handle(null);
+		handlers[0].handle(0);
 	}
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
