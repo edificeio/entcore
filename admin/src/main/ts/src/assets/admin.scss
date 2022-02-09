@@ -437,7 +437,8 @@ i.group_add {
 .button {
   cursor: pointer;
   text-align: left;
-  padding: 0.7rem;
+  padding: 8px 12px;
+  line-height: 1.5;
   border-radius: 3px;
   transition: background 0.25s, color 0.25s, border 0.25s;
   font-family: "Open Sans", sans-serif;
@@ -1241,6 +1242,7 @@ ode-lightbox {
       }
     }
   }
+  
   h2 {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
@@ -1259,8 +1261,14 @@ ode-lightbox {
     }
     ode-list {
       ul {
-        max-height: 40vh;
-        overflow-y: auto;
+        max-height: 36vh;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        overflow-y: scroll;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
     }
   }
@@ -1538,6 +1546,11 @@ ode-list {
       i::before {
         color: white;
       }
+      .group-input-icon {
+        &::before {
+          content: "\e853";
+        }
+      }
     }
     &.disabled {
       color: #ccc;
@@ -1562,9 +1575,11 @@ ode-group-output-users {
     li {
       position: relative;
       display: flex;
+      gap: 12px;
       justify-content: center;
       align-items: center;
-      span.display-name {
+      .display-name {
+        font-size: 14px;
         flex: 1;
         padding-right: 5px;
       }
@@ -1573,9 +1588,9 @@ ode-group-output-users {
           color: $grey-dark;
           border: 1px solid $shadow-light;
           background-color: $white-transparent;
-          font-size: 1em;
+          font-size: 12px;
           font-style: normal;
-          border-radius: 3px;
+          border-radius: 30px;
           padding: 5px 15px;
           text-align: center;
           &::before {
@@ -2133,6 +2148,7 @@ ode-group-users-list {
     span.structures {
       ul {
         border: 1px solid $grey-light;
+        font-size: 12px;
         border-radius: 3px;
         padding: 5px 5px;
         margin: 0 5px;

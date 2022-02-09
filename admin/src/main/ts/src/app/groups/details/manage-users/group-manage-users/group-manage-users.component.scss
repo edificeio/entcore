@@ -4,11 +4,14 @@ $buttons-size: 42px;
   margin-top: 24px;
   display: flex;
   justify-content: space-between;
+  align-items: stretch;
   gap: 16px;
   min-height: 50vh;
 
   > div:not(:nth-child(2)) {
     flex: 1;
+    min-width: 300px;
+    max-width: 300px;
   }
 }
 
@@ -29,7 +32,7 @@ $buttons-size: 42px;
   padding-left: 10px;
   padding-right: 10px;
   font-family: "Open Sans";
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 24px;
   text-align: center;
@@ -47,18 +50,6 @@ $buttons-size: 42px;
   margin: 24px 0;
 }
 
-.group-manage-input {
-  position: relative;
-
-  > ode-group-input-filters-users {
-    box-sizing: border-box;
-    position: absolute;
-    text-align: center;
-    right: 0;
-    top: 27px;
-  }
-}
-
 .group-manage-buttons {
   display: inline-flex;
   flex-direction: column;
@@ -69,10 +60,10 @@ $buttons-size: 42px;
 }
 
 .group-manage-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   padding: 0;
-  margin-left: 5px;
-  margin-right: 5px;
-  text-align: center;
   border-radius: 25px;
   width: $buttons-size;
   height: $buttons-size;
@@ -80,7 +71,7 @@ $buttons-size: 42px;
 
   &--add {
     &:not(:disabled) {
-      background-color: rgb(255, 131, 82);
+      background-color: #FF8D2E;
       color: #fff;
 
       &:hover {
@@ -91,12 +82,12 @@ $buttons-size: 42px;
 
   &--remove {
     &:not(:disabled) {
-      background-color: indianred;
+      background-color: #FF8D2E;
       color: #fff;
 
       &:hover {
-        background-color: darken(indianred, 5%);
-        border-color: darken(indianred, 10%);
+        background-color: darken(#FF8D2E, 5%);
+        border-color: darken(#FF8D2E, 10%);
       }
     }
   }

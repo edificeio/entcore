@@ -2,68 +2,69 @@
   <s5l>search</s5l>
 </strong>
 
-<div class="group-input-container flex-row-wrap">
+<div class="group-input-container flex-row-wrap" [ngClass]="{'is-transverse-search': searchInput}">
+  <ode-group-input-filters-users *ngIf="!searchInput" [structure]="structure"
+  ></ode-group-input-filters-users>
   <ode-list
     [model]="model"
     [filters]="listFilters.getFormattedFilters(excludeDeletedUsers)"
-    [inputFilter]="userLS.filterByInput"
-    [sort]="userLS.sorts"
+    [inputFilter]="userListService.filterByInput"
+    [sort]="userListService.sorts"
     [isSelected]="isSelected"
-    (inputChange)="userLS.inputFilter = $event"
+    (inputChange)="userListService.inputFilter = $event"
     (onSelect)="selectUser($event)"
     (listChange)="storedElements = $event"
+    [searchInput]="searchInput"
+    [searchSubmit]="searchInput && search"
     searchPlaceholder="search.user"
     noResultsLabel="list.results.no.users"
   >
     <div toolbar class="user-toolbar">
-      <i
-        class="fa"
-        aria-hidden="true"
-        [ngClass]="{
-          'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
-          'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
-          selected: userLS.sortsMap.alphabetical.selected
-        }"
-        [title]="'sort.alphabetical' | translate"
-        position="top"
-        (click)="userLS.changeSorts('alphabetical')"
-      ></i>
-
-      <i
-        class="fa"
-        aria-hidden="true"
-        [ngClass]="{
-          'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
-          'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
-          selected: userLS.sortsMap.profile.selected
-        }"
-        [title]="'sort.profile' | translate"
-        position="top"
-        (click)="userLS.changeSorts('profile')"
-      ></i>
+      <div>
+        <i
+          class="fa"
+          aria-hidden="true"
+          [ngClass]="{
+            'fa-sort-alpha-asc': userListService.sortsMap.alphabetical.sort === '+',
+            'fa-sort-alpha-desc': userListService.sortsMap.alphabetical.sort === '-',
+            selected: userListService.sortsMap.alphabetical.selected
+          }"
+          [title]="'sort.alphabetical' | translate"
+          position="top"
+          (click)="userListService.changeSorts('alphabetical')"
+        ></i>
+        <i
+          class="fa"
+          aria-hidden="true"
+          [ngClass]="{
+            'fa-sort-amount-asc': userListService.sortsMap.profile.sort === '+',
+            'fa-sort-amount-desc': userListService.sortsMap.profile.sort === '-',
+            selected: userListService.sortsMap.profile.selected
+          }"
+          [title]="'sort.profile' | translate"
+          position="top"
+          (click)="userListService.changeSorts('profile')"
+        ></i>
+      </div>
 
       <button
-        class="select-all"
-        (click)="selectAll()"
+        class="check-all"
+        [ngClass]="{'users-checked': allUsersChecked}"
+        (click)="toggleSelectedUsers()"
         [title]="'select.all' | translate"
       >
         <s5l>select.all</s5l>
-      </button>
-
-      <button
-        class="deselect-all"
-        (click)="deselectAll()"
-        [title]="'deselect.all' | translate"
-      >
-        <s5l>deselect.all</s5l>
+        <i class="group-input-icon"></i>
       </button>
     </div>
 
     <ng-template let-item>
-      <span class="display-name">
-        {{ item?.lastName.toUpperCase() }} {{ item?.firstName }}
-      </span>
-      <i class="profile" [ngClass]="item.type">{{ item.type | translate }}</i>
+      <div class="display-name">
+        {{item.lastName?.toUpperCase()}} {{item.firstName}}
+          <span *ngIf="searchInput" class="structures">{{userStructures(item)}}</span>
+      </div> 
+      <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+      <i class="group-input-icon"></i>
     </ng-template>
   </ode-list>
 </div>

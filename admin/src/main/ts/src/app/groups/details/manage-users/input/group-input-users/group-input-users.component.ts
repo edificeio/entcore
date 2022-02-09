@@ -20,6 +20,7 @@ import {
   UserlistFiltersService,
 } from "../../../../../core/services/userlist.filters.service";
 import { SpinnerService } from "ngx-ode-ui";
+import { BundlesService } from "ngx-ode-sijil";
 
 @Component({
   selector: "ode-group-input-users",
@@ -32,6 +33,7 @@ export class GroupInputUsersComponent
   implements OnInit, OnDestroy, OnChanges
 {
   @Input() model: UserModel[] = [];
+  @Input() structure: StructureModel;
   @Input() searchInput: boolean = false;
   @Output() selectUsers: EventEmitter<UserModel[]> = new EventEmitter();
 
@@ -46,13 +48,15 @@ export class GroupInputUsersComponent
   // Users selected by enduser
   selectedUsers: UserModel[] = [];
 
-  structure: StructureModel;
   structures: StructureModel[] = [];
 
   structureOptions: SelectOption<StructureModel>[] = [];
 
+  allUsersChecked:boolean = false;
+
   constructor(
-    public userLS: UserListService,
+    private bundles: BundlesService,
+    public userListService: UserListService,
     public listFilters: UserlistFiltersService,
     public usersService: UsersService,
     public spinner: SpinnerService,
@@ -65,7 +69,7 @@ export class GroupInputUsersComponent
 
   ngOnInit(): void {
     super.ngOnInit();
-    
+
     this.subscriptions.add(
       this.listFilters.$updateSubject.subscribe(() => {
         this.changeDetector.markForCheck();
@@ -93,13 +97,17 @@ export class GroupInputUsersComponent
     return this.selectedUsers.indexOf(user) > -1;
   };
 
-  selectAll(): void {
-    this.selectedUsers = this.storedElements;
-    this.selectUsers.emit(this.selectedUsers);
-  }
+  toggleSelectedUsers(): void {
+    const selectedUsersLength = this.selectedUsers.length;
+    const storedElementsLength = this.storedElements.length;
 
-  deselectAll(): void {
-    this.selectedUsers = [];
+    if (selectedUsersLength !== storedElementsLength) {
+      this.selectedUsers = this.storedElements;
+      this.allUsersChecked = true;
+    } else {
+      this.selectedUsers = [];
+      this.allUsersChecked = false;
+    }
     this.selectUsers.emit(this.selectedUsers);
   }
 
@@ -107,18 +115,26 @@ export class GroupInputUsersComponent
     this.nbUser = list.length;
   }
 
+  userStructures(item: UserModel) {
+    if(item.structures && item.structures.length > 0) {
+        let result = item.structures[0].name;
+        if (item.structures.length > 1) {
+            result += ` + ${item.structures.length-1} ${this.bundles.translate("others")}`;
+        }
+        return result;
+    }
+    return "";
+  }
+
   search = (): void => {
-    console.log(this.userLS.inputFilter);
-    
     this.spinner.perform(
       "portal-content",
-      this.usersService
-        .search(this.userLS.inputFilter)
-        .then(data => {
-          this.model = data;
-          this.refreshListCount(data);
-          this.changeDetector.markForCheck();
-        })
+      this.usersService.search(this.userListService.inputFilter).then(data => {
+        this.model = data;
+
+        this.refreshListCount(data);
+        this.changeDetector.markForCheck();
+      })
     );
   };
 }
