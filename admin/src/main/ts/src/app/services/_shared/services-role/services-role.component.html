@@ -39,14 +39,14 @@
         </li>
       </ul>
     </div>
-
-    <button 
-      *ngIf="!disabled"
-      (click)="openLightbox.emit(role)"
-      class="actions-list__button--add"
-    >
-      {{ 'add.groups' | translate }}
-      <i class="fonticon group_add is-size-3"></i>
-    </button>
   </div>
+
+  <button 
+    *ngIf="!disabled"
+    (click)="openLightbox.emit(role)"
+    class="actions-list__button--add"
+  >
+    {{ 'add.groups' | translate }}
+    <i class="fonticon group_add is-size-3"></i>
+  </button>
 </ode-panel-section>
