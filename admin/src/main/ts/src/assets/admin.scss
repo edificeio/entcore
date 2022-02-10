@@ -1223,6 +1223,7 @@ i.fa-plus {
 ode-lightbox {
   font-size: 16px;
   div[content] {
+    min-width: 400px;
     padding: 24px !important;
     border-radius: 3px;
     box-shadow: 2px 2px 10px $shadow-dark;
