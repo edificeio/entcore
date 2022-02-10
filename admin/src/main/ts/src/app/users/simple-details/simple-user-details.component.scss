@@ -1,3 +1,5 @@
+@import "../../../assets/variables";
+
 .lightbox-header {
     margin-bottom: 0;
     > s5l {
@@ -9,6 +11,10 @@
     color: #ff8352;
     > i {
         margin-left: 10px;
+    }
+    &--disabled {
+        pointer-events: none;
+        color: $grey-medium;
     }
 }
 .title-icon {
