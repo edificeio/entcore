@@ -11,7 +11,8 @@
                       [manageableStructuresId]="manageableStructuresId"
                       [sendingCommunicationRules]="groupsSendingCommunicationRules | async"
                       [receivingCommunicationRules]="groupsReceivingCommunicationRules | async"
-                      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+                      [addReceivingCommunicationPickableGroups]="addReceivingCommunicationPickableGroups"
+                      [addSendingCommunicationPickableGroups]="addSendingCommunicationPickableGroups"
                       [structures]="globalStore.structures.data"
                       (groupClose)="openGroupDetails()"
                       (groupPickerStructureChange)="onGroupPickerStructureChange($event)">

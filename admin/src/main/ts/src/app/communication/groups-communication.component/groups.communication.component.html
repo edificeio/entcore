@@ -23,7 +23,7 @@
       [communicationRules]="sendingCommunicationRules"
       [activeColumn]="'sending'"
       [manageableStructuresId]="manageableStructuresId"
-      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+      [addCommunicationPickableGroups]="addSendingCommunicationPickableGroups"
       [structures]="structures"
       (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></ode-communication-rules>
   </div>
@@ -42,7 +42,7 @@
       [communicationRules]="receivingCommunicationRules"
       [activeColumn]="'receiving'"
       [manageableStructuresId]="manageableStructuresId"
-      [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+      [addCommunicationPickableGroups]="addReceivingCommunicationPickableGroups"
       [structures]="structures"
       (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></ode-communication-rules>
   </div>
