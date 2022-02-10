@@ -177,6 +177,17 @@ public class DirectoryController extends BaseController {
 		}));
 	}
 
+	@Post("/autogroups/link")
+	@SecuredAction("directory.autogroups.link")
+	public void linkAutogroups(final HttpServerRequest request) {
+		eb.send("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				renderJson(request, event.body());
+			}
+		}));
+	}
+
 	@Post("/export")
 	@SecuredAction("directory.export")
 	@IgnoreCsrf

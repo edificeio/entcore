@@ -413,6 +413,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				User.searchUserFromOldPlatform(vertx);
 				message.reply(new JsonObject().put("status", "ok"));
 				break;
+			case "manual-link-autogroups":
+				Group.runLinkRules();
+				message.reply(new JsonObject().put("status", "ok"));
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}
