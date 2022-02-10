@@ -11,6 +11,8 @@ import { UserDetailsModel } from '../../core/store/models/userdetails.model';
 import { Config } from '../../core/resolvers/Config';
 import { globalStore } from '../../core/store/global.store';
 import { UsersStore } from '../users.store';
+import { SessionModel } from 'src/app/core/store/models/session.model';
+import { Session } from 'src/app/core/store/mappings/session';
 
 
 @Component({
@@ -40,6 +42,8 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
     imgSrc: string;
     imgLoaded = false;
 
+    private session: Session;
+
     private _user: UserModel;
     set user(user: UserModel) {
         this._user = user;
@@ -67,7 +71,7 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
         super(injector);
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         super.ngOnInit();
         this.subscriptions.add(this.usersStore.$onchange.subscribe(field => {
             if (field === 'user') {
@@ -98,6 +102,7 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
             this.user.code = this.user.userDetails.activationCode;
         }
 
+        this.session = await SessionModel.getSession();
     }
 
     millisecondToDays(millisecondTimestamp: number): number {
@@ -404,6 +409,19 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
 
     openUserCommunication() {
         this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'communication'], {relativeTo: this.route.parent}));
+    }
+
+    isAdmlOf(structure: StructureModel): boolean {
+        if (this.session && this.session.isADMC()) {
+            return true;
+        }
+
+        if (this.session && this.session.functions && this.session.functions["ADMIN_LOCAL"]) {            
+            const { scope } = this.session.functions["ADMIN_LOCAL"];
+            return scope.includes(structure.id);
+        }
+        
+        return false;
     }
 
     private updateDeletedInStructures() {
