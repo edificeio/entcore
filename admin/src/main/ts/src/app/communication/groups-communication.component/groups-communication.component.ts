@@ -69,7 +69,10 @@ export class GroupsCommunicationComponent {
     private _sendingCommunicationRules: CommunicationRule[];
 
     @Input()
-    public addCommunicationPickableGroups: GroupModel[];
+    public addReceivingCommunicationPickableGroups: GroupModel[];
+
+    @Input()
+    public addSendingCommunicationPickableGroups: GroupModel[];
 
 
     private _receivingCommunicationRules: CommunicationRule[];

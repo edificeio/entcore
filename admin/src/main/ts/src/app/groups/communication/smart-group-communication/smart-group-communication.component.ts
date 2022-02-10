@@ -24,7 +24,9 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
     public manageableStructuresId: string[];
     public groupsSendingCommunicationRules = new ReplaySubject<CommunicationRule[]>();
     public groupsReceivingCommunicationRules = new ReplaySubject<CommunicationRule[]>();
-    public addCommunicationPickableGroups: GroupModel[];
+
+    public addSendingCommunicationPickableGroups: GroupModel[];
+    public addReceivingCommunicationPickableGroups: GroupModel[];
 
     public spinner: SpinnerService;
     public communicationRulesService: CommunicationRulesService;
@@ -60,7 +62,8 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
 
         const activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
         this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
-        this.addCommunicationPickableGroups = this.activeStructure.groups.data;
+        this.addSendingCommunicationPickableGroups = this.activeStructure.groups.data;
+        this.addReceivingCommunicationPickableGroups = this.activeStructure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
     }
 
     public openGroupDetails() {
@@ -74,7 +77,8 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
 
     public onGroupPickerStructureChange(structure: StructureModel) {
         structure.groups.sync().then(() => {
-            this.addCommunicationPickableGroups = structure.groups.data;
+            this.addSendingCommunicationPickableGroups = this.activeStructure.groups.data;
+            this.addReceivingCommunicationPickableGroups = this.activeStructure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
             this.changeDetector.markForCheck();
         });
     }
