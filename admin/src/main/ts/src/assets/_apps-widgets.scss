@@ -24,7 +24,7 @@ i.aide-devoirs {
 
   &::before {
     content: '\e818';
-    color: #214759;
+    color: $red;
   }
 }
 
@@ -34,7 +34,7 @@ i.apps {
 
   &::before {
     content: '\e86c';
-    color: #214759;
+    color: $yellow;
   }
 }
 
@@ -65,7 +65,7 @@ i.carnet-de-bord {
 
   &::before {
     content: '\e902';
-    color: #214759;
+    color: $green;
   }
 }
 
@@ -75,7 +75,7 @@ i.dicodelazone {
   font-size: 10rem !important;
   &::before {
     content: '\e938';
-    color: #ff3a54;
+    color: $red;
   }
 }
 
@@ -85,7 +85,7 @@ i.dictaphone {
 
   &::before {
     content: '\e864';
-    color: #ff3a54;
+    color: $red;
   }
 }
 
@@ -95,7 +95,7 @@ i.maxicours {
 
   &::before {
     content: '\e825';
-    color: #214759;
+    color: $red;
   }
 }
 
@@ -120,12 +120,14 @@ i.notes {
 }
 
 i.qwant-large,
-i.qwant {
+i.qwant,
+i.qwant-junior-large,
+i.qwant-junior {
   @include fonticon;
 
   &::before {
     content: '\e93d';
-    color: #e13a3a;
+    color: $red;
   }
 }
 
@@ -135,17 +137,18 @@ i.rss {
 
   &::before {
     content: '\e861';
-    color: #ff8500;
+    color: $green;
   }
 }
 
 i.schoolbook-large,
 i.schoolbook {
-  @include fonticon;
+  font-family: "FontAwesome";
+  font-style: normal;
 
   &::before {
-    content: '\e95a';
-    color: #214759;
+    content: '\f2bd';
+    color: $green;
   }
 }
 
@@ -155,6 +158,6 @@ i.signets {
 
   &::before {
     content: '\e80c';
-    color: #ff8500;
+    color: $green;
   }
 }
