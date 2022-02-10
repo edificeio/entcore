@@ -547,6 +547,8 @@ i.group_add {
     font-weight: bold;
   }
   .message-body {
+    display: inline-flex;
+    gap: 12px;
     padding: 10px 20px !important;
     font-size: 0.9em;
     font-weight: initial;
