@@ -179,6 +179,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/autogroups/link")
 	@SecuredAction("directory.autogroups.link")
+	@IgnoreCsrf
 	public void linkAutogroups(final HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
