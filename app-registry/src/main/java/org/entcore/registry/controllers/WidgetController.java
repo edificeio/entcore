@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import fr.wseduc.webutils.I18n;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
 import org.entcore.registry.filters.AnyAdmin;
 import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.filters.WidgetLinkFilter;
@@ -66,10 +68,20 @@ public class WidgetController extends BaseController {
 
 	@Get("/widget/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void getWidgetInfos(final HttpServerRequest request){
+	public void getWidgetInfos(final HttpServerRequest request) {
 		String widgetId = request.params().get("id");
 		String structureId = request.params().get("structureId");
-		service.getWidgetInfos(widgetId, structureId, defaultResponseHandler(request));
+		service.getWidgetInfos(widgetId, structureId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> r) {
+				if (r.isRight()) {
+					UserUtils.translateGroupsNames(r.right().getValue().getJsonArray("groups"), I18n.acceptLanguage(request));
+					renderJson(request, r.right().getValue());
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	@Delete("/widget/:id")
