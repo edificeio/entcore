@@ -122,6 +122,8 @@ public class TestHelper {
     }
 
     /*TODO Fluent method to document.  */
+    public AssertTestHelper asserts() { return new AssertTestHelper(this, vertx); }
+
     public TestHelper initSharedData() {
         final LocalMap<Object, Object> map = vertx.sharedData().getLocalMap("cluster");
         map.put("node", false);

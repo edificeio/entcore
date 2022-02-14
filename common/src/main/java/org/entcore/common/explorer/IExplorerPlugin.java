@@ -42,14 +42,14 @@ public interface IExplorerPlugin {
 
     IExplorerPluginCommunication getCommunication();
 
-    public enum ExplorerRemoteAction {
+    enum ExplorerRemoteAction {
         QueryReindex,
         QueryCreate,
         QueryDelete,
         QueryMetrics,
     }
 
-    public enum ExplorerRemoteError {
+    enum ExplorerRemoteError {
         CreateFailed("explorer.remote.error.create"),
         CreatePushFailed("explorer.remote.error.create_push"),
         DeleteFailed("explorer.remote.error.delete"),

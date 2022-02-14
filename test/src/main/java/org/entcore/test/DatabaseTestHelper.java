@@ -1,6 +1,10 @@
 package org.entcore.test;
 
 import com.mongodb.QueryBuilder;
+import io.vertx.ext.mongo.MongoClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
@@ -8,7 +12,6 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
-import org.junit.ClassRule;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Neo4jContainer;
@@ -26,6 +29,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -58,6 +63,28 @@ public class DatabaseTestHelper {
      * @param postgreSQLContainer PostgreSQL container to initialize, see {@link #createPostgreSQLContainer()}
      * @param schema Name of the pgsql schema to initialize
      */
+    public ElasticClientManager createESClient(final ElasticsearchContainer esContainer) throws URISyntaxException {
+        final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
+        return new ElasticClientManager(vertx, uris);
+    }
+
+    public RedisClient createRedisClient(final GenericContainer<?> redisContainer){
+        final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
+        final RedisClient redisClient = new RedisClient(vertx, redisConfig);
+        return redisClient;
+    }
+
+    public PostgresClient createPgClient(final PostgreSQLContainer<?> pgContainer){
+        final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
+        final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
+        return postgresClient;
+    }
+
+    public MongoClient createMongoClient(final MongoDBContainer mongoDBContainer){
+        final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
+        return MongoClient.createShared(vertx, mongoConfig);
+    }
+
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema) {
         return initPostgreSQL(context, postgreSQLContainer, schema, true);
     }
