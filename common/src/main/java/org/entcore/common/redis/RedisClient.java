@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-//TODO merge with entcore
 public class RedisClient {
     public static final String ID_STREAM = "$id_stream";
     public static final String NAME_STREAM = "$name_stream";
