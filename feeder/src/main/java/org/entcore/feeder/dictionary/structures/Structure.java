@@ -282,21 +282,25 @@ public class Structure {
 		return structureGroupExternalId;
 	}
 
+	public String[] createHeadTeacherGroupIfAbsent(String classExternalId) {
+		return this.createHeadTeacherGroupIfAbsent(classExternalId, null);
+	}
+
 	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name) {
 		String structureGroupExternalId = this.createHeadTeacherGroupIfAbsent();
 		String classGroupExternalId = this.getClassHeadTeacherGroupExternalId(classExternalId);
 			String query =
 					"MATCH (c:Class { externalId : {classExternalId}}) " +
 					"MERGE c<-[:DEPENDS]-(cg:Group:HTGroup {externalId: {externalId}}) " +
-					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = {displayNameSearchField}, " +
-					"cg.name = {name}, cg.structureName = {structureName} ";
+					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = COALESCE({displayNameSearchField}, c.displayNameSearchField), " +
+					"cg.name = COALESCE({name}, c.name + '-HeadTeacher'), cg.structureName = {structureName} ";
 			JsonObject params = new JsonObject()
 					.put("classExternalId", classExternalId)
 					.put("externalId", classGroupExternalId)
 					.put("id", UUID.randomUUID().toString())
-					.put("displayNameSearchField", Validator.sanitize(name))
+					.put("displayNameSearchField", name == null ? null : Validator.sanitize(name))
 					.put("structureName", struct.getString("name"))
-					.put("name", name + "-HeadTeacher")
+					.put("name", name == null ? null : name + "-HeadTeacher")
 					.put("filter", "HeadTeacher");
 			getTransaction().add(query, params);
 			String linkParent =
@@ -454,6 +458,47 @@ public class Structure {
 				"MATCH (s:Structure {id : {id}}) " +
 				"REMOVE s.timetable, s.punctualTimetable";
 		tx.add(query, params);
+	}
+
+	public static void load(String externalId, TransactionHelper transactionHelper, Handler<Structure> handler)
+	{
+		load(externalId, transactionHelper, handler, null);
+	}
+
+	public static void load(String externalId, TransactionHelper transactionHelper, Handler<Structure> handler, Handler<Throwable> error)
+	{
+		JsonObject params = new JsonObject().put("externalId", externalId);
+		String query = "MATCH (s:Structure) WHERE s.externalId = {externalId} RETURN s";
+
+		final TransactionHelper tx;
+		try {
+			tx = TransactionManager.getInstance().begin();
+			tx.add(query, params);
+			tx.commit(new Handler<Message<JsonObject>>()
+			{
+				@Override
+				public void handle(Message<JsonObject> result)
+				{
+					String txStatus = result.body().getString("status");
+					if(txStatus.equals("ok"))
+					{
+						JsonArray txResults = result.body().getJsonArray("results");
+						JsonObject structJson = txResults.getJsonArray(0).getJsonObject(0).getJsonObject("s"); // First (and only) result of first (and only) transaction query
+						handler.handle(new Structure(externalId, structJson, transactionHelper));
+					}
+					else
+					{
+						log.error("Failed to load structure " + externalId);
+						if(error != null)
+							error.handle(new Exception(result.body().getString("message")));
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			log.error("Failed to load structure transaction " + externalId);
+			if(error != null)
+				error.handle(e);
+		}
 	}
 
 	public static void count(String exportType, TransactionHelper transactionHelper) {

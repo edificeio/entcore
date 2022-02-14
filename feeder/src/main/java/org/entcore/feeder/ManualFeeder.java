@@ -1009,12 +1009,32 @@ public class ManualFeeder extends BusModBase {
 		final String classExternalId = message.body().getString("classExternalId");
 		final String structureExternalId = message.body().getString("structureExternalId");
 		if (userId == null || classExternalId == null || structureExternalId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.addHeadTeacherManual(userId,structureExternalId,classExternalId, tx);
-			}
-		});
+
+		try
+		{
+			TransactionHelper tx = TransactionManager.getTransaction();
+			Structure.load(structureExternalId, tx, new Handler<Structure>()
+			{
+				@Override
+				public void handle(Structure struct)
+				{
+						struct.createHeadTeacherGroupIfAbsent(classExternalId);
+						User.addHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
+
+						tx.commit(new Handler<Message<JsonObject>>()
+						{
+							@Override
+							public void handle(Message<JsonObject> event)
+							{
+								message.reply(event.body());
+							}
+						});
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding user to head teacher group", e);
+			sendError(message, "transaction.error");
+		}
 	}
 
 	public void updateUserHeadTeacherManual(final Message<JsonObject> message) {
@@ -1022,24 +1042,64 @@ public class ManualFeeder extends BusModBase {
 		final String classExternalId = message.body().getString("classExternalId");
 		final String structureExternalId = message.body().getString("structureExternalId");
 		if (userId == null || classExternalId == null || structureExternalId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
-			}
-		});
+
+		try
+		{
+			TransactionHelper tx = TransactionManager.getTransaction();
+			Structure.load(structureExternalId, tx, new Handler<Structure>()
+			{
+				@Override
+				public void handle(Structure struct)
+				{
+						struct.createHeadTeacherGroupIfAbsent(classExternalId);
+						User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
+
+						tx.commit(new Handler<Message<JsonObject>>()
+						{
+							@Override
+							public void handle(Message<JsonObject> event)
+							{
+								message.reply(event.body());
+							}
+						});
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when updating user to head teacher group", e);
+			sendError(message, "transaction.error");
+		}
 	}
 
 	public void addUserDirectionManual(final Message<JsonObject> message) {
 		final String userId = getMandatoryString("userId", message);
 		final String structureExternalId = message.body().getString("structureExternalId");
 		if (userId == null || structureExternalId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.addDirectionManual(userId,structureExternalId, tx);
-			}
-		});
+
+		try
+		{
+			TransactionHelper tx = TransactionManager.getTransaction();
+			Structure.load(structureExternalId, tx, new Handler<Structure>()
+			{
+				@Override
+				public void handle(Structure struct)
+				{
+						struct.createDirectionGroupIfAbsent();
+						User.addDirectionManual(userId,structureExternalId, tx);
+
+						tx.commit(new Handler<Message<JsonObject>>()
+						{
+							@Override
+							public void handle(Message<JsonObject> event)
+							{
+								message.reply(event.body());
+							}
+						});
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding user to direction group", e);
+			sendError(message, "transaction.error");
+		}
 	}
 
 	public void removeUserDirectionManual(final Message<JsonObject> message) {
