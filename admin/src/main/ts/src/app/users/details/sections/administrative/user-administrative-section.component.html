@@ -48,7 +48,7 @@
   </form>
 
   <button (click)="updateDetails()"
-          class="is-pulled-right"
+          class="is-pulled-right has-bottom-margin-10"
           [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('portal-content')"
           *ngIf="user.deleteDate == null">
     <s5l>save.modifications</s5l>
