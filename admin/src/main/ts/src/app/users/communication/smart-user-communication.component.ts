@@ -23,7 +23,8 @@ export class SmartUserCommunicationComponent extends OdeComponent implements OnI
     public manageableStructuresId: string[];
     public userSendingCommunicationRules: CommunicationRule[];
     public userReceivingCommunicationRules: CommunicationRule[];
-    public addCommunicationPickableGroups: GroupModel[];
+    public addSendingCommunicationPickableGroups: GroupModel[];
+    public addReceivingCommunicationPickableGroups: GroupModel[];
 
 
     constructor(
@@ -49,7 +50,8 @@ export class SmartUserCommunicationComponent extends OdeComponent implements OnI
             this.manageableStructuresId = this.globalStore.structures.data.map(s => s.id);
             this.communicationRulesService.setGroups(data.groups);
         }));
-        this.addCommunicationPickableGroups = this.usersStore.structure.groups.data;
+        this.addSendingCommunicationPickableGroups = this.usersStore.structure.groups.data;
+        this.addReceivingCommunicationPickableGroups = this.usersStore.structure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
         const activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
         this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
     }
@@ -65,7 +67,8 @@ export class SmartUserCommunicationComponent extends OdeComponent implements OnI
 
     public onGroupPickerStructureChange(structure: StructureModel) {
         structure.groups.sync().then(() => {
-            this.addCommunicationPickableGroups = structure.groups.data;
+            this.addSendingCommunicationPickableGroups = structure.groups.data;
+            this.addReceivingCommunicationPickableGroups = structure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
             this.changeDetector.markForCheck();
         });
     }
