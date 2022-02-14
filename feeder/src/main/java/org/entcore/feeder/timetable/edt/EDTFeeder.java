@@ -22,7 +22,7 @@ package org.entcore.feeder.timetable.edt;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 
 import fr.wseduc.webutils.security.Md5;
 
@@ -54,7 +54,7 @@ public class EDTFeeder implements EDTReader
     protected String structId;
     protected String externalId;
 
-    public ExternalRessource(Structure s)
+    public ExternalRessource(ImporterStructure s)
     {
       this.structId = s.getExternalId();
     }
@@ -76,9 +76,9 @@ public class EDTFeeder implements EDTReader
 
   public abstract class LinkableRessource extends ExternalRessource
   {
-    protected Structure structure;
+    protected ImporterStructure structure;
 
-    public LinkableRessource(Structure s)
+    public LinkableRessource(ImporterStructure s)
     {
       super(s);
       this.structure = s;
@@ -137,7 +137,7 @@ public class EDTFeeder implements EDTReader
     public HeadTeacherGroup headTeacherGroup;
     public List<Group> groups = new ArrayList<Group>();
 
-    public Classe(Structure s)
+    public Classe(ImporterStructure s)
     {
       super(s);
     }
@@ -172,7 +172,7 @@ public class EDTFeeder implements EDTReader
     public String name;
     public String identity;
 
-    public Group(Structure s)
+    public Group(ImporterStructure s)
     {
       super(s);
     }
@@ -180,7 +180,7 @@ public class EDTFeeder implements EDTReader
 
   public class HeadTeacherGroup extends Group
   {
-    public HeadTeacherGroup(Structure s, Classe c)
+    public HeadTeacherGroup(ImporterStructure s, Classe c)
     {
       super(s);
 
@@ -204,7 +204,7 @@ public class EDTFeeder implements EDTReader
     public Map<String, PartieClasse> subclasses = new HashMap<String, PartieClasse>();
     public Map<String, Group> groups = new HashMap<String, Group>();
 
-    public User(Structure s, String profile)
+    public User(ImporterStructure s, String profile)
     {
       super(s);
       this.profile = profile;
@@ -242,7 +242,7 @@ public class EDTFeeder implements EDTReader
     public List<Classe> principalClasses = new ArrayList<Classe>();
     public Map<String, Subject> subjects = new HashMap<String, Subject>();
 
-    public Teacher(Structure s)
+    public Teacher(ImporterStructure s)
     {
       super(s, DefaultProfiles.TEACHER_PROFILE.getString("name"));
     };
@@ -263,7 +263,7 @@ public class EDTFeeder implements EDTReader
 
   public class Personnel extends User
   {
-    public Personnel(Structure s) { super(s, DefaultProfiles.PERSONNEL_PROFILE.getString("name")); };
+    public Personnel(ImporterStructure s) { super(s, DefaultProfiles.PERSONNEL_PROFILE.getString("name")); };
   }
 
   public class Student extends User
@@ -272,7 +272,7 @@ public class EDTFeeder implements EDTReader
 
     public List<Parent> parents = new ArrayList<Parent>();
 
-    public Student(Structure s)
+    public Student(ImporterStructure s)
     {
       super(s, DefaultProfiles.STUDENT_PROFILE.getString("name"));
     }
@@ -328,7 +328,7 @@ public class EDTFeeder implements EDTReader
 
     public List<Student> children = new ArrayList<Student>();
 
-    public Parent(Structure s)
+    public Parent(ImporterStructure s)
     {
       super(s, DefaultProfiles.RELATIVE_PROFILE.getString("name"));
     }
@@ -367,7 +367,7 @@ public class EDTFeeder implements EDTReader
   protected static final Logger log = LoggerFactory.getLogger(EDTFeeder.class);
 
   private String sourceString;
-  private Structure structure;
+  private ImporterStructure structure;
 
   private Map<String, Teacher> teachers = new HashMap<String, Teacher>();
   private Map<String, Personnel> personnels = new HashMap<String, Personnel>();
@@ -378,7 +378,7 @@ public class EDTFeeder implements EDTReader
   private Map<String, PartieClasse> subclasses =  new HashMap<String, PartieClasse>();
   private Map<String, Group> groups = new HashMap<String, Group>();
 
-  public EDTFeeder(Structure structure, String sourceString)
+  public EDTFeeder(ImporterStructure structure, String sourceString)
   {
     this.structure = structure;
     this.sourceString = sourceString;

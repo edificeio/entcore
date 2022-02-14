@@ -21,7 +21,7 @@ package org.entcore.feeder.timetable.edt;
 
 import org.entcore.feeder.Feed;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -50,7 +50,7 @@ public class EDTFeederLauncher implements Feed
   {
     JsonObject structureInfos = new JsonObject();
     final String content = this.edtUtils.getContent(path, mode, structureInfos);
-    Structure structure = importer.createOrUpdateStructure(structureInfos);
+    ImporterStructure structure = importer.createOrUpdateStructure(structureInfos);
 
     EDTFeeder context = new EDTFeeder(structure, this.getFeederSource());
     // This method is synchronous

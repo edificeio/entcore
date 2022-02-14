@@ -20,7 +20,7 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -91,7 +91,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
 				if (g.length == 2) {
-					Structure s = importer.getStructure(g[0]);
+					ImporterStructure s = importer.getStructure(g[0]);
 					if (s != null) {
 						String groupExternalId = s.getExternalId() + "$" + g[1];
 						s.createFunctionalGroupIfAbsent(groupExternalId, g[1]);
@@ -113,7 +113,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] c = ((String) o).split("\\$");
 				if (c.length == 2) {
-					Structure s = importer.getStructure(c[0]);
+					ImporterStructure s = importer.getStructure(c[0]);
 					if (s != null) {
 						String classExternalId = s.getExternalId() + "$" + c[1];
 						s.createClassIfAbsent(classExternalId, c[1]);

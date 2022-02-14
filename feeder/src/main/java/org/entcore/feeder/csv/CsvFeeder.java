@@ -25,7 +25,7 @@ import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import org.entcore.feeder.utils.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -97,7 +97,7 @@ public class CsvFeeder implements Feed {
 			public void handle(AsyncResult<List<String>> event) {
 				if (event.succeeded() && event.result().size() == 1) {
 					final String path = event.result().get(0);
-					final Structure s;
+					final ImporterStructure s;
 					try {
 						JsonObject structure = CSVUtil.getStructure(path);
 						final String overrideClass = structure.getString("overrideClass");
@@ -142,7 +142,7 @@ public class CsvFeeder implements Feed {
 		});
 	}
 
-	private void launchFiles(final String path, final List<String> files, final Structure structure,
+	private void launchFiles(final String path, final List<String> files, final ImporterStructure structure,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
 		if (importer.getReport() != null && importer.getReport().isNotReverseFilesOrder()) { // pronote case
 			Collections.sort(files);
@@ -294,7 +294,7 @@ public class CsvFeeder implements Feed {
 		}
 	}
 
-	public void start(final String profile, final Structure structure, String file, String charset,
+	public void start(final String profile, final ImporterStructure structure, String file, String charset,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
 		importer.getReport().addProfile(profile);
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
@@ -305,7 +305,7 @@ public class CsvFeeder implements Feed {
 		DefaultFunctions.createOrUpdateFunctions(importer);
 
 		final Validator validator = ManualFeeder.profiles.get(profile);
-//		final Structure structure = importer.getStructure(structureExternalId);
+//		final ImporterStructure structure = importer.getStructure(structureExternalId);
 //		if (structure == null) {
 //			handler.handle(new ResultMessage().error("invalid.structure"));
 //			return;
@@ -649,7 +649,7 @@ public class CsvFeeder implements Feed {
 	//	importer.persist(handler);
 	}
 
-	private void createFunctionDisciplineGroup(String profile, Structure structure, JsonObject user, List<String[]> groups) {
+	private void createFunctionDisciplineGroup(String profile, ImporterStructure structure, JsonObject user, List<String[]> groups) {
 		if (user.getJsonArray("functions") != null && user.getJsonArray("functions").size() > 0) {
 			for (Object o: user.getJsonArray("functions")) {
 				if (!(o instanceof String)) continue;
@@ -699,7 +699,7 @@ public class CsvFeeder implements Feed {
 		}
 	}
 
-	public static void generateUserExternalId(JsonObject props, String c, Structure structure, long seed) {
+	public static void generateUserExternalId(JsonObject props, String c, ImporterStructure structure, long seed) {
 		String externalId = props.getString("externalId");
 		if (externalId != null && !externalId.trim().isEmpty()) {
 			return;
@@ -710,7 +710,7 @@ public class CsvFeeder implements Feed {
 		}
 	}
 
-	protected static String getHashMapping(JsonObject props, String c, Structure structure, long seed) {
+	protected static String getHashMapping(JsonObject props, String c, ImporterStructure structure, long seed) {
 		String mapping = structure.getExternalId()+props.getString("surname", "")+
 				props.getString("lastName", "")+props.getString("firstName", "")+
 				props.getString("email","")+props.getString("title","")+
@@ -724,7 +724,7 @@ public class CsvFeeder implements Feed {
 		return null;
 	}
 
-	public static void generateRelativeUserExternalId(JsonObject props, Structure structure) {
+	public static void generateRelativeUserExternalId(JsonObject props, ImporterStructure structure) {
 		String externalId = props.getString("externalId");
 		if (externalId != null && !externalId.trim().isEmpty()) {
 			return;
@@ -735,7 +735,7 @@ public class CsvFeeder implements Feed {
 		}
 	}
 
-	protected static String getRelativeHashMapping(JsonObject props, Structure structure) {
+	protected static String getRelativeHashMapping(JsonObject props, ImporterStructure structure) {
 		String mapping = structure.getExternalId()+
 				props.getString("lastName", "")+props.getString("firstName", "");
 		try {

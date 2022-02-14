@@ -42,34 +42,19 @@ public class Structure {
 	private static final Logger log = LoggerFactory.getLogger(Structure.class);
 	protected final String id;
 	protected final String externalId;
-	protected final Importer importer = Importer.getInstance();
+	protected TransactionHelper transactionHelper = null;
 	protected JsonObject struct;
-	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
-	protected final Set<String> groups = Collections.synchronizedSet(new HashSet<String>());
-	protected final Set<String> classesGroups = Collections.synchronizedSet(new HashSet<String>());
 	private transient String overrideClass;
 
 	public Structure(JsonObject struct) {
 		this(struct.getString("externalId"), struct);
 	}
 
-	protected Structure(JsonObject struct, JsonArray groups, JsonArray classes) {
-		this(struct);
-		if (groups != null) {
-			for (Object o : groups) {
-				if (!(o instanceof String)) continue;
-				this.groups.add((String) o);
-			}
-		}
-		if (classes != null) {
-			for (Object o : classes) {
-				if (!(o instanceof String)) continue;
-				this.classes.add((String) o);
-			}
-		}
+	protected Structure(String externalId, JsonObject struct) {
+		this(externalId, struct, null);
 	}
 
-	protected Structure(String externalId, JsonObject struct) {
+	protected Structure(String externalId, JsonObject struct, TransactionHelper tHelper) {
 		if (struct != null && externalId != null && externalId.equals(struct.getString("externalId"))) {
 			this.id = struct.getString("id");
 		} else {
@@ -77,10 +62,18 @@ public class Structure {
 		}
 		this.externalId = externalId;
 		this.struct = struct;
+		this.transactionHelper = tHelper;
 	}
 
-	private TransactionHelper getTransaction() {
-		return importer.getTransaction();
+	public void setTransaction(TransactionHelper tHelper)
+	{
+		this.transactionHelper = tHelper;
+	}
+
+	protected TransactionHelper getTransaction() {
+		if(this.transactionHelper == null)
+			log.error("Missing transaction helper in Structure");
+		return this.transactionHelper;
 	}
 
 	public void update(JsonObject struct) {
@@ -179,7 +172,6 @@ public class Structure {
 	}
 
 	public void createClassIfAbsent(String classExternalId, String name) {
-		if (classes.add(classExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
@@ -197,11 +189,9 @@ public class Structure {
 							.put("name", name)
 					);
 			getTransaction().add(query, params);
-		}
 	}
 
 	public void updateClassName(String classExternalId, String name) {
-		if (classes.contains(classExternalId)) {
 			String query =
 					"MATCH (c:Class { externalId : {externalId}})<-[:DEPENDS]-(g:ProfileGroup) " +
 					"WHERE c.name <> {name} " +
@@ -211,7 +201,6 @@ public class Structure {
 					.put("name", name)
 					.put("groupSearchField", Validator.sanitize(name));
 			getTransaction().add(query, params);
-		}
 	}
 
 	public void createFunctionalGroupIfAbsent(String groupExternalId, String name)
@@ -220,7 +209,6 @@ public class Structure {
 	}
 
 	public void createFunctionalGroupIfAbsent(String groupExternalId, String name, String source) {
-		if (groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " : "WHERE s.timetable = {source} ") +
@@ -237,7 +225,6 @@ public class Structure {
 					);
 			params.put("source", source);
 			getTransaction().add(query, params);
-		}
 	}
 
 	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label)
@@ -246,7 +233,7 @@ public class Structure {
 	}
 
 	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label, String source) {
-		if (isNotEmpty(label) && groups.add(groupExternalId)) {
+		if (isNotEmpty(label)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '' OR s.timetable = 'NOP') " : "WHERE s.timetable = s.source ") +
@@ -267,10 +254,17 @@ public class Structure {
 		}
 	}
 
-	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name) {
-		String structureGroupExternalId = this.externalId + "-ht";
-		String classGroupExternalId = classExternalId + "-ht";
-		if (groups.add(structureGroupExternalId)) {
+	public String getHeadTeacherGroupExternalId() {
+		return this.externalId + "-ht";
+	}
+
+	public String getClassHeadTeacherGroupExternalId(String classExternalId) {
+		return classExternalId + "-ht";
+	}
+
+	public String createHeadTeacherGroupIfAbsent()
+	{
+		String structureGroupExternalId = this.getHeadTeacherGroupExternalId();
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"CREATE s<-[:DEPENDS]-(c:Group:HTGroup {props}) " +
@@ -285,8 +279,12 @@ public class Structure {
 							.put("filter", "HeadTeacher")
 					);
 			getTransaction().add(query, params);
-		}
-		if (classesGroups.add(classGroupExternalId)) {
+		return structureGroupExternalId;
+	}
+
+	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name) {
+		String structureGroupExternalId = this.createHeadTeacherGroupIfAbsent();
+		String classGroupExternalId = this.getClassHeadTeacherGroupExternalId(classExternalId);
 			String query =
 					"MATCH (c:Class { externalId : {classExternalId}}) " +
 					"MERGE c<-[:DEPENDS]-(cg:Group:HTGroup {externalId: {externalId}}) " +
@@ -308,13 +306,15 @@ public class Structure {
 					.put("structureGroupExternalId", structureGroupExternalId)
 					.put("classGroupExternalId", classGroupExternalId);
 			getTransaction().add(linkParent, pl);
-		}
 		return new String[]{structureGroupExternalId, classGroupExternalId};
 	}
 
+	public String getDirectionGroupExternalId() {
+		return this.externalId + "-dir";
+	}
+
 	public String createDirectionGroupIfAbsent() {
-		String groupExternalId = this.externalId + "-dir";
-		if (groups.add(groupExternalId)) {
+		String groupExternalId = this.getDirectionGroupExternalId();
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"CREATE s<-[:DEPENDS]-(c:Group:DirectionGroup {props}) " +
@@ -329,7 +329,6 @@ public class Structure {
 							.put("filter", "Direction")
 					);
 			getTransaction().add(query, params);
-		}
 		return groupExternalId;
 	}
 

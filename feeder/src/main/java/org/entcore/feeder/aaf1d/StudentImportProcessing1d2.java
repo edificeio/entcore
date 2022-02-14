@@ -20,7 +20,7 @@
 package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.StudentImportProcessing2;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -75,7 +75,7 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 				if (!(o instanceof String)) continue;
 				String [] c = ((String) o).split("\\$");
 				if (c.length == 5) {
-					Structure s = importer.getStructure(c[0]);
+					ImporterStructure s = importer.getStructure(c[0]);
 					if (s != null) {
 						String classExternalId = getAcademyPrefix() + c[3];
 						s.createClassIfAbsent(classExternalId, c[4]);

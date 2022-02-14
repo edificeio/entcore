@@ -81,7 +81,7 @@ public class Transition {
 		if (tx == null) {
 			return;
 		}
-		Structure structure = GraphData.getStructures().get(structureExternalId);
+		ImporterStructure structure = GraphData.getStructures().get(structureExternalId);
 		if (structure == null) {
 			log.error("Missing structure with externalId : " + structureExternalId);
 			if (handler != null) {
@@ -107,7 +107,7 @@ public class Transition {
 				public void handle(Message<JsonObject> m) {
 					if ("ok".equals(m.body().getString("status"))) {
 
-						Structure s = GraphData.getStructures().get(structuresExternalId[j]);
+						ImporterStructure s = GraphData.getStructures().get(structuresExternalId[j]);
 						if (s == null) {
 							log.error("Missing structure with externalId : " +
 									structuresExternalId[j]);
