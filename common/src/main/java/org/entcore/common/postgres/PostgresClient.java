@@ -14,7 +14,6 @@ import io.vertx.core.logging.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.*;
 
-//TODO merge with entcore common
 public class PostgresClient {
     private final Vertx vertx;
     private final JsonObject config;
