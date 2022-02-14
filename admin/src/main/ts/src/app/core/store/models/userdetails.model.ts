@@ -112,6 +112,14 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.put(`/directory/userbook/${this.id}`, {picture: ''});
     }
 
+    userMotto() {
+        return this.http.get(`/directory/userbook/${this.id}`);
+    }
+
+    deleteUserMotto() {
+        return this.http.put(`/directory/userbook/${this.id}`, {motto: ''});
+    }
+
     addHeadTeacherManual(structureId: string, structureExternalId: string, classe: any) {
         const relationToAdd = classe.externalId;
         return this.http.post(`/directory/${structureId}/user/${this.id}/headteacher`, {

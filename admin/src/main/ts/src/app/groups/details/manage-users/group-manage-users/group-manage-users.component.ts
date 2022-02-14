@@ -21,7 +21,6 @@ import { StructureModel } from "src/app/core/store/models/structure.model";
 import { globalStore } from "src/app/core/store/global.store";
 import { Session } from "src/app/core/store/mappings/session";
 import { SessionModel } from "src/app/core/store/models/session.model";
-import { UserDetailsModel } from "src/app/core/store/models/userdetails.model";
 
 @Component({
   selector: "ode-group-manage-users",
@@ -93,10 +92,12 @@ export class GroupManageUsersComponent
     ) {
       this.isLoading = true;
       this.spinner.perform(
-        "group-manage-users", this.groupsStore.structure.users.sync().then(() => {
+        "group-manage-users",
+        this.groupsStore.structure.users.sync().then(() => {
           this.populateInputUsers(this.groupsStore.structure.users.data);
           this.isLoading = false;
-        }));
+        })
+      );
     } else {
       this.populateInputUsers(this.groupsStore.structure.users.data);
     }
@@ -137,7 +138,7 @@ export class GroupManageUsersComponent
 
     if (session.functions && session.functions["ADMIN_LOCAL"]) {
       const { code, scope } = session.functions["ADMIN_LOCAL"];
-      
+
       this.hasStructures = scope && scope.length > 1;
       this.isADML = code === "ADMIN_LOCAL";
     } else {

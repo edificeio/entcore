@@ -757,6 +757,10 @@
   "notify.user.remove.photo.content": "La photo de l'utilisateur {{user}} sera supprimée d'ici peu.",
   "notify.user.remove.photo.error.title": "Erreur lors de la suppression de la photo",
   "notify.user.remove.photo.error.content": "La photo de l'utilisateur {{user}} n'a pas pu être supprimée.",
+  "notify.user.remove.motto.title": "Suppression de la devise de l'utilisateur",
+  "notify.user.remove.motto.content": "La devise de l'utilisateur {{user}} a été supprimée.",
+  "notify.user.remove.motto.error.title": "Erreur lors de la suppression de la devise",
+  "notify.user.remove.motto.error.content": "La devise de l'utilisateur {{user}} n'a pas pu être supprimée.",
   "notify.user.add.adml.title": "Rôle d'Administrateur local attribué",
   "notify.user.add.adml.content": "Le rôle d'Administrateur local a bien été attribué à l'utilisateur {{user}}.",
   "notify.user.add.adml.error.title": "Erreur lors de l'attribution de rôle Administrateur local",
@@ -1404,5 +1408,12 @@
   "maxicours-widget": "Maxicours",
   "rss-widget": "RSS",
   "bookmark-widget": "Signets",
-  "dicodelazone-widget": "Dico de la zone"
+  "dicodelazone-widget": "Dico de la zone",
+
+  "panel.motto": "Devise",
+  "non-existent.user.motto": "Aucune devise définie pour ce compte",
+  "delete.user.motto": "Supprimer la devise",
+  "user.administration.rights": "Droits d'administration",
+  "user.toggle.rights": "Modifier les droits",
+  "non-existent.user.rights": "Aucun droit d'administration"
 }
