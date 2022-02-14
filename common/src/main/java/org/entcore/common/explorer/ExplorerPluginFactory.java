@@ -1,5 +1,11 @@
 package org.entcore.common.explorer;
 
+import fr.wseduc.webutils.data.FileResolver;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
+import org.entcore.common.mongodb.MongoClientFactory;
+import org.entcore.common.postgres.PostgresClient;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
