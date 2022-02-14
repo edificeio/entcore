@@ -21,7 +21,7 @@ package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -63,7 +63,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		Structure structure = importer.createOrUpdateStructure(object);
+		ImporterStructure structure = importer.createOrUpdateStructure(object);
 		if (structure != null) {
 			importer.forceStructureSource(structure);
 			structure.addAttachment();

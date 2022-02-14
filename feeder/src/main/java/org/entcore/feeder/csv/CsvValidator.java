@@ -25,7 +25,8 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
+import org.entcore.feeder.dictionary.structures.ImporterCachedStructure;
 import fr.wseduc.webutils.collections.Joiner;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -316,7 +317,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("externalId", structure), r -> {
 			final JsonArray res = r.body().getJsonArray("result");
 			if ("ok".equals(r.body().getString("status")) && res != null) {
-				final Structure struct = new Structure(new JsonObject().put("externalId", structure));
+				final ImporterStructure struct = new ImporterCachedStructure(new JsonObject().put("externalId", structure));
 				for (Object o: res) {
 					if (!(o instanceof JsonObject)) continue;
 					final JsonObject user = (JsonObject) o;
@@ -631,9 +632,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			final Map<String, String> existExternalIdLogin, final String charset, final Handler<JsonObject> handler) {
 		addProfile(profile);
 		final Validator validator = profiles.get(profile);
-		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<Structure>() {
+		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<ImporterStructure>() {
 			@Override
-			public void handle(final Structure structure) {
+			public void handle(final ImporterStructure structure) {
 				if (structure == null) {
 					addError(profile, "invalid.structure");
 					handler.handle(result);
@@ -1060,7 +1061,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	}
 
-	private void getStructure(final String path, final Handler<Structure> handler) {
+	private void getStructure(final String path, final Handler<ImporterStructure> handler) {
 		String query = "MATCH (s:Structure {externalId:{id}})" +
 				"return s.id as id, s.externalId as externalId, s.UAI as UAI, s.name as name";
 		TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("id", structureId), new Handler<Message<JsonObject>>() {
@@ -1068,7 +1069,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			public void handle(Message<JsonObject> event) {
 				JsonArray result = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
-					final Structure s = new Structure(result.getJsonObject(0));
+					final ImporterStructure s = new ImporterCachedStructure(result.getJsonObject(0));
 					try {
 						final JsonObject structure = CSVUtil.getStructure(path);
 						final String overrideClass = structure.getString("overrideClass");
@@ -1083,7 +1084,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					try {
 						final JsonObject structure = CSVUtil.getStructure(path);
 						final String overrideClass = structure.getString("overrideClass");
-						final Structure s = new Structure(structure);
+						final ImporterStructure s = new ImporterCachedStructure(structure);
 						if (isNotEmpty(overrideClass)) {
 							s.setOverrideClass(overrideClass);
 						}

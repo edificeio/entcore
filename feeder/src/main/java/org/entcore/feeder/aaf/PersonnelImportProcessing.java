@@ -20,7 +20,7 @@
 package org.entcore.feeder.aaf;
 
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -99,7 +99,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] m = ((String) o).split("\\$");
 				if (m.length == 3) {
-					Structure s = importer.getStructure(m[0]);
+					ImporterStructure s = importer.getStructure(m[0]);
 					if (s != null) {
 						s.linkModules(m[1]);
 					}
@@ -114,7 +114,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
 				if (g.length == 2 || g.length == 3) {
-					Structure s = importer.getStructure(g[0]);
+					ImporterStructure s = importer.getStructure(g[0]);
 					if (s != null) {
 						String groupExternalId = s.getExternalId() + "$" + g[1];
 						s.createFunctionalGroupIfAbsent(groupExternalId, g[1]);
@@ -146,7 +146,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] c = ((String) o).split("\\$");
 				if (c.length == 2 || c.length == 3) {
-					Structure s = importer.getStructure(c[0]);
+					ImporterStructure s = importer.getStructure(c[0]);
 					if (s != null) {
 						String classExternalId = s.getExternalId() + "$" + c[1];
 						s.createClassIfAbsent(classExternalId, c[1]);
@@ -166,7 +166,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
 				if (g.length == 5) {
-					Structure s = importer.getStructure(g[0]);
+					ImporterStructure s = importer.getStructure(g[0]);
 					String groupExternalId;
 					if (s != null) {
 						if ("ENS".equals(g[1])) {
@@ -199,7 +199,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
 				if (g.length == 2) {
-					Structure s = importer.getStructure(g[0]);
+					ImporterStructure s = importer.getStructure(g[0]);
 					if (s != null) {
 						String classGroupExternalId = s.getExternalId() + "$" + g[1];
 						String[] structureGroupExternalId = s.createHeadTeacherGroupIfAbsent(classGroupExternalId, g[1]);
@@ -223,7 +223,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		if (direction != null && direction.size() > 0) {
 			for (Object o: direction) {
 				if (!(o instanceof String)) continue;
-				Structure s = importer.getStructure((String)o);
+				ImporterStructure s = importer.getStructure((String)o);
 				if (s != null) {
 					String structureGroupExternalId = s.createDirectionGroupIfAbsent();
 					if (linkStructureGroups != null) {

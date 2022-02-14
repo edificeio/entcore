@@ -21,7 +21,7 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.PersonnelImportProcessing;
-import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -120,7 +120,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
 				if (g.length == 5) {
-					Structure s = importer.getStructure(g[0]);
+					ImporterStructure s = importer.getStructure(g[0]);
 
 					if(s != null && DIRECTION_FONCTIONS.contains(g[4]) == true)
 							createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);

@@ -46,7 +46,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Importer {
 
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
-	private ConcurrentMap<String, Structure> structures;
+	private ConcurrentMap<String, ImporterStructure> structures;
 	private ConcurrentMap<String, Profile> profiles;
 	private Set<String> userImportedExternalId = new HashSet<>();
 	private TransactionHelper transactionHelper;
@@ -60,7 +60,7 @@ public class Importer {
 	private boolean firstImport = false;
 	private String currentSource;
 	private Neo4j neo4j;
-	private ConcurrentMap<String, Structure> structuresByUAI;
+	private ConcurrentMap<String, ImporterStructure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
@@ -242,7 +242,7 @@ public class Importer {
 		transactionHelper = new TransactionHelper(neo4j, 1000);
 	}
 
-	public Structure createOrUpdateStructure(JsonObject struct) {
+	public ImporterStructure createOrUpdateStructure(JsonObject struct) {
 		JsonArray groups = null;
 		if (struct != null) {
 			groups = struct.getJsonArray("groups");
@@ -251,7 +251,7 @@ public class Importer {
 		if(name != null)
 			struct.put("feederName", name); // This is used to reset manual names
 		final String error = structureValidator.validate(struct);
-		Structure s = null;
+		ImporterStructure s = null;
 		if (error != null) {
 			report.addIgnored("Structure", error, struct);
 			log.warn(error);
@@ -293,7 +293,7 @@ public class Importer {
 					s.update(struct);
 				} else {
 					try {
-						s = new Structure(externalId, struct);
+						s = new ImporterCachedStructure(externalId, struct);
 						structures.putIfAbsent(externalId, s);
 						s.create();
 					} catch (IllegalArgumentException e) {
@@ -305,7 +305,7 @@ public class Importer {
 		return s;
 	}
 
-	public void forceStructureSource(Structure s)
+	public void forceStructureSource(ImporterStructure s)
 	{
 		s.setSource(currentSource);
 	}
@@ -895,7 +895,7 @@ public class Importer {
 		transactionHelper.add(query, new JsonObject().put("source", source));
 	}
 
-	public Structure getStructure(String externalId) {
+	public ImporterStructure getStructure(String externalId) {
 		return structures.get(externalId);
 	}
 

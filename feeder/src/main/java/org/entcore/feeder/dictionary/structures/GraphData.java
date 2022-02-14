@@ -32,9 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GraphData {
 
-	private static final ConcurrentMap<String, Structure> structures = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, ImporterStructure> structures = new ConcurrentHashMap<>();
 	private static final ConcurrentMap<String, Profile> profiles = new ConcurrentHashMap<>();
-	private static final ConcurrentMap<String, Structure> structuresByUAI = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, ImporterStructure> structuresByUAI = new ConcurrentHashMap<>();
 	private static final ConcurrentHashMap<String, String> externalIdMapping = new ConcurrentHashMap<>();
 
 	static void loadData(final Neo4j neo4j, final Handler<Message<JsonObject>> handler) {
@@ -75,7 +75,7 @@ public class GraphData {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject r = (JsonObject) o;
 						JsonObject s = r.getJsonObject("s", new JsonObject()).getJsonObject("data");
-						Structure structure = new Structure(s, r.getJsonArray("groups"), r.getJsonArray("classes"));
+						ImporterStructure structure = new ImporterCachedStructure(s, r.getJsonArray("groups"), r.getJsonArray("classes"));
 						String externalId = s.getString("externalId");
 						structures.put(externalId, structure);
 						String UAI = s.getString("UAI");
@@ -112,11 +112,11 @@ public class GraphData {
 		return profiles;
 	}
 
-	public static ConcurrentMap<String, Structure> getStructures() {
+	public static ConcurrentMap<String, ImporterStructure> getStructures() {
 		return structures;
 	}
 
-	public static ConcurrentMap<String, Structure> getStructuresByUAI() {
+	public static ConcurrentMap<String, ImporterStructure> getStructuresByUAI() {
 		return structuresByUAI;
 	}
 
