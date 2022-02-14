@@ -10,19 +10,29 @@
 
       <ode-form-field label="loginAlias">
         <div>
-          <input type="text"
-                 [(ngModel)]="details.loginAlias"
-                 name="loginAlias"
-                 [pattern]="loginAliasPattern"
-                 #loginAliasInput="ngModel">
-          <button type="button"
-                  (click)="updateLoginAlias()"
-                  [disabled]="infoForm.pristine || infoForm.invalid || spinner.isLoading('portal-content')">
+          <input
+            type="text"
+            [(ngModel)]="details.loginAlias"
+            name="loginAlias"
+            [pattern]="loginAliasPattern"
+            #loginAliasInput="ngModel"
+          />
+          <button
+            type="button"
+            (click)="updateLoginAlias()"
+            [disabled]="
+              infoForm.pristine ||
+              infoForm.invalid ||
+              spinner.isLoading('portal-content')
+            "
+          >
             <s5l>login.update</s5l>
             <i class="fa fa-floppy-o"></i>
           </button>
-          <ode-form-errors [control]="loginAliasInput"
-                       [expectedPatternMsg]="'form.user.alias.pattern' | translate">
+          <ode-form-errors
+            [control]="loginAliasInput"
+            [expectedPatternMsg]="'form.user.alias.pattern' | translate"
+          >
           </ode-form-errors>
         </div>
       </ode-form-field>
@@ -52,45 +62,59 @@
       <ode-form-field label="mergeKey" *ngIf="user.type === 'Relative'">
         <div>
           <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
-          <button type="button"
-                  class="noflex"
-                  *ngIf="!details.mergeKey"
-                  (click)="generateMergeKey()"
-                  [disabled]="user.deleteDate != null">
+          <button
+            type="button"
+            class="noflex"
+            *ngIf="!details.mergeKey"
+            (click)="generateMergeKey()"
+            [disabled]="user.deleteDate != null"
+          >
             <s5l>generate</s5l>
             <i class="fa fa-cog"></i>
           </button>
         </div>
       </ode-form-field>
-      <ode-form-field 
-        label="functions" 
+      <ode-form-field
+        label="functions"
         *ngIf="!user.deleteDate && !simpleUserDetails"
       >
         <div>
           <div *ngIf="!details.isAdmc()">
-            <button type="button"
-                    *ngIf="showAddAdmlButton()"
-                    (click)="showAddAdmlConfirmation = true">
+            <button
+              type="button"
+              *ngIf="showAddAdmlButton()"
+              (click)="showAddAdmlConfirmation = true"
+            >
               <s5l>adml.add</s5l>
               <i class="fa fa-cog"></i>
             </button>
 
             <ode-lightbox-confirm
-                [show]="showAddAdmlConfirmation"
-                [lightboxTitle]="'warning'"
-                (onConfirm)="addAdml()"
-                (onCancel)="showAddAdmlConfirmation = false">
-                <p>
-                  <s5l [s5l-params]="{userName: user.displayName, userProfile: user.type | translate, structureName: structure.name}">user.add.adml.disclaimer.info</s5l>
-                </p>
-                <p>
-                  <s5l>user.add.adml.disclaimer.confirm</s5l>
-                </p>
+              [show]="showAddAdmlConfirmation"
+              [lightboxTitle]="'warning'"
+              (onConfirm)="addAdml()"
+              (onCancel)="showAddAdmlConfirmation = false"
+            >
+              <p>
+                <s5l
+                  [s5l-params]="{
+                    userName: user.displayName,
+                    userProfile: user.type | translate,
+                    structureName: structure.name
+                  }"
+                  >user.add.adml.disclaimer.info</s5l
+                >
+              </p>
+              <p>
+                <s5l>user.add.adml.disclaimer.confirm</s5l>
+              </p>
             </ode-lightbox-confirm>
 
-            <button type="button"
-                    *ngIf="details.isAdml(this.structure.id)"
-                    (click)="showRemoveAdmlConfirmation = true">
+            <button
+              type="button"
+              *ngIf="details.isAdml(this.structure.id)"
+              (click)="showRemoveAdmlConfirmation = true"
+            >
               <s5l>adml.remove</s5l>
               <i class="fa fa-cog"></i>
             </button>
@@ -99,17 +123,23 @@
             <div>
               <span>{{ func[0] | translate }}</span>
               <span *ngIf="func[1] && func[1].length > 0">
-                                        ({{ displayAdmlStructureNames(func[1]) }})
-                                    </span>
+                ({{ displayAdmlStructureNames(func[1]) }})
+              </span>
             </div>
             <div *ngIf="func[0] == 'ADMIN_LOCAL'">
               <ode-lightbox-confirm
                 [show]="showRemoveAdmlConfirmation"
                 [lightboxTitle]="'warning'"
                 (onConfirm)="removeAdml()"
-                (onCancel)="showRemoveAdmlConfirmation = false">
-                <p>{{ 'user.remove.adml.disclaimer.info' | translate:{username: user.displayName} }}</p>
-                <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
+                (onCancel)="showRemoveAdmlConfirmation = false"
+              >
+                <p>
+                  {{
+                    "user.remove.adml.disclaimer.info"
+                      | translate: { username: user.displayName }
+                  }}
+                </p>
+                <p>{{ "user.remove.adml.disclaimer.confirm" | translate }}</p>
               </ode-lightbox-confirm>
             </div>
           </div>
@@ -119,27 +149,48 @@
   </form>
   <form>
     <fieldset>
-      <ode-form-field label="send.reset.password" *ngIf="!details.activationCode">
+      <ode-form-field
+        label="send.reset.password"
+        *ngIf="!details.activationCode"
+      >
         <div>
           <div class="sendPassword">
-            <input type="email" [(ngModel)]="passwordResetMail" name="passwordResetMail"
-                   [attr.placeholder]="'send.reset.password.email.placeholder' | translate"
-                   #passwordMailInput="ngModel" [pattern]="emailPattern">
-            <button type="button" (click)="sendResetPasswordMail(passwordResetMail)"
-                    [disabled]="!passwordResetMail || passwordMailInput.errors">
+            <input
+              type="email"
+              [(ngModel)]="passwordResetMail"
+              name="passwordResetMail"
+              [attr.placeholder]="
+                'send.reset.password.email.placeholder' | translate
+              "
+              #passwordMailInput="ngModel"
+              [pattern]="emailPattern"
+            />
+            <button
+              type="button"
+              (click)="sendResetPasswordMail(passwordResetMail)"
+              [disabled]="!passwordResetMail || passwordMailInput.errors"
+            >
               <span><s5l>send.reset.password.button</s5l></span>
               <i class="fa fa-envelope"></i>
             </button>
           </div>
 
           <div class="sendPassword" *ngIf="smsModule">
-            <input type="tel" [(ngModel)]="passwordResetMobile" name="passwordResetMobile"
-                   [attr.placeholder]="'send.reset.password.mobile.placeholder' | translate"
-                   #passwordMobileInput="ngModel">
-            <button type="button"
-                    class="mobile"
-                    (click)="sendResetPasswordMobile(passwordResetMobile)"
-                    [disabled]="!passwordResetMobile || passwordMobileInput.errors">
+            <input
+              type="tel"
+              [(ngModel)]="passwordResetMobile"
+              name="passwordResetMobile"
+              [attr.placeholder]="
+                'send.reset.password.mobile.placeholder' | translate
+              "
+              #passwordMobileInput="ngModel"
+            />
+            <button
+              type="button"
+              class="mobile"
+              (click)="sendResetPasswordMobile(passwordResetMobile)"
+              [disabled]="!passwordResetMobile || passwordMobileInput.errors"
+            >
               <span><s5l>send.reset.password.button</s5l></span>
               <i class="fa fa-mobile"></i>
             </button>
@@ -147,15 +198,29 @@
         </div>
       </ode-form-field>
 
-      <ode-form-field label="password.renewal.code" *ngIf="!details.activationCode">
+      <ode-form-field
+        label="password.renewal.code"
+        *ngIf="!details.activationCode"
+      >
         <div>
           <button type="button" (click)="clickOnGenerateRenewalCode()">
             <span><s5l>generate.password.renewal.code</s5l></span>
           </button>
           <span *ngIf="renewalCode">
-                                <s5l *ngIf="config['reset-code-delay'] && config['reset-code-delay'] > 0" [s5l-params]="{numberOfDays: millisecondToDays(config['reset-code-delay'])}">generated.password.renewal.code.with.lifespan</s5l>
-                                <s5l *ngIf="config['reset-code-delay'] == 0">generated.password.renewal.code</s5l>
-                                 : {{renewalCode}}</span>
+            <s5l
+              *ngIf="
+                config['reset-code-delay'] && config['reset-code-delay'] > 0
+              "
+              [s5l-params]="{
+                numberOfDays: millisecondToDays(config['reset-code-delay'])
+              }"
+              >generated.password.renewal.code.with.lifespan</s5l
+            >
+            <s5l *ngIf="config['reset-code-delay'] == 0"
+              >generated.password.renewal.code</s5l
+            >
+            : {{ renewalCode }}</span
+          >
         </div>
       </ode-form-field>
 
@@ -165,7 +230,11 @@
             <span><s5l>individual.massmail.pdf</s5l></span>
             <i class="fa fa-file-pdf-o"></i>
           </button>
-          <button type="button" (click)="showMassMailConfirmation = true" [disabled]="!details.email">
+          <button
+            type="button"
+            (click)="showMassMailConfirmation = true"
+            [disabled]="!details.email"
+          >
             <span><s5l>individual.massmail.mail</s5l></span>
             <i class="fa fa-envelope"></i>
           </button>
@@ -173,7 +242,8 @@
             [show]="showMassMailConfirmation"
             [lightboxTitle]="'warning'"
             (onConfirm)="sendIndividualMassMail('mail')"
-            (onCancel)="showMassMailConfirmation = false">
+            (onCancel)="showMassMailConfirmation = false"
+          >
             <s5l>individual.massmail.confirm</s5l>
           </ode-lightbox-confirm>
         </div>

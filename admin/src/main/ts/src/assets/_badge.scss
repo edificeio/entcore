@@ -1,0 +1,53 @@
+@import "./variables";
+
+.badge {
+    font-size: 0.8em;
+    padding: 0.2em 10px;
+    border-radius: 5px;
+
+    // profile
+    &.profile {
+      color: $grey-dark;
+      border: 1px solid $shadow-light;
+      background-color: $white-transparent;
+      font-size: 12px;
+      font-style: normal;
+      border-radius: 30px;
+      padding: 5px 15px;
+      text-align: center;
+      &::before {
+        content: " ";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+    }
+    &.Student.profile::before {
+      background-color: $orange;
+    }
+    &.Teacher.profile::before {
+      background-color: $green;
+    }
+    &.Relative.profile::before {
+      background-color: $cyan;
+    }
+    &.Personnel.profile::before {
+      background-color: $purple;
+    }
+    &.Guest.profile::before {
+      background-color: $pink;
+    }
+    
+    // alert
+    &.alert {
+        background-color: $danger;
+        color: white;
+    }
+    // info
+    &.info {
+        background-color: $info;
+        color: white;
+    }
+}
