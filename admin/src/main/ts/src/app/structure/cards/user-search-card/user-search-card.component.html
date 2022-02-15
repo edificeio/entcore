@@ -25,7 +25,7 @@
     <ul *ngIf="foundUsers && foundUsers.length > 0">
       <li *ngFor="let user of foundUsers">
         <a [routerLink]="['users', 'list', user.id, 'details']">
-          {{ user.lastName | uppercase }} {{ user.firstName }}
+          {{ user.lastName | uppercase }} {{ user.firstName }} <span class="user__search__results--displayName">({{ user.displayName }})</span>
         </a>
       </li>
     </ul>

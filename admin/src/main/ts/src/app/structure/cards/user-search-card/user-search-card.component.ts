@@ -5,6 +5,7 @@ import { StructureModel } from '../../../core/store/models/structure.model';
 @Component({
     selector: 'ode-user-search-card',
     templateUrl: './user-search-card.component.html',
+    styleUrls: ['./user-search-card.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserSearchCardComponent extends OdeComponent implements AfterViewInit {
@@ -35,10 +36,5 @@ export class UserSearchCardComponent extends OdeComponent implements AfterViewIn
             this.foundUsers = [];
         }
         this.changeDetector.markForCheck();
-    }
-
-    ngAfterViewInit() {
-        this.changeDetector.markForCheck();
-        this.changeDetector.detectChanges();
     }
 }
