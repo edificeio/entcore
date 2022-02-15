@@ -14,6 +14,7 @@ import { WidgetsListComponent } from './widgets/list/widgets-list.component';
 import { WidgetsResolver } from './widgets/list/widgets.resolver';
 import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
+import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-myapps-parameters.component';
 
 export let routes: Routes = [
     {
@@ -66,7 +67,18 @@ export let routes: Routes = [
                         component: SmartWidgetComponent,
                         resolve: {
                             roles: WidgetRolesResolver
-                        }
+                        },
+                        children: [
+                            {
+                                path: 'myapps-params',
+                                component: WidgetMyAppsParametersComponent,
+                                resolve: {
+                                    // my-apps parameters
+                                    apps: ApplicationsResolver, 
+                                    connectors: ConnectorsResolver
+                                }
+                            }
+                        ]
                     }
                 ]
             }

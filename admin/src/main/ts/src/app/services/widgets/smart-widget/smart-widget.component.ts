@@ -11,6 +11,10 @@ import { filterRolesByDistributions } from "../../applications/application/smart
 import { ServicesStore } from "../../services.store";
 import { filterWidgetsByLevelsOfEducation } from "../../_shared/services-list/services-list.component";
 import { Assignment } from "../../_shared/services-types";
+import { SessionModel } from 'src/app/core/store/models/session.model';
+import { Session } from 'src/app/core/store/mappings/session';
+
+type SmartWidgetTab = 'assignment' | 'massAssignment' | 'myappsParameters';
 
 @Component({
     selector: 'ode-smart-widget',
@@ -22,11 +26,25 @@ import { Assignment } from "../../_shared/services-types";
     `]
 })
 export class SmartWidgetComponent extends OdeComponent implements OnChanges {
-    public currentTab: 'assignment' | 'massAssignment' = 'assignment';
+    private _currentTab:SmartWidgetTab  = 'assignment';
+    public get currentTab():SmartWidgetTab {
+        return this._currentTab;
+    }
+    public set currentTab( newTab:SmartWidgetTab ) {
+        this._currentTab = newTab;
+        if( newTab==='myappsParameters' ) {
+            this.router.navigate( ['myapps-params'], {relativeTo: this.route});
+        } else {
+            this.router.navigate( ['.'], {relativeTo: this.route});
+        }
+    }
+
     public assignmentGroupPickerList: Array<GroupModel>;
     public currentStructure:StructureModel;
 
     public currentWidgetLevel:string = '';
+
+    private session: Session;
 
     constructor(
         injector: Injector,
@@ -37,12 +55,13 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
         super(injector);
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         super.ngOnInit();
         this.subscriptions.add(this.route.params.subscribe((params: Params) => {
             if (params['widgetId']) {
                 this.servicesStore.widget = this.servicesStore.structure.widgets.data.find(a => a.id === params['widgetId']);
                 this.checkStructureLevelOfEducation();
+                this.currentTab = 'assignment';
             }
         }));
 
@@ -51,8 +70,12 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
                 this.currentStructure = data.structure;
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 this.checkStructureLevelOfEducation();
+                this.currentTab = 'assignment';
             }
         }));
+
+        this.session = await SessionModel.getSession();
+        this.currentTab = 'assignment';
     }
 
     private checkStructureLevelOfEducation(): void {
@@ -65,6 +88,24 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
         } else {
             this.currentWidgetLevel = '';
         }
+    }
+
+    public get canEditMyAppsParameters():boolean {
+        return this.servicesStore.widget.name==='my-apps' 
+            && this.is2D
+            && this.isAdml( this.currentStructure.id );
+    } 
+
+    private get is2D() {
+        return this.currentStructure.levelsOfEducation && this.currentStructure.levelsOfEducation.length && this.currentStructure.levelsOfEducation.indexOf(2) >= 0;
+    }
+
+    private isAdml( structureId:string ) {
+        if (this.session && this.session.functions && this.session.functions["ADMIN_LOCAL"]) {            
+            const { scope } = this.session.functions["ADMIN_LOCAL"];
+            return scope.includes( structureId );
+        }
+        return false;
     }
 
     public async handleMandatoryToggle(assignment: Assignment): Promise<void> {

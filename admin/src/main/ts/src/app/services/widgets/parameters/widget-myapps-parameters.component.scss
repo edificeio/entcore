@@ -1,0 +1,15 @@
+@import "../../../../assets/variables";
+
+.app-params .form-content {
+    min-width: 40rem;
+    min-height: 26rem;
+
+    header {
+        font-weight: bold;
+    }
+
+    i {
+        color: $grey-dark;
+    }
+}
+
