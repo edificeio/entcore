@@ -173,6 +173,7 @@ public class Group {
 
 			tx.add(removeQuery, params);
 			tx.add(linkQuery, params);
+			User.countUsersInGroups(null, "ManualGroup", tx);
 
 			tx.commit(null);
 		}
