@@ -349,10 +349,11 @@ public class DefaultSchoolService implements SchoolService {
 	public void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler) {
 		final String search = StringValidation.sanitize(input);
 		String query =
-			"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
-			"WHERE s.id = {id} " +
-			"AND u.displayNameSearchField CONTAINS {search} " +
-			"RETURN distinct u.id as id, u.firstName as firstName, u.lastName as lastName " +
+			"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {id}}) " +
+			"WHERE u.displayNameSearchField CONTAINS {search} " +
+			"OR u.lastNameSearchField CONTAINS {search} " +
+			"OR u.firstNameSearchField CONTAINS {search} " +
+			"RETURN distinct u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName " +
 			"ORDER BY u.lastName";
 
 		JsonObject params = new JsonObject()
