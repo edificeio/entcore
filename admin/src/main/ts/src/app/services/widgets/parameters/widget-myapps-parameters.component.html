@@ -1,0 +1,60 @@
+<div class="message is-info has-margin-10">
+    <div class="message-body">
+        <s5l>services.widget.myapps.message.info</s5l>
+    </div>
+</div>
+
+<ode-panel-section section-title="services.widget.myapps.parameters.apps">
+
+    <button (click)="showAppLightbox = true" class="">
+        <s5l>services.widget.myapps.choose.app</s5l>
+        <i class="fa fa-plus-circle is-size-5"></i>
+    </button>
+
+    <button (click)="showConnectorLightbox = true" class="">
+        <s5l>services.widget.myapps.choose.connector</s5l>
+        <i class="fa fa-plus-circle is-size-5"></i>
+    </button>
+
+</ode-panel-section>
+
+<ode-lightbox class="app-params" [show]="showAppLightbox" (onClose)="showAppLightbox = false">
+    <form class="form__add-app" [formGroup]="addApplicationForm" (ngSubmit)="addApplication()">
+        <div class="form-content">
+            <header><i class="fa fa-plus is-size-6"></i>&nbsp;<s5l>services.widget.myapps.add.app</s5l></header>
+
+            <ode-form-field label="services.widget.myapps.choose.app">
+                <ode-mono-select
+                    name="application" 
+                    formControlName="selectedApp"
+                    [options]="applicationOptions"
+                    placeholder="services.widget.myapps.choose.in_list"
+                    (ngModelChange)="onApplicationChange($event)">
+                </ode-mono-select>
+            </ode-form-field>
+
+            <ode-form-field label="services.widget.myapps.choose.profiles">
+                <ode-multi-select 
+                    class="lct-profiles-select"
+                    formControlName="profiles"
+                    label="services.widget.myapps.select.profiles"
+                    [options]="profileOptions" 
+                    [trackByFn]="profileTrackByFn" 
+                    [preview]="true">
+                </ode-multi-select>
+            </ode-form-field>
+        </div>
+
+        <div class="action">
+            <button type="button" class="cancel" (click)="reset()">
+                <s5l>cancel</s5l>
+            </button>
+            <button type="button"
+                    class="create confirm"
+                    [disabled]="addApplicationForm.pristine || addApplicationForm.invalid"
+                    (click)="addApplication()">
+                <s5l>save</s5l>
+            </button>
+        </div>
+    </form>
+</ode-lightbox>

@@ -15,6 +15,12 @@
             (click)="currentTab = 'massAssignment'">
         {{ 'services.tab.mass-assignment' | translate }}
     </button>
+    <button class="tab"
+            *ngIf="canEditMyAppsParameters"
+            [ngClass]="{active: currentTab === 'myappsParameters'}"
+            (click)="currentTab = 'myappsParameters'">
+        {{ 'services.tab.parameters' | translate }}
+    </button>
 </div>
 
 <div *ngIf="currentWidgetLevel" class="message is-warning has-margin-10 has-bottom-margin-30">
@@ -39,3 +45,5 @@
         [widget]="servicesStore.widget"
         (massChange)="onMassChange()">
 </ode-widget-mass-assignment>
+
+<router-outlet></router-outlet>

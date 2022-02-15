@@ -39,6 +39,7 @@ import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.compon
 import { WidgetAssignmentComponent } from './widgets/assignment/widget-assignment.component';
 import { WidgetMassAssignmentComponent } from './widgets/mass-assignment/widget-mass-assignment.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
+import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-myapps-parameters.component';
 
 @NgModule({
     imports: [
@@ -69,7 +70,8 @@ import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolve
         WidgetsListComponent,
         SmartWidgetComponent,
         WidgetAssignmentComponent,
-        WidgetMassAssignmentComponent
+        WidgetMassAssignmentComponent,
+        WidgetMyAppsParametersComponent
     ],
     providers: [
         NgSwitch,
