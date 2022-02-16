@@ -74,8 +74,7 @@ public abstract class ExplorerResourceCrudMongo implements IExplorerResourceCrud
             final String id = UUID.randomUUID().toString();
             ids.add(id);
             json.put(getIdColumn(), id);
-            json.put(getCreatorIdColumn(), user.getUserId());
-            json.put(getCreatorNameColumn(), user.getUsername());
+            setCreatorForModel(user, json);
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
             mongoClient.insert(getCollectionName(), json, promise);
@@ -115,6 +114,11 @@ public abstract class ExplorerResourceCrudMongo implements IExplorerResourceCrud
         user.setUserId(id);
         user.setUsername(name);
         return user;
+    }
+
+    protected void setCreatorForModel(final UserInfos user, final JsonObject json){
+        json.put(getCreatorIdColumn(), user.getUserId());
+        json.put(getCreatorNameColumn(), user.getUsername());
     }
 
     protected String getCreatedAtColumn() {
