@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, Input } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
+import { UserModel } from 'src/app/core/store/models/user.model';
 import { StructureModel } from '../../../core/store/models/structure.model';
 
 @Component({
@@ -36,5 +37,9 @@ export class UserSearchCardComponent extends OdeComponent implements AfterViewIn
             this.foundUsers = [];
         }
         this.changeDetector.markForCheck();
+    }
+
+    isDisplayNameDifferent(user: UserModel): boolean {
+        return (user.lastName + ' ' + user.firstName) !== user.displayName;
     }
 }
