@@ -148,6 +148,27 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
+    public Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById) {
+        final List<Future> futures = sourceById.entrySet().stream().map(e->{
+            final String id = e.getKey();
+            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+            return toMessage(message, e.getValue());
+        }).collect(Collectors.toList());
+        return CompositeFuture.all(futures).compose(all->{
+            final List<ExplorerMessage> messages = all.list();
+            return communication.pushMessage(messages);
+        });
+    }
+
+    @Override
+    public Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source) {
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+        return toMessage(message, source).compose(messages -> {
+            return communication.pushMessage(messages);
+        });
+    }
+
+    @Override
     public Future<Void> notifyUpsert(final UserInfos user, final JsonObject source) {
         final ExplorerMessage message = ExplorerMessage.upsert(getIdForModel(source), user, isForSearch()).withType(getApplication(), getResourceType());
         return toMessage(message, source).compose(messages -> {
