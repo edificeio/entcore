@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IExplorerPlugin {
     static String addressFor(String application, String resourceType) {
@@ -15,6 +16,10 @@ public interface IExplorerPlugin {
     void start();
 
     void stop();
+
+    Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source);
+
+    Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById);
 
     Future<Void> notifyUpsert(UserInfos user, JsonObject source);
 
