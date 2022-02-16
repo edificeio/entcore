@@ -11,6 +11,11 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SpinnerService } from 'ngx-ode-ui';
 
+export enum SearchTypeEnum {
+    DISPLAY_NAME = 'displayName',
+    EMAIL = 'email'
+}
+
 @Component({
     selector: 'ode-tree-user-list',
     templateUrl: './tree-user-list.component.html',
@@ -21,6 +26,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     nbUser: number;
     searchTerm: string;
+    searchType: SearchTypeEnum;
     structure: StructureModel;
 
     @Input() userlist: UserModel[] = [];
@@ -58,6 +64,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
             }
         }));
         this.nbUser = this.userlist.length;
+        this.searchType = SearchTypeEnum.DISPLAY_NAME;
     }
 
     ngAfterViewChecked() {
@@ -92,9 +99,13 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
         return "";
     }
 
+    setSearchType(type: SearchTypeEnum) {
+        this.searchType = type;
+    }
+
     search = (): void => {
         this.spinner.perform('portal-content',
-            this.usersService.search(this.searchTerm, this.structure.id).then(data => {
+            this.usersService.search(this.searchTerm, this.searchType, this.structure.id).then(data => {
                 this.userlist = data;
                 this.refreshListCount(data);
                 this.changeDetector.markForCheck();

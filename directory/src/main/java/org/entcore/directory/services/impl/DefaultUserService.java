@@ -453,12 +453,12 @@ public class DefaultUserService implements UserService {
 	@Override
 	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
 						  JsonArray expectedProfiles, UserInfos userInfos, io.vertx.core.Handler<fr.wseduc.webutils.Either<String,JsonArray>> results) {
-		listAdmin(structureId, includeSubStructure, classId, groupId, expectedProfiles, null, null, userInfos, results);
+		listAdmin(structureId, includeSubStructure, classId, groupId, expectedProfiles, null, null, null, userInfos, results);
 	};
 
 	@Override
 	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
-						  JsonArray expectedProfiles, String filterActivated, String nameFilter,
+						  JsonArray expectedProfiles, String filterActivated, String searchTerm, String searchType,
 						  UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
 		String filter = "";
@@ -507,9 +507,14 @@ public class DefaultUserService implements UserService {
 				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		}
-		if(nameFilter != null && !nameFilter.trim().isEmpty()){
-			condition += "AND u.displayName =~ {regex}  ";
-			params.put("regex", "(?i)^.*?" + Pattern.quote(nameFilter.trim()) + ".*?$");
+		if(searchTerm != null && !searchTerm.trim().isEmpty()){
+			if ("email".equals(searchType)) {
+				condition += "AND u.emailSearchField =~ {regex} ";
+			} else {
+				condition += "AND u.displayNameSearchField =~ {regex} ";
+			}
+
+			params.put("regex", "(?i)^.*?" + Pattern.quote(searchTerm.trim()) + ".*?$");
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){

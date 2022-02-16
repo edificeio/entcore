@@ -79,7 +79,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-
 public class UserController extends BaseController {
 	static final String MOTTO_RESOURCE_NAME = "motto";
 	static final String MOOD_RESOURCE_NAME = "mood";
@@ -443,7 +442,7 @@ public class UserController extends BaseController {
 							}
 						};
 					}
-					userService.listAdmin(structureId, false, classId, null, types, filterActive, null, user, handler);
+					userService.listAdmin(structureId, false, classId, null, types, filterActive, null, null, user, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -613,11 +612,12 @@ public class UserController extends BaseController {
 					final String classId = request.params().get("classId");
 					final JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
 					final String groupId = request.params().get("groupId");
-					final String nameFilter = request.params().get("name");
+					final String searchTerm = request.params().get("searchTerm");
 					final String filterActive = request.params().get("filterActive");
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
+					final String searchType = request.params().get("searchType"); // searchType possible values: displayName or email
 
-					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, nameFilter, user, arrayResponseHandler(request));
+					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchTerm, searchType, user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
