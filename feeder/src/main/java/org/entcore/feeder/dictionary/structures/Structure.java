@@ -267,17 +267,16 @@ public class Structure {
 		String structureGroupExternalId = this.getHeadTeacherGroupExternalId();
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:DEPENDS]-(c:Group:HTGroup {props}) " +
+					"MERGE s<-[:DEPENDS]-(c:Group:HTGroup {externalId: {externalId}}) " +
+					"ON CREATE SET c.id = {id}, c.displayNameSearchField = {displayNameSearchField}, c.name = {name}, c.filter = {filter} " +
 					"SET c.source = s.source";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
-					.put("props", new JsonObject()
-							.put("externalId", structureGroupExternalId)
-							.put("id", UUID.randomUUID().toString())
-							.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
-							.put("name", struct.getString("name") + "-HeadTeacher")
-							.put("filter", "HeadTeacher")
-					);
+					.put("externalId", structureGroupExternalId)
+					.put("id", UUID.randomUUID().toString())
+					.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
+					.put("name", struct.getString("name") + "-HeadTeacher")
+					.put("filter", "HeadTeacher");
 			getTransaction().add(query, params);
 		return structureGroupExternalId;
 	}
@@ -293,7 +292,7 @@ public class Structure {
 					"MATCH (c:Class { externalId : {classExternalId}}) " +
 					"MERGE c<-[:DEPENDS]-(cg:Group:HTGroup {externalId: {externalId}}) " +
 					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = COALESCE({displayNameSearchField}, c.displayNameSearchField), " +
-					"cg.name = COALESCE({name}, c.name + '-HeadTeacher'), cg.structureName = {structureName} ";
+					"cg.name = COALESCE({name}, c.name + '-HeadTeacher'), cg.structureName = {structureName}, cg.filter = {filter} ";
 			JsonObject params = new JsonObject()
 					.put("classExternalId", classExternalId)
 					.put("externalId", classGroupExternalId)
@@ -321,17 +320,16 @@ public class Structure {
 		String groupExternalId = this.getDirectionGroupExternalId();
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
-					"CREATE s<-[:DEPENDS]-(c:Group:DirectionGroup {props}) " +
+					"MERGE s<-[:DEPENDS]-(c:Group:DirectionGroup {externalId: {externalId}}) " +
+					"ON CREATE SET c.id = {id}, c.displayNameSearchField = {displayNameSearchField}, c.name = {name}, c.filter = {filter} " +
 					"SET c.source = s.source";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
-					.put("props", new JsonObject()
-							.put("externalId", groupExternalId)
-							.put("id", UUID.randomUUID().toString())
-							.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
-							.put("name", struct.getString("name") + "-Direction")
-							.put("filter", "Direction")
-					);
+					.put("externalId", groupExternalId)
+					.put("id", UUID.randomUUID().toString())
+					.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
+					.put("name", struct.getString("name") + "-Direction")
+					.put("filter", "Direction");
 			getTransaction().add(query, params);
 		return groupExternalId;
 	}
