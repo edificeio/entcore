@@ -13,8 +13,27 @@
    (scrolledDown)="userListService.addPageDown()"
    (listChange)="refreshListCount($event)"
    [searchInput]="true">
-   <div toolbar class="user-toolbar">
-      <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
+   <div toolbar class="user-toolbar has-space-between">
+      <div class="user-toolbar-searchLabel">
+         <s5l>user.searchType.label</s5l>
+         <button 
+            class="button has-left-margin-5" 
+            [ngClass]="{'is-selected': searchType === 'displayName'}"
+            (click)="setSearchType('displayName')"
+         >
+            <s5l>user.searchType.name</s5l>
+         </button>
+         <button 
+            class="button has-left-margin-5" 
+            [ngClass]="{'is-selected': searchType === 'email'}"
+            (click)="setSearchType('email')"
+         >
+            <s5l>user.searchType.email</s5l>
+         </button> 
+      </div>
+      <div>
+         <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
+      </div>
    </div>
 
    <ng-template let-item>
