@@ -15,8 +15,7 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        {label: 'users.tabs.mainList', view: 'list', active: 'list'},
-        {label: 'users.tabs.treeList', view: 'tree-list', active: 'tree-list'}
+        {label: 'users.tabs.mainList', view: 'list', active: 'list'}
     ];
 
     constructor(
@@ -32,7 +31,19 @@ export class UsersComponent extends OdeComponent implements OnInit, OnDestroy {
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.structure = data.structure;
-                this.changeDetector.markForCheck();
+
+                // if structure has children then add "User Transverse search" tab
+                const treeListTabPosition = this.tabs.findIndex(tab => tab.label === 'users.tabs.treeList');
+                if (this.structure.children && 
+                    this.structure.children.length > 0 &&
+                    treeListTabPosition === -1) {
+                    this.tabs.push({label: 'users.tabs.treeList', view: 'tree-list', active: 'tree-list'});
+                } else if (!this.structure.children && treeListTabPosition > -1) {
+                    this.tabs.splice(treeListTabPosition, 1);
+                    if (this.isActive('tree-list')) {
+                        this.router.navigate(['/admin', this.structure.id, 'users', 'list', 'filter']);
+                    }
+                }
             }
         }));
     }
