@@ -30,7 +30,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
     searchTypeEnum = SearchTypeEnum;
     structure: StructureModel;
 
-    @Input() userlist: UserModel[] = [];
+    userlist: UserModel[];
 
     @Input() listCompanion: string;
     @Output() companionChange: EventEmitter<string> = new EventEmitter<string>();
@@ -64,7 +64,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
                 this.changeDetector.markForCheck();
             }
         }));
-        this.nbUser = this.userlist.length;
+        this.nbUser = this.userlist ? this.userlist.length: 0;
         this.searchType = SearchTypeEnum.DISPLAY_NAME;
     }
 

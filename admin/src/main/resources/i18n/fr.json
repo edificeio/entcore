@@ -514,6 +514,7 @@
   "list.results.no.groups": "Aucun groupe",
   "list.results.no.broadcast": "Aucune liste",
   "list.results.users": "utilisateurs",
+  "list.placeholder": "Recherchez facilement des utilisateurs à travers votre ENT",
   "users.quick.search.intro": "Tapez quelques lettres dans le champ ci-dessus pour trouver les utilisateurs qui ont un nom ou un prénom correspondant",
   "user.root.error": "Erreur",
   "user.root.error.text": "Une erreur est survenue durant votre dernière action.",
