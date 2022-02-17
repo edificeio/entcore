@@ -3,7 +3,7 @@
     <div><span>{{ groupsStore.group.name }}</span></div>
     <div class="members-count" *ngIf="groupsStore.group?.subType === 'BroadcastGroup'">
         {{ groupsStore.group.users.length }}&nbsp;
-        <s5l [s5l-params]="{count: groupsStore.group.users.length||0}">members</s5l>
+        <s5l [s5l-params]="{count: groupsStore.group.nbUsers||0}">members</s5l>
     </div>
   </div>
   <div>

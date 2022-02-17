@@ -96,7 +96,7 @@ public class DefaultGroupService implements GroupService {
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
 				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
 				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
-				"g.lockDelete AS lockDelete, " +
+				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as NbUsers, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
 				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
