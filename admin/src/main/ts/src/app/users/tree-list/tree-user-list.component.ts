@@ -27,6 +27,7 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
     nbUser: number;
     searchTerm: string;
     searchType: SearchTypeEnum;
+    searchTypeEnum = SearchTypeEnum;
     structure: StructureModel;
 
     @Input() userlist: UserModel[] = [];
