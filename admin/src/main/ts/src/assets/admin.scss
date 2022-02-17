@@ -1545,14 +1545,6 @@ ode-list {
     &.disabled {
       color: #ccc;
     }
-    &.no-results {
-      text-align: center;
-      font-style: italic;
-      &:hover {
-        cursor: default !important;
-        background-color: inherit !important;
-      }
-    }
   }
 }
 
