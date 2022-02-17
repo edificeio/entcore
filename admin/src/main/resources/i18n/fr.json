@@ -1429,7 +1429,7 @@
   "user.toggle.rights": "Modifier les droits",
   "non-existent.user.rights": "Aucun droit d'administration",
 
-  "user.searchType.label": "Rechercher par",
+  "user.searchType.label": "Rechercher par :",
   "user.searchType.name": "Nom",
   "user.searchType.email": "Mail"
 }
