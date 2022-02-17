@@ -28,7 +28,10 @@ export class GroupDetailsResolver implements Resolve<GroupModel> {
         if (!targetGroup) {
             this.router.navigate(['/admin', structure._id, 'groups', groupType]);
         }
-        if (targetGroup.users && targetGroup.users.length < 1) {
+        if (targetGroup.users 
+                && targetGroup.users.length < 1
+                && targetGroup.subType!=="BroadcastGroup"   // Do not details users of broadcast groups (300k+ users !)
+            ) {
             this.spinner.perform('groups-content', targetGroup.syncUsers()
                 .then(() => {
                     return targetGroup;
