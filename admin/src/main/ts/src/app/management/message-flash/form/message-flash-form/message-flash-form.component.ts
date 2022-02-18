@@ -39,7 +39,16 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     mailNotification = false;
     pushNotification = false;
     private lightboxSubStructures: string[];
-    trumbowygOptions: TrumbowygOptions = {lang: this.bundles.currentLanguage};
+    trumbowygOptions: TrumbowygOptions = {
+        btns: [
+            ['undo', 'redo'],
+            ['strong', 'em', 'underline'],
+            ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+            ['foreColor', 'fontfamily', 'fontsize'],
+            ['link']
+        ],
+        lang: this.bundles.currentLanguage
+    };
     itemList: StructureListItem[] = [];
 
     constructor(injector: Injector,
