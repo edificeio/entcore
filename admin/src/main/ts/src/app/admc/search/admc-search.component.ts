@@ -15,6 +15,13 @@ import { OdeComponent } from "ngx-ode-core";
             >
                 <s5l>admc.search.transverse</s5l>
             </button>
+            <button 
+                class="tab"
+                routerLink="unlinked"
+                routerLinkActive="active"
+            >
+                <s5l>admc.search.unlinked</s5l>
+            </button>
         </div>
         <router-outlet></router-outlet>
     `

@@ -14,7 +14,7 @@ import { OdeComponent } from "ngx-ode-core";
                 <i class="fa fa-search" aria-hidden="true"></i>
                 <s5l>admc.search.transverse</s5l>
             </button>
-            <button routerLink="../search/unlinked" disabled>
+            <button routerLink="../search/unlinked">
                 <i class="fa fa-user" aria-hidden="true"></i>
                 <s5l>admc.search.unlinked</s5l>
             </button>

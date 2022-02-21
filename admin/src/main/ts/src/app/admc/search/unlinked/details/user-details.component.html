@@ -1,0 +1,164 @@
+<div class="panel-header">
+  <div class="panel-header-info">
+    <span class="user-displayname">
+      {{ details.lastName | uppercase }} {{ details.firstName }}
+    </span>
+    <span *ngFor="let type of details.type">
+      <span class="badge profile" [ngClass]="type">{{type | translate}}</span>
+    </span>
+  </div>
+
+  <div class="panel-header-sub">
+    <span *ngIf="isContextAdml()" class="user-admin">
+      <s5l>ADMIN_LOCAL</s5l> <i class="fa fa-cog"></i>
+    </span>
+    <span class="user-inactive" *ngIf="details?.activationCode && details?.activationCode?.length > 0">
+      <s5l>user.inactive</s5l> <i class="fa fa-lock"></i>
+    </span>
+  </div>
+
+  <div class="panel-message" *ngIf="!isUnblocked()">
+    <i class="fa fa-ban"></i>
+    <s5l>user.blocked</s5l>
+    <!--
+    <button class="action"
+            (click)="toggleUserBlock(false)"
+            [disabled]="spinner.isLoading('portal-content')">
+      <i class="fa fa-check"></i>
+      <s5l>unblock</s5l>
+    </button>
+    -->
+  </div>
+
+  <div class="panel-message" *ngIf="details.deleteDate">
+    <i class="fa fa-times-circle"></i>
+    <s5l [s5l-params]="{ numberOfDays: millisecondToDays(
+           millisecondsUntilEffectiveDeletion(details.deleteDate)
+         )}">
+      user.predeleted
+    </s5l>
+  </div>
+
+  <div class="panel-message yellow"
+       *ngIf="!details?.deleteDate && details?.disappearanceDate">
+    <i class="fonticon waiting-predelete"></i>
+    <s5l [s5l-params]="{ numberOfDays: millisecondToDays(
+           millisecondsUntilPreDeletion(details.disappearanceDate, details.type[0])
+         )}">
+      user.predeleted.waiting
+    </s5l>
+    <ode-message-sticker
+      [type]="'info'"
+      [messages]="['user.predeleted.waiting.help']"
+    ></ode-message-sticker>
+  </div>
+
+  <div class="panel-header-content">
+    <div class="left">
+      <div><img [src]="imgSrc" (load)="imgLoad()" /></div>
+    </div>
+
+    <div class="right" *ngIf="!details.deleteDate">
+      <div *ngIf="isRemovable() && isActive()">
+        <button (click)="removeUser()"
+                [disabled]="spinner.isLoading('portal-content')">
+          <i class="fa fa-times-circle"></i>
+          <s5l>predelete.account</s5l>
+        </button>
+      </div>
+
+      <div *ngIf="isRemovable() && !isActive()">
+        <button (click)="showRemoveUserConfirmation = true"
+                [disabled]="spinner.isLoading('portal-content')">
+          <i class="fa fa-times-circle"></i>
+          <s5l>delete.account</s5l>
+        </button>
+        <ode-lightbox-confirm
+          lightboxTitle="warning"
+          [show]="showRemoveUserConfirmation"
+          [title]="'warning'"
+          (onConfirm)="removeUser()"
+          (onCancel)="showRemoveUserConfirmation = false"
+        >
+          <p><s5l [s5l-params]="{ username: details.displayName }">user.remove.disclaimer.info</s5l></p>
+          <strong>{{ "user.remove.disclaimer.confirm" | translate }}</strong>
+        </ode-lightbox-confirm>
+      </div>
+    </div>
+    <div class="right" *ngIf="details?.deleteDate">
+      <button (click)="restoreUser()"
+              [disabled]="spinner.isLoading('portal-content')">
+        <i class="fa fa-times-circle"></i>
+        <s5l>restore.account</s5l>
+      </button>
+    </div>
+  </div>
+</div>
+
+<ode-panel-section section-title="users.details.section.infos">
+  <form>
+    <fieldset>
+      <ode-form-field label="id"><span>{{ details.id }}</span></ode-form-field>
+      <ode-form-field label="externalId"><span>{{ details.externalId }}</span></ode-form-field>
+      <ode-form-field label="profile" *ngIf="details.type"><span>{{ details.type[0] | translate }}</span></ode-form-field>
+      <ode-form-field label="login"><span>{{ details.login }}</span></ode-form-field>
+      <ode-form-field label="source"><span>{{ details.source | translate }}</span></ode-form-field>
+      <ode-form-field label="activation.code" *ngIf="details.activationCode"><span>{{ details.activationCode }}</span></ode-form-field>
+    </fieldset>
+  </form>
+</ode-panel-section>
+
+<section class="panel-section">
+  <div class="section_administrative is-display-flex has-space-between" [class.panel-section-header]="!editMode">
+    <div class="name-group"><s5l>users.details.section.administrative</s5l></div>
+
+    <div class="buttons">
+      <button type="button" [class.edit]="editMode" (click)="onToggleEdit()">
+        <i class='fa' [ngClass]="{'fa-edit':!editMode, 'fa-save':editMode}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="panel-section-content">
+    <form #administrativeForm="ngForm">
+      <fieldset>
+        <ode-form-field label="firstName">
+          <input type="text" [(ngModel)]="details.firstName" [readonly]="!editMode"
+                name="firstName" required #firstNameInput="ngModel">
+          <ode-form-errors [control]="firstNameInput"></ode-form-errors>
+        </ode-form-field>
+        <ode-form-field label="lastName">
+          <input type="text" [(ngModel)]="details.lastName" [readonly]="!editMode"
+                name="lastName" required #lastNameInput="ngModel" >
+          <ode-form-errors [control]="lastNameInput"></ode-form-errors>
+        </ode-form-field>
+        <ode-form-field label="displayName">
+          <input type="text" [(ngModel)]="details.displayName" [readonly]="!editMode"
+                name="displayName" required #displayNameInput="ngModel" >
+          <ode-form-errors [control]="displayNameInput"></ode-form-errors>
+        </ode-form-field>
+        <ode-form-field label="birthDate">
+          <ode-date-picker [(ngModel)]="details.birthDate" name="birthDate"
+                      #birthDateInput="ngModel" minDate="1900-01-01" maxDate="today"
+                      [disabled]="!!details.deleteDate && !editMode">
+          </ode-date-picker>
+          <ode-form-errors [control]="birthDateInput"></ode-form-errors>
+        </ode-form-field>
+        <ode-form-field label="address" *ngIf="!config['hide-personal-data']">
+          <input type="text" [(ngModel)]="details.address" name="address" [readonly]="!editMode" >
+        </ode-form-field>
+        <ode-form-field label="zipCode" *ngIf="!config['hide-personal-data']">
+          <input type="text" [(ngModel)]="details.zipCode" name="zipCode" [readonly]="!editMode" >
+        </ode-form-field>
+        <ode-form-field label="city" *ngIf="!config['hide-personal-data']">
+          <input type="text" [(ngModel)]="details.city" name="city" [readonly]="!editMode" >
+        </ode-form-field>
+      </fieldset>
+    </form>
+  </div>
+</section>
+
+<ode-unlinked-user-structures-section
+    [user]="details"
+    *ngIf="!details.deleteDate">
+</ode-unlinked-user-structures-section>
