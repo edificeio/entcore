@@ -1,0 +1,29 @@
+<section class="admc-search-unlinked">
+  <ode-side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
+    <div side-card>
+      <ode-list
+            [model]="collectionRef"
+            [sort]="'+displayName'"
+            [inputFilter]="filterByInput"
+            [searchPlaceholder]="'search.user'"
+            [noResultsLabel]="'no.user.found'"
+            [isSelected]="isSelected"
+            (inputChange)="itemInputFilter = $event"
+            (onSelect)="onSelectItem($event)">
+
+        <ng-template let-item>
+          <div class="user-name">
+            <span>{{ item.displayName }}</span>
+          </div>
+        </ng-template>
+      </ode-list>
+    </div>
+
+    <div side-companion>
+      <div class="panel-section">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+
+  </ode-side-layout>
+</section>

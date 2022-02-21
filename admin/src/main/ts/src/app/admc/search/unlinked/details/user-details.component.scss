@@ -1,0 +1,47 @@
+@import "../../../../../assets/variables";
+
+.section_administrative {
+    padding: 5px 10px;
+    border-top: 1px solid $grey-dark;
+
+    .name-group {
+        font-size: 1.2em;
+        place-self: center;
+    }
+    .buttons button {
+        border-radius: 15px;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        cursor: pointer;
+        background: $white-transparent;
+        color: $grey-dark;
+        border:0;
+        margin: 5px 0;
+        transition: all 0.25s;
+
+        &.edit {
+            color: $grey-light;
+            background: $accent;
+        }
+
+        i {
+            float: none;
+            padding: 0;
+            position: relative;
+            top: -1px;
+            left: -5.6px;
+            font-size: 1em;
+        }
+    }
+}
+
+.panel-section-content {
+    padding: 15px;
+
+    input[type=text], input[type=tel], input[type=email], input[type=date], input[type=number] {
+        &[readonly] {
+            border-bottom: 0;
+        }
+    }
+}
