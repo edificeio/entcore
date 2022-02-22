@@ -1,6 +1,5 @@
 <ode-list
    [model]="userlist"
-   [filters]="listFiltersService.getFormattedFilters()"
    [inputFilter]="userListService.filterByInput"
    [sort]="userListService.sorts"
    searchPlaceholder="search.user"
@@ -14,28 +13,16 @@
    (scrolledDown)="userListService.addPageDown()"
    (listChange)="refreshListCount($event)"
    [searchInput]="true">
-   <div toolbar class="user-toolbar has-space-between">
-      <div class="user-toolbar-searchLabel">
-         <s5l>user.searchType.label</s5l>
-         <button 
-            class="button has-left-margin-5" 
-            [ngClass]="{'is-selected': searchType === searchTypeEnum.DISPLAY_NAME}"
-            (click)="setSearchType(searchTypeEnum.DISPLAY_NAME)"
+      <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
+         <ode-search-toolbar
+            [label]="'user.searchType.label'"
+            [searchTypes]="searchTypes"
+            [nbItem]="nbUser || 0"
+            [nbItemLabel]="'list.results.users'"
+            (selectSearchType)="handleSelectSearchType($event)"
          >
-            <s5l>user.searchType.name</s5l>
-         </button>
-         <button 
-            class="button has-left-margin-5" 
-            [ngClass]="{'is-selected': searchType === searchTypeEnum.EMAIL}"
-            (click)="setSearchType(searchTypeEnum.EMAIL)"
-         >
-            <s5l>user.searchType.email</s5l>
-         </button> 
+         </ode-search-toolbar>
       </div>
-      <div>
-         <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
-      </div>
-   </div>
 
    <ng-template let-item>
       <span class="is-display-flex">

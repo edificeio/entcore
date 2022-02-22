@@ -1,20 +1,12 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
-import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
 import { UserListService } from 'src/app/core/services/userlist.service';
 import { UserModel } from '../../core/store/models/user.model';
 import { UsersService } from '../users.service';
-import { UsersStore } from '../users.store';
-import { routing } from '../../core/services/routing.service';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SpinnerService } from 'ngx-ode-ui';
-
-export enum SearchTypeEnum {
-    DISPLAY_NAME = 'displayName',
-    EMAIL = 'email'
-}
+import { SearchTypeEnum } from 'src/app/core/enum/SearchTypeEnum';
 
 @Component({
     selector: 'ode-tree-user-list',
@@ -26,14 +18,12 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     nbUser: number;
     searchTerm: string;
-    searchType: SearchTypeEnum;
-    searchTypeEnum = SearchTypeEnum;
-    structure: StructureModel;
-
+    searchTypes: Array<{label: string, value: SearchTypeEnum}>;
+    selectedSearchTypeValue: string;
     userlist: UserModel[];
 
-    @Input() listCompanion: string;
-    @Output() companionChange: EventEmitter<string> = new EventEmitter<string>();
+    @Input()
+    structure: StructureModel;
 
     // Selection
     @Input() selectedUser: UserModel;
@@ -41,10 +31,8 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     constructor(
         private bundles: BundlesService,
-        private usersStore: UsersStore,
         public usersService: UsersService,
         public userListService: UserListService,
-        public listFiltersService: UserlistFiltersService,
         public spinner: SpinnerService,
         injector: Injector) {
             super(injector);
@@ -52,20 +40,18 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     ngOnInit() {
         super.ngOnInit();
-        routing.observe(this.route, 'data').subscribe(async (data: Data) => {
-            if (data.structure) {
-                this.structure = data.structure;
-            }
-        });
-        this.subscriptions.add(this.listFiltersService.$updateSubject.subscribe(() => this.changeDetector.markForCheck()));
-        this.subscriptions.add(this.userListService.$updateSubject.subscribe(() => this.changeDetector.markForCheck()));
-        this.subscriptions.add(this.usersStore.$onchange.subscribe((field) => {
-            if (field === 'user') {
-                this.changeDetector.markForCheck();
-            }
-        }));
         this.nbUser = this.userlist ? this.userlist.length: 0;
-        this.searchType = SearchTypeEnum.DISPLAY_NAME;
+        this.searchTypes = [
+            {
+                label: 'user.searchType.name',
+                value: SearchTypeEnum.DISPLAY_NAME
+            },
+            {
+                label: 'user.searchType.email',
+                value: SearchTypeEnum.EMAIL
+            }
+        ];
+        this.selectedSearchTypeValue = SearchTypeEnum.DISPLAY_NAME;
     }
 
     ngAfterViewChecked() {
@@ -78,15 +64,9 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
     }
 
     refreshListCount(list): void {
-        this.nbUser = list.length;
-    }
-
-    filtersOn(): boolean {
-        return this.listFiltersService.filters.some(f => f.outputModel && f.outputModel.length > 0);
-    }
-
-    isFilterSelected(): boolean {
-        return this.router.url.indexOf('/users/filter') > -1;
+        if (list) {
+            this.nbUser = list.length;
+        }
     }
 
     userStructures(item: UserModel) {
@@ -100,13 +80,13 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
         return "";
     }
 
-    setSearchType(type: SearchTypeEnum) {
-        this.searchType = type;
+    handleSelectSearchType(searchTypeValue: string): void {
+        this.selectedSearchTypeValue = searchTypeValue;
     }
 
     search = (): void => {
         this.spinner.perform('portal-content',
-            this.usersService.search(this.searchTerm, this.searchType, this.structure.id).then(data => {
+            this.usersService.search(this.searchTerm, this.selectedSearchTypeValue, this.structure.id).then(data => {
                 this.userlist = data;
                 this.refreshListCount(data);
                 this.changeDetector.markForCheck();

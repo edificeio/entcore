@@ -39,7 +39,7 @@ export let routes: Routes = [
                 ]
             },
             {
-                path: 'tree-list', component: TreeUsersListComponent, resolve: {users: UsersResolver},
+                path: 'tree-list', component: TreeUsersListComponent,
                 children: [
                     {path: 'search', component: EmptyScreenComponent},
                     {

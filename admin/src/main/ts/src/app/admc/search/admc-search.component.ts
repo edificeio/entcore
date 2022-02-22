@@ -21,4 +21,7 @@ import { OdeComponent } from "ngx-ode-core";
 })
 export class AdmcSearchComponent extends OdeComponent {
 
+    openUserDetail($event): void {
+        console.log($event);
+    }
 }

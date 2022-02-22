@@ -1,0 +1,78 @@
+<ode-side-layout (closeCompanion)="closeCompanion()" [showCompanion]="true">
+  <div side-card>
+    <ode-list
+      [model]="userlist"
+      [inputFilter]="userListService.filterByInput"
+      [sort]="userListService.sorts"
+      searchPlaceholder="search.user"
+      noResultsLabel="list.results.no.users"
+      placeholder="list.placeholder"
+      [isSelected]="isSelected"
+      [limit]="userListService.limit"
+      [searchSubmit]="search"
+      (inputChange)="searchTerm = $event"
+      (onSelect)="selectedUser = $event; onselect.emit($event)"
+      (scrolledDown)="userListService.addPageDown()"
+      (listChange)="refreshListCount($event)"
+      [searchInput]="true"
+    >
+      <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
+        <ode-search-toolbar
+          [label]="'user.searchType.label'"
+          [searchTypes]="searchTypes"
+          [nbItem]="nbUser || 0"
+          [nbItemLabel]="'list.results.users'"
+          (selectSearchType)="handleSelectSearchType($event)"
+        >
+        </ode-search-toolbar>
+      </div>
+
+      <ng-template let-item>
+        <span class="is-display-flex">
+          <span class="display-name">
+            {{ item.lastName?.toUpperCase() }} {{ item.firstName }}
+          </span>
+          <span class="icons">
+            <i
+              class="fa fa-lock"
+              *ngIf="item.code && item.code?.length > 0"
+              [title]="'user.icons.tooltip.inactive' | translate"
+            >
+            </i>
+            <i
+              class="fa fa-ban"
+              *ngIf="item.blocked"
+              [title]="'user.icons.tooltip.blocked' | translate"
+            >
+            </i>
+            <i
+              class="fonticon duplicates"
+              *ngIf="item.duplicates && item.duplicates?.length > 0"
+              [title]="'user.icons.tooltip.duplicated' | translate"
+            >
+            </i>
+            <i
+              class="fa fa-times-circle"
+              *ngIf="item.deleteDate"
+              [title]="'user.icons.tooltip.deleted' | translate"
+            >
+            </i>
+            <i
+              class="fonticon waiting-predelete"
+              *ngIf="!item.deleteDate && item.disappearanceDate"
+              [title]="'user.icons.tooltip.disappeared' | translate"
+            >
+            </i>
+          </span>
+          <i class="profile" [ngClass]="item.type">{{
+            item.type | translate
+          }}</i>
+        </span>
+        <span class="structures">{{ userStructures(item) }}</span>
+      </ng-template>
+    </ode-list>
+  </div>
+  <div side-companion>
+    <router-outlet></router-outlet>
+  </div>
+</ode-side-layout>

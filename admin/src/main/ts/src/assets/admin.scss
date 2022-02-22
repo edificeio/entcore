@@ -1549,6 +1549,7 @@ ode-list {
 }
 
 ode-user-list,
+ode-admc-search-transverse,
 ode-tree-user-list,
 ode-group-users-list,
 ode-group-input-users,
@@ -1640,7 +1641,8 @@ ode-group-output-users {
   }
 }
 
-ode-tree-user-list {
+ode-tree-user-list,
+ode-admc-search-transverse {
   ode-list {
     li {
       display: block;
