@@ -42,6 +42,7 @@ import org.entcore.common.controller.RightsController;
 import org.entcore.common.elasticsearch.ElasticSearch;
 import org.entcore.common.emailstate.EmailStateFactory;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
@@ -256,6 +257,9 @@ public abstract class BaseServer extends Server {
 					Redis.getInstance().init(vertx, new JsonObject(redisConf));
 				}
 			}
+		}
+		if (config.getBoolean("explorer", true)) {
+			ExplorerPluginFactory.init(vertx, config);
 		}
 		//
 

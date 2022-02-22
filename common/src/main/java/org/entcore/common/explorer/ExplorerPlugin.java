@@ -116,6 +116,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             case QueryReindex: {
                 final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
                 final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
+                log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
                 final ExplorerStream<JsonObject> stream = new ExplorerStream<>(bulk -> {
                     return toMessage(bulk, e -> {
                         final String id = getIdForModel(e);
@@ -126,6 +127,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                         return communication.pushMessage(messages);
                     });
                 }, metricsEnd -> {
+                    log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getResourceType(), from, to, metricsEnd));
                     message.reply(metricsEnd);
                 });
                 doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
