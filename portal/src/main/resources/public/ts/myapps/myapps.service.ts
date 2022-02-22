@@ -1,4 +1,4 @@
-import { model } from "entcore";
+import { model, ui } from "entcore";
 import { App } from "./myapps.types";
 import http from "axios";
 
@@ -111,16 +111,17 @@ export class AppsService {
         model.me.myApps.applications = [...orderedApplications, ...orderedConnectors];   
     }
 
-    isBookmark(app: App): boolean {
+    isBookmark(app: App, is1DTheme: boolean): boolean {
+        if (is1DTheme) return false; // We don't consider bookmarks in 1D
         return model.me.bookmarkedApps.find(bookmarkedApp => bookmarkedApp.name === app.name);
     }
 
-    isApplication(app: App): boolean {
-        return !AppsService.getInstance().isBookmark(app) && !app.isExternal;
+    isApplication(app: App, is1DTheme: boolean): boolean {
+        return !AppsService.getInstance().isBookmark(app, is1DTheme) && !app.isExternal;
     }
 
-    isConnector(app: App): boolean {
-        return !AppsService.getInstance().isBookmark(app) && app.isExternal;
+    isConnector(app: App, is1DTheme: boolean): boolean {
+        return !AppsService.getInstance().isBookmark(app, is1DTheme) && app.isExternal;
     }
     
     sortApp(a: App, b: App) {
@@ -132,4 +133,10 @@ export class AppsService {
             model.me.myApps.applications.push(app.name);
         }
     }
+
+    async is1DTheme(): Promise<boolean> {
+        let conf = await ui.getCurrentThemeConf();
+        return conf && conf.parent == "panda";
+    }
+
 }
