@@ -5,6 +5,8 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
@@ -12,6 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerPluginClient implements IExplorerPluginClient {
+    static final Logger log = LoggerFactory.getLogger(ExplorerPluginClient.class);
 
     @Override
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to){
@@ -28,7 +31,9 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
         }
         //nb_message,nb_batch
         final Future<JsonObject> future = send(headers, payload, Duration.ofDays(100));
+        log.info(String.format("Trigger indexation from=%s to=%s",from, to));
         return future.map(res->{
+            log.info(String.format("End trigger indexation from=%s to=%s metrics=%s",from, to, res));
             final int nb_message = res.getInteger("nb_message");
             final int nb_batch = res.getInteger("nb_batch");
             return new IndexResponse(nb_batch, nb_message);
