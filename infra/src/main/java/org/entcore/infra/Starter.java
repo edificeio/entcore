@@ -103,6 +103,10 @@ public class Starter extends BaseServer {
 			if (neo4jConfig != null) {
 				serverMap.put("neo4jConfig", neo4jConfig.encode());
 			}
+			JsonObject mongoConfig = config.getJsonObject("mongoConfig");
+			if (mongoConfig != null) {
+				serverMap.put("mongoConfig", mongoConfig.encode());
+			}
 			JsonObject redisConfig = config.getJsonObject("redisConfig");
 			if (redisConfig != null) {
 				serverMap.put("redisConfig", redisConfig.encode());
