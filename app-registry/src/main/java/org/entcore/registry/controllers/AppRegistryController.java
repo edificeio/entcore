@@ -32,6 +32,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Vertx;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -49,6 +50,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -60,10 +62,18 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 public class AppRegistryController extends BaseController {
 
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
+	private JsonObject skinLevels;
+
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+	}
 
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -649,6 +659,15 @@ public class AppRegistryController extends BaseController {
 				final Integer transactionId = message.body().getInteger("transactionId");
 				final Boolean commit = message.body().getBoolean("commit", true);
 				appRegistryService.massAuthorization(data, transactionId, commit, busResponseHandler(message));
+				break;
+			case "apply-default-bookmarks" :
+				final String userId = message.body().getString("userId");
+				final String userTheme = message.body().getString("theme");
+				final JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
+				if (userSkinLevels != null && userSkinLevels.contains("2d")) {
+					// We apply default bookmarks for 2D themes only
+					appRegistryService.applyDefaultBookmarks(userId);
+				}
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")

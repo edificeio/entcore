@@ -452,6 +452,16 @@ public class DefaultUserBookService implements UserBookService {
 		neo.executeTransaction(queries.build(),null, true, validResultsHandler(res->{
 			if(res.isLeft()){
 				log.error("[DefaultUserBookService.initUserbook] failed to init userbook: "+ res.left().getValue());
+			} else {
+				final JsonObject action = new JsonObject()
+						.put("action", "apply-default-bookmarks")
+						.put("userId", userId)
+						.put("theme", theme);
+				this.eb.request("wse.app.registry.bus", action, handler -> {
+					if (handler.failed()) {
+						log.error("[DefaultUserBookService.initUserbook] failed to init default bookmarks: "+ handler.cause().toString());
+					}
+				});
 			}
 		}));
 	}

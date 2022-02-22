@@ -48,6 +48,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
@@ -800,7 +801,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void getDefaultBookmarks(final String structureId, Handler<Either<String, JsonObject>> handler) {
+	public void getDefaultBookmarks(final String structureId, final Handler<Either<String, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {id: {structureId}}) " +
 				"RETURN CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE [] END AS defaultBookmarks";
 		final JsonObject params = new JsonObject().put("structureId", structureId);
@@ -808,10 +809,52 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void setDefaultBookmarks(final String structureId, JsonArray apps, Handler<Either<String, JsonObject>> handler) {
+	public void setDefaultBookmarks(final String structureId, final JsonArray apps, final Handler<Either<String, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {id: {structureId}}) SET s.defaultBookmarks = {apps}";
 		final JsonObject params = new JsonObject().put("structureId", structureId).put("apps", apps);
 		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void applyDefaultBookmarks(final String userId) {
+		final String query = "MATCH (u:User {id: {userId}})-[:IN]-(:ProfileGroup)-[:DEPENDS]-(s:Structure) " +
+				"WITH u, COLLECT(CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE [] END) AS defaultBookmarks " +
+				"RETURN u.profiles[0] AS userProfile, defaultBookmarks";
+		final JsonObject params = new JsonObject().put("userId", userId);
+		neo.execute(query, params, event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				final String message = event.body().getString("message");
+				log.error("[AppRegistry] - Retrieving defaultBookmarks failed for user ("+userId+"): " + message);
+			} else {
+				final JsonArray result = event.body().getJsonArray("result");
+				final Set<String> apps = new HashSet<>();
+				for (int i = 0; i < result.size(); i++) {
+					final JsonObject res = result.getJsonObject(i);
+					final JsonArray byProfile = getOrElse(res.getJsonArray("defaultBookmarks"), new JsonArray());
+					final String userProfile = res.getString("userProfile");
+					if (!StringUtils.isEmpty(userProfile)) {
+						for (int j = 0; j < byProfile.size(); j++) {
+							final JsonArray ja = getOrElse(new JsonObject(getOrElse(byProfile.getString(j), "{}")).getJsonArray(userProfile), new JsonArray());
+							apps.addAll(ja.getList());
+						}
+					}
+				}
+				if (apps.size() > 0) {
+					final JsonObject jo = new JsonObject().put("bookmarks", new JsonArray(new ArrayList<>(apps)));
+					final String query2 = "MATCH (:User {id: {userId}})-[:PREFERS]->(uac:UserAppConf) " +
+							"SET uac.apps = {app}";
+					final JsonObject params2 = new JsonObject()
+							.put("userId", userId)
+							.put("app", jo.encode());
+					neo.execute(query2, params2, event2 -> {
+						if (!"ok".equals(event2.body().getString("status"))) {
+							final String message = event.body().getString("message");
+							log.error("[AppRegistry] - Retrieving defaultBookmarks failed for user ("+userId+"): " + message);
+						}
+					});
+				}
+			}
+		});
 	}
 
 }
