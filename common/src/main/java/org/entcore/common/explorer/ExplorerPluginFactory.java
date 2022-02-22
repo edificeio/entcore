@@ -17,14 +17,14 @@ public class ExplorerPluginFactory {
     public static void init(final Vertx vertx, final JsonObject config){
         globalConfig = config;
         vertxInstance = vertx;
-        if (config.getBoolean("explorer", true)) {
-            if (config.getJsonObject("explorer") != null) {
-                explorerConfig = config.getJsonObject("explorer");
-            } else {
-                final String explorer = (String) vertx.sharedData().getLocalMap("server").get("explorer");
-                if(explorer != null){
-                    explorerConfig = new JsonObject(explorer);
-                }
+        if (config.getJsonObject("explorerConfig") != null) {
+            explorerConfig = config.getJsonObject("explorerConfig");
+        } else {
+            final String explorer = (String) vertx.sharedData().getLocalMap("server").get("explorerConfig");
+            if(explorer != null){
+                explorerConfig = new JsonObject(explorer);
+            }else {
+                explorerConfig = new JsonObject();
             }
         }
     }

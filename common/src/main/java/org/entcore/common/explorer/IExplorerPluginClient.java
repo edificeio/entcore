@@ -20,12 +20,12 @@ public interface IExplorerPluginClient {
 
     Future<JsonObject> getMetrics(UserInfos user);
 
-    public static class DeleteResponse {
+    class DeleteResponse {
         public final List<String> deleted = new ArrayList<>();
         public final List<String> notDeleted = new ArrayList<>();
     }
 
-    public static class IndexResponse {
+    class IndexResponse {
         public final int nbBatch;
         public final int nbMessage;
 
