@@ -126,6 +126,44 @@
 	        "blacklist": {{ webviewFilterBlacklist|default([]) }}
         },
         {% endif %}
+	    "mongoConfig": {
+        	{% if mongo_password is defined %}
+                "username": "{{ mongo_user }}",
+                "password": "{{ mongo_password }}",
+                "authSource": "{{ dbName }}",
+            {% endif %}
+            "hosts": [
+            {% if ipMongodb is defined %}
+                {% for ip in ipMongodb %}
+                {
+                    "host": "{{ ip }}",
+                    "port": 27017
+                }{% if not(loop.last) %},{% endif %}
+                {% endfor %}
+            {% else %}
+                {% for ip in dbip %}
+                {
+                    "host": "{{ ip }}",
+                    "port": 27017
+                }{% if not(loop.last) %},{% endif %}
+                {% endfor %}
+            {% endif %}
+            ],
+            "db_name": "{{ dbName }}",
+            {% if (readPreferenceMongo is defined and readPreferenceMongo) %}
+            "readPreference": "nearest",
+            {% endif %}
+            {% if socketTimeoutMongo is defined %}
+            "socketTimeoutMS":{{socketTimeoutMongo}},
+            {% endif %}
+            {% if mongoMaxPoolSize is defined %}
+            "maxPoolSize":{{mongoMaxPoolSize}},
+            {% endif %}
+            {% if mongoMinPoolSize is defined %}
+            "minPoolSize":{{mongoMinPoolSize}},
+            {% endif %}
+            "use_mongo_types": true
+	    },
         "neo4jConfig": {
             "poolSize": 100, "checkDelay": 30000,
 	        "optimized-check-enable": {{ neo4jOptimizedEnable | default('true') }},
