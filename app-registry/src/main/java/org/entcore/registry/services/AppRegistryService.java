@@ -90,7 +90,9 @@ public interface AppRegistryService {
 
 	void massAuthorization(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
 
-	void getDefaultBookmarks(final String structureId, Handler<Either<String, JsonObject>> handler);
+	void getDefaultBookmarks(String structureId, Handler<Either<String, JsonObject>> handler);
 
-	void setDefaultBookmarks(final String structureId, JsonArray apps, Handler<Either<String, JsonObject>> handler);
+	void setDefaultBookmarks(String structureId, JsonArray apps, Handler<Either<String, JsonObject>> handler);
+
+	void applyDefaultBookmarks(String userId);
 }
