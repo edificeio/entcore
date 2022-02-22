@@ -81,6 +81,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
     const connectorsThreshold: number = await AppsService.getInstance().getConnectorsThresold();
 
     const applicationList = await AppsService.getInstance().getApplicationsList();
+    const is1DTheme: boolean = await AppsService.getInstance().is1DTheme();
     if (applicationList) {
         let displayedApplications: Array<App> = applicationList.
             filter(app => app.display).
@@ -97,14 +98,14 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
         if ($scope.display.showConnectorSection) {
             // first apps then connectors
             displayedApplications
-                .filter(app => AppsService.getInstance().isApplication(app))
+                .filter(app => AppsService.getInstance().isApplication(app, is1DTheme))
                 .forEach(app => AppsService.getInstance().pushToMyApps(app));
             displayedApplications
-                .filter(app => AppsService.getInstance().isConnector(app))
+                .filter(app => AppsService.getInstance().isConnector(app, is1DTheme))
                 .forEach(app => AppsService.getInstance().pushToMyApps(app));
         } else {
             displayedApplications
-                .filter(app => !AppsService.getInstance().isBookmark(app))
+                .filter(app => !AppsService.getInstance().isBookmark(app, is1DTheme))
                 .forEach(app => AppsService.getInstance().pushToMyApps(app));
         }
         
@@ -119,19 +120,19 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
 
         // lists for template
         $scope.bookmarks = displayedApplications
-            .filter(app => AppsService.getInstance().isBookmark(app))
+            .filter(app => AppsService.getInstance().isBookmark(app, is1DTheme))
             .sort((a, b) => model.me.myApps.bookmarks.indexOf(a.name) > model.me.myApps.bookmarks.indexOf(b.name)? 1: -1);
             
         if ($scope.display.showConnectorSection) {
             $scope.applications = displayedApplications
-                .filter(app => AppsService.getInstance().isApplication(app))
+                .filter(app => AppsService.getInstance().isApplication(app, is1DTheme))
                 .sort((a, b) => AppsService.getInstance().sortApp(a, b));
             $scope.connectors = displayedApplications
-                .filter(app => AppsService.getInstance().isConnector(app))
+                .filter(app => AppsService.getInstance().isConnector(app, is1DTheme))
                 .sort((a, b) => AppsService.getInstance().sortApp(a, b));
         } else {
             $scope.applications = displayedApplications
-                .filter(app => !AppsService.getInstance().isBookmark(app))
+                .filter(app => !AppsService.getInstance().isBookmark(app, is1DTheme))
                 .sort((a, b) => AppsService.getInstance().sortApp(a, b));
         }
         
