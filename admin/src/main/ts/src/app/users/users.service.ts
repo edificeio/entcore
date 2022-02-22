@@ -4,7 +4,6 @@ import {UserOverview} from './user-overview/user-overview.component';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import { UserModel } from '../core/store/models/user.model';
-import { SearchTypeEnum } from './tree-list/tree-user-list.component';
 
 export interface BackendDirectoryUserResponse {
     zipCode: string;
@@ -58,7 +57,7 @@ export class UsersService {
         );
     }
 
-    public async search(searchTerm: string, searchType?: SearchTypeEnum, structureId?: string): Promise<UserModel[]> {
+    public async search(searchTerm: string, searchType?: string, structureId?: string): Promise<UserModel[]> {
         if (!searchTerm) return [];
 
         // let term = searchTerm.replace(/[^-0-9a-zÀ-ÿ]/g, ''); // I had to remove that for email search

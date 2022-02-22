@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
-import { Data, NavigationEnd } from '@angular/router';
+import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from '../../core/services/routing.service';
 import { UserlistFiltersService } from '../../core/services/userlist.filters.service';
 import { UserListService } from '../../core/services/userlist.service';
-import { StructureModel } from '../../core/store/models/structure.model';
 import { UsersStore } from '../users.store';
-import { includes } from '../users.component';
 
 @Component({
     selector: 'ode-tree-users-list',
@@ -16,28 +14,29 @@ import { includes } from '../users.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TreeUsersListComponent extends OdeComponent {
+    
     constructor(
         injector: Injector,
         public usersStore: UsersStore,
         protected listFilters: UserlistFiltersService,
-        protected spinner: SpinnerService
+        protected spinner: SpinnerService,
+        public userListService: UserListService
     ) {
         super(injector);
     }
 
     ngOnInit(): void {
         super.ngOnInit();
+        
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
-                const structure: StructureModel = data.structure;
-                this.usersStore.structure = structure;
-                this.initFilters(structure);
+                this.usersStore.structure = data.structure;
                 this.changeDetector.detectChanges();
             }
         }));
-
-        this.subscriptions.add(this.router.events.subscribe(e => {
-            if (e instanceof NavigationEnd) {
+        this.subscriptions.add(this.userListService.$updateSubject.subscribe(() => this.changeDetector.markForCheck()));
+        this.subscriptions.add(this.usersStore.$onchange.subscribe((field) => {
+            if (field === 'user') {
                 this.changeDetector.markForCheck();
             }
         }));
@@ -56,29 +55,5 @@ export class TreeUsersListComponent extends OdeComponent {
 
     openCompanionView(view) {
         this.router.navigate([view], {relativeTo: this.route});
-    }
-
-    private initFilters(structure: StructureModel) {
-        this.listFilters.resetFilters();
-
-        this.listFilters.setClassesComboModel(structure.classes);
-        this.listFilters.setSourcesComboModel(structure.userSources);
-
-        const filterAafFunctions: Array<Array<string>> = [];
-        structure.aafFunctions.forEach(structureAafFunctions => {
-            structureAafFunctions.forEach(structureAafFunction => {
-                if (!includes(filterAafFunctions, [structureAafFunction[2], structureAafFunction[4]])) {
-                    filterAafFunctions.push([structureAafFunction[2], structureAafFunction[4]]);
-                }
-            });
-        });
-        this.listFilters.setFunctionsComboModel(filterAafFunctions);
-
-        this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));
-        this.listFilters.setFunctionalGroupsComboModel(
-            structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name));
-        this.listFilters.setManualGroupsComboModel(
-            structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name));
-        this.listFilters.setMailsComboModel([]);
     }
 }

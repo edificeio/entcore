@@ -1,12 +1,12 @@
 <div class="flex-header">
 </div>
-<ode-side-layout (closeCompanion)="closeCompanion()"
-            [showCompanion]="true">
+<ode-side-layout (closeCompanion)="closeCompanion()" [showCompanion]="true">
   <div side-card>
     <ode-tree-user-list
-              (companionChange)="openCompanionView($event)"
-              [selectedUser]="usersStore.user"
-              (onselect)="openUserDetail($event)"></ode-tree-user-list>
+      [structure]="usersStore.structure"
+      [selectedUser]="usersStore.user"
+      (onselect)="openUserDetail($event)">
+    </ode-tree-user-list>
   </div>
   <div side-companion>
     <router-outlet></router-outlet>
