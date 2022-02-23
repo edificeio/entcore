@@ -8,20 +8,25 @@ import {ApplicationRolesResolver} from './application-roles/application-roles.re
 import { RoleActionsResolver } from './application-roles/resolvers/roles.resolver';
 import { DistributionsResolver } from './application-roles/resolvers/distributions.resolver';
 import { ActionsResolver } from './application-roles/resolvers/actions.resolver';
+import { EmptyRolesComponent } from './empty-roles/empty-roles.component';
 
-export let routes: Routes = [
-    {
-        path: '', component: AdmcAppsRolesComponent,
-        resolve: { apps: AdmcAppsRolesResolver },
-        children: [{
-            path: ':appId',
-            component: ApplicationRolesComponent,
-            resolve: { 
-                app: ApplicationRolesResolver, 
-                roles: RoleActionsResolver, 
-                actions: ActionsResolver,
-                distributions: DistributionsResolver
-            }
-        }]
-    }
-];
+export let routes: Routes = [{
+    path: '', 
+    component: AdmcAppsRolesComponent,
+    resolve: { 
+        apps: AdmcAppsRolesResolver 
+    },
+    children: [{
+        path: '', 
+        component: EmptyRolesComponent
+    },{
+        path: ':appId',
+        component: ApplicationRolesComponent,
+        resolve: { 
+            app: ApplicationRolesResolver, 
+            roles: RoleActionsResolver, 
+            actions: ActionsResolver,
+            distributions: DistributionsResolver
+        }
+    }]
+}];
