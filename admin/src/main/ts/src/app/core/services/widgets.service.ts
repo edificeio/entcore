@@ -1,11 +1,13 @@
 import {Injectable} from '@angular/core';
 import { Profile, Structure } from 'src/app/services/_shared/services-types';
+import { StructureModel } from '../store/models/structure.model';
 import { WidgetModel } from '../store/models/widget.model';
 import { NotifyService } from './notify.service';
 import http from 'axios';
 
-type DefaultBookmarks = {
-    defaultBookmarks:[]
+    // Example {\"Teacher\":[\"Blog\", \"Exercices et évaluations\"]}
+export type DefaultBookmarks = {
+    [p in Profile]?: Array<string> /** array of translated app names */
 };
 
 @Injectable()
@@ -41,20 +43,20 @@ export class WidgetService {
             .catch( () => this.notify.error('widget.notify.ko') );
     }
 
-    public getMyAppsParameters(structure:Structure):Promise<[]> {
+    public getMyAppsParameters(structure:StructureModel):Promise<DefaultBookmarks|null> {
         const url = `/appregistry/applications/${structure.id}/default-bookmarks`;
-        return http.get<DefaultBookmarks>(url)
+        return http.get<{defaultBookmarks:string}>(url)
             .then( b => {
-                if(b.status===200) return b.data.defaultBookmarks;
+                if(b.status===200) return JSON.parse(b.data.defaultBookmarks) as DefaultBookmarks;
                 throw 'unexpected error';
             })
             .catch( () => {
                 this.notify.error('services.widget.myapps.prefs.load.error');
-                return [];
+                return null;
             } );
     }
 
-    public setMyAppsParameters(structure:Structure, bookmarks:[]) {
+    public setMyAppsParameters(structure:Structure, bookmarks:DefaultBookmarks) {
         const url = `/appregistry/applications/${structure.id}/default-bookmarks`;
         return http.put(url, {apps: bookmarks})
             .then( () => this.notify.info('widget.notify.ok') )

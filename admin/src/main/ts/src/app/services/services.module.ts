@@ -40,6 +40,7 @@ import { WidgetAssignmentComponent } from './widgets/assignment/widget-assignmen
 import { WidgetMassAssignmentComponent } from './widgets/mass-assignment/widget-mass-assignment.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-myapps-parameters.component';
+import { DefaultBookmarksResolver } from './widgets/parameters/default-bookmarks.resolver';
 
 @NgModule({
     imports: [
@@ -81,7 +82,8 @@ import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-mya
         ApplicationRolesResolver,
         ConnectorRolesResolver,
         WidgetsResolver,
-        WidgetRolesResolver
+        WidgetRolesResolver,
+        DefaultBookmarksResolver
     ]
 })
 export class ServicesModule {

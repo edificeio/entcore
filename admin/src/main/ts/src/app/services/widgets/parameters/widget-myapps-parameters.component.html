@@ -58,3 +58,44 @@
         </div>
     </form>
 </ode-lightbox>
+
+<ode-lightbox class="connector-params" [show]="showConnectorLightbox" (onClose)="showConnectorLightbox = false">
+    <form class="form__add-connector" [formGroup]="addConnectorForm" (ngSubmit)="addConnector()">
+        <div class="form-content">
+            <header><i class="fa fa-plus is-size-6"></i>&nbsp;<s5l>services.widget.myapps.add.connector</s5l></header>
+
+            <ode-form-field label="services.widget.myapps.choose.connector">
+                <ode-mono-select
+                    name="connector" 
+                    formControlName="selectedConnector"
+                    [options]="connectorOptions"
+                    placeholder="services.widget.myapps.choose.in_list"
+                    (ngModelChange)="onConnectorChange($event)">
+                </ode-mono-select>
+            </ode-form-field>
+
+            <ode-form-field label="services.widget.myapps.choose.profiles">
+                <ode-multi-select 
+                    class="lct-profiles-select"
+                    formControlName="profiles"
+                    label="services.widget.myapps.select.profiles"
+                    [options]="profileOptions" 
+                    [trackByFn]="profileTrackByFn" 
+                    [preview]="true">
+                </ode-multi-select>
+            </ode-form-field>
+        </div>
+
+        <div class="action">
+            <button type="button" class="cancel" (click)="reset()">
+                <s5l>cancel</s5l>
+            </button>
+            <button type="button"
+                    class="create confirm"
+                    [disabled]="addConnectorForm.pristine || addConnectorForm.invalid"
+                    (click)="addConnector()">
+                <s5l>save</s5l>
+            </button>
+        </div>
+    </form>
+</ode-lightbox>

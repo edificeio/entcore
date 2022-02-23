@@ -15,6 +15,7 @@ import { WidgetsResolver } from './widgets/list/widgets.resolver';
 import { SmartWidgetComponent } from './widgets/smart-widget/smart-widget.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-myapps-parameters.component';
+import { DefaultBookmarksResolver } from './widgets/parameters/default-bookmarks.resolver';
 
 export let routes: Routes = [
     {
@@ -75,7 +76,8 @@ export let routes: Routes = [
                                 resolve: {
                                     // my-apps parameters
                                     apps: ApplicationsResolver, 
-                                    connectors: ConnectorsResolver
+                                    connectors: ConnectorsResolver,
+                                    bookmarks: DefaultBookmarksResolver
                                 }
                             }
                         ]
