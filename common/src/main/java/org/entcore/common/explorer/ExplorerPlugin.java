@@ -19,9 +19,17 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     protected final IExplorerPluginCommunication communication;
     protected Function<Void, Void> listener;
-
+    protected JsonObject explorerConfig = new JsonObject();
+    protected Integer reindexBatchSize = 100;
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
+    }
+
+    @Override
+    public IExplorerPlugin setConfig(final JsonObject config) {
+        explorerConfig = config;
+        reindexBatchSize = config.getInteger("reindexBatchSize",reindexBatchSize);
+        return this;
     }
 
     @Override
@@ -117,7 +125,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
                 final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
                 log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
-                final ExplorerStream<JsonObject> stream = new ExplorerStream<>(bulk -> {
+                final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
                     return toMessage(bulk, e -> {
                         final String id = getIdForModel(e);
                         final UserInfos user = getCreatorForModel(e);

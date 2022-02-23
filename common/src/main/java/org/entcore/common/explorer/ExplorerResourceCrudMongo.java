@@ -40,7 +40,6 @@ public abstract class ExplorerResourceCrudMongo implements IExplorerResourceCrud
 
     @Override
     public void fetchByDate(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
-        //TODO cursor and filter by date
         int i = 1;
         final QueryBuilder query = QueryBuilder.start();
         if (from.isPresent() || to.isPresent()) {

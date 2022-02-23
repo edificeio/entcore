@@ -17,6 +17,8 @@ public interface IExplorerPlugin {
 
     void stop();
 
+    IExplorerPlugin setConfig(JsonObject config);
+
     Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source);
 
     Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById);

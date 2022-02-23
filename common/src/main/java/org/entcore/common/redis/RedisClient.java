@@ -55,6 +55,15 @@ public class RedisClient {
             final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
             this.redisOptions = new RedisOptions().setConnectionString(url);
         }
+        if(redisConfig.getInteger("maxWaitingHandlers") !=null){
+            redisOptions.setMaxWaitingHandlers(redisConfig.getInteger("maxWaitingHandlers"));
+        }
+        if(redisConfig.getInteger("maxPoolSize") !=null){
+            redisOptions.setMaxPoolSize(redisConfig.getInteger("maxPoolSize"));
+        }
+        if(redisConfig.getInteger("maxPoolWaiting") !=null){
+            redisOptions.setMaxPoolWaiting(redisConfig.getInteger("maxPoolWaiting"));
+        }
         client = io.vertx.redis.client.Redis.createClient(vertx, redisOptions);
     }
 
