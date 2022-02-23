@@ -29,6 +29,13 @@ public class ExplorerPluginFactory {
         }
     }
 
+    public static JsonObject getExplorerConfig() throws Exception {
+        if(explorerConfig == null){
+            throw new Exception("Explorer config not initialized");
+        }
+        return explorerConfig;
+    }
+
     public static IExplorerPluginCommunication getCommunication() throws Exception {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
@@ -48,14 +55,14 @@ public class ExplorerPluginFactory {
         final IExplorerPluginCommunication communication = getCommunication();
         final MongoClient mongoClient = MongoClientFactory.create(vertxInstance, globalConfig);
         final ExplorerFactoryParams<MongoClient> params = new ExplorerFactoryParams<MongoClient>(mongoClient,communication);
-        return instance.apply(params);
+        return instance.apply(params).setConfig(getExplorerConfig());
     }
 
     public static IExplorerPlugin createPostgresPlugin(final Function<ExplorerFactoryParams<PostgresClient>, IExplorerPlugin> instance) throws Exception {
         final IExplorerPluginCommunication communication = getCommunication();
         final PostgresClient postgresClient = PostgresClient.create(vertxInstance, globalConfig);
         final ExplorerFactoryParams<PostgresClient> params = new ExplorerFactoryParams<PostgresClient>(postgresClient,communication);
-        return instance.apply(params);
+        return instance.apply(params).setConfig(getExplorerConfig());
     }
 
     public static class ExplorerFactoryParams<DB>{
