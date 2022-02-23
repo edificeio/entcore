@@ -658,7 +658,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				handler.handle(new Either.Left<String, JsonArray>("Service Providor ID is null or empty"));
 			} else {
 				SamlServiceProvider sp = spFactory.serviceProvider(SPid);
-				sp.generate(eb, userId, host, handler);
+				sp.generate(eb, userId, host, SPid, handler);
 			}
 		}
 	}
