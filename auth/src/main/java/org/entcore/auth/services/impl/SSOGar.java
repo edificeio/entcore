@@ -18,7 +18,7 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class SSOGar extends AbstractSSOProvider {
 
     @Override
-    public void generate(EventBus eb, String userId, String host, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
 
         JsonObject sendTOMediacentre = new JsonObject().put("action", "getConfig");
 
