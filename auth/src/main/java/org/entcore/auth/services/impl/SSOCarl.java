@@ -11,7 +11,7 @@ import org.opensaml.saml2.core.Assertion;
 
 public class SSOCarl extends AbstractSSOProvider {
     @Override
-    public void generate(EventBus eb, String userId, String host, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
         String query = "MATCH (u:User {id:{userId}}) RETURN u.login as login";
         Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId), Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {

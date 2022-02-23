@@ -11,9 +11,14 @@ import org.opensaml.saml2.core.Assertion;
 
 public class SSOMatrix extends AbstractSSOProvider {
     @Override
-    public void generate(EventBus eb, String userId, String host, Handler<Either<String, JsonArray>> handler) {
-        String query = "MATCH (u:User {id:{userId}}) RETURN u.id as id, u.login as login, u.displayName as displayName";
-        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId), Neo4jResult.validUniqueResultHandler(evt -> {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
+        String query = "MATCH (u:User {id:{userId}})" +
+                //Check if the user can access to the App
+                "-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(a:Application) " +
+                "WHERE a.address CONTAINS({serviceProviderEntityId}) " +
+                "RETURN DISTINCT u.id as id, u.login as login, u.displayName as displayName";
+        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceProviderEntityId",serviceProviderEntityId + "/"),
+                Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
                 handler.handle(new Either.Left(evt.left().getValue()));
                 return;
