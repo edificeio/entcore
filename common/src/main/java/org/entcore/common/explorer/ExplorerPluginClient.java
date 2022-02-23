@@ -18,6 +18,11 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
 
     @Override
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to){
+        return getForIndexation(user, from, to, new HashSet<>());
+    }
+
+    @Override
+    public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryReindex.name());
         headers.add("userId", user.getUserId());
@@ -28,6 +33,9 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
         }
         if(to.isPresent()){
             payload.put("to", to.get().getTime());
+        }
+        if(!apps.isEmpty()){
+            payload.put("apps", new JsonArray(new ArrayList(apps)));
         }
         //nb_message,nb_batch
         final Future<JsonObject> future = send(headers, payload, Duration.ofDays(100));

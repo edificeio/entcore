@@ -47,10 +47,16 @@ public class RedisClient {
         final Integer port = redisConfig.getInteger("port");
         final String username = redisConfig.getString("username","");
         final String password = redisConfig.getString("password");
+        final String auth = redisConfig.getString("auth");
         final Integer select = redisConfig.getInteger("select", 0);
         if (StringUtils.isEmpty(password)) {
-            final String url = String.format("redis://%s:%s/%s", host, port, select);
-            this.redisOptions = new RedisOptions().setConnectionString(url);
+            if (StringUtils.isEmpty(auth)) {
+                final String url = String.format("redis://%s:%s/%s", host, port, select);
+                this.redisOptions = new RedisOptions().setConnectionString(url);
+            }else{
+                final String url = String.format("redis://%s:%s/%s?password=%s", host, port, select, auth);
+                this.redisOptions = new RedisOptions().setConnectionString(url);
+            }
         } else {
             final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
             this.redisOptions = new RedisOptions().setConnectionString(url);
