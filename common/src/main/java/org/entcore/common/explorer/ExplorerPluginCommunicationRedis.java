@@ -46,17 +46,20 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
             return Future.succeededFuture();
         }
         final List<Future> futures = new ArrayList<>();
+        Future<List<String>> previous = Future.succeededFuture();
         final Map<String, List<JsonObject>> map = toRedisMap(messages);
         for (final String stream : map.keySet()) {
-            futures.add(redisClient.xAdd(stream, map.get(stream)).onFailure(e -> {
+            final Future<List<String>> tmp = previous.compose(ee-> redisClient.xAdd(stream, map.get(stream)).onFailure(e -> {
                 //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                 final RedisExplorerFailed fail = new RedisExplorerFailed(stream, map.get(stream));
                 pendingFailed.add(fail);
                 vertx.setTimer(retryUntil, rr -> {
                     pendingFailed.remove(fail);
                 });
-                log.error("Failed to push resources to stream " + stream, e.getCause());
+                log.error("Failed to push resources to stream " + stream, e);
             }));
+            previous = tmp;
+            futures.add(tmp);
         }
         final Promise promise = Promise.promise();
         pending.add(promise);

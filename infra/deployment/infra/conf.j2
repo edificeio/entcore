@@ -111,6 +111,15 @@
             {% if redis_password is defined %},
             "auth": "{{ redis_password }}"
             {% endif %}
+            {% if redisMaxWaitingHandlers is defined %},
+            "maxWaitingHandlers": {{ redisMaxWaitingHandlers }}
+            {% endif %}
+            {% if redisMaxPoolSize is defined %},
+            "maxPoolSize": {{ redisMaxPoolSize }}
+            {% endif %}
+            {% if redisMaxPoolWaiting is defined %},
+            "maxPoolWaiting": {{ redisMaxPoolWaiting }}
+            {% endif %}
         },
         {% endif %}
         {% if oauthCache is defined %}
