@@ -124,6 +124,12 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             case QueryReindex: {
                 final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
                 final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
+                final Optional<JsonArray> apps = Optional.ofNullable(message.body().getJsonArray("apps"));
+                if(apps.isPresent() && !apps.get().contains(getApplication())){
+                    log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
+                    message.reply(new JsonObject());
+                    return;
+                }
                 log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
                 final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
                     return toMessage(bulk, e -> {
