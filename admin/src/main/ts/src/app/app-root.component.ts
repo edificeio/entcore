@@ -67,7 +67,7 @@ export class AppRootComponent extends OdeComponent {
         }));
 
         this.subscriptions.add(this.route.url.subscribe(url =>{
-            if (!this.hasSubscribeChildRoute && this.route.children[0].routeConfig.path.length != 0) {
+            if (!this.hasSubscribeChildRoute && this.route.children[0].routeConfig.path == ":structureId") {
                 this.subscriptions.add(this.route.children[0].params.subscribe(params => {
                     if (params) {
                         const structureId = params.structureId;
