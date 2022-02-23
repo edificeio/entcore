@@ -90,8 +90,6 @@ export class UserInfoSectionComponent
     const session: Session = await SessionModel.getSession();
     this.isAdmc = session.isADMC();
     this.cdRef.markForCheck();
-
-    console.log(this.simpleUserDetails);
   }
 
   protected onUserChange() {
