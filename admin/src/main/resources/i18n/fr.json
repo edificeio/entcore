@@ -886,6 +886,7 @@
   "services.classes": "Classes",
   "services.application.search": "Rechercher une application",
   "services.application.list.empty": " Aucune application",
+  "services.application.roles.empty-screen": "<p>Cette page permet de paramétrer les rôles applicatifs qui seront vus par les Administrateurs locaux des établissements scolaires.<br>Sélectionnez une application dans la liste de gauche pour commencer le paramétrage.<p>",
   "services.application.roles.list.empty": "Vous n'avez pas accès à la configuration des rôles pour cette application",
   "services.application.message.targetWarning": "L'interface de cette application est adaptée pour le niveau {{target == 1D ? Primaire : Secondaire }} uniquement",
   "services.connector.access": " Accès au connecteur",

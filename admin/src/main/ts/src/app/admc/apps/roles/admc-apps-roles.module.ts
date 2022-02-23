@@ -19,6 +19,7 @@ import {AdmcAppsRolesComponent} from './admc-apps-roles.component';
 import {ApplicationRolesComponent} from './application-roles/application-roles.component';
 import {ApplicationsRoleCompositionComponent} from './applications-role-composition/applications-role-composition.component';
 import { ActionsResolver } from './application-roles/resolvers/actions.resolver';
+import { EmptyRolesComponent } from './empty-roles/empty-roles.component';
 
 @NgModule({
     imports: [
@@ -35,6 +36,7 @@ import { ActionsResolver } from './application-roles/resolvers/actions.resolver'
         AdmcAppsRolesComponent,
         ApplicationRolesComponent,
         ApplicationsRoleCompositionComponent,
+        EmptyRolesComponent
     ],
     providers: [
         NgSwitch,
