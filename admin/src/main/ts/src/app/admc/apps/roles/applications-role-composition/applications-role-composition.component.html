@@ -4,13 +4,17 @@
        [class.panel-section-header]="!editMode">
 
     <div class="name-group is-display-flex has-space-between">
-      <div class="role-name" *ngIf="!editMode">{{role.name | translate}}</div>
+      <div class="role-name" *ngIf="!editMode">
+        <span>{{role.name | translate}}</span>
+        <span class="role-name-i18n" [hidden]="role.name==bundleSvc.translate(role.name)">i18n</span>
+      </div>
 
       <mat-form-field *ngIf="editMode" class="role-name">
         <mat-label>{{role.name | translate}}</mat-label>
         <input type="text" matInput 
             [formControl]="nameCtl" 
-            [(ngModel)]="role.name">
+            [(ngModel)]="role.name"
+            (focus)="onFocus($event)">
       </mat-form-field>
 
       <div class="buttons">
@@ -28,11 +32,12 @@
         <s5l *ngIf="!editMode" [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
         <mat-form-field *ngIf="editMode">
           <mat-select multiple
-              [formControl]="distributionsCtl"
-              [disabled]="!editMode"
-              (selectionChange)="withDistributions=true">
+                      [placeholder]="getPlaceholderFor(distributionsCtl)"
+                      [formControl]="distributionsCtl"
+                      [disabled]="!editMode"
+                      (selectionChange)="withDistributions=true">
             <mat-select-trigger>
-              <s5l [s5l-params]="{nb: checkedDistributions.length}">ux.multiselect.selected-distributions</s5l>
+              {{ 'ux.multiselect.selected-distributions' | translate:{nb:distributionsCtl.value.length} }}
             </mat-select-trigger>
             <mat-option *ngFor="let distrib of distributions" [value]="distrib">{{distrib}}</mat-option>
           </mat-select>

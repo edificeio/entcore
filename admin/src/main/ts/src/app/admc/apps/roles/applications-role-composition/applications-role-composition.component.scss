@@ -12,13 +12,25 @@
         width: -webkit-fill-available;
         width: -moz-available;
 
+        .role-name-i18n {
+            margin-left: 10px;
+            background-color: #6FBE2E;
+            border-radius: 1em;
+            padding: 1px 8px;
+            font-size: 10px;
+
+            &[hidden] {
+                display:none !important;
+            }
+        }
+
         div.role-name {
             font-size: 1.2em;
             place-self: center;
         }
 
         mat-form-field {
-            width: 66%;
+            flex-grow: 1;
             font-size: 1em;
         }
 
@@ -55,7 +67,7 @@
     }
 
     .distributions mat-form-field {
-        width: 66%;
+        width: 260px;
     }
 
 }
