@@ -809,9 +809,15 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void setDefaultBookmarks(final String structureId, final JsonArray apps, final Handler<Either<String, JsonObject>> handler) {
+	public void setDefaultBookmarks(final String structureId, final JsonObject apps, final Handler<Either<String, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {id: {structureId}}) SET s.defaultBookmarks = {apps}";
-		final JsonObject params = new JsonObject().put("structureId", structureId).put("apps", apps);
+		for (Iterator<Map.Entry<String,Object>> iterator = apps.iterator(); iterator.hasNext();) { // removing null entries
+			Map.Entry<String,Object> app = iterator.next();
+			if (app.getValue() == null) {
+				iterator.remove();
+			}
+		}
+		final JsonObject params = new JsonObject().put("structureId", structureId).put("apps", apps.encode());
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
 

@@ -47,8 +47,7 @@ export class WidgetService {
         const url = `/appregistry/applications/${structure.id}/default-bookmarks`;
         return http.get<{defaultBookmarks:string}>(url)
             .then( b => {
-                if(b.status===200) return JSON.parse(b.data.defaultBookmarks) as DefaultBookmarks;
-                throw 'unexpected error';
+                return JSON.parse(b.data.defaultBookmarks) as DefaultBookmarks;
             })
             .catch( () => {
                 this.notify.error('services.widget.myapps.prefs.load.error');
