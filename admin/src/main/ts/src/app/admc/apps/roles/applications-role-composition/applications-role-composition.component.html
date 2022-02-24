@@ -18,10 +18,13 @@
       </mat-form-field>
 
       <div class="buttons">
-        <button type="button" [class.edit]="editMode" (click)="onToggleEdit($event)">
+        <button type="button" 
+                [class.edit]="editMode"
+                (click)="onToggleEdit($event)" 
+                [disabled]="!checkedActions || checkedActions.length===0">
           <i class='fa' [ngClass]="{'fa-edit':!editMode, 'fa-save':editMode}"></i>
         </button>
-        <button type="button" [class.edit]="editMode" (click)="onRemove.emit(role)">
+        <button type="button" [class.edit]="editMode" (click)="showDeletionConfirm=true">
           <i class='fa fa-trash'></i>
         </button>
       </div>
@@ -46,6 +49,13 @@
     </div>
 
   </div>
+
+  <ode-lightbox-confirm lightboxTitle="services.application.roles.delete.confirm.title"
+                        [show]="showDeletionConfirm"
+                        (onCancel)="showDeletionConfirm=false"
+                        (onConfirm)="showDeletionConfirm=false; onRemove.emit(role);">
+    <span [innerHTML]="'services.application.roles.delete.confirm.content' | translate: {role: role.name}"></span>
+  </ode-lightbox-confirm>
 
   <ode-list-checkable 
       [readOnly]="!editMode"

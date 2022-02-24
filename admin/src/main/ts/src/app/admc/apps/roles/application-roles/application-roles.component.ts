@@ -132,7 +132,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
         return this.roleSvc.removeRole( role )
         .then( success => {
             const removeAtIdx = this.application.roles.findIndex( r=>r.id===roleModel.id );
-            if( success && removeAtIdx>0 ) {
+            if( success && removeAtIdx>=0 ) {
                 // cleanup data model
                 delete this.roles[roleModel.id];
                 this.application.roles.splice( removeAtIdx, 1 );
