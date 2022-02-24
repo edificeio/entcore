@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
+import { BundlesService } from 'ngx-ode-sijil';
 import { RoleActionModel, RoleModel } from 'src/app/core/store/models/role.model';
 import { AdmcAppsRolesService } from '../admc-apps-roles.service';
 
@@ -35,7 +36,8 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
 
     constructor(
             injector: Injector,
-            private roleSvc:AdmcAppsRolesService
+            private roleSvc:AdmcAppsRolesService,
+            public bundleSvc:BundlesService
         ) {
         super(injector);
     }
@@ -46,6 +48,16 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
         this.distributionsCtl = new FormControl( {value:this.checkedDistributions, disabled:true} );
 
         this.editMode = (this.role as any).isNew || false;    // Sorry for the hack, but the data model is not clear.
+    }
+
+    /** 
+     * <mat-select-trigger> are hidden when no value is selected among the available options.
+     * @see https://github.com/angular/components/issues/7758
+     * We fallback to using a placeholder in that precise case.
+     * The placeholder must be undefined as soon as an option is selected.
+     */
+    getPlaceholderFor(ctl:FormControl) {
+        if( ctl.value.length===0 ) return this.bundleSvc.translate('ux.multiselect.selected-distributions', {nb:ctl.value.length});
     }
 
     onToggleEdit($event) {
@@ -64,6 +76,13 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
             this.withDistributions = false;
         }
         this.editMode = !this.editMode;
+    }
+
+    onFocus($event:FocusEvent) {
+        const input = $event.currentTarget as HTMLInputElement;
+        if( input ) {
+            input.setSelectionRange(0, input.value.length);
+        }
     }
 
     public check(action:RoleActionModel, active) {
