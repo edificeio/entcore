@@ -40,7 +40,6 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users', 'list'], {replaceUrl: false});
                 }).then(() => {
-                    console.log("coucu")
                     user.id = user.userDetails.id;
                     user.displayName = user.userDetails.displayName;
                     user.structures = user.userDetails.structureNodes.map(s => { return { id: s.id, name: s.name, externalId: s.externalId }});

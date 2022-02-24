@@ -75,7 +75,7 @@ export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, 
         super.ngOnInit();
         this.subscriptions.add(this.usersStore.$onchange.subscribe(field => {
             if (field === 'user') {
-                if (!this.user || this.user.id !== this.usersStore.user.id ||
+                if (!this.user || !this.user.userDetails || this.user.id !== this.usersStore.user.id ||
                     !this.structure || this.structure !== this.usersStore.structure) {
                     this.structure = this.usersStore.structure;
                     this.user = this.usersStore.user;
