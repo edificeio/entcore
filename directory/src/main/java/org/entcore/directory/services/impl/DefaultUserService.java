@@ -507,14 +507,17 @@ public class DefaultUserService implements UserService {
 				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		}
-		if(searchTerm != null && !searchTerm.trim().isEmpty()){
+		searchTerm = normalize( searchTerm );
+		if(searchTerm != null){
 			if ("email".equals(searchType)) {
 				condition += "AND u.emailSearchField =~ {regex} ";
 			} else {
 				condition += "AND u.displayNameSearchField =~ {regex} ";
+				// Remove accents when searching for a display name.
+				searchTerm = StringUtils.stripAccents(searchTerm);
 			}
 
-			params.put("regex", "(?i)^.*?" + Pattern.quote(searchTerm.trim()) + ".*?$");
+			params.put("regex", "(?i)^.*?" + Pattern.quote(searchTerm) + ".*?$");
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
@@ -555,6 +558,17 @@ public class DefaultUserService implements UserService {
 				"ORDER BY type DESC, displayName ASC ";
 
 		neo.execute(query, params, validResultHandler(results));
+	}
+
+	
+	private String normalize(String str) {
+		if (str != null ) {
+			str = str.toLowerCase().replaceAll("\\s+", "").trim();
+			if( str.isEmpty() ) {
+				return null;
+			}
+		}
+		return str;
 	}
 
 	@Override
