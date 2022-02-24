@@ -555,7 +555,7 @@ public class AppRegistryController extends BaseController {
 	public void setDefaultBookmarks(final HttpServerRequest request){
 		final String structureId = request.params().get("structureId");
 		bodyToJson(request, body -> {
-			JsonArray apps = body.getJsonArray("apps");
+			JsonObject apps = body.getJsonObject("apps");
 			if (structureId == null || structureId.trim().isEmpty() || apps == null || apps.isEmpty()) {
 				badRequest(request);
 				return;
