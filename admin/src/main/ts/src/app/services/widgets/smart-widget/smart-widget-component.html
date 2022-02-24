@@ -10,9 +10,11 @@
     >
       {{ 'services.tab.assignment' | translate }}
     </button>
-    <button class="tab"
-            [ngClass]="{active: currentTab === 'massAssignment'}"
-            (click)="currentTab = 'massAssignment'">
+    <button
+        *ngIf="showTab"
+        class="tab"
+        [ngClass]="{active: currentTab === 'massAssignment'}"
+        (click)="currentTab = 'massAssignment'">
         {{ 'services.tab.mass-assignment' | translate }}
     </button>
     <button class="tab"
