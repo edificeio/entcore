@@ -45,6 +45,7 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
     public currentWidgetLevel:string = '';
 
     private session: Session;
+    public showTab:boolean = true;
 
     constructor(
         injector: Injector,
@@ -70,12 +71,22 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
                 this.currentStructure = data.structure;
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 this.checkStructureLevelOfEducation();
+                this.showMassAssignmentTab(this.currentStructure);
                 this.currentTab = 'assignment';
             }
         }));
 
         this.session = await SessionModel.getSession();
         this.currentTab = 'assignment';
+    }
+
+    private showMassAssignmentTab(structure):void {        
+        if (structure.children && 
+            structure.children.length > 0) {
+            this.showTab = true;
+        } else {
+            this.showTab = false;
+        }
     }
 
     private checkStructureLevelOfEducation(): void {
