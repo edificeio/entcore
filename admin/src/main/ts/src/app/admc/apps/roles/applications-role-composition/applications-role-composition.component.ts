@@ -34,6 +34,9 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
     public editMode = false;
     public withDistributions:boolean = false;
 
+    // Show/hide the role deletion confirm lightbox.
+    public showDeletionConfirm:boolean = false;
+
     constructor(
             injector: Injector,
             private roleSvc:AdmcAppsRolesService,

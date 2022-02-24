@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import http from 'axios';
+import { NotifyService } from 'src/app/core/services/notify.service';
 import { RoleActionModel } from 'src/app/core/store/models/role.model';
 
 export type Role = {
@@ -19,6 +20,8 @@ type AppTemplate = {
 
 @Injectable()
 export class AdmcAppsRolesService {
+    constructor( private notify:NotifyService ) {
+    }
 
 // NOTE JCBE-ODE : Uncomment commented lines below if you want to "cache" the available roles.
 // But beware, you will new to manually keep this cached data synchronized (new roles...)
@@ -105,27 +108,42 @@ export class AdmcAppsRolesService {
             })
         )
         .then( res => {
+            if( res.status>=400 ) {
+                throw res.statusText;
+            }
             if( res.status===201 && role.isNew ) {
                 role.id = res.data.id;
                 delete role.isNew;
             }
+            this.notify.info('services.application.roles.save.success');
             return true;
         })
-        .catch( err => false );
+        .catch( err => {
+            this.notify.error('services.application.roles.save.error');
+            return false;
+        });
     }
 
     private saveNewRole( role:Role ) {
         return http.post<{id:string}>('/appregistry/role', {
             role: role.name, 
             actions: role.actions.map( r=>r.name )
-        })
+        });
     }
 
     public removeRole( role:Role ) {
         return http
         .delete(`/appregistry/role/${role.id}`)
-        .then( res => true )
-        .catch( err => false );
+        .then( res => {
+            if( res.status>=400 )
+                throw res.statusText;
+            this.notify.info('services.application.roles.delete.success');
+            return true;
+        })
+        .catch( err => {
+            this.notify.error('services.application.roles.delete.error');
+            return false;
+        });
     }
 
     public changeDistributions(role:Role, distributions) {
@@ -133,10 +151,15 @@ export class AdmcAppsRolesService {
         .put(`/appregistry/role/${role.id}/distributions`, {
             distributions: distributions
         })
-        .then( res => true )
-        .catch( err => false );
-        // .success(function () {
-        //     notify.info(lang.translate("appregistry.notify.distributionsUpdate"));
-        // });
+        .then( res => {
+            if( res.status>=400 )
+                throw res.statusText;
+            this.notify.info('services.application.roles.distribution.update.success');
+            return true;
+        })
+        .catch( err => {
+            this.notify.error('services.application.roles.distribution.update.error');
+            return false;
+        });
     };
 }
