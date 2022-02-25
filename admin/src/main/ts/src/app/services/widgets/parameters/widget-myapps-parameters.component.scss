@@ -1,5 +1,33 @@
 @import "../../../../assets/variables";
 
+ul.param-list {
+    padding: 0;
+
+    .bookmarks {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+    
+        .applies-to {
+            color: #A9A9A9;
+        }
+        &:first-child {
+            padding-top: 0;
+            margin-top: -15px;
+        }    
+    }
+}
+
+.bt-add {
+    margin: 0 5px;
+}
+
+i.action {
+    font-size: 1.5em;
+    padding: 0 5px 0 15px;    
+}
+
 .app-params .form-content,
 .connector-params .form-content {
     min-width: 40rem;
