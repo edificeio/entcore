@@ -47,7 +47,12 @@ export class WidgetService {
         const url = `/appregistry/applications/${structure.id}/default-bookmarks`;
         return http.get<{defaultBookmarks:string}>(url)
             .then( b => {
-                return JSON.parse(b.data.defaultBookmarks) as DefaultBookmarks;
+                if( typeof b.data.defaultBookmarks==="string" ) {
+                    return JSON.parse(b.data.defaultBookmarks) as DefaultBookmarks;
+                } else {
+                    // When none are defined, defaultBookmarks may be an empty array.
+                    return {};
+                }
             })
             .catch( () => {
                 this.notify.error('services.widget.myapps.prefs.load.error');

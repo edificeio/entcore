@@ -32,6 +32,7 @@ const emptyBookmarks = {
 export class WidgetMyAppsParametersComponent extends OdeComponent {
     public structure:Structure;
     public widget: WidgetModel;
+    public allProfiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
 
     public addApplicationForm: FormGroup = new FormGroup({
         selectedApp: new FormControl(),
@@ -148,17 +149,17 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
 
     public addApplication() {
         if( this.selectedApp )
-            this.addToDefaultParameters(this.selectedApp.displayName);
+            this.addToDefaultParameters(this.selectedApp.displayName, this.addApplicationForm.get('profiles').value);
     }
     public addConnector() {
         if( this.selectedConnector )
-            this.addToDefaultParameters(this.selectedConnector.displayName);
+            this.addToDefaultParameters(this.selectedConnector.displayName, this.addConnectorForm.get('profiles').value);
     }
 
-    private addToDefaultParameters( paramName:string ) {
-        const applyToProfiles = (this.addApplicationForm.get('profiles').value || []) as Array<string>;
+    private addToDefaultParameters( paramName:string, applyToProfiles?:Array<string> ) {
+        applyToProfiles = applyToProfiles || [];
 
-        ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'].forEach( profile => {
+        this.allProfiles.forEach( profile => {
             // Null arrays not allowed for now
             const profileParameters = (this.defaultBookmarks[profile] || []) as Array<string>;
             const indexOfParamInProfileParameters = profileParameters.indexOf(paramName);
@@ -191,7 +192,7 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
     public reset() {
         this.selectedApp = null;
         this.selectedConnector = null;
-        this.profileOptions = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'].map( p => ({
+        this.profileOptions = this.allProfiles.map( p => ({
             value:p, 
             label:p
         }) );
