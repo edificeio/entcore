@@ -21,6 +21,10 @@ const emptyBookmarks = {
     'AdminLocal': null
 }
 
+type BookmarkView = {
+    [appName:string]: Array<Profile>;
+}
+
 @Component({
     selector: 'ode-widget-myapps-parameters',
     templateUrl: 'widget-myapps-parameters.component.html',
@@ -57,6 +61,8 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
     public showConnectorLightbox:boolean = false;
 
     private defaultBookmarks:DefaultBookmarks = emptyBookmarks;
+    // For displaying in the template :
+    public bookmarksView:BookmarkView = {};
 
     constructor(
             injector: Injector,
@@ -89,6 +95,7 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
                 this.updateConnectorList();
             }
             this.defaultBookmarks = data.bookmarks || emptyBookmarks;
+            this.bookmarksView = this.bookmarkModelToView();
         }));
 
         this.updateAppList();
@@ -115,6 +122,25 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
             return (a && a.displayName && b && b.displayName) ? a.displayName.localeCompare(b.displayName) : 0;
         })
         .map( app => ({label:app.displayName, value:app}));
+    }
+
+    public onEdit( appOrConnectorKey:string ) {
+        let appOrConn:SelectOption<ApplicationModel|IConnector> = this.applicationOptions.find( app => app.label===appOrConnectorKey );
+        if( appOrConn ) {
+            this.addApplicationForm.get('selectedApp').setValue( appOrConn.value );
+            this.showAppLightbox = true;
+            return;
+        }
+        appOrConn = this.connectorOptions.find( conn => conn.label=== appOrConnectorKey );
+        if( appOrConn ) {
+            this.addConnectorForm.get('selectedConnector').setValue( appOrConn.value );
+            this.showConnectorLightbox = true;
+            return;
+        }
+    }
+
+    public onDelete( appOrConnectorKey:string ) {
+        this.updateDefaultParameters(appOrConnectorKey, []);        
     }
 
     public onApplicationChange(e:ApplicationModel) {
@@ -146,17 +172,33 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
         return profiles;
     }
 
+    private bookmarkModelToView():BookmarkView {
+        const view = {};
+        if( this.defaultBookmarks ) {
+            for( const profile in this.defaultBookmarks ) {
+                if( this.defaultBookmarks[profile] ) {
+                    this.defaultBookmarks[profile].forEach( appName => {
+                        view[appName] = view[appName] || [];
+                        if( view[appName].indexOf(profile) < 0 ) {
+                            view[appName].push(profile);
+                        }
+                    });
+                }
+            }
+        }
+        return view;
+    }
 
     public addApplication() {
         if( this.selectedApp )
-            this.addToDefaultParameters(this.selectedApp.displayName, this.addApplicationForm.get('profiles').value);
+            this.updateDefaultParameters(this.selectedApp.displayName, this.addApplicationForm.get('profiles').value);
     }
     public addConnector() {
         if( this.selectedConnector )
-            this.addToDefaultParameters(this.selectedConnector.displayName, this.addConnectorForm.get('profiles').value);
+            this.updateDefaultParameters(this.selectedConnector.displayName, this.addConnectorForm.get('profiles').value);
     }
 
-    private addToDefaultParameters( paramName:string, applyToProfiles?:Array<string> ) {
+    private updateDefaultParameters( paramName:string, applyToProfiles?:Array<string> ) {
         applyToProfiles = applyToProfiles || [];
 
         this.allProfiles.forEach( profile => {
@@ -182,10 +224,14 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
                 delete this.defaultBookmarks[profile];
             }
         });
-        this.spinner.perform(
+        return this.spinner.perform(
             "portal-content", 
             this.widgetSvc.setMyAppsParameters(this.structure, this.defaultBookmarks)
-        );
+        )
+        .then( () => {
+            this.bookmarksView = this.bookmarkModelToView();
+        });
+;
     }
 
     /** [Re]init the app/connectors lightboxes. */

@@ -4,14 +4,29 @@
     </div>
 </div>
 
-<ode-panel-section section-title="services.widget.myapps.parameters.apps">
+<ode-panel-section section-title="services.widget.myapps.parameters.apps" [folded]="false">
+    <ul class="param-list">
+        <li class="bookmarks" *ngFor="let appKeyVal of bookmarksView | keyvalue">
+            <div class="label">
+                <s5l>{{appKeyVal.key}}</s5l>
+                <span class="applies-to" *ngFor="let profile of appKeyVal.value; let isFirst = first">
+                    <span *ngIf="isFirst"> - </span><span *ngIf="!isFirst">, </span>
+                    <s5l>{{profile}}</s5l>
+                </span>
+            </div>
+            <div class="actions">
+                <i class="fa fa-pencil action" (click)="onEdit(appKeyVal.key)" ></i>
+                <i class="fa fa-times action" (click)="onDelete(appKeyVal.key)"></i>
+            </div>
+        </li>
+    </ul>
 
-    <button (click)="showAppLightbox = true" class="">
+    <button (click)="showAppLightbox = true" class="bt-add">
         <s5l>services.widget.myapps.choose.app</s5l>
         <i class="fa fa-plus-circle is-size-5"></i>
     </button>
 
-    <button (click)="showConnectorLightbox = true" class="">
+    <button (click)="showConnectorLightbox = true" class="bt-add">
         <s5l>services.widget.myapps.choose.connector</s5l>
         <i class="fa fa-plus-circle is-size-5"></i>
     </button>
