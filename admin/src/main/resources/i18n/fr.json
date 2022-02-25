@@ -15,6 +15,9 @@
   "admc.search.transverse": "Recherche transverse",
   "admc.search.unlinked": "Personnes non rattachées",
 
+  "admc.search.currentStructure": "Rechercher dans la structure courante",
+  "admc.search.linkedStructures": "Rechercher dans toutes les structures liées",
+
   "admc.apps": "Gérer les applications",
   "admc.apps.configuration": "Paramétrage des applications",
   "admc.apps.roles": "Rôles applicatifs",
