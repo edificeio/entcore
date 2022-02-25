@@ -556,7 +556,7 @@ public class AppRegistryController extends BaseController {
 		final String structureId = request.params().get("structureId");
 		bodyToJson(request, body -> {
 			JsonObject apps = body.getJsonObject("apps");
-			if (structureId == null || structureId.trim().isEmpty() || apps == null || apps.isEmpty()) {
+			if (structureId == null || structureId.trim().isEmpty() || apps == null) {
 				badRequest(request);
 				return;
 			}

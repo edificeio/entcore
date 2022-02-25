@@ -803,7 +803,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	@Override
 	public void getDefaultBookmarks(final String structureId, final Handler<Either<String, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {id: {structureId}}) " +
-				"RETURN CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE [] END AS defaultBookmarks";
+				"RETURN CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE \"{}\" END AS defaultBookmarks";
 		final JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
@@ -824,7 +824,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	@Override
 	public void applyDefaultBookmarks(final String userId) {
 		final String query = "MATCH (u:User {id: {userId}})-[:IN]-(:ProfileGroup)-[:DEPENDS]-(s:Structure) " +
-				"WITH u, COLLECT(CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE [] END) AS defaultBookmarks " +
+				"WITH u, COLLECT(CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE \"{}\" END) AS defaultBookmarks " +
 				"RETURN u.profiles[0] AS userProfile, defaultBookmarks";
 		final JsonObject params = new JsonObject().put("userId", userId);
 		neo.execute(query, params, event -> {
