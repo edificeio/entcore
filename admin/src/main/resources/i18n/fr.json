@@ -16,7 +16,7 @@
   "admc.search.unlinked": "Personnes non rattachées",
 
   "admc.search.currentStructure": "Rechercher dans la structure courante",
-  "admc.search.linkedStructures": "Rechercher dans toutes les structures liées",
+  "admc.search.linkedStructures": "Rechercher dans toutes les structures",
 
   "admc.apps": "Gérer les applications",
   "admc.apps.configuration": "Paramétrage des applications",
@@ -42,7 +42,7 @@
   "pick.a.structure": "Choisir un établissement en cliquant sur le menu <i class='fa fa-bars'></i> en haut à gauche",
   "users.title": "Utilisateurs",
   "users.tabs.mainList": "Utilisateurs de mon établissement",
-  "users.tabs.treeList": "Rechercher dans les sous-structures",
+  "users.tabs.treeList": "Rechercher dans toutes les structures",
   "users.tabs.removedList": "Utilisateurs non rattachés",
   "structure.home.title": "Page de l'établissement",
   "Teacher": "Enseignant",
