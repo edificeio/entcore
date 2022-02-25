@@ -115,7 +115,7 @@ export class AdmcAppsRolesService {
                 role.id = res.data.id;
                 delete role.isNew;
             }
-            this.notify.info('services.application.roles.save.success');
+            this.notify.success('services.application.roles.save.success');
             return true;
         })
         .catch( err => {
@@ -154,7 +154,7 @@ export class AdmcAppsRolesService {
         .then( res => {
             if( res.status>=400 )
                 throw res.statusText;
-            this.notify.info('services.application.roles.distribution.update.success');
+            this.notify.success('services.application.roles.distribution.update.success');
             return true;
         })
         .catch( err => {
