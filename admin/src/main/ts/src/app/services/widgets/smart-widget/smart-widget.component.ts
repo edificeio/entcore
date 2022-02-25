@@ -104,11 +104,15 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
     public get canEditMyAppsParameters():boolean {
         return this.servicesStore.widget.name==='my-apps' 
             && this.is2D
-            && this.isAdml( this.currentStructure.id );
+            && (this.isAdmc() || this.isAdml(this.currentStructure.id));
     } 
 
     private get is2D() {
         return this.currentStructure.levelsOfEducation && this.currentStructure.levelsOfEducation.length && this.currentStructure.levelsOfEducation.indexOf(2) >= 0;
+    }
+
+    private isAdmc() {
+        return this.session && this.session.isADMC();
     }
 
     private isAdml( structureId:string ) {
