@@ -791,7 +791,7 @@ public class Importer {
 	}
 
 	public void linkRelativeToClass(String profileExternalId, String prefix, String structureExternalId) {
-		JsonObject j = new JsonObject().put("profileExternalId", profileExternalId);
+		JsonObject j = new JsonObject().put("profileExternalId", profileExternalId).put("source", currentSource);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
