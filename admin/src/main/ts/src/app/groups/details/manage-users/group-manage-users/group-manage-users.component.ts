@@ -136,16 +136,21 @@ export class GroupManageUsersComponent
   setContext = async () => {
     const session: Session = await SessionModel.getSession();
 
+    if (session.isADMC()) {
+      this.hasStructures = true;
+      this.isDropdownVisible = !this.isDropdownVisible;
+    }
+
     if (session.functions && session.functions["ADMIN_LOCAL"]) {
       const { code, scope } = session.functions["ADMIN_LOCAL"];
 
-      this.hasStructures = scope && scope.length > 1;
       this.isADML = code === "ADMIN_LOCAL";
+      this.hasStructures = scope && scope.length > 1;
     } else {
       return false;
     }
 
-    if (this.isADML && this.hasStructures) {
+    if (this.hasStructures) {
       this.isDropdownVisible = !this.isDropdownVisible;
     }
   };
