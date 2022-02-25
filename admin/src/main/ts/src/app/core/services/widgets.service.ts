@@ -18,28 +18,28 @@ export class WidgetService {
     public massLink(widget:WidgetModel, structure:Structure, profiles:Array<Profile>) {
         const url = `/appregistry/widget/${widget.id}/authorize/${structure.id}`;
         return http.put(url + (profiles.length>0 ? "?profile="+profiles.join("&profile=") : ""))
-            .then( () => this.notify.info('widget.mass.link.notify.ok') )
+            .then( () => this.notify.success('widget.mass.link.notify.ok') )
             .catch( () => this.notify.error('widget.mass.link.notify.ko') );
     }
 
     public massUnlink(widget:WidgetModel, structure:Structure, profiles:Array<Profile>){
         const url = `/appregistry/widget/${widget.id}/authorize/${structure.id}`;
         return http.delete(url + (profiles.length>0 ? "?profile="+profiles.join("&profile=") : ""))
-            .then( () => this.notify.info('widget.mass.unlink.notify.ok') )
+            .then( () => this.notify.success('widget.mass.unlink.notify.ok') )
             .catch( () => this.notify.error('widget.mass.unlink.notify.ko') );
     }
 
     public massSetMandatory(widget:WidgetModel, structure:Structure, profiles:Array<Profile>){
         const url = `/appregistry/widget/${widget.id}/mandatory/${structure.id}/mass`;
         return http.put(url + (profiles.length>0 ? "?profile="+profiles.join("&profile=") : ""))
-            .then( () => this.notify.info('widget.notify.ok') )
+            .then( () => this.notify.success('widget.notify.ok') )
             .catch( () => this.notify.error('widget.notify.ko') );
     }
     
     public massUnsetMandatory(widget:WidgetModel, structure:Structure, profiles:Array<Profile>){
         const url = `/appregistry/widget/${widget.id}/mandatory/${structure.id}/mass`;
         return http.delete(url + (profiles.length>0 ? "?profile="+profiles.join("&profile=") : ""))
-            .then( () => this.notify.info('widget.notify.ok') )
+            .then( () => this.notify.success('widget.notify.ok') )
             .catch( () => this.notify.error('widget.notify.ko') );
     }
 
@@ -63,7 +63,7 @@ export class WidgetService {
     public setMyAppsParameters(structure:Structure, bookmarks:DefaultBookmarks) {
         const url = `/appregistry/applications/${structure.id}/default-bookmarks`;
         return http.put(url, {apps: bookmarks})
-            .then( () => this.notify.info('widget.notify.ok') )
+            .then( () => this.notify.success('widget.notify.ok') )
             .catch( () => this.notify.error('widget.notify.ko') );
     }
 }
