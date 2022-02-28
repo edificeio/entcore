@@ -323,7 +323,7 @@ export class UserInfoSectionComponent
             {
               key: "notify.user.updateLoginAlias.content",
               parameters: {
-                user: this.user.firstName + " " + this.user.lastName,
+                user: this.details.firstName + " " + this.details.lastName,
               },
             },
             "notify.user.updateLoginAlias.title"

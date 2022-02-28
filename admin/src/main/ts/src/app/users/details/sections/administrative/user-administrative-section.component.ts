@@ -63,7 +63,7 @@ export class UserAdministrativeSectionComponent extends AbstractSection {
                     {
                         key: 'notify.user.update.content',
                         parameters: {
-                            user: this.details.firstName + ' ' + this.user.lastName
+                            user: this.details.firstName + ' ' + this.details.lastName
                         }
                     }, 'notify.user.update.title');
 
@@ -81,6 +81,10 @@ export class UserAdministrativeSectionComponent extends AbstractSection {
     }
 
     private updateInStructures() {
+        if (!this.usersStore.structure) {
+            return;
+        }
+
         this.user.structures.forEach(us => {
             if (us.id !== this.usersStore.structure.id) {
                 const s = globalStore.structures.data.find(gs => gs.id === us.id);

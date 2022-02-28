@@ -9,6 +9,8 @@ import { AdmcSearchComponent } from "./admc-search.component";
 import { routes } from "./admc-search.routing";
 import { AdmcSearchService } from "./admc-search.service";
 import { AdmcSearchTransverseComponent } from "./transverse/admc-search-transverse.component";
+import { UsersModule } from "src/app/users/users.module";
+import { UsersStore } from "src/app/users/users.store";
 
 @NgModule({
     imports: [
@@ -16,7 +18,8 @@ import { AdmcSearchTransverseComponent } from "./transverse/admc-search-transver
         FormsModule,
         RouterModule.forChild(routes),
         NgxOdeSijilModule.forChild(),
-        NgxOdeUiModule
+        NgxOdeUiModule,
+        UsersModule
     ],
     declarations: [
         AdmcSearchComponent,
@@ -26,7 +29,8 @@ import { AdmcSearchTransverseComponent } from "./transverse/admc-search-transver
     ],
     providers: [
         UserListService,
-        AdmcSearchService
+        AdmcSearchService,
+        UsersStore
     ]
 })
 export class AdmcSearchModule {
