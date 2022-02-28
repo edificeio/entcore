@@ -18,6 +18,8 @@ import { UnlinkedUserDetailsComponent } from "./unlinked/details/user-details.co
 import { UserDetailsResolver } from "./unlinked/details/user-details.resolver";
 import { UnlinkedUserService } from "./unlinked/unlinked.service";
 import { UnlinkedUserStructuresSectionComponent } from "./unlinked/structures-section/user-structures-section.component";
+import { UsersModule } from "src/app/users/users.module";
+import { UsersStore } from "src/app/users/users.store";
 
 @NgModule({
     imports: [
@@ -42,7 +44,8 @@ import { UnlinkedUserStructuresSectionComponent } from "./unlinked/structures-se
         AdmcSearchUnlinkedResolver,
         UserDetailsResolver,
         ConfigResolver,
-        UnlinkedUserService
+        UnlinkedUserService,
+        UsersStore
     ],
     exports: [
     ]
