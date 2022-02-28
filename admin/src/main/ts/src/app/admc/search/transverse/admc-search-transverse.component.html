@@ -11,7 +11,7 @@
       [limit]="userListService.limit"
       [searchSubmit]="search"
       (inputChange)="searchTerm = $event"
-      (onSelect)="selectedUser = $event; onselect.emit($event)"
+      (onSelect)="handleSelectUser($event)"
       (scrolledDown)="userListService.addPageDown()"
       (listChange)="refreshListCount($event)"
       [searchInput]="true"
@@ -29,7 +29,7 @@
       </div>
 
       <ng-template let-item>
-        <span class="is-display-flex">
+        <span class="is-display-flex has-align-items-center">
           <span class="display-name">
             {{ item.lastName?.toUpperCase() }} {{ item.firstName }}
           </span>

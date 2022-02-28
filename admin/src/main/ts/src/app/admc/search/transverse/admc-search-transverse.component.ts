@@ -5,6 +5,7 @@ import { SpinnerService } from "ngx-ode-ui";
 import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
 import { UserListService } from "src/app/core/services/userlist.service";
 import { UserModel } from "src/app/core/store/models/user.model";
+import { UsersStore } from "src/app/users/users.store";
 import { AdmcSearchService } from "../admc-search.service";
 
 @Component({
@@ -29,6 +30,7 @@ export class AdmcSearchTransverseComponent extends OdeComponent {
         public spinner: SpinnerService,
         public userListService: UserListService,
         private admcSearchService: AdmcSearchService,
+        public usersStore: UsersStore,
         injector: Injector) {
         super(injector);
     }
@@ -80,5 +82,11 @@ export class AdmcSearchTransverseComponent extends OdeComponent {
                 this.changeDetector.markForCheck();
             })
         );
+    }
+
+    handleSelectUser(user: UserModel): void {
+        this.selectedUser = user;
+        this.usersStore.user = user;
+        this.spinner.perform('portal-content', this.router.navigate([user.id, 'details'], {relativeTo: this.route}));
     }
 }

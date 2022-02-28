@@ -92,7 +92,8 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
         UsersService
     ],
     exports: [
-        RouterModule
+        RouterModule,
+        SimpleUserDetailsComponent
     ]
 })
 export class UsersModule {
