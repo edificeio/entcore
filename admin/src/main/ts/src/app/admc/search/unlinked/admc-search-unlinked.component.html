@@ -4,13 +4,26 @@
       <ode-list
             [model]="collectionRef"
             [sort]="'+displayName'"
-            [inputFilter]="filterByInput"
-            [searchPlaceholder]="'search.user'"
-            [noResultsLabel]="'no.user.found'"
+            searchPlaceholder="search.user"
+            noResultsLabel="no.user.found"
+            placeholder="list.placeholder"
             [isSelected]="isSelected"
-            (inputChange)="itemInputFilter = $event"
-            (onSelect)="onSelectItem($event)">
-
+            (inputChange)="onSearchTermChanged($event)"
+            [searchSubmit]="search"
+            (scrolledDown)="search()"
+            (onSelect)="onSelectItem($event)"
+            [searchInput]="true">
+        <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
+          <ode-search-toolbar
+            [label]="'user.searchType.label'"
+            [searchTypes]="searchTypes"
+            [nbItem]="nbUsers"
+            [nbItemLabel]="'list.results.users'"
+            (selectSearchType)="handleSelectSearchType($event)"
+          >
+          </ode-search-toolbar>
+        </div>
+      
         <ng-template let-item>
           <div class="user-name">
             <span>{{ item.displayName }}</span>

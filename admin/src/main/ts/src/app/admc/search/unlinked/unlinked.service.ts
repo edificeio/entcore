@@ -3,6 +3,8 @@ import http from 'axios';
 import { Profile } from 'src/app/services/_shared/services-types';
 import { NotifyService } from '../../../core/services/notify.service';
 import { BackendDirectoryUserResponse } from 'src/app/users/users.service';
+import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
+
 
 export type UnlinkedUser = {
     id: string;
@@ -20,18 +22,36 @@ export type UnlinkedUserDetails = BackendDirectoryUserResponse & {
     disappearanceDate?: number;
 };
 
+export type ListSearchParameters = {
+    structureId?:String;
+    profiles?:Array<Profile>;
+    sortOn?: string;
+    fromIndex?: number;
+    limitResult?: number;
+    searchType?: SearchTypeEnum;
+    searchTerm?: string;
+};
+
 @Injectable()
 export class UnlinkedUserService {
     constructor( private notify:NotifyService ) {
     }
 
-    public list(structureId?:String, profiles?:Array<Profile>) {
-        const url = `/directory/list/isolated?1=1`;
-        return http.get<UnlinkedUser[]>(
-                url
-                + (structureId && structureId.length>0 ? `&structureId=${structureId}` : "")
-                + (profiles && profiles.length>0 ? "&profile="+profiles.join("&profile=") : "")
-            )
+    public list(params?:ListSearchParameters) {
+        let url = `/directory/list/isolated?1=1`;
+        if( params ) {
+            if( params.structureId && params.structureId.length>0 ) 
+                url += `&structureId=${params.structureId}`;
+            if( params.profiles && params.profiles.length>0 ) 
+                url += "&profile="+params.profiles.join("&profile=");
+            if( params.sortOn && typeof params.fromIndex==="number" )
+                url += `&sortOn=${encodeURIComponent(params.sortOn)}&fromIndex=${params.fromIndex}`;
+            if( typeof params.limitResult==="number" )
+                url += `&limitResult=${params.limitResult}`;
+            if( params.searchType && params.searchTerm )
+                url += `&searchType=${params.searchType}&searchTerm=${encodeURIComponent(params.searchTerm)}`;
+        }
+        return http.get<UnlinkedUser[]>(url)
             .then( response => {
                 if( response.status===200 ) return response.data;
                 throw response.statusText;
