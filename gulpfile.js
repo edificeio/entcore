@@ -2,7 +2,6 @@
 
 require('./gulpfile-admin.js');
 require('./gulpfile-ts.js');
-require('./admin/src/main/ts/gulpfile.js')
 var loader = require('./gulpfile-loader');
 
 gulp.task('build', loader().buildList(), () => {});
