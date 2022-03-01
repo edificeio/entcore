@@ -156,36 +156,41 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withShared(final JsonArray shared) {
+        message.put("shared", shared);
+        return this;
+    }
+
     public JsonObject getMessage() {
         return message;
     }
-
     public String getId() {
         return id;
     }
-
+    public Optional<JsonArray> getOptionalShared() {
+        return Optional.ofNullable(message.getJsonArray("shared"));
+    }
+    public JsonArray getShared() {
+        return message.getJsonArray("shared", new JsonArray());
+    }
     public String getCreatorId() {
         return message.getString("creatorId");
     }
     public String getApplication() {
         return message.getString("application");
     }
-
     public String getResourceType() {
         return message.getString("resourceType");
     }
     public JsonObject getOverride() {
         return message.getJsonObject("override");
     }
-
     public String getAction() {
         return action;
     }
-
     public ExplorerPriority getPriority() {
         return priority;
     }
-
     public String getResourceUniqueId() {
         return getId()+":"+getApplication()+":"+getResourceType();
     }

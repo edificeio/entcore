@@ -78,8 +78,12 @@ public class DirectoryTestHelper {
     /** Create a user in the Neo4J container. */
     public Future<Void> createActiveUser(UserInfos infos) {
         final Future<Void> async = Future.future();
-        final JsonObject params = new JsonObject().put("userid", infos.getUserId());
-        final String query = "CREATE (u:User:Visible {id : {userid} }) RETURN u";
+        final JsonObject props = new JsonObject().put("id", infos.getUserId());
+        if(infos.getLogin() != null){
+            props.put("login", infos.getLogin());
+        }
+        final JsonObject params = new JsonObject().put("props", props);
+        final String query = "CREATE (u:User:Visible {props}) RETURN u";
         Neo4j.getInstance().execute(query, params, message -> {
             if ("ok".equals(message.body().getString("status"))) {
                 async.complete();

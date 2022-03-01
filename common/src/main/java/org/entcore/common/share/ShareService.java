@@ -27,15 +27,19 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 public interface ShareService {
 
 	void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler);
 
+	void shareInfosWithoutVisible(String userId, String resourceId, Handler<Either<String, JsonArray>> handler);
+
 	void shareInfos(String userId, String resourceId, String acceptLanguage, String search,
-			Handler<Either<String, JsonObject>> handler);
+					Handler<Either<String, JsonObject>> handler);
 
 	void shareInfos(String userId, String resourceId, String acceptLanguage, ShareInfosQuery query,
 			Handler<Either<String, JsonObject>> handler);
@@ -55,6 +59,10 @@ public interface ShareService {
 	//static void removeShareMetadata(JsonObject data);
 
 	Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler);
+
+	default Future<JsonObject> share(UserInfos user, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler){
+		return share(user.getUserId(), resourceId, share, handler);
+	}
 
 	default void findUserIdsForShare(String resourceId, String userId,
 							 Handler<AsyncResult<Set<String>>> h){

@@ -7,6 +7,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -48,7 +49,11 @@ public class PostgresClient {
             final Object value = row.getValue(col);
             if(value != null){
                 group.add(col+"=$" + placeholderCounter);
-                tuple.addValue(value);
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(Json.create(value));
+                }else{
+                    tuple.addValue(value);
+                }
             }
             placeholderCounter++;
         }
@@ -91,7 +96,12 @@ public class PostgresClient {
     public static Tuple insertValues(final Collection<JsonObject> rows, final Tuple tuple, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
-                tuple.addValue(row.getValue(col));
+                final Object value = row.getValue(col);
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(Json.create(value));
+                }else{
+                    tuple.addValue(value);
+                }
             }
         }
         return tuple;
@@ -104,8 +114,12 @@ public class PostgresClient {
     public static Tuple insertValuesWithDefault(final Collection<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
-                final Object val = row.getValue(col, defaultValues.get(col));
-                tuple.addValue(val);
+                final Object value = row.getValue(col, defaultValues.get(col));
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(Json.create(value));
+                }else{
+                    tuple.addValue(value);
+                }
             }
         }
         return tuple;
@@ -114,7 +128,12 @@ public class PostgresClient {
     public static Tuple insertValuesFromMap(final Collection<Map<String, Object>> rows, final Tuple tuple, final String... column) {
         for (final Map<String, Object> row : rows) {
             for (final String col : column) {
-                tuple.addValue(row.get(col));
+                final Object value = row.get(col);
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(Json.create(value));
+                }else{
+                    tuple.addValue(value);
+                }
             }
         }
         return tuple;
@@ -127,7 +146,11 @@ public class PostgresClient {
                 if (value == null) {
                     value = defaultValues.getOrDefault(col, value);
                 }
-                tuple.addValue(value);
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(Json.create(value));
+                }else{
+                    tuple.addValue(value);
+                }
             }
         }
         return tuple;
@@ -145,7 +168,11 @@ public class PostgresClient {
 
     public static <T> Tuple inTuple(final Tuple tuple, final Collection<T> values) {
         for (final T value : values) {
-            tuple.addValue(value);
+            if(value instanceof  JsonObject || value instanceof JsonArray){
+                tuple.addValue(Json.create(value));
+            }else{
+                tuple.addValue(value);
+            }
         }
         return tuple;
     }
