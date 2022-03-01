@@ -137,7 +137,7 @@ export class AdmcAppsRolesService {
         .then( res => {
             if( res.status>=400 )
                 throw res.statusText;
-            this.notify.info('services.application.roles.delete.success');
+            this.notify.success('services.application.roles.delete.success');
             return true;
         })
         .catch( err => {
