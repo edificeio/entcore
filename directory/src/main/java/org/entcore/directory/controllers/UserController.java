@@ -335,7 +335,24 @@ public class UserController extends BaseController {
 	public void listIsolated(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final List<String> expectedProfile = request.params().getAll("profile");
-		userService.listIsolated(structureId, expectedProfile, arrayResponseHandler(request));
+		final String sortOn = request.params().get("sortOn");
+		final String fromIndex = request.params().get("fromIndex");
+		final Integer fromIndexInt = fromIndex==null ? null : Integer.valueOf(fromIndex);
+		final String limitResult = request.params().get("limitResult");
+		final Integer limitResultInt = limitResult==null ? null : Integer.valueOf(limitResult);
+		final String searchType = request.params().get("searchType");
+		final String searchTerm = request.params().get("searchTerm");
+	
+		userService.listIsolated(
+			structureId, 
+			expectedProfile,
+			sortOn,
+			fromIndexInt,
+			limitResultInt,
+			searchType,
+			searchTerm,
+			arrayResponseHandler(request)
+		);
 	}
 
 	@Delete("/user")

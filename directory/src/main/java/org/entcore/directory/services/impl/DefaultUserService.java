@@ -425,14 +425,36 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results) {
+	public void listIsolated(
+			String structureId, 
+			List<String> profile, 
+			String sortOn,
+			final Integer fromIndex,
+			final Integer limitResult,
+			final String searchType,
+			String searchTerm,
+			Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
 		String query;
+
+		String condition = "";
+		searchTerm = normalize( searchTerm );
+		if(searchTerm != null && searchTerm.length()>0 ){
+			if ("email".equals(searchType)) {
+				condition += "AND u.emailSearchField CONTAINS {searchTerm} ";
+			} else {
+				condition += "AND u.displayNameSearchField CONTAINS {searchTerm} ";
+				// Remove accents when searching for a display name.
+				searchTerm = StringUtils.stripAccents(searchTerm);
+			}
+			params.put("searchTerm", searchTerm);
+		}
+
 		// users without class
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			query = "MATCH  (s:Structure { id : {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
 					"g-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE  NOT(u-[:IN]->()-[:DEPENDS]->(:Class)-[:BELONGS]->s) ";
+					"WHERE  NOT(u-[:IN]->()-[:DEPENDS]->(:Class)-[:BELONGS]->s) "+ condition;
 			params.put("structureId", structureId);
 			if (profile != null && !profile.isEmpty()) {
 				query += "AND p.name IN {profile} ";
@@ -440,13 +462,33 @@ public class DefaultUserService implements UserService {
 			}
 		} else { // users without structure
 			query = "MATCH (u:User)" +
-					"WHERE NOT(u-[:IN]->()-[:DEPENDS]->(:Structure)) " +
+					"WHERE NOT(u-[:IN]->()-[:DEPENDS]->(:Structure)) "+ condition +
 					"OPTIONAL MATCH u-[:IN]->(dpg:DefaultProfileGroup)-[:HAS_PROFILE]->(p:Profile) ";
 		}
+		
 		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
-				"u.lastName as lastName, u.displayName as displayName " +
-				"ORDER BY type DESC, displayName ASC ";
+				"u.lastName as lastName, u.displayName as displayName ";
+
+		// Apply search parameters and sort order
+		if( sortOn==null || sortOn.length()<2 ) {
+			// Default sort order, historical behaviour.
+			query += "ORDER BY type DESC, displayName ASC ";
+		} else {
+			final String order = sortOn.startsWith("-") ? "DESC" : "ASC";
+			if( sortOn.charAt(0)=='+'|| sortOn.charAt(0)=='-' ) {
+				sortOn = sortOn.substring(1);
+			}
+			query += "ORDER BY "+ sortOn +" "+ order;
+		}
+		if( fromIndex != null && fromIndex.intValue() > 0 ) {
+			query += " SKIP {skip}";
+			params.put( "skip", fromIndex );
+		}
+		if( limitResult != null && limitResult.intValue() > 0 ) {
+			query += " LIMIT {limit}";
+			params.put( "limit", limitResult );
+		}
 		neo.execute(query, params, validResultHandler(results));
 	}
 

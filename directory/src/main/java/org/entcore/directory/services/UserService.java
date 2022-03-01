@@ -58,7 +58,28 @@ public interface UserService {
 	void list(JsonArray groupIds, JsonArray userIds, boolean itSelf, String userId,
 			Handler<Either<String, JsonArray>> handler);
 
-	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
+	/**
+	 * List users who are not attached to a structure or a class.
+	 * All parameters are optional and cumulative.
+	 * 
+	 * @param structureId If defined, return users attached to this structure but with no class.
+	 * @param profile If defined, return users having one of the profiles.
+	 * @param sortOn If defined, sort users by this field (defaults to "displayName")
+	 * @param fromIndex If defined, return users by ommitting results before the index.
+	 * @param limitResult If defined, returned resultset will contain users up to this number. 
+	 * @param searchType If defined with searchTerm, filter results on this field.
+	 * @param searchTerm If defined with searchType, filter results on field containing this value.
+	 * @param results the resultset
+	 */
+	void listIsolated(
+		final String structureId, 
+		final List<String> profile, 
+		final String sortOn,
+		final Integer fromIndex,
+		final Integer limitResult,
+		final String searchType,
+		final String searchTerm,
+		Handler<Either<String, JsonArray>> results);
 
 	void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId, JsonArray expectedProfiles,
 			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
