@@ -1,13 +1,20 @@
 package org.entcore.common.explorer;
 
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.share.ShareService;
+import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -15,6 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerPlugin implements IExplorerPlugin {
+    public static final String RESOURCES_ADDRESS = "explorer.resources";
+    public static final String RESOURCES_GETSHARE = "getshare";
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final IExplorerPluginCommunication communication;
@@ -164,6 +173,48 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
+    public Future<JsonArray> getShareInfo(String id) {
+        return getShareInfo(new HashSet<>(Arrays.asList(id))).map(e->{
+            return e.getOrDefault(id, new JsonArray());
+        });
+    }
+
+    @Override
+    public Future<Map<String, JsonArray>> getShareInfo(Set<String> ids) {
+        final JsonArray payload = new JsonArray(new ArrayList(ids));
+        final Promise<Map<String,JsonArray>> promise = Promise.promise();
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", RESOURCES_GETSHARE);
+        communication.vertx().eventBus().request(RESOURCES_ADDRESS, payload, deliveryOptions, message -> {
+            if(message.succeeded()) {
+                final Map<String, JsonArray> map = new HashMap<>();
+                final JsonObject received = (JsonObject) message.result().body();
+                for(final String id : ids){
+                    map.put(id, received.getJsonArray(id, new JsonArray()));
+                }
+                promise.complete(map);
+            }else{
+                promise.fail(message.cause());
+            }
+        });
+        return promise.future();
+    }
+
+    @Override
+    public Future<Void> notifyShare(String id, UserInfos user, JsonArray shared) {
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+        return communication.pushMessage(message.withShared(shared));
+    }
+
+    @Override
+    public Future<Void> notifyShare(Set<String> ids, UserInfos user, JsonArray shared) {
+        final List<ExplorerMessage> messages = ids.stream().map(id->{
+            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+            return message.withShared(shared);
+        }).collect(Collectors.toList());
+        return communication.pushMessage(messages);
+    }
+
+    @Override
     public Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById) {
         final List<Future> futures = sourceById.entrySet().stream().map(e->{
             final String id = e.getKey();
@@ -293,6 +344,28 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     @Override
     public IExplorerPluginCommunication getCommunication() {
         return communication;
+    }
+
+    @Override
+    public ShareService createMongoShareService(String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+        return createMongoShareService(communication.vertx().eventBus(), MongoDb.getInstance(), collection, securedActions, groupedActions);
+    }
+
+    @Override
+    public ShareService createMongoShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+        final ShareService inner = new MongoDbShareService(eb , mongo, collection, securedActions, groupedActions);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
+    }
+
+    @Override
+    public ShareService createPostgresShareService(Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+        return createPostgresShareService(communication.vertx().eventBus(), securedActions, groupedActions);
+    }
+
+    @Override
+    public ShareService createPostgresShareService(EventBus eb, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+        final ShareService inner = new SqlShareService(eb , securedActions, groupedActions);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
     }
 
     //abstract

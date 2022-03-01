@@ -21,6 +21,8 @@ package org.entcore.common.share.impl;
 
 import java.util.*;
 
+import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.sql.Sql;
@@ -136,6 +138,59 @@ public class SqlShareService extends GenericShareService {
 				return all;
 			});
 		}).setHandler(h);
+	}
+
+	@Override
+	public void shareInfosWithoutVisible(final String userId, final String resourceId, final Handler<Either<String, JsonArray>> handler) {
+		if (userId == null || userId.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonArray>("Invalid userId."));
+			return;
+		}
+		if (resourceId == null || resourceId.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonArray>("Invalid resourceId."));
+			return;
+		}
+		final JsonArray actions = getResoureActions(securedActions);
+		String query = "SELECT s.member_id, s.action, m.group_id FROM " + shareTable + " AS s " + "JOIN " + schema
+				+ "members AS m ON s.member_id = m.id WHERE resource_id = ?";
+		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)),message -> {
+			if ("ok".equals(message.body().getString("status"))) {
+				final JsonArray res = message.body().getJsonArray("results");
+				final JsonArray shared = new JsonArray();
+				final Map<String, JsonObject> sharedById = new HashMap();
+				for (Object r : res) {
+					if (!(r instanceof JsonArray))
+						continue;
+					final JsonArray row = (JsonArray) r;
+					final String memberId = row.getString(0);
+					final String actionId = row.getString(1);
+					final String groupId = row.getString(2);
+					if(groupId != null){
+						//group
+						final String key = "GROUP_"+groupId;
+						final JsonObject share = sharedById.getOrDefault(key, new JsonObject().put("groupId", groupId));
+						share.put(actionId, true);
+						if(!sharedById.containsKey(key)){
+							shared.add(share);
+							sharedById.put(key, share);
+						}
+					}else if(memberId != null){
+						//user
+						final String key = "USER_"+memberId;
+						final JsonObject share = sharedById.getOrDefault(key, new JsonObject().put("userId", memberId));
+						share.put(actionId, true);
+						if(!sharedById.containsKey(key)){
+							shared.add(share);
+							sharedById.put(key, share);
+						}
+					}
+				}
+				handler.handle(new Either.Right<>(shared));
+			}else{
+				final String error = message.body().getString("error", "Error finding shared resource.");
+				handler.handle(new Either.Left<>(error));
+			}
+		});
 	}
 
 	@Override

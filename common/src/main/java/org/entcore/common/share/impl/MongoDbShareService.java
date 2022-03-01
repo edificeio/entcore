@@ -45,6 +45,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 public class MongoDbShareService extends GenericShareService {
 
@@ -224,6 +225,30 @@ public class MongoDbShareService extends GenericShareService {
 			} else {
 				handler.handle(new Either.Left<String, JsonObject>(
 						mongoEvent.body().getString("error", "Error finding shared resource.")));
+			}
+		});
+	}
+
+	@Override
+	public void shareInfosWithoutVisible(final String userId, final String resourceId, final Handler<Either<String, JsonArray>> handler) {
+		if (userId == null || userId.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonArray>("Invalid userId."));
+			return;
+		}
+		if (resourceId == null || resourceId.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonArray>("Invalid resourceId."));
+			return;
+		}
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		JsonObject keys = new JsonObject().put("shared", 1);
+		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEVent -> {
+			if ("ok".equals(mongoEVent.body().getString("status"))) {
+				final JsonObject res = mongoEVent.body().getJsonObject("result", new JsonObject());
+				final JsonArray shared = res.getJsonArray("shared", new JsonArray());
+				handler.handle(new Either.Right<>(shared));
+			}else{
+				final String error = mongoEVent.body().getString("error", "Error finding shared resource.");
+				handler.handle(new Either.Left<>(error));
 			}
 		});
 	}

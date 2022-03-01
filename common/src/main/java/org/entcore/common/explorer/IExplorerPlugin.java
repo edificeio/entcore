@@ -1,11 +1,17 @@
 package org.entcore.common.explorer;
 
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface IExplorerPlugin {
     static String addressFor(String application, String resourceType) {
@@ -17,7 +23,23 @@ public interface IExplorerPlugin {
 
     void stop();
 
+    ShareService createPostgresShareService(Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions);
+
+    ShareService createPostgresShareService(EventBus eb, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions);
+
+    ShareService createMongoShareService(String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions);
+
+    ShareService createMongoShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions);
+
     IExplorerPlugin setConfig(JsonObject config);
+
+    Future<JsonArray> getShareInfo(String id);
+
+    Future<Map<String, JsonArray>> getShareInfo(Set<String> id);
+
+    Future<Void> notifyShare(String id, UserInfos user, JsonArray shared);
+
+    Future<Void> notifyShare(Set<String> id, UserInfos user, JsonArray shared);
 
     Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source);
 

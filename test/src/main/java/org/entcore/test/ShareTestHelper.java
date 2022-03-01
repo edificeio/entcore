@@ -75,4 +75,26 @@ public class ShareTestHelper {
             throw e;
         }
     }
+
+    public Map<String,SecuredAction> getSecuredActions(TestContext context) throws Exception {
+        try {
+            // delegate IDE build to gradle in order to have annotation processor running
+            // before tests
+            final URL uri = getClass().getClassLoader().getResource("securedaction");
+            final String parent = Paths.get(uri.toURI()).getParent().toAbsolutePath().toString();
+            final String oldValue = FileResolver.absolutePath("");
+            try {
+
+                FileResolver.getInstance().setBasePath(parent);
+                final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
+                final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
+                return mapActions;
+            } finally {
+                FileResolver.getInstance().setBasePath(oldValue);
+            }
+        } catch (Exception e) {
+            context.fail(e);
+            throw e;
+        }
+    }
 }
