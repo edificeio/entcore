@@ -23,6 +23,7 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
     @Input() distributions: Array<string> = [];
     @Input() checkedDistributions: Array<string> = [];
 
+    @Output() onEdit: EventEmitter<RoleModel> = new EventEmitter<RoleModel>();
     @Output() onSave: EventEmitter<{role:RoleModel, withDistributions:boolean}> = new EventEmitter<{role:RoleModel, withDistributions:boolean}>();
     @Output() onRemove: EventEmitter<RoleModel> = new EventEmitter<RoleModel>();
     @Output() onActionChange: EventEmitter<ActionChange> = new EventEmitter<ActionChange>();
@@ -77,6 +78,8 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
             // => This toggles a save event.
             this.onSave.emit( {role:this.role, withDistributions:this.withDistributions} );
             this.withDistributions = false;
+        } else {
+            this.onEdit.emit( this.role );
         }
         this.editMode = !this.editMode;
     }

@@ -19,6 +19,8 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
     public actions: Array<RoleActionModel>;
     public distributions: Array<string>;
 
+    public disableNewRole:string|null = null;
+
     constructor(
             injector: Injector,
             private roleSvc:AdmcAppsRolesService) {
@@ -54,7 +56,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
     newRole() {
         const newRole:Role = {
             id: NEW_ROLE,
-            name: "Nom du nouveau rôle",
+            name: "",
             distributions: [], // #WB-381, No default distributions when creating a new role
             actions:[],
             isNew: true
@@ -62,6 +64,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
 
         this.application.roles.unshift( newRole as unknown as RoleModel);
         this.roles[NEW_ROLE] = newRole;
+        this.disableNewRole = 'disabled';
     }
 
     public actionsOfRole(roleModel:RoleModel):Array<RoleActionModel> {
