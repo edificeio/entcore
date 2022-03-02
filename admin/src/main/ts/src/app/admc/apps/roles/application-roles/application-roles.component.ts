@@ -55,7 +55,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
         const newRole:Role = {
             id: NEW_ROLE,
             name: "Nom du nouveau rôle",
-            distributions: [].concat(this.distributions),
+            distributions: [], // #WB-381, No default distributions when creating a new role
             actions:[],
             isNew: true
         };
