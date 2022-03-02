@@ -21,6 +21,7 @@
   "admc.apps": "Gérer les applications",
   "admc.apps.configuration": "Paramétrage des applications",
   "admc.apps.roles": "Rôles applicatifs",
+  "admc.apps.roles.newRoleName": "Nom du nouveau rôle",
   "admc.apps.calendar": "Calendrier",
 
   "admc.misc": "Autres",
@@ -585,6 +586,9 @@
   "group.manage.users.added": "Déjà dans le groupe",
   "group.manage.users.button.add": "Ajouter au groupe les utilisateurs sélectionnés en orange",
   "group.manage.users.button.remove": "Retirer du groupe les utilisateurs sélectionnés en bleu",
+  "group.manage.tab.search.structure": "Rechercher dans un établissement",
+  "group.manage.tab.search.allStructures": "Rechercher dans toutes les structures",
+
   "group.delete.button": "Supprimer",
   "group.delete.button.lock": "Groupe verouillé",
   "group.delete.confirm.content": "Veuillez confirmer la suppression définitive du groupe <strong>{{groupName}}</strong>.",

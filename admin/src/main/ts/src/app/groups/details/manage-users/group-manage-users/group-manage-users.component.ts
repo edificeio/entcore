@@ -56,11 +56,11 @@ export class GroupManageUsersComponent
 
   tabs = [
     {
-      label: "Rechercher dans un établissement",
+      label: "group.manage.tab.search.structure",
       active: 1,
     },
     {
-      label: "Rechercher dans toutes les structures",
+      label: "group.manage.tab.search.allStructures",
       active: 2,
     },
   ];

@@ -5,6 +5,7 @@ import { AdmcAppsRolesService, Role } from '../admc-apps-roles.service';
 import { routing } from 'src/app/core/services/routing.service';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
 import { RoleActionModel, RoleModel } from 'src/app/core/store/models/role.model';
+import { BundlesService } from 'ngx-ode-sijil';
 
 const NEW_ROLE = "_NEW_ROLE";
 
@@ -23,7 +24,8 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
 
     constructor(
             injector: Injector,
-            private roleSvc:AdmcAppsRolesService) {
+            private roleSvc:AdmcAppsRolesService,
+            private bundlesService: BundlesService) {
         super(injector);
     }
 
@@ -56,7 +58,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
     newRole() {
         const newRole:Role = {
             id: NEW_ROLE,
-            name: "",
+            name: this.bundlesService.translate('admc.apps.roles.newRoleName'),
             distributions: [], // #WB-381, No default distributions when creating a new role
             actions:[],
             isNew: true
