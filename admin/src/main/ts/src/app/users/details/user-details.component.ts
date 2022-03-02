@@ -98,6 +98,13 @@ export class UserDetailsComponent
           }
         } else if (field === "structure") {
           this.structure = this.usersStore.structure;
+          
+          // #WB-373: if structure changed and user is not in structure 
+          // then navigate to /admin/${structureId}/users/list/filter
+          if (this.user && this.user.structures && !this.user.structures.find(s => s.id === this.structure.id)) {
+              this.router.navigate(['/admin', this.structure.id, 'users', 'list', 'filter']);
+          }
+
           this.changeDetector.markForCheck();
         }
       })
