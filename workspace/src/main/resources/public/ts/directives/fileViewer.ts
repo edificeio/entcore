@@ -14,6 +14,7 @@ interface FileViewerScope {
 	csvDelegate: CsvDelegate;
 	txtDelegate: TxtDelegate
 	isTxt(): boolean
+	isStreamable(): boolean
 	download(): void;
 	isOfficePdf(): boolean;
 	isOfficeExcelOrCsv(): boolean;
@@ -161,6 +162,13 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 			scope.isTxt = () => {
 				const ext = ['txt'];
 				return ext.includes(scope.contentType);
+			}
+
+			scope.isStreamable = () => {
+				return scope.contentType==='video' 
+					&& scope.ngModel 
+					&& scope.ngModel.metadata 
+					&& typeof scope.ngModel.metadata.captation === "boolean";
 			}
 
 			scope.closeViewFile = () => {
