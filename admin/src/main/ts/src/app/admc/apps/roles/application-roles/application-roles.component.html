@@ -1,6 +1,6 @@
 <h2>
   <span>{{ application.displayName }}</span>
-  <button (click)="newRole()">
+  <button (click)="newRole()" [disabled]="disableNewRole">
     <s5l>roles.create.button</s5l>
     <i class="fa fa-plus is-size-5"></i>
   </button>
@@ -20,7 +20,8 @@
     (onActionChange)="toggleAction($event.role, $event.action, $event.active)"
     [distributions]="distributions"
     [checkedDistributions]="distributionsOfRole(role)"
-    (onSave)="save($event.role, $event.withDistributions)"
-    (onRemove)="delete($event)">
+    (onEdit)="disableNewRole = 'disabled'"
+    (onSave)="save($event.role, $event.withDistributions); disableNewRole = null;"
+    (onRemove)="delete($event); disableNewRole = null;">
   </ode-applications-role-composition>
 </div>

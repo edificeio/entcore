@@ -11,7 +11,7 @@
 
       <mat-form-field *ngIf="editMode" class="role-name">
         <mat-label>{{role.name | translate}}</mat-label>
-        <input type="text" matInput 
+        <input type="text" required matInput 
             [formControl]="nameCtl" 
             [(ngModel)]="role.name"
             (focus)="onFocus($event)">
@@ -21,7 +21,7 @@
         <button type="button" 
                 [class.edit]="editMode"
                 (click)="onToggleEdit($event)" 
-                [disabled]="!checkedActions || checkedActions.length===0">
+                [disabled]="!role.name || role.name.trim().length===0 || !checkedActions || checkedActions.length===0">
           <i class='fa' [ngClass]="{'fa-edit':!editMode, 'fa-save':editMode}"></i>
         </button>
         <button type="button" [class.edit]="editMode" (click)="showDeletionConfirm=true">
@@ -54,7 +54,7 @@
                         [show]="showDeletionConfirm"
                         (onCancel)="showDeletionConfirm=false"
                         (onConfirm)="showDeletionConfirm=false; onRemove.emit(role);">
-    <span [innerHTML]="'services.application.roles.delete.confirm.content' | translate: {role: role.name}"></span>
+    <span [innerHTML]="'services.application.roles.delete.confirm.content' | translate: {role: bundleSvc.translate(role.name)}"></span>
   </ode-lightbox-confirm>
 
   <ode-list-checkable 
