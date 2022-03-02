@@ -11,7 +11,7 @@
     (click)="isSelectedTab(tab)"
     class="group-manage-tab"
     [ngClass]="{ active: selectedTab === tab.active }"
-    >{{ tab.label }}</span
+    >{{ tab.label | translate }}</span
   >
 </div>
 
