@@ -118,7 +118,7 @@ export class StructureAttachmentComponent
 
   cancelAttach() {
     this.selectedStructure = [];
-    this.showAddStructuresLightBox = false;
+    this.closeLightBox();
   }
 
   attachParent = (): void => {
