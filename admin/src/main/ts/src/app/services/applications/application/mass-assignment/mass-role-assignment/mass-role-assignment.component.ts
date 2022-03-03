@@ -8,39 +8,7 @@ import { MassAssignment, Profile, Role, Structure } from '../../../../_shared/se
 @Component({
     selector: 'mass-role-assignment',
     templateUrl: './mass-role-assignment.component.html',
-    styles: [`
-        form {
-            padding: 0 15px 15px 15px;
-            margin: 0;
-        }`, `
-        .submit {
-            background-color: #ff8352;
-            color: white;
-            min-width: 80px;
-            text-align: center;
-        }`, `
-        .submit[disabled], .submit[disabled]:hover {
-            background-color: #f2f2f2;
-            color: grey;
-        }`, `
-        .submit:hover {
-            background-color: #ff5e1f;
-        }`, `
-        select {
-            display: inline-block;
-            vertical-align: middle;
-            min-width: 400px;
-            height: 105px;
-            font-size: 16px;
-        }`, `
-        .form__row {
-            margin: 15px 0;
-        }`, `
-        .form__row--last {
-            margin-bottom: 0;
-            text-align: right;
-        }`
-    ]
+    styleUrls: ['./mass-role-assignment.component.scss']
 })
 export class MassRoleAssignment extends OdeComponent implements OnInit, OnChanges {
 
