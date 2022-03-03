@@ -5,6 +5,7 @@ import { NotifyService } from '../../../../../core/services/notify.service';
 import { RoleModel } from '../../../../../core/store/models/role.model';
 import { ServicesStore } from '../../../../services.store';
 import { MassAssignment, Profile, Role, Structure } from '../../../../_shared/services-types';
+import { filterRolesByDistributions } from '../../smart-application/smart-application.component';
 
 @Component({
     selector: 'ode-smart-mass-role-assignment',
@@ -28,10 +29,11 @@ export class SmartMassRoleAssignmentComponent extends OdeComponent implements On
     ngOnInit(): void {
         super.ngOnInit();
         this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
-        this.subscriptions.add(this.route.data.subscribe(data => {
+        this.subscriptions.add(this.route.data.subscribe((data: {roles: Array<RoleModel>}) => {
             if (data.roles) {
-                this.roles = data.roles
-                    .filter((r: RoleModel) => r.transverse === false)
+                this.roles = filterRolesByDistributions(
+                    data.roles.filter(r => r.transverse == false), 
+                    this.servicesStore.structure.distributions)
                     .map((r: RoleModel) => ({id: r.id, name: r.name}));
             }
         }));
