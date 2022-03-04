@@ -44,7 +44,8 @@ public interface UserAuthAccount {
 
 	void changePassword(String login, String password, HttpServerRequest request, Handler<Boolean> handler);
 
-	void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, final Handler<Either<String, JsonObject>> handler);
+	void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, String profile, JsonArray functions,
+									final Handler<Either<String, JsonObject>> handler);
 
 	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest,boolean checkFederatedLogin , Handler<Boolean> handler);
 

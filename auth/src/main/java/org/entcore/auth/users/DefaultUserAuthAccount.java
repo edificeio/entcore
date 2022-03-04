@@ -401,12 +401,54 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, final Handler<Either<String, JsonObject>> handler)
+	public void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, String profile, JsonArray functions,
+										final Handler<Either<String, JsonObject>> handler)
 	{
 		if (email == null || email.trim().isEmpty())
 		{
 			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
 			return;
+		}
+
+		JsonObject sendMailFilter = config.getJsonObject("change-password-mail-filter");
+		if(sendMailFilter != null)
+		{
+			boolean userAllowed = false;
+			JsonArray allowedProfiles = sendMailFilter.getJsonArray("profiles");
+			JsonArray allowedFunctions = sendMailFilter.getJsonArray("functions");
+
+			if(allowedProfiles != null)
+				if(allowedProfiles.contains(profile) == true)
+					userAllowed = true;
+
+			if(allowedFunctions != null)
+			{
+				if(functions == null)
+					functions = new JsonArray();
+
+				boolean hasAllowedFunction = false;
+				for(int i = allowedFunctions.size(); i-- > 0;)
+				{
+					for(int j = functions.size(); j-- > 0;)
+					{
+						if(functions.getString(j).equals(allowedFunctions.getString(i)) == true)
+						{
+							hasAllowedFunction = true;
+							break;
+						}
+					}
+					if(hasAllowedFunction == true)
+						break;
+				}
+
+				userAllowed |= hasAllowedFunction;
+			}
+
+			if(userAllowed == false)
+			{
+				handler.handle(new Either.Right<String, JsonObject>(new JsonObject().put("sent", false)));
+				return;
+			}
 		}
 
 		log.info("Sending changedPassword by email: "+login+"/"+email);
@@ -429,7 +471,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						if("error".equals(event.body().getString("status"))){
 							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
 						} else {
-							handler.handle(new Either.Right<String, JsonObject>(event.body()));
+							handler.handle(new Either.Right<String, JsonObject>(event.body().put("sent", true)));
 						}
 					}
 				}));
@@ -568,8 +610,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
+				"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
+				"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null, n.changePw = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
+				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
 				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
@@ -585,7 +630,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					String email = user.getString("email");
 					String dName = user.getString("displayName");
 					String login = user.getString("login");
-					sendChangedPasswordMail(request, email, dName, login, new Handler<Either<String, JsonObject>>()
+					String profile = user.getString("profile");
+					JsonArray functions = user.getJsonArray("functions");
+					sendChangedPasswordMail(request, email, dName, login, profile, functions, new Handler<Either<String, JsonObject>>()
 					{
 						@Override
 						public void handle(Either<String, JsonObject> res)
@@ -605,8 +652,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
+				"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
+				"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
 				"SET n.password = {password}, n.changePw = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
+				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
 				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName as displayName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
@@ -620,7 +670,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					String email = user.getString("email");
 					String dName = user.getString("displayName");
 					String login = user.getString("login");
-					sendChangedPasswordMail(request, email, dName, login, new Handler<Either<String, JsonObject>>()
+					String profile = user.getString("profile");
+					JsonArray functions = user.getJsonArray("functions");
+
+					sendChangedPasswordMail(request, email, dName, login, profile, functions, new Handler<Either<String, JsonObject>>()
 					{
 						@Override
 						public void handle(Either<String, JsonObject> res)
