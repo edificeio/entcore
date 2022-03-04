@@ -568,7 +568,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
-				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
+				"SET n.password = {password}, n.resetCode = null, n.resetDate = null, n.changePw = null " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
 		Map<String, Object> params = new HashMap<>();
