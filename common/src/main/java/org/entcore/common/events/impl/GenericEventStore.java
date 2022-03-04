@@ -139,7 +139,11 @@ public abstract class GenericEventStore implements EventStore {
 					}
 					execute(UserUtils.sessionToUserInfos(res.getJsonObject(0)), eventType, request, customAttributes);
 				} else {
-					logger.error("Error : user " + value + " not found.");
+					if ("login".equals(attr)) {
+						createAndStoreEvent(eventType, "loginAlias", value, clientId, request);
+					} else {
+						logger.error("Error : user " + value + " not found.");
+					}
 				}
 
 			}
