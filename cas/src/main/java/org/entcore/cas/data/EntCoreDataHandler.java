@@ -51,6 +51,8 @@ import fr.wseduc.cas.exceptions.Try;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.mongodb.MongoDb;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 public class EntCoreDataHandler extends DataHandler {
 
 	public static final String COLLECTION = "authcas";
@@ -142,6 +144,10 @@ public class EntCoreDataHandler extends DataHandler {
 				if (userInfos != null) {
 					authCas.setUser(userInfos.getUserId());
 					authCas.setStructureIds(new HashSet<>(userInfos.getStructures()));
+					Object forceChangePassword = userInfos.getOtherProperties().get("forceChangePassword");
+					if (forceChangePassword != null && forceChangePassword instanceof Boolean) {
+						authCas.setForceChangePassword((Boolean)forceChangePassword);
+					}
 				} else{
 					log.warn("Could not found user info - necessary for computing cas structures");
 				}
