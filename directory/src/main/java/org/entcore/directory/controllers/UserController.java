@@ -607,12 +607,13 @@ public class UserController extends BaseController {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				if (user != null) {
+				// Only accept queries having a searchTerm greater than 2 characters.
+				final String searchTerm = request.params().get("searchTerm");
+				if (user != null && searchTerm!=null && searchTerm.length()>2) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
 					final JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
 					final String groupId = request.params().get("groupId");
-					final String searchTerm = request.params().get("searchTerm");
 					final String filterActive = request.params().get("filterActive");
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
 					final String searchType = request.params().get("searchType"); // searchType possible values: displayName or email
