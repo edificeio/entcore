@@ -46,6 +46,20 @@ public class EntCoreCredentialResponse extends CredentialResponse {
 		}
 	}
 
+	public void resetPasswordRequestorResponse(Request request) {
+		Response response = request.getResponse();
+		try {
+			response.putHeader("Location", "/auth/reset/forceChangePassword?callback=" +
+					URLEncoder.encode("/cas/login?" + serializeParams(request), "UTF-8"));
+			response.setStatusCode(302);
+		} catch (UnsupportedEncodingException e) {
+			response.setStatusCode(500);
+			response.setBody(e.getMessage());
+		} finally {
+			response.close();
+		}
+	}
+
 	protected String serializeParams(Request request) throws UnsupportedEncodingException {
 		StringBuilder sb = new StringBuilder();
 		for (Map.Entry<String, String> entry : request.getParameterMap().entrySet()) {
