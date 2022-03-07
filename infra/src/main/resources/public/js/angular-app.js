@@ -1459,8 +1459,8 @@ module.directive('bindHtml', function($compile) {
                 htmlVal.find('script').remove();
 				htmlVal.find('*').each(function(index, item) {
 					var attributes = item.attributes;
-					for(var i = 0; i < attributes.length; i++){
-						if(attributes[i].name.startsWith('on')){
+					for(var i = attributes.length-1; i >=0; i--){
+						if(attributes[i].name.startsWith('on') || attributes[i].value.includes("javascript:")){
 							item.removeAttribute(attributes[i].name);
 						}
 					}
