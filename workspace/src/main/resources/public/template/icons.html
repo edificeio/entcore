@@ -2,7 +2,7 @@
 
  -->
 
-<infotip name="workspace-explorer-tutorial" on-change="onInfotipChange($visible)" class="info" ng-if="openedFolder.all.length">
+ <infotip name="workspace-explorer-tutorial" on-change="onInfotipChange($visible)" class="info" ng-if="openedFolder.all.length">
 	<strong><i18n>tuto.title</i18n></strong>
 	<br /><strong><i18n>tuto.action.select</i18n></strong> <i18n>tuto.text.select</i18n>
 	<br /><strong><i18n>tuto.action.open</i18n></strong> <i18n>tuto.text.open</i18n>
@@ -88,7 +88,7 @@
 					</div>
 					<div ng-switch-when="video" class="twelve cell video"
 							ng-style="{'background-image': videoThumbUrl(document)}">
-						<i class="video-large"></i>
+						<svg class="icon-video" width="48" height="48"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg>
 					</div>
 					<i ng-switch-default class="[[document.role()]]-large">
 					</i>
