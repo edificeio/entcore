@@ -148,6 +148,29 @@ public class ElasticClient {
         return future.future();
     }
 
+    public Future<SearchResult> searchWithMeta(final String index, final JsonObject payload, final ElasticOptions options) {
+        final Promise<SearchResult> future = Promise.promise();
+        final String queryParams = options.getQueryParams();
+        httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200) {
+                    final JsonObject body = new JsonObject(resBody.toString());
+                    final JsonArray hits = body.getJsonObject("hits").getJsonArray("hits");
+                    final Long total = body.getJsonObject("hits").getJsonObject("total").getLong("value");
+                    final String relation = body.getJsonObject("hits").getJsonObject("total").getString("relation");
+                    final List<JsonObject> mapped = hits.stream().map(o -> {
+                        final JsonObject json = (JsonObject) o;
+                        return json.getJsonObject("_source").put("_id", json.getString("_id"));
+                    }).collect(Collectors.toList());
+                    future.complete(new SearchResult(total, relation, mapped));
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        return future.future();
+    }
+
     public Future<Integer> count(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<Integer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
@@ -196,6 +219,29 @@ public class ElasticClient {
                 .putHeader("Accept", "application/json; charset=UTF-8")
                 .setChunked(true).exceptionHandler(onError);
         return new ElasticBulkBuilder(req, future.future());
+    }
+
+    public static class SearchResult{
+        private final Long count;
+        private final String countRelation;
+        private final List<JsonObject> rows;
+
+        public SearchResult(final Long count, final String countRelation, final List<JsonObject> rows) {
+            this.countRelation = countRelation;
+            this.count = count;
+            this.rows = rows;
+        }
+
+        public String getCountRelation() {return countRelation;}
+        public List<JsonObject> getRows() {return rows;}
+        public Long getCount() {
+            if("eq".equals(countRelation)){
+                return count;
+            }else{
+                //gte
+                return count+1;
+            }
+        }
     }
 
     public static class ElasticOptions {
