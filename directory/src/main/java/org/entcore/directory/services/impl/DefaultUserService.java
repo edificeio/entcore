@@ -510,14 +510,13 @@ public class DefaultUserService implements UserService {
 		searchTerm = normalize( searchTerm );
 		if(searchTerm != null){
 			if ("email".equals(searchType)) {
-				condition += "AND u.emailSearchField =~ {regex} ";
+				condition += "AND u.emailSearchField CONTAINS {searchTerm} ";
 			} else {
-				condition += "AND u.displayNameSearchField =~ {regex} ";
+				condition += "AND u.displayNameSearchField CONTAINS {searchTerm} ";
 				// Remove accents when searching for a display name.
 				searchTerm = StringUtils.stripAccents(searchTerm);
 			}
-
-			params.put("regex", "(?i)^.*?" + Pattern.quote(searchTerm) + ".*?$");
+			params.put("searchTerm", searchTerm);
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
