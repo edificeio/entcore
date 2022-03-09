@@ -618,7 +618,13 @@ public class UserController extends BaseController {
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
 					final String searchType = request.params().get("searchType"); // searchType possible values: displayName or email
 
-					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchTerm, searchType, user, arrayResponseHandler(request));
+					final String nameFilter = request.params().get("name");
+					if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
+						// Retro-compability : if a "name" parameter is defined, it should be interpreted like a searchTerm (+searchType=displayName)
+						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, nameFilter, "displayName", user, arrayResponseHandler(request));
+					} else {
+						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchTerm, searchType, user, arrayResponseHandler(request));
+					}
 				} else {
 					unauthorized(request);
 				}
