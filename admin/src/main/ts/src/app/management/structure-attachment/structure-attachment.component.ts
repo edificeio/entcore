@@ -66,6 +66,8 @@ export class StructureAttachmentComponent
     );
 
     this.initialList = [...this.structures];
+
+    this.selectedStructure = [];
   };
 
   selectStructure(structure: StructureModel): void {
