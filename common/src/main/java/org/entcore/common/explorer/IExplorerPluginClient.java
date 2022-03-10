@@ -3,6 +3,8 @@ package org.entcore.common.explorer;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.impl.ExplorerPluginClient;
+import org.entcore.common.explorer.impl.ExplorerPluginClientDefault;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;

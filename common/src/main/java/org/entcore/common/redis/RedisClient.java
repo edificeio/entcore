@@ -78,34 +78,42 @@ public class RedisClient {
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, Optional.empty(), Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, Optional.empty(), Optional.empty(), Optional.empty(), false);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, Optional.empty(), Optional.empty(), false);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, Optional.empty());
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, Optional.empty(), false);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, ids);
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, ids, false);
+    }
+
+    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids, final boolean autoClean) {
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, ids, autoClean);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams) {
-        return xreadGroup(group, consumer, streams, false, Optional.empty(), Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, streams, false, Optional.empty(), Optional.empty(), Optional.empty(), false);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack) {
-        return xreadGroup(group, consumer, streams, ack, Optional.empty(), Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, streams, ack, Optional.empty(), Optional.empty(), Optional.empty(), false);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count) {
-        return xreadGroup(group, consumer, streams, ack, count, Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, streams, ack, count, Optional.empty(), Optional.empty(), false);
     }
 
-    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids) {
+    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count, final Optional<String> ids) {
+        return xreadGroup(group, consumer, streams, ack, count, Optional.empty(), ids, false);
+    }
+
+    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids, final boolean autoClean) {
         if (streams.isEmpty()) {
             return Future.succeededFuture(new ArrayList<>());
         }
@@ -137,10 +145,16 @@ public class RedisClient {
                         final Response objects = streamAndObjects.get(1);
                         for (final Response idAndObject : objects) {
                             final String id = idAndObject.get(0).toString();
-                            final JsonObject json = toJson(idAndObject.get(1));
-                            json.put(ID_STREAM, id);
-                            json.put(NAME_STREAM, name);
-                            jsons.add(json);
+                            final Optional<JsonObject> jsonOpt = toJson(idAndObject.get(1));
+                            if(jsonOpt.isPresent()){
+                                final JsonObject json = jsonOpt.get();
+                                json.put(ID_STREAM, id);
+                                json.put(NAME_STREAM, name);
+                                jsons.add(json);
+                            }else if(autoClean){
+                                //DELETE IF ENTRY HAS BEEN ACKED (nil)
+                                this.xDel(name, id);
+                            }
                         }
                     }
                 }
@@ -179,8 +193,12 @@ public class RedisClient {
         send(req, res -> {
             if (res.succeeded()) {
                 if (res.result() != null) {
-                    final JsonObject json = toJson(res.result());
-                    promise.complete(json);
+                    final Optional<JsonObject> json = toJson(res.result());
+                    if(json.isPresent()){
+                        promise.complete(json.get());
+                    }else{
+                        promise.fail("not found");
+                    }
                 } else {
                     promise.fail("not found");
                 }
@@ -232,8 +250,11 @@ public class RedisClient {
             //auto generate id
             final Request req = Request.cmd(Command.XADD).arg(stream).arg("*");
             for (final String key : json.getMap().keySet()) {
-                req.arg(key);
-                req.arg(json.getValue(key).toString());
+                final Object value = json.getValue(key);
+                if(value != null){
+                    req.arg(key);
+                    req.arg(value.toString());
+                }
             }
             send(req, res -> {
                 if (res.succeeded()) {
@@ -301,7 +322,12 @@ public class RedisClient {
         send(req, res -> {
             if (res.succeeded()) {
                 if (res.result() != null) {
-                    promise.complete(toJson(res.result()));
+                    final Optional<JsonObject> json = toJson(res.result());
+                    if(json.isPresent()){
+                        promise.complete(json.get());
+                    }else{
+                        promise.fail("not found");
+                    }
                 } else {
                     promise.fail("not found");
                 }
@@ -315,19 +341,25 @@ public class RedisClient {
     protected List<JsonObject> toJsonList(final Response response) {
         final List<JsonObject> jsons = new ArrayList<>();
         for (final Response r : response) {
-            jsons.add(toJson(r));
+            final Optional<JsonObject> json = toJson(r);
+            if(json.isPresent()){
+                jsons.add(json.get());
+            }
         }
         return jsons;
     }
 
-    protected JsonObject toJson(final Response response) {
+    protected Optional<JsonObject> toJson(final Response response) {
+        if(response == null){
+            return Optional.empty();
+        }
         final JsonObject json = new JsonObject();
         for (int index = 1; index < response.size(); index = index + 2) {
             final String field = response.get(index - 1).toString();
             final Response value = response.get(index);
             addToJson(json, field, value);
         }
-        return json;
+        return Optional.ofNullable(json);
     }
 
     protected void addToJson(final JsonObject json, final String key, final Response value) {

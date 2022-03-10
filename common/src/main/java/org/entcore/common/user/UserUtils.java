@@ -50,6 +50,7 @@ import static fr.wseduc.webutils.http.Renders.unauthorized;
 
 public class UserUtils {
 
+	private static final String USERBOOK_ADDRESS = "userbook.preferences";
 	private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
@@ -902,5 +903,24 @@ public class UserUtils {
 		});
 	}
 
+	public static  Future<JsonObject> getUserPreferences(final EventBus eb, final HttpServerRequest request, final String application) {
+		final Promise<JsonObject> promise = Promise.promise();
+		final JsonObject params = new JsonObject().put("action", "get.currentuser")
+				.put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
+				.put("application", "theme");
+		eb.request(USERBOOK_ADDRESS, params, (final AsyncResult<Message<JsonObject>> event) -> {
+			if (event.succeeded()) {
+				final JsonObject body = event.result().body();
+				if ("error".equals(body.getString("status"))) {
+					promise.fail(body.getString("error"));
+				} else {
+					promise.complete(body.getJsonObject("value", new JsonObject()));
+				}
+			} else {
+				promise.fail(event.cause());
+			}
+		});
+		return promise.future();
+	}
 }
 
