@@ -170,6 +170,13 @@ public class StructureController extends BaseController {
 	public void defineParent(final HttpServerRequest request) {
 		final String parentStructureId = request.params().get("parentStructureId");
 		final String structureId = request.params().get("structureId");
+
+		// Checking structureId and parentStructureId are different to prevent attaching to same structure
+		if (structureId != null && structureId.equals(parentStructureId)) {
+			unauthorized(request, "Error: parent structure and child structure are the same structure.");
+			return;
+		}
+
 		// Checking if structureId is not already a parent of parentStructureId, to avoid loop
 		structureService.isParent(parentStructureId, structureId, isParent -> {
 			if (isParent.isRight()) {
