@@ -81,6 +81,7 @@ public interface IExplorerPlugin {
     enum ExplorerRemoteError {
         CreateFailed("explorer.remote.error.create"),
         CreatePushFailed("explorer.remote.error.create_push"),
+        ReindexFailed("explorer.remote.error.reindex"),
         DeleteFailed("explorer.remote.error.delete"),
         DeletePushFailed("explorer.remote.error.delete_push");
         private final String error;

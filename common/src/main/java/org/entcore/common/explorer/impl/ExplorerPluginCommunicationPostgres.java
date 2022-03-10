@@ -1,4 +1,4 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Json;
@@ -8,6 +8,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 
