@@ -1,4 +1,4 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -8,6 +8,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.*;

@@ -1,11 +1,13 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.Tuple;
+import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IExplorerDb;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -16,11 +18,11 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class ExplorerResourceCrudSql implements IExplorerResourceCrud {
+public abstract class ExplorerDbSql implements IExplorerDb {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final PostgresClientPool pgPool;
 
-    public ExplorerResourceCrudSql(final PostgresClientPool pool) {
+    public ExplorerDbSql(final PostgresClientPool pool) {
         this.pgPool = pool;
     }
 
