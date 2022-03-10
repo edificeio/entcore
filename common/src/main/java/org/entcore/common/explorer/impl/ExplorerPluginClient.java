@@ -1,12 +1,12 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;

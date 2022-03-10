@@ -1,4 +1,4 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -10,6 +10,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
+import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IExplorerDb;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -18,12 +20,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public abstract class ExplorerResourceCrudMongo implements IExplorerResourceCrud {
+public abstract class ExplorerDbMongo implements IExplorerDb {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final MongoClient mongoClient;
 
-    public ExplorerResourceCrudMongo(final MongoClient mongoClient) {
+    public ExplorerDbMongo(final MongoClient mongoClient) {
         this.mongoClient = mongoClient;
     }
 

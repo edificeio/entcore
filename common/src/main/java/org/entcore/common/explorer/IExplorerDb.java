@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface IExplorerResourceCrud {
+public interface IExplorerDb {
     String getIdForModel(final JsonObject json);
 
     void setIdForModel(final JsonObject json, final String id);

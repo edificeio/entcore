@@ -3,6 +3,7 @@ package org.entcore.common.explorer;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class ExplorerStream<T> {
     private final JsonObject metrics = new JsonObject();
     private final Integer batchSize;
     private final List<T> pending = new ArrayList<>();
+    private final Promise<JsonObject> endPromise = Promise.promise();
 
     public ExplorerStream(final Integer batchSize, final Function<List<T>,Future<Void>> h, final Handler<JsonObject> onEnd){
         this.handler = h;
@@ -43,15 +45,21 @@ public class ExplorerStream<T> {
         pending.clear();
         if(toTrigger.isEmpty()){
             this.onEnd.handle(metrics);
+            this.endPromise.complete(metrics);
             return Future.succeededFuture();
         }else{
             return this.handler.apply(toTrigger).onComplete(e->{
                 this.onEnd.handle(metrics);
+                this.endPromise.complete(metrics);
             });
         }
     }
 
     public Future<Void> end(){
         return this.end(new ArrayList<>());
+    }
+
+    public Future<JsonObject> getEndFuture() {
+        return endPromise.future();
     }
 }

@@ -20,14 +20,7 @@
 package org.entcore.common.utils;
 
 import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 import java.lang.Integer;
 import java.lang.Long;
 import java.lang.IllegalArgumentException;
@@ -45,7 +38,36 @@ public final class StringUtils {
      */
     private StringUtils() {
     }
+    public static Optional<Integer> parseInt(String toParse) {
+        try {
+            return Optional.of(Integer.parseInt(toParse));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
 
+    public static Optional<Long> parseLong(String toParse) {
+        try {
+            return Optional.of(Long.parseLong(toParse));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Double> parseDouble(String toParse) {
+        try {
+            return Optional.of(Double.parseDouble(toParse));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Boolean> parseBoolean(String toParse) {
+        if(toParse.equalsIgnoreCase("true") || toParse.equalsIgnoreCase("false")){
+            return Optional.ofNullable(Boolean.parseBoolean(toParse));
+        }
+        return Optional.empty();
+    }
     /**
      * Removes space characters (space, tab, etc ...)
      * beginning and end of string. If the result is an empty string, or if the

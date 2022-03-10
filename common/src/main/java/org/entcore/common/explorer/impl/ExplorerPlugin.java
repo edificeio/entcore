@@ -1,4 +1,4 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.SecuredAction;
@@ -12,6 +12,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.*;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
@@ -25,13 +26,23 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
     public static final String RESOURCES_GETSHARE = "getshare";
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected final IExplorerPluginCommunication communication;
     protected Function<Void, Void> listener;
     protected JsonObject explorerConfig = new JsonObject();
     protected Integer reindexBatchSize = 100;
+    protected final List<IExplorerSubResource> subResources = new ArrayList<>();
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
+    }
+
+
+    public ExplorerPlugin addSubResource(final IExplorerSubResource sub) {
+        this.subResources.add(sub);
+        return this;
+    }
+
+    public List<IExplorerSubResource> getSubResources() {
+        return subResources;
     }
 
     @Override
@@ -56,104 +67,27 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final ExplorerRemoteAction action = ExplorerRemoteAction.valueOf(actionStr);
         switch (action) {
             case QueryCreate: {
-                final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
-                final boolean copy = message.body().getBoolean("copy", false);
                 final UserInfos user = new UserInfos();
                 user.setUserId(userId);
                 user.setUsername(userName);
-                final List<JsonObject> jsons = values.stream().filter(e -> e instanceof JsonObject).map(e -> (JsonObject) e).collect(Collectors.toList());
-                doCreate(user, jsons, copy).onComplete(idsRes -> {
-                    if (idsRes.succeeded()) {
-                        final List<String> ids = idsRes.result();
-                        final List<JsonObject> safeSources = new ArrayList<>();
-                        final List<String> safeIds = new ArrayList<>();
-                        for (int i = 0; i < jsons.size() && i < ids.size(); i++) {
-                            safeSources.add(jsons.get(i));
-                            safeIds.add(ids.get(i));
-                        }
-                        toMessage(safeSources, source -> {
-                            final int index = safeSources.indexOf(source);
-                            final String id = safeIds.get(index);
-                            final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
-                            return mess;
-                        }).compose(messages -> {
-                            return communication.pushMessage(messages);
-                        }).onComplete(resPush -> {
-                            if (resPush.succeeded()) {
-                                message.reply(new JsonArray(ids));
-                            } else {
-                                message.reply(new JsonArray(ids), new DeliveryOptions().addHeader("error", ExplorerRemoteError.CreatePushFailed.getError()));
-                                log.error("Failed to push created resource coming from explorer: ", idsRes.cause());
-                            }
-                        });
-                    } else {
-                        message.fail(500, ExplorerRemoteError.CreateFailed.getError());
-                        log.error("Failed to create resource coming from explorer: ", idsRes.cause());
-                    }
-                });
+                final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
+                final boolean copy = message.body().getBoolean("copy", false);
+                onCreateAction(message, user, values, copy);
                 break;
             }
             case QueryDelete: {
-                final JsonArray values = message.body().getJsonArray("ids", new JsonArray());
                 final UserInfos user = new UserInfos();
                 user.setUserId(userId);
                 user.setUsername(userName);
-                final List<String> ids = values.stream().filter(e -> e instanceof String).map(e -> (String) e).collect(Collectors.toList());
-                doDelete(user, ids).onComplete(idsRes -> {
-                    if (idsRes.succeeded()) {
-                        final List<Boolean> deleteStatus = idsRes.result();
-                        final List<ExplorerMessage> messages = new ArrayList<>();
-                        final List<String> ok = new ArrayList<>();
-                        final List<String> nok = new ArrayList<>();
-                        for (int i = 0; i < deleteStatus.size() && i < ids.size(); i++) {
-                            if (deleteStatus.get(i)) {
-                                final ExplorerMessage mess = ExplorerMessage.delete(ids.get(i), user,isForSearch()).withType(getApplication(), getResourceType());
-                                messages.add(mess);
-                                ok.add(ids.get(i));
-                            } else {
-                                nok.add(ids.get(i));
-                            }
-                        }
-                        communication.pushMessage(messages).onComplete(resPush -> {
-                            final JsonObject payload = new JsonObject().put("deleted", new JsonArray(ok)).put("failed", new JsonArray(nok));
-                            if (resPush.succeeded()) {
-                                message.reply(payload);
-                            } else {
-                                message.reply(payload, new DeliveryOptions().addHeader("error", ExplorerRemoteError.DeletePushFailed.getError()));
-                                log.error("Failed to push deleted resource coming from explorer: ", idsRes.cause());
-                            }
-                        });
-                    } else {
-                        message.fail(500, ExplorerRemoteError.DeleteFailed.getError());
-                        log.error("Failed to delete resource coming from explorer: ", idsRes.cause());
-                    }
-                });
+                final JsonArray values = message.body().getJsonArray("ids", new JsonArray());
+                onDeleteAction(message, user, values);
                 break;
             }
             case QueryReindex: {
                 final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
                 final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
                 final Optional<JsonArray> apps = Optional.ofNullable(message.body().getJsonArray("apps"));
-                if(apps.isPresent() && !apps.get().contains(getApplication())){
-                    log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
-                    message.reply(new JsonObject());
-                    return;
-                }
-                log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
-                final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
-                    return toMessage(bulk, e -> {
-                        final String id = getIdForModel(e);
-                        final UserInfos user = getCreatorForModel(e);
-                        final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
-                        return mess;
-                    }).compose(messages -> {
-                        return communication.pushMessage(messages);
-                    });
-                }, metricsEnd -> {
-                    log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getResourceType(), from, to, metricsEnd));
-                    message.reply(metricsEnd);
-                });
-                doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
+                onReindexAction(message, from , to, apps);
                 break;
             }
             case QueryMetrics: {
@@ -162,6 +96,120 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 break;
             }
         }
+    }
+
+    protected void onCreateAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values, final boolean copy){
+        final List<JsonObject> jsons = values.stream().filter(e -> e instanceof JsonObject).map(e -> (JsonObject) e).collect(Collectors.toList());
+        doCreate(user, jsons, copy).onComplete(idsRes -> {
+            if (idsRes.succeeded()) {
+                final List<String> ids = idsRes.result();
+                final List<JsonObject> safeSources = new ArrayList<>();
+                final List<String> safeIds = new ArrayList<>();
+                for (int i = 0; i < jsons.size() && i < ids.size(); i++) {
+                    safeSources.add(jsons.get(i));
+                    safeIds.add(ids.get(i));
+                }
+                toMessage(safeSources, source -> {
+                    final int index = safeSources.indexOf(source);
+                    final String id = safeIds.get(index);
+                    final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+                    return mess;
+                }).compose(messages -> {
+                    return communication.pushMessage(messages);
+                }).onComplete(resPush -> {
+                    if (resPush.succeeded()) {
+                        message.reply(new JsonArray(ids));
+                    } else {
+                        message.reply(new JsonArray(ids), new DeliveryOptions().addHeader("error", ExplorerRemoteError.CreatePushFailed.getError()));
+                        log.error("Failed to push created resource coming from explorer: ", idsRes.cause());
+                    }
+                });
+            } else {
+                message.fail(500, ExplorerRemoteError.CreateFailed.getError());
+                log.error("Failed to create resource coming from explorer: ", idsRes.cause());
+            }
+        });
+    }
+
+    protected void onDeleteAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values){
+        final List<String> ids = values.stream().filter(e -> e instanceof String).map(e -> (String) e).collect(Collectors.toList());
+        doDelete(user, ids).onComplete(idsRes -> {
+            if (idsRes.succeeded()) {
+                final List<Boolean> deleteStatus = idsRes.result();
+                final List<ExplorerMessage> messages = new ArrayList<>();
+                final List<String> ok = new ArrayList<>();
+                final List<String> nok = new ArrayList<>();
+                for (int i = 0; i < deleteStatus.size() && i < ids.size(); i++) {
+                    if (deleteStatus.get(i)) {
+                        final ExplorerMessage mess = ExplorerMessage.delete(ids.get(i), user,isForSearch()).withType(getApplication(), getResourceType());
+                        messages.add(mess);
+                        ok.add(ids.get(i));
+                    } else {
+                        nok.add(ids.get(i));
+                    }
+                }
+                communication.pushMessage(messages).onComplete(resPush -> {
+                    final JsonObject payload = new JsonObject().put("deleted", new JsonArray(ok)).put("failed", new JsonArray(nok));
+                    if (resPush.succeeded()) {
+                        message.reply(payload);
+                    } else {
+                        message.reply(payload, new DeliveryOptions().addHeader("error", ExplorerRemoteError.DeletePushFailed.getError()));
+                        log.error("Failed to push deleted resource coming from explorer: ", idsRes.cause());
+                    }
+                });
+            } else {
+                message.fail(500, ExplorerRemoteError.DeleteFailed.getError());
+                log.error("Failed to delete resource coming from explorer: ", idsRes.cause());
+            }
+        });
+    }
+
+    protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps){
+        if(apps.isPresent() && !apps.get().contains(getApplication())){
+            log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
+            message.reply(new JsonObject());
+            return;
+        }
+        log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
+        final JsonObject metrics = new JsonObject();
+        final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
+            return toMessage(bulk, e -> {
+                final String id = getIdForModel(e);
+                final UserInfos user = getCreatorForModel(e);
+                final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+                return mess;
+            }).compose(messages -> {
+                return communication.pushMessage(messages);
+            });
+        }, metricsEnd -> {
+            log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getResourceType(), from, to, metricsEnd));
+            metrics.mergeIn(metricsEnd);
+        });
+        doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
+        stream.getEndFuture().onComplete(root->{
+            if(root.succeeded()){
+                //reindex subresources
+                final List<Future> futures = new ArrayList<>();
+                for(final IExplorerSubResource sub : this.subResources){
+                    futures.add(sub.reindex(from, to).onSuccess(submetrics->{
+                        final JsonArray tmp = metrics.getJsonArray("subresources", new JsonArray());
+                        tmp.add(submetrics);
+                        metrics.put("subresources", tmp);
+                    }));
+                }
+                CompositeFuture.all(futures).onComplete(e->{
+                    if(e.succeeded()){
+                        message.reply(metrics);
+                    }else{
+                        message.fail(500, ExplorerRemoteError.ReindexFailed.getError());
+                        log.error("Failed to reindex subresources: "+ getApplication(), root.cause());
+                    }
+                });
+            }else{
+                message.fail(500, ExplorerRemoteError.ReindexFailed.getError());
+                log.error("Failed to reindex resources: "+ getApplication(), root.cause());
+            }
+        });
     }
 
     @Override

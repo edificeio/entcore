@@ -1,7 +1,9 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
 
 import java.util.List;
 

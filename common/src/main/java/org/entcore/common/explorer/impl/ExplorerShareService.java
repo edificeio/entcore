@@ -1,4 +1,4 @@
-package org.entcore.common.explorer;
+package org.entcore.common.explorer.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.security.SecuredAction;
@@ -8,6 +8,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.GenericShareService;
