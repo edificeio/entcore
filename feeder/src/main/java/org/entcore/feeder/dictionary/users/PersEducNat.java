@@ -145,11 +145,7 @@ public class PersEducNat extends AbstractUser {
 						String qs =
 								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
 										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r " +
-										"WITH u, g " +
-										"MATCH (u)-[r:COMMUNIQUE]-(g) " +
-										"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"SET r.flagRemove = true";
+										"DELETE r ";
 						JsonObject ps = new JsonObject()
 								.put("userExternalId", externalId)
 								.put("source", currentSource)
@@ -197,11 +193,7 @@ public class PersEducNat extends AbstractUser {
 					String q =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r " +
-							"WITH u, g " +
-							"MATCH (u)-[r:COMMUNIQUE]-(g) " +
-							"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"SET r.flagRemove = true";
+							"DELETE r ";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
@@ -257,11 +249,7 @@ public class PersEducNat extends AbstractUser {
 								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group) " +
 										"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup) AND " +
 										"NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r " +
-										"WITH u, g " +
-										"MATCH (u)-[r:COMMUNIQUE]-(g) " +
-										"WHERE (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"SET r.flagRemove = true";
+										"DELETE r ";
 
 						transactionHelper.add(qdfg, pdfg);
 					}

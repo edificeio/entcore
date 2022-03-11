@@ -62,6 +62,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 			importer.deleteOldProfileAttachments();
 		}
 		importer.addStructureNameInGroups(getAcademyPrefix());
+		importer.removeOldCommunicationRules(getAcademyPrefix());
 	}
 
 	@Override
