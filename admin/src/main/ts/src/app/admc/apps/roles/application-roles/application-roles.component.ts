@@ -47,6 +47,7 @@ export class ApplicationRolesComponent extends OdeComponent implements OnInit {
         this.subscriptions.add( routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.app) {
                 this.application = data.app;
+                this.disableNewRole = null;
             }
             if (data.actions) {
                 this.actions = data.actions;
