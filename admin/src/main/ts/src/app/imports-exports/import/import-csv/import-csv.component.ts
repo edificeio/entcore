@@ -101,8 +101,7 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
         availableFields : {},
         mappings : {},
         profiles : [],
-        // @ts-ignore: this.prop is really assigned before being used
-        enableButtonNextStep: this.enableButtonNextStep,
+        enableButtonNextStep: null as ()=>void,     // Initialized in @see ngOnInit() below.
         checkErrors(globalError: GlobalError, translate: Function): boolean {
             const res = {};
             for (const p of this.profiles) {
@@ -221,8 +220,7 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
         possibleState : User.possibleState,
         ns : this.ns,
         cdRef: this.changeDetector,
-        // @ts-ignore: this.prop is really assigned before being used
-        enableButtonNextStep: this.enableButtonNextStep,
+        enableButtonNextStep: null as ()=>void,     // Initialized in @see ngOnInit() below.
         init(data: {importId: string, softErrors: any}, profiles): void {
             this.importId = data.importId;
             for (const p of profiles.asArray()) {
@@ -398,6 +396,11 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
 
     ngOnInit(): void {
         super.ngOnInit();
+
+        // Set some callbacks
+        this.columns.enableButtonNextStep= this.enableButtonNextStep;
+        this.report.enableButtonNextStep= this.enableButtonNextStep;
+
         this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
                 this.cancel();
