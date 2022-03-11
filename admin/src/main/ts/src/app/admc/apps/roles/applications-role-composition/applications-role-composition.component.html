@@ -5,12 +5,12 @@
 
     <div class="name-group is-display-flex has-space-between">
       <div class="role-name" *ngIf="!editMode">
-        <span>{{role.name}}</span>
+        <span>{{role.name | translate}}</span>
         <span class="role-name-i18n" [hidden]="role.name==bundleSvc.translate(role.name)">i18n</span>
       </div>
 
       <mat-form-field *ngIf="editMode" class="role-name">
-        <mat-label>{{role.name}}</mat-label>
+        <mat-label>{{role.name | translate}}</mat-label>
         <input 
           type="text" 
           required 
