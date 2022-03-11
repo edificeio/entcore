@@ -571,7 +571,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 							if("error".equals(event.body().getString("status"))){
 								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
 							} else {
-								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+								handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
 							}
 						}
 					}));
