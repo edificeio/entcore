@@ -609,7 +609,7 @@ public class UserController extends BaseController {
 			public void handle(UserInfos user) {
 				// Only accept queries having a searchTerm greater than 2 characters.
 				final String searchTerm = request.params().get("searchTerm");
-				if (user != null && (searchTerm == null || searchTerm.length() > 2)) {
+				if (user != null && (searchTerm == null || searchTerm.trim().length() > 2)) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
 					final JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
