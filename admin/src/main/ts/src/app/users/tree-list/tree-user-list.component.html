@@ -13,7 +13,7 @@
    (scrolledDown)="userListService.addPageDown()"
    (listChange)="refreshListCount($event)"
    [searchInput]="true"
-   [isSearchButtonDisabled]="searchTerm?.length<3"
+   [isSearchButtonDisabled]="searchTerm?.trim().length<3"
    >
       <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
          <ode-search-toolbar
