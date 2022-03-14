@@ -10,12 +10,13 @@
       [isSelected]="isSelected"
       [limit]="userListService.limit"
       [searchSubmit]="search"
+      [searchInput]="true"
+      [isSearchButtonDisabled]="searchTerm?.trim().length < 3"
+      [searchDelay]="0"
       (inputChange)="searchTerm = $event"
       (onSelect)="handleSelectUser($event)"
       (scrolledDown)="userListService.addPageDown()"
       (listChange)="refreshListCount($event)"
-      [searchInput]="true"
-      [isSearchButtonDisabled]="searchTerm?.trim().length < 3"
     >
       <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
         <ode-search-toolbar
