@@ -30,6 +30,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.ProxyType;
 
 import java.net.URI;
 import java.util.Random;
@@ -116,6 +118,14 @@ public class ElasticSearch {
 					.setDefaultPort(uris[i].getPort())
 					.setConnectTimeout(20000)
 					.setSsl(elasticSearchSSL);
+			if (System.getProperty("httpclient.proxyHost") != null) {
+				ProxyOptions proxyOptions = new ProxyOptions()
+						.setHost(System.getProperty("httpclient.proxyHost"))
+						.setPort(Integer.parseInt(System.getProperty("httpclient.proxyPort")))
+						.setUsername(System.getProperty("httpclient.proxyUsername"))
+						.setPassword(System.getProperty("httpclient.proxyPassword"));
+				httpClientOptions.setProxyOptions(proxyOptions);
+			}
 			clients[i] = new ElasticSearchClient(i, vertx.createHttpClient(httpClientOptions));
 			availableNodes.addIfAbsent(i);
 		}
