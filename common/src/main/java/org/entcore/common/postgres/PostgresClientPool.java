@@ -1,12 +1,13 @@
 package org.entcore.common.postgres;
 
-import io.reactiverse.pgclient.PgPool;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 
 public class PostgresClientPool {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
@@ -20,7 +21,7 @@ public class PostgresClientPool {
     public Future<Void> notify(final String channel, final String message) {
         final Future<Void> future = Future.future();
         this.pgPool.query(
-                "NOTIFY " + channel + ", '" + message + "'", notified -> {
+                "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                     if (notified.failed()) {
                         log.error("Could not notify channel: " + channel);
                     }
@@ -41,9 +42,9 @@ public class PostgresClientPool {
         return future;
     }
 
-    public Future<PgRowSet> preparedQuery(final String query, final Tuple tuple) {
-        final Future<PgRowSet> future = Future.future();
-        this.pgPool.preparedQuery(query, tuple, future.completer());
+    public Future<RowSet<Row>> preparedQuery(final String query, final Tuple tuple) {
+        final Future<RowSet<Row>> future = Future.future();
+        this.pgPool.preparedQuery(query).execute(tuple, future.completer());
         return future;
     }
 }
