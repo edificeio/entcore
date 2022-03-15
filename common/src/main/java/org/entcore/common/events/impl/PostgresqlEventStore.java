@@ -28,6 +28,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.validation.ValidationException;
 
@@ -80,6 +84,8 @@ public class PostgresqlEventStore extends GenericEventStore {
 					.setPassword(eventStorePGConfig.getString("password"))
 					.setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)) // unit seconds
 					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+				final PoolOptions poolOptions = new PoolOptions()
+						.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
 				if (!SslMode.DISABLE.equals(sslMode)) {
 					options
 						.setSslMode(sslMode)
@@ -110,7 +116,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 				"WHERE table_schema = 'events' and table_name LIKE '%_events'";
 		final Collector<Row, ?, Set<String>> collector = Collectors.mapping(
 			row -> row.getString("table_name").replace("_events", "").toUpperCase(), Collectors.toSet());
-		pgClient.query(listEventsTypesQuery, collector, ar -> {
+		pgClient.query(listEventsTypesQuery).collecting(collector).execute(ar -> {
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture(ar.result().value()));
 			} else {
@@ -196,7 +202,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			}
 		}
 		final String query = Sql.insertQuery(tableName, e);
-		pgClient.query(query, ar -> {
+		pgClient.query(query).execute(ar -> {
 			if (ar.succeeded()) {
 				handler.handle(new Either.Right<String, Void>(null));
 			} else {

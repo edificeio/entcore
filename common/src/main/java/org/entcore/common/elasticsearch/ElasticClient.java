@@ -41,6 +41,21 @@ public class ElasticClient {
         return future.future();
     }
 
+    public Future<Void> deleteMapping(final String index) {
+        final Promise<Void> future = Promise.promise();
+        httpClient.delete("/" + index).handler(res -> {
+                    if (res.statusCode() == 200 || res.statusCode() == 201) {
+                        future.complete();
+                    } else {
+                        res.bodyHandler(resBody -> {
+                            future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                        });
+                    }
+                }).putHeader("content-type", "application/json")
+                .exceptionHandler(onError).end();
+        return future.future();
+    }
+
     public Future<String> createDocument(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();

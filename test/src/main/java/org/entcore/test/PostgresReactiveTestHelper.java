@@ -1,15 +1,19 @@
 package org.entcore.test;
 
-import io.reactiverse.pgclient.*;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +30,7 @@ public class PostgresReactiveTestHelper {
         options.setPassword(postgres.getPassword());
         options.setPort(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
         options.setUser(postgres.getUsername());
-        PgClient.connect(vertx, options, this.pgConnection.completer());
+        PgConnection.connect(vertx, options, this.pgConnection.completer());
     }
 
 
@@ -37,12 +41,12 @@ public class PostgresReactiveTestHelper {
         }
         return this.pgConnection.compose(conn -> {
             final Future<List<JsonObject>> future = Future.future();
-            conn.preparedQuery(query, tuple, event -> {
+            conn.preparedQuery(query).execute(tuple, event -> {
                 try {
                     if (event.succeeded()) {
                         final List<JsonObject> all = new ArrayList<>();
                         final List<String> columnNames = event.result().columnsNames();
-                        final PgIterator it = event.result().iterator();
+                        final Iterator<Row> it = event.result().iterator();
                         while (it.hasNext()) {
                             final Row row = it.next();
                             final JsonObject object = new JsonObject();
@@ -53,14 +57,6 @@ public class PostgresReactiveTestHelper {
                                 }
                                 if (value instanceof LocalDateTime) {
                                     value = ((LocalDateTime) value).toInstant(ZoneOffset.UTC).toEpochMilli();
-                                }
-                                if (value instanceof io.reactiverse.pgclient.impl.data.JsonImpl) {
-                                    final String str = ((io.reactiverse.pgclient.impl.data.JsonImpl) value).toString();
-                                    if (str.startsWith("[")) {
-                                        value = new JsonArray(str);
-                                    } else {
-                                        value = new JsonObject(str);
-                                    }
                                 }
                                 object.put(col, value);
                             }

@@ -1,14 +1,15 @@
 package org.entcore.common.postgres;
 
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.PgTransaction;
-import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.pgclient.pubsub.PgSubscriber;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.Tuple;
 
 public class PostgresClientChannel {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientChannel.class);
@@ -52,7 +53,7 @@ public class PostgresClientChannel {
         return this.ensureConnect().compose(resConnection -> {
             final Future<Void> future = Future.future();
             this.pgSubscriber.actualConnection().query(
-                    "NOTIFY " + channel + ", '" + message + "'", notified -> {
+                    "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                         if (notified.failed()) {
                             log.error("Could not notify channel: " + channel);
                         }
@@ -68,15 +69,15 @@ public class PostgresClientChannel {
 
     public Future<PostgresClient.PostgresTransaction> transaction() {
         return this.ensureConnect().map(r -> {
-            final PgTransaction pg = this.pgSubscriber.actualConnection().begin();
+            final Transaction pg = this.pgSubscriber.actualConnection().begin();
             return new PostgresClient.PostgresTransaction(pg);
         });
     }
 
-    public Future<PgRowSet> preparedQuery(String query, Tuple tuple) {
+    public Future<RowSet<Row>> preparedQuery(String query, Tuple tuple) {
         return this.ensureConnect().compose(r -> {
-            final Future<PgRowSet> future = Future.future();
-            this.pgSubscriber.actualConnection().preparedQuery(query, tuple, future.completer());
+            final Future<RowSet<Row>> future = Future.future();
+            this.pgSubscriber.actualConnection().preparedQuery(query).execute(tuple, future.completer());
             return future;
         });
     }

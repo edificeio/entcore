@@ -1,13 +1,12 @@
 package org.entcore.common.explorer.impl;
 
-import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
@@ -50,7 +49,7 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
                 map.put("id_resource", e.getId());
                 map.put("created_at", now);
                 map.put("resource_action", e.getAction());
-                map.put("payload", Json.create(e.getMessage()));
+                map.put("payload", e.getMessage());
                 map.put("priority", e.getPriority().getValue());
                 return map;
             }).collect(Collectors.toList());
