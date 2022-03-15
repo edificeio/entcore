@@ -1,8 +1,5 @@
 package org.entcore.common.postgres;
 
-import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -11,6 +8,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.pubsub.PgSubscriber;
+import io.vertx.sqlclient.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -50,7 +51,7 @@ public class PostgresClient {
             if(value != null){
                 group.add(col+"=$" + placeholderCounter);
                 if(value instanceof  JsonObject || value instanceof JsonArray){
-                    tuple.addValue(Json.create(value));
+                    tuple.addValue(value);
                 }else{
                     tuple.addValue(value);
                 }
@@ -98,7 +99,7 @@ public class PostgresClient {
             for (final String col : column) {
                 final Object value = row.getValue(col);
                 if(value instanceof  JsonObject || value instanceof JsonArray){
-                    tuple.addValue(Json.create(value));
+                    tuple.addValue((value));
                 }else{
                     tuple.addValue(value);
                 }
@@ -116,7 +117,7 @@ public class PostgresClient {
             for (final String col : column) {
                 final Object value = row.getValue(col, defaultValues.get(col));
                 if(value instanceof  JsonObject || value instanceof JsonArray){
-                    tuple.addValue(Json.create(value));
+                    tuple.addValue((value));
                 }else{
                     tuple.addValue(value);
                 }
@@ -130,7 +131,7 @@ public class PostgresClient {
             for (final String col : column) {
                 final Object value = row.get(col);
                 if(value instanceof  JsonObject || value instanceof JsonArray){
-                    tuple.addValue(Json.create(value));
+                    tuple.addValue((value));
                 }else{
                     tuple.addValue(value);
                 }
@@ -147,7 +148,7 @@ public class PostgresClient {
                     value = defaultValues.getOrDefault(col, value);
                 }
                 if(value instanceof  JsonObject || value instanceof JsonArray){
-                    tuple.addValue(Json.create(value));
+                    tuple.addValue((value));
                 }else{
                     tuple.addValue(value);
                 }
@@ -169,7 +170,7 @@ public class PostgresClient {
     public static <T> Tuple inTuple(final Tuple tuple, final Collection<T> values) {
         for (final T value : values) {
             if(value instanceof  JsonObject || value instanceof JsonArray){
-                tuple.addValue(Json.create(value));
+                tuple.addValue((value));
             }else{
                 tuple.addValue(value);
             }
@@ -177,13 +178,12 @@ public class PostgresClient {
         return tuple;
     }
 
-    public static JsonObject toJson(final Row row, final PgRowSet result) {
+    public static JsonObject toJson(final Row row, final RowSet result) {
         final JsonObject json = new JsonObject();
-        for (final String key : result.columnsNames()) {
+        final List<String> columns = result.columnsNames();
+        for (final String key : columns) {
             final Object value = row.getValue(key);
-            if (value instanceof Json) {
-                json.put(key, ((Json) value).value());
-            } else if (value instanceof UUID) {
+            if (value instanceof UUID) {
                 json.put(key, value.toString());
             } else if (value instanceof LocalDateTime) {
                 json.put(key, value.toString());
@@ -212,24 +212,26 @@ public class PostgresClient {
     public PostgresClientPool getClientPool(boolean reuse) {
         if (reuse) {
             if (pool == null) {
-                final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
+                final PgPool pgPool = PgPool.pool(vertx, new PgConnectOptions()
                         .setPort(config.getInteger("port", 5432))
                         .setHost(config.getString("host"))
                         .setDatabase(config.getString("database"))
                         .setUser(config.getString("user"))
-                        .setPassword(config.getString("password"))
+                        .setPassword(config.getString("password")),
+                        new PoolOptions()
                         .setMaxSize(config.getInteger("pool-size", 10))
                 );
                 pool = new PostgresClientPool(pgPool, config);
             }
             return pool;
         } else {
-            final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
+            final PgPool pgPool = PgPool.pool(vertx, new PgConnectOptions()
                     .setPort(config.getInteger("port", 5432))
                     .setHost(config.getString("host"))
                     .setDatabase(config.getString("database"))
                     .setUser(config.getString("user"))
-                    .setPassword(config.getString("password"))
+                    .setPassword(config.getString("password")),
+                    new PoolOptions()
                     .setMaxSize(config.getInteger("pool-size", 10))
             );
             return new PostgresClientPool(pgPool, config);
@@ -238,16 +240,16 @@ public class PostgresClient {
 
     public static class PostgresTransaction {
         private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
-        private final PgTransaction pgTransaction;
+        private final Transaction pgTransaction;
         private final List<Future> futures = new ArrayList<>();
 
-        PostgresTransaction(final PgTransaction pgTransaction) {
+        PostgresTransaction(final Transaction pgTransaction) {
             this.pgTransaction = pgTransaction;
         }
 
-        public Future<PgRowSet> addPreparedQuery(String query, Tuple tuple) {
-            final Future<PgRowSet> future = Future.future();
-            this.pgTransaction.preparedQuery(query, tuple, future.completer());
+        public Future<RowSet<Row>> addPreparedQuery(String query, Tuple tuple) {
+            final Future<RowSet<Row>> future = Future.future();
+            this.pgTransaction.preparedQuery(query).execute(tuple,future.completer());
             futures.add(future);
             return future;
         }
@@ -256,7 +258,7 @@ public class PostgresClient {
             final Future<Void> future = Future.future();
             //prepareQuery not works with notify allow only internal safe message
             this.pgTransaction.query(
-                    "NOTIFY " + channel + ", '" + message + "'", notified -> {
+                    "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                         future.handle(notified.mapEmpty());
                         if (notified.failed()) {
                             log.error("Could not notify channel: " + channel);
