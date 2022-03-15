@@ -1,7 +1,5 @@
 package org.entcore.common.email.impl;
 
-import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -9,6 +7,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.Tuple;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,7 +33,8 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 .setHost(pgConfig.getString("host"))
                 .setDatabase(pgConfig.getString("database"))
                 .setUser(pgConfig.getString("user"))
-                .setPassword(pgConfig.getString("password"))
+                .setPassword(pgConfig.getString("password"));
+        final PoolOptions poolOptions = new PoolOptions()
                 .setMaxSize(pgConfig.getInteger("pool-size", 5));
         if (!SslMode.DISABLE.equals(sslMode)) {
             options
@@ -76,7 +80,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         query.append("INSERT INTO ").append(readTableName);
         query.append("(id, date, read_at").append(separator).append(String.join(",",names)).append(") ");
         query.append("VALUES ($1, $2, $3").append(separator).append(String.join(",",placeholders)).append(") RETURNING id");
-        this.pool.preparedQuery(query.toString(), tuple, r -> {
+        this.pool.preparedQuery(query.toString()).execute(tuple, r -> {
             if (r.succeeded()) {
                 promise.complete();
             } else {
@@ -121,7 +125,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         return promise;
     }
 
-    protected Future<Void> insert(PgTransaction transaction, String tableName, final Map<String, Object> params) {
+    protected Future<Void> insert(Transaction transaction, String tableName, final Map<String, Object> params) {
         final Future<Void> future = Future.future();
         final StringBuilder query = new StringBuilder();
         final StringBuilder values = new StringBuilder();
@@ -139,14 +143,14 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
             values.append(separator).append("$").append(index++);
             final Object value = params.get(key);
             if (value instanceof JsonObject || value instanceof JsonArray) {
-                tuple.addValue(Json.create(value));
+                tuple.addValue((value));
             } else {
                 tuple.addValue(value);
             }
             separator = ", ";
         }
         query.append(") VALUES (").append(values).append(") RETURNING id");
-        transaction.preparedQuery(query.toString(), tuple, r -> {
+        transaction.preparedQuery(query.toString()).execute(tuple, r -> {
             if (r.succeeded()) {
                 future.complete();
             } else {

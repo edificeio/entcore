@@ -204,7 +204,7 @@ project(':common') {
     compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
     compile "io.vertx:vertx-redis-client:$vertxVersion"
-    compile "io.reactiverse:reactive-pg-client:$reactivePgVersion"
+    compile "io.vertx:vertx-pg-client:$vertxVersion"
     compile "org.mongodb:mongodb-driver-async:$mongoVersion"
     compile ("io.vertx:vertx-mongo-client:$vertxVersion") {
       exclude group: 'org.mongodb', module: 'mongodb-driver-async'
