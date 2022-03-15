@@ -147,7 +147,7 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
         this.selectedApp = e;
         if( e ) {
             // Update currently selected profiles, according to the default parameters.
-            this.addApplicationForm.get('profiles').setValue( this.extractProfilesForParam(e.displayName) );
+            this.addApplicationForm.get('profiles').setValue( this.extractProfilesForParam(e.name) );
         } else {
             this.addApplicationForm.get('profiles').reset();
         }
@@ -156,7 +156,7 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
         this.selectedConnector = e;
         if( e ) {
             // Update currently selected profiles, according to the default parameters.
-            this.addConnectorForm.get('profiles').setValue( this.extractProfilesForParam(e.displayName) );
+            this.addConnectorForm.get('profiles').setValue( this.extractProfilesForParam(e.name) );
         } else {
             this.addConnectorForm.get('profiles').reset();
         }
