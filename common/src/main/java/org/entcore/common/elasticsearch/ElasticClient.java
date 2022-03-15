@@ -33,7 +33,11 @@ public class ElasticClient {
                 future.complete();
             } else {
                 res.bodyHandler(resBody -> {
-                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                    if(resBody.toString().contains("resource_already_exists_exception")){
+                        future.complete();
+                    }else{
+                        future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                    }
                 });
             }
         }).putHeader("content-type", "application/json")
