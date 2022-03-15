@@ -173,6 +173,22 @@
             {% endif %}
             "use_mongo_types": true
 	    },
+        "postgresConfig":{
+            {% if ipPostgresMaster is defined %}
+            "host": "{{ ipPostgresMaster }}",
+            {% else %}
+                {% if ipPostgres is defined %}
+            "host": "{{ ipPostgres | first }}",
+                {% else %}
+            "host": "{{ dbip | first }}",
+                {% endif %}
+            {% endif %}
+            "database": "{{dbName}}",
+            "port": {{postgresPort | default(5432)}},
+            "user": "{{ userPostgres }}",
+            "password": "{{ passwordPostgres }}",
+            "pool-size": {{postgresPoolSize | default(50)}}
+        },
         "neo4jConfig": {
             "poolSize": 100, "checkDelay": 30000,
 	        "optimized-check-enable": {{ neo4jOptimizedEnable | default('true') }},
