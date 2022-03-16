@@ -42,5 +42,7 @@
   "PmbRegisteredService.name" : "PMB",
   "PmbRegisteredService.description" : "PMB",
   "EnseignoRegisteredService.name" : "Enseigno",
-  "EnseignoRegisteredService.description" : "Enseigno"
+  "EnseignoRegisteredService.description" : "Enseigno",
+  "AtNormandieRegisteredService.name": "AtoutNormandie",
+  "AtNormandieRegisteredService.description": "AtoutNormandie"
 }
