@@ -111,6 +111,10 @@ public class Starter extends BaseServer {
 			if (postgresConfig != null) {
 				serverMap.put("postgresConfig", postgresConfig.encode());
 			}
+			JsonObject explorerConfig = config.getJsonObject("explorerConfig");
+			if (explorerConfig != null) {
+				serverMap.put("explorerConfig", explorerConfig.encode());
+			}
 			JsonObject redisConfig = config.getJsonObject("redisConfig");
 			if (redisConfig != null) {
 				serverMap.put("redisConfig", redisConfig.encode());
