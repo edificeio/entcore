@@ -191,11 +191,11 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
 
     public addApplication() {
         if( this.selectedApp )
-            this.updateDefaultParameters(this.selectedApp.displayName, this.addApplicationForm.get('profiles').value);
+            this.updateDefaultParameters(this.selectedApp.name, this.addApplicationForm.get('profiles').value);
     }
     public addConnector() {
         if( this.selectedConnector )
-            this.updateDefaultParameters(this.selectedConnector.displayName, this.addConnectorForm.get('profiles').value);
+            this.updateDefaultParameters(this.selectedConnector.name, this.addConnectorForm.get('profiles').value);
     }
 
     private updateDefaultParameters( paramName:string, applyToProfiles?:Array<string> ) {
