@@ -92,7 +92,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     @Override
     public Future<Void> notifyDeleteById(final UserInfos user, final String parentId, final String id) {
         final ExplorerMessage message = ExplorerMessage.delete(parentId, user, isForSearch()).withType(getApplication(), getResourceType());
-        message.withSubResourceHtml(id, "");
+        message.withSubResource(id, true);
         return getCommunication().pushMessage(message);
     }
 
@@ -100,7 +100,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     public Future<Void> notifyDeleteById(final UserInfos user, final String parentId, final List<String> ids) {
         final List<ExplorerMessage> messages = ids.stream().map(id->{
             final ExplorerMessage message = ExplorerMessage.delete(parentId, user, isForSearch()).withType(getApplication(), getResourceType());
-            message.withSubResourceHtml(id, "");
+            message.withSubResource(id, true);
             return message;
         }).collect(Collectors.toList());
         return getCommunication().pushMessage(messages);
@@ -109,7 +109,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     @Override
     public Future<Void> notifyDelete(final UserInfos user, final JsonObject source) {
         final ExplorerMessage message = ExplorerMessage.delete(getParentId(source), user, isForSearch()).withType(getApplication(), getResourceType());
-        message.withSubResourceHtml(getChildId(source), "");
+        message.withSubResource(getChildId(source), true);
         return getCommunication().pushMessage(message);
     }
 
@@ -117,7 +117,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     public Future<Void> notifyDelete(final UserInfos user, final List<JsonObject> sources) {
         return toMessage(sources, e -> {
             final ExplorerMessage message = ExplorerMessage.delete(getParentId(e), user, isForSearch()).withType(getApplication(), getResourceType());
-            message.withSubResourceHtml(getChildId(e), "");
+            message.withSubResource(getChildId(e), true);
             return message;
         }).compose(messages -> {
             return getCommunication().pushMessage(messages);
