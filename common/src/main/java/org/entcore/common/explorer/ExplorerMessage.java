@@ -142,16 +142,29 @@ public class ExplorerMessage {
                 subResource.put("content", content);
                 break;
         }
+        subResource.put("deleted", false);
+        subResources.add(subResource);
+        message.put("subresources", subResources);
+        return this;
+    }
+
+    public ExplorerMessage withSubResource(final String id, final boolean deleted) {
+        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
+        final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
+        subResource.put("deleted", deleted);
         subResources.add(subResource);
         message.put("subresources", subResources);
         return this;
     }
 
     public ExplorerMessage withSubResourceHtml(final String id, final String content) {
-        final JsonObject subResources = message.getJsonObject("subresources", new JsonObject());
-        final JsonObject subResource = subResources.getJsonObject(id, new JsonObject());
+        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
+        final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
         subResource.put("contentHtml", content);
-        subResources.put(id, subResource);
+        subResource.put("deleted", false);
+        subResources.add(subResource);
         message.put("subresources", subResources);
         return this;
     }
