@@ -4,6 +4,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {GroupsStore} from './groups.store';
+import { StructureModel } from '../core/store/models/structure.model';
 
 export type GroupUpdatePayload = {
     name?: string;
@@ -46,6 +47,19 @@ export class GroupsService {
                 this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
                 this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
             })
+        );
+    }
+
+    public getAutolinkAutomaticGroups(structure: StructureModel): Observable<Array<GroupModel>> {
+        return this.httpClient.get<Array<GroupModel>>(
+            '/directory/group/admin/list', 
+            {
+                'params': {
+                    'structureId': structure.id,
+                    'onlyAutomaticGroups': 'true',
+                    'recursive': 'true'
+                }
+            }
         );
     }
 }
