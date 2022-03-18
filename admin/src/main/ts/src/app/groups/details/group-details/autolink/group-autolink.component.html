@@ -181,7 +181,7 @@
         </div>
         <div *ngIf="showDisciplinesPicker || form.teacherSubSectionRadio === 'disciplines'">
           <ode-multi-combo
-            [comboModel]="disciplines"
+            [comboModel]="disciplineOptions"
             [(outputModel)]="form.selectedDisciplines"
             [title]="'disciplines.multi.combo.title' | translate"
           >
@@ -233,7 +233,7 @@
         </div>
         <div *ngIf="showFunctionsPicker || form.personnelSubSectionCheckbox">
           <ode-multi-combo
-            [comboModel]="functions"
+            [comboModel]="functionOptions"
             [(outputModel)]="form.selectedFunctions"
             [title]="'functionsgroup.multi.combo.title' | translate"
           >

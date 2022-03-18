@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
-import { trim } from 'ngx-ode-ui';
+import { trim, SpinnerService } from 'ngx-ode-ui';
 import { merge, Observable, Subject } from 'rxjs';
 import { filter, first, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { GroupNameService } from 'src/app/core/services/group-name.service';
@@ -35,11 +35,15 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
     public groupNewName: string;
 
+    public autolinkFunctionOptions: Array<string> = [];
+    public autolinkDisciplineOptions: Array<string> = [];
+
     constructor(public groupsStore: GroupsStore,
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
                 public groupNameService: GroupNameService,
                 private groupsService: GroupsService,
+                private spinnerService: SpinnerService,
                 injector: Injector) {
                 super(injector);
     }
@@ -86,6 +90,30 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         .subscribe());
 
         this.groupNewName = this.groupsStore.group.name;
+
+        this.spinnerService.perform('portal-content',
+            new Promise<void>((resolve, reject) => {
+                this.groupsService.
+                    getAutolinkAutomaticGroups(this.groupsStore.structure).
+                    subscribe((data: Array<GroupModel>) => {
+                        const disciplineGroups = data.filter(group => group.labels && group.labels.includes('DisciplineGroup'));
+                        if (disciplineGroups) {
+                            this.autolinkDisciplineOptions = disciplineGroups.map(d => d.filter);
+                            // remove duplicates values
+                            this.autolinkDisciplineOptions = Array.from(new Set(this.autolinkDisciplineOptions));
+                        }
+
+                        const funcGroups = data.filter(group => group.labels && group.labels.includes('FuncGroup'));
+                        if (funcGroups) {
+                            this.autolinkFunctionOptions = funcGroups.map(f => f.filter);
+                            // remove duplicates values
+                            this.autolinkFunctionOptions = Array.from(new Set(this.autolinkFunctionOptions));
+                        }                        
+                        this.changeDetector.markForCheck();
+                        resolve();
+                    }, reject);
+            })
+        );
     }
 
     showLightBox() {

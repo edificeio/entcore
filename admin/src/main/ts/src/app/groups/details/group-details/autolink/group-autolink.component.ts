@@ -35,10 +35,13 @@ export class GroupAutolinkComponent extends OdeComponent {
     @Input()
     structure: StructureModel;
 
-    public form: AutolinkFormModel;
+    @Input()
+    disciplineOptions: Array<string>;
+    
+    @Input()
+    functionOptions: Array<string>;
 
-    public disciplines: Array<string>;
-    public functions: Array<string>;
+    public form: AutolinkFormModel;
 
     public lightboxSubStructureIds: Array<string> = [];
     public showSubStructutresPickerButton: boolean;
@@ -68,8 +71,6 @@ export class GroupAutolinkComponent extends OdeComponent {
 
     private initForm(): void {
         this.form = new AutolinkFormModel();
-        this.disciplines = this.structure.groups.data.filter(g => g.labels && g.labels.includes('DisciplineGroup')).map(g => g.filter);
-        this.functions = this.structure.groups.data.filter(g => g.labels && g.labels.includes('FuncGroup')).map(g => g.filter);
 
         this.form.teacherSubSectionRadio = 'all';
 
@@ -94,14 +95,14 @@ export class GroupAutolinkComponent extends OdeComponent {
                 this.form.teacherSubSectionRadio = 'HeadTeacher';
             }
 
-            this.disciplines.forEach(d => {
+            this.disciplineOptions.forEach(d => {
                 if (this.group.autolinkUsersFromGroups.includes(d)) {
                     this.form.teacherSubSectionRadio = 'disciplines';
                     this.form.selectedDisciplines.push(d);
                 }
             });
 
-            this.functions.forEach(f => {
+            this.functionOptions.forEach(f => {
                 if (this.group.autolinkUsersFromGroups.includes(f)) {
                     this.form.personnelSubSectionCheckbox = true;
                     this.form.selectedFunctions.push(f);
