@@ -221,7 +221,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
      * @returns {boolean}
      */
     isNotTeacherOrHeadTeacher(structureExternalId: string, classe: any) {
-        if (this.teaches === undefined) {
+
+        if (!this.hasTeacherProfile()) {
             return true;
         }
 
