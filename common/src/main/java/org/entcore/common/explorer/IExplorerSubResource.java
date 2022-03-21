@@ -9,10 +9,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface IExplorerSubResource {
 
@@ -37,4 +34,6 @@ public interface IExplorerSubResource {
     Future<Void> notifyDelete(UserInfos user, List<JsonObject> sources);
 
     Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to);
+
+    Future<Void> onDeleteParent(final Collection<String> parentIds);
 }
