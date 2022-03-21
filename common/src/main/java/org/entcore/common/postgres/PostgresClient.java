@@ -62,6 +62,29 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
+    public static String updatePlaceholdersWithNull(final JsonObject row, final int startAt, final List<String> columns, final Tuple tuple) {
+        int placeholderCounter = startAt;
+        final List<String> placeholders = new ArrayList<>();
+        final List<String> group = new ArrayList<>();
+        for (final String col : columns) {
+            final Object value = row.getValue(col);
+            if(value != null){
+                group.add(col+"=$" + placeholderCounter);
+                if(value instanceof  JsonObject || value instanceof JsonArray){
+                    tuple.addValue(value);
+                }else{
+                    tuple.addValue(value);
+                }
+            }else{
+                group.add(col+"=$" + placeholderCounter);
+                tuple.addValue(null);
+            }
+            placeholderCounter++;
+        }
+        placeholders.add(String.join(",", group));
+        return String.join(",", placeholders);
+    }
+
     public static String insertPlaceholders(final Collection<JsonObject> rows, final int startAt, final List<String> columns) {
         return insertPlaceholders(rows, startAt, columns.toArray(new String[columns.size()]));
     }
