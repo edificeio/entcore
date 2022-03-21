@@ -79,7 +79,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 final UserInfos user = new UserInfos();
                 user.setUserId(userId);
                 user.setUsername(userName);
-                final JsonArray values = message.body().getJsonArray("ids", new JsonArray());
+                final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
                 onDeleteAction(message, user, values);
                 break;
             }
@@ -146,6 +146,11 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                         ok.add(ids.get(i));
                     } else {
                         nok.add(ids.get(i));
+                    }
+                }
+                if(!ok.isEmpty()){
+                    for(final IExplorerSubResource sub : this.subResources){
+                        sub.onDeleteParent(ok);
                     }
                 }
                 communication.pushMessage(messages).onComplete(resPush -> {
