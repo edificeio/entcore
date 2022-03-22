@@ -30,11 +30,15 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected Function<Void, Void> listener;
     protected JsonObject explorerConfig = new JsonObject();
     protected Integer reindexBatchSize = 100;
+    protected Optional<IExplorerFolderTree> folderTree = Optional.empty();
     protected final List<IExplorerSubResource> subResources = new ArrayList<>();
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
     }
 
+    public void setFolderTree(final IExplorerFolderTree folderTree) {
+        this.folderTree = Optional.ofNullable(folderTree);
+    }
 
     public ExplorerPlugin addSubResource(final IExplorerSubResource sub) {
         this.subResources.add(sub);
@@ -84,10 +88,11 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 break;
             }
             case QueryReindex: {
+                final boolean includeFolders = message.body().getBoolean("includeFolders", false);
                 final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
                 final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
                 final Optional<JsonArray> apps = Optional.ofNullable(message.body().getJsonArray("apps"));
-                onReindexAction(message, from , to, apps);
+                onReindexAction(message, from , to, apps, includeFolders);
                 break;
             }
             case QueryMetrics: {
@@ -169,13 +174,13 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         });
     }
 
-    protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps){
+    protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps, final boolean includeFolders){
         if(apps.isPresent() && !apps.get().contains(getApplication())){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
             message.reply(new JsonObject());
             return;
         }
-        log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s",getApplication(), getResourceType(), from, to));
+        log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s includeFolders=%s",getApplication(), getResourceType(), from, to, includeFolders));
         final JsonObject metrics = new JsonObject();
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             return toMessage(bulk, e -> {
@@ -202,6 +207,13 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                         metrics.put("subresources", tmp);
                     }));
                 }
+                //reindex folders
+                if(includeFolders && folderTree.isPresent()){
+                    futures.add(folderTree.get().reindex(from, to).onSuccess(folderMetrics->{
+                        metrics.put("folders", folderMetrics);
+                    }));
+                }
+                //wait all
                 CompositeFuture.all(futures).onComplete(e->{
                     if(e.succeeded()){
                         message.reply(metrics);
