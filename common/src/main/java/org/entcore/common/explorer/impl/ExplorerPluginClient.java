@@ -18,16 +18,22 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
 
     @Override
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to){
-        return getForIndexation(user, from, to, new HashSet<>());
+        return getForIndexation(user, from, to, new HashSet<>(), false);
     }
 
     @Override
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps){
+        return getForIndexation(user, from, to, apps, false);
+    }
+
+    @Override
+    public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps, final boolean includeFolders){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryReindex.name());
         headers.add("userId", user.getUserId());
         headers.add("userName", user.getUsername());
         final JsonObject payload = new JsonObject();
+        payload.put("includeFolders", includeFolders);
         if(from.isPresent()){
             payload.put("from", from.get().getTime());
         }
