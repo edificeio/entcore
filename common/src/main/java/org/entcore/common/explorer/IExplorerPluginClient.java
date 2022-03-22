@@ -18,6 +18,8 @@ public interface IExplorerPluginClient {
 
     Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to, Set<String> apps);
 
+    Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to, Set<String> apps, boolean includeFolders);
+
     Future<List<String>> createAll(UserInfos user, List<JsonObject> json, boolean isCopy);
 
     Future<DeleteResponse> deleteById(UserInfos user, Set<String> ids);
