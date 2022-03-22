@@ -971,7 +971,8 @@ public class AuthController extends BaseController {
 								}
 								JsonArray results = event.right().getValue();
 								if (results.size() == 0) {
-									badRequest(request, "no.match");
+									// Return status 200 to avoid telling if email exists in database or not
+									renderJson(request, new JsonObject());
 									return;
 								}
 								JsonArray structures = new fr.wseduc.webutils.collections.JsonArray();
