@@ -172,7 +172,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 						setError('auth.notify.non.unique.result.mail');
 					}
 				}else {
-					notify.info("auth.notify." + service + ".sent")
+					notify.info("auth.notify." + service + ".sent", 5000)
 					if (data.mobile) {
 						$scope.user.channels = {
 							mobile: data.mobile
