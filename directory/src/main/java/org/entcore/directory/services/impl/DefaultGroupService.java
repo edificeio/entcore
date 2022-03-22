@@ -179,4 +179,42 @@ public class DefaultGroupService implements GroupService {
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
 
+	@Override
+	public void getFuncAndDisciplinesGroups(String structureId, Boolean recursive, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		if (userInfos == null) {
+			results.handle(new Either.Left<String, JsonArray>("invalid.user"));
+			return;
+		}
+
+		String recursion = "";
+		if (recursive.booleanValue() == true) {
+			recursion = "<-[:HAS_ATTACHMENT*0..]-(:Structure)";
+		}
+
+		String structureCondition = "";
+		JsonObject params = new JsonObject();
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL) && !userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				structureCondition += " AND s.id IN {structures} ";
+				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+			}
+		}
+
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			structureCondition += " AND s.id = {structure} ";
+			params.put("structure", structureId);
+		}
+
+		String query =
+				"MATCH (s:Structure)" + recursion + "<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g:Group) " +
+				"WHERE EXISTS(g.filter) " + structureCondition + " AND ('FuncGroup' in labels(g) OR 'DisciplineGroup' in labels(g)) " +
+				"RETURN g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels";
+		neo.execute(query, params, validResultHandler(results));
+	}
 }
