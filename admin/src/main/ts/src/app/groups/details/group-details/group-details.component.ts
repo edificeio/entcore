@@ -94,7 +94,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.spinnerService.perform('portal-content',
             new Promise<void>((resolve, reject) => {
                 this.groupsService.
-                    getAutolinkAutomaticGroups(this.groupsStore.structure).
+                getFuncAndDisciplines(this.groupsStore.structure).
                     subscribe((data: Array<GroupModel>) => {
                         const disciplineGroups = data.filter(group => group.labels && group.labels.includes('DisciplineGroup'));
                         if (disciplineGroups) {

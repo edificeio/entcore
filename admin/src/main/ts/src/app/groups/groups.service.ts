@@ -50,13 +50,12 @@ export class GroupsService {
         );
     }
 
-    public getAutolinkAutomaticGroups(structure: StructureModel): Observable<Array<GroupModel>> {
+    public getFuncAndDisciplines(structure: StructureModel): Observable<Array<GroupModel>> {
         return this.httpClient.get<Array<GroupModel>>(
-            '/directory/group/admin/list', 
+            '/directory/group/admin/funcAndDisciplines', 
             {
                 'params': {
                     'structureId': structure.id,
-                    'onlyAutomaticGroups': 'true',
                     'recursive': 'true'
                 }
             }
