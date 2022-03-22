@@ -98,6 +98,32 @@ public class GroupController extends BaseController {
 		});
 	}
 
+	/**
+	 * Retrieve Func and Disciplines Groups, example: "PRINCIPAL ADJOINT", "CPE", "Education Physique et Sportive"
+	 * query param:
+	 * - structureId: String
+	 * - recursive: boolean, true => will search in structureId and substructures (if user is ADML of substructures)
+	 * @param request
+	 */
+	@Get("/group/admin/funcAndDisciplines")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getFuncGroups(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					final String structureId = request.params().get("structureId");
+					final Boolean recursive = request.params().contains("recursive") ?
+							new Boolean(request.params().get("recursive")) :
+							Boolean.FALSE;
+					groupService.getFuncAndDisciplinesGroups(structureId, recursive, user, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	@Post("/group")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void create(final HttpServerRequest request) {
