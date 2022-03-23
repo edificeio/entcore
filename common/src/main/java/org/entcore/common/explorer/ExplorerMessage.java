@@ -76,10 +76,19 @@ public class ExplorerMessage {
         return builder;
     }
 
-    public ExplorerMessage withParentId(final Optional<String> parentId) {
+    public ExplorerMessage withParentId(final Optional<Long> parentId) {
         final JsonObject override = new JsonObject();
         if(parentId.isPresent()){
-            override.put("parentId", parentId.get());
+            override.put("parentId", parentId.get().toString());
+        }
+        this.withOverrideFields(override);
+        return this;
+    }
+
+    public ExplorerMessage withParentEntId(final Optional<String> parentId) {
+        final JsonObject override = new JsonObject();
+        if(parentId.isPresent()){
+            override.put("parentEntId", parentId.get());
         }
         this.withOverrideFields(override);
         return this;
@@ -98,6 +107,11 @@ public class ExplorerMessage {
     public ExplorerMessage withType(final String application, final String resourceType) {
         message.put("application", application);
         message.put("resourceType", resourceType);
+        return this;
+    }
+
+    public ExplorerMessage withForceApplication(final String application) {
+        message.put("application", application);
         return this;
     }
 
