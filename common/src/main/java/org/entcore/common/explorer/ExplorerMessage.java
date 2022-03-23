@@ -76,6 +76,15 @@ public class ExplorerMessage {
         return builder;
     }
 
+    public ExplorerMessage withParentId(final Optional<String> parentId) {
+        final JsonObject override = new JsonObject();
+        if(parentId.isPresent()){
+            override.put("parentId", parentId.get());
+        }
+        this.withOverrideFields(override);
+        return this;
+    }
+
     public ExplorerMessage withPublic(final boolean pub) {
         message.put("public", pub);
         return this;

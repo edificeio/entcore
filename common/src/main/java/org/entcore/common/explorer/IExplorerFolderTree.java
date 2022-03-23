@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface IExplorerFolderTree {
+    String FOLDER_TYPE = "folder";
 
     Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to);
 }
