@@ -11,7 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import org.entcore.common.explorer.ExplorerStream;
-import org.entcore.common.explorer.IExplorerDb;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -20,29 +20,38 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public abstract class ExplorerDbMongo implements IExplorerDb {
-
+public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final MongoClient mongoClient;
 
-    public ExplorerDbMongo(final MongoClient mongoClient) {
+    protected ExplorerPluginResourceMongo(final IExplorerPluginCommunication communication, final MongoClient mongoClient) {
+        super(communication);
         this.mongoClient = mongoClient;
     }
 
     @Override
-    public Future<List<JsonObject>> getByIds(final Set<String> ids) {
-        if (ids.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        final Promise<List<JsonObject>> future = Promise.promise();
-        final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
-        mongoClient.find(getCollectionName(),query, future);
-        return future.future();
+    protected String getIdForModel(final JsonObject json) {
+        return json.getValue(getIdColumn()).toString();
     }
 
     @Override
-    public void fetchByDate(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
-        int i = 1;
+    protected JsonObject setIdForModel(final JsonObject json, final String id) {
+        json.put(getIdColumn(), id);
+        return json;
+    }
+
+    @Override
+    protected UserInfos getCreatorForModel(final JsonObject json) {
+        final String id = json.getString(getCreatorIdColumn());
+        final String name = json.getString(getCreatorNameColumn());
+        final UserInfos user = new UserInfos();
+        user.setUserId(id);
+        user.setUsername(name);
+        return user;
+    }
+
+    @Override
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
         final QueryBuilder query = QueryBuilder.start();
         if (from.isPresent() || to.isPresent()) {
             if (from.isPresent()) {
@@ -66,9 +75,8 @@ public abstract class ExplorerDbMongo implements IExplorerDb {
         });
     }
 
-
     @Override
-    public Future<List<String>> createAll(final UserInfos user, final List<JsonObject> sources) {
+    protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final List<Future> futures = new ArrayList<>();
         final List<String> ids = new ArrayList<>();
         for(final JsonObject json : sources){
@@ -84,7 +92,7 @@ public abstract class ExplorerDbMongo implements IExplorerDb {
     }
 
     @Override
-    public Future<List<Boolean>> deleteById(final List<String> ids) {
+    protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
         final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
         final Promise<MongoClientDeleteResult> promise = Promise.promise();
         mongoClient.removeDocuments(getCollectionName(), query , promise);
@@ -97,38 +105,25 @@ public abstract class ExplorerDbMongo implements IExplorerDb {
         });
     }
 
-    @Override
-    public String getIdForModel(final JsonObject json) {
-        return json.getValue(getIdColumn()).toString();
+    public Future<List<JsonObject>> getByIds(final Set<String> ids) {
+        if (ids.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final Promise<List<JsonObject>> future = Promise.promise();
+        final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
+        mongoClient.find(getCollectionName(),query, future);
+        return future.future();
     }
 
-    @Override
-    public void setIdForModel(final JsonObject json, final String id) {
-        json.put(getIdColumn(), id);
-    }
-
-    @Override
-    public UserInfos getCreatorForModel(final JsonObject json) {
-        final String id = json.getString(getCreatorIdColumn());
-        final String name = json.getString(getCreatorNameColumn());
-        final UserInfos user = new UserInfos();
-        user.setUserId(id);
-        user.setUsername(name);
-        return user;
-    }
-
+    //overridable
     protected void setCreatorForModel(final UserInfos user, final JsonObject json){
         json.put(getCreatorIdColumn(), user.getUserId());
         json.put(getCreatorNameColumn(), user.getUsername());
     }
 
-    protected String getCreatedAtColumn() {
-        return "createdAt";
-    }
+    protected String getCreatedAtColumn() { return "createdAt"; }
 
-    protected String getCreatorIdColumn() {
-        return "creatorId";
-    }
+    protected String getCreatorIdColumn() { return "creatorId"; }
 
     protected String getCreatorNameColumn() {
         return "creatorName";
@@ -136,13 +131,13 @@ public abstract class ExplorerDbMongo implements IExplorerDb {
 
     protected String getIdColumn() { return "_id"; }
 
+    protected Object toMongoId(final String id) { return id; }
+
     protected Object toMongoDate(final LocalDateTime date) {
         ZonedDateTime zonedDateTime = date.atZone(ZoneId.systemDefault());
         return Date.from(zonedDateTime.toInstant());
     }
 
+    //abstract
     protected abstract String getCollectionName();
-
-    protected Object toMongoId(final String id) { return id; }
-
 }

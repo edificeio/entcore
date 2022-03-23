@@ -2,12 +2,10 @@ package org.entcore.common.explorer.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerStream;
-import org.entcore.common.explorer.IExplorerDb;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -18,35 +16,36 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class ExplorerDbSql implements IExplorerDb {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final PostgresClientPool pgPool;
 
-    public ExplorerDbSql(final PostgresClientPool pool) {
+    protected ExplorerPluginResourceSql(final IExplorerPluginCommunication communication, final PostgresClientPool pool) {
+        super(communication);
         this.pgPool = pool;
     }
 
     @Override
-    public Future<List<JsonObject>> getByIds(final Set<String> ids) {
-        if (ids.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        final Set<Object> idParsed = ids.stream().map(e-> toSqlId(e)).collect(Collectors.toSet());
-        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), idParsed);
-        final String queryTpl = "SELECT * FROM %s  WHERE id IN (%s) ";
-        final String inPlaceholder = PostgresClient.inPlaceholder(idParsed, 1);
-        final String query = String.format(queryTpl, getTableName(), inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows -> {
-            final List<JsonObject> jsons = new ArrayList<>();
-            for (final Row row : rows) {
-                jsons.add(PostgresClient.toJson(row, rows));
-            }
-            return jsons;
-        });
+    protected String getIdForModel(final JsonObject json) {
+        return json.getValue(getIdColumn()).toString();
     }
 
     @Override
-    public void fetchByDate(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
+    protected JsonObject setIdForModel(final JsonObject json, final String id) {
+        json.put(getIdColumn(), Integer.valueOf(id));
+        return json;
+    }
+
+    @Override
+    protected UserInfos getCreatorForModel(final JsonObject json) { final String id = json.getString(getCreatorIdColumn());
+        final String name = json.getString(getCreatorNameColumn());
+        final UserInfos user = new UserInfos();
+        user.setUserId(id);
+        user.setUsername(name);
+        return user;
+    }
+
+    @Override
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
         //TODO cursor and filter by date
         int i = 1;
         final Tuple tuple = Tuple.tuple();
@@ -81,9 +80,8 @@ public abstract class ExplorerDbSql implements IExplorerDb {
         });
     }
 
-
     @Override
-    public Future<List<String>> createAll(final UserInfos user, final List<JsonObject> sources) {
+    protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final Map<String, Object> map = new HashMap<>();
         map.put(getCreatorIdColumn(), user.getUserId());
         map.put(getCreatorNameColumn(), user.getUsername());
@@ -102,7 +100,7 @@ public abstract class ExplorerDbSql implements IExplorerDb {
     }
 
     @Override
-    public Future<List<Boolean>> deleteById(final List<String> ids) {
+    protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
         final Set<Integer> safeIds = ids.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet());
         final String queryTpl = "DELETE FROM %s WHERE id IN (%s);";
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
@@ -113,26 +111,25 @@ public abstract class ExplorerDbSql implements IExplorerDb {
         });
     }
 
-    @Override
-    public String getIdForModel(final JsonObject json) {
-        return json.getValue(getIdColumn()).toString();
+    public Future<List<JsonObject>> getByIds(final Set<String> ids) {
+        if (ids.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final Set<Object> idParsed = ids.stream().map(e-> toSqlId(e)).collect(Collectors.toSet());
+        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), idParsed);
+        final String queryTpl = "SELECT * FROM %s  WHERE id IN (%s) ";
+        final String inPlaceholder = PostgresClient.inPlaceholder(idParsed, 1);
+        final String query = String.format(queryTpl, getTableName(), inPlaceholder);
+        return pgPool.preparedQuery(query, tuple).map(rows -> {
+            final List<JsonObject> jsons = new ArrayList<>();
+            for (final Row row : rows) {
+                jsons.add(PostgresClient.toJson(row, rows));
+            }
+            return jsons;
+        });
     }
 
-    @Override
-    public void setIdForModel(final JsonObject json, final String id) {
-        json.put(getIdColumn(), Integer.valueOf(id));
-    }
-
-    @Override
-    public UserInfos getCreatorForModel(final JsonObject json) {
-        final String id = json.getString(getCreatorIdColumn());
-        final String name = json.getString(getCreatorNameColumn());
-        final UserInfos user = new UserInfos();
-        user.setUserId(id);
-        user.setUsername(name);
-        return user;
-    }
-
+    //overridable
     protected String getCreatedAtColumn() {
         return "created_at";
     }
@@ -149,10 +146,6 @@ public abstract class ExplorerDbSql implements IExplorerDb {
         return "id";
     }
 
-    protected abstract String getTableName();
-
-    protected abstract List<String> getColumns();
-
     protected List<String> getMessageFields() {
         return getColumns();
     }
@@ -161,4 +154,8 @@ public abstract class ExplorerDbSql implements IExplorerDb {
         return id;
     }
 
+    //abstract
+    protected abstract String getTableName();
+
+    protected abstract List<String> getColumns();
 }
