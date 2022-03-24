@@ -334,6 +334,36 @@
   "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "en_EN": "Anglais",
   "es_ES": "Espagnol",
+
+  "explorer.sidebar.btn.create.label" : "Créer un dossier"
+  ,"explorer.modal.form.create.folder.title" : "Créer un dossier"
+  ,"explorer.modal.form.create.folder.input" : "Nom de mon dossier"
+  ,"explorer.sidebar.btn.import.label" : "Importer"
+  ,"explorer.modal.props.btn.cancel.label" : "Annuler"
+  ,"explorer.modal.props.btn.record.label" : "Enregistrer"
+  ,"explorer.toaster.btn.open.label" : "Ouvrir"
+  ,"explorer.toaster.btn.manage.label" : "Propriétés"
+  ,"explorer.toaster.btn.comment.label" : "Commenter"
+  ,"explorer.toaster.btn.delete.label" : "Supprimer"
+  ,"explorer.toaster.btn.move.label" : "Déplacer"
+  ,"explorer.toaster.btn.copy.label" : "Dupliquer"
+  ,"explorer.toaster.btn.export.label" : "Exporter"
+  ,"explorer.toaster.btn.share.label" : "Partager"
+  ,"explorer.toaster.btn.publish.label" : "Publier dans la bibliothèque"
+  ,"explorer.toaster.btn.print.label" : "Imprimer"
+  ,"explorer.domino.info.seconds.ago" : "Il y a quelques secondes"
+  ,"explorer.domino.info.minutes.ago" : "Il y a {0} minutes"
+  ,"explorer.domino.info.hours.ago" : "Il y a {0} heure(s)"
+  ,"explorer.domino.info.days.ago" : "Il y a {0} jours"
+  ,"explorer.domino.info.month.ago" : "Il y a {0} mois"
+  ,"explorer.domino.info.year.ago" : "Il y a {0} ans"
+  ,"explorer.domino.info.updated.by" : "Modifié par"
+  ,"explorer.domino.info.public.title" : "Ressource publique"
+  ,"explorer.domino.info.shared.title" : "Ressource partagée"
+  ,"explorer.domino.info.views.title" : "Nombre de vues"
+  ,"explorer.domino.info.comments.title" : "Nombre de commentaires"
+  ,
+  
   "exercizer": "Exercices",
   "exercizer.behaviours.distributed.on": "Distribué pour le",
   "file.heavy": "Fichier lourd",
