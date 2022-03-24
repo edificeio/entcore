@@ -215,8 +215,8 @@ public class ExplorerMessage {
     public Optional<String> getParentEntId(){
         return Optional.ofNullable(this.getOverrideSafe().getString("parentEntId"));
     }
-    public Optional<Long> getParentId(){
-        return Optional.ofNullable(this.getOverrideSafe().getLong("parentId"));
+    public Optional<String> getParentId(){
+        return Optional.ofNullable(this.getOverrideSafe().getValue("parentId")).map(e->e.toString());
     }
     public JsonObject getMessage() {
         return message;
