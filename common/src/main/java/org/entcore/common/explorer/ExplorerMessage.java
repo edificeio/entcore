@@ -40,7 +40,7 @@ public class ExplorerMessage {
         }
     }
 
-    private final String id;
+    private String id;
     private final String action;
     private final JsonObject message = new JsonObject();
     private final ExplorerPriority priority;
@@ -77,7 +77,7 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withParentId(final Optional<Long> parentId) {
-        final JsonObject override = new JsonObject();
+        final JsonObject override = this.getOverrideSafe();
         if(parentId.isPresent()){
             override.put("parentId", parentId.get().toString());
         }
@@ -86,10 +86,17 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withParentEntId(final Optional<String> parentId) {
-        final JsonObject override = new JsonObject();
+        final JsonObject override = this.getOverrideSafe();
         if(parentId.isPresent()){
             override.put("parentEntId", parentId.get());
         }
+        this.withOverrideFields(override);
+        return this;
+    }
+
+    public ExplorerMessage withMigrationFlag(final boolean migration) {
+        final JsonObject override = this.getOverrideSafe();
+        override.put("migration", migration);
         this.withOverrideFields(override);
         return this;
     }
@@ -197,6 +204,20 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withForceId(final String id) {
+        this.id = id;
+        return this;
+    }
+
+    public boolean getMigrationFlag(){
+        return this.getOverrideSafe().getBoolean("migration", false);
+    }
+    public Optional<String> getParentEntId(){
+        return Optional.ofNullable(this.getOverrideSafe().getString("parentEntId"));
+    }
+    public Optional<Long> getParentId(){
+        return Optional.ofNullable(this.getOverrideSafe().getLong("parentId"));
+    }
     public JsonObject getMessage() {
         return message;
     }
@@ -212,6 +233,12 @@ public class ExplorerMessage {
     public String getCreatorId() {
         return message.getString("creatorId");
     }
+    public String getName() {
+        return message.getString("name");
+    }
+    public String getCreatorName() {
+        return message.getString("creatorName");
+    }
     public String getApplication() {
         return message.getString("application");
     }
@@ -220,6 +247,9 @@ public class ExplorerMessage {
     }
     public JsonObject getOverride() {
         return message.getJsonObject("override");
+    }
+    public JsonObject getOverrideSafe() {
+        return message.getJsonObject("override", new JsonObject());
     }
     public String getAction() {
         return action;
