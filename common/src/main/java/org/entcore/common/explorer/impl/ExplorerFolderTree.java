@@ -69,6 +69,7 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
             message.withName(getName(source));
             message.withTrashed(isTrashed(source));
             message.withParentEntId(getParentId(source));
+            message.withMigrationFlag(true);
             messages.add(message);
         }
         //resources
