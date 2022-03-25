@@ -336,11 +336,14 @@
   "es_ES": "Espagnol",
 
   "explorer.sidebar.btn.create.label" : "Créer un dossier"
+  ,"explorer.sidebar.btn.import.label" : "Importer"
   ,"explorer.modal.form.create.folder.title" : "Créer un dossier"
   ,"explorer.modal.form.create.folder.input" : "Nom de mon dossier"
-  ,"explorer.sidebar.btn.import.label" : "Importer"
   ,"explorer.modal.props.btn.cancel.label" : "Annuler"
   ,"explorer.modal.props.btn.record.label" : "Enregistrer"
+  ,"explorer.modal.move.title": "Déplacer"
+  ,"explorer.modal.move.btn.cancel.label": "Annuler"
+  ,"explorer.modal.move.btn.move.label": "Déplacer"
   ,"explorer.toaster.btn.open.label" : "Ouvrir"
   ,"explorer.toaster.btn.manage.label" : "Propriétés"
   ,"explorer.toaster.btn.comment.label" : "Commenter"
