@@ -101,6 +101,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                             this.autolinkDisciplineOptions = disciplineGroups.map(d => d.filter);
                             // remove duplicates values
                             this.autolinkDisciplineOptions = Array.from(new Set(this.autolinkDisciplineOptions));
+                            this.autolinkDisciplineOptions.sort();
                         }
 
                         const funcGroups = data.filter(group => group.labels && group.labels.includes('FuncGroup'));
@@ -108,6 +109,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                             this.autolinkFunctionOptions = funcGroups.map(f => f.filter);
                             // remove duplicates values
                             this.autolinkFunctionOptions = Array.from(new Set(this.autolinkFunctionOptions));
+                            this.autolinkFunctionOptions.sort();
                         }                        
                         this.changeDetector.markForCheck();
                         resolve();
