@@ -19,6 +19,7 @@
         "password-event-sync-default-value": {{ passwordEventSyncDefaultValue }}, 
         {% endif %}
         "maxRetry": {{ maxRetry|default(20) }},
+		"private-etabs-prefix-educonnect": {{ authPrivateStructEduconnect | default('false') }},
         "safeRedirect":{
             "delayInMinutes": {{ safeRedirectDelay|default(30) }},
             "defaultDomains": {{ safeRedirectDomains|default([]) }}
@@ -33,6 +34,7 @@
         },
 	    {% endif %}
 	    "reset-code-expire-delay":{{ resetCodeExpireDelay|default(86400000) }},
+		{% if changePasswordMailFilter is defined %} "change-password-mail-filter": {{ changePasswordMailFilter }}, {% endif %}
         "app-type" : "SYSTEM",
         {% if externalTokens is defined %}
         "externalTokens": {{externalTokens}}, 
@@ -53,6 +55,17 @@
         {% endif %}
         "activationAutoLogin": true,
         "teacherForgotPasswordEmail": false,
+        {% if not(ha) or item == 'jobs' %}
+       	"new-device-warning":
+        {
+          "cron": "*/30 * * * * ? *",
+          "warn-admc": true, 
+          "warn-adml": true, 
+          "warn-users": false,
+          "score-threshold": 3,
+          "batch-limit": 1000 
+        },
+		{% endif %}
         "authenticationServer": {
             "loginURL": "/auth/login",
             "logoutURL": "/auth/logout",

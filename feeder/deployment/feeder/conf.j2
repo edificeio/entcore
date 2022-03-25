@@ -26,6 +26,7 @@
 		"support-perseducnat-1d-2d": {{ supportPerseducnat1d2d | default('false') }},
         {% if feederCsvConfig is defined %}
         "csv" : {{feederCsvConfig}},
+		"csv-imports-timeout" : 900000,
         "feeder" : "BE1D",
         {% else %}
         "feeder": "AAF",
