@@ -97,7 +97,8 @@ public class NewDeviceWarningTask implements Handler<Long>
 
     private EmailSender sender;
     private String mailFrom;
-    private PgClient pgClient = null;
+    private PgClient masterClient = null;
+    private PgClient slaveClient = null;
     private String platformId;
     private String adminFilter;
     private int scoreThreshold;
@@ -113,6 +114,7 @@ public class NewDeviceWarningTask implements Handler<Long>
 			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
 			this.platformId = eventStoreConfig.getString("platform");
 			final JsonObject eventStorePGConfig = eventStoreConfig.getJsonObject("postgresql");
+			final JsonObject eventStoreSlavePGConfig = eventStoreConfig.getJsonObject("postgresql-slave");
 			if (eventStorePGConfig != null)
             {
 				final PgPoolOptions options = new PgPoolOptions()
@@ -122,8 +124,22 @@ public class NewDeviceWarningTask implements Handler<Long>
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
 					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
-				this.pgClient = PgClient.pool(vertx, options);
+				this.masterClient = PgClient.pool(vertx, options);
 			}
+
+			if (eventStoreSlavePGConfig != null)
+            {
+				final PgPoolOptions options = new PgPoolOptions()
+					.setPort(eventStoreSlavePGConfig.getInteger("port", 5432))
+					.setHost(eventStoreSlavePGConfig.getString("host"))
+					.setDatabase(eventStoreSlavePGConfig.getString("database"))
+					.setUser(eventStoreSlavePGConfig.getString("user"))
+					.setPassword(eventStoreSlavePGConfig.getString("password"))
+					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5));
+				this.slaveClient = PgClient.pool(vertx, options);
+			}
+            else
+                this.slaveClient = this.masterClient;
 		}
 
         this.sender = sender;
@@ -149,7 +165,7 @@ public class NewDeviceWarningTask implements Handler<Long>
 	@Override
 	public void handle(Long event)
     {
-        if(this.pgClient == null && locked.compareAndSet(false, true) == false)
+        if(this.masterClient == null || locked.compareAndSet(false, true) == false)
             return;
 
         String getNewLoginEvents = "SELECT e." + LOGIN_ID_FIELD + ", e." + PLATFORM_ID_FIELD + ", e." + USER_ID_FIELD + ", e." + USER_PROFILE_FIELD +
@@ -160,7 +176,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                                     " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + this.adminFilter +
                                     " AND c." + LOGIN_ID_FIELD + " IS NULL" +
                                     " LIMIT $2";
-        this.pgClient.preparedQuery(getNewLoginEvents, Tuple.of(this.platformId, this.batchLimit), new Handler<AsyncResult<PgRowSet>>()
+        this.slaveClient.preparedQuery(getNewLoginEvents, Tuple.of(this.platformId, this.batchLimit), new Handler<AsyncResult<PgRowSet>>()
         {
             @Override
             public void handle(AsyncResult<PgRowSet> pgRes)
@@ -175,6 +191,8 @@ public class NewDeviceWarningTask implements Handler<Long>
                     JsonArray rows = pgRowSetToJsonArray(pgRes.result());
                     if(rows.size() > 0)
                         loadUsers(rows);
+                    else
+                        locked.set(false);
                 }
             }
         });
@@ -244,7 +262,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                                         " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + USER_ID_FIELD + " = ANY($2)";
         Tuple userIdsTuple = Tuple.of(platformId);
         userIdsTuple.addStringArray(users.keySet().toArray(new String[users.keySet().size()]));
-        this.pgClient.preparedQuery(getKnownConnections, userIdsTuple, new Handler<AsyncResult<PgRowSet>>()
+        this.slaveClient.preparedQuery(getKnownConnections, userIdsTuple, new Handler<AsyncResult<PgRowSet>>()
         {
             @Override
             public void handle(AsyncResult<PgRowSet> pgRes)
@@ -295,13 +313,10 @@ public class NewDeviceWarningTask implements Handler<Long>
                             boolean sendEmail = user.email != null && c.score >= scoreThreshold;
 
                             insertTuples.add(Tuple.of(id, date, c.userAgent, c.ip, user.id, user.profile, user.admin, platformId, c.score, sendEmail));
-
-                            if(sendEmail == true)
-                                sendEmail(user, c);
                         }
                     }
 
-                    pgClient.preparedBatch(insertNewConnections, insertTuples, new Handler<AsyncResult<PgRowSet>>()
+                    masterClient.preparedBatch(insertNewConnections, insertTuples, new Handler<AsyncResult<PgRowSet>>()
                     {
                         @Override
                         public void handle(AsyncResult<PgRowSet> pgRes)
@@ -312,7 +327,18 @@ public class NewDeviceWarningTask implements Handler<Long>
                                 locked.set(false);
                             }
                             else
+                            {
+                                for(LoginEventUser user : users.values())
+                                {
+                                    for(Connection c : user.newConnections)
+                                    {
+                                        boolean sendEmail = user.email != null && c.score >= scoreThreshold;
+                                        if(sendEmail == true)
+                                            sendEmail(user, c);
+                                    }
+                                }
                                 locked.set(false);
+                            }
                         }
                     });
                 }
@@ -354,7 +380,7 @@ public class NewDeviceWarningTask implements Handler<Long>
         Tuple removeUsersTuple = Tuple.of(this.platformId);
         removeUsersTuple.addStringArray(userIds);
 
-        this.pgClient.preparedQuery(removeKnownDevices, removeUsersTuple, new Handler<AsyncResult<PgRowSet>>()
+        this.masterClient.preparedQuery(removeKnownDevices, removeUsersTuple, new Handler<AsyncResult<PgRowSet>>()
         {
             @Override
             public void handle(AsyncResult<PgRowSet> pgRes)
@@ -538,6 +564,12 @@ public class NewDeviceWarningTask implements Handler<Long>
         {
             return this.userAgent == null ? 0 : this.ip == null ? 1 : this.userAgent.hashCode() * this.ip.hashCode();
         }
+
+        @Override
+        public String toString()
+        {
+            return this.id + "(" + this.date + " / " + this.userAgent +  "): " + this.score;
+        }
     }
 
     private class LoginEventUser
@@ -596,6 +628,12 @@ public class NewDeviceWarningTask implements Handler<Long>
                     }
                 }
             }
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.id + "(" + this.displayName + ") KNOWN " + this.knownConnections +  " >>> NEW " + this.newConnections;
         }
     }
 
