@@ -76,9 +76,15 @@ export class SmartGroupCommunicationComponent extends OdeComponent implements On
     }
 
     public onGroupPickerStructureChange(structure: StructureModel) {
+        if (!structure) {
+            this.addSendingCommunicationPickableGroups = [];
+            this.addReceivingCommunicationPickableGroups = [];
+            return;
+        }
+        
         structure.groups.sync().then(() => {
-            this.addSendingCommunicationPickableGroups = this.activeStructure.groups.data;
-            this.addReceivingCommunicationPickableGroups = this.activeStructure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
+            this.addSendingCommunicationPickableGroups = structure.groups.data;
+            this.addReceivingCommunicationPickableGroups = structure.groups.data.filter(g => g.subType !== 'BroadcastGroup');
             this.changeDetector.markForCheck();
         });
     }
