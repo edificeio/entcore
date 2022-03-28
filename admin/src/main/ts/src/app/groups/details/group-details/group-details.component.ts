@@ -91,31 +91,33 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
         this.groupNewName = this.groupsStore.group.name;
 
-        this.spinnerService.perform('portal-content',
-            new Promise<void>((resolve, reject) => {
-                this.groupsService.
-                getFuncAndDisciplines(this.groupsStore.structure).
-                    subscribe((data: Array<GroupModel>) => {
-                        const disciplineGroups = data.filter(group => group.labels && group.labels.includes('DisciplineGroup'));
-                        if (disciplineGroups) {
-                            this.autolinkDisciplineOptions = disciplineGroups.map(d => d.filter);
-                            // remove duplicates values
-                            this.autolinkDisciplineOptions = Array.from(new Set(this.autolinkDisciplineOptions));
-                            this.autolinkDisciplineOptions.sort();
-                        }
+        if (this.groupsStore.group.subType === 'BroadcastGroup') {
+            this.spinnerService.perform('portal-content',
+                new Promise<void>((resolve, reject) => {
+                    this.groupsService.
+                    getFuncAndDisciplines(this.groupsStore.structure).
+                        subscribe((data: Array<GroupModel>) => {
+                            const disciplineGroups = data.filter(group => group.labels && group.labels.includes('DisciplineGroup'));
+                            if (disciplineGroups) {
+                                this.autolinkDisciplineOptions = disciplineGroups.map(d => d.filter);
+                                // remove duplicates values
+                                this.autolinkDisciplineOptions = Array.from(new Set(this.autolinkDisciplineOptions));
+                                this.autolinkDisciplineOptions.sort();
+                            }
 
-                        const funcGroups = data.filter(group => group.labels && group.labels.includes('FuncGroup'));
-                        if (funcGroups) {
-                            this.autolinkFunctionOptions = funcGroups.map(f => f.filter);
-                            // remove duplicates values
-                            this.autolinkFunctionOptions = Array.from(new Set(this.autolinkFunctionOptions));
-                            this.autolinkFunctionOptions.sort();
-                        }                        
-                        this.changeDetector.markForCheck();
-                        resolve();
-                    }, reject);
-            })
-        );
+                            const funcGroups = data.filter(group => group.labels && group.labels.includes('FuncGroup'));
+                            if (funcGroups) {
+                                this.autolinkFunctionOptions = funcGroups.map(f => f.filter);
+                                // remove duplicates values
+                                this.autolinkFunctionOptions = Array.from(new Set(this.autolinkFunctionOptions));
+                                this.autolinkFunctionOptions.sort();
+                            }                        
+                            this.changeDetector.markForCheck();
+                            resolve();
+                        }, reject);
+                })
+            );
+        }
     }
 
     showLightBox() {
