@@ -91,7 +91,7 @@ public class DefaultClassService implements ClassService {
 						filterPart + collectPart +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"(LENGTH(m.email)>0 AND EXISTS(m.email)) as hasEmail, " +
-				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.birthDate as birthDate, m.lastLogin as lastLogin, " +
+				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.displayName as displayName, m.birthDate as birthDate, m.lastLogin as lastLogin, " +
 				"p.name as type, m.blocked as blocked, m.source as source, relativeList " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
