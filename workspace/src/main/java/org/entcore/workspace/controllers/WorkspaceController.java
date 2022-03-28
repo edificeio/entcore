@@ -947,8 +947,26 @@ public class WorkspaceController extends BaseController {
 							if (inline && ETag.check(request, file)) {
 								notModified(request, file);
 							} else {
-								storage.sendFile(file, result.getString("name"), request, inline,
-										result.getJsonObject("metadata"));
+								JsonObject metadata = DocumentHelper.getMetadata(result);
+								if (thumbSize != null
+										&& !thumbSize.trim().isEmpty()
+										&& DocumentHelper.getContentType(result).startsWith("video")) {
+									String thumbDownloadName = result.getString("name");
+									String[] nameSplit = result.getString("name").split("\\.");
+
+									if (nameSplit != null && nameSplit.length > 1) {
+										thumbDownloadName = nameSplit[0] + ".png";
+									}
+
+									JsonObject thumbMetadata = new JsonObject()
+											.put("content-type", "image/png")
+											.put("filename", thumbDownloadName)
+											.put("size", metadata.getLong("size"));
+
+									storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
+								} else {
+									storage.sendFile(file, result.getString("name"), request, inline, metadata);
+								}
 							}
 							// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
 							// 		new JsonObject().put("resource", request.params().get("id")));
