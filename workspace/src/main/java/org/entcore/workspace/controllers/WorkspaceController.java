@@ -949,10 +949,10 @@ public class WorkspaceController extends BaseController {
 							} else {
 								JsonObject metadata = result.getJsonObject("metadata");
 								if (metadata != null
-										&& metadata.getString("content-type") != null
-										&& metadata.getString("content-type").startsWith("video")
 										&& thumbSize != null
-										&& !thumbSize.trim().isEmpty()) {
+										&& !thumbSize.trim().isEmpty()
+										&& metadata.getString("content-type") != null
+										&& metadata.getString("content-type").startsWith("video")) {
 									String thumbDownloadName = result.getString("name");
 									String[] nameSplit = result.getString("name").split("\\.");
 
@@ -967,8 +967,7 @@ public class WorkspaceController extends BaseController {
 
 									storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
 								} else {
-									storage.sendFile(file, result.getString("name"), request, inline,
-											result.getJsonObject("metadata"));
+									storage.sendFile(file, result.getString("name"), request, inline, metadata);
 								}
 							}
 							// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
