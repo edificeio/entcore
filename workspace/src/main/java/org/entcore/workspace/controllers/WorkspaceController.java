@@ -947,12 +947,10 @@ public class WorkspaceController extends BaseController {
 							if (inline && ETag.check(request, file)) {
 								notModified(request, file);
 							} else {
-								JsonObject metadata = result.getJsonObject("metadata");
-								if (metadata != null
-										&& thumbSize != null
+								JsonObject metadata = DocumentHelper.getMetadata(result);
+								if (thumbSize != null
 										&& !thumbSize.trim().isEmpty()
-										&& metadata.getString("content-type") != null
-										&& metadata.getString("content-type").startsWith("video")) {
+										&& DocumentHelper.getContentType(result).startsWith("video")) {
 									String thumbDownloadName = result.getString("name");
 									String[] nameSplit = result.getString("name").split("\\.");
 
