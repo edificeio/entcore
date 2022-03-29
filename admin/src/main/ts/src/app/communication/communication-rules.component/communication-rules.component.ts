@@ -373,7 +373,10 @@ export function sortGroups(groups: GroupModel[], getGroupNameFn: (GroupModel) =>
 }
 
 export function getStructureOfGroup(group: GroupModel): { id: string, name: string } {
-    return group.structures[0];
+    if (group && group.structures && group.structures.length > 0) {
+        return group.structures[0];
+    }
+    return {id: '', name: ''};
 }
 
 export function getStructureIdOfGroup(group: GroupModel): string {
