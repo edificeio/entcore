@@ -201,10 +201,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				String serviceProvider = message.body().getString("SP");
 				String userId = message.body().getString("userId");
 				String nameid = message.body().getString("nameid");
+				String authNRequestId = message.body().getString("authNRequestId");
 				String host = message.body().getString("host");
 				String url = message.body().getString("scheme") + "://" + host;
 				spSSODescriptor = getSSODescriptor(serviceProvider);
-				generateSAMLResponse(serviceProvider, userId, nameid, host, url, message);
+				generateSAMLResponse(serviceProvider, authNRequestId, userId, nameid, host, url, message);
 				break;
 			case "validate-signature":
 				sendOK(message, new JsonObject().put("valid", validateSignature(response)));
@@ -249,6 +250,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * Build SAMLResponse and convert it in base64
 	 *
 	 * @param serviceProvider serviceProvider name qualifier
+	 * @param authNRequestId  AuthNRequest ID
 	 * @param userId          neo4j userID
 	 * @param nameId          ameId value
 	 * @param message         message
@@ -260,7 +262,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws UnsupportedEncodingException
 	 * @throws MarshallingException
 	 */
-	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId,
+	public void generateSAMLResponse(final String serviceProvider, final String authNRequestId, final String userId, final String nameId,
 			final String host, final String url, final Message<JsonObject> message) throws SignatureException,
 			NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
 		logger.info("start generating SAMLResponse");
@@ -362,7 +364,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					String destination = assertionConsumerService.getLocation();
 
 					// --- Build response --
-					Response response = createResponse(new DateTime(), idpIssuer, status, assertion, destination);
+					Response response = createResponse(authNRequestId, new DateTime(), idpIssuer, status, assertion, destination);
 
 					Signature signature = null;
 					try {
@@ -487,14 +489,15 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	/**
 	 * Build the java response
 	 * 
-	 * @param issueDate   date of generation
-	 * @param issuer      issuer (must be the same as the nameid->namequalifier)
-	 * @param status      the status
-	 * @param assertion   the assertion
-	 * @param destination the acs location
+	 * @param authNRequestId	AuthNRequest provided for InResponseTo
+	 * @param issueDate   		date of generation
+	 * @param issuer      		issuer (must be the same as the nameid->namequalifier)
+	 * @param status      		the status
+	 * @param assertion   		the assertion
+	 * @param destination 		the acs location
 	 * @return the java Response
 	 */
-	private Response createResponse(final DateTime issueDate, Issuer issuer, Status status, Assertion assertion,
+	private Response createResponse(String authNRequestId, final DateTime issueDate, Issuer issuer, Status status, Assertion assertion,
 			String destination) {
 		ResponseBuilder responseBuilder = new ResponseBuilder();
 		Response response = responseBuilder.buildObject();
@@ -506,6 +509,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		response.setStatus(status);
 		response.setDestination(destination);
 		response.getAssertions().add(assertion);
+		if (!authNRequestId.isEmpty()) {
+			response.setInResponseTo(authNRequestId);
+		}
 		return response;
 	}
 

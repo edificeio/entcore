@@ -242,12 +242,12 @@ public class SamlController extends AbstractFederateController {
                     log.error("Error loading relay-state properties.");
                 }
 
-				ssoGenerateSAML(user, serviceProviderId, relayState,  request);
+				ssoGenerateSAML(user, "", serviceProviderId, relayState,  request);
 			}
 		});
 	}
 
-	private void ssoGenerateSAML(UserInfos user, String serviceProviderId, String relayState, HttpServerRequest request) {
+	private void ssoGenerateSAML(UserInfos user, String authNRequestId, String serviceProviderId, String relayState, HttpServerRequest request) {
 		if (serviceProviderId == null || serviceProviderId.trim().isEmpty()) {
             forbidden(request, "invalid.provider");
             return;
@@ -263,6 +263,7 @@ public class SamlController extends AbstractFederateController {
                 .put("userId", user.getUserId())
                 .put("nameid", sessionId)
                 .put("host", getHost(request))
+                .put("authNRequestId", authNRequestId)
 				.put("scheme", getScheme(request));
 		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             @Override
@@ -391,11 +392,12 @@ public class SamlController extends AbstractFederateController {
 			XPath path = xpf.newXPath();
 			String expression = "/AuthnRequest/Issuer";
 			final String serviceProviderId = (String) path.evaluate(expression, doc.getDocumentElement());
+			final String authNRequestId = doc.getDocumentElement().getAttribute("ID");
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user == null) redirectToLogin(request, SAMLAuthnRequest, relayState);
-					else ssoGenerateSAML(user, serviceProviderId, relayState,  request);
+					else ssoGenerateSAML(user, authNRequestId, serviceProviderId, relayState,  request);
 				}
 			});
 		} catch (Exception e) {
