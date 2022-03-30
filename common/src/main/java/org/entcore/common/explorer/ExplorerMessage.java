@@ -4,8 +4,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ExplorerMessage {
     public enum ExplorerContentType{
@@ -90,6 +93,13 @@ public class ExplorerMessage {
         if(parentId.isPresent()){
             override.put("parentEntId", parentId.get());
         }
+        this.withOverrideFields(override);
+        return this;
+    }
+
+    public ExplorerMessage withChildrenEntId(final Set<String> childId) {
+        final JsonObject override = this.getOverrideSafe();
+        override.put("childEntId", new JsonArray(new ArrayList<>(childId)));
         this.withOverrideFields(override);
         return this;
     }
@@ -218,6 +228,15 @@ public class ExplorerMessage {
     public Optional<String> getParentId(){
         return Optional.ofNullable(this.getOverrideSafe().getValue("parentId")).map(e->e.toString());
     }
+    public Optional<Set<String>> getChildEntId(){
+        return Optional.ofNullable(this.getOverrideSafe().getValue("childEntId")).filter(e-> {
+            return e instanceof  JsonArray;
+        }).map(e->{
+          final JsonArray arr = (JsonArray) e;
+          return arr.stream().map(row -> row.toString()).collect(Collectors.toSet());
+        });
+    }
+
     public JsonObject getMessage() {
         return message;
     }
