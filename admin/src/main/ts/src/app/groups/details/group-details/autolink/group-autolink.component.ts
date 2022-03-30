@@ -129,23 +129,26 @@ export class GroupAutolinkComponent extends OdeComponent {
         }
 
         // populate autolinkUsersFromGroups from profiles selection
-        this.form.profile && groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
-        
-        if (this.form.profile === 'Teacher' &&
-            this.form.teacherSubSectionRadio === 'HeadTeacher') {
-            groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
-        }
-
-        if (this.form.profile === 'Teacher' && 
-            this.form.teacherSubSectionRadio === 'disciplines' &&
-            this.form.selectedDisciplines && 
-            this.form.selectedDisciplines.length > 0) {
-            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedDisciplines);
-        } else if (this.form.profile === 'Personnel' &&
-            this.form.personnelSubSectionCheckbox &&
-            this.form.selectedFunctions && 
-            this.form.selectedFunctions.length > 0) {
-            groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedFunctions);
+        if (this.form.profile === 'Teacher') {
+            if (this.form.teacherSubSectionRadio === 'HeadTeacher') {
+                groupUpdatePayload.autolinkUsersFromGroups.push('HeadTeacher');
+            } else if (this.form.teacherSubSectionRadio === 'disciplines' && 
+                this.form.selectedDisciplines && 
+                this.form.selectedDisciplines.length > 0) {
+                groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedDisciplines);
+            } else if (this.form.teacherSubSectionRadio === 'all') {
+                groupUpdatePayload.autolinkUsersFromGroups.push('Teacher');
+            }
+        } else if (this.form.profile === 'Personnel') {
+            if (this.form.personnelSubSectionCheckbox &&
+                this.form.selectedFunctions && 
+                this.form.selectedFunctions.length > 0) {
+                groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedFunctions);
+            } else {
+                groupUpdatePayload.autolinkUsersFromGroups.push('Personnel');
+            }
+        } else {
+            groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
         }
 
         this.groupsService.
