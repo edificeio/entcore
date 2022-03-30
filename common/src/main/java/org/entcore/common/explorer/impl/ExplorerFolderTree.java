@@ -64,21 +64,15 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         final String id = getFolderId(source);
         final UserInfos user = getCreatorForModel(source);
         //folder
-        {
-            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getFolderResourceType());
-            message.withName(getName(source));
-            message.withTrashed(isTrashed(source));
-            message.withParentEntId(getParentId(source));
-            message.withMigrationFlag(true);
-            messages.add(message);
-        }
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getFolderResourceType());
+        message.withName(getName(source));
+        message.withTrashed(isTrashed(source));
+        message.withParentEntId(getParentId(source));
+        message.withMigrationFlag(true);
         //resources
         final Set<String> resourceIds = getResourceIds(source);
-        for(final String res : resourceIds){
-            final ExplorerMessage message = ExplorerMessage.upsert(res, user, isForSearch()).withType(getApplication(), getParentResourceType());
-            message.withParentEntId(getParentId(source));
-            messages.add(message);
-        }
+        message.withChildrenEntId(resourceIds);
+        messages.add(message);
         return messages;
     }
 
