@@ -509,7 +509,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		response.setStatus(status);
 		response.setDestination(destination);
 		response.getAssertions().add(assertion);
-		if (!authNRequestId.isEmpty()) {
+		if (authNRequestId != null && !authNRequestId.isEmpty()) {
 			response.setInResponseTo(authNRequestId);
 		}
 		return response;
