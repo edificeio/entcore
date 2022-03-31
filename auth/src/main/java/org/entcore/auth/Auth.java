@@ -185,8 +185,9 @@ public class Auth extends BaseServer {
 				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
 				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
 				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
+				String processInterval = NDWConf.getString("process-interval");
 				NDWTask = new NewDeviceWarningTask(vertx, emailFactory.getSender(), config.getString("email"),
-													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit);
+													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval);
 				new CronTrigger(vertx, cron).schedule(NDWTask);
 			}
 		}

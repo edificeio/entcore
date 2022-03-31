@@ -103,10 +103,11 @@ public class NewDeviceWarningTask implements Handler<Long>
     private String adminFilter;
     private int scoreThreshold;
     private int batchLimit;
+    private String processInterval;
 
     private static final Logger log = LoggerFactory.getLogger(NewDeviceWarningTask.class);
 
-	public NewDeviceWarningTask(Vertx vertx, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit)
+	public NewDeviceWarningTask(Vertx vertx, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit, String processInterval)
     {
 		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
 		if (eventStoreConf != null)
@@ -146,6 +147,7 @@ public class NewDeviceWarningTask implements Handler<Long>
         this.mailFrom = mailFrom != null ? mailFrom : "noreply@one1d.fr";
         this.scoreThreshold = scoreThreshold;
         this.batchLimit = batchLimit;
+        this.processInterval = processInterval != null ? processInterval : "1 HOUR";
 
         if(includeUsers == true)
             this.adminFilter = "1 = 1";
@@ -174,6 +176,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                                     " INNER JOIN " + DEVICES_INFO_TABLE + " d USING (" + USER_AGENT_FIELD + ")" +
                                     " LEFT JOIN " + DEVICE_CHECK_TABLE + " c USING (" + PLATFORM_ID_FIELD + "," + USER_ID_FIELD + "," + USER_AGENT_FIELD + "," + IP_FIELD + ")" +
                                     " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + this.adminFilter +
+                                    " AND e." + DATE_FIELD + " > NOW() - INTERVAL '" + this.processInterval + "' " +
                                     " AND c." + LOGIN_ID_FIELD + " IS NULL" +
                                     " LIMIT $2";
         this.slaveClient.preparedQuery(getNewLoginEvents, Tuple.of(this.platformId, this.batchLimit), new Handler<AsyncResult<PgRowSet>>()
