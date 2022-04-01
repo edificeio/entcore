@@ -44,9 +44,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.lang.model.util.ElementScanner6;
-
 import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -55,6 +52,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class NewDeviceWarningTask implements Handler<Long>
@@ -231,7 +229,9 @@ public class NewDeviceWarningTask implements Handler<Long>
             user.addNewConnection(conn);
         }
 
-        String getUsersEmail = "MATCH (u:User) WHERE u.id IN {users} RETURN u.id AS id, u.email AS email, u.displayName AS displayName";
+        String getUsersEmail = "MATCH (u:User) WHERE u.id IN {users} " +
+                                "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+                                "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, uac.theme AS theme, uac.language AS language";
 		Neo4j.getInstance().execute(getUsersEmail, new JsonObject().put("users", new JsonArray(new ArrayList(users.keySet()))), new Handler<Message<JsonObject>>()
         {
 			@Override
@@ -243,7 +243,11 @@ public class NewDeviceWarningTask implements Handler<Long>
                     for(int i = res.size(); i-- > 0;)
                     {
                         JsonObject neoUser = res.getJsonObject(i);
-                        users.get(neoUser.getString("id")).setInfos(neoUser.getString("displayName"), neoUser.getString("email"));
+                        String mutableUserLanguage = "fr";
+                        try {
+                            mutableUserLanguage = getOrElse(new JsonObject(getOrElse(neoUser.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
+                        } catch(Exception e) {}
+                        users.get(neoUser.getString("id")).setInfos(neoUser.getString("displayName"), neoUser.getString("email"), neoUser.getString("theme"), mutableUserLanguage);
                     }
                     scoreConnections(users);
                 }
@@ -357,7 +361,7 @@ public class NewDeviceWarningTask implements Handler<Long>
             .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
             .put("ip", c.ip);
 		sender.sendEmail(
-            new JsonHttpServerRequest(new JsonObject()),
+            new JsonHttpServerRequest(new JsonObject().put("headers", new JsonObject().put("Accept-Language", user.language).put("X-ENT-Theme", user.theme))),
             user.email,
             this.mailFrom,
             null,
@@ -582,6 +586,8 @@ public class NewDeviceWarningTask implements Handler<Long>
         String admin;
         String displayName;
         String email;
+        String theme;
+        String language;
 
         Set<Connection> knownConnections = new LinkedHashSet<Connection>();
         Set<Connection> newConnections = new HashSet<Connection>();
@@ -593,10 +599,12 @@ public class NewDeviceWarningTask implements Handler<Long>
             this.admin = admin;
         }
 
-        public void setInfos(String displayName, String email)
+        public void setInfos(String displayName, String email, String theme, String language)
         {
             this.displayName = displayName;
             this.email = email;
+            this.theme = theme;
+            this.language = language;
         }
 
         public void addKnownConnection(Connection c)
