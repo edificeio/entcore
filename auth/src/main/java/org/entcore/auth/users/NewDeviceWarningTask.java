@@ -52,6 +52,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 
+import fr.wseduc.webutils.I18n;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -231,7 +232,8 @@ public class NewDeviceWarningTask implements Handler<Long>
 
         String getUsersEmail = "MATCH (u:User) WHERE u.id IN {users} " +
                                 "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-                                "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, uac.theme AS theme, uac.language AS language";
+                                "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, " +
+                                "uac.theme AS theme, uac.language AS language";
 		Neo4j.getInstance().execute(getUsersEmail, new JsonObject().put("users", new JsonArray(new ArrayList(users.keySet()))), new Handler<Message<JsonObject>>()
         {
 			@Override
@@ -243,11 +245,17 @@ public class NewDeviceWarningTask implements Handler<Long>
                     for(int i = res.size(); i-- > 0;)
                     {
                         JsonObject neoUser = res.getJsonObject(i);
+                        String displayName = neoUser.getString("displayName");
+                        String email = neoUser.getString("email");
+                        String theme = neoUser.getString("theme");
                         String mutableUserLanguage = "fr";
                         try {
                             mutableUserLanguage = getOrElse(new JsonObject(getOrElse(neoUser.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
                         } catch(Exception e) {}
-                        users.get(neoUser.getString("id")).setInfos(neoUser.getString("displayName"), neoUser.getString("email"), neoUser.getString("theme"), mutableUserLanguage);
+                        String userDomain = neoUser.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+                        String userScheme = neoUser.getString("lastScheme", "http");
+
+                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userScheme + "://" + userDomain);
                     }
                     scoreConnections(users);
                 }
@@ -359,7 +367,8 @@ public class NewDeviceWarningTask implements Handler<Long>
             .put("displayName", user.displayName)
             .put("device", c.device.toString())
             .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
-            .put("ip", c.ip);
+            .put("ip", c.ip)
+            .put("host", user.host);
 		sender.sendEmail(
             new JsonHttpServerRequest(new JsonObject().put("headers", new JsonObject().put("Accept-Language", user.language).put("X-ENT-Theme", user.theme))),
             user.email,
@@ -588,6 +597,7 @@ public class NewDeviceWarningTask implements Handler<Long>
         String email;
         String theme;
         String language;
+        String host;
 
         Set<Connection> knownConnections = new LinkedHashSet<Connection>();
         Set<Connection> newConnections = new HashSet<Connection>();
@@ -599,12 +609,13 @@ public class NewDeviceWarningTask implements Handler<Long>
             this.admin = admin;
         }
 
-        public void setInfos(String displayName, String email, String theme, String language)
+        public void setInfos(String displayName, String email, String theme, String language, String host)
         {
             this.displayName = displayName;
             this.email = email;
             this.theme = theme;
             this.language = language;
+            this.host = host;
         }
 
         public void addKnownConnection(Connection c)
