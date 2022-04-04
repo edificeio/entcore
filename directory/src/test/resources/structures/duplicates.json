@@ -1,0 +1,46 @@
+{
+  "sourceStructure": {
+    "name": "Source Structure",
+    "UAI": "0000000X",
+    "appRoles": [
+      {
+        "name": "RoleApp1",
+        "type": "Role"
+      },
+      {
+        "name": "RoleApp2",
+        "type": "Role"
+      }
+    ],
+    "widgetRoles": [
+      {
+        "name": "RoleWidget1",
+        "type": "Widget"
+      },
+      {
+        "name": "RoleWidget2",
+        "type": "Widget"
+      }
+    ],
+    "distributions": ["DISTRIB1", "DISTRIB2"],
+    "levelsOfEducation": ["1d", "2d"],
+    "hasApp": true
+  },
+  "targetStructures": [
+    {
+      "name": "Target Structure 1",
+      "UAI": "1111111X"
+    },
+    {
+      "name": "Target Structure 2",
+      "UAI": "2222222Y"
+    }
+  ],
+  "options": {
+    "setApplications": true,
+    "setWidgets": true,
+    "setDistribution": true,
+    "setEducation": true,
+    "setHasApp": true
+  }
+}
