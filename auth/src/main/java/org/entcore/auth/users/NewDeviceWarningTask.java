@@ -175,7 +175,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                                     " INNER JOIN " + DEVICES_INFO_TABLE + " d USING (" + USER_AGENT_FIELD + ")" +
                                     " LEFT JOIN " + DEVICE_CHECK_TABLE + " c USING (" + PLATFORM_ID_FIELD + "," + USER_ID_FIELD + "," + USER_AGENT_FIELD + "," + IP_FIELD + ")" +
                                     " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + this.adminFilter +
-                                    " AND e." + DATE_FIELD + " > NOW() - INTERVAL '" + this.processInterval + "' " +
+                                    " AND e." + DATE_FIELD + " BETWEEN NOW() - INTERVAL '" + this.processInterval + "' AND NOW() " + // AND NOW() is to prevent searching future partitions
                                     " AND c." + LOGIN_ID_FIELD + " IS NULL" +
                                     " LIMIT $2";
         this.slaveClient.preparedQuery(getNewLoginEvents, Tuple.of(this.platformId, this.batchLimit), new Handler<AsyncResult<PgRowSet>>()
