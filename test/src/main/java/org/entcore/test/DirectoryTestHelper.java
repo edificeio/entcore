@@ -2,6 +2,7 @@ package org.entcore.test;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -85,6 +86,11 @@ public class DirectoryTestHelper {
         return createGroup(id, name, "ProfileGroup").compose(r -> createProfile(id, name).map(id));
     }
 
+    public Future<String> createFunctionGroup(String name) {
+        String id = UUID.randomUUID().toString();
+        return createGroup(id, name, "FunctionGroup").map(id);
+    }
+
     public Future<String> createProfile(String profileGroup, String name) {
         final String id = UUID.randomUUID().toString();
         final JsonObject props = new JsonObject().put("pgId", profileGroup).put("name", name).put("id", id);
@@ -115,6 +121,7 @@ public class DirectoryTestHelper {
                 .put("id", id).put("source", source);
         final JsonObject params = new JsonObject().put("props", props);
         final String query = "CREATE (u:Structure {props}) RETURN u";
+        Neo4j neo = Neo4j.getInstance();
         Neo4j.getInstance().execute(query, params, message -> {
             if ("ok".equals(message.body().getString("status"))) {
                 async.complete(id);
@@ -308,6 +315,23 @@ public class DirectoryTestHelper {
         return future;
     }
 
+    public Future<Boolean> groupHasRoles(String groupId, String groupType, List<String> roleIds) {
+        Promise<Boolean> promise = Promise.promise();
+        String query = "MATCH (g:" + groupType + ")-[rel:AUTHORIZED]->(r:Role) WHERE g.id={groupId} AND r.id IN {roleIds} RETURN COUNT(rel) as nb";
+        JsonObject params = new JsonObject()
+                .put("groupId", groupId)
+                .put("roleIds", roleIds);
+        test.database().executeNeo4jWithUniqueResult(query, params)
+            .onComplete(res -> {
+                if (res.succeeded()) {
+                    promise.complete(res.result().getInteger("nb").intValue() > 0);
+                } else {
+                    promise.fail(res.cause());
+                }
+            });
+        return promise.future();
+    }
+
     public Future<Boolean> functionGroupHasRole(String groupId, String roleId) {
         Future<Boolean> future = Future.future();
         test.database().executeNeo4jWithUniqueResult(
@@ -320,5 +344,148 @@ public class DirectoryTestHelper {
                     }
                 });
         return future;
+    }
+
+    public Future<String> createRole(String name, String nodeType) {
+        final String id = UUID.randomUUID().toString();
+
+        final Promise<String> async = Promise.promise();
+        final JsonObject props = new JsonObject()
+                .put("id", id)
+                .put("name", name);
+        final JsonObject params = new JsonObject()
+                .put("props", props);
+        final String query = "CREATE (r:"+nodeType+" {props}) RETURN r";
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete(id);
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async.future();
+    }
+
+    public Future<Void> attachRoleToGroup(String roleId, String groupId) {
+        final Promise<Void> async = Promise.promise();
+
+        final String query = "MATCH (r:Role {id:{roleId}}), (g:Group {id:{groupId}}) MERGE (g)-[a:AUTHORIZED]->(r) RETURN g,a,r";
+        final JsonObject params = new JsonObject().put("roleId", roleId).put("groupId", groupId);
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async.future();
+    }
+
+    public Future<Void> setDistributions(String structureId, JsonArray distributions) {
+        final Promise<Void> async = Promise.promise();
+
+        final String query = "MATCH (s:Structure {id: {structureId}}) SET s.distributions = {distributions} RETURN s.id as id, s.distributions as distributions";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("distributions", distributions);
+
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async.future();
+    }
+
+    public Future<Void> setLevelsOfEducation(String structureId, JsonArray levelsOfEducation) {
+        final Promise<Void> async = Promise.promise();
+
+        final String query = "MATCH (s:Structure {id: {structureId}}) SET s.levelsOfEducation = {levelsOfEducation} RETURN s.id as id, s.levelsOfEducation as levelsOfEducation";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("levelsOfEducation", levelsOfEducation);
+
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async.future();
+    }
+
+    public Future<Void> setHasApp(String structureId, Boolean hasApp) {
+        final Promise<Void> async = Promise.promise();
+
+        final String query = "MATCH (s:Structure {id: {structureId}}) SET s.hasApp = {hasApp} RETURN s.id as id, s.hasApp as hasApp";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("hasApp", hasApp);
+
+        Neo4j.getInstance().execute(query, params, message -> {
+            if ("ok".equals(message.body().getString("status"))) {
+                async.complete();
+            } else {
+                async.fail(message.body().getString("message"));
+            }
+        });
+        return async.future();
+    }
+
+    public Future<Boolean> structureHasApp(String structureId, Boolean hasApp) {
+        Promise<Boolean> async = Promise.promise();
+        final String query = "MATCH (s:Structure {id: {structureId}}) WHERE s.hasApp={hasApp} RETURN COUNT(s) as nb";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("hasApp", hasApp);
+
+        test.database().executeNeo4jWithUniqueResult(query, params)
+                .onComplete(resCount -> {
+                    if (resCount.succeeded()) {
+                        async.complete(resCount.result().getInteger("nb").intValue() > 0);
+                    } else {
+                        async.fail(resCount.cause());
+                    }
+                });
+        return async.future();
+    }
+
+    public Future<Boolean> structureHasDistributions(String structureId, JsonArray distributions) {
+        Promise<Boolean> async = Promise.promise();
+        final String query = "MATCH (s:Structure {id: {structureId}}) WHERE s.distributions={distributions} RETURN COUNT(s) as nb";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("distributions", distributions);
+
+        test.database().executeNeo4jWithUniqueResult(query, params)
+                .onComplete(resCount -> {
+                    if (resCount.succeeded()) {
+                        async.complete(resCount.result().getInteger("nb").intValue() > 0);
+                    } else {
+                        async.fail(resCount.cause());
+                    }
+                });
+        return async.future();
+    }
+
+    public Future<Boolean> structureHasLevelsOfEducation(String structureId, JsonArray levelsOfEducation) {
+        Promise<Boolean> async = Promise.promise();
+        final String query = "MATCH (s:Structure {id: {structureId}}) WHERE s.levelsOfEducation={levelsOfEducation} RETURN COUNT(s) as nb";
+        final JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("levelsOfEducation", levelsOfEducation);
+
+        test.database().executeNeo4jWithUniqueResult(query, params)
+                .onComplete(resCount -> {
+                    if (resCount.succeeded()) {
+                        async.complete(resCount.result().getInteger("nb").intValue() > 0);
+                    } else {
+                        async.fail(resCount.cause());
+                    }
+                });
+        return async.future();
     }
 }
