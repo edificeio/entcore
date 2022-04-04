@@ -253,6 +253,7 @@ project(':directory') {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    testCompile project(':test')
   }
 }
 
