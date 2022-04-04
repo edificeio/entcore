@@ -10,7 +10,7 @@
 	<div data-ng-controller="FlashMessages" class="twelve cell">
 		<div class="flashmsg" ng-repeat="message in messages.all" ng-class="message.color" ng-style="{ 'background-color': message.customColor }">
 			<i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
-			<div bind-html="message.contents[currentLanguage]"></div>
+			<div ng-bind-html="message.contents[currentLanguage]"></div>
 			<div ng-if="message.signature" style="font-style: italic;" ng-style="{'color': message.signatureColor}">
 				<p></p>
 				[[ message.signature ]]
