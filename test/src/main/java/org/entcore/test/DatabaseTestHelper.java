@@ -5,6 +5,7 @@ import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
@@ -208,7 +209,16 @@ public class DatabaseTestHelper {
 
     /** @return a new docker-based ElasticSearch OSS 7.9 container. */
     public ElasticsearchContainer createElasticContainer() {
-        return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0");
+        return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3");
+    }
+
+    public ElasticsearchContainer createOpenSearchContainer() {
+        final DockerImageName myImage = DockerImageName.parse("opensearchproject/opensearch:1.1.0").asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch:latest");
+        final ElasticsearchContainer opensearchContainer = new ElasticsearchContainer(myImage);
+        opensearchContainer.withEnv("discovery.type", "single-node");
+        opensearchContainer.withEnv("DISABLE_INSTALL_DEMO_CONFIG", "true");
+        opensearchContainer.withEnv("DISABLE_SECURITY_PLUGIN", "true");
+        return opensearchContainer;
     }
 
     /** @return a new docker-based Redis 5/generic container. */
