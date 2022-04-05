@@ -43,8 +43,6 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         btns: [
             ['undo', 'redo'],
             ['strong', 'em', 'underline'],
-            ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
-            ['foreColor', 'fontfamily', 'fontsize'],
             ['link']
         ],
         lang: this.bundles.currentLanguage
