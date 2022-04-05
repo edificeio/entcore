@@ -18,6 +18,7 @@ interface Scope extends IScope {
 class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 	constructor( 
 		private $compile:ICompileService,
+		private $sanitize: any,
 		private richContentSvc:RichContentService, 
 		private helperSvc:NgHelperService ) {
 	}
@@ -34,7 +35,8 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 		const parentCtrl = controllers[0] as FlashMsgController;
 		if( !parentCtrl || !scope.message ) return;
 
-		this.richContentSvc.apply(scope.message.contents[parentCtrl.currentLanguage] ?? '', elem, scope);
+		let messageContent = scope.message.contents[parentCtrl.currentLanguage] ?? '';
+		this.richContentSvc.apply(this.$sanitize(messageContent), elem, scope);
 
 		// If needed, limit the height of displayed text, and add a button "See more" which toggles the full message display back and forth.
 		if( this.helperSvc ) {
@@ -84,7 +86,7 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
  * Usage:
  *   &lt;flash-message-content>The content to display which can be very very long</flash-message-content&gt;
  */
-export function DirectiveFactory($compile:ICompileService, richContentSvc:RichContentService, helperSvc:NgHelperService) {
-	return new Directive($compile, richContentSvc, helperSvc);
+export function DirectiveFactory($compile:ICompileService, $sanitize: any, richContentSvc:RichContentService, helperSvc:NgHelperService) {
+	return new Directive($compile, $sanitize, richContentSvc, helperSvc);
 }
-DirectiveFactory.$inject = ["$compile", "odeRichContentService", "odeNgHelperService"];
+DirectiveFactory.$inject = ["$compile", "$sanitize", "odeRichContentService", "odeNgHelperService"];
