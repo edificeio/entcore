@@ -367,7 +367,7 @@ public class NewDeviceWarningTask implements Handler<Long>
             .put("displayName", user.displayName)
             .put("device", c.device.toString())
             .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
-            .put("ip", c.ip)
+            .put("ip", c.ip.indexOf("/") > -1 ? c.ip.substring(0, c.ip.indexOf("/")) : c.ip)
             .put("host", user.host);
 		sender.sendEmail(
             new JsonHttpServerRequest(new JsonObject().put("headers", new JsonObject().put("Accept-Language", user.language).put("X-ENT-Theme", user.theme))),
