@@ -128,8 +128,16 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
     
     if( Object.keys(updatedFields).length ) {
       this.spinner.perform('portal-content', this.svc.update(this.details.id, updatedFields))
-      .then(() => {
-          this.administrativeForm.reset(updatedFields);
+      .then( u => {
+          //this.administrativeForm.reset(updatedFields);
+          Object.assign( this.details, u);
+          Object.keys(this.administrativeForm.controls).forEach( ctlName => {
+            if( typeof u[ctlName] !== "undefined" ) {
+              const ctl = this.administrativeForm.controls[ctlName];
+              ctl.setValue( u[ctlName] );
+            }
+          });
+
           this.ns.success(
               {
                   key: 'notify.user.update.content',
