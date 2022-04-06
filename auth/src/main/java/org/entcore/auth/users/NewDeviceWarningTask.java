@@ -272,6 +272,7 @@ public class NewDeviceWarningTask implements Handler<Long>
     {
         String getKnownConnections = "SELECT e." + LOGIN_ID_FIELD + ", e." + PLATFORM_ID_FIELD + ", e." + USER_ID_FIELD + ", e." + USER_PROFILE_FIELD +
                                         ", e." + USER_ADMIN_FIELD + ", e." + USER_AGENT_FIELD + ", e." + IP_FIELD + "::varchar(64), e." + DATE_FIELD +
+                                        ", d.* " +
                                         " FROM " + DEVICE_CHECK_TABLE + " e" +
                                         " INNER JOIN " + DEVICES_INFO_TABLE + " d USING (" + USER_AGENT_FIELD + ")" +
                                         " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + USER_ID_FIELD + " = ANY($2)";
