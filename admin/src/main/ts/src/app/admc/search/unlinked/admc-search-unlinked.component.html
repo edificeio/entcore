@@ -15,7 +15,7 @@
             [searchInput]="true">
         <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
           <ode-search-toolbar
-            [label]="'user.searchType.label'"
+            label="user.searchType.label"
             [searchTypes]="searchTypes"
             [nbItem]="nbUsers"
             [nbItemLabel]="'list.results.users'"
@@ -30,6 +30,16 @@
           </div>
         </ng-template>
       </ode-list>
+      <div toolbar *ngIf="collectionRef.length>0 && !noMoreResults">
+        <button class="search-more is-display-flex has-space-around"
+                (click)="search()"
+                [disabled]="spinner.isLoading('portal-content')">
+          <div>
+            <i class="fa fa-search is-size-5"></i>
+            <s5l>search</s5l>
+          </div>
+        </button>
+      </div>
     </div>
 
     <div side-companion>

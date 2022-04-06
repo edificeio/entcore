@@ -8,6 +8,7 @@ import { Subscription } from "rxjs";
 
 @Component({
     selector: 'ode-admc-unlinked',
+    styleUrls: ['./admc-search-unlinked.component.scss'],
     templateUrl: './admc-search-unlinked.component.html'
 })
 export class AdmcSearchUnlinkedComponent extends OdeComponent implements OnInit {
@@ -16,13 +17,13 @@ export class AdmcSearchUnlinkedComponent extends OdeComponent implements OnInit 
     public collectionRef: Array<UnlinkedUser> = [];
     // search parameters
     public itemInputFilter:string;
-    private noMoreResults = false;
+    public noMoreResults = false;
     searchTypes: Array<{label: string, value: SearchTypeEnum}>;
     selectedSearchTypeValue: SearchTypeEnum;
 
     constructor(injector: Injector, 
         private svc:UnlinkedUserService, 
-        private spinner: SpinnerService
+        public spinner: SpinnerService
         ) {
         super(injector);
     }
