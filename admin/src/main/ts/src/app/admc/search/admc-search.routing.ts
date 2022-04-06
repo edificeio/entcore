@@ -23,7 +23,6 @@ export let routes: Routes = [{
     }, {
         path: 'unlinked',
         component: AdmcSearchUnlinkedComponent,
-        resolve: {config: ConfigResolver},
         children: [{
             path: ':userId', 
             resolve: {userDetails: UserDetailsResolver},
