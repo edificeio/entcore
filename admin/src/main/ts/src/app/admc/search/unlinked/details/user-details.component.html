@@ -113,7 +113,7 @@
     <div class="name-group"><s5l>users.details.section.administrative</s5l></div>
 
     <div class="buttons">
-      <button type="button" [class.edit]="editMode" (click)="onToggleEdit()">
+      <button type="button" *ngIf="!details.deleteDate" [class.edit]="editMode" (click)="onToggleEdit()">
         <i class='fa' [ngClass]="{'fa-edit':!editMode, 'fa-save':editMode}"></i>
       </button>
     </div>
