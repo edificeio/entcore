@@ -5,6 +5,7 @@ import { CsvDelegate, CsvFile, CsvController } from './csvViewer';
 import { TxtDelegate, TxtController, TxtFile } from './txtViewer';
 declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
+declare var ENABLE_GGB: boolean;
 
 
 interface FileViewerScope {
@@ -28,6 +29,7 @@ interface FileViewerScope {
 	canEditInScratch(): boolean;
 	openOnLool(): void;
 	openOnScratch(): void;
+	openOnGeogebra():void;
 	$parent: {
 		display: {
 			editedImage: any;
@@ -190,6 +192,10 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 
 			scope.openOnScratch = () => {
 				ENABLE_SCRATCH && window.open(`/scratch/open?ent_id=${scope.ngModel._id}`);
+			}
+
+			scope.openOnGeogebra = () => {
+				ENABLE_GGB && window.open(`/geogebra/${scope.ngModel._id}`);
 			}
 
 			scope.canEditInLool = () => {

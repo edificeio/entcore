@@ -8,12 +8,15 @@
 				<i18n>workspace.open</i18n>
 			</button>
             <button ng-disabled="!canBeOpenOnLool(selectedDocuments()[0])"
-					ng-if="selectedDocuments().length === 1 && ENABLE_LOOL && !(ENABLE_SCRATCH && canBeOpenOnScratch(selectedDocuments()[0]))"
+					ng-if="selectedDocuments().length === 1 && ENABLE_LOOL && !(ENABLE_SCRATCH && canBeOpenOnScratch(selectedDocuments()[0])) && !(ENABLE_GGB && canBeOpenOnGGB(selectedDocuments()[0]))"
                     workflow="lool.openFile" ng-click="openOnLool(selectedDocuments()[0])">
                 <i18n>workspace.external.open</i18n>
             </button>
 			<button ng-if="selectedDocuments().length === 1 && ENABLE_SCRATCH && canBeOpenOnScratch(selectedDocuments()[0])"
 					ng-click="openOnScratch(selectedDocuments()[0])">
+				<i18n>workspace.external.open</i18n>
+			</button>
+			<button ng-if="selectedDocuments().length === 1 && ENABLE_GGB && canBeOpenOnGGB(selectedDocuments()[0])" ng-click="openOnGGB(selectedDocuments()[0])">
 				<i18n>workspace.external.open</i18n>
 			</button>
 			<button ng-if="showOpenLocation()" ng-click="openLocation()" class="cell">

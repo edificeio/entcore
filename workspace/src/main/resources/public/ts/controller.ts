@@ -28,13 +28,16 @@ import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
 import { models, workspaceService, DocumentCursor, Document, DocumentCursorParams, CursorUpdate } from "./services";
 import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
 import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
+import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
 
 
 declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
-export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope {
+declare var ENABLE_GGB: boolean;
+export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope, GeogebraDelegateScope {
 	ENABLE_LOOL: boolean;
 	ENABLE_SCRATCH: boolean;
+	ENABLE_GGB: boolean;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
 	//new
@@ -157,8 +160,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	KeyboardDelegate($scope);
 	ENABLE_LOOL && LoolDelegate($scope, $route);
 	ENABLE_SCRATCH && ScratchDelegate($scope, $route);
+	ENABLE_GGB && GeogebraDelegate($scope, $route);
 	$scope.ENABLE_LOOL = ENABLE_LOOL;
 	$scope.ENABLE_SCRATCH = ENABLE_SCRATCH;
+	$scope.ENABLE_GGB = ENABLE_GGB;
 
 	/**
 	 * INIT
