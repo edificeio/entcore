@@ -58,8 +58,8 @@
       <div><img [src]="imgSrc" (load)="imgLoad()" /></div>
     </div>
 
-    <div class="right" *ngIf="!details.deleteDate">
-      <div *ngIf="isRemovable() && isActive()">
+    <div class="right" *ngIf="isRemovable()">
+      <div *ngIf="isActive()">
         <button (click)="removeUser()"
                 [disabled]="spinner.isLoading('portal-content')">
           <i class="fa fa-times-circle"></i>
@@ -67,7 +67,7 @@
         </button>
       </div>
 
-      <div *ngIf="isRemovable() && !isActive()">
+      <div *ngIf="!isActive()">
         <button (click)="showRemoveUserConfirmation = true"
                 [disabled]="spinner.isLoading('portal-content')">
           <i class="fa fa-times-circle"></i>
@@ -85,7 +85,7 @@
         </ode-lightbox-confirm>
       </div>
     </div>
-    <div class="right" *ngIf="details?.deleteDate">
+    <div class="right" *ngIf="!isRemovable()">
       <button (click)="restoreUser()"
               [disabled]="spinner.isLoading('portal-content')">
         <i class="fa fa-times-circle"></i>

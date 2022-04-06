@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit, ViewChild, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit, ViewChild, Input, Output, EventEmitter } from "@angular/core";
 import { Data, NavigationEnd } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
@@ -17,6 +17,8 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
   @ViewChild('administrativeForm', { static: false }) administrativeForm: NgForm;
   @ViewChild('firstNameInput', { static: false })     firstNameInput: AbstractControl;
   @ViewChild('lastNameInput', { static: false })      lastNameInput: AbstractControl;
+
+  @Output() ondelete: EventEmitter<UnlinkedUserDetails> = new EventEmitter<UnlinkedUserDetails>();
 
   public config: Config;
 
@@ -90,9 +92,13 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
     this.spinner
       .perform("portal-content", this.svc.delete(this.details))
       .then(() => {
-        this.details.deleteDate = Date.now();
-        this.changeDetector.markForCheck();
-
+        if( this.isActive() ) {
+          // User is now pre-deleted
+          this.details.deleteDate = Date.now();
+        } else {
+          // Notify deletion
+          this.ondelete.emit( this.details );
+        }
         this.ns.success(
           { key: msgRoot+".content", parameters:parameters },
           { key: msgRoot+".title", parameters:parameters }
@@ -104,6 +110,10 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
           { key: msgRoot+".error.title", parameters:parameters },
           err
         );
+      })
+      .finally( () => {
+        this.showRemoveUserConfirmation = false;
+        this.changeDetector.markForCheck();
       });
   }
 

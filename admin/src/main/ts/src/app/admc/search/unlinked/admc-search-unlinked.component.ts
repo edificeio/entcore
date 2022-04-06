@@ -3,6 +3,8 @@ import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
 import { ListSearchParameters, UnlinkedUser, UnlinkedUserService } from "./unlinked.service";
 import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
+import { UnlinkedUserDetailsComponent } from "./details/user-details.component";
+import { Subscription } from "rxjs";
 
 @Component({
     selector: 'ode-admc-unlinked',
@@ -10,6 +12,7 @@ import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
 })
 export class AdmcSearchUnlinkedComponent extends OdeComponent implements OnInit {
     @Input() selectedItem: UnlinkedUser;
+    private ondeleteUserSubscription?:Subscription;
     public collectionRef: Array<UnlinkedUser> = [];
     // search parameters
     public itemInputFilter:string;
@@ -37,6 +40,31 @@ export class AdmcSearchUnlinkedComponent extends OdeComponent implements OnInit 
             }
         ];
         this.selectedSearchTypeValue = SearchTypeEnum.DISPLAY_NAME;
+    }
+
+    /** Called when the angular router displays the details of the selected user. */
+    onUserDetailsAttached(e) {
+        if (e && e instanceof UnlinkedUserDetailsComponent) {
+            const detailsComponent = e as UnlinkedUserDetailsComponent;
+            this.ondeleteUserSubscription = detailsComponent.ondelete.asObservable().subscribe({
+                next: (e)=> { 
+                    const idx = this.collectionRef.findIndex( u => u.id===this.selectedItem.id );
+                    if( idx >= 0 ) {
+                        this.collectionRef.splice( idx, 1 );
+                        this.collectionRef = [].concat(this.collectionRef); // Only way for updating the list ?!
+                        this.selectedItem = null;
+                        this.router.navigate(['.'], {relativeTo: this.route});
+                    }
+                }
+            });
+        }
+    }
+    /** Called when angular hides the details of the selected user. */
+    onUserDetailsDetached(e) {
+        if( this.ondeleteUserSubscription ) {
+            this.ondeleteUserSubscription.unsubscribe();
+            delete this.ondeleteUserSubscription;
+        }
     }
 
     onSearchTermChanged(value:string) {

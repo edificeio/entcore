@@ -34,7 +34,10 @@
 
     <div side-companion>
       <div class="panel-section">
-        <router-outlet></router-outlet>
+        <router-outlet
+          (activate)="onUserDetailsAttached($event)"
+          (deactivate)="onUserDetailsDetached($event)"
+        ></router-outlet>
       </div>
     </div>
 
