@@ -346,7 +346,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					// --- TAG Assertion ---
 					Assertion assertion = null;
 					try {
-						assertion = generateAssertion(entngIdpNameQualifier, serviceProvider, nameId,
+						assertion = generateAssertion(authNRequestId, entngIdpNameQualifier, serviceProvider, nameId,
 								assertionConsumerService.getLocation(), userId);
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
@@ -518,12 +518,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	/**
 	 * Build the java assertion
 	 *
-	 * @param idp             identity provider name qualifier
-	 * @param serviceProvider service provider name qualifier
-	 * @param nameId          nameId value
-	 * @param recipient       recipient of the assertion (SP Assertion Consumer
-	 *                        Service)
-	 * @param userId          user id neo4j
+	 * @param authNRequestId	AuthNRequest provided for InResponseTo
+	 * @param idp             	identity provider name qualifier
+	 * @param serviceProvider 	service provider name qualifier
+	 * @param nameId          	nameId value
+	 * @param recipient       	recipient of the assertion (SP Assertion Consumer
+	 *                        	Service)
+	 * @param userId          	user id neo4j
 	 * @return the java assertion
 	 *
 	 * @throws UnsupportedEncodingException
@@ -531,7 +532,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws InvalidKeyException
 	 * @throws SignatureException
 	 */
-	private Assertion generateAssertion(String idp, String serviceProvider, String nameId, String recipient,
+	private Assertion generateAssertion(String authNRequestId, String idp, String serviceProvider, String nameId, String recipient,
 			String userId)
 			throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		debug("start generating assertion");
@@ -558,7 +559,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		assertion.setIssuer(issuer);
 
 		// --- TAG Subject ---
-		Subject subject = createSubject(nameId, 5, idp, serviceProvider, recipient);
+		Subject subject = createSubject(authNRequestId, nameId, 5, idp, serviceProvider, recipient);
 		assertion.setSubject(subject);
 
 		// --- TAG Conditions ---
@@ -745,7 +746,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		return issuer;
 	}
 
-	private Subject createSubject(String nameIdValue, Integer samlAssertionDays, String idpNameQualifier,
+	private Subject createSubject(String authNRequestId, String nameIdValue, Integer samlAssertionDays, String idpNameQualifier,
 			String spNameQualifier, String recipient) {
 		debug("createSubject for nameid : " + nameIdValue);
 		debug("idpNameQualifier : " + idpNameQualifier);
@@ -767,6 +768,10 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		SubjectConfirmationData subjectConfirmationData = dataBuilder.buildObject();
 		subjectConfirmationData.setNotOnOrAfter(currentDate);
 		subjectConfirmationData.setRecipient(recipient);
+
+		if (authNRequestId != null && !authNRequestId.isEmpty()) {
+			subjectConfirmationData.setInResponseTo(authNRequestId);
+		}
 
 		SubjectConfirmationBuilder subjectConfirmationBuilder = new SubjectConfirmationBuilder();
 		SubjectConfirmation subjectConfirmation = subjectConfirmationBuilder.buildObject();
