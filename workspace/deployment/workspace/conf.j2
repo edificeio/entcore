@@ -22,6 +22,7 @@
 		{% if scratchUrl is defined %} "enable-scratch": true, {% endif %}
         {% if loolVersion is defined %}"enable-lool": true,{% endif %}
         {% if geogebraVersion is defined %}"enable-geogebra": true,{% endif %}
+        {% if nextcloudVersion is defined %}"enable-nextcloud": true,{% endif %}
         "publicConf": {
             "lazy-mode": {{ workspaceLazyMode|default('true') }},
             "ttl-documents":{{ workspaceTtlDoc|default('180') }},
