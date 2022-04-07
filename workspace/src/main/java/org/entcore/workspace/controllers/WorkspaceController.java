@@ -1707,6 +1707,7 @@ public class WorkspaceController extends BaseController {
 		context.put("enableLool", config.getBoolean("enable-lool", false));
 		context.put("enableScratch", config.getBoolean("enable-scratch", false));
 		context.put("enableGeogebra", config.getBoolean("enable-geogebra", false));
+		context.put("enableNextcloud", config.getBoolean("enable-nextcloud", false));
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
