@@ -1706,6 +1706,7 @@ public class WorkspaceController extends BaseController {
 		final JsonObject context = new JsonObject();
 		context.put("enableLool", config.getBoolean("enable-lool", false));
 		context.put("enableScratch", config.getBoolean("enable-scratch", false));
+		context.put("enableNextcloud", config.getBoolean("enable-nextcloud", false));
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
