@@ -140,7 +140,7 @@
         <ode-form-field label="birthDate">
           <ode-date-picker [(ngModel)]="details.birthDate" name="birthDate"
                       #birthDateInput="ngModel" minDate="1900-01-01" maxDate="today"
-                      [disabled]="!!details.deleteDate && !editMode">
+                      [readonly]="!!details.deleteDate || !editMode">
           </ode-date-picker>
           <ode-form-errors [control]="birthDateInput"></ode-form-errors>
         </ode-form-field>
