@@ -153,7 +153,7 @@ public class RedisClient {
                                 jsons.add(json);
                             }else if(autoClean){
                                 //DELETE IF ENTRY HAS BEEN ACKED (nil)
-                                this.xDel(name, id);
+                                this.xAck(name, group, id);
                             }
                         }
                     }
