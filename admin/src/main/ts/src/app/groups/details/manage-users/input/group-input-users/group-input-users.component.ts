@@ -40,7 +40,7 @@ export class GroupInputUsersComponent
   public excludeDeletedUsers: DeleteFilter;
 
   nbUser: number;
-  searchTerm: string;
+  searchTerm: string = "";
   // list elements stored by store pipe in list component
   // (takes filters in consideration)
   storedElements: UserModel[] = [];
@@ -127,6 +127,7 @@ export class GroupInputUsersComponent
   }
 
   search = (): void => {
+    this.userListService.inputFilter = this.searchTerm;
     this.spinner.perform(
       "portal-content",
       this.usersService.search(this.userListService.inputFilter).then(data => {
@@ -137,4 +138,14 @@ export class GroupInputUsersComponent
       })
     );
   };
+
+  onInputChange( searchTerm:string ) {
+    searchTerm = searchTerm.trim() || "";
+    // Apply filters on-the-fly, but only if there is no submit button (<=>searchInput mode is not active)
+    if( !this.searchInput ) {
+      this.userListService.inputFilter = searchTerm;
+    } else {
+      this.searchTerm = searchTerm;
+    }
+  }
 }
