@@ -9,6 +9,7 @@ import {
   OnDestroy,
   OnChanges,
   OnInit,
+  ViewChild
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
 import { StructureModel } from "../../core/store/models/structure.model";
@@ -31,6 +32,7 @@ export class StructureAttachmentComponent
 
   @Output() selectStructures: EventEmitter<StructureModel[]> =
     new EventEmitter();
+  @Output() inputChange: EventEmitter<string> = new EventEmitter<string>();
 
   searchTerm: string;
   currentId: string;
@@ -78,6 +80,7 @@ export class StructureAttachmentComponent
         item => item.id !== structure.id
       );
     }
+    
     this.selectStructures.emit(this.selectedStructure);
   }
 
@@ -114,12 +117,12 @@ export class StructureAttachmentComponent
             0)
       );
     });
-
     this.changeDetector.markForCheck();
   };
 
   cancelAttach() {
     this.selectedStructure = [];
+    this.init();
     this.closeLightBox();
   }
 
@@ -135,6 +138,7 @@ export class StructureAttachmentComponent
               "management.structure.informations.attach.parent.success.content",
               "management.structure.informations.attach.parent.success.title"
             );
+            this.init();
             this.changeDetector.detectChanges();
             this.changeDetector.markForCheck();
           },
@@ -145,6 +149,9 @@ export class StructureAttachmentComponent
               error.statusText,
               "error"
             );
+            this.init();
+            this.changeDetector.detectChanges();
+            this.changeDetector.markForCheck();
           },
         });
       }
@@ -175,6 +182,9 @@ export class StructureAttachmentComponent
           error.statusText,
           "error"
         );
+        this.init();
+        this.changeDetector.detectChanges();
+        this.changeDetector.markForCheck();
       },
     });
   };
