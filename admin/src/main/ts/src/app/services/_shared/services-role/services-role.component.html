@@ -20,7 +20,7 @@
               [ngClass]="{'mandatory': group.mandatory, 'notmandatory': !group.mandatory}"
               aria-hidden="true"
               (click)="mandatoryToggle.emit(group)"
-              [title]="'services.widget.mandatory.icon.title' | translate"
+              title="{{ 'services.widget.mandatory.icon.title' | translate }}"
             >
             </i>
             <i *ngIf="!disabled"

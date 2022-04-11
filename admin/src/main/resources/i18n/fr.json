@@ -1070,6 +1070,7 @@
   "services.widget.search": "Rechercher un widget",
   "services.widget.list.empty": "Aucun widget",
   "services.widget.roles.access": "Accès au paramétrage du widget",
+  "services.widget.mandatory.icon.title": "Épingler le widget et le rendre obligatoire sur la page d'accueil",
 
   "services.widget.myapps.message.info": "Les applications ajoutées ici sont ajoutées comme application favorites pour les nouveaux comptes de l’établissement.",
   "services.widget.myapps.parameters.apps": "Liste des applications choisies par l’établissement",
