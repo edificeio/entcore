@@ -11,14 +11,14 @@
     [inputFilter]="userListService.filterByInput"
     [sort]="userListService.sorts"
     [isSelected]="isSelected"
-    (inputChange)="userListService.inputFilter = $event"
+    (inputChange)="onInputChange($event)"
     (onSelect)="selectUser($event)"
     (listChange)="storedElements = $event"
     [searchInput]="searchInput"
     [searchSubmit]="searchInput && search"
     searchPlaceholder="search.user"
     noResultsLabel="list.results.no.users"
-    [isSearchButtonDisabled]="userListService.inputFilter?.trim().length<3"
+    [isSearchButtonDisabled]="searchTerm.length<3"
   >
     <div toolbar class="user-toolbar">
       <div>
