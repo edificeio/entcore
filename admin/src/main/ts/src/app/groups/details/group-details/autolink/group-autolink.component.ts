@@ -93,12 +93,14 @@ export class GroupAutolinkComponent extends OdeComponent {
 
             if (this.group.autolinkUsersFromGroups.includes('HeadTeacher')) {
                 this.form.teacherSubSectionRadio = 'HeadTeacher';
+                this.form.profile = 'Teacher';
             }
 
             this.disciplineOptions.forEach(d => {
                 if (this.group.autolinkUsersFromGroups.includes(d)) {
                     this.form.teacherSubSectionRadio = 'disciplines';
                     this.form.selectedDisciplines.push(d);
+                    this.form.profile = 'Teacher';
                 }
             });
 
@@ -106,6 +108,7 @@ export class GroupAutolinkComponent extends OdeComponent {
                 if (this.group.autolinkUsersFromGroups.includes(f)) {
                     this.form.personnelSubSectionCheckbox = true;
                     this.form.selectedFunctions.push(f);
+                    this.form.profile = 'Personnel';
                 }
             });
         }
