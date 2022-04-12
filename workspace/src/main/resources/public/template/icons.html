@@ -86,12 +86,10 @@
 							<img lazy-load-img="getImageUrl(document)" alt="thumbnail" />
 						</div>
 					</div>
-					<div ng-switch-when="video" class="twelve cell video"
-							ng-style="{'background-image': videoThumbUrl(document)}">
-						<svg class="icon-video" width="48" height="48"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg>
+					<div ng-switch-when="video" class="twelve cell video" ng-style="{'background-image': videoThumbUrl(document)}">
+						<i><svg class="icon-video" width="40" height="40"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg></i>
 					</div>
-					<i ng-switch-default class="[[document.role()]]-large">
-					</i>
+					<i ng-switch-default class="[[document.role()]]-large"></i>
 				</a>
 
 				<i ng-if="document.isShared && isSearchResult()" class="shared inline"></i>
