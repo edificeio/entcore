@@ -1476,5 +1476,7 @@
 
   "user.searchType.label": "Rechercher par :",
   "user.searchType.name": "Nom",
-  "user.searchType.email": "Mail"
+  "user.searchType.email": "Mail",
+
+  "show.more.results": "Afficher plus de résultats"
 }
