@@ -47,6 +47,7 @@ export class UserListComponent extends OdeComponent implements OnInit, OnDestroy
     ngAfterViewChecked() {
         // called to update list nbUser after filters update
         this.changeDetector.markForCheck();
+        this.changeDetector.detectChanges();
     }
 
     isSelected = (user: UserModel): boolean => {
