@@ -291,7 +291,9 @@ public class AuthController extends BaseController {
 
 					private void oauthTokenHandle(Response response) {
 						if (response.getCode() == 200 && ("password".equals(req.getParameter("grant_type")) ||
-								"refresh_token".equals(req.getParameter("grant_type")))) {
+								"refresh_token".equals(req.getParameter("grant_type")) ||
+								"saml2".equals(req.getParameter("grant_type")) ||
+								"custom_token".equals(req.getParameter("grant_type")))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
 							if ("password".equals(req.getParameter("grant_type"))) {
 								String login = req.getParameter("username");
@@ -309,21 +311,47 @@ public class AuthController extends BaseController {
 								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
 									if (authInfo != null) {
 										String id = authInfo.getUserId();
-										eventStore.createAndStoreEventByUserId(
-											AuthEvent.LOGIN.name(), id, clientCredential.getClientId(), request);
-										userAuthAccount.storeDomain(id, getHost(request), getScheme(request), new io.vertx.core.Handler<Boolean>() {
-											@Override
-											public void handle(Boolean event) {
-												if (Boolean.FALSE.equals(event)) {
-													log.error("[OAUTH] Error while storing last known domain for user " + id);
-												}
-											}
-										});
+										storeLoginEventAndDomain(request, clientCredential, id);
+									}
+								});
+							} else if ("saml2".equals(req.getParameter("grant_type"))) {
+								final DataHandler data = oauthDataFactory.create(req);
+								data.getUserIdByAssertion(req.getParameter("assertion"), userId -> {
+									if (userId != null) {
+										try {
+											storeLoginEventAndDomain(request, clientCredential, userId.get());
+										} catch (Throwable e) {
+											log.error("Error when try get user id from assertion in oauth2 token endpoint", e);
+										}
+									}
+								});
+							} else if ("custom_token".equals(req.getParameter("grant_type"))) {
+								final DataHandler data = oauthDataFactory.create(req);
+								data.getUserIdByCustomToken(req.getParameter("custom_token"), userId -> {
+									if (userId != null) {
+										try {
+											storeLoginEventAndDomain(request, clientCredential, userId.get());
+										} catch (Throwable e) {
+											log.error("Error when try get user id from custom_token in oauth2 token endpoint", e);
+										}
 									}
 								});
 							}
 						}
 						renderJson(request, new JsonObject(response.getBody()), response.getCode());
+					}
+
+					private void storeLoginEventAndDomain(final HttpServerRequest request, final ClientCredential clientCredential,
+							String id) {
+						eventStore.createAndStoreEventByUserId(AuthEvent.LOGIN.name(), id, clientCredential.getClientId(), request);
+						userAuthAccount.storeDomain(id, getHost(request), getScheme(request), new io.vertx.core.Handler<Boolean>() {
+							@Override
+							public void handle(Boolean event) {
+								if (Boolean.FALSE.equals(event)) {
+									log.error("[OAUTH] Error while storing last known domain for user " + id);
+								}
+							}
+						});
 					}
 				});
 			}
