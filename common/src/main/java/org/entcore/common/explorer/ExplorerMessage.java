@@ -279,7 +279,9 @@ public class ExplorerMessage {
     public String getResourceUniqueId() {
         return getId()+":"+getApplication()+":"+getResourceType();
     }
-
+    public JsonArray getSubresources() {
+        return this.message.getJsonArray("subresources", new JsonArray());
+    }
     public void setIdQueue(String idQueue) {
         this.idQueue = idQueue;
     }
