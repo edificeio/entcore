@@ -138,20 +138,27 @@ public class ElasticBulkBuilder {
         actions.add("update");
     }
 
-    public void script(final JsonObject document) {
-        script(document, Optional.empty(), Optional.empty(), Optional.empty());
+    public void script(final String source, final JsonObject params) {
+        script(source, params, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
-    public void script(final JsonObject document, final String id) {
-        script(document, Optional.ofNullable(id), Optional.empty(), Optional.empty());
+    public void script(final String source, final JsonObject params, final String id) {
+        script(source, params, Optional.ofNullable(id), Optional.empty(), Optional.empty());
     }
 
-    public void script(final JsonObject document, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
+    public void script(final String source, final JsonObject params, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
+        final JsonObject script = new JsonObject();
+        script.put("lang", "painless").put("params", params).put("source", source);
+        final JsonObject root = new JsonObject().put("script", script).put("scripted_upsert", true);
+        script(root,id, index, routing);
+    }
+
+    public void script(final JsonObject script, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
         if (id.isPresent()) {
             metadata.put("_id", id.get());
-        } else if (document.containsKey("_id")) {
-            metadata.put("_id", document.getString("_id"));
+        } else if (script.containsKey("_id")) {
+            metadata.put("_id", script.getString("_id"));
         }
         if (index.isPresent()) {
             metadata.put("_index", index.get());
@@ -159,8 +166,8 @@ public class ElasticBulkBuilder {
         if (routing.isPresent()) {
             metadata.put("routing", routing.get());
         }
-        document.remove("_id");
-        doWrite(Optional.of(document), metadata, "update");
+        script.remove("_id");
+        doWrite(Optional.of(script), metadata, "update");
         actions.add("update");
     }
 
