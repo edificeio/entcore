@@ -89,7 +89,7 @@ public class NewDeviceWarningTask implements Handler<Long>
 
     private static final int SCORE_LOW = 1;
     private static final int SCORE_MID = 2;
-    private static final int SCORE_HIGH = 3;
+    private static final int SCORE_HIGH = 4;
     private static final int SCORE_MAX = 100;
 
     private static final AtomicBoolean locked = new AtomicBoolean(false);
@@ -441,20 +441,20 @@ public class NewDeviceWarningTask implements Handler<Long>
         String deviceBrand;
         String deviceModel;
         String osName;
-        String osFammily;
+        String osFamily;
         String osPlatform;
         String osVersion;
         String clientType;
         String clientName;
         String clientVersion;
 
-        public Device(String deviceType, String deviceBrand, String deviceModel, String osName, String osFammily, String osPlatform, String osVersion, String clientType, String clientName, String clientVersion)
+        public Device(String deviceType, String deviceBrand, String deviceModel, String osName, String osFamily, String osPlatform, String osVersion, String clientType, String clientName, String clientVersion)
         {
             this.deviceType = deviceType;
             this.deviceBrand = deviceBrand;
             this.deviceModel = deviceModel;
             this.osName = osName;
-            this.osFammily = osFammily;
+            this.osFamily = osFamily;
             this.osPlatform = osPlatform;
             this.osVersion = osVersion;
             this.clientType = clientType;
@@ -483,15 +483,15 @@ public class NewDeviceWarningTask implements Handler<Long>
                 return -1;
 
             int score = 0;
+            score += (this._cmp(this.deviceType, o.deviceType)) ? 0 : SCORE_HIGH;
             score += (this._cmp(this.deviceBrand, o.deviceBrand)) ? 0 : SCORE_HIGH;
             score += (this._cmp(this.deviceModel, o.deviceModel)) ? 0 : SCORE_HIGH;
             score += (this._cmp(this.osName, o.osName)) ? 0 : SCORE_HIGH;
-            score += (this._cmp(this.osFammily, o.osFammily)) ? 0 : SCORE_HIGH;
+            score += (this._cmp(this.osFamily, o.osFamily)) ? 0 : SCORE_HIGH;
             score += (this._cmp(this.osPlatform, o.osPlatform)) ? 0 : SCORE_HIGH;
-            score += (this._cmp(this.osVersion, o.osVersion)) ? 0 : SCORE_HIGH;
+            score += (this._cmp(this.osVersion, o.osVersion)) ? 0 : SCORE_LOW;
             score += (this._cmp(this.clientType, o.clientType)) ? 0 : SCORE_HIGH;
-            score += (this._cmp(this.clientName, o.clientName)) ? 0 : SCORE_HIGH;
-
+            score += (this._cmp(this.clientName, o.clientName)) ? 0 : SCORE_LOW;
             score += (this._cmp(this.clientVersion, o.clientVersion)) ? 0 : SCORE_LOW;
 
             return score;
@@ -510,7 +510,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                 this._hash(deviceBrand) *
                 this._hash(deviceModel) *
                 this._hash(osName) *
-                this._hash(osFammily) *
+                this._hash(osFamily) *
                 this._hash(osPlatform) *
                 this._hash(osVersion) *
                 this._hash(clientType) *
@@ -556,7 +556,7 @@ public class NewDeviceWarningTask implements Handler<Long>
         {
             int score = this.device.compare(c.device);
 
-            score += this.ip == null ? c.ip == null ? 0 : SCORE_MID : this.ip.equals(c.ip) ? 0 : SCORE_MID;
+            score += this.ip == null ? c.ip == null ? 0 : SCORE_LOW : this.ip.equals(c.ip) ? 0 : SCORE_LOW;
 
             return score;
         }
