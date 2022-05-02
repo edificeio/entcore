@@ -25,19 +25,17 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class CleanImportProcessing extends BaseImportProcessing {
+public class CleanImportProcessingGlobal extends BaseImportProcessing {
 
 
-	protected CleanImportProcessing(String path, Vertx vertx) {
+	protected CleanImportProcessingGlobal(String path, Vertx vertx) {
 		super(path, vertx);
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
 		initAcademyPrefix(path);
-		importer.applyRemoveUsersFromStructure(getAcademyPrefix(), e -> {
-			parse(handler, new CleanImportProcessingGlobal(path, vertx));
-		});
+		parse(handler, null);
 	}
 
 	@Override
@@ -47,14 +45,17 @@ public class CleanImportProcessing extends BaseImportProcessing {
 
 	@Override
 	protected void preCommit() {
-		log.info(e-> "clean import process", true);
+		log.info(e-> "clean import process global", true);
 		final JsonArray importPrefixList = importer.getPrefixToImportList();
-		if (importPrefixList != null && !importPrefixList.isEmpty() && getAcademyPrefix() != null && !getAcademyPrefix().isEmpty()) {
-			importPrefixList.remove(getAcademyPrefix().substring(0, getAcademyPrefix().length() - 1));
-		}
 
-		importer.addStructureNameInGroups(getAcademyPrefix());
-		importer.removeOldCommunicationRules(getAcademyPrefix());
+		if (importPrefixList == null || importPrefixList.isEmpty()) {
+			log.info(e-> "Global method calls in clean import process", true);
+			importer.removeOldFunctionalGroup();
+			importer.removeEmptyClasses();
+			importer.restorePreDeletedUsers();
+			importer.countUsersInGroups();
+			importer.deleteOldProfileAttachments();
+		}
 	}
 
 	@Override
