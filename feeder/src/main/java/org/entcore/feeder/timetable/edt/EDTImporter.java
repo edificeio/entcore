@@ -290,11 +290,17 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	public void addProfesseur(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		final String idPronote = structureExternalId + "$" + currentEntity.getString(IDPN);
+		final String firstName = currentEntity.getString("Prenom");
+		final String lastName = currentEntity.getString("Nom");
 		userImportedPronoteId.add(idPronote);
-		final String[] teacherId = teachersMapping.get(idPronote);
 
-		TimetableReport.Teacher teacher = new TimetableReport.Teacher(
-			currentEntity.getString("Prenom"), currentEntity.getString("Nom"), currentEntity.getString("DateNaissance"));
+		String[] teacherId = teachersMapping.get(idPronote);
+		if (teacherId == null) {
+			teacherId = teachersCleanNameMapping.get(Validator.sanitize(firstName + lastName));
+			findPersEducNat(currentEntity, idPronote, "Teacher");
+		}
+
+		TimetableReport.Teacher teacher = new TimetableReport.Teacher(firstName, lastName, currentEntity.getString("DateNaissance"));
 
 		if (teacherId != null && isNotEmpty(teacherId[0])) {
 			teachers.put(id, teacherId[0]);
@@ -315,7 +321,6 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			}
 		} else {
 			idpnIdent.put(idPronote, id);
-			findPersEducNat(currentEntity, idPronote, "Teacher");
 			ttReport.addUnknownTeacher(teacher);
 		}
 		teachersById.put(id, teacher);
