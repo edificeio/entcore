@@ -34,7 +34,7 @@ import io.vertx.core.json.JsonObject;
 public class MockSSOProvider extends SSOEduConnect {
 
     public MockSSOProvider(boolean noPrefix) {
-        super(noPrefix);
+        super(noPrefix, false);
     }
 
     @Override

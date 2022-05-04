@@ -312,8 +312,21 @@ public class FolderTest {
                                     final JsonArray res = res6.right().getValue();
                                     System.out.println(res.encodePrettily());
                                     context.assertEquals(2, res.size());
-                                    context.assertEquals(2, res.getJsonObject(0).getInteger("nbUnread"));
-                                    context.assertEquals(0, res.getJsonObject(1).getInteger("nbUnread"));
+
+                                    JsonObject folder11 = res.stream()
+                                        .map(JsonObject.class::cast)
+                                        .filter(f -> "folder11".equals(f.getString("name")))
+                                        .findFirst()
+                                        .orElse(null);
+                                    context.assertEquals(2, folder11.getInteger("nbUnread"));
+
+                                    JsonObject folder12 = res.stream()
+                                            .map(JsonObject.class::cast)
+                                            .filter(f -> "folder12".equals(f.getString("name")))
+                                            .findFirst()
+                                            .orElse(null);
+                                    context.assertEquals(0, folder12.getInteger("nbUnread"));
+
                                     async.complete();
                                 });
                             });

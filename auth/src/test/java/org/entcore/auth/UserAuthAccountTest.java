@@ -220,15 +220,16 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldResetPassword(TestContext context) {
         final Async async = context.async();
-        test.directory().createActiveUser("user12", "activationCode12", "user12@test.com").compose(resAcUser -> {
-            return test.directory().resetUser(resAcUser, "resetCode12");
-        }).setHandler(resAcUser -> {
-            context.assertTrue(resAcUser.succeeded());
-            authAccount.resetPassword("user12", "resetCode12", "password12", null, resActiv -> {
-                context.assertTrue(resActiv);
-                async.complete();
-            });
-        });
+        test.directory()
+                .createActiveUser("user12", "activationCode12", "user12@test.com")
+                .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode12"))
+                .onComplete(resAcUser -> {
+                    context.assertTrue(resAcUser.succeeded());
+                    authAccount.resetPassword("user12", "resetCode12", "password12", null, resActiv -> {
+                        context.assertTrue(resActiv);
+                        async.complete();
+                    });
+                });
     }
 
     @Test

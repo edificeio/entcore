@@ -44,7 +44,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class HostTest {
 
-    private static final String HOST = "test.entcore.org";
+    private static final String HOST = "entcore.org";
     private static final String HEADER_INJECTION_HOST = "attack.com";
     private static final HttpServerRequest ATTACK_HTTP_REQUEST = new JsonHttpServerRequest(new JsonObject()
             .put("headers", new JsonObject().put("Host", HEADER_INJECTION_HOST)));
@@ -56,7 +56,7 @@ public class HostTest {
 	public void setUp(TestContext context) {
         vertx = Vertx.vertx();
         vertx.sharedData().getLocalMap("skins").put(HOST, "test");
-        vertx.sharedData().getLocalMap("server").put("emailConfig", "{\"email\":\"ne-pas-repondre@entcore.org\", \"host\":\"https://test.entcore.org\", " +
+        vertx.sharedData().getLocalMap("server").put("emailConfig", "{\"email\":\"ne-pas-repondre@entcore.org\", \"host\":\"https://entcore.org\", " +
             "\"type\":\"GoMail\", \"user\": \"test\", \"password\": \"test\", \"uri\" : \"http://localhost:3080\", \"platform\": \"test\"}");
         final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 		Renders.getAllowedHosts().addAll(skins.keySet());

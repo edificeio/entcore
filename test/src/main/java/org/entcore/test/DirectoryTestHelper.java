@@ -19,6 +19,7 @@ import java.util.*;
 public class DirectoryTestHelper {
     private final Vertx vertx;
     private final TestHelper test;
+    private static final long RESET_CODE_EXPIRE_DELAY = 3600000l;
 
     DirectoryTestHelper(TestHelper t, Vertx v) {
         this.vertx = v;
@@ -287,18 +288,22 @@ public class DirectoryTestHelper {
         return async;
     }
 
-    public Future<Void> resetUser(String id, String resetCode) {
-        final Future<Void> async = Future.future();
-        final String query = "MATCH (u:User {id : {id}}) SET u.resetCode={resetCode} RETURN u";
-        final JsonObject params = new JsonObject().put("id", id).put("resetCode", resetCode);
+    public Future<JsonObject> resetUser(String id, String resetCode) {
+        final Promise<JsonObject> async = Promise.promise();
+        final String query = "MATCH (u:User {id : {id}}) SET u.resetCode={resetCode}, u.resetDate={resetDate} RETURN u";
+        final JsonObject params = new JsonObject()
+                .put("id", id)
+                .put("resetCode", resetCode)
+                .put("resetDate", (System.currentTimeMillis()));
         Neo4j.getInstance().execute(query, params, message -> {
             if ("ok".equals(message.body().getString("status"))) {
-                async.complete();
+                final JsonArray r = message.body().getJsonArray("result");
+                async.complete(r.getJsonObject(0).getJsonObject("u").getJsonObject("data"));
             } else {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     public Future<Boolean> groupHasRole(String groupId, String roleId) {

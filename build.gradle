@@ -79,6 +79,10 @@ subprojects {
 
   test {
     classpath += configurations.compileOnly
+
+    exclude 'org/entcore/infra/**'
+    exclude 'org/entcore/workspace/**'
+
     testLogging {
       // set options for log level LIFECYCLE
       events TestLogEvent.FAILED,
