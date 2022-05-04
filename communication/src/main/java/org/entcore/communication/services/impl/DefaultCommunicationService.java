@@ -386,9 +386,9 @@ public class DefaultCommunicationService implements CommunicationService {
 			if (!structures.isEmpty()) {
 				query2 +=
 						"WITH DISTINCT s, cg " +
-						"MATCH s<-[:DEPENDS]-(sg:ProfileGroup) " +
-						"WHERE sg.name =~ {structureProfile} " +
-						"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + sg.id ";
+						"MATCH s<-[:DEPENDS]-(g) " +
+						"WHERE (" + groupLabel + ") AND g.name =~ {structureProfile} " +
+						"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			}
 			JsonObject p = params.copy();
 			p.put("otherProfile", "^.*?(" + Joiner.on("|").join(classes) + ")$");
