@@ -33,7 +33,7 @@ public class ImporterTest {
         final String path = getClass().getResource("/aaf").getFile();
         final AafFeeder feeder = new AafFeeder(test.vertx(), path);
         final Importer importer = Importer.getInstance();
-        importer.init(Neo4j.getInstance(), "aaf", "fr", false, resInit -> {
+        importer.init(Neo4j.getInstance(), "aaf", "fr", false, false, resInit -> {
             context.assertEquals("ok", resInit.body().getString("status"));
             try {
                 feeder.launch(importer, res -> {
