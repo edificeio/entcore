@@ -11,12 +11,7 @@ pipeline {
       }
       stage('Test') {
         steps {
-          script {
-            try {
-              sh './build.sh test'
-            } catch (err) {
-            }
-          }
+          sh './build.sh test'
         }
       }
       stage('Publish') {
