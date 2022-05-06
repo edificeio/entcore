@@ -1,8 +1,10 @@
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
+import { Session } from 'src/app/core/store/mappings/session';
 import { GroupModel } from 'src/app/core/store/models/group.model';
 import { RoleModel } from 'src/app/core/store/models/role.model';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { routing } from '../../../../core/services/routing.service';
 import { ServicesStore } from '../../../services.store';
@@ -60,11 +62,16 @@ export class SmartApplicationComponent extends OdeComponent implements OnInit, O
 
     public onMassAssignment(): void {
         this.servicesStore.application.syncRoles(this.servicesStore.structure.id)
-            .then(() =>
-                this.servicesStore.application.roles = filterRolesByDistributions(
-                    this.servicesStore.application.roles.filter(r => r.transverse == false),
-                    this.servicesStore.structure.distributions)
-            );
+            .then(async () => {
+                let roles: Array<RoleModel> = this.servicesStore.application.roles.filter(r => r.transverse == false);
+
+                const session: Session = await SessionModel.getSession();
+                if (session.isADMC()) {
+                    this.servicesStore.application.roles = roles;
+                } else {
+                    this.servicesStore.application.roles = filterRolesByDistributions(roles, this.servicesStore.structure.distributions);
+                }
+            });
     }
 
     public structureHasChildren(structure: StructureModel): boolean {
