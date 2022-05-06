@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, EventEmitter, Injector, OnDestroy, OnInit, Output } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
+import { Session } from 'src/app/core/store/mappings/session';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 import { NotifyService } from '../../../../../core/services/notify.service';
 import { RoleModel } from '../../../../../core/store/models/role.model';
 import { ServicesStore } from '../../../../services.store';
@@ -29,12 +31,18 @@ export class SmartMassRoleAssignmentComponent extends OdeComponent implements On
     ngOnInit(): void {
         super.ngOnInit();
         this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
-        this.subscriptions.add(this.route.data.subscribe((data: {roles: Array<RoleModel>}) => {
+        this.subscriptions.add(this.route.data.subscribe(async (data: {roles: Array<RoleModel>}) => {
             if (data.roles) {
-                this.roles = filterRolesByDistributions(
-                    data.roles.filter(r => r.transverse == false), 
-                    this.servicesStore.structure.distributions)
-                    .map((r: RoleModel) => ({id: r.id, name: r.name}));
+                let roles: Array<RoleModel> = data.roles.filter(r => r.transverse == false);
+
+                const session: Session = await SessionModel.getSession();
+                if (session.isADMC()) {
+                    this.roles = roles;
+                } else {
+                    this.roles = filterRolesByDistributions(roles, this.servicesStore.structure.distributions)
+                        .map((r: RoleModel) => ({id: r.id, name: r.name}));
+                }
+
             }
         }));
     }
