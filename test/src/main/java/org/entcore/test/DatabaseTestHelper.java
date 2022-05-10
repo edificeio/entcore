@@ -137,6 +137,10 @@ public class DatabaseTestHelper {
         return new MongoDBContainer("mongo:3.6.17");
     }
 
+    public MongoDBContainer createMongo4Container() {
+        return new MongoDBContainer("mongo:4.0.0");
+    }
+
     public ElasticsearchContainer createElasticContainer() {
         return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0");
     }

@@ -80,9 +80,6 @@ subprojects {
   test {
     classpath += configurations.compileOnly
 
-    exclude 'org/entcore/infra/**'
-    exclude 'org/entcore/workspace/**'
-
     testLogging {
       // set options for log level LIFECYCLE
       events TestLogEvent.FAILED,
@@ -285,6 +282,7 @@ project(':workspace') {
     compile "com.sun.jna:jna:$jnaVersion"
     compile "net.sf:lamejb:$lamejbVersion"
     testCompile project(':test')
+    configurations.testCompile.exclude group: 'com.sun.jna', module: 'jna'
   }
 }
 

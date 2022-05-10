@@ -30,3 +30,12 @@ CREATE TABLE mail.attachments_events (
     name text not null,
     content text not null
 );
+CREATE TABLE mail.read_events(
+    id uuid NOT NULL,
+    date timestamp without time zone not null,
+    user_id character varying(36),
+    ua character varying(256),
+    device_type character varying(32),
+    read_at timestamp without time zone not null DEFAULT NOW(),
+    PRIMARY KEY (id, date)
+);
