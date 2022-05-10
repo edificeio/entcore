@@ -26,6 +26,8 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -34,10 +36,7 @@ import org.entcore.common.neo4j.*;
 import org.entcore.test.DatabaseClusterTestHelper;
 import org.entcore.test.PostgresReactiveTestHelper;
 import org.entcore.test.TestHelper;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -48,6 +47,7 @@ import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
 public class Neo4jClientHATest {
+    static Logger log = LoggerFactory.getLogger(Neo4jClientHATest.class);
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
     public static DatabaseClusterTestHelper.Neo4jCluster cluster = test.database().cluster().initNeo4j(3, 1);
@@ -71,7 +71,7 @@ public class Neo4jClientHATest {
     @Before
     public void beforeEach(TestContext context) throws Exception {
         if (nbTests > 0) {
-            System.out.println("Clean events and mails....");
+            log.info("Clean events and mails....");
             pgContainer.stop();
             pgContainer.start();
             eventReceived = 0;
@@ -86,7 +86,7 @@ public class Neo4jClientHATest {
         nbTests++;
     }
 
-    @Test
+    //@Test
     public void testHealthCheckShouldDetectChanges(TestContext context) {
         final Neo4jRestClientNodeManager manager = manager(context, true, false, false);
         final Async async = context.async();
@@ -94,9 +94,9 @@ public class Neo4jClientHATest {
         assertSlaveAvailable(context, manager, 0);
         assertEventReceived(context, Optional.empty(), Optional.empty(), Optional.empty());
         assertMailReceived(context, Optional.empty());
-        System.out.println("Should first health check...");
+        log.info("Should first health check...");
         manager.getChecker().check(manager).compose(r -> waitMS(50)).compose(r -> {
-            System.out.println("Should detect 2 slave 1 master...");
+            log.info("Should detect 2 slave 1 master...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 2);
             assertEventReceived(context, 3);
@@ -107,7 +107,7 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should detect 1 unavailable...");
+            log.info("Should detect 1 unavailable...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 1);
             assertUnvailable(context, manager, 1);
@@ -119,19 +119,28 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should detect 2 unavailable...");
+            log.info("Should detect 2 unavailable...");
             assertMasterAvailable(context, manager, 1);
             assertUnvailable(context, manager, 2);
             assertEventReceived(context, 1);
             assertMailReceived(context, 1);
             assertBanned(context, manager, 2);
-            final Optional<Neo4jRestClientNode> node = manager.getClients().stream().filter(e -> !e.isAvailable()).findFirst();
-            return cluster.start(test.vertx()).map(e -> {
+            return cluster.start(test.vertx()).map(ee -> {
+                //set slave still banned
+                manager.getClients().stream().forEach(e -> {
+                    if(e.isSlave()){
+                        e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(5));
+                    }else{
+                        e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
+                    }
+                });
                 syncManager(context, manager, cluster);
-                return e;
+                return ee;
             });
-        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should not detect 2 new available (banned)...");
+        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> {
+            return manager.getChecker().check(manager);
+        }).compose(r -> {
+            log.info("Should not detect 2 new available (banned)...");
             assertBanned(context, manager, 2);
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 0);
@@ -139,12 +148,12 @@ public class Neo4jClientHATest {
             assertEventReceived(context, 0);
             assertMailReceived(context, 0);
             manager.getClients().forEach(e -> {
-                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(65));
+                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
             });
             assertBanned(context, manager, 0);
             return waitPending();
         }).compose(r -> manager.getChecker().check(manager)).compose(r -> waitMS(50)).compose(r -> {
-            System.out.println("Should detect 2 new available (unbanned)...");
+            log.info("Should detect 2 new available (unbanned)...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 2);
             assertUnvailable(context, manager, 0);
@@ -156,17 +165,16 @@ public class Neo4jClientHATest {
         }));
     }
 
-
-    @Test
+    //@Test
     public void testReadCheckShouldDetectChanges(TestContext context) {
         final Neo4jRestClientNodeManager manager = manager(context, false, true, false);
         final Async async = context.async();
         assertMasterAvailable(context, manager, 0);
         assertSlaveAvailable(context, manager, 0);
-        System.out.println("Should first read check...");
+        log.info("Should first read check...");
         manager.getChecker().check(manager).compose(r -> waitMS(50)).compose(r -> {
             //wait store event to finish....
-            System.out.println("Should detect 3 slave or master (any)...");
+            log.info("Should detect 3 slave or master (any)...");
             assertMasterAvailable(context, manager, 3);
             assertSlaveAvailable(context, manager, 3);
             assertUnvailable(context, manager, 0);
@@ -178,7 +186,7 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should detect 1 unavailable...");
+            log.info("Should detect 1 unavailable...");
             assertMasterAvailable(context, manager, 2);
             assertSlaveAvailable(context, manager, 2);
             assertUnvailable(context, manager, 1);
@@ -190,20 +198,29 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should detect 2 unavailable...");
+            log.info("Should detect 2 unavailable...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 1);
             assertUnvailable(context, manager, 2);
             assertEventReceived(context, 1);
             assertMailReceived(context, 1);
             assertBanned(context, manager, 2);
-            final Optional<Neo4jRestClientNode> node = manager.getClients().stream().filter(e -> !e.isAvailable()).findFirst();
             return cluster.start(test.vertx()).map(e -> {
                 syncManager(context, manager, cluster);
                 return e;
             });
-        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> manager.getChecker().check(manager)).compose(r -> {
-            System.out.println("Should not detect 2 new available (banned)...");
+        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> {
+            //set 2 banned and 1 unbanned
+            for(final Neo4jRestClientNode client : manager.getClients()){
+                if(client.isAvailable()){
+                    client.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
+                }else{
+                    client.setNotAvailableFrom(LocalDateTime.now().minusSeconds(5));
+                }
+            }
+            return manager.getChecker().check(manager);
+        }).compose(r -> {
+            log.info("Should not detect 2 new available (banned)...");
             assertBanned(context, manager, 2);
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 1);
@@ -211,13 +228,13 @@ public class Neo4jClientHATest {
             assertEventReceived(context, 0);
             assertMailReceived(context, 0);
             manager.getClients().forEach(e -> {
-                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(65));
+                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
             });
             assertBanned(context, manager, 0);
             return waitPending();
         }).compose(r -> manager.getChecker().check(manager)).compose(r -> waitMS(50)).compose(r -> {
             //wait store of events 50ms
-            System.out.println("Should detect 2 new available (unbanned)...");
+            log.info("Should detect 2 new available (unbanned)...");
             assertMasterAvailable(context, manager, 3);
             assertSlaveAvailable(context, manager, 3);
             assertUnvailable(context, manager, 0);
@@ -229,7 +246,7 @@ public class Neo4jClientHATest {
         }));
     }
 
-    @Test
+    //@Test
     public void testMapCheckShouldDetectChanges(TestContext context) {
         final Neo4jRestClientNodeManager managerActif = manager(context, true, true, true, true);
         final Neo4jRestClientNodeManager managerPassive = manager(context, true, true, true, false);
@@ -241,10 +258,10 @@ public class Neo4jClientHATest {
         assertSlaveAvailable(context, managerPassive, 3);
         assertEventReceived(context, Optional.empty(), Optional.empty(), Optional.empty());
         assertMailReceived(context, Optional.empty());
-        System.out.println("Should first map check...");
+        log.info("Should first map check...");
         checkAll(managers).compose(r -> waitMS(50)).compose(r -> {
             //wait store event to finish....
-            System.out.println("Should detect 3 slave or master (any)...");
+            log.info("Should detect 3 slave or master (any)...");
             for (final Neo4jRestClientNodeManager manager : managers) {
                 assertMasterAvailable(context, manager, 1);
                 assertSlaveAvailable(context, manager, 2);
@@ -258,7 +275,7 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> checkAll(managers)).compose(r -> {
-            System.out.println("Should detect 1 unavailable...");
+            log.info("Should detect 1 unavailable...");
             for (final Neo4jRestClientNodeManager manager : managers) {
                 assertMasterAvailable(context, manager, 1);
                 assertSlaveAvailable(context, manager, 1);
@@ -272,7 +289,7 @@ public class Neo4jClientHATest {
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> checkAll(managers)).compose(r -> {
-            System.out.println("Should detect 2 unavailable...");
+            log.info("Should detect 2 unavailable...");
             for (final Neo4jRestClientNodeManager manager : managers) {
                 assertMasterAvailable(context, manager, 1);
                 assertSlaveAvailable(context, manager, 0);
@@ -288,8 +305,19 @@ public class Neo4jClientHATest {
                 }
                 return e;
             });
-        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> checkAll(managers)).compose(r -> waitMS(50)).compose(r -> {
-            System.out.println("Should not detect 2 new available (banned)...");
+        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> {
+            for (final Neo4jRestClientNodeManager manager : managers) {
+                for(final Neo4jRestClientNode client : manager.getClients()){
+                    if(client.isSlave()){
+                        client.setNotAvailableFrom(LocalDateTime.now().minusSeconds(5));
+                    }else{
+                        client.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
+                    }
+                }
+            }
+            return checkAll(managers);
+        }).compose(r -> waitMS(50)).compose(r -> {
+            log.info("Should not detect 2 new available (banned)...");
             assertBanned(context, managerActif, 2);
             assertBanned(context, managerPassive, 2);
             assertMasterAvailable(context, managerActif, 1);
@@ -298,7 +326,7 @@ public class Neo4jClientHATest {
                 assertSlaveAvailable(context, manager, 0);
                 assertUnvailable(context, manager, 2);
                 manager.getClients().forEach(e -> {
-                    e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(65));
+                    e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
                 });
                 assertBanned(context, manager, 0);
             }
@@ -307,7 +335,7 @@ public class Neo4jClientHATest {
             return waitPending();
         }).compose(r -> checkAll(managers)).compose(r -> waitMS(50)).compose(r -> {
             //wait store of events 50ms
-            System.out.println("Should detect 2 new available (unbanned)...");
+            log.info("Should detect 2 new available (unbanned)...");
             for (final Neo4jRestClientNodeManager manager : managers) {
                 assertMasterAvailable(context, manager, 1);
                 assertSlaveAvailable(context, manager, 2);
@@ -325,36 +353,36 @@ public class Neo4jClientHATest {
     public void testClientShouldReadAndWrite(TestContext context) {
         final Neo4jRestClientNodeManager manager = manager(context, true, true, false);
         final Async async = context.async();
-        System.out.println("Should read and write...");
+        log.info("Should read and write...");
         check(manager).compose(r -> waitMS(50)).compose(r -> {
             //wait store event to finish....
-            System.out.println("Should read and write when 3 slave or master (any)...");
+            log.info("Should read and write when 3 slave or master (any)...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 2);
             assertQuery(context, true, manager);
             assertQuery(context, false, manager);
             return waitPending();
         }).compose(r -> {
-            System.out.println("Should stop 1 slave...");
+            log.info("Should stop 1 slave...");
             final Optional<Neo4jRestClientNode> node = manager.getClients().stream().filter(e -> e.isSlaveAvailable()).findFirst();
             final boolean res = cluster.stop(node.get().getUrl());
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> check(manager)).compose(r -> {
-            System.out.println("Should read and write when 1 unavailable...");
+            log.info("Should read and write when 1 unavailable...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 1);
             assertQuery(context, true, manager);
             assertQuery(context, false, manager);
             return waitPending();
         }).compose(r -> {
-            System.out.println("Should stop second slave...");
+            log.info("Should stop second slave...");
             final Optional<Neo4jRestClientNode> node = manager.getClients().stream().filter(e -> e.isSlaveAvailable()).findFirst();
             final boolean res = cluster.stop(node.get().getUrl());
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> check(manager)).compose(r -> {
-            System.out.println("Should read/write when 2 unavailable...");
+            log.info("Should read/write when 2 unavailable...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 0);
             assertQuery(context, true, manager);
@@ -362,36 +390,41 @@ public class Neo4jClientHATest {
             //
             return waitPending();
         }).compose(r -> {
-            System.out.println("Should stop master...");
+            log.info("Should stop master...");
             final Optional<Neo4jRestClientNode> node = manager.getClients().stream().filter(e -> e.isAvailable()).findFirst();
             final boolean res = cluster.stop(node.get().getUrl());
             context.assertTrue(res);
             return waitSwitch();
         }).compose(r -> waitPending()).compose(r -> check(manager)).compose(r -> {
-            System.out.println("Should not read/write when 3 unavailable...");
+            log.info("Should not read/write when 3 unavailable...");
             assertMasterAvailable(context, manager, 0);
             assertSlaveAvailable(context, manager, 0);
             assertFailQuery(context, true, manager);
             assertFailQuery(context, false, manager);
             return waitPending();
         }).compose(r -> {
-            System.out.println("Should start all...");
+            log.info("Should start all...");
             return cluster.start(test.vertx()).map(e -> {
                 syncManager(context, manager, cluster);
                 return e;
             });
-        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> check(manager)).compose(r -> waitMS(50)).compose(r -> {
-            System.out.println("Should read/write 3 new available (banned but return first)...");
+        }).compose(r -> waitSwitch()).compose(r -> waitPending()).compose(r -> {
+            manager.getClients().forEach(e->{
+                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(5));
+            });
+            return check(manager);
+        }).compose(r -> waitMS(50)).compose(r -> {
+            log.info("Should read/write 3 new available (banned but return first)...");
             assertMasterAvailable(context, manager, 0);
             assertSlaveAvailable(context, manager, 0);
             assertQuery(context, true, manager);
             assertQuery(context, false, manager);
             manager.getClients().forEach(e -> {
-                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(65));
+                e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
             });
             return waitPending();
         }).compose(r -> check(manager)).compose(r -> waitMS(50)).compose(r -> {
-            System.out.println("Should read/write 3 new available (banned)...");
+            log.info("Should read/write 3 new available (banned)...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 2);
             //wait store of events 50ms
@@ -443,6 +476,7 @@ public class Neo4jClientHATest {
         final boolean keepAlive = true;
         final String authorizationHeader = null;
         final JsonObject neo4jConfig = new JsonObject();
+        neo4jConfig.put("ban-duration-seconds", 10);
         neo4jConfig.put("notification-enable", true);
         neo4jConfig.put("healthcheck-enable", healthcheck);
         neo4jConfig.put("readcheck-enable", readcheck);
@@ -498,22 +532,62 @@ public class Neo4jClientHATest {
 
     private void assertBanned(final TestContext context, final Neo4jRestClientNodeManager manager, final long expected) {
         final long nbMaster = manager.getClients().stream().filter(e -> e.isBanned()).count();
-        context.assertEquals(expected, nbMaster);
+        try{
+            context.assertEquals(expected, nbMaster);
+        }catch(AssertionError exc){
+            log.error("Count master: "+manager.getClients().stream().filter(e -> e.isMaster()).count());
+            log.error("Count slave: "+manager.getClients().stream().filter(e -> e.isSlave()).count());
+            log.error("Count master available: "+manager.getClients().stream().filter(e -> e.isMasterAvailable()).count());
+            log.error("Count slave available: "+manager.getClients().stream().filter(e -> e.isSlaveAvailable()).count());
+            log.error("Count available: "+manager.getClients().stream().filter(e -> e.isAvailable()).count());
+            log.error("Count banned: "+manager.getClients().stream().filter(e -> e.isBanned()).count());
+            throw exc;
+        }
     }
 
     private void assertMasterAvailable(final TestContext context, final Neo4jRestClientNodeManager manager, final long expected) {
         final long nbMaster = manager.getClients().stream().filter(e -> e.isMasterAvailable()).count();
-        context.assertEquals(expected, nbMaster);
+        try{
+            context.assertEquals(expected, nbMaster);
+        }catch(AssertionError exc){
+            log.error("Count master: "+manager.getClients().stream().filter(e -> e.isMaster()).count());
+            log.error("Count slave: "+manager.getClients().stream().filter(e -> e.isSlave()).count());
+            log.error("Count master available: "+manager.getClients().stream().filter(e -> e.isMasterAvailable()).count());
+            log.error("Count slave available: "+manager.getClients().stream().filter(e -> e.isSlaveAvailable()).count());
+            log.error("Count available: "+manager.getClients().stream().filter(e -> e.isAvailable()).count());
+            log.error("Count banned: "+manager.getClients().stream().filter(e -> e.isBanned()).count());
+            throw exc;
+        }
     }
 
     private void assertSlaveAvailable(final TestContext context, final Neo4jRestClientNodeManager manager, final long expected) {
         final long nbMaster = manager.getClients().stream().filter(e -> e.isSlaveAvailable()).count();
-        context.assertEquals(expected, nbMaster);
+        try{
+            context.assertEquals(expected, nbMaster);
+        }catch(AssertionError exc){
+            log.error("Count master: "+manager.getClients().stream().filter(e -> e.isMaster()).count());
+            log.error("Count slave: "+manager.getClients().stream().filter(e -> e.isSlave()).count());
+            log.error("Count master available: "+manager.getClients().stream().filter(e -> e.isMasterAvailable()).count());
+            log.error("Count slave available: "+manager.getClients().stream().filter(e -> e.isSlaveAvailable()).count());
+            log.error("Count available: "+manager.getClients().stream().filter(e -> e.isAvailable()).count());
+            log.error("Count banned: "+manager.getClients().stream().filter(e -> e.isBanned()).count());
+            throw exc;
+        }
     }
 
     private void assertUnvailable(final TestContext context, final Neo4jRestClientNodeManager manager, final long expected) {
         final long nbUnavailable = manager.getClients().stream().filter(e -> !e.isAvailable()).count();
-        context.assertEquals(expected, nbUnavailable);
+        try{
+            context.assertEquals(expected, nbUnavailable);
+        }catch(AssertionError exc){
+            log.error("Count master: "+manager.getClients().stream().filter(e -> e.isMaster()).count());
+            log.error("Count slave: "+manager.getClients().stream().filter(e -> e.isSlave()).count());
+            log.error("Count master available: "+manager.getClients().stream().filter(e -> e.isMasterAvailable()).count());
+            log.error("Count slave available: "+manager.getClients().stream().filter(e -> e.isSlaveAvailable()).count());
+            log.error("Count available: "+manager.getClients().stream().filter(e -> e.isAvailable()).count());
+            log.error("Count banned: "+manager.getClients().stream().filter(e -> e.isBanned()).count());
+            throw exc;
+        }
     }
 
     private Future<Void> assertEventReceived(final TestContext context, final int expected) {

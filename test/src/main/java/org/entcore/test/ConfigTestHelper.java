@@ -34,7 +34,7 @@ public class ConfigTestHelper {
     }
     public ConfigTestHelper withMailerConfig(final PostgreSQLContainer<?> pgContainer){
         final JsonObject postgresql = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
-        final JsonObject config = new JsonObject().put("postgresql", postgresql).put("email", "test@entcore.org").put("host", "https://test.entcore.org");
+        final JsonObject config = new JsonObject().put("type", "Postgres").put("postgresql", postgresql).put("email", "test@entcore.org").put("host", "https://test.entcore.org");
         vertx.sharedData().getLocalMap("server").put("emailConfig", config.toString());
         return this;
     }
