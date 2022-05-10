@@ -440,6 +440,7 @@ public class UserUtils {
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> message) {
 				if (message.succeeded()) {
+					JsonObject body = message.result().body();
 					JsonObject session = message.result().body().getJsonObject("session");
 					if (request != null && !paused) {
 						request.resume();
@@ -452,12 +453,12 @@ public class UserUtils {
 					} else {
 						handler.handle(null);
 						final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
-						log.warn("Could not found session: "+key+ message.result().body().getString("error"));
+						log.warn("Could not found session: "+ key + " error: " + body.getString("error") + " message: " + body.getString("message"));
 					}
 				} else {
 					handler.handle(null);
 					final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
-					log.error("Could not found session: "+key,message.cause());
+					log.error("Could not found session: " + key + " cause: " + message.cause());
 				}
 				final long timeGetSessionDelay = System.currentTimeMillis() - startSessionTime;
 				if (timeGetSessionDelay > LOG_SESSION_DELAY) {
