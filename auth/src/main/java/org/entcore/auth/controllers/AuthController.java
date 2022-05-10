@@ -602,7 +602,7 @@ public class AuthController extends BaseController {
 						CookieHelper.set("authenticated", "true", timeout, request);
 						//create xsrf token on create session to avoid cache issue
 						if(config.getBoolean("xsrfOnAuth", true)){
-							CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), request);
+							CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), timeout, request);
 						}
 						redirectionService.redirect(request,
 								callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?")

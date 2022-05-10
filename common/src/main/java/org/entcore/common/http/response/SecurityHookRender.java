@@ -29,6 +29,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -129,7 +130,9 @@ public class SecurityHookRender implements HookProcess {
 				@Override
 				public void handle(Boolean s) {
 					if (Boolean.TRUE.equals(s)) {
-						CookieHelper.set("XSRF-TOKEN", xsrfToken, request);
+						if (StringUtils.isEmpty(CookieHelper.get("XSRF-TOKEN", request))) {
+							CookieHelper.set("XSRF-TOKEN", xsrfToken, request);
+						}
 					}
 					handler.handle(null);
 				}
