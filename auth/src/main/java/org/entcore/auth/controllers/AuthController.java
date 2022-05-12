@@ -39,6 +39,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.Optional;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
