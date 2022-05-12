@@ -60,6 +60,7 @@ import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
+import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.validation.StringValidation;
 
@@ -1241,7 +1242,7 @@ public class AuthController extends BaseController {
 					public void handle(Boolean r) {
 						if (Boolean.TRUE.equals(r)) {
 							request.response().end();
-							UserUtils.deletePermanentSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
+							UserUtils.deletePermanentSession(eb, userId, null, null, new io.vertx.core.Handler<Boolean>() {
 								@Override
 								public void handle(Boolean event) {
 									if (!event) {
@@ -1249,7 +1250,7 @@ public class AuthController extends BaseController {
 									}
 								}
 							});
-							UserUtils.deleteCacheSession(eb, userId, new io.vertx.core.Handler<Boolean>() {
+							UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
 								@Override
 								public void handle(Boolean event) {
 									if (!event) {
@@ -1281,7 +1282,7 @@ public class AuthController extends BaseController {
 							request.response().end();
 							for (int i = 0; i < userIds.size(); i++) {
 								String userId = userIds.getString(i);
-								UserUtils.deletePermanentSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
+								UserUtils.deletePermanentSession(eb, userId, null, null, new io.vertx.core.Handler<Boolean>() {
 									@Override
 									public void handle(Boolean event) {
 										if (!event) {
@@ -1289,7 +1290,7 @@ public class AuthController extends BaseController {
 										}
 									}
 								});
-								UserUtils.deleteCacheSession(eb, userId, new io.vertx.core.Handler<Boolean>() {
+								UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
 									@Override
 									public void handle(Boolean event) {
 										if (!event) {
@@ -1350,7 +1351,6 @@ public class AuthController extends BaseController {
 				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
-				final String forceChange = request.formAttributes().get("forceChange");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
 								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
@@ -1364,54 +1364,52 @@ public class AuthController extends BaseController {
 					}
 					renderJson(request, error);
 				} else {
-					final io.vertx.core.Handler<Boolean> resultHandler = new io.vertx.core.Handler<Boolean>() {
+					DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
+					data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
 
 						@Override
-						public void handle(Boolean reseted) {
-							if (Boolean.TRUE.equals(reseted)) {
-								trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-								redirectionService.redirect(request, callback);
-							} else {
-								trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
-										+ login);
-								error(request, resetCode);
-							}
-						}
-					};
-					if (resetCode != null && !resetCode.trim().isEmpty()) {
-						userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
-					} else {
-						DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-						data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
+						public void handle(Try<AccessDenied, String> tryUserId) {
+							try {
+								final String userId = tryUserId.get();
 
-							@Override
-							public void handle(Try<AccessDenied, String> tryUserId) {
-								try {
-									final String userId = tryUserId.get();
-									if (userId != null && !userId.trim().isEmpty()) {
-										if ("force".equals(forceChange)) {
-											userAuthAccount.changePassword(login, password, request, reseted -> {
-												if (Boolean.TRUE.equals(reseted)) {
-													trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
-													UserUtils.deleteCacheSession(eb, userId,
-															false, r -> redirectionService.redirect(request, callback));
-												} else {
-													trace.info("Erreur lors du changement forcé du mot de passe de l'utilisateur " + login);
-													error(request, resetCode);
-												}
-											});
+								// Keep current session and app token alive
+								Optional<String> sessionId = UserUtils.getSessionId(request);
+								Optional<String> appToken = Optional.empty();
+
+								if(request instanceof SecureHttpServerRequest)
+									appToken = AppOAuthResourceProvider.getTokenId((SecureHttpServerRequest)request);
+
+								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
+								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
+								final io.vertx.core.Handler<Boolean> resultHandler = new io.vertx.core.Handler<Boolean>() {
+
+									@Override
+									public void handle(Boolean reseted) {
+										if (Boolean.TRUE.equals(reseted)) {
+											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
+											trace.info("Session " + sessionIdStr + " Token " + appTokenStr);
+											UserUtils.deleteCacheSession(eb, userId, sessionIdStr, r -> redirectionService.redirect(request, callback));
+											UserUtils.deletePermanentSession(eb, userId, sessionIdStr, appTokenStr, r -> {});
 										} else {
-											userAuthAccount.changePassword(login, password, request, resultHandler);
+											trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
+													+ login);
+											error(request, resetCode);
 										}
-									} else {
-										error(request, null);
 									}
-								} catch (AccessDenied e) {
+								};
+
+								if (resetCode != null && !resetCode.trim().isEmpty()) {
+									userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
+								} else if(userId != null && !userId.trim().isEmpty()) {
+									userAuthAccount.changePassword(login, password, request, resultHandler);
+								} else {
 									error(request, null);
 								}
+							} catch (AccessDenied e) {
+								error(request, null);
 							}
-						});
-					}
+						}
+					});
 				}
 			}
 
@@ -1465,7 +1463,7 @@ public class AuthController extends BaseController {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-					UserUtils.deletePermanentSession(eb, user.getUserId(), sessionId,
+					UserUtils.deletePermanentSession(eb, user.getUserId(), sessionId, null,
 							new io.vertx.core.Handler<Boolean>() {
 								@Override
 								public void handle(Boolean event) {

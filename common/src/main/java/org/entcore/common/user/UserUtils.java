@@ -587,17 +587,18 @@ public class UserUtils {
 		});
 	}
 
-	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
+	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId, String currentTokenId,
 			final Handler<Boolean> handler) {
-		deletePermanentSession(eb, userId, currentSessionId, true, handler);
+		deletePermanentSession(eb, userId, currentSessionId, currentTokenId, true, handler);
 	}
 
-	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
+	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId, String currentTokenId,
 											  boolean immediate, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
 				.put("action", "dropPermanentSessions")
 				.put("userId", userId)
 				.put("currentSessionId", currentSessionId)
+				.put("currentTokenId", currentTokenId)
 				.put("immediate", immediate);
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
@@ -610,15 +611,11 @@ public class UserUtils {
 		});
 	}
 
-	public static void deleteCacheSession(EventBus eb, String userId, final Handler<Boolean> handler) {
-		deleteCacheSession(eb, userId, true, handler);
-	}
-
-	public static void deleteCacheSession(EventBus eb, String userId, boolean deleteSessionCollection, final Handler<Boolean> handler) {
+	public static void deleteCacheSession(EventBus eb, String userId, String currentSessionId, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
 				.put("action", "dropCacheSession")
-				.put("userId", userId)
-				.put("deleteSessionCollection", deleteSessionCollection);
+				.put("currentSessionId", currentSessionId)
+				.put("userId", userId);
 		eb.send(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
