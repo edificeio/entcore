@@ -34,6 +34,11 @@
 				var encodingHash = encodeURIComponent(hash);
 
 				$.each($("div.item a"),function(){
+					var classes = $(this).attr('class').split(/\s+/);
+					for(var i = classes.length; i-- > 0;)
+						if(classes[i].startsWith("other")) // Don't add anchor to ACS of type "other"
+							return;
+
 					$(this).attr('href', $(this).attr('href') + encodingHash);
 				});
 			}
