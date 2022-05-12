@@ -320,7 +320,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		boolean setFirstname = firstName != null && !firstName.trim().isEmpty();
 		boolean setStructure = structure != null && !structure.trim().isEmpty();
 
-		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.emailSearchField = {mail} " +
+		String query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WHERE u.emailSearchField = {mail} " +
 				(setFirstname ? " AND u.firstNameSearchField = {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
 				//" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
