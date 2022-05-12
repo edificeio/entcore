@@ -148,11 +148,18 @@ public class SamlController extends AbstractFederateController {
 						log.error("Invalid acs URI", e);
 						continue;
 					}
+
+					String uriStr;
+					if(attr.startsWith("login"))
+						uriStr = uri.getScheme() + "://" + uri.getHost() + "/auth/login";
+					else if(attr.startsWith("other"))
+						uriStr = uri.toString();
+					else
+						uriStr = uri.getScheme() + "://" + uri.getHost() + "/auth/saml/authn/" + attr;
+
 					JsonObject o = new JsonObject()
 							.put("name", attr)
-							.put("uri", uri.getScheme() + "://" + uri.getHost() +
-									(attr.startsWith("login") ? "/auth/login" : attr.startsWith("other") ?
-											StringUtils.trimToBlank(uri.getPath()) : "/auth/saml/authn/" + attr));
+							.put("uri", uriStr);
 					wmf.add(o);
 				}
 				samlWayfMustacheFormat.put(host, new JsonObject().put("providers", wmf));
