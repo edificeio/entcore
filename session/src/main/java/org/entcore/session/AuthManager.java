@@ -156,12 +156,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "[doDropCacheSession] Invalid userId : " + message.body().encode());
 			return;
 		}
-		final boolean deleteSessionCollection = getOrElse(message.body().getBoolean("deleteSessionCollection"), true);
+		String currentSessionId = message.body().getString("currentSessionId");
 		sessionStore.listSessionsIds(userId, ar -> {
 			if (ar.succeeded()) {
 				for (Object sessionId : ar.result()) {
 					if (sessionId instanceof String) {
-						dropSession(null, (String) sessionId, null, deleteSessionCollection);
+						if(currentSessionId != null && ((String)sessionId).equals(currentSessionId) == false)
+							dropSession(null, (String) sessionId, null);
 					}
 				}
 				sendOK(message);
@@ -175,6 +176,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void doDropPermanentSessions(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
 		String currentSessionId = message.body().getString("currentSessionId");
+		String currentTokenId = message.body().getString("currentTokenId");
 		boolean immediate = getOrElse(message.body().getBoolean("immediate"), true);
 
 		if (userId == null || userId.trim().isEmpty()) {
@@ -199,20 +201,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if("ok".equals(msg.body().getString("status")) == false)
 					finalHandler.handle(new Either.Left<String, Void>(msg.body().getString("message")));
 				else
-					dropOAuth2Tokens(userId, immediate, finalHandler);
+					dropOAuth2Tokens(userId, currentTokenId, immediate, finalHandler);
 			}
 		};
 
+		JsonObject query = new JsonObject().put("userId", userId);
+		if (currentSessionId != null) {
+			query.put("_id", new JsonObject().put("$ne", currentSessionId));
+		}
+
 		if (immediate) {
-			JsonObject query = new JsonObject().put("userId", userId);
-			if (currentSessionId != null) {
-				query.put("_id", new JsonObject().put("$ne", currentSessionId));
-			}
 			mongo.delete(SESSIONS_COLLECTION, query, dropSessionsHandler);
 		} else {
 			// set a TTL flag to tell background task to delete session (TTL index expireAfterSeconds: 60 seconds)
 			mongo.update(SESSIONS_COLLECTION,
-					MongoQueryBuilder.build(QueryBuilder.start("userId").is(userId)),
+					query,
 					new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build(),
 					false,
 					true,
@@ -220,7 +223,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 	}
 
-	private void dropOAuth2Tokens(String userId, boolean immediate, Handler<Either<String, Void>> handler)
+	private void dropOAuth2Tokens(String userId, String currentTokenId, boolean immediate, Handler<Either<String, Void>> handler)
 	{
 		JsonObject userFilter = new JsonObject().put("userId", userId);
 		JsonObject setTTL = new MongoUpdateBuilder().set("flagTTL", MongoDb.now()).build();
@@ -283,7 +286,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								{
 									for(int i = resArray.size(); i-- > 0;)
 									{
-										String tokenKey = "AppOAuthResourceProvider:token:" + resArray.getJsonObject(i).getString("token");
+										String tokenId = resArray.getJsonObject(i).getString("token");
+										if(tokenId.equals(currentTokenId))
+										{
+											// Keep this token and its auth alive
+											authIdFilter.put("token", new JsonObject().put("$ne", currentTokenId));
+											userFilter.put("_id", new JsonObject().put("$ne", resArray.getJsonObject(i).getString("authId")));
+											continue;
+										}
+
+										String tokenKey = "AppOAuthResourceProvider:token:" + tokenId;
 										OAuthCacheService.remove(tokenKey, new Handler<AsyncResult<Void>>()
 										{
 											@Override
@@ -540,14 +552,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta) {
-		dropSession(message, sessionId, meta, true);
-	}
-
-	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta, boolean deleteSessionCollection) {
-		if (deleteSessionCollection) {
-			mongo.delete(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId));
-		}
-
 		sessionStore.dropSession(sessionId, ar -> {
 			if (ar.succeeded()) {
 				if (getOrElse(config.getBoolean("slo"), false)) {

@@ -143,10 +143,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 				request.resume();
 				origHandler.handle(e);
 			};
-			Optional<String> token = getTokenHeader(request);
-			if(!token.isPresent()){
-				token = getTokenParam(request);
-			}
+			Optional<String> token = getTokenId(request);
 			if(token.isPresent()){
 				request.pause();
 				final String tokenStr = token.get();
@@ -201,6 +198,17 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 
 
 	private static final Pattern REGEXP_AUTHORIZATION = Pattern.compile("^\\s*(OAuth|Bearer)\\s+([^\\s\\,]*)");
+
+	public static Optional<String> getTokenId(SecureHttpServerRequest request)
+	{
+		Optional<String> token = getTokenHeader(request);
+
+		if(!token.isPresent()){
+			token = getTokenParam(request);
+		};
+
+		return token;
+	}
 
 	private static Optional<String> getTokenHeader(SecureHttpServerRequest request) {
 		//get from header
