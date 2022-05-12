@@ -670,7 +670,7 @@ public class StructureController extends BaseController {
 									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
 									for (Object userId : usersId) {
-										UserUtils.deletePermanentSession(eb, (String) userId, null, false, new Handler<Boolean>() {
+										UserUtils.deletePermanentSession(eb, (String) userId, null, null, false, new Handler<Boolean>() {
 											@Override
 											public void handle(Boolean event) {
 												if (!event) {
@@ -678,7 +678,7 @@ public class StructureController extends BaseController {
 												}
 											}
 										});
-										UserUtils.deleteCacheSession(eb, (String) userId, new Handler<Boolean>() {
+										UserUtils.deleteCacheSession(eb, (String) userId, null, new Handler<Boolean>() {
 											@Override
 											public void handle(Boolean event) {
 												if (!event) {
