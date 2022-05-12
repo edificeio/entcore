@@ -1,6 +1,7 @@
 import { IIdiom, IUserInfo } from 'ode-ts-client';
 import { session, conf } from 'ode-ngjs-front';
 import { IController } from 'angular';
+import * as $ from 'jquery';
 
 export class AppController implements IController {
 	me: IUserInfo;
@@ -10,6 +11,9 @@ export class AppController implements IController {
 	// IController implementation
 	$onInit(): void {
 		this.initialize();
+		$(() => {
+			$("h2.subtitle").css("display", "");
+		});
 	}
 
 	private async initialize():Promise<void> {
