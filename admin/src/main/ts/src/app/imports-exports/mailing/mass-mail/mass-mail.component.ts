@@ -93,7 +93,7 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         this.userlistFiltersService.resetFilters();
         this.userlistFiltersService.setDuplicatesComboModel([]);
         this.userlistFiltersService.setClassesComboModel(structure.classes);
-        this.userlistFiltersService.setProfilesComboModel(structure.profiles.map(p => p.name));
+        this.userlistFiltersService.setProfilesComboModel(structure.profiles.map(p => this.bundles.translate(p.name)));
     }
 
     getFilteredUsers(): UserModel[] {
