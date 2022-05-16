@@ -37,6 +37,7 @@ class ProfileFilter extends UserFilter<string> {
     type = 'type';
     label = 'profiles.multi.combo.title';
     comboModel = [];
+    order = '+';
 
     filter = (type: string) => {
         const outputModel = this.outputModel;

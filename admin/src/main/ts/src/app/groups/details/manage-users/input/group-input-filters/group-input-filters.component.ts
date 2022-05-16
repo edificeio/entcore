@@ -61,7 +61,7 @@ export class GroupInputFiltersComponent extends OdeComponent implements OnChange
         });
         ProfilesService.getProfiles().then(p => {
             this.structure.profiles = p;
-            this.listFilters.setProfilesComboModel(this.structure.profiles.map(p => p.name));
+            this.listFilters.setProfilesComboModel(this.structure.profiles.map(p => this.bundles.translate(p.name)));
             this.changeDetector.markForCheck();
         });
         this.structure.groups.sync().then(() => {
