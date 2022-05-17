@@ -438,6 +438,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		currentEntity.put("externalId", externalId);
 		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
 		currentEntity.put("idgpe", currentEntity.remove("id"));
+		currentEntity.put("modified", importDate);
 		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
 		currentEntity.put("name", mappedName);
 
@@ -447,7 +448,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			{
 				txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
-					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()));
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()).put("date", importDate));
 
 				ttReport.temporaryGroupCreated(name);
 			}
@@ -526,14 +527,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
 					.put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource())
+					.put("date", importDate)
 					.put("idrgpmt", currentEntity.getString("id")));
 
 				ttReport.temporaryGroupCreated(name);
 			}
 			else
 			{
-				txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) SET fg.idrgpmt = {idrgpmt}",
-					currentEntity.put("externalId", externalId).put("idrgpmt", currentEntity.getString("id")));
+				txXDT.add("MATCH (fg:Group:FunctionalGroup {externalId:{externalId}}) SET fg.idrgpmt = {idrgpmt}, fg.modified = {date}",
+					currentEntity.put("externalId", externalId).put("idrgpmt", currentEntity.getString("id")).put("date", importDate));
 
 				functionalGroupExternalIdCopy.remove(externalId);
 				ttReport.groupUpdated(name);
@@ -1018,7 +1020,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	protected void removeUselessGroups(JsonObject baseParams)
 	{
 		super.removeUselessGroups(baseParams);
-		txXDT.add(get_DELETE_GROUPS("WHERE HEAD(u.profiles) = 'Teacher' "), baseParams);
+		baseParams.put("date", importDate);
+		txXDT.add(get_DELETE_GROUPS("WHERE HEAD(u.profiles) = 'Teacher' OR g.created <> {date}"), baseParams);
 	}
 
 	private class LftComparator implements Comparator<JsonObject> {
