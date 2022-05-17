@@ -101,6 +101,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
 			"MERGE (fg:FunctionalGroup:Group {externalId:{externalId}}) " +
 			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source}, fg.displayNameSearchField = {displayNameSearchField} " +
+			", fg.created = {date} SET fg.modified = {date}" +
 			"MERGE (fg)-[:DEPENDS]->(s) ";
 	private static final String PERSEDUCNAT_TO_GROUPS =
 			"MATCH (u:User {id : {id}}), (fg:FunctionalGroup) " +
@@ -148,6 +149,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static final long CLEARANCE_TIME = 15 * 60 * 1000;
 
 	protected long importTimestamp;
+	protected String importDate;
 	protected Long forceTimestamp;
 	protected final Storage storage;
 	protected final String UAI;
@@ -260,6 +262,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	{
 		this.ttReport.start();
 		importTimestamp = forceTimestamp != null ? forceTimestamp.longValue() : System.currentTimeMillis();
+		importDate = DateTime.now().toString();
 		final String externalIdFromUAI = "MATCH (s:Structure {UAI : {UAI}}) " +
 				"return s.externalId as externalId, s.id as id, s.timetable as timetable ";
 		final String tma = getTeacherMappingAttribute();
