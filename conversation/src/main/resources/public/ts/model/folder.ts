@@ -85,7 +85,7 @@ export abstract class Folder implements Selectable {
         await this.mails.toggleUnread(unread);
         this.mails.selection.deselectAll();
         await quota.refresh();
-        await this.countUnread();
+        await this.countUnread(true);
     }
 }
 
@@ -148,7 +148,7 @@ export class Trash extends SystemFolder {
             await folder.restore();
         }
         await this.syncUsersFolders();
-        await this.countUnread();
+        await this.countUnread(true);
     }
 
     async restoreMails () {

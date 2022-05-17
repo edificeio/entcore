@@ -228,7 +228,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.removeFromUserFolder = async (event, mail) => {
             if (Conversation.instance.currentFolder instanceof UserFolder) {
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
-                await Conversation.instance.folders.inbox.countUnread();
+                await Conversation.instance.folders.inbox.countUnread(true);
                 await Conversation.instance.folders.draft.countTotal();
                 $scope.state.selectAll = false;
                 $scope.$apply();
@@ -524,7 +524,7 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.trash.restore();
             await $scope.refreshFolders();
             await Conversation.instance.folders.draft.mails.refresh();
-            await Conversation.instance.folders.inbox.countUnread();
+            await Conversation.instance.folders.inbox.countUnread(true);
             await $scope.userFolders.countUnread();
             await Conversation.instance.folders.draft.countTotal();
             $scope.state.selectAll = false;
@@ -533,7 +533,10 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
-            await Conversation.instance.currentFolder.countUnread();
+            await Conversation.instance.currentFolder.countUnread(true);
+            if(Conversation.instance.currentFolder.getName()=='DRAFT'){
+                await Conversation.instance.folders.draft.countTotal();
+            }
             $scope.state.selectAll = false;
             $scope.$apply();
         };
@@ -662,7 +665,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.close('lightbox');
             await Conversation.instance.currentFolder.mails.moveSelection(folderTarget);
             if (!(await $scope.countDraft(Conversation.instance.currentFolder, folderTarget))) {
-                await Conversation.instance.currentFolder.countUnread();
+                await Conversation.instance.currentFolder.countUnread(true);
                 await folderTarget.countUnread();
             }
             await $scope.refreshFolder();
@@ -780,7 +783,7 @@ export let conversationController = ng.controller('ConversationController', [
 
             if (!(await $scope.countDraft($scope.state.dragFolder, folder))) {
                 await folder.countUnread();
-                await $scope.state.dragFolder.countUnread();
+                await $scope.state.dragFolder.countUnread(true);
             }
             $scope.$apply();
         }
@@ -794,7 +797,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
 
             if (!(await $scope.countDraft($scope.state.dragFolder, $scope.state.dragFolder))) {
-                await $scope.state.dragFolder.countUnread();
+                await $scope.state.dragFolder.countUnread(true);
             }
             $scope.$apply();
         }
@@ -826,8 +829,10 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.countDraft = async (folderSource, folderTarget) => {
             var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
-            if (draft)
+            if (draft){
+                FolderModel.purgeCache()
                 await Conversation.instance.folders.draft.countTotal();
+            }
             return draft;
         }
 
@@ -841,7 +846,7 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.lightbox.show = false;
                 await Conversation.instance.folders.trash.removeAll();
                 await $scope.refreshFolders();
-                await Conversation.instance.folders.trash.countUnread();
+                await Conversation.instance.folders.trash.countUnread(true);
             }finally{
                 $scope.$apply();
             }
