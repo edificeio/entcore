@@ -99,6 +99,7 @@
         },
         {% if redisHost is defined %}
         "redisConfig": {
+            "select": {{ redisSelect|default('0') }},
             "host": "{{ redisHost }}",
             "port": {{ redisPort|default('6379') }}
             {% if redis_password is defined %},
