@@ -273,7 +273,7 @@ public abstract class BaseServer extends Server {
 							final String themeName = theme.substring(theme.lastIndexOf(File.separator) + 1);
 							final String domain = reverseSkins.get(themeName);
 							if (domain == null) {
-								log.warn("Missing domain for theme : " + theme);
+								log.debug("Missing domain for theme : " + theme);
 								continue;
 							}
 							final String i18nDirectory = theme + File.separator + "i18n" + File.separator + className;
