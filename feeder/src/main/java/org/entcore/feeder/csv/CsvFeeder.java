@@ -372,7 +372,7 @@ public class CsvFeeder implements Feed {
 									user.put(c, a);
 								}
 								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) ||
-										"groups".equals(c)) &&
+										"groups".equals(c) || "headTeacher".equals(c)) &&
 										!v.startsWith(structure.getExternalId() + "$")) {
 									a.add(structure.getExternalId() + "$" + v);
 								} else {
@@ -402,7 +402,7 @@ public class CsvFeeder implements Feed {
 									user.put(c, v2);
 								}
 						}
-						if ("classes".equals(c) || "groups".equals(c)) {
+						if ("classes".equals(c) || "groups".equals(c) || "headTeacher".equals(c)) {
 							String[] cc = v.split("\\$");
 							if (cc.length == 2 && !cc[1].matches("[0-9]+")) {
 								final String fosEId = importer.getFieldOfStudy().get(cc[1]);
@@ -418,9 +418,21 @@ public class CsvFeeder implements Feed {
 							if ("classes".equals(c)) {
 								structure.createClassIfAbsent(eId, cc[0]);
 								classes.add(classId);
-							} else {
+							} else if ("groups".equals(c)) {
 								structure.createFunctionalGroupIfAbsent(eId, cc[0]);
 								groups.add(classId);
+							} else if ("headTeacher".equals(c))
+							{
+								String[] structureGroupExternalId = structure.createHeadTeacherGroupIfAbsent(eId, cc[0]);
+
+								final String[] structureGroup = new String[2];
+								structureGroup[0] = structure.getExternalId();
+								structureGroup[1] = structureGroupExternalId[0];
+								groups.add(structureGroup);
+								final String[] classGroup = new String[2];
+								classGroup[0] = structure.getExternalId();
+								classGroup[1] = structureGroupExternalId[1];
+								groups.add(classGroup);
 							}
 						}
 					}
