@@ -149,9 +149,14 @@ public class Structure {
 	}
 
 	public void addAttachment() {
-		JsonArray functionalAttachment = struct.getJsonArray("functionalAttachment");
-		if (functionalAttachment != null && functionalAttachment.size() > 0 &&
-				!externalId.equals(functionalAttachment.getString(0))) {
+		JsonArray functionalAttachment = struct.getJsonArray("functionalAttachment", new JsonArray());
+		String districtAttachment = struct.getString("district");
+
+		if(districtAttachment != null)
+			functionalAttachment.add(districtAttachment);
+
+		if (functionalAttachment.size() > 0 && !externalId.equals(functionalAttachment.getString(0)))
+		{
 			JsonObject params = new JsonObject().put("externalId", externalId);
 			String query;
 			if (functionalAttachment.size() == 1) {
@@ -163,7 +168,7 @@ public class Structure {
 			} else {
 				query =
 						"MATCH (s:Structure { externalId : {externalId}}), (ps:Structure) " +
-						"WHERE ps.externalId IN {functionalAttachment} " +
+						"WHERE ps.externalId IN {functionalAttachment} AND ps.externalId <> {externalId} " +
 						"CREATE UNIQUE s-[:HAS_ATTACHMENT]->ps";
 				params.put("functionalAttachment", functionalAttachment);
 			}
