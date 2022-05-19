@@ -335,6 +335,7 @@
   "en_EN": "Anglais",
   "es_ES": "Espagnol",
   "exercizer": "Exercices",
+  "exercizer.behaviours.distributed.on": "Distribué pour le",
   "file.heavy": "Fichier lourd",
   "file.light": "Fichier léger",
   "filename": "Nom du fichier",
