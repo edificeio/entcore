@@ -197,6 +197,7 @@ public class TimetableReport
 
   private List<Subject> createdSubjects = new LinkedList<Subject>();
   private Map<Subject, List<Teacher>> usersAttachedToSubject = new HashMap<Subject, List<Teacher>>();
+  private Subject unknownSubject = new Subject("ERREUR-MATIERE-INCONNUE");
 
   private long nbUsersFound = 0;
   private List<User> missingUsers = new LinkedList<User>();
@@ -286,7 +287,16 @@ public class TimetableReport
       JsonObject item = new JsonObject()
         .put("class", entry.getKey().toString())
         .put("teachers", this.getTemplateEntities(entry.getValue()));
-      uas.add(item);
+
+      if(entry.getKey() != this.unknownSubject)
+        uas.add(item);
+      else
+      {
+        JsonArray newUas = new JsonArray();
+        newUas.add(item);
+        newUas.addAll(uas);
+        uas = newUas;
+      }
     }
 
     long elapsed = (endTime - startTime) / 1000;
@@ -507,6 +517,9 @@ public class TimetableReport
 
   public void addUserToSubject(Teacher user, Subject subject)
   {
+    if(subject == null)
+      subject = unknownSubject;
+
     if(this.usersAttachedToSubject.containsKey(subject) == false)
       this.usersAttachedToSubject.put(subject, new LinkedList<Teacher>());
     if(user != null)
