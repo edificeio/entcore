@@ -37,6 +37,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 
 
@@ -49,7 +52,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private final EventBus eb;
     private final OssFcm ossFcm;
     private LocalMap<String,String> eventsI18n;
-
+    private Map<String,JsonObject> cacheI18N = new HashMap<>();
 
     public DefaultPushNotifService(Vertx vertx, JsonObject config, OssFcm ossFcm) {
         super(vertx, config);
@@ -64,24 +67,20 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
     @Override
     public void sendNotificationMessageUsers(final String notificationName,final JsonObject notification,final JsonArray recipientIds, boolean addData) {
-        configService.getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
-            public void handle(final Either<String, JsonObject> properties) {
-                if(properties.isLeft() || properties.right().getValue() == null){
-                    log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
+        configService.getNotificationProperties(notificationName, properties -> {
+            if(properties.isLeft() || properties.right().getValue() == null){
+                log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
+                return;
+            }
+            //Get users preferences (overrides notification properties)
+            NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", userList -> {
+                if(userList == null){
+                    log.error("[sendPushNotification] Issue while retrieving users preferences.");
                     return;
                 }
-                //Get users preferences (overrides notification properties)
-                NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", new Handler<JsonArray>() {
-                    public void handle(final JsonArray userList) {
-                        if(userList == null){
-                            log.error("[sendPushNotification] Issue while retrieving users preferences.");
-                            return;
-                        }
-                        sendUsers(notificationName, notification, userList, properties.right().getValue(), true, addData);
+                sendUsers(notificationName, notification, userList, properties.right().getValue(), true, addData);
 
-                    }
-                });
-            }
+            });
         });
     }
 
@@ -97,23 +96,19 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
     @Override
     public void sendDataMessageUsers(String notificationName, JsonObject notification, JsonObject templateParameters, JsonArray recipientIds) {
-        configService.getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
-            public void handle(final Either<String, JsonObject> properties) {
-                if(properties.isLeft() || properties.right().getValue() == null){
-                    log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
+        configService.getNotificationProperties(notificationName, properties -> {
+            if(properties.isLeft() || properties.right().getValue() == null){
+                log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
+                return;
+            }
+            //Get users preferences (overrides notification properties)
+            NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", userList -> {
+                if(userList == null){
+                    log.error("[sendPushNotification] Issue while retrieving users preferences.");
                     return;
                 }
-                //Get users preferences (overrides notification properties)
-                NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", new Handler<JsonArray>() {
-                    public void handle(final JsonArray userList) {
-                        if(userList == null){
-                            log.error("[sendPushNotification] Issue while retrieving users preferences.");
-                            return;
-                        }
-                        sendUsers(notificationName, notification, userList, properties.right().getValue() ,false, true);
-                    }
-                });
-            }
+                sendUsers(notificationName, notification, userList, properties.right().getValue() ,false, true);
+            });
         });
     }
 
@@ -144,49 +139,39 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
                             notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
                     userPref.getJsonArray("tokens") != null && userPref.getJsonArray("tokens").size() > 0){
-                for(Object token : userPref.getJsonArray("tokens")){
-                    processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, new Handler<JsonObject>() {
-                        @Override
-                        public void handle(final JsonObject message) {
-                            try {
-                                ossFcm.sendNotifications(new JsonObject().put("message", message.put("token", (String) token)));
-                            } catch (Exception e) {
-                                log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
+                processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, message -> {
+                    for(Object token : userPref.getJsonArray("tokens")){
+                        try {
+                            ossFcm.sendNotifications(new JsonObject().put("message", message.put("token", (String) token)));
+                        } catch (Exception e) {
+                            log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
 
-                            }
                         }
-                    });
-                }
-
+                    }
+                });
             }
         }
     }
 
     private void sendTopic(final String notificationName,final JsonObject notification,final String topic, boolean typeNotification, boolean typeData){
 
-        this.processMessage(notification, "fr", typeNotification, typeData, new Handler<JsonObject>() {
-            @Override
-            public void handle(final JsonObject message) {
-                try {
-                    ossFcm.sendNotifications(new JsonObject().put("message", message.put("topic", topic)));
-                } catch (Exception e) {
-                    log.error("[sendNotificationToTopic] Issue while sending notification (" + notificationName + ").", e);
+        this.processMessage(notification, "fr", typeNotification, typeData, message -> {
+            try {
+                ossFcm.sendNotifications(new JsonObject().put("message", message.put("topic", topic)));
+            } catch (Exception e) {
+                log.error("[sendNotificationToTopic] Issue while sending notification (" + notificationName + ").", e);
 
-                }
             }
         });
     }
 
     private void sendCondition(final String notificationName,final JsonObject notification,final String condition,  boolean typeNotification, boolean typeData){
-        this.processMessage(notification, "fr", typeNotification, typeData, new Handler<JsonObject>() {
-            @Override
-            public void handle(final JsonObject message) {
-                try {
-                    ossFcm.sendNotifications(new JsonObject().put("message", message.put("condition", condition)));
-                } catch (Exception e) {
-                    log.error("[sendNotificationToCondition] Issue while sending notification (" + notificationName + ").", e);
+        this.processMessage(notification, "fr", typeNotification, typeData, message -> {
+            try {
+                ossFcm.sendNotifications(new JsonObject().put("message", message.put("condition", condition)));
+            } catch (Exception e) {
+                log.error("[sendNotificationToCondition] Issue while sending notification (" + notificationName + ").", e);
 
-                }
             }
         });
     }
@@ -195,53 +180,56 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     public void processMessage(final JsonObject notification, String language, final boolean typeNotification,final boolean typeData, final Handler<JsonObject> handler){
         final JsonObject message = new JsonObject();
 
-        translateMessage(language, new Handler<JsonObject>() {
-            @Override
-            public void handle(JsonObject keys) {
-                final JsonObject notif = new JsonObject();
-                final JsonObject data = new JsonObject();
-                final JsonObject pushNotif = notification.getJsonObject("pushNotif", new JsonObject());
-                String body = pushNotif.getString("body", "");
-                body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
+        translateMessage(language, keys -> {
+            final JsonObject notif = new JsonObject();
+            final JsonObject data = new JsonObject();
+            final JsonObject pushNotif = notification.getJsonObject("pushNotif", new JsonObject());
+            String body = pushNotif.getString("body", "");
+            body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
 
-                // Caution : Push-notif length can't exceed 4kb
-                // @see https://firebase.google.com/docs/cloud-messaging/http-server-ref#downstream-http-messages-plain-text
+            // Caution : Push-notif length can't exceed 4kb
+            // @see https://firebase.google.com/docs/cloud-messaging/http-server-ref#downstream-http-messages-plain-text
 
-                notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
-                notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
-                if(typeData) {
-                    if (notification.containsKey("type"))
-                        data.put("type", notification.getString("type"));
-                    if (notification.containsKey("event-type"))
-                        data.put("event-type", notification.getString("event-type"));
-                    if (notification.containsKey("params"))
-                        data.put("params", notification.getJsonObject("params").toString());
-                    if (notification.containsKey("resource"))
-                        data.put("resource", notification.getString("resource"));
-                    if (notification.containsKey("sender"))
-                        data.put("sender", notification.getString("sender"));
-                    if (notification.containsKey("sub-resource"))
-                        data.put("sub-resource", notification.getString("sub-resource"));
-                    if(!typeNotification)
-                        data.put("notification", notif);
-                    message.put("data", data);
-                }
-                if(typeNotification)
-                    message.put("notification", notif);
-
-                handler.handle(message);
+            notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
+            notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
+            if(typeData) {
+                if (notification.containsKey("type"))
+                    data.put("type", notification.getString("type"));
+                if (notification.containsKey("event-type"))
+                    data.put("event-type", notification.getString("event-type"));
+                if (notification.containsKey("params"))
+                    data.put("params", notification.getJsonObject("params").toString());
+                if (notification.containsKey("resource"))
+                    data.put("resource", notification.getString("resource"));
+                if (notification.containsKey("sender"))
+                    data.put("sender", notification.getString("sender"));
+                if (notification.containsKey("sub-resource"))
+                    data.put("sub-resource", notification.getString("sub-resource"));
+                if(!typeNotification)
+                    data.put("notification", notif);
+                message.put("data", data);
             }
+            if(typeNotification)
+                message.put("notification", notif);
+
+            handler.handle(message);
         });
     }
 
-    public void translateMessage(String language, Handler<JsonObject> handler){
-        String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-        final JsonObject translations;
-        if (i18n == null || i18n.length() == 0) {
-            translations = new JsonObject();
-        } else {
-            translations = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+    public void translateMessage(final String language, final Handler<JsonObject> handler){
+        final String key = language.split(",")[0].split("-")[0];
+        if(!this.cacheI18N.containsKey(key)){
+            //create cache
+            final JsonObject translations;
+            final String i18n = eventsI18n.get(key);
+            if (i18n == null || i18n.length() == 0) {
+                translations = new JsonObject();
+            } else {
+                translations = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+            }
+            this.cacheI18N.put(key, translations);
         }
+        final JsonObject translations = this.cacheI18N.get(key);
         handler.handle(translations);
     }
 
