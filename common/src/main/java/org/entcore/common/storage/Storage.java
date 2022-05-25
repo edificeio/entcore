@@ -19,6 +19,7 @@
 
 package org.entcore.common.storage;
 
+import io.vertx.core.streams.ReadStream;
 import org.entcore.common.validation.FileValidator;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -46,6 +47,8 @@ public interface Storage {
 	void writeFsFile(String id, String filename, Handler<JsonObject> handler);
 
 	void readFile(String id, Handler<Buffer> handler);
+
+	void readStreamFile(String id, Handler<ReadStream<Buffer>> handler);
 
 	void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata);
 
