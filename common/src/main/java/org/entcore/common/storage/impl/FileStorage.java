@@ -23,6 +23,8 @@ import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.streams.ReadStream;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FallbackStorage;
@@ -84,6 +86,7 @@ public class FileStorage implements Storage {
 			this.basePaths.add(((!basePath.endsWith("/")) ? basePath + "/" : basePath));
 		}
 		this.lastBucketIdx = this.basePaths.size() - 1;
+
 	}
 
 	@Override
@@ -359,6 +362,34 @@ public class FileStorage implements Storage {
 		});
 	}
 
+	/**
+	 * Allows the user to get a document from their workspace
+	 * Same as readFile but returns a ReadStream<Buffer> rather than a buffer
+	 * @param id : id of the attachment
+	 * @param handler
+	 */
+	@Override
+	public void readStreamFile(String id, final Handler<ReadStream<Buffer>> handler) {
+		getReadPath(id, ar -> {
+			if (ar.succeeded()) {
+				fs.open(ar.result(), new OpenOptions(), fileRes -> {
+					if (fileRes.succeeded()) {
+						ReadStream<Buffer> fileStream = fileRes.result();
+						handler.handle(fileStream);
+					} else {
+						handler.handle(null);
+						log.error(fileRes.cause().getMessage(), fileRes.cause());
+					}
+				});
+			} else {
+				handler.handle(null);
+				log.warn(ar.cause().getMessage(), ar.cause());
+			}
+		});
+	}
+
+
+
 	@Override
 	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata) {
 		sendFile(id, downloadName, request, inline, metadata, null);
@@ -419,6 +450,7 @@ public class FileStorage implements Storage {
 			}
 		});
 	}
+
 
 	@Override
 	public void removeFile(String id, final Handler<JsonObject> handler) {

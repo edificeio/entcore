@@ -26,6 +26,8 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.streams.ReadStream;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
@@ -333,6 +335,11 @@ public class GridfsStorage implements Storage {
 			}
 		});
 		}
+	}
+
+	@Override
+	public void readStreamFile(String id, Handler<ReadStream<Buffer>> handler) {
+		throw new NotImplementedException("Error. Not Implemented exception");
 	}
 
 	@Override
