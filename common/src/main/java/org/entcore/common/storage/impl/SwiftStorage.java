@@ -22,6 +22,8 @@ package org.entcore.common.storage.impl;
 import fr.wseduc.swift.SwiftClient;
 import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import io.vertx.core.streams.ReadStream;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
@@ -138,6 +140,11 @@ public class SwiftStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void readStreamFile(String id, Handler<ReadStream<Buffer>> handler) {
+		throw new NotImplementedException("Error. Not Implemented exception");
 	}
 
 	@Override
