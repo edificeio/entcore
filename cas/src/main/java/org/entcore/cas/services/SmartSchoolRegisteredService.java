@@ -41,7 +41,8 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
     private static final String ACTIVE_STRUCTURE = "active_structure";
 
     private static final List<String> CHECKER_FUNCTIONS = Arrays.asList("gestionnaireressources", "gestionnaireformation", "offcomecole");
-    private static final List<String> EDITOR_FUNCTIONS = Arrays.asList("enseignantinstructeur", "experttice", "encadrementapprenant");
+    private static final List<String> EDITOR_FUNCTIONS = Arrays.asList("enseignantinstructeur", "experttice",
+            "encadrementapprenant", "gestionnaireressources", "gestionnaireformation", "offcomecole");
 
     @Override
     protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionnalAttributes) {
