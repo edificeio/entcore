@@ -1,6 +1,7 @@
 package org.entcore.common.service.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -15,7 +16,6 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,6 +31,18 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 		super(vertx);
 		fileImporter = new FolderImporter(vertx, vertx.fileSystem(), vertx.eventBus());
 	}
+
+    /** 
+     * Hook to allow patching table data before it is exported to disk.
+     * @param exportDocuments truthy when workspace documents should be exported.
+     * @param exportPath Path of the directory where table data will be exported.
+     * @param tableName Name of the exported SQL table.
+     * @param fields Fields exported from the table data.
+     * @param rows Table data that will be exported. Can be modified. Each row is a JsonArray, with cells in the same order as the fields variable.
+     */
+    protected Future<Void> beforeExportingTableToPath(final boolean exportDocuments, String exportPath, String tableName, final JsonArray fields, final JsonArray rows) {
+        return Future.succeededFuture(); // No-op if not overriden (it is in exercizer)
+    }
 
     protected void exportTables(HashMap<String, JsonArray> queries, JsonArray cumulativeResult, HashMap<String, JsonArray> fieldsToNull,
             boolean exportDocuments, String exportPath, AtomicBoolean exported, Handler<Boolean> handler) {
@@ -100,14 +112,17 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 							results.put("results", rows);
                             queries.remove(tableName);
 
-							vertx.fileSystem().writeFile(filePath, results.toBuffer(),
-									new Handler<AsyncResult<Void>>() {
-										@Override
-										public void handle(AsyncResult<Void> voidAsyncResult) {
-											exportTables(queries, cumulativeResult.add(results), fieldsToNull, exportDocuments, exportPath,
-													exported, handler);
-										}
-							});
+                            beforeExportingTableToPath(exportDocuments,exportPath,tableName, fields, rows)
+                            .onComplete( r -> {
+                                vertx.fileSystem().writeFile(filePath, results.toBuffer(),
+                                    new Handler<AsyncResult<Void>>() {
+                                        @Override
+                                        public void handle(AsyncResult<Void> voidAsyncResult) {
+                                            exportTables(queries, cumulativeResult.add(results), fieldsToNull, exportDocuments, exportPath,
+                                                    exported, handler);
+                                        }
+                                    });
+                            });
 						} else {
 							log.error(title + " : Error, unexpected result " + event.body().encode());
 							handler.handle(exported.get());
