@@ -259,33 +259,42 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                     idsMapByTable.put(table, new JsonObject(oldIdsToNewIdsMap));
 
-                    if (!results.isEmpty()) {
+                    if (results.isEmpty()) {
+                        final JsonArray finalResults = transformResults(fields, results, userId, username, builder, table, forceImportAsDuplication, duplicateSuffix);
 
-                        results = transformResults(fields, results, userId, username, builder, table, forceImportAsDuplication, duplicateSuffix);
+                        beforeImportingResultsToTable(importPath, table, fields, finalResults)
+                        .onComplete( r -> {
+                            String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
+                                    ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
+                            String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
+                            String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT '" + table + "' AS table, "
+                                                    + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
 
-                        String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
-                                ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
-                        String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
-                        String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT '" + table + "' AS table, "
-                                                + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
+                            for (int i = 0; i < finalResults.size(); i++) {
+                                JsonArray entry = finalResults.getJsonArray(i);
+                                String query = insert + Sql.listPrepared(entry);
 
-                        for (int i = 0; i < results.size(); i++) {
-                            JsonArray entry = results.getJsonArray(i);
-                            String query = insert + Sql.listPrepared(entry);
-
-                            if (tablesWithId.containsKey(table)) {
-                                builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
-                                        " RETURNING 1) SELECT '" + table + "' AS table, count(*) AS noduplicates FROM rows", entry);
+                                if (tablesWithId.containsKey(table)) {
+                                    builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
+                                            " RETURNING 1) SELECT '" + table + "' AS table, count(*) AS noduplicates FROM rows", entry);
+                                }
+                                builder.prepared(query + conflictNothing, entry);
                             }
-                            builder.prepared(query + conflictNothing, entry);
-                        }
 
+                            importTables(importPath, schema, tables, tablesWithId, userId, username, locale, builder,
+                                forceImportAsDuplication, handler, idsMapByTable, duplicateSuffix);
+                        });
+                    } else {
+                        importTables(importPath, schema, tables, tablesWithId, userId, username, locale, builder,
+                            forceImportAsDuplication, handler, idsMapByTable, duplicateSuffix);
                     }
-                    importTables(importPath, schema, tables, tablesWithId, userId, username, locale, builder,
-                        forceImportAsDuplication, handler, idsMapByTable, duplicateSuffix);
                 }
             });
         }
+    }
+
+    protected Future<Void> beforeImportingResultsToTable(String importPath, String table, final JsonArray fields, final JsonArray rows) {
+        return Future.succeededFuture(); // No-op if not overriden (it is in exercizer)
     }
 
 	protected JsonArray transformResults(JsonArray fields, JsonArray results, String userId, String username,
