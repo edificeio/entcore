@@ -63,6 +63,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.utils.MapFactory;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 
 import fr.wseduc.security.ActionType;
@@ -83,7 +84,6 @@ import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -134,6 +134,8 @@ public class AuthController extends BaseController {
 	private List<String> internalAddress;
 	private boolean checkFederatedLogin = false;
 
+	private long jwtTtlSeconds;
+
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -156,6 +158,7 @@ public class AuthController extends BaseController {
 		slo = config.getBoolean("slo", false);
 		sessionsLimit = config.getLong("sessions-limit", 0L);
 		log.info("Initial Session limit : " + sessionsLimit);
+		jwtTtlSeconds = config.getLong("jwt-ttl-seconds", 600L);
 		final JsonObject sessionLimitConfig = config.getJsonObject("session-limit-config");
 		if (sessionLimitConfig != null && isNotEmpty(sessionLimitConfig.getString("uri")) && isNotEmpty(sessionLimitConfig.getString("platform"))) {
 			// TODO replace http conf with pg referencial
@@ -259,6 +262,83 @@ public class AuthController extends BaseController {
 			}
 		} else {
 			invalidRequest(request, redirectUri, state);
+		}
+	}
+
+	/* FIXME FAKE OAUTH for dev purposes only
+	@Get("/oauth2/fake")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void generateOAuthTokenFromSession(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if( user != null ) {
+				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
+				data.createOrUpdateAuthInfo("a_client_id", user.getUserId(), "auth", authInfo -> {
+					if( authInfo==null ) {
+						log.info("NULL AUTH INFO");
+					} else {
+						data.createOrUpdateAccessToken(authInfo, res -> {
+							log.info("fake token = "+res.getToken());
+							renderJson( request, new JsonObject().put("status","ok").put("result", res.toString()) );
+						});
+					}
+				});
+			} else {
+				unauthorized(request);
+			}
+		});
+	}
+	*/
+
+	/** 
+	 * Endpoint to convert a valid OAuth2 token in another platform-recognized token representing a user session.
+	 * @param type Set to "QueryParam" to produce a JWT reusable in HTTP query params.
+	 * @return JSON {"token_type":"QueryParam", "access_token":stringified token, "expires_in":number of seconds}
+	 */
+	@Get("/oauth2/token")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void createTokenFromOAuth2(final HttpServerRequest request) {
+		final String tokenType = request.params().get("type");
+		if( !(request instanceof SecureHttpServerRequest) || StringUtils.isEmpty(tokenType) ) {
+			badRequest(request);
+			return;
+		}
+		final String oauth2 = AppOAuthResourceProvider.getTokenId((SecureHttpServerRequest) request).orElse(null);
+		if( oauth2==null ){
+			badRequest(request);
+			return;
+		}
+		/* Do not check if oauth token is valid for the current user, just create a new token derived from it. */
+		if( "queryparam".equalsIgnoreCase(tokenType) ) {
+			// Create a token to use in HTTP query params => a JWT with a short validity period.
+			final Request req = new HttpServerRequestAdapter(request);
+			final DataHandler data = oauthDataFactory.create(req);
+			data.getAccessToken(oauth2, access -> {
+				if (access == null || access.getAuthId() == null) {
+					unauthorized(request);
+					return;
+				}
+				data.getAuthInfoById(access.getAuthId(), authInfo -> {
+					if(authInfo==null) {
+						unauthorized(request);
+						return;
+					}
+					renderJson(request, createQueryParamToken(request, authInfo.getUserId(), authInfo.getClientId(), jwtTtlSeconds));
+				});
+			});
+		} else {
+			badRequest(request);
+		}
+	}
+
+	private JsonObject createQueryParamToken(final HttpServerRequest request, String userId, String clientId, final long ttlInSeconds) {
+		final JsonObject result = new JsonObject()
+			.put("token_type", "QueryParam");
+		try {
+			return result
+				.put("access_token", UserUtils.createJWTForQueryParam(vertx, userId, clientId, ttlInSeconds, request))
+				.put("expires_in", ttlInSeconds);
+		} catch(Exception e) {
+			return result.put("expires_in", 0).putNull( "access_token" );
 		}
 	}
 

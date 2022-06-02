@@ -706,17 +706,45 @@ public class UserUtils {
 
 	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId, HttpServerRequest request) throws Exception {
 		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
-		final JsonObject payload = new JsonObject();
-		final long iat = System.currentTimeMillis() / 1000;
-		if (request != null) {
-			payload.put("iss", Renders.getHost(request));
-		}
-		payload
-				.put("aud", clientId)
-				.put("sub", user.getUserId())
-				.put("iat", iat)
-				.put("exp", iat + JWT_TOKEN_EXPIRATION_TIME);
+		final JsonObject payload = createJWTClaim(
+			user.getUserId(), clientId, JWT_TOKEN_EXPIRATION_TIME,
+			(request != null) ? Renders.getHost(request) : null
+		);
 		return jwt.encodeAndSignHmac(payload);
+	}
+
+	/**
+	 * Create a new JWT intended to be used in HTTP query params.
+	 * - payload is signed, proving the server was the emitter,
+	 * - is has a short time-to-live ;
+	 * @param vertx
+	 * @param userId id of the (session) user
+	 * @param clientId 
+	 * @param ttlInSeconds Generated token will be valid until this amount of seconds has elapsed
+	 * @param request null, or used to fill the issuer claim in the token
+	 * @return a signed JWT
+	 * @throws Exception
+	 */
+	public static String createJWTForQueryParam(
+				Vertx vertx, String userId, String clientId, long ttlInSeconds, HttpServerRequest request
+			) throws Exception {
+		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+		final JsonObject payload = createJWTClaim(userId, clientId,
+			(0>=ttlInSeconds || ttlInSeconds>JWT_TOKEN_EXPIRATION_TIME) ? JWT_TOKEN_EXPIRATION_TIME : ttlInSeconds,
+			(request != null) ? Renders.getHost(request) : null
+		);
+		return jwt.encodeAndSignHmac(payload);
+	}
+
+	private static JsonObject createJWTClaim(String userId, String intendedAudience, long ttlInSeconds, String issuer) {
+		final JsonObject payload = new JsonObject();
+		final long issuedAt = System.currentTimeMillis() / 1000;
+		if (issuer != null) payload.put("iss", issuer);
+		payload.put("aud", intendedAudience)
+			   .put("sub", userId)
+			   .put("iat", issuedAt)
+			   .put("exp", issuedAt + ttlInSeconds);
+		return payload;
 	}
 
 	public static void getUserIdsForGroupIds(Set<String> groupsIds, String currentUserId, EventBus eb, Handler<AsyncResult<Set<String>>> h) {
