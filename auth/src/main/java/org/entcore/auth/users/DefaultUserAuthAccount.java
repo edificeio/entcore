@@ -229,8 +229,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject params = new JsonObject().put("userId", userId);
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
 			if(res.isRight()) {
-				UserUtils.addSessionAttribute(eb, userId, "needRevalidateTerms", "false", addSessionAttributeRes -> {
-					handler.handle(addSessionAttributeRes);
+				UserUtils.deleteCacheSession(eb, userId, null, deleteCacheSessionRes -> {
+					if (deleteCacheSessionRes) {
+						UserUtils.addSessionAttribute(eb, userId, "needRevalidateTerms", "false", addSessionAttributeRes -> {
+							handler.handle(addSessionAttributeRes);
+						});
+					} else {
+						handler.handle(false);
+					}
 				});
 			} else {
 				handler.handle(false);
