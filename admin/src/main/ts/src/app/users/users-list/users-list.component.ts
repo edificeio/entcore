@@ -8,7 +8,6 @@ import { UserListService } from '../../core/services/userlist.service';
 import { StructureModel } from '../../core/store/models/structure.model';
 import { UsersStore } from '../users.store';
 import { includes } from '../users.component';
-import { BundlesService } from 'ngx-ode-sijil';
 
 @Component({
     selector: 'ode-users-list',
@@ -21,8 +20,7 @@ export class UsersListComponent extends OdeComponent {
         injector: Injector,
         public usersStore: UsersStore,
         protected listFilters: UserlistFiltersService,
-        protected spinner: SpinnerService,
-        protected sijilService: BundlesService
+        protected spinner: SpinnerService
     ) {
         super(injector);
     }
@@ -76,7 +74,7 @@ export class UsersListComponent extends OdeComponent {
         });
         this.listFilters.setFunctionsComboModel(filterAafFunctions);
 
-        this.listFilters.setProfilesComboModel(structure.profiles.map(p => this.sijilService.translate(p.name)));
+        this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));
         this.listFilters.setFunctionalGroupsComboModel(
             structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name));
         this.listFilters.setManualGroupsComboModel(

@@ -4,7 +4,6 @@ import { UserListService } from 'src/app/core/services/userlist.service';
 import { UsersListComponent } from '../users-list/users-list.component';
 import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
 import { SpinnerService } from 'ngx-ode-ui';
-import { BundlesService } from 'ngx-ode-sijil';
 
 
 @Component({
@@ -18,9 +17,8 @@ export class UsersRelinkComponent extends UsersListComponent {
         injector: Injector,
         public usersStore: UsersStore,
         protected listFilters: UserlistFiltersService,
-        protected spinner: SpinnerService,
-        protected sijilService: BundlesService
+        protected spinner: SpinnerService
     ) {
-        super(injector, usersStore, listFilters, spinner, sijilService);
+        super(injector, usersStore, listFilters, spinner);
     }
 }
