@@ -1370,8 +1370,13 @@ public class AuthController extends BaseController {
 
 						@Override
 						public void handle(Try<AccessDenied, String> tryUserId) {
-							try {
-								final String userId = tryUserId.get();
+
+								String userId = null;
+								try {
+									userId = tryUserId.get();
+								} catch (AccessDenied e) {
+									// Will be handled by resetCode check
+								}
 
 								// Keep current session and app token alive
 								Optional<String> sessionId = UserUtils.getSessionId(request);
@@ -1382,15 +1387,14 @@ public class AuthController extends BaseController {
 
 								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
 								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
-								final io.vertx.core.Handler<Boolean> resultHandler = new io.vertx.core.Handler<Boolean>() {
+								final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
 
 									@Override
-									public void handle(Boolean reseted) {
-										if (Boolean.TRUE.equals(reseted)) {
+									public void handle(String resetedUserId) {
+										if (resetedUserId != null) {
 											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											trace.info("Session " + sessionIdStr + " Token " + appTokenStr);
-											UserUtils.deleteCacheSession(eb, userId, sessionIdStr, r -> redirectionService.redirect(request, callback));
-											UserUtils.deletePermanentSession(eb, userId, sessionIdStr, appTokenStr, r -> {});
+											UserUtils.deleteCacheSession(eb, resetedUserId, sessionIdStr, r -> redirectionService.redirect(request, callback));
+											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, r -> {});
 										} else {
 											trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
 													+ login);
@@ -1406,9 +1410,7 @@ public class AuthController extends BaseController {
 								} else {
 									error(request, null);
 								}
-							} catch (AccessDenied e) {
-								error(request, null);
-							}
+
 						}
 					});
 				}
