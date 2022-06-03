@@ -226,7 +226,7 @@ public class UserAuthAccountTest {
                 .onComplete(resAcUser -> {
                     context.assertTrue(resAcUser.succeeded());
                     authAccount.resetPassword("user12", "resetCode12", "password12", null, resActiv -> {
-                        context.assertTrue(resActiv);
+                        context.assertTrue(resActiv != null);
                         async.complete();
                     });
                 });
@@ -240,7 +240,7 @@ public class UserAuthAccountTest {
         }).setHandler(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.resetPassword("user13", "bad", "password13", null, resActiv -> {
-                context.assertFalse(resActiv);
+                context.assertFalse(resActiv != null);
                 async.complete();
             });
         });
