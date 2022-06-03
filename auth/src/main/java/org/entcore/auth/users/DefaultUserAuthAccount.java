@@ -606,7 +606,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void resetPassword(String login, String resetCode, String password, HttpServerRequest request, final Handler<Boolean> handler) {
+	public void resetPassword(String login, String resetCode, String password, HttpServerRequest request, final Handler<String> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND has(n.resetDate) " +
@@ -638,18 +638,18 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						@Override
 						public void handle(Either<String, JsonObject> res)
 						{
-							handler.handle(true); // Ignore email failures: email is optional
+							handler.handle(user.getString("id")); // Ignore email failures: email is optional
 						}
 					});
 				}
 				else
-					handler.handle(user != null);
+					handler.handle(user != null ? user.getString("id") : null);
 			}
 		}, query, password, login, params);
 	}
 
 	@Override
-	public void changePassword(String login, String password, HttpServerRequest request, final Handler<Boolean> handler) {
+	public void changePassword(String login, String password, HttpServerRequest request, final Handler<String> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
@@ -679,12 +679,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						@Override
 						public void handle(Either<String, JsonObject> res)
 						{
-							handler.handle(true); // Ignore email failures: email is optional
+							handler.handle(user.getString("id")); // Ignore email failures: email is optional
 						}
 					});
 				}
 				else
-					handler.handle(user != null);
+					handler.handle(user != null ? user.getString("id") : null);
 			}
 		}, query, password, login, params);
 	}

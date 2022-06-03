@@ -40,9 +40,9 @@ public interface UserAuthAccount {
 	void activateAccountWithRevalidateTerms(String login, String activationCode, String password, String email,
 						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
 
-	void resetPassword(String login, String resetCode, String password, HttpServerRequest request, Handler<Boolean> handler);
+	void resetPassword(String login, String resetCode, String password, HttpServerRequest request, Handler<String> handler);
 
-	void changePassword(String login, String password, HttpServerRequest request, Handler<Boolean> handler);
+	void changePassword(String login, String password, HttpServerRequest request, Handler<String> handler);
 
 	void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, String profile, JsonArray functions,
 									final Handler<Either<String, JsonObject>> handler);
