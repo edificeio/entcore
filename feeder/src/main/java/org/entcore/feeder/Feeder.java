@@ -72,6 +72,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public static final String USER_REPOSITORY = "user.repository";
 	public static final String FEEDER_ADDRESS = "entcore.feeder";
+	public static final String SUBJECT_SOURCE = "MANUAL";
 	private String defaultFeed;
 	private final Map<String, Feed> feeds = new HashMap<>();
 	private ManualFeeder manual;
@@ -331,6 +332,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-add-head-teacher" : manual.addUserHeadTeacherManual(message);
 				break;
 			case "manual-update-head-teacher" : manual.updateUserHeadTeacherManual(message);
+				break;
+			case "manual-add-subject" : manual.createManualSubject(message);
+				break;
+			case "manual-update-subject" : manual.updateManualSubject(message);
+				break;
+			case "manual-delete-subject" : manual.deleteManualSubject(message);
 				break;
 			case "manual-add-direction" : manual.addUserDirectionManual(message);
 				break;
