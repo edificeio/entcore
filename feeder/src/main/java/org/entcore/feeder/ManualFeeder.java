@@ -19,6 +19,7 @@
 
 package org.entcore.feeder;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.Json;
 import org.entcore.common.events.EventStore;
@@ -1068,6 +1069,38 @@ public class ManualFeeder extends BusModBase {
 			logger.error("Error in transaction when updating user to head teacher group", e);
 			sendError(message, "transaction.error");
 		}
+	}
+
+	public void createManualSubject(final Message<JsonObject> message) {
+		JsonObject subject = message.body().getJsonObject("subject");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Subject.createManualSubject(subject, tx);
+			}
+		});
+
+	}
+
+	public void updateManualSubject(final Message<JsonObject> message) {
+		JsonObject subject = message.body().getJsonObject("subject");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Subject.updateManualSubject(subject, tx);
+			}
+		});
+
+	}
+
+	public void deleteManualSubject(final Message<JsonObject> message) {
+		String subjectId = message.body().getString("subjectId");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply (TransactionHelper tx) {
+				Subject.deleteManualSubject(subjectId,tx);
+			}
+		});
 	}
 
 	public void addUserDirectionManual(final Message<JsonObject> message) {

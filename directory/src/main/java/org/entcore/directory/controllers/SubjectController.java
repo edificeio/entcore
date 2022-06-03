@@ -52,7 +52,7 @@ public class SubjectController extends BaseController {
         bodyToJson(request, pathPrefix + "createManualSubject", new Handler<JsonObject>() {
             @Override
             public void handle(JsonObject body) {
-                subjectService.createOrUpdateManual(body, notEmptyResponseHandler(request, 201));
+                subjectService.createManual(body, notEmptyResponseHandler(request, 201));
             }
         });
     }

@@ -9,7 +9,7 @@ import org.entcore.common.user.UserInfos;
 public interface SubjectService {
     void getSubjects(String structureId, Handler<Either<String, JsonArray>> results);
 
-    void createOrUpdateManual(JsonObject subject, Handler<Either<String, JsonObject>> result);
+    void createManual(JsonObject subject, Handler<Either<String, JsonObject>> result);
 
     void updateManual(JsonObject subject, Handler<Either<String, JsonObject>> result);
 
