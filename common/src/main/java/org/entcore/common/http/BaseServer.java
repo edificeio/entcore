@@ -152,7 +152,8 @@ public abstract class BaseServer extends Server {
 		clearFilters();
 		addFilter(new AccessLoggerFilter(accessLogger));
 		addFilter(new WebviewFilter(vertx, getEventBus(vertx)));
-		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
+		UserAuthFilter userAuth = new UserAuthWithQueryParamFilter(
+			new AppOAuthResourceProvider(
 				getEventBus(vertx), getPathPrefix(config), ()->{
 					try{
 						if(!oauthConfigJson.get().getBoolean("enabled", false)) return Optional.empty();
@@ -160,7 +161,12 @@ public abstract class BaseServer extends Server {
 					}catch(Exception e){
 						return Optional.empty();
 					}
-		}, oauthTtl), new BasicFilter()));
+			}, oauthTtl), 
+			new BasicFilter(),
+			new QueryParamTokenFilter(),
+			this
+		);
+		addFilter(userAuth);
 
 		addFilter(new TermsRevalidationFilter(getEventBus(vertx)));
 

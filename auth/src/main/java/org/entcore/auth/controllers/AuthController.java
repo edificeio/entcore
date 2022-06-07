@@ -270,15 +270,16 @@ public class AuthController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void generateOAuthTokenFromSession(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
-			if( user != null ) {
+			final String clientId = request.getParam("clientId");
+			if( user != null && clientId != null && !clientId.trim().isEmpty() ) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-				data.createOrUpdateAuthInfo("a_client_id", user.getUserId(), "auth", authInfo -> {
+				data.createOrUpdateAuthInfo(clientId, user.getUserId(), "auth", authInfo -> {
 					if( authInfo==null ) {
 						log.info("NULL AUTH INFO");
 					} else {
 						data.createOrUpdateAccessToken(authInfo, res -> {
-							log.info("fake token = "+res.getToken());
-							renderJson( request, new JsonObject().put("status","ok").put("result", res.toString()) );
+							log.debug("fake token = "+res.getToken());
+							renderJson( request, new JsonObject().put("status","ok").put("result", res.getToken()) );
 						});
 					}
 				});
