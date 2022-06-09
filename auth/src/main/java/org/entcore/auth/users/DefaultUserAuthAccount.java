@@ -58,6 +58,7 @@ import fr.wseduc.webutils.security.BCrypt;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.user.SessionAttributes.*;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
@@ -229,14 +230,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject params = new JsonObject().put("userId", userId);
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
 			if(res.isRight()) {
-				UserUtils.deleteCacheSession(eb, userId, null, deleteCacheSessionRes -> {
-					if (deleteCacheSessionRes) {
-						UserUtils.addSessionAttribute(eb, userId, "needRevalidateTerms", "false", addSessionAttributeRes -> {
-							handler.handle(addSessionAttributeRes);
-						});
-					} else {
-						handler.handle(false);
-					}
+				UserUtils.addSessionAttribute(eb, userId, NEED_REVALIDATE_TERMS, "false", addSessionAttributeRes -> {
+					handler.handle(addSessionAttributeRes);
 				});
 			} else {
 				handler.handle(false);

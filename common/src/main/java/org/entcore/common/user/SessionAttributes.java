@@ -29,4 +29,6 @@ public final class SessionAttributes {
 
 	public static final String THEME_ATTRIBUTE = "theme";
 
+	public static final String NEED_REVALIDATE_TERMS = "needRevalidateTerms";
+
 }
