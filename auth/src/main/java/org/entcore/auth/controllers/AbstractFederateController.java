@@ -23,6 +23,8 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.logging.Tracer;
+import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.CookieHelper;
 
 import org.entcore.auth.services.SafeRedirectionService;
@@ -46,6 +48,7 @@ public abstract class AbstractFederateController extends BaseController {
 	private EventStore eventStore;
 	protected String signKey;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
+	private static final Tracer trace = TracerFactory.getTracer("auth");
 
 	protected void authenticate(JsonObject res, String sessionIndex, String nameId, JsonObject activationThemes, HttpServerRequest request) {
 		final String userId = res.getString("id");
@@ -65,9 +68,10 @@ public abstract class AbstractFederateController extends BaseController {
 			});
 		}
 		if (activationCode != null && login != null) {
+			trace.info("Code d'activation entré pour l'utilisateur fédéré " + login);
 			activateUser(activationCode, login, email, mobile, theme, sessionIndex, nameId, request);
 		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
-			log.info("Connexion de l'utilisateur fédéré " + login);
+			trace.info("Connexion de l'utilisateur fédéré " + login);
 			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login, request);
 			createSession(userId, sessionIndex, nameId, request);
 		} else {
@@ -110,11 +114,11 @@ public abstract class AbstractFederateController extends BaseController {
 			@Override
 			public void handle(Either<String, String> activated) {
 				if (activated.isRight() && activated.right().getValue() != null) {
-					log.info("Activation du compte utilisateur " + login);
+					trace.info("Activation du compte utilisateur " + login);
 					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login, request);
 					createSession(activated.right().getValue(), sessionIndex, nameId, request);
 				} else {
-					log.info("Echec de l'activation : compte utilisateur " + login +
+					trace.info("Echec de l'activation : compte utilisateur " + login +
 							" introuvable ou déjà activé.");
 					JsonObject error = new JsonObject()
 							.put("error", new JsonObject()
