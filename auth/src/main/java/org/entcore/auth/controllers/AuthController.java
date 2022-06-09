@@ -273,7 +273,7 @@ public class AuthController extends BaseController {
 			final String clientId = request.getParam("clientId");
 			if( user != null && clientId != null && !clientId.trim().isEmpty() ) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-				data.createOrUpdateAuthInfo(clientId, user.getUserId(), "auth", authInfo -> {
+				data.createOrUpdateAuthInfo(clientId, user.getUserId(), "auth timeline", authInfo -> {
 					if( authInfo==null ) {
 						log.info("NULL AUTH INFO");
 					} else {
