@@ -27,6 +27,8 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
+import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -35,6 +37,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.neo4j.Neo4j;
 
 import java.io.IOException;
@@ -400,30 +403,53 @@ public class UserUtils {
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
 		} else {
-			String oneSessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-			String remoteUserId = null;
+			final String oneSessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+			Promise<String> promise = Promise.promise();
 			if (request instanceof SecureHttpServerRequest) {
-				remoteUserId = ((SecureHttpServerRequest) request).getAttribute("remote_user");
-			}
-			if ((oneSessionId == null || oneSessionId.trim().isEmpty()) &&
-					(remoteUserId == null || remoteUserId.trim().isEmpty())) {
-				handler.handle(null);
-				return;
+				promise.complete( ((SecureHttpServerRequest) request).getAttribute("remote_user") );
 			} else {
-				if (!paused) {
-					request.pause();
-				}
-				JsonObject findSession = new JsonObject();
-				if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
-					findSession.put("action", "find")
-							.put("sessionId", oneSessionId);
-				} else { // remote user (oauth)
-					findSession.put("action", "findByUserId")
-							.put("userId", remoteUserId)
-							.put("allowDisconnectedUser", true);
-				}
-				findSession(eb, request, findSession, paused, handler);
+				promise.complete( null );
 			}
+			promise.future()
+			.compose( remoteUserId -> {
+				// If request attributes are not set yet, and if a bearer token exists,
+				// try to retrieve the remote_user by validating the token.
+				if( (oneSessionId==null || oneSessionId.trim().isEmpty()) && remoteUserId==null && request instanceof SecureHttpServerRequest) {
+					final SecureHttpServerRequest secureRequest = (SecureHttpServerRequest) request;
+					OAuthResourceProvider provider = new DefaultOAuthResourceProvider(eb);
+					Promise<String> attrPromise = Promise.promise();
+					if( provider.hasBearerHeader(secureRequest) ) {
+						provider.validToken(secureRequest, r -> {
+							attrPromise.complete( secureRequest.getAttribute("remote_user") );
+						});
+					} else {
+						attrPromise.complete( (String) null );
+					}
+					return attrPromise.future();
+				} else {
+					return Future.succeededFuture(remoteUserId);
+				}
+			})
+			.onSuccess( remoteUserId -> {
+				if ((oneSessionId == null || oneSessionId.trim().isEmpty()) &&
+						(remoteUserId == null || remoteUserId.trim().isEmpty())) {
+					handler.handle(null);
+				} else {
+					if (!paused) {
+						request.pause();
+					}
+					JsonObject findSession = new JsonObject();
+					if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
+						findSession.put("action", "find")
+								.put("sessionId", oneSessionId);
+					} else { // remote user (oauth)
+						findSession.put("action", "findByUserId")
+								.put("userId", remoteUserId)
+								.put("allowDisconnectedUser", true);
+					}
+					findSession(eb, request, findSession, paused, handler);
+				}
+			});
 		}
 	}
 
