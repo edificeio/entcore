@@ -1496,6 +1496,7 @@ public class AuthController extends BaseController {
 	}
 
 	@Get("/revalidate-terms")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void revalidateTerms(final HttpServerRequest request) {
 		renderView(request);
 	}
