@@ -27,10 +27,12 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
 
   // Tabs
   tabs = [
+//  { label: "Classes", view: "classes" },  // admin only
     { label: "ManualGroup", view: "manualGroup" },
     { label: "ProfileGroup", view: "profileGroup" },
     { label: "FunctionalGroup", view: "functionalGroup" },
     { label: "FunctionGroup", view: "functionGroup" },
+//  { label: "BroadcastGroup", view: "broadcastGroup" }    // admin only
   ];
 
   groupsError: any;
@@ -59,7 +61,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.showBroadcastGroupTab();
+    this.showAdminTabs();
   }
 
   onError(error: Error) {
@@ -67,23 +69,29 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     this.groupsError = error;
   }
 
-  createButtonHidden(groupType) {
-    return (
-      !this.router.isActive(
-        `/admin/${this.groupsStore.structure.id}/groups/${groupType}`,
-        false
-      ) ||
-      this.router.isActive(
-        `/admin/${this.groupsStore.structure.id}/groups/${groupType}/create`,
-        true
-      )
-    );
+  createButtonHidden(keyword) {
+    if( keyword==='classes' ) {
+      return !this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${keyword}`, false)
+        || this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${keyword}/create`, true)
+    } else {
+      return (
+        !this.router.isActive(
+          `/admin/${this.groupsStore.structure.id}/groups/${keyword}`,
+          false
+        ) ||
+        this.router.isActive(
+          `/admin/${this.groupsStore.structure.id}/groups/${keyword}/create`,
+          true
+        )
+      );
+    }
   }
 
-  async showBroadcastGroupTab() {
+  async showAdminTabs() {
     const session: Session = await SessionModel.getSession();
     this.isADMC = session.isADMC();
     if (this.isADMC) {
+      this.tabs.unshift({ label: "Classes", view: "classes" });
       this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup" });
     }
     this.changeDetector.markForCheck();

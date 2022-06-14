@@ -26,13 +26,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
-
 public interface ClassService {
 
 	void create(String schoolId, JsonObject c, Handler<Either<String, JsonObject>> result);
 
 	void update(String classId, JsonObject c, Handler<Either<String, JsonObject>> result);
+
+	void remove(String classId, Handler<Either<String, JsonObject>> result);
 
 	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, Handler<Either<String, JsonArray>> results);
 

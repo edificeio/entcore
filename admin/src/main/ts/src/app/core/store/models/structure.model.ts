@@ -6,6 +6,8 @@ import { ApplicationCollection } from '../collections/application.collection';
 import { ConnectorCollection } from '../collections/connector.collection';
 import { WidgetCollection } from '../collections/widget.collection';
 
+export type ClassModel = { id: string, name: string };
+
 export class StructureModel extends Model<StructureModel> {
     UAI?: string;
     externalId?: string;
@@ -14,7 +16,7 @@ export class StructureModel extends Model<StructureModel> {
     children?: StructureModel[];
     users: UserCollection;
     removedUsers: UserCollection;
-    classes: Array<{ id: string, name: string }> = [];
+    classes: Array<ClassModel> = [];
     groups: GroupCollection;
     subjects: SubjectCollection;
     applications: ApplicationCollection;

@@ -2152,6 +2152,13 @@ ode-group-users-list {
   }
 }
 
+ode-class-create {
+  .panel-section-header {
+    border: 0;
+    padding: 0 !important;
+  }
+}
+
 ode-group-create {
   ode-panel-section {
     div.action {

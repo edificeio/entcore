@@ -1,0 +1,32 @@
+<div class="panel-header">
+  <span><s5l>create.class</s5l></span>
+</div>
+
+<ode-panel-section class="thin">
+  <form #createForm="ngForm" (ngSubmit)="createNewClass()" autocomplete="off">
+    <ode-form-field [label]="label">
+      <input
+        type="text"
+        [(ngModel)]="newClass.name"
+        name="name"
+        required
+        pattern=".*\S+.*"
+        #nameInput="ngModel"
+        (blur)="onNameBlur(newClass.name)"
+      />
+      <ode-form-errors [control]="nameInput"></ode-form-errors>
+    </ode-form-field>
+
+    <div class="action">
+      <button type="button" class="cancel" (click)="cancel()">
+        <s5l>create.class.cancel</s5l>
+      </button>
+      <button
+        class="create confirm"
+        [disabled]="createForm.pristine || createForm.invalid"
+      >
+        <s5l>create.class.submit</s5l>
+      </button>
+    </div>
+  </form>
+</ode-panel-section>

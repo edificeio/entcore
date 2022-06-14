@@ -29,6 +29,10 @@ import { SmartGroupCommunicationComponent } from "./communication/smart-group-co
 import { globalStoreProvider } from "../core/store/global.store";
 import { GroupInfoComponent } from "./info/group-info.component";
 import { UsersService } from "../users/users.service";
+import { ClassesComponent } from "./classes/classes.component";
+import { ClassDetailsComponent } from "./classes/details/class-details.component";
+import { ClassesService } from "./classes/classes.service";
+import { ClassCreateComponent } from "./classes/create/class-create.component";
 
 @NgModule({
   imports: [
@@ -48,6 +52,9 @@ import { UsersService } from "../users/users.service";
     GroupInputFiltersComponent,
     GroupOutputUsersComponent,
     GroupUsersListComponent,
+    ClassesComponent,
+    ClassCreateComponent,
+    ClassDetailsComponent,
     GroupsTypeViewComponent,
     GroupInfoComponent,
     SmartGroupCommunicationComponent,
@@ -62,6 +69,7 @@ import { UsersService } from "../users/users.service";
     GroupNameService,
     GroupsService,
     UsersService,
+    ClassesService,
     globalStoreProvider,
   ],
   exports: [RouterModule],
