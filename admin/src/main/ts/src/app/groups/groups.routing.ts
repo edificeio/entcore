@@ -9,16 +9,33 @@ import { GroupDetailsResolver } from "./details/group-details.resolver";
 import { GroupInternalCommunicationRuleResolver } from "./details/group-internal-communication-rule.resolver";
 import { SmartGroupCommunicationComponent } from "./communication/smart-group-communication/smart-group-communication.component";
 import { GroupInfoComponent } from "./info/group-info.component";
+import { ClassesComponent } from "./classes/classes.component";
+import { ClassDetailsComponent } from "./classes/details/class-details.component";
+import { ClassCreateComponent } from "./classes/create/class-create.component";
 
 export let routes: Routes = [
   {
     path: "",
     component: GroupsComponent,
-    resolve: { grouplist: GroupsResolver },
     children: [
+      {
+        path: "classes",
+        component: ClassesComponent,
+        children: [
+          {
+            path: "create",
+            component: ClassCreateComponent,
+          },
+          {
+            path: ":classId/details",
+            component: ClassDetailsComponent
+          }
+        ]
+      },
       {
         path: ":groupType",
         component: GroupsTypeViewComponent,
+        resolve: { grouplist: GroupsResolver },
         children: [
           {
             path: "create",

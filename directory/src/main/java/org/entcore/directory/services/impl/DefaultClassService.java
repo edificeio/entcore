@@ -69,6 +69,14 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
+	public void remove(String classId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-remove-class")
+				.put("classId", classId);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+	}
+
+	@Override
 	public void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative,
 						  Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject().put("classId", classId);

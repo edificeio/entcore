@@ -31,9 +31,11 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.AdmlOfStructureOrClassOrTeachOfUser;
 import org.entcore.directory.security.TeacherInAllStructure;
 import org.entcore.directory.services.ClassService;
@@ -82,6 +84,18 @@ public class ClassController extends BaseController {
 				classService.update(classId, body, defaultResponseHandler(request));
 			}
 		});
+	}
+
+	@Delete("/class/:classId")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void removeClass(final HttpServerRequest request) {
+		final String classId = request.params().get("classId");
+		if (StringUtils.isEmpty(classId)) {
+			badRequest(request);
+			return;
+		}
+		classService.remove(classId, defaultResponseHandler(request));
 	}
 
 	@Post("/class/:classId/user")

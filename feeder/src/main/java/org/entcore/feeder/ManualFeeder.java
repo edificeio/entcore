@@ -27,6 +27,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -184,6 +185,67 @@ public class ManualFeeder extends BusModBase {
 				}
 			});
 		}
+	}
+
+	public void removeClass(final Message<JsonObject> message) {
+		String classId = getMandatoryString("classId", message);
+		if (StringUtils.isEmpty(classId)) return;
+
+		//=== Find which users to remove from class
+		String queryUserIds =
+			"MATCH (c:`Class` {id: {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
+			"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User)-[:IN]->spg " +
+			"RETURN COLLECT(m.id) as ids ";
+		neo4j.execute(queryUserIds, new JsonObject().put("classId", classId), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				try {
+					TransactionHelper tx = TransactionManager.getTransaction();
+					
+					JsonArray res = r.body().getJsonArray("result");
+					if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
+						final JsonArray userIds = res.getJsonObject(0).getJsonArray("ids");
+						if( userIds !=null && !userIds.isEmpty() ) {
+							final JsonArray classIds = new JsonArray();
+							userIds.forEach( u -> classIds.add(classId) );
+							prepareRemovingUsersFromClasses(tx, userIds, classIds);
+						}
+					}
+
+					prepareRemovingProfileGroupsOfClass(tx, classId);
+					prepareRemovingClass(tx, classId);
+
+					tx.commit(new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							// final JsonArray results = event.body().getJsonArray("results");
+							// if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+							// 	message.reply(event.body().put("result", results.getJsonArray(0)));
+							// } else {
+							message.reply(event.body());
+							// }
+						}
+					});
+				} catch (TransactionException e) {
+					logger.error("Error in transaction while removing class", e);
+					sendError(message, "transaction.error");
+				}
+			}
+		});
+	}
+
+	private void prepareRemovingProfileGroupsOfClass(TransactionHelper tx, String classId) {
+		String query =
+			"MATCH (c:Class {id: {classId}})<-[:DEPENDS]-(cpg:Group) " +
+			"DETACH DELETE cpg ";
+		tx.add(query, new JsonObject().put("classId", classId));
+	}
+
+	private void prepareRemovingClass(TransactionHelper tx, String classId) {
+		String query =
+			"MATCH (c:Class {id: {classId}}) " +
+			"DETACH DELETE c ";
+		tx.add(query, new JsonObject().put("classId", classId));
 	}
 
 	public void createUser(final Message<JsonObject> message) {
@@ -661,40 +723,7 @@ public class ManualFeeder extends BusModBase {
 									 JsonArray userIds, JsonArray classIds) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			for(int i=0; i < userIds.size(); i++) {
-				String userId = userIds.getString(i);
-				Object classIdsForUserId = classIds.getValue(i);
-				JsonArray currentClassIds = classIdsForUserId instanceof JsonArray? (JsonArray) classIdsForUserId: new JsonArray().add(classIdsForUserId.toString());
-				for(Object classIdObj : currentClassIds) {
-					JsonObject params = new JsonObject()
-							.put("classId", classIdObj.toString())
-							.put("userId", userId);
-					String query =
-							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-									"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-									"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-									"CREATE UNIQUE dpg<-[:IN]-u " +
-									"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
-									"DELETE r " +
-									"RETURN DISTINCT u.id as id";
-
-					tx.add(query, params);
-
-					String query2 =
-							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
-									"DELETE r ";
-
-					tx.add(query2, params);
-
-					String query3 =
-							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure)<-[b:BELONGS]-(c:Class {id : {classId}}) " +
-									"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
-									"DELETE r " +
-									"RETURN DISTINCT u.id as id";
-
-					tx.add(query3, params);
-				}
-			}
+			prepareRemovingUsersFromClasses(tx, userIds, classIds);
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
@@ -709,6 +738,43 @@ public class ManualFeeder extends BusModBase {
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when remove user from structure", e);
 			sendError(message, "transaction.error");
+		}
+	}
+
+	protected void prepareRemovingUsersFromClasses(TransactionHelper tx, JsonArray userIds, JsonArray classIds) {
+		for(int i=0; i < userIds.size(); i++) {
+			final String userId = userIds.getString(i);
+			final Object classIdsForUserId = classIds.getValue(i);
+			JsonArray currentClassIds = classIdsForUserId instanceof JsonArray? (JsonArray) classIdsForUserId: new JsonArray().add(classIdsForUserId.toString());
+			for(Object classIdObj : currentClassIds) {
+				JsonObject params = new JsonObject()
+						.put("classId", classIdObj.toString())
+						.put("userId", userId);
+				String query =
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+								"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+								"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+								"CREATE UNIQUE dpg<-[:IN]-u " +
+								"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
+								"DELETE r " +
+								"RETURN DISTINCT u.id as id";
+
+				tx.add(query, params);
+
+				String query2 =
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
+								"DELETE r ";
+
+				tx.add(query2, params);
+
+				String query3 =
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure)<-[b:BELONGS]-(c:Class {id : {classId}}) " +
+								"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+								"DELETE r " +
+								"RETURN DISTINCT u.id as id";
+
+				tx.add(query3, params);
+			}
 		}
 	}
 
