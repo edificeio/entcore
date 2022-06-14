@@ -672,5 +672,6 @@
   "workspace.invalidfile.placeholder": "Fichier invalide",
   "workspace.import.zip.invalid": "Fichier invalide",
   "helpbox.next": "Suivant",
-  "helpbox.finish": "J'ai compris"
+  "helpbox.finish": "J'ai compris",
+  "workspace.add.document.success": "Le fichier a été importé avec succès"
 }
