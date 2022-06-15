@@ -40,7 +40,8 @@ public class TermsRevalidationFilter implements Filter {
                         }
                     }
                 } else {
-                    handler.handle(false);
+                    //user is not connected... we cant force him to validate cgu
+                    handler.handle(true);
                 }
             });
         } else {
