@@ -44,7 +44,7 @@
 						<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
 							<img skin-src="[[resource.icon]]" class="illustration" />
 							<a class="eight cell-ellipsis name">[[resource.title]]</a>
-							<em class="cell-ellipsis owner">[[resource.ownerName]]</em>
+							<em class="cell-ellipsis">[[resource.ownerName]]</em>
 						</li>
 					</ul>
 				</div>
