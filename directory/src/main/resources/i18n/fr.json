@@ -523,6 +523,7 @@
     "invalid.lastName": "Le nom est invalide à la ligne ",
     "invalid.structure": "Structure invalide",
     "invalid.merge.keys": "La clef de fusion n'est pas valide",
+    "invalid.merged.logins": "Le compte fusionné n'est pas valide",
     "loading": "Chargement en cours...",
     "mail.invalid": "Adresse courriel invalide",
     "mark": "Marquer",

@@ -480,6 +480,67 @@ public class DuplicateUsers {
 
 	}
 
+	public void unmergeByLogins(final Message<JsonObject> message) {
+		final JsonObject error = new JsonObject().put("status", "error");
+		final String originalUserId = message.body().getString("originalUserId");
+		if (originalUserId == null || originalUserId.isEmpty()) {
+			message.reply(error.put("message", "invalid.original.user"));
+			return;
+		}
+		final JsonArray mergedLogins = message.body().getJsonArray("mergedLogins");
+		if (mergedLogins == null || mergedLogins.size() < 1) {
+			message.reply(error.put("message", "invalid.merged.logins"));
+			return;
+		}
+		final String updQuery =
+			"MATCH (u:User {id: {userId}})<-[r:MERGED]-(u2:User {login: {mergedLogin}}) " +
+			"WHERE HAS(u.mergedLogins) AND u2.mergedWith=u.id " +
+			"DELETE r " +
+			"SET u.mergedLogins = [l IN u.mergedLogins WHERE l <> u2.login], " +
+				"u.checksum='unmerged', u2.checksum='unmerged' " +
+			"REMOVE u2.mergedWith";
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+			for( int i=0; i<mergedLogins.size(); i++ ) {
+				final String mergedLogin = mergedLogins.getString(i);
+				tx.add(
+					updQuery, 
+					new JsonObject().put("userId", originalUserId).put("mergedLogin", mergedLogin)
+				);
+			}
+			tx.add(
+				"MATCH (u:User {id: {userId}}) "+
+				"SET u.mergedLogins = CASE WHEN SIZE(u.mergedLogins) = 0 THEN null ELSE u.mergedLogins END "+
+				"RETURN u.mergedLogins as mergedLogins", 
+				new JsonObject().put("userId", originalUserId)
+			);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						JsonArray results = event.body().getJsonArray("results");
+						// Keep last result only
+						message.reply( new JsonObject()
+							.put("status", "ok")
+							.put("result", new JsonArray().add( 
+								(results!=null && results.size()>0) 
+									? results.getJsonArray(results.size()-1).getJsonObject(0)
+									: new JsonObject() 
+							))
+						);
+					} else {
+						final String err = event.body().getString("message");
+						message.reply(error.put("message", err));
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			log.error("transaction.error", e);
+			message.reply(error.put("message", "transaction.error"));
+		}
+	}
+
+
 	private int prioritySource(String source) {
 		Integer priority = sourcePriority.get(source);
 		return (priority != null) ? priority : 0;

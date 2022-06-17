@@ -810,6 +810,19 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Post("/duplicate/user/unmergeByLogins")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void unmergeFromLogins(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, body -> {
+			if( body != null && body.containsKey("originalUserId") && body.containsKey("mergedLogins") ) {
+				userService.unmergeByLogins(body, notEmptyResponseHandler(request));
+			} else {
+				badRequest(request);
+			}
+		});
+	}
+
 	@Get("/allowLoginUpdate")
 	@SecuredAction("user.allow.login.update")
 	public void allowLoginUpdate(final HttpServerRequest request) {

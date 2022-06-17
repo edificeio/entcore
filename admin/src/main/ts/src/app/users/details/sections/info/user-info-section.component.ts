@@ -21,6 +21,7 @@ import { SpinnerService } from "ngx-ode-ui";
 import { PlatformInfoService } from "src/app/core/services/platform-info.service";
 import { SessionModel } from "src/app/core/store/models/session.model";
 import { Session } from "src/app/core/store/mappings/session";
+import { catchError, tap } from "rxjs/operators";
 
 @Component({
   selector: "ode-user-info-section",
@@ -34,6 +35,7 @@ export class UserInfoSectionComponent
   passwordResetMail: string;
   passwordResetMobile: string;
   smsModule: boolean | string;
+  showMergedLogins: boolean = false;
   showAddAdmlConfirmation: boolean = false;
   showRemoveAdmlConfirmation: boolean = false;
   showMassMailConfirmation = false;
@@ -289,6 +291,36 @@ export class UserInfoSectionComponent
 
   generateMergeKey() {
     this.spinner.perform("portal-content", this.details.generateMergeKey());
+  }
+
+  unmerge(mergedLogin:string) {
+    const payload = {
+      originalUserId: this.details.id,
+      mergedLogins: [mergedLogin]
+    }
+    this.spinner.perform("portal-content", 
+      this.http.post<{mergedLogins:Array<string>}>('/directory/duplicate/user/unmergeByLogins', payload).pipe(
+        tap( result => {
+          this.ns.success({
+            key: 'notify.user.unmerge.content',
+            parameters: {mergedLogin: mergedLogin}
+          }, 'notify.user.unmerge.title');
+
+          if( result.mergedLogins ) {
+            this.details.mergedLogins = result.mergedLogins;
+          } else {
+            this.details.mergedLogins.splice( this.details.mergedLogins.indexOf(mergedLogin), 1 );
+          }
+        }),
+        catchError( err => {
+          this.ns.error({
+            key: 'notify.user.unmerge.error.content',
+            parameters: {mergedLogin: mergedLogin}
+          }, 'notify.user.unmerge.error.title', err);
+          throw err;
+        })
+      ).toPromise()    
+    );
   }
 
   displayAdmlStructureNames(structureIds: string[]): string {

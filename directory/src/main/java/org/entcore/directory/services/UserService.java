@@ -130,6 +130,8 @@ public interface UserService {
 
 	void mergeByKey(String userId, JsonObject body, Handler<Either<String,JsonObject>> handler);
 
+	void unmergeByLogins(JsonObject body, Handler<Either<String,JsonObject>> handler);
+
 	void listChildren(String userId, Handler<Either<String,JsonArray>> eitherHandler);
 
 	void getUserInfos(String userId, Handler<Either<String,JsonObject>> handler);

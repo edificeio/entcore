@@ -74,6 +74,36 @@
           </button>
         </div>
       </ode-form-field>
+      <ode-form-field label="mergedLogins" *ngIf="details.mergedLogins && details.mergedLogins.length" >
+        <div>
+          <span>{{ details.mergeKey }}</span>
+          <button type="button" class="noflex"
+                  (click)="showMergedLogins = true">
+            <s5l>mergedLogins.view</s5l>
+            <i class="fa fa-eye"></i>
+          </button>
+
+          <ode-lightbox [show]="showMergedLogins" (onClose)="showMergedLogins = false">
+            <h2><s5l [s5l-params]="{displayName: details.displayName}">mergedLogins.box.title</s5l></h2>
+            <div>
+              <div *ngIf="isAdmc" class="message is-info">
+                <div class="message-body">&nbsp;<s5l>mergedLogins.box.content</s5l></div>
+              </div>
+              <ode-list class="inner-list" [model]="details.mergedLogins" [isSearchActive]="false">
+                <ng-template let-item>
+                  <div class="is-display-flex has-space-between has-align-items-center">
+                    <div>{{ item }}</div>
+                    <button type="button" class="button is-primary" *ngIf="isAdmc" (click)="unmerge(item)">
+                      <s5l>mergedLogins.unmerge</s5l>
+                      <i class="fa fa-scissors"></i>
+                    </button>
+                  </div>                    
+                </ng-template>
+              </ode-list>
+            </div>
+          </ode-lightbox>
+        </div>
+      </ode-form-field>
       <ode-form-field
         label="functions"
         *ngIf="!user.deleteDate && !simpleUserDetails"
