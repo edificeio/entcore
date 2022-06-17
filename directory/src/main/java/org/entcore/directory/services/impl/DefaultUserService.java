@@ -903,6 +903,16 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void unmergeByLogins(JsonObject body, Handler<Either<String, JsonObject>> handler) {
+		if (Utils.defaultValidationParamsNull(handler, body)) return;
+		JsonObject action = new JsonObject()
+				.put("action", "unmerge-by-logins")
+				.put("originalUserId", body.getString("originalUserId"))
+				.put("mergedLogins", body.getJsonArray("mergedLogins"));
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+	}
+
+	@Override
 	public void listChildren(String userId, Handler<Either<String, JsonArray>> handler) {
 		final String query =
 				"MATCH (n:User {id : {id}})<-[:RELATED]-(child:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +

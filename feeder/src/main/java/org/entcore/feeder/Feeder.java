@@ -387,6 +387,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "merge-by-keys" :
 				duplicateUsers.mergeBykeys(message);
 				break;
+			case "unmerge-by-logins" : // Reverse operation of "merge-by-keys"
+				duplicateUsers.unmergeByLogins(message);
+				break;
 			case "mark-duplicates" :
 				duplicateUsers.markDuplicates(message);
 				break;

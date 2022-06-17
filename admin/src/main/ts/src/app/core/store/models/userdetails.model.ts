@@ -55,6 +55,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     manualGroups?: GroupModel[];
     administrativeStructures?: Array<string>;
     mergeKey?: string;
+    mergedLogins?: Array<string>;
+    mergedWith?: string;
     loginAlias?: string;
     quota?: number;
     storage?: number;
