@@ -42,6 +42,7 @@ import org.vertx.java.busmods.BusModBase;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
@@ -218,12 +219,15 @@ public class ManualFeeder extends BusModBase {
 					tx.commit(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
-							// final JsonArray results = event.body().getJsonArray("results");
-							// if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-							// 	message.reply(event.body().put("result", results.getJsonArray(0)));
-							// } else {
+							final JsonArray results = event.body().getJsonArray("results");
+							if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+								// Notify apps which groups have been deleted.
+								JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
+								if( r!=null && !r.isEmpty() ) {
+									Transition.publishDeleteGroups(eb, logger, r);
+								}
+							}
 							message.reply(event.body());
-							// }
 						}
 					});
 				} catch (TransactionException e) {
@@ -237,7 +241,10 @@ public class ManualFeeder extends BusModBase {
 	private void prepareRemovingProfileGroupsOfClass(TransactionHelper tx, String classId) {
 		String query =
 			"MATCH (c:Class {id: {classId}})<-[:DEPENDS]-(cpg:Group) " +
-			"DETACH DELETE cpg ";
+			"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
+			"WITH cpg, cpg.id as groupId, cpg.name as groupName, collect(u.id) as userIds " +
+			"DETACH DELETE cpg " +
+			"RETURN groupId as group, groupName as groupName, userIds as users ";
 		tx.add(query, new JsonObject().put("classId", classId));
 	}
 
