@@ -289,10 +289,12 @@ public class User {
 
 		public void findMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
 				JsonArray profiles, Handler<Message<JsonObject>> handler) {
-			final String query =
+			String query =
 					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE u.source = {source} AND HEAD(u.profiles) IN {profiles} AND NOT(u.externalId IN {existingUsers}) " +
-					"RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
+					"WHERE u.source = {source} AND HEAD(u.profiles) IN {profiles} ";
+
+			query += (existingUsers != null && existingUsers.size() > 0) ? "AND NOT(u.externalId IN {existingUsers}) " : "";
+			query += "RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
 							"u.firstName as firstName, HEAD(u.profiles) as profile";
 			final JsonObject params = new JsonObject()
 					.put("structureExternalId", structureExternalId)

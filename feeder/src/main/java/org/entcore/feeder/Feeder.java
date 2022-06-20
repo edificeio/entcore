@@ -719,7 +719,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							final JsonArray existingUsers = ir.getJsonArray("usersExternalIds");
 							final JsonArray profiles = ir.getJsonArray(Report.PROFILES);
 							if (preDelete && structureExternalId != null && existingUsers != null &&
-									existingUsers.size() > 0 && !importReport.containsErrors()) {
+									!importReport.containsErrors()) {
 								logger.info(e -> "START preDeleteTask");
 								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
 										structureExternalId, source, existingUsers, profiles, new Handler<Message<JsonObject>>() {
