@@ -236,7 +236,7 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
             $scope.userCreate.submitting = true;
             $scope.userCreate.addAfterSubmit = thenAdd;
             const { lastName, type } = $scope.userCreate.form;
-            if (type === "Student") {
+            if (type === "Student" || type === "Relative") {
                 const params = {
                     structures: [$scope.selectedSchoolId($scope.selectedClass)]
                 };

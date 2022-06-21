@@ -25,7 +25,7 @@
         </tr>
     </table>
     <div class="flex-row justify-end top-spacing twice">
-        <button ng-click="attachUserToMyClassOnly()">
+        <button ng-click="attachUserToMyClassOnly()" ng-if="!isUserCreateSearchVisible()">
             <span class="large-text">
                 <i18n>classAdmin.duplicate.submit.change</i18n>
             </span>
