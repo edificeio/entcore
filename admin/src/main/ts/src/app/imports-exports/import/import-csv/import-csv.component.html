@@ -16,15 +16,16 @@
                        [messages]="messages.get('import.info.file')">
       </ode-message-sticker>
     </h2>
+    <message-box *ngIf="isSourceAutomatic" [type]="'info'" [messages]="['import.warning.aaf']"></message-box>
     <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
     <message-box *ngFor="let key of globalError.profile | keys" [type]="'danger'" [messages]="globalError.profile[key]"></message-box>
     <h3>{{ 'import.header.selectFile' | translate }}</h3>
     <p *ngFor="let p of profiles.asArray(true)">
-      <label class="step1-file__label">
+      <label for="loadFile" class="step1-file__label">
         <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]" />
         {{'import.file.'+p | translate}}
       </label>
-      <input type="file" name="{{p}}" (change)="loadFile($event)" [hidden]="!isLoaded(p)" />
+      <input id="loadFile" type="file" name="{{p}}" (change)="loadFile($event)" [hidden]="!isLoaded(p)" />
       <message-box *ngIf="globalError.profile['error.'+p]" [type]="'danger'"
                    [messages]="globalError.profile['error.'+p]"></message-box>
     </p>
