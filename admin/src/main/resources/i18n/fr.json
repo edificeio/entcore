@@ -660,6 +660,7 @@
   "import.files.deposit": "Dépôt des fichiers",
   "import.fields.checking": "Vérification des champs",
   "import.class.checking": "Vérification des classes",
+  "import.warning.aaf": "Attention, votre source d’alimentation est automatique, les comptes utilisateurs ainsi que les classes sont créés par l’Annuaire Académique Fédérateur, pour les voir apparaître il faut mettre à jour vos bases élèves et parents. N’hésitez pas à contacter le support via l’application assistance, disponible dans Mes applis.",
 
   "import.filesDeposit": "Dépôt des fichiers",
   "import.header.selectFile": "Sélectionnez les profils pour lesquels vous souhaitez lancer un import :",

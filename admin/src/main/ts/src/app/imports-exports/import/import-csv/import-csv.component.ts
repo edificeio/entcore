@@ -5,6 +5,7 @@ import { BundlesService } from 'ngx-ode-sijil';
 import { ObjectURLDirective, SpinnerService, WizardComponent } from 'ngx-ode-ui';
 import { Subscription } from 'rxjs';
 import { routing } from 'src/app/core/services/routing.service';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { NotifyService } from '../../../core/services/notify.service';
 import { ImportCSVService } from '../import-csv.service';
 import { Messages } from '../messages.model';
@@ -46,7 +47,6 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
             this.profile = {};
         }
     };
-
     // Control displaying of cancel confirmation lightbox
     confirmCancel: boolean;
 
@@ -88,6 +88,8 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
         predelete: false,
         transition: false,
     };
+
+    isSourceAutomatic:boolean = false;
 
     columns = {
         // TODO : Move server-side
@@ -393,7 +395,6 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
             this.importInfos[event.target.name] = event.target.files[0];
         }
     }
-
     ngOnInit(): void {
         super.ngOnInit();
 
@@ -403,11 +404,13 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
 
         this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
+                console.log(data.structure);
                 this.cancel();
                 this.importInfos.structureId = data.structure.id;
                 this.importInfos.structureExternalId = data.structure.externalId;
                 this.importInfos.structureName = data.structure.name;
                 this.importInfos.UAI = data.structure.UAI;
+                this.isSourceAutomatic = data.structure.source && StructureModel.AUTOMATIC_SOURCES_REGEX.test(data.structure.source);
                 this.changeDetector.markForCheck();
             }
         });
