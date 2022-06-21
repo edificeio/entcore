@@ -404,15 +404,28 @@ public class DuplicateUsers {
 						"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
 						"AND NOT(u.source IN ['CSV','MANUAL'] AND mu.source IN ['AAF1D','AAF'])" +
 						"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds"
+						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds, " +
+							"u.federated as federated, COLLECT(mu.federated) as mergeUserFederated "
 						, params, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						JsonArray result = event.body().getJsonArray("result");
 						if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
+							Boolean isUserFederated = result.getJsonObject(0).getBoolean("federated");
+							if( isUserFederated==null || !isUserFederated.booleanValue() ) {
+								// Check: federated users cannot be merged with a non-federated User
+								JsonArray mergeUserFederated = result.getJsonObject(0).getJsonArray("mergeUserFederated");
+								for( int i=0; i<mergeUserFederated.size(); i++ ) {
+									if( Boolean.TRUE.equals(mergeUserFederated.getBoolean(i)) ) {
+										message.reply(error.put("message", "invalid.merge.federated"));
+										return;
+									}
+								}
+							}
+
 							JsonArray mergeUserIds = result.getJsonObject(0).getJsonArray("mergeUserIds");
 							if( mergeUserIds==null || mergeUserIds.isEmpty() ) {
-								message.reply(error.put("message", "invalid.merged.logins"));
+								message.reply(error.put("message", "invalid.merged.keys"));
 								return;
 							}
 							params.put("mergeUserIds", mergeUserIds);
