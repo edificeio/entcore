@@ -673,5 +673,5 @@
   "workspace.import.zip.invalid": "Fichier invalide",
   "helpbox.next": "Suivant",
   "helpbox.finish": "J'ai compris",
-  "workspace.add.document.success": "Le fichier a été importé avec succès"
+  "workspace.add.document.success": "Le fichier a été importé et est disponible dans votre espace documentaire"
 }
