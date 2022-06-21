@@ -397,15 +397,29 @@ public class DuplicateUsers {
 			return;
 		}
 		final JsonObject params = new JsonObject()
-				.put("userId", originalUserId);
+				.put("userId", originalUserId)
+				.put("mergeKeys", mergeKeys);
 		TransactionManager.getNeo4jHelper().execute(
-				"MATCH (u:User {id: {userId}}) RETURN u.mergeKey as mergeKey", params, new Handler<Message<JsonObject>>() {
+						"MATCH (u:User {id: {userId}}), (mu:User) " +
+						"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+						"AND NOT(u.source IN ['CSV','MANUAL'] AND mu.source IN ['AAF1D','AAF'])" +
+						"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds"
+						, params, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						JsonArray result = event.body().getJsonArray("result");
 						if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
+							JsonArray mergeUserIds = result.getJsonObject(0).getJsonArray("mergeUserIds");
+							if( mergeUserIds==null || mergeUserIds.isEmpty() ) {
+								message.reply(error.put("message", "invalid.merged.logins"));
+								return;
+							}
+							params.put("mergeUserIds", mergeUserIds);
+
 							String mergeKey = result.getJsonObject(0).getString("mergeKey");
 							if (mergeKey != null && mergeKeys.contains(mergeKey)) {
+								// Don't merge a user with himself
 								final JsonArray tmp = new fr.wseduc.webutils.collections.JsonArray();
 								for (Object o : mergeKeys) {
 									if (!mergeKey.equals(o)) {
@@ -426,38 +440,32 @@ public class DuplicateUsers {
 
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"MERGE u-[:IN]->gin " +
 												"DELETE rin ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"MERGE  u-[:COMMUNIQUE]->gcom " +
 												"DELETE rcom ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"MERGE u<-[:COMMUNIQUE]-gcomr " +
 												"DELETE rcomr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"MERGE u-[:RELATED]->ur " +
 												"DELETE rr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)<-[rrr:RELATED]-(urr:User) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"MERGE u<-[:RELATED]-urr " +
 												"DELETE rrr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User) " +
-												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " + // AND LENGTH(mu.joinKey) < 2  " +
+												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
 												"SET mu.mergedWith = {userId}, mu.mergeKey = null, u.mergedLogins = coalesce(u.mergedLogins, []) + mu.login " +
 //					", u.joinKey =  FILTER(eId IN u.joinKey WHERE eId <> mu.externalId) + mu.externalId " +
 												"MERGE mu-[:MERGED]->u " +
