@@ -26,6 +26,7 @@ import { catchError, tap } from "rxjs/operators";
 @Component({
   selector: "ode-user-info-section",
   templateUrl: "./user-info-section.component.html",
+  styleUrls: ['./user-info-section.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserInfoSectionComponent

@@ -83,7 +83,7 @@
             <i class="fa fa-eye"></i>
           </button>
 
-          <ode-lightbox [show]="showMergedLogins" (onClose)="showMergedLogins = false">
+          <ode-lightbox class="merge-info" [show]="showMergedLogins" (onClose)="showMergedLogins = false">
             <h2><s5l [s5l-params]="{displayName: details.displayName}">mergedLogins.box.title</s5l></h2>
             <div>
               <div *ngIf="isAdmc" class="message is-info">
