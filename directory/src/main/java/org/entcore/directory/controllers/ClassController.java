@@ -90,12 +90,15 @@ public class ClassController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeClass(final HttpServerRequest request) {
-		final String classId = request.params().get("classId");
-		if (StringUtils.isEmpty(classId)) {
-			badRequest(request);
-			return;
-		}
-		classService.remove(classId, defaultResponseHandler(request));
+		// Fix WB-665 : suppressed functionality for now.
+		forbidden(request);
+
+		// final String classId = request.params().get("classId");
+		// if (StringUtils.isEmpty(classId)) {
+		// 	badRequest(request);
+		// 	return;
+		// }
+		// classService.remove(classId, defaultResponseHandler(request));
 	}
 
 	@Post("/class/:classId/user")
