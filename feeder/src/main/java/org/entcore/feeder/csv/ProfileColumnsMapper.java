@@ -46,6 +46,7 @@ public class ProfileColumnsMapper {
 				.put("externalid", "externalId")
 				.put("idexterno", "externalId")
 				.put("nom", "lastName")
+				.put("nomdefamille", "lastName")
 				.put("apellido", "lastName")
 				.put("lastname", "lastName")
 				.put("sobrenome", "lastName")

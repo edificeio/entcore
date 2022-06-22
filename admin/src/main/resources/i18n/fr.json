@@ -755,7 +755,7 @@
   "missing.attribute.message": "{{errorNumber}} champ(s) obligatoire(s) ne sont pas renseigné(s)",
   "invalid.value": "Valeur invalide",
   "invalid.value.message": "{{errorNumber}} champ(s) sont renseigné(s) avec une valeur invalide",
-
+  "import.error.file.separator": "Le séparateur est invalide: les fichiers doivent être enregistrés au format .csv (séparateur point-virgule)",
   "import.info.file.0": "Notice d'utilisation de l'import de fichiers CSV",
   "import.info.file.1": "Vous pouvez ici créer et/ou mettre à jour les comptes des utilisateurs en important des fichiers CSV, constitués à la main ou issus d'un logiciel, <strong>notamment les exports ONDE</strong>. Il est important de suivre les consignes suivantes :",
   "import.info.file.2": "- Un fichier distinct doit être constitué pour chaque profil d'utilisateurs (élèves, parents, enseignants, personnels, invités).",
