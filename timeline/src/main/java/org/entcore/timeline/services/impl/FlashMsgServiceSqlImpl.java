@@ -201,11 +201,10 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 
 	@Override
 	public void markAsRead(UserInfos user, String id, Handler<Either<String, JsonObject>> handler) {
-		JsonObject params = new JsonObject()
-			.put("message_id", id)
-			.put("user_id", user.getUserId());
-
-		sql.insert(JOIN_TABLE, params, validUniqueResultHandler(handler));
+		String query = "INSERT INTO " + JOIN_TABLE + " " +
+				"(message_id, user_id) VALUES (?,?) ON CONFLICT DO NOTHING";
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(id).add(user.getUserId());
+		sql.prepared(query, values, validUniqueResultHandler(handler));
 	}
 
 	@Override
