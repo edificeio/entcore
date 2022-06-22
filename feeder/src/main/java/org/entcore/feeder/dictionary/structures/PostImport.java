@@ -127,6 +127,10 @@ public class PostImport {
 				{
 					Group.runLinkRules();
 				}
+				if(config.getBoolean("fix-incorrect-storages", true) == true)
+				{
+					fixIncorrectStorages();
+				}
 			}
 		};
 	}
@@ -278,6 +282,31 @@ public class PostImport {
 		} else {
 			logger.info(e-> "SKIP applyComRules");
 			handler.handle(null);
+		}
+	}
+
+	private void fixIncorrectStorages()
+	{
+		String setDefaultQuotas = "MATCH (p:Profile)-[:HAS_PROFILE]-(pg:ProfileGroup)-[:IN]-(u:User)-[r:USERBOOK]->(n:UserBook) " +
+									"WHERE NOT(HAS(n.quota)) SET n.quota = p.defaultQuota";
+		String setMissingStorages = "MATCH (n:UserBook) WHERE NOT(HAS(n.storage)) SET n.storage = 0";
+		String fixNegativeStorages = "MATCH (n:UserBook) WHERE n.storage < 0 SET n.storage = 0";
+
+		try {
+			final TransactionHelper tx = TransactionManager.getTransaction();
+			final JsonObject params = new JsonObject();
+			tx.add(setDefaultQuotas, params);
+			tx.add(setMissingStorages, params);
+			tx.add(fixNegativeStorages, params);
+			tx.commit(res -> {
+				if ("ok".equals(res.body().getString("status"))) {
+					logger.info(t -> "Incorrect storages have been fixed");
+				} else {
+					logger.error(t -> "Error in fixing incorrect storages transaction : " + res.body().getString("message"));
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error(t -> "Error in fixing incorrect storages transaction.", e);
 		}
 	}
 
