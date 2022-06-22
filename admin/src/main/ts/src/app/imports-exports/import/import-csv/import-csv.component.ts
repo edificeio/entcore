@@ -392,7 +392,7 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
         const files: FileList = event.target.files;
         this.profiles.inputFiles[event.target.name] = event.target;
         if (files.length === 1) {
-            this.importInfos[event.target.name] = event.target.files[0];
+            this.importInfos[event.target.name] = files[0];
         }
     }
     ngOnInit(): void {
