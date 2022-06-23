@@ -37,6 +37,8 @@ import io.vertx.core.json.JsonObject;
 import java.util.Set;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.request.filter.AbstractQueryParamTokenFilter.QUERYPARAM_TOKEN;
+
 
 
 /**
@@ -73,7 +75,12 @@ public class HttpActionFilter extends AbstractActionFilter {
 		}
 
 		final SecureHttpServerRequest sreq = (SecureHttpServerRequest) request;
-		if (isNotEmpty(sreq.getAttribute("remote_user"))) {
+		if (isNotEmpty(sreq.getParam(QUERYPARAM_TOKEN))) {
+			String tokenParam = QUERYPARAM_TOKEN+"="+sreq.getParam(QUERYPARAM_TOKEN).trim();
+			httpClient.get("/auth/oauth2/userinfo?"+tokenParam, getResponseHandler(request, handler))
+					.putHeader("Accept", "application/json; version=2.1")
+					.end();
+		} else if (isNotEmpty(sreq.getAttribute("remote_user"))) {
 			httpClient.get("/auth/internal/userinfo", getResponseHandler(request, handler))
 					.putHeader("Authorization", request.headers().get("Authorization"))
 					.putHeader("Accept", "application/json; version=2.1")
