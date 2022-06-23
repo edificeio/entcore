@@ -17,7 +17,8 @@ Behaviours.register('directory', {
 			allowClassAdminResetPassword: "org.entcore.directory.controllers.DirectoryController|allowClassAdminResetPassword",
 			allowClassAdminBlockUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminBlockUsers",
 			allowClassAdminDeleteUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminDeleteUsers",
-			allowClassAdminUnlinkUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminUnlinkUsers"
+			allowClassAdminUnlinkUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminUnlinkUsers",
+			allowClassAdminCSVImport: "org.entcore.directory.controllers.DirectoryController|allowClassAdminCSVImport"
 		}
 	},
 	sniplets: {
