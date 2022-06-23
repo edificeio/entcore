@@ -120,10 +120,13 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 					@Override
 					public void handle(final Either<String, JsonObject> event) {
 						if (event.isRight() && (
-								event.right().getValue().getBoolean("blockedProfile", false) ||
-								event.right().getValue().getBoolean("blockedUser", false)
+								event.right().getValue().getBoolean("blockedProfile", false)
 						)) {
 							handler.handle(new Either.Left<String, Object>("blocked.profile"));
+						} else if (event.isRight() && (
+								event.right().getValue().getBoolean("blockedUser", false)
+						)) {
+							handler.handle(new Either.Left<String, Object>("blocked.user"));
 						} else if (setFederated &&  event.isRight() && event.right().getValue().getBoolean("federated") == null &&
 								event.right().getValue().getString("id") != null) {
 							String query = "MATCH (u:User {id: {id}}) SET u.federated = true ";

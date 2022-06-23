@@ -537,7 +537,13 @@ public class SamlController extends AbstractFederateController {
 					@Override
 					public void handle(final Either<String, Object> event) {
 						if (event.isLeft()) {
-							loginResult(request, "fed.auth.error.user.not.found", assertion);
+							String error = event.left().getValue();
+							if(error.equals("blocked.profile"))
+								loginResult(request, "auth.error.blockedProfileType", assertion);
+							else if(error.equals("blocked.user"))
+								loginResult(request, "auth.error.blockedUser", assertion);
+							else
+								loginResult(request, "fed.auth.error.user.not.found", assertion);
 						} else {
 							final String nameIdFromAssertion = getNameId(assertion);
 							final String sessionIndex = getSessionId(assertion);
