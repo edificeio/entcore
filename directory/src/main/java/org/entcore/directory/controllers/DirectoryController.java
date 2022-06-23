@@ -652,4 +652,7 @@ public class DirectoryController extends BaseController {
 
 	@SecuredAction("classadmin.unlink.users")
 	public void allowClassAdminUnlinkUsers(){}
+
+	@SecuredAction("classadmin.csv.import")
+	public void allowClassAdminCSVImport(){}
 }
