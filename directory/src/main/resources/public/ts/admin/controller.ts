@@ -9,9 +9,10 @@ import { UserCreateDelegateScope, UserCreateDelegate } from './delegates/userCre
 import { ExportDelegateScope, ExportDelegate } from './delegates/userExport';
 import { User } from './model';
 import { UserFindDelegate, UserFindDelegateScope } from './delegates/userFind';
+import { ChooseClassDelegate, ChooseClassDelegateScope } from './delegates/choose-class';
 
 
-export interface ClassAdminControllerScope extends UserListDelegateScope, UserInfosDelegateScope, MenuDelegateScope, ActionsDelegateScope, UserCreateDelegateScope, ExportDelegateScope, UserFindDelegateScope {
+export interface ClassAdminControllerScope extends UserListDelegateScope, UserInfosDelegateScope, MenuDelegateScope, ActionsDelegateScope, UserCreateDelegateScope, ExportDelegateScope, UserFindDelegateScope, ChooseClassDelegateScope {
 	safeApply(a?);
 	onToasterUnlinkUsers();
 	closeLightbox(): void;
@@ -39,11 +40,17 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	UserCreateDelegate($scope);
 	ExportDelegate($scope);
 	UserFindDelegate($scope);
+	ChooseClassDelegate($scope);
 	// === Init
 	const init = async function () {
 		const networkPromise = directoryService.getSchoolsForUser(model.me.userId);
 		const network = await networkPromise;
 		$scope.onSchoolLoaded.next(network);
+		if( (!network || !network.length
+			  		  || (network.length==1 && (!network[0].classrooms || !network[0].classrooms.length)))
+			  && model.me.structures && model.me.structures.length>0 ) {
+			template.open('lightbox', 'admin/class/choose-class');
+		}
 		console.log("[Directory][Controller] network is ready:", network);
 	}
 	init();

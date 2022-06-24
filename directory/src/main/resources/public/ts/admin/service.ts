@@ -238,6 +238,10 @@ export const directoryService = {
         //TODO on import finish=> resync class and send an event
         //return directoryService.fetchClass({ withUsers: true });
     },
+    async addMeToClasses(classes:ClassRoom[]) {
+        const res = await http.put(`/directory/class/add-self`, {classIds: classes.map(c=>c.id)});
+        return res.data;
+    },
     async addExistingUserToClass(classId: string, user: User) {
         const res = await http.put(`/directory/class/${classId}/add/${user.id}`);
         return res.data;

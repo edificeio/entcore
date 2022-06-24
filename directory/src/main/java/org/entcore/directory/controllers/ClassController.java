@@ -41,7 +41,11 @@ import org.entcore.directory.security.TeacherInAllStructure;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
+
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerFileUpload;
@@ -49,6 +53,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -187,6 +192,71 @@ public class ClassController extends BaseController {
 		classService.findUsers(classId, types, collectRelative, handler);
 	}
 
+	@Put("/class/add-self")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void addSelf(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, (final UserInfos user) -> {
+			// WB-516: Only teachers without a class can add themselves to classes.
+			if (user!=null 
+					&& "Teacher".equals(user.getType())
+					&& user.getClasses()!=null && user.getClasses().size()==0 
+					) {
+				bodyToJson(request, new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject body) {
+						JsonArray classIds = body.getJsonArray("classIds");
+						if (classIds != null && classIds.size() > 0) {
+							List<Future> adds = new ArrayList<Future>(classIds.size());
+							for( int i=0; i<classIds.size(); i++ ) {
+								adds.add( futureAddUser(classIds.getString(i), user.getUserId(), user) );
+							}
+							CompositeFuture.all(adds)
+							.onSuccess( res -> { ok(request); })
+							.onFailure( error -> { renderJson(request, new JsonObject().put("error", error.getMessage()), 400); });
+						} else {
+							badRequest(request);
+						}
+					}
+				});
+			} else {
+				unauthorized(request);
+			}
+		});
+	}
+
+	/** 
+	 * Add a visible User - or self - to a Class.
+	 * @param classId ID of the class
+	 * @param userId ID of the user to add
+	 * @param user current user - may share the same ID as userId.
+	 */
+	private Future<JsonObject> futureAddUser(String classId, String userId, UserInfos user) {
+        Promise<JsonObject> promise = Promise.promise();
+		Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> res) {
+				if (res.isRight()) {
+					String schoolId = res.right().getValue().getString("schoolId");
+					JsonObject j = new JsonObject()
+							.put("action", "setDefaultCommunicationRules")
+							.put("schoolId", schoolId);
+					eb.send("wse.communication", j);
+					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
+					ApplicationUtils.publishModifiedUserGroup(eb, a);
+					promise.complete(res.right().getValue());
+				} else {
+					promise.fail(res.left().getValue());
+				}
+			}
+		};
+		if( userId.equals(user.getUserId()) ) {
+			classService.addSelf(classId, user, handler);
+		} else {
+			classService.addUser(classId, userId, user, handler);
+		}
+		return promise.future();
+	}
+
 	@Put("/class/:classId/add/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addUser(final HttpServerRequest request) {
@@ -196,23 +266,9 @@ public class ClassController extends BaseController {
 				if (user != null) {
 					final String classId = request.params().get("classId");
 					final String userId = request.params().get("userId");
-					classService.addUser(classId, userId, user, new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> res) {
-							if (res.isRight()) {
-								String schoolId = res.right().getValue().getString("schoolId");
-								JsonObject j = new JsonObject()
-										.put("action", "setDefaultCommunicationRules")
-										.put("schoolId", schoolId);
-								eb.send("wse.communication", j);
-								JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
-								ApplicationUtils.publishModifiedUserGroup(eb, a);
-								renderJson(request, res.right().getValue());
-							} else {
-								renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
-							}
-						}
-					});
+					futureAddUser(classId, userId, user)
+					.onSuccess( res -> { renderJson(request, res); })
+					.onFailure( error -> { renderJson(request, new JsonObject().put("error", error.getMessage()), 400); });
 				} else {
 					unauthorized(request);
 				}

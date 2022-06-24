@@ -132,7 +132,17 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
+	public void addSelf(final String classId, final UserInfos user, final Handler<Either<String, JsonObject>> result) {
+		addUser(classId, user.getUserId(), user, true, result);
+	}
+
+	@Override
 	public void addUser(final String classId, final String userId, final UserInfos user,
+			final Handler<Either<String, JsonObject>> result) {
+		addUser(classId, userId, user, false, result);
+	}
+	
+	private void addUser(final String classId, final String userId, final UserInfos user, boolean self,
 			final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(result, classId, userId)) return;
 		if (user == null) {
@@ -158,7 +168,7 @@ public class DefaultClassService implements ClassService {
 									.put("classId", classId)
 									.put("uId", userId)
 									.put("profile", t);
-							UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params,
+							UserUtils.findVisibleUsers(eb, user.getUserId(), self, false, customReturn, params,
 									new Handler<JsonArray>() {
 
 								@Override

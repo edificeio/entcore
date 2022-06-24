@@ -38,6 +38,8 @@ public interface ClassService {
 
 	void get(String classId, Handler<Either<String, JsonObject>> result);
 
+	void addSelf(String classId, UserInfos user, Handler<Either<String, JsonObject>> result);
+
 	void addUser(String classId, String userId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	void link(String classId, JsonArray userIds, Handler<Either<String, JsonArray>> result);
