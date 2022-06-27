@@ -494,7 +494,7 @@ public class DuplicateUsers {
 								message.reply(error.put("message", "transaction.error"));
 							}
 						} else {
-							message.reply(error.put("message", "user.not.found"));
+							message.reply(error.put("message", "invalid.merge.aaf"));
 						}
 					}
 				});
