@@ -1,11 +1,11 @@
-<div class="horizontal-spacing-twice">
+<div class="choose-class horizontal-spacing-twice">
     <h2 translate content="classAdmin.class.not.affected"></h2>
     <div class="row">
-        <div class="mb-24">
+        <div class="step-hint mt-12 mb-16">
             <span ng-if="!chooseClassModel.selectedSchoolId" translate content="classAdmin.class.select.structure"></span>
             <span ng-if="chooseClassModel.selectedSchoolId" translate content="classAdmin.class.select.classes"></span>
         </div>
-        <div class="row" ng-hide="chooseClassModel.classrooms.length">
+        <div class="row mb-24" ng-hide="chooseClassModel.classrooms.length">
             <select class="vertical-spacing-twice" 
                     i18n-placeholder="classAdmin.class.select.structure.placeholder"
                     ng-change="chooseClassModel.listClassrooms()"
@@ -15,12 +15,11 @@
                         ng-selected="[[chooseClassModel.selectedSchoolId==school.id]]">[[school.name]]</option>
               </select>
         </div>
-        <div class="row has-vertical-padding is-display-flex" 
+        <div class="row mb-24 has-vertical-padding is-display-flex" 
                 ng-show="chooseClassModel.classrooms.length">
             <div class="checkbox six cell" 
-                    ng-repeat="class in chooseClassModel.classrooms track by class.id">
-                <div style="border-radius: 4px; border: 1px solid currentColor; padding: 8px 12px; margin: 4px;"
-                     class="cell-ellipsis"
+                    ng-repeat="class in chooseClassModel.classrooms | orderBy:'name' as results track by class.id">
+                <div class="class-card cell-ellipsis"
                      ng-class="chooseClassModel.ckCSS(class)"
                      ng-click="chooseClassModel.toggleChoice(class)">
                     [[class.name]]
@@ -31,20 +30,19 @@
     <div class="lightbox-buttons fluid">
         <button class="right-magnet" 
                 ng-if="!chooseClassModel.selectedSchoolId" 
-                ng-enable="chooseClassModel.chosen.length === 0"
                 ng-click="chooseClassModel.next(1)">
             <i18n>next</i18n>
             <i class="left-spacing open-right"></i>
         </button>
         <button class="right-magnet" 
                 ng-if="chooseClassModel.selectedSchoolId" 
-                ng-enable="chooseClassModel.chosen.length > 0"
+                ng-disabled="!chooseClassModel.chosen.length"
                 ng-click="chooseClassModel.next(2)">
-            <span class="right-spacing" style="font-family:'generic-icons' !important;">&#xe871;</span>
+            <i class="right-spacing check"></i>
             <i18n>directory.params.validate</i18n>
         </button>
         <button class="right-magnet" 
-                ng-if="chooseClassModel.selectedSchoolId" 
+                ng-if="chooseClassModel.selectedSchoolId && chooseClassModel.schools.length!==1" 
                 ng-click="chooseClassModel.previous()">
             <i class="right-spacing left-open"></i>
             <i18n>previous</i18n>

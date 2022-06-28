@@ -36,8 +36,7 @@ export function ChooseClassDelegate($scope: ChooseClassDelegateScope) {
         ckCSS: (c:ClassRoom) => {
             const isChosen = _model.chosen.findIndex(clazz=>clazz.id===c.id) >= 0;
             return {
-                'primary-color': isChosen,
-                'bold': isChosen
+                'selected': isChosen
             }
         },
         previous: async () => {
