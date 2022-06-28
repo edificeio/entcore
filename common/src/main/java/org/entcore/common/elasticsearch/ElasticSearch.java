@@ -31,9 +31,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.ProxyOptions;
-import io.vertx.core.net.ProxyType;
 
 import java.net.URI;
+import java.util.Base64;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,6 +67,8 @@ public class ElasticSearch {
 	private final CopyOnWriteArrayList<Integer> availableNodes = new CopyOnWriteArrayList<>();
 	private final Random rnd = new Random();
 	private String defaultIndex;
+	private String username = null;
+	private String password = null;
 	private Vertx vertx;
 
 	private ElasticSearch() {}
@@ -108,6 +110,8 @@ public class ElasticSearch {
 	public void init(URI[] uris, Vertx vertx, int poolSize,
 						 boolean keepAlive, JsonObject elasticsearchConfig) {
 		defaultIndex = elasticsearchConfig.getString("index");
+		username = elasticsearchConfig.getString("username", null);
+		password = elasticsearchConfig.getString("password", null);
 		Boolean elasticSearchSSL = elasticsearchConfig.getBoolean("elasticsearch-ssl", false);
 		clients = new ElasticSearchClient[uris.length];
 		for (int i = 0; i < uris.length; i++) {
@@ -164,6 +168,12 @@ public class ElasticSearch {
 		req.exceptionHandler(e -> checkDisableClientAfterError(esc, e));
 		req.putHeader("Content-Type", "application/json");
 		req.putHeader("Accept", "application/json; charset=UTF-8");
+
+		if (this.username != null && this.password != null && !this.username.isEmpty() && !this.password.isEmpty()) {
+			String credentials = this.username + ":" + this.password;
+			req.putHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
+		}
+
 		req.end(payload.encode());
 	}
 
