@@ -242,9 +242,14 @@ export const directoryService = {
         const res = await http.put(`/directory/class/add-self`, {classIds: classes.map(c=>c.id)});
         return res.data;
     },
-    async addExistingUserToClass(classId: string, user: User) {
-        const res = await http.put(`/directory/class/${classId}/add/${user.id}`);
-        return res.data;
+    async addExistingUserToClass(classId: string, user: User, selectedChildren?: User[]) {
+        const res = [await http.put(`/directory/class/${classId}/add/${user.id}`)];
+        if (selectedChildren && selectedChildren.length > 0) {
+            selectedChildren.forEach(async student => {
+                res.push(await http.put(`/directory/user/${student.id}/related/${user.id}`));
+            });
+        }
+        return Promise.all(res);
     },
     async changeUserClass(user: User, args: { fromClasses: string[], toClass: string, withRelative: boolean }) {
         //+++ OLD Way

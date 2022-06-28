@@ -283,7 +283,7 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         $scope.tracker.trackEvent( TRACK.event, TRACK.ACCOUNT_CREATION.action, 
             TRACK.name( TRACK.ACCOUNT_CREATION.ATTACH, $scope.userCreate.form.type) 
         );
-        await directoryService.addExistingUserToClass(classroom.id, user);
+        await directoryService.addExistingUserToClass(classroom.id, user, $scope.userCreate.form.relatives);
         afterSubmit(user);
     }
     $scope.attachUserToMyClassOnly = async function () {
