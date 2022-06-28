@@ -25,6 +25,7 @@ import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FallbackStorage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
@@ -67,6 +68,7 @@ public class FileStorage implements Storage {
 	private final boolean flat;
 	private AntivirusClient antivirus;
 	private FileValidator validator;
+	private FallbackStorage fallbackStorage;
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat) {
 		this(vertx, new JsonArray().add(basePath), flat);
@@ -200,6 +202,10 @@ public class FileStorage implements Storage {
 	}
 
 	private void mkdirsIfNotExists(String id, String path, final Handler<AsyncResult<Void>> h) {
+		mkdirsIfNotExists(fs, id, path, h);
+	}
+
+	static void mkdirsIfNotExists(FileSystem fs, String id, String path, final Handler<AsyncResult<Void>> h) {
 		final String dir = org.entcore.common.utils.FileUtils.getParentPath(path);
 		fs.exists(dir, new Handler<AsyncResult<Boolean>>() {
 			@Override
@@ -660,7 +666,11 @@ public class FileStorage implements Storage {
 		if (lastBucketIdx == 0) {
 			try {
 				final String path = getWritePath(file);
-				handler.handle(Future.succeededFuture(path));
+				if (fallbackStorage != null) {
+					fallbackStorage.downloadFileIfNotExists(file, path, handler);
+				} else {
+					handler.handle(Future.succeededFuture(path));
+				}
 			} catch (FileNotFoundException e) {
 				handler.handle(Future.failedFuture(e));
 			}
@@ -682,6 +692,8 @@ public class FileStorage implements Storage {
 				handler.handle(Future.succeededFuture(p));
 			} else if (idx < lastBucketIdx) {
 				getReadPath(file, idx + 1, handler);
+			} else if (fallbackStorage != null) {
+				fallbackStorage.downloadFile(file, p, handler);
 			} else {
 				handler.handle(Future.failedFuture(new FileNotFoundException("Not found file : " + file)));
 			}
@@ -699,6 +711,10 @@ public class FileStorage implements Storage {
 	@Override
 	public FileValidator getValidator() {
 		return validator;
+	}
+
+	public void setFallbackStorage(FallbackStorage fallbackStorage) {
+		this.fallbackStorage = fallbackStorage;
 	}
 
 }

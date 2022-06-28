@@ -108,6 +108,22 @@ public class StorageFactory {
 				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
 			}
 			((FileStorage) storage).setValidator(fileValidator);
+
+			JsonObject s3fallback = fs.getJsonObject("s3fallback");
+			if (s3fallback != null) {
+				final String host = s3fallback.getString("host");
+				final String name = s3fallback.getString("name");
+				final boolean multiBuckets = s3fallback.getBoolean("multi-buckets", true);
+				final int nbStorageFolder = s3fallback.getInteger("nb-storage-folder", 1);
+				final String region = s3fallback.getString("region");
+				final String accessKey = s3fallback.getString("access-key");
+				final String secretKey = s3fallback.getString("secret-key");
+				if (isNotEmpty(host) && isNotEmpty(name) && isNotEmpty(region) && isNotEmpty(accessKey) && isNotEmpty(secretKey)) {
+					S3FallbackStorage s3FallbackStorage = new S3FallbackStorage(
+							vertx, host, name, multiBuckets, nbStorageFolder, region, accessKey, secretKey);
+					((FileStorage) storage).setFallbackStorage(s3FallbackStorage);
+				}
+			}
 		} else {
 			storage = new GridfsStorage(vertx, Server.getEventBus(vertx), gridfsAddress);
 		}
