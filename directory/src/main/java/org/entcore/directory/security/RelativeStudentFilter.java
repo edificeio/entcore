@@ -20,6 +20,8 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Promise;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -41,49 +43,91 @@ public class RelativeStudentFilter implements ResourcesProvider {
 	public void authorize(final HttpServerRequest request, Binding binding, UserInfos user,
 			final Handler<Boolean> handler) {
 		Map<String, UserInfos.Function> functions = user.getFunctions();
-		if (functions == null || functions.isEmpty()) {
-			handler.handle(false);
-			return;
-		}
 		if (functions.containsKey(SUPER_ADMIN)) {
 			handler.handle(true);
 			return;
 		}
-		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-		if (adminLocal == null || adminLocal.getScope() == null) {
-			handler.handle(false);
-			return;
-		}
+
 		final String studentId = request.params().get("studentId");
 		final String relativeId = request.params().get("relativeId");
-		String query =
-				"MATCH (s)<-[:DEPENDS]-(:Group)<-[:IN]-(:User { id : {id}}) " +
-				"WHERE (s:Structure OR s:Class) AND s.id IN {scope} " +
-				"RETURN count(*) > 0 as exists ";
-		JsonArray scope = new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope());
-		StatementsBuilder s = new StatementsBuilder()
-				.add(query, new JsonObject()
-						.put("id", studentId)
-						.put("scope", scope)
-				)
-				.add(query, new JsonObject()
-						.put("id", relativeId)
-						.put("scope", scope)
-				);
-		request.pause();
-		Neo4j.getInstance().executeTransaction(s.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				request.resume();
-				JsonArray res = r.body().getJsonArray("results");
-				handler.handle(
-						"ok".equals(r.body().getString("status")) &&
-								res.size() == 2 &&
-								res.getJsonArray(0).getJsonObject(0).getBoolean("exists", false) &&
-								res.getJsonArray(1).getJsonObject(0).getBoolean("exists", false)
-				);
-			}
+		Promise<Void> p1 = Promise.promise(), p2 = Promise.promise();
+		if ("Teacher".equals(user.getType())) {
+			// Usage from class-admin
+			String query =
+					"MATCH (:User { id : {userId}})-[:IN]->(:Group)-[:DEPENDS]->(s:Structure)" +
+							"<-[:DEPENDS]-(:Group)<-[:IN]-(:User { id : {id}}) " +
+							"RETURN count(*) > 0 as exists ";
+			StatementsBuilder s = new StatementsBuilder()
+					.add(query, new JsonObject()
+							.put("id", studentId)
+							.put("userId", user.getUserId())
+					)
+					.add(query, new JsonObject()
+							.put("id", relativeId)
+							.put("userId", user.getUserId())
+					);
+			request.pause();
+			Neo4j.getInstance().executeTransaction(s.build(), null, true, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> r) {
+					request.resume();
+					JsonArray res = r.body().getJsonArray("results");
+					if ("ok".equals(r.body().getString("status")) &&
+							res.size() == 2 &&
+							res.getJsonArray(0).getJsonObject(0).getBoolean("exists", false) &&
+							res.getJsonArray(1).getJsonObject(0).getBoolean("exists", false)) {
+						p1.complete();
+					} else {
+						p1.fail("Error");
+					}
+				}
+			});
+		} else {
+			p1.fail("Not a teacher");
+		}
+
+		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+
+		if (adminLocal != null && adminLocal.getScope() != null) {
+			// Usage from admin console
+			String query =
+					"MATCH (s)<-[:DEPENDS]-(:Group)<-[:IN]-(:User { id : {id}}) " +
+							"WHERE (s:Structure OR s:Class) AND s.id IN {scope} " +
+							"RETURN count(*) > 0 as exists ";
+			JsonArray scope = new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope());
+			StatementsBuilder s = new StatementsBuilder()
+					.add(query, new JsonObject()
+							.put("id", studentId)
+							.put("scope", scope)
+					)
+					.add(query, new JsonObject()
+							.put("id", relativeId)
+							.put("scope", scope)
+					);
+			request.pause();
+			Neo4j.getInstance().executeTransaction(s.build(), null, true, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> r) {
+					request.resume();
+					JsonArray res = r.body().getJsonArray("results");
+					if ("ok".equals(r.body().getString("status")) &&
+							res.size() == 2 &&
+							res.getJsonArray(0).getJsonObject(0).getBoolean("exists", false) &&
+							res.getJsonArray(1).getJsonObject(0).getBoolean("exists", false)) {
+						p2.complete();
+					} else {
+						p2.fail("Error");
+					}
+				}
+			});
+		} else {
+			p2.fail("Not a admin");
+		}
+
+		CompositeFuture.any(p1.future(), p2.future()).onComplete(result -> {
+				handler.handle(result.succeeded());
 		});
+		
 	}
 
 }
