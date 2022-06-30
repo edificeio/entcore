@@ -89,17 +89,17 @@
               <div *ngIf="isAdmc" class="message is-info">
                 <div class="message-body">&nbsp;<s5l>mergedLogins.box.content</s5l></div>
               </div>
-              <ode-list class="inner-list" [model]="details.mergedLogins" [isSearchActive]="false">
-                <ng-template let-item>
+              <ul>
+                <li *ngFor="let item of details.mergedLogins">
                   <div class="is-display-flex has-space-between has-align-items-center">
                     <div>{{ item }}</div>
                     <button type="button" class="button is-primary" *ngIf="isAdmc" (click)="unmerge(item)">
                       <s5l>mergedLogins.unmerge</s5l>
                       <i class="fa fa-scissors"></i>
                     </button>
-                  </div>                    
-                </ng-template>
-              </ode-list>
+                  </div>
+                </li>
+              </ul>
             </div>
           </ode-lightbox>
         </div>
