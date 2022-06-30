@@ -413,13 +413,17 @@ public class UserUtils {
 			promise.future()
 			.compose( remoteUserId -> {
 				// If request attributes are not set yet, and if a bearer token exists,
-				// try to retrieve the remote_user by validating the token.
+				// try retrieving the remote_user by validating the token.
 				if( (oneSessionId==null || oneSessionId.trim().isEmpty()) && remoteUserId==null && request instanceof SecureHttpServerRequest) {
 					final SecureHttpServerRequest secureRequest = (SecureHttpServerRequest) request;
 					OAuthResourceProvider provider = new DefaultOAuthResourceProvider(eb);
 					Promise<String> attrPromise = Promise.promise();
 					if( provider.hasBearerHeader(secureRequest) ) {
+						request.pause();
+
 						provider.validToken(secureRequest, r -> {
+							if (paused) request.pause();  // provider.validToken() may have resumed the request, so pause it again.
+							else 		request.resume(); // Request was not paused, so resume it.
 							attrPromise.complete( secureRequest.getAttribute("remote_user") );
 						});
 					} else {
