@@ -402,7 +402,7 @@ public class DuplicateUsers {
 		TransactionManager.getNeo4jHelper().execute(
 						"MATCH (u:User {id: {userId}}), (mu:User) " +
 						"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-						"AND NOT(u.source IN ['CSV','MANUAL'] AND mu.source IN ['AAF1D','AAF'])" +
+						"AND u.source IN ['AAF1D','AAF'] AND mu.source IN ['AAF1D','AAF']" +
 						"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
 						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds, " +
 							"u.federated as federated, COLLECT(mu.federated) as mergeUserFederated "
