@@ -59,8 +59,8 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OAuthDataHandler extends DataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
-	private static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
-	private static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
+	public static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
+	public static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
 	private static final String AUTH_ERROR_GLOBAL = "auth.error.global";
 	private static final String AUTH_ERROR_BAN = "auth.error.ban";
 	private static final String LOGIN_BAN_KEY = "logban:";
