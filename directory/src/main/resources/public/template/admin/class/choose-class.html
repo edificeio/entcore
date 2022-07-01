@@ -7,12 +7,10 @@
         </div>
         <div class="row mb-24" ng-hide="chooseClassModel.classrooms.length">
             <select class="vertical-spacing-twice" 
-                    i18n-placeholder="classAdmin.class.select.structure.placeholder"
                     ng-change="chooseClassModel.listClassrooms()"
-                    ng-model="chooseClassModel.selectedSchoolId">
-                <!--option value="-1" translate content="classAdmin.userFind.userWithoutClass"></option -->
-                <option ng-repeat="school in chooseClassModel.schools track by school.id" value="[[school.id]]"
-                        ng-selected="[[chooseClassModel.selectedSchoolId==school.id]]">[[school.name]]</option>
+                    ng-model="chooseClassModel.selectedSchool"
+                    ng-options="school as school.name for school in chooseClassModel.schools track by school.id">
+                <option value="">[['classAdmin.class.select.structure.placeholder'|i18n]]</option>
               </select>
         </div>
         <div class="row mb-24 has-vertical-padding is-display-flex" 

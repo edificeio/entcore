@@ -6,7 +6,8 @@ import { directoryService } from '../service';
 export interface ChooseClassDelegateScope extends EventDelegateScope {
     chooseClassModel: {
         readonly schools: School[];
-        selectedSchoolId?: string;
+        selectedSchool?: School;
+        readonly selectedSchoolId?: string;
         readonly classrooms: ClassRoom[];
         selectedClassroomId?: string;
         chosen: ClassRoom[];
@@ -26,11 +27,14 @@ export function ChooseClassDelegate($scope: ChooseClassDelegateScope) {
     // === Private attributes
     let _schools: School[] = [];
     let _classrooms: ClassRoom[] = [];
+    let _selectedSchool: School = null;
     // === Public attributes
     const _model = $scope.chooseClassModel = {
         get schools() { return _schools },
         get classrooms() { return _classrooms },
-        selectedSchoolId: null,
+        get selectedSchool() { return _selectedSchool },
+        set selectedSchool( school:School|null ) { _selectedSchool = school },
+        get selectedSchoolId() { return this.selectedSchool ? this.selectedSchool.id : null },
         selectedClassroomId: null,
         chosen: [],
         ckCSS: (c:ClassRoom) => {
@@ -40,7 +44,7 @@ export function ChooseClassDelegate($scope: ChooseClassDelegateScope) {
             }
         },
         previous: async () => {
-            _model.selectedSchoolId = null;
+            _model.selectedSchool = null;
             _model.selectedClassroomId = null;
             _classrooms = [];
         },
@@ -74,7 +78,7 @@ export function ChooseClassDelegate($scope: ChooseClassDelegateScope) {
             return {name: model.me.structureNames[idx], id: model.me.structures[idx]};
         });
         if( _schools && _schools.length===1 && _schools[0] ) {
-            _model.selectedSchoolId = _schools[0].id;
+            _model.selectedSchool = _schools[0];
             await _model.listClassrooms();
         }
     });
