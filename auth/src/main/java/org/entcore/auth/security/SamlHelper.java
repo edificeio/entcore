@@ -110,7 +110,15 @@ public class SamlHelper {
                 if (ar.succeeded()) {
                     getUserFromAssertion(ar.result(), event -> {
                         if (event.isLeft()) {
-                            handler.handle(new Try<OAuthError, String>(
+                            String value = event.left().getValue();
+                            if(value != null && value.equals("blocked.profile"))
+                                handler.handle(new Try<OAuthError, String>(
+                                    new AccessDenied(OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE)));
+                            else if(value != null && value.equals("blocked.user"))
+                                handler.handle(new Try<OAuthError, String>(
+                                    new AccessDenied(OAuthDataHandler.AUTH_ERROR_BLOCKED_USER)));
+                            else
+                                handler.handle(new Try<OAuthError, String>(
                                     new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                         } else {
                             if (event.right().getValue() != null && event.right().getValue() instanceof JsonObject) {
