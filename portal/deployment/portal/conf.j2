@@ -178,7 +178,8 @@
             "homeworks",
             "scrapbook",
             "collaborativewall",
-            "formulaire" {{ resourcesApplicationExt|default('') }}
+            "formulaire",
+            "exercizer" {{ resourcesApplicationExt|default('') }}
         ]
         {% if matomoODEEnabled is defined and matomoODEEnabled %},
         "tracker":{
