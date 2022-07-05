@@ -259,7 +259,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                     idsMapByTable.put(table, new JsonObject(oldIdsToNewIdsMap));
 
-                    if (results.isEmpty()) {
+                    if (!results.isEmpty()) {
                         final JsonArray finalResults = transformResults(fields, results, userId, username, builder, table, forceImportAsDuplication, duplicateSuffix);
 
                         beforeImportingResultsToTable(importPath, table, fields, finalResults)
