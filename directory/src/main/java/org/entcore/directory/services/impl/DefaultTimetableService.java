@@ -391,7 +391,7 @@ public class DefaultTimetableService implements TimetableService {
 
 	@Override
 	public void importTimetable(String structureId, final String path, final String domain,
-			final String acceptLanguage, boolean uai, String timetableType, boolean groupsOnly, boolean automaticMode,
+			final String acceptLanguage, boolean uai, String timetableType, boolean groupsOnly, boolean timetableMode, boolean automaticMode,
 			final Handler<Either<JsonObject, JsonObject>> handler) {
 		final String  structureAttr = uai ? "UAI" : "id";
 		final String setPunctualTimetable = timetableType == null ? "REMOVE s.punctualTimetable" : "SET s.punctualTimetable = {punctualTT}";
@@ -415,7 +415,8 @@ public class DefaultTimetableService implements TimetableService {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						return;
 					}
-					callTimetableImport(event.right().getValue().getString("UAI"), ttType, timetableType != null && (automaticMode == false && timetableType.equals(dbTimetable) == false),
+					boolean isPunctual = automaticMode == true ? timetableType != null && timetableType.equals(dbTimetable) == false : timetableMode == true;
+					callTimetableImport(event.right().getValue().getString("UAI"), ttType, isPunctual,
 										groupsOnly, automaticMode, path, acceptLanguage, handler);
 				} else {
 					errors.add(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
