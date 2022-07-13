@@ -1,6 +1,7 @@
 <div class="centered container row">
 	<section class="main">
 		<div class="login panel" ng-class="{'browser-container': !browser || (browser && browser.outdated) || !cookieEnabled}">
+			<img class="logo absolute" src="/assets/themes/[[childTheme]]/img/illustrations/logo.png" alt="Logo de l'ENT">
 			<div ng-if="!cookieEnabled" class="browser">
 				<h1><i18n>cookies.missing.title</i18n></h1>
 				<p class="warning"><i18n>cookies.missing.text</i18n></p>
