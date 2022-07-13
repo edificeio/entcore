@@ -631,22 +631,29 @@ directory.User.prototype.loadInfos = async function(){
 		this.loadVisibility();
 	}
 	data.attachedStructures = [];
-	adminStructure = _.findWhere(this.schools, {id: data.administrativeStructures[0].id})
-	if (adminStructure) {
-		adminStructure.admin = true;
-		data.attachedStructures.push(adminStructure);
+
+	if (data.administrativeStructures !== undefined) {
+		adminStructure = _.findWhere(this.schools, {id: data.administrativeStructures[0].id})
+		if (adminStructure) {
+			adminStructure.admin = true;
+			data.attachedStructures.push(adminStructure);
+		}
 	}
-	if (data.functions[0][1]) {
-		data.functions[0][1].forEach(id => {
-			adml = _.findWhere(this.schools, {id: id});
-			if (adml) {
-				adml.adml = true;
-				if (!adminStructure || (adminStructure && adminStructure.id !== adml.id)) {
-					data.attachedStructures.push(adml);
+
+	if (data.functions !== undefined) {
+		if (data.functions[0][1]) {
+			data.functions[0][1].forEach(id => {
+				adml = _.findWhere(this.schools, {id: id});
+				if (adml) {
+					adml.adml = true;
+					if (!adminStructure || (adminStructure && adminStructure.id !== adml.id)) {
+						data.attachedStructures.push(adml);
+					}
 				}
-			}
-		});
+			});
+		}	
 	}
+	
 	this.schools.forEach(structure => {
 		if (!_.findWhere(data.attachedStructures, {id: structure.id})) {
 			data.attachedStructures.push(structure);
