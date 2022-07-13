@@ -147,7 +147,7 @@ watch () {
     --rm \
     -u "$USER_UID:$GROUP_GID" \
     -v $PWD/../$SPRINGBOARD:/home/node/springboard \
-    node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/springboard"
+    node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/springboard --max-old-space-size=8192"
 }
 
 ngWatch () {
