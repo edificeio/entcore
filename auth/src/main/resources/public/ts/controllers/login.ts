@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang, http, $ } from 'entcore';
+import { ng, template, idiom as lang, http, $, skin } from 'entcore';
 
 export let loginController = ng.controller('LoginController', ['$scope', ($scope) => {
 	$scope.template = template;
@@ -135,6 +135,16 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 			$scope.$apply();
 		}
 	});
+
+	let conf = { overriding: [] };
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', '/assets/theme-conf.js');
+	xhr.onload = async () => {
+		eval(xhr.responseText.split('exports.')[1]);
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		$scope.childTheme = currentTheme.child;
+	};
+	xhr.send();
 
 	$scope.connect = function () {
 		console.log('connect');
