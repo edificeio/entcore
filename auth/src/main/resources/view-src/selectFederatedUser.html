@@ -38,13 +38,16 @@
 					<input type="hidden" name="key" value="{{key}}" />
 					<div class=" row">
 						<label class="three cell">{{structureName}}</label>
+						{{^blockedUser}}
 						<button class="right-magnet" style="margin-bottom:5px;"><i18n>connect.federated.user</i18n></button>
+						{{/blockedUser}}
+						{{#blockedUser}}
+						<label class="right-magnet"><i18n>auth.error.blockedUser</i18n></label>
+						{{/blockedUser}}
 					</div>
 				</form>
 				{{/users}}
 			</div>
-			</article>
-			</article>
 		</article>
 	</section>
 	</default-styles>

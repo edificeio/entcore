@@ -174,7 +174,9 @@ public class SamlHelper {
             if (!(o instanceof JsonObject))
                 continue;
             JsonObject j = (JsonObject) o;
-            j.put("key", HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey));
+            if (!j.getBoolean("blockedUser", false)) {
+                j.put("key", HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey));
+            }
             j.put("nameId", nameId);
             j.put("sessionIndex", sessionIndex);
         }
