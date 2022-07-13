@@ -16,6 +16,7 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	xhr.onload = () => {
 		eval(xhr.responseText.split('exports.')[1]);
 		currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		$scope.childTheme = currentTheme.child;
 		if(currentTheme.group){
 			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
 		}

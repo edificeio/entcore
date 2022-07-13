@@ -1,6 +1,7 @@
-import { http, ng, template, notify } from 'entcore';
+import { http, ng, template, notify, skin } from 'entcore';
 
 interface ForgotControllerScope {
+	childTheme: any;
 	template: typeof template;
 	login: string
 	activationCode: string
@@ -62,6 +63,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 		$scope.error = text;
 		$scope.$apply();
 	}
+	
 	//===Init
 	http().get('/auth/configure/welcome').done(function (d) {
 	    $scope.welcome.content = d.welcomeMessage;
@@ -83,6 +85,15 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
 	}
+	let conf = { overriding: [] };
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', '/assets/theme-conf.js');
+	xhr.onload = async () => {
+		eval(xhr.responseText.split('exports.')[1]);
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		$scope.childTheme = currentTheme.child;
+	};
+	xhr.send();
 	//===Routes
 	route({
 		actionId: function(params){
