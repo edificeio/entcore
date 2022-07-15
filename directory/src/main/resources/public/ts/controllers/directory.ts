@@ -184,6 +184,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 					return;
 				}
 				$scope.currentSchool.sync();
+				$scope.showSchool($scope.currentSchool);
 
 				$scope.currentSchool.one('sync', function(){
 					$scope.users = $scope.currentSchool.users;
