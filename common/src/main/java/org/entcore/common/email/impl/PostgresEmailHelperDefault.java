@@ -30,7 +30,8 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 .setDatabase(pgConfig.getString("database"))
                 .setUser(pgConfig.getString("user"))
                 .setPassword(pgConfig.getString("password"))
-                .setMaxSize(pgConfig.getInteger("pool-size", 5));
+                .setMaxSize(pgConfig.getInteger("pool-size", 5))
+                .setSslMode(SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE")));
         this.pool = PgClient.pool(vertx, options);
         this.tableName = pgConfig.getString("tablename", "mail.mail_events");
         this.attachementTableName = pgConfig.getString("attachment-tablename", "mail.attachments_events");
