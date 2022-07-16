@@ -71,14 +71,19 @@ public class PostgresqlEventStore extends GenericEventStore {
 			platform = eventStoreConfig.getString("platform");
 			final JsonObject eventStorePGConfig = eventStoreConfig.getJsonObject("postgresql");
 			if (eventStorePGConfig != null) {
+				final SslMode sslMode = SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE"));
 				final PgPoolOptions options = new PgPoolOptions()
 					.setPort(eventStorePGConfig.getInteger("port", 5432))
 					.setHost(eventStorePGConfig.getString("host"))
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5))
-					.setSslMode(SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE")));
+					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+				if (!SslMode.DISABLE.equals(sslMode)) {
+					options
+						.setSslMode(sslMode)
+						.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+				}
 				pgClient = PgClient.pool(vertx, options);
 				listKnownEvents(ar -> {
 					if (ar.succeeded()) {

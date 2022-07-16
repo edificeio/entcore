@@ -118,27 +118,37 @@ public class NewDeviceWarningTask implements Handler<Long>
 			final JsonObject eventStoreSlavePGConfig = eventStoreConfig.getJsonObject("postgresql-slave");
 			if (eventStorePGConfig != null)
             {
+                final SslMode sslMode = SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE"));
 				final PgPoolOptions options = new PgPoolOptions()
 					.setPort(eventStorePGConfig.getInteger("port", 5432))
 					.setHost(eventStorePGConfig.getString("host"))
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5))
-                    .setSslMode(SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE")));
+					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+                if (!SslMode.DISABLE.equals(sslMode)) {
+                    options
+                        .setSslMode(sslMode)
+                        .setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+                }
 				this.masterClient = PgClient.pool(vertx, options);
 			}
 
 			if (eventStoreSlavePGConfig != null)
             {
+                final SslMode sslMode = SslMode.valueOf(eventStoreSlavePGConfig.getString("ssl-mode", "DISABLE"));
 				final PgPoolOptions options = new PgPoolOptions()
 					.setPort(eventStoreSlavePGConfig.getInteger("port", 5432))
 					.setHost(eventStoreSlavePGConfig.getString("host"))
 					.setDatabase(eventStoreSlavePGConfig.getString("database"))
 					.setUser(eventStoreSlavePGConfig.getString("user"))
 					.setPassword(eventStoreSlavePGConfig.getString("password"))
-					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5))
-                    .setSslMode(SslMode.valueOf(eventStoreSlavePGConfig.getString("ssl-mode", "DISABLE")));
+					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5));
+                if (!SslMode.DISABLE.equals(sslMode)) {
+                    options
+                        .setSslMode(sslMode)
+                        .setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+                }
 				this.slaveClient = PgClient.pool(vertx, options);
 			}
             else
