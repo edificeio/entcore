@@ -36,6 +36,7 @@ import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.PgPool;
 import io.reactiverse.pgclient.PgPoolOptions;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -76,7 +77,8 @@ public class PostgresqlEventStore extends GenericEventStore {
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5))
+					.setSslMode(SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE")));
 				pgClient = PgClient.pool(vertx, options);
 				listKnownEvents(ar -> {
 					if (ar.succeeded()) {

@@ -34,6 +34,7 @@ import io.reactiverse.pgclient.PgPool;
 import io.reactiverse.pgclient.PgPoolOptions;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.SslMode;
 import io.reactiverse.pgclient.Tuple;
 
 import java.util.List;
@@ -123,7 +124,8 @@ public class NewDeviceWarningTask implements Handler<Long>
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5))
+                    .setSslMode(SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE")));
 				this.masterClient = PgClient.pool(vertx, options);
 			}
 
@@ -135,7 +137,8 @@ public class NewDeviceWarningTask implements Handler<Long>
 					.setDatabase(eventStoreSlavePGConfig.getString("database"))
 					.setUser(eventStoreSlavePGConfig.getString("user"))
 					.setPassword(eventStoreSlavePGConfig.getString("password"))
-					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5));
+					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5))
+                    .setSslMode(SslMode.valueOf(eventStoreSlavePGConfig.getString("ssl-mode", "DISABLE")));
 				this.slaveClient = PgClient.pool(vertx, options);
 			}
             else
