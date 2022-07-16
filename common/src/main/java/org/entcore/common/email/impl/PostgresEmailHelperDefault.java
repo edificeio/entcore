@@ -24,14 +24,19 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
     final String attachementTableName;
 
     public PostgresEmailHelperDefault(Vertx vertx, JsonObject pgConfig) {
+        final SslMode sslMode = SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE"));
         final PgPoolOptions options = new PgPoolOptions()
                 .setPort(pgConfig.getInteger("port", 5432))
                 .setHost(pgConfig.getString("host"))
                 .setDatabase(pgConfig.getString("database"))
                 .setUser(pgConfig.getString("user"))
                 .setPassword(pgConfig.getString("password"))
-                .setMaxSize(pgConfig.getInteger("pool-size", 5))
-                .setSslMode(SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE")));
+                .setMaxSize(pgConfig.getInteger("pool-size", 5));
+        if (!SslMode.DISABLE.equals(sslMode)) {
+            options
+                .setSslMode(sslMode)
+                .setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+        }
         this.pool = PgClient.pool(vertx, options);
         this.tableName = pgConfig.getString("tablename", "mail.mail_events");
         this.attachementTableName = pgConfig.getString("attachment-tablename", "mail.attachments_events");
