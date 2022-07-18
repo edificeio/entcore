@@ -707,7 +707,8 @@ public class AuthController extends BaseController {
 				public void handle(UserInfos event) {
 					if (event != null && Boolean.TRUE.equals(event.getFederated())
 							&& !request.params().contains("SAMLRequest")) {
-						if (config.containsKey("openid-federate")) {
+						if (config.getJsonObject("openid-federate", new JsonObject()).getJsonObject("domains",
+								new JsonObject()).containsKey(getHost(request))) {
 							redirectionService.redirect(request, "/auth/openid/slo?callback=" + c);
 						} else {
 							redirectionService.redirect(request, "/auth/saml/slo?callback=" + c);
