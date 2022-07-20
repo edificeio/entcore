@@ -819,6 +819,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			template.open('dominosUser', 'dominos-user');
 			$scope.showDefaultValue = true;
 		}
+
+		$scope.$apply();
 		return $scope.showDefaultValue;
 	};
 
