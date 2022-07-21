@@ -117,6 +117,8 @@
     "auth.notify.not.activated.mail": "Votre compte n'est pas activé, veuillez contacter l'administrateur ENT de votre établissement.",
     "auth.notify.invalid.receivers.all.login": "Échec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
     "auth.notify.invalid.receivers.all.mail": "Échec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
+    "auth.notify.password.forgotten": "Si une adresse email est associée à ce compte, un email contenant un lien pour mettre à jour votre mot de passe vous a été envoyé. Pensez à vérifier vos spams. Si vous n'avez rien reçu, contactez votre administrateur.",
+    "auth.notify.id.forgotten": "Si un compte est associé à cette adresse email, un email contenant votre identifiant vous a été envoyé. Pensez à vérifier vos spams. Si vous n'avez rien reçu, contactez votre administrateur.",
     "auth.info.firstName":"Veuillez entrer votre prénom :",
     "auth.info.structure":"Veuillez choisir votre établissement :",
     "federated.users.title" : "Choisissez le compte pour vous connecter : ",
