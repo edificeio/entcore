@@ -144,7 +144,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 		$scope.sendingMailAndWaitingFeedback = true;
 		http().postJson('/auth/forgot-password', {login: login, service: service})
 			.done(function(data){
-				notify.info("auth.notify."+service+".sent")
+				notify.info("auth.notify.password.forgotten", 8000);
 				$scope.user.channels = {}
 				$scope.sendingMailAndWaitingFeedback = false;
 				$scope.$apply()
@@ -169,7 +169,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 						$scope.user.mode = 'idExtras'
 					}else{
 						$scope.user.mode = 'notFound';
-						setError('auth.notify.non.unique.result.mail');
+						setError('auth.notify.id.forgotten');
 					}
 				}else {
 					notify.info("auth.notify." + service + ".sent", 5000)
