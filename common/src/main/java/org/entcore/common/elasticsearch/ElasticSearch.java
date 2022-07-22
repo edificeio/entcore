@@ -148,11 +148,11 @@ public class ElasticSearch {
 	}
 
 	public void delete(String type, JsonObject object, Handler<AsyncResult<JsonObject>> handler) {
-		this.postInternal(this.defaultIndex + "/" + type + "/_delete_by_query", 200, object, handler);
+		this.postInternal(this.defaultIndex + "/_delete_by_query", 200, object, handler);
 	}
 
 	public void update(String type, JsonObject object, Integer id, Handler<AsyncResult<JsonObject>> handler) {
-		this.postInternal(this.defaultIndex + "/" + type + "/" + id + "/_update", 200, object, handler);
+		this.postInternal(this.defaultIndex + "/_update" + id, 200, object, handler);
 	}
 
 	private void postInternal(String path, int expectedStatus, JsonObject payload, Handler<AsyncResult<JsonObject>> handler) {
