@@ -174,7 +174,8 @@ public class NodePdfClient implements PdfGenerator {
 					handler.handle(new DefaultAsyncResult<>(pdf));
 				});
 			} else {
-				log.error("[responseHandler] Invalid status code when receive pdf response with status: "+ res.statusCode());
+				log.error("[responseHandler] Invalid status code when receive pdf response with status: " +
+						res.statusCode() + " , message: " + res.statusMessage());
 				handler.handle(new DefaultAsyncResult<>(new PdfException("invalid.pdf.response")));
 			}
 		};
