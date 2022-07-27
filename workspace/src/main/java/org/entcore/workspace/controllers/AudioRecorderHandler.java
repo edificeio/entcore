@@ -167,7 +167,9 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						if ("ok".equals(event.body().getString("status"))) {
-							ws.writeTextMessage("ok");
+							final String docId = event.body().getString("_id");
+							final JsonObject jo = new JsonObject().put("status", "ok").put("docId", docId);
+							ws.write(jo.toBuffer());
 							eventHelper.onCreateResource(UserUtils.sessionToUserInfos(infos), RESOURCE_NAME, ws.headers());
 						} else {
 							ws.writeTextMessage(event.body().getString("message"));

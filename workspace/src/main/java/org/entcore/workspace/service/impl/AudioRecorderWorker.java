@@ -121,7 +121,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 												@Override
 												public void handle(Message<JsonObject> event) {
 													if ("ok".equals(event.body().getString("status"))) {
-														sendOK(message);
+														sendOK(message, event.body());
 													} else {
 														sendError(message, "workspace.add.error");
 													}
