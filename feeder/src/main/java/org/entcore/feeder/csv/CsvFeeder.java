@@ -221,6 +221,7 @@ public class CsvFeeder implements Feed {
 			CSVUtil.getCharset(vertx, file, new Handler<String>() {
 				@Override
 				public void handle(String charset) {
+					CSVReader csvReader = null;
 					try {
 						final String profile = file.substring(file.lastIndexOf(File.separator) + 1).replaceFirst(".csv", "");
 						if(columnsMapper.profileExists(profile) == false)
@@ -231,7 +232,7 @@ public class CsvFeeder implements Feed {
 							}
 							return;
 						}
-						CSVReader csvReader = getCsvReader(file, charset);
+						csvReader = getCsvReader(file, charset);
 						String[] strings;
 						int i = 0;
 						while ((strings = csvReader.readNext()) != null) {
@@ -258,6 +259,14 @@ public class CsvFeeder implements Feed {
 					} catch (Exception e) {
 						handler.handle(new ResultMessage().error("csv.exception"));
 						log.error("csv.exception", e);
+					} finally {
+						if(csvReader!=null) {
+							try {
+								csvReader.close();
+							} catch (Exception e) {
+								log.error("Could not close parser", e);
+							}
+						}
 					}
 				}
 			});
@@ -310,9 +319,9 @@ public class CsvFeeder implements Feed {
 //			handler.handle(new ResultMessage().error("invalid.structure"));
 //			return;
 //		}
-
+		CSVReader csvParser = null;
 		try {
-			CSVReader csvParser = getCsvReader(file, charset);
+			csvParser = getCsvReader(file, charset);
 			final List<String> columns = new ArrayList<>();
 			int nbColumns = 0;
 			String[] strings;
@@ -651,6 +660,14 @@ public class CsvFeeder implements Feed {
 		} catch (Exception e) {
 			handler.handle(new ResultMessage().error("csv.exception"));
 			log.error("csv.exception", e);
+		} finally {
+			if(csvParser!=null) {
+				try {
+					csvParser.close();
+				} catch (Exception e) {
+					log.error("Could not close parser", e);
+				}
+			}
 		}
 //		importer.markMissingUsers(structure.getExternalId(), new Handler<Void>() {
 //			@Override

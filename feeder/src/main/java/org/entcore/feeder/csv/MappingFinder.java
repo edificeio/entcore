@@ -89,9 +89,9 @@ public class MappingFinder {
 			handler.handle(errors);
 			return;
 		}
-
+		CSVReader csvReader = null;
 		try {
-			CSVReader csvReader = getCsvReader(path, charset);
+			csvReader = getCsvReader(path, charset);
 			final int nbColumns = columns.size();
 			String[] values;
 			int rowIdx = 0;
@@ -161,6 +161,14 @@ public class MappingFinder {
 		} catch (Exception e) {
 			addError(errors, "error.read.file", path);
 			handler.handle(errors);
+		} finally {
+			if(csvReader!=null) {
+				try {
+					csvReader.close();
+				} catch (Exception e) {
+					log.error("Could not close reader", e);
+				}
+			}
 		}
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
@@ -175,14 +183,21 @@ public class MappingFinder {
 						}
 					}
 					vertx.fileSystem().deleteBlocking(path);
-
+					CSVWriter writer = null;
 					try {
-						CSVWriter writer = getCsvWriter(path, charset);
+						writer = getCsvWriter(path, charset);
 						writer.writeAll(lines);
-						writer.close();
 					} catch (IOException e) {
 						log.error("Error writing file.", e);
 						addError(errors, "error.write.file", path);
+					}finally{
+						if(writer!=null) {
+							try {
+								writer.close();
+							} catch (Exception e) {
+								log.error("Could not close writer", e);
+							}
+						}
 					}
 					if ("Relative".equals(profile) && columns.contains("childLastName") && !columns.contains("childExternalId")) {
 						if (additionalColumn) {
@@ -245,8 +260,9 @@ public class MappingFinder {
 			handler.handle(errors);
 			return;
 		}
+		CSVReader csvReader = null;
 		try {
-			CSVReader csvReader = getCsvReader(path, charset);
+			csvReader = getCsvReader(path, charset);
 			String[] values;
 			int rowIdx = 0;
 			while ((values = csvReader.readNext()) != null) {
@@ -311,6 +327,14 @@ public class MappingFinder {
 		} catch (Exception e) {
 			addError(errors, "error.read.file", path);
 			handler.handle(errors);
+		}finally{
+			if(csvReader!=null) {
+				try {
+					csvReader.close();
+				} catch (Exception e) {
+					log.error("Could not close parser", e);
+				}
+			}
 		}
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
@@ -334,14 +358,21 @@ public class MappingFinder {
 						}
 					}
 					vertx.fileSystem().deleteBlocking(path);
-
+					CSVWriter writer = null;
 					try {
-						CSVWriter writer = getCsvWriter(path, charset);
+						writer = getCsvWriter(path, charset);
 						writer.writeAll(lines);
-						writer.close();
 					} catch (IOException e) {
 						log.error("Error writing file.", e);
 						addError(errors, "error.write.file", path);
+					}finally{
+						if(writer!=null) {
+							try {
+								writer.close();
+							} catch (Exception e) {
+								log.error("Could not close writer", e);
+							}
+						}
 					}
 					handler.handle(errors);
 				} else {
