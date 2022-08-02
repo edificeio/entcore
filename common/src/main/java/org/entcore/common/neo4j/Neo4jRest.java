@@ -463,7 +463,7 @@ public class Neo4jRest implements GraphDatabase {
 		final String b = Json.encode(body);
 
 		req.exceptionHandler(event -> {
-			logger.error("Neo4j error in request : " + path + " - " + b, event);
+			logger.error("Neo4j error in request : " + path + " - " + b + ": " + event.getMessage(), event);
 			if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
 				logger.warn("Retry sendRequest with empty statements.");
 				try {
