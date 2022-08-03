@@ -1,7 +1,6 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from '../../store/models/group.model';
 import { StructureModel } from './structure.model';
-import { globalStore } from '../global.store';
 
 export enum UserProfiles
 {
@@ -276,11 +275,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         } else {
             return false;
         }
-    }
-
-    isEligibleForDirection(structure: StructureModel)
-    {
-        return (this.hasTeacherProfile() || this.hasPersonnelProfile()) && globalStore.structures.get(structure.id).is1D();
     }
 
     isDirectionManual(structureExternalId: string) {

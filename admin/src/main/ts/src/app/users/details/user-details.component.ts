@@ -20,6 +20,7 @@ import { Config } from "../../core/resolvers/Config";
 import { globalStore } from "../../core/store/global.store";
 import { UsersStore } from "../users.store";
 import { BundlesService } from "ngx-ode-sijil";
+import { UserService } from "src/app/core/services/user.service";
 
 @Component({
   selector: "ode-user-detail",
@@ -79,7 +80,8 @@ export class UserDetailsComponent
     private ns: NotifyService,
     private usersStore: UsersStore,
     private userListService: UserListService,
-    private bundles: BundlesService
+    private bundles: BundlesService,
+    private userService: UserService
   ) {
     super(injector);
   }
@@ -195,8 +197,8 @@ export class UserDetailsComponent
   removeFromStructure() {
     this.spinner.perform(
       "portal-content",
-      this.user
-        .removeStructure(this.structure.id)
+      this.userService
+        .removeStructure(this.user, this.structure.id)
         .then(() => {
           this.changeDetector.markForCheck();
 
@@ -232,8 +234,8 @@ export class UserDetailsComponent
   unremoveFromStructure() {
     this.spinner.perform(
       "portal-content",
-      this.user
-        .addStructure(this.structure.id)
+      this.userService
+        .addStructure(this.user, this.structure.id)
         .then(() => {
           this.changeDetector.markForCheck();
 

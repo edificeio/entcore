@@ -12,7 +12,14 @@ import {NotifyService} from '../../../../core/services/notify.service';
     templateUrl: './user-quota-section.component.html'
 })
 export class UserQuotaSectionComponent extends AbstractSection implements OnInit {
-    @Input() user: UserModel;
+    _inUser: UserModel;
+    get inUser() {
+        return this._inUser;
+    }
+    @Input() set inUser(user: UserModel) {
+        this._inUser = user;
+        this.user = user;
+    }
 
     /** unit calculated from user quota */
     unit: Unit;
