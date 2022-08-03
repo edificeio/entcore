@@ -1,7 +1,9 @@
 import { AbstractStore } from 'src/app/core/store/abstract.store';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class MessageFlashStore extends AbstractStore {
 
     constructor() {

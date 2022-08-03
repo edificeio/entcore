@@ -19,8 +19,8 @@ describe('ServicesService', () => {
                 HttpClientTestingModule
             ]
         });
-        servicesService = TestBed.get(ServicesService);
-        httpTestingController = TestBed.get(HttpTestingController);
+        servicesService = TestBed.inject(ServicesService);
+        httpTestingController = TestBed.inject(HttpTestingController);
         connector = new ConnectorModel();
         connector.name = 'connector1';
         connector.displayName = 'connector1';

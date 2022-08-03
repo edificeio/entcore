@@ -34,9 +34,9 @@ export class GroupManageUsersComponent
   @Output()
   closeEmitter: EventEmitter<void> = new EventEmitter<void>();
 
-  @ViewChild(GroupInputUsersComponent, { static: false })
+  @ViewChild(GroupInputUsersComponent)
   groupInputUsersComponent: GroupInputUsersComponent;
-  @ViewChild(GroupOutputUsersComponent, { static: false })
+  @ViewChild(GroupOutputUsersComponent)
   groupOutputUsersComponent: GroupOutputUsersComponent;
 
   inputUsers: UserModel[];

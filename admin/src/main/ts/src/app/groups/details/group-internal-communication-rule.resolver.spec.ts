@@ -17,8 +17,8 @@ describe('GroupInternalCommunicationRuleResolver', () => {
                 HttpClientTestingModule
             ]
         }).compileComponents();
-        service = TestBed.get(GroupInternalCommunicationRuleResolver);
-        httpController = TestBed.get(HttpTestingController);
+        service = TestBed.inject(GroupInternalCommunicationRuleResolver);
+        httpController = TestBed.inject(HttpTestingController);
     }));
 
     it(`should call '/communication/group/myGroupId' when the current group id is 'myGroupId'`, () => {

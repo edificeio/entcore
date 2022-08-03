@@ -31,9 +31,9 @@ export class UserDetailsComponent
   extends OdeComponent
   implements OnInit, OnDestroy
 {
-  @ViewChild("codeInput", { static: false })
+  @ViewChild("codeInput")
   codeInput: AbstractControl;
-  @ViewChild("administrativeForm", { static: false })
+  @ViewChild("administrativeForm")
   administrativeForm: NgForm;
 
   @Input() simpleUserDetails: boolean;

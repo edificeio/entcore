@@ -46,7 +46,7 @@ describe('UserInfoSectionComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(UserInfoSectionComponent);
         component = fixture.debugElement.componentInstance;
-        httpController = TestBed.get(HttpTestingController);
+        httpController = TestBed.inject(HttpTestingController);
     }));
 
     it('should create the UserInfoSectionComponent component', async(() => {

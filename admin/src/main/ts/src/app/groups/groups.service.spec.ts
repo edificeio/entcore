@@ -31,9 +31,9 @@ describe('GroupsService', () => {
             ],
             imports: [HttpClientTestingModule]
         });
-        groupsService = TestBed.get(GroupsService);
+        groupsService = TestBed.inject(GroupsService);
         groupsService.groupsStore = mockGroupStore;
-        httpTestingController = TestBed.get(HttpTestingController);
+        httpTestingController = TestBed.inject(HttpTestingController);
     });
 
     describe('delete', () => {

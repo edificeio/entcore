@@ -56,9 +56,9 @@ export class UserInfoSectionComponent
   @Input() config: Config;
   @Input() simpleUserDetails: boolean;
 
-  @ViewChild("infoForm", { static: false }) infoForm: NgForm;
+  @ViewChild("infoForm") infoForm: NgForm;
 
-  @ViewChild("loginAliasInput", { static: false })
+  @ViewChild("loginAliasInput")
   loginAliasInput: AbstractControl;
 
   @ViewChild("loginInput", { static: false })

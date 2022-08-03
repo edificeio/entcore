@@ -18,8 +18,8 @@ describe('UserGroupsResolver', () => {
                 HttpClientTestingModule
             ]
         });
-        userGroupsResolver = TestBed.get(UserGroupsResolver);
-        httpController = TestBed.get(HttpTestingController);
+        userGroupsResolver = TestBed.inject(UserGroupsResolver);
+        httpController = TestBed.inject(HttpTestingController);
     });
 
     it('should call the backend API for listing groups of a user', () => {

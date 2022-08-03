@@ -78,7 +78,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     @Output()
     iconFileInvalid: EventEmitter<string> = new EventEmitter();
 
-    @ViewChild('propertiesForm', { static: false })
+    @ViewChild('propertiesForm')
     propertiesFormRef: NgForm;
 
     LINKPARAMS_TARGET_PORTAL = '';

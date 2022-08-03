@@ -32,7 +32,7 @@ export class SmartConnectorComponent extends OdeComponent implements OnInit, OnD
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
     public assignmentGroupPickerList: GroupModel[];
 
-    @ViewChild(ConnectorPropertiesComponent, { static: false })
+    @ViewChild(ConnectorPropertiesComponent)
     connectorPropertiesComponent: ConnectorPropertiesComponent;
 
     public PROPERTIES_TAB = 'properties';

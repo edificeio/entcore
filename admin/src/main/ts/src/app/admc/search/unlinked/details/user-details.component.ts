@@ -14,9 +14,9 @@ import { AbstractControl, NgForm } from "@angular/forms";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
-  @ViewChild('administrativeForm', { static: false }) administrativeForm: NgForm;
-  @ViewChild('firstNameInput', { static: false })     firstNameInput: AbstractControl;
-  @ViewChild('lastNameInput', { static: false })      lastNameInput: AbstractControl;
+  @ViewChild('administrativeForm') administrativeForm: NgForm;
+  @ViewChild('firstNameInput')     firstNameInput: AbstractControl;
+  @ViewChild('lastNameInput')      lastNameInput: AbstractControl;
 
   @Output() ondelete: EventEmitter<UnlinkedUserDetails> = new EventEmitter<UnlinkedUserDetails>();
 

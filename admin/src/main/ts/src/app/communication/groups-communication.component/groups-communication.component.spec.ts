@@ -32,7 +32,7 @@ describe('GroupsCommunicationComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(GroupsCommunicationComponent);
         component = fixture.debugElement.componentInstance;
-        const bundlesService = TestBed.get(BundlesService);
+        const bundlesService: any = TestBed.inject(BundlesService);
         bundlesService.addToBundle({
             'user.communication.back-to-user-details': 'Retour à la fiche',
             'user.communication.title': 'Communication de {{ lastName }} {{ firstName }}'

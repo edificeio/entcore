@@ -13,8 +13,8 @@ describe('UserService', () => {
             ],
             imports: [HttpClientTestingModule]
         });
-        userService = TestBed.get(UsersService);
-        httpTestingController = TestBed.get(HttpTestingController);
+        userService = TestBed.inject(UsersService);
+        httpTestingController = TestBed.inject(HttpTestingController);
     });
 
     describe('fetch', () => {

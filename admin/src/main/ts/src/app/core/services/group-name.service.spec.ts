@@ -11,8 +11,8 @@ describe('GroupNameService', () => {
             providers: [GroupNameService],
             imports: [SijilModule.forRoot()]
         });
-        groupNameService = TestBed.get(GroupNameService);
-        const bundlesService = TestBed.get(BundlesService);
+        groupNameService = TestBed.inject(GroupNameService);
+        const bundlesService: any = TestBed.inject(BundlesService);
         bundlesService.addToBundle({
             'group.card.structure.Personnel': 'Personnels de {{name}}',
             'group.card.structure.Relative': 'Parents de {{name}}',
