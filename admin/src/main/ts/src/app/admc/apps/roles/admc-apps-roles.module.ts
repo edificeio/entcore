@@ -1,7 +1,8 @@
 import {NgModule} from '@angular/core';
 import {CommonModule, NgSwitch} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import { MatInputModule, MatSelectModule } from '@angular/material';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import {RouterModule} from '@angular/router';
 import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 import {NgxOdeUiModule} from 'ngx-ode-ui';

@@ -3,7 +3,7 @@ import {Observable, Subject} from 'rxjs';
 import {AlerteModel} from '../../core/store/models/AlerteModel';
 import {mergeMap, tap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {OdeComponent} from 'ngx-ode-core';
 
 @Component({
