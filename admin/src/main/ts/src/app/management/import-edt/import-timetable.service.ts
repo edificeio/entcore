@@ -2,7 +2,45 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
-import { TimetableClassesMapping, TimetableGroupsMapping, EDTImportFlux, EDTImportMode } from './import-edt.component';
+
+export interface EDTReport
+{
+  _id: string,
+  id: string,
+  created: any, // mongo date
+  source: string,
+  manual: boolean,
+  date: string,
+  report?: string,
+}
+
+export enum EDTImportFlux
+{
+  DEFAULT="",
+  NONE="NOP",
+  EDT="EDT",
+  UDT="UDT",
+}
+
+export enum EDTImportMode
+{
+  DEFAULT,
+  TIMETABLE_ONLY,
+  GROUPS_ONLY
+}
+
+export interface TimetableClassesMapping
+{
+  unknownClasses: String[],
+  classNames: String[],
+  classesMapping: object, //Map<String, String>
+}
+export interface TimetableGroupsMapping
+{
+  unknownGroups: String[],
+  groupNames: String[],
+  groupsMapping: object, //Map<String, String>
+}
 
 @Injectable({
   providedIn: 'root',

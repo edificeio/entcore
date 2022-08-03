@@ -1,4 +1,4 @@
-import {MatPaginatorIntl} from '@angular/material';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { HttpClient } from '@angular/common/http';
 import { BundlesService } from 'ngx-ode-sijil';
 

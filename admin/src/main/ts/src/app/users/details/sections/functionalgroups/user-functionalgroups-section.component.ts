@@ -20,7 +20,15 @@ export class UserFunctionalgroupsSectionComponent extends AbstractSection implem
 
     showGroupLightbox = false;
 
-    @Input() user: UserModel;
+    _inUser: UserModel;
+    get inUser() {
+      return this._inUser;
+    }
+    @Input() set inUser(user: UserModel) {
+        this._inUser = user;
+        this.user = user;
+    }
+
     @Input() structure: StructureModel;
 
     public inputFilter = '';

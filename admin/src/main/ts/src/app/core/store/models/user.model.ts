@@ -1,6 +1,5 @@
 import {Model} from 'entcore-toolkit';
 import {UserDetailsModel} from './userdetails.model';
-import {globalStore} from '../global.store';
 import {GroupModel} from './group.model';
 
 export interface Classe {
@@ -48,51 +47,6 @@ export class UserModel extends Model<UserModel> {
     disappearanceDate?: number;
 
     userDetails: UserDetailsModel;
-
-    visibleStructures() {
-        return this.structures.filter(structure => globalStore.structures.data
-            .find(manageableStructure => manageableStructure.id === structure.id));
-    }
-
-    invisibleStructures() {
-        return this.structures.filter(structure => globalStore.structures.data
-            .every(manageableStructure => manageableStructure.id !== structure.id));
-    }
-
-    addStructure(structureId: string) {
-        return this.http.put(`/directory/structure/${structureId}/link/${this.id}`)
-            .then(() => {
-                const targetStructure = globalStore.structures.data.find(s => s.id === structureId);
-                if (targetStructure) {
-                    this.structures.push({id: targetStructure.id, name: targetStructure.name, externalId: null});
-                    if (targetStructure.users.data.length > 0)
-                    {
-                        targetStructure.users.data.push(this);
-                        targetStructure.removedUsers.data = targetStructure.removedUsers.data
-                            .filter(u => u.id !== this.id);
-                    }
-                    this.userDetails.unremoveFromStructure(targetStructure);
-                }
-            });
-    }
-
-    removeStructure(structureId: string) {
-        return this.http.delete(`/directory/structure/${structureId}/unlink/${this.id}`)
-            .then(() => {
-                this.structures = this.structures.filter(s => s.id !== structureId);
-                const targetStructure = globalStore.structures.data.find(s => s.id === structureId);
-                if (targetStructure)
-                {
-                    if(targetStructure.users.data.length > 0)
-                    {
-                        targetStructure.users.data = targetStructure.users.data
-                            .filter(u => u.id !== this.id);
-                        targetStructure.removedUsers.data.push(this);
-                    }
-                    this.userDetails.removeFromStructure(targetStructure);
-                }
-            });
-    }
 
     addClass(classe: Classe) {
         return this.http.put(`/directory/class/${classe.id}/link/${this.id}`)
@@ -158,20 +112,6 @@ export class UserModel extends Model<UserModel> {
         }
     }
 
-    separateDuplicate(duplicateId: string) {
-        return this.http.delete(`/directory/duplicate/ignore/${this.id}/${duplicateId}`).then(() => {
-            const duplicate = this.duplicates.find(d => d.id === duplicateId);
-            duplicate.structures.forEach(duplicatedStructure => {
-                const structure = globalStore.structures.data.find(struct => struct.id === duplicatedStructure.id);
-                if (structure && structure.users.data.length > 0) {
-                    const user = structure.users.data.find(rUser => rUser.id === duplicateId);
-                    if (user) { user.duplicates = user.duplicates.filter(d => d.id !== this.id); }
-                }
-            });
-            this.duplicates = this.duplicates.filter(d => d.id !== duplicateId);
-        });
-    }
-
     createNewUser(structureId) {
         const userPayload = new window.URLSearchParams();
 
@@ -196,10 +136,5 @@ export class UserModel extends Model<UserModel> {
                 this.deleteDate = null;
                 this.disappearanceDate = null;
             });
-    }
-
-    visibleRemovedStructures() {
-        let rmStructs = this.userDetails.removedFromStructures != null ? this.userDetails.removedFromStructures : [];
-        return globalStore.structures.data.filter(struct => rmStructs.indexOf(struct.externalId) != -1);
     }
 }

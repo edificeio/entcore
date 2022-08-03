@@ -9,6 +9,7 @@ import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { globalStore } from 'src/app/core/store/global.store';
+import { UserService } from 'src/app/core/services/user.service';
 
 @Component({
     selector: 'ode-user-duplicates-section',
@@ -24,7 +25,8 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
                 private router: Router,
                 private usersStore: UsersStore,
                 private userListService: UserListService,
-                private ns: NotifyService) {
+                private ns: NotifyService,
+                private userService: UserService) {
         super();
     }
 
@@ -93,7 +95,7 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
     }
 
     separate = (dupId) => {
-        return this.spinner.perform(dupId, this.user.separateDuplicate(dupId)).then(res => {
+        return this.spinner.perform(dupId, this.userService.separateDuplicate(this.user, dupId)).then(res => {
             this.userListService.$updateSubject.next();
             this.ns.success({
                 key: 'notify.user.dissociate.success.content',

@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { EDTReport } from './import-edt.component';
 import {BundlesService} from 'ngx-ode-sijil';
+import { EDTReport } from './import-timetable.service';
 
 @Injectable({
   providedIn: 'root',

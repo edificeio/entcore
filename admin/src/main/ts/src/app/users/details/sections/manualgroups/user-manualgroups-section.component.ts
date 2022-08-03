@@ -20,8 +20,15 @@ export class UserManualgroupsSectionComponent extends AbstractSection implements
     public inputFilter = '';
     public showGroupLightbox = false;
 
-    @Input()
-    public user: UserModel;
+    public _inUser: UserModel;
+    get inUser() {
+        return this.inUser;
+    }
+    @Input() set inUser(user: UserModel) {
+        this._inUser = user;
+        this.user = user;
+    }
+
     @Input()
     public structure: StructureModel;
 

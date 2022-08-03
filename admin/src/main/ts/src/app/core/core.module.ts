@@ -11,6 +11,7 @@ import { SessionResolver } from './resolvers/session.resolver';
 import { StructuresResolver } from './resolvers/structures.resolver';
 import { NotifyService } from './services/notify.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
+import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
 
 @NgModule({
@@ -32,7 +33,8 @@ import { WidgetService } from './services/widgets.service';
         NotifyService,
         SpinnerService,
         WidgetService,
-        ConfigResolver
+        ConfigResolver,
+        UserService
     ],
 })
 export class CoreModule {

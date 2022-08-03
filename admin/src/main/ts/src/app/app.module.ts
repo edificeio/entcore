@@ -48,7 +48,7 @@ registerLocaleData(localePt);
     ],
     bootstrap: [AppComponent],
     providers: [
-        { provide: COMPONENT_LIFECYCLE_DEBUG_MODE, useValue: 1 }
+        { provide: COMPONENT_LIFECYCLE_DEBUG_MODE, useValue: 0 }
     ]
 })
 export class AppModule {

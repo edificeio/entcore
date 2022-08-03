@@ -7,7 +7,7 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "importHelpers": true,
 
@@ -18,7 +18,11 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ngx-ode-core": ["node_modules/ngx-ode-core"],
+      "ngx-ode-sijil": ["node_modules/ngx-ode-sijil"]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

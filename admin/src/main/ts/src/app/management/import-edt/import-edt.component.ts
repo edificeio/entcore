@@ -4,50 +4,11 @@ import { OdeComponent } from 'ngx-ode-core';
 import { routing } from 'src/app/core/services/routing.service';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { ImportEDTReportsService } from './import-edt-reports.service';
-import { ImportTimetableService } from './import-timetable.service';
+import { EDTImportFlux, EDTImportMode, EDTReport, ImportTimetableService, TimetableClassesMapping, TimetableGroupsMapping } from './import-timetable.service';
 import { SelectOption } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
-
-export interface EDTReport
-{
-  _id: string,
-  id: string,
-  created: any, // mongo date
-  source: string,
-  manual: boolean,
-  date: string,
-  report?: string,
-}
-
-export enum EDTImportFlux
-{
-  DEFAULT="",
-  NONE="NOP",
-  EDT="EDT",
-  UDT="UDT",
-}
-
-export enum EDTImportMode
-{
-  DEFAULT,
-  TIMETABLE_ONLY,
-  GROUPS_ONLY
-}
-
-export interface TimetableClassesMapping
-{
-  unknownClasses: String[],
-  classNames: String[],
-  classesMapping: object, //Map<String, String>
-}
-export interface TimetableGroupsMapping
-{
-  unknownGroups: String[],
-  groupNames: String[],
-  groupsMapping: object, //Map<String, String>
-}
 
 @Component(
 {

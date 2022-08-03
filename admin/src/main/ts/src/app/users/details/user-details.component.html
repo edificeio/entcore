@@ -227,7 +227,7 @@
 
 <div>
   <ode-user-info-section
-    [user]="user"
+    [inUser]="user"
     [structure]="structure"
     [config]="config"
   >
@@ -241,7 +241,7 @@
   </ode-user-administrative-section>
 
   <ode-user-quota-section
-    [user]="user"
+    [inUser]="user"
     *ngIf="!details.activationCode && !user.deleteDate"
   >
   </ode-user-quota-section>
@@ -269,7 +269,7 @@
   </ode-user-children-section>
 
   <ode-user-aaf-functions-section
-    [user]="user"
+    [inUser]="user"
     [structure]="structure"
     *ngIf="user.type == 'Personnel' || user.type == 'Teacher'"
   >
@@ -290,14 +290,14 @@
   </ode-user-classes-section>
 
   <ode-user-functionalgroups-section
-    [user]="user"
+    [inUser]="user"
     [structure]="structure"
     *ngIf="!user.deleteDate"
   >
   </ode-user-functionalgroups-section>
 
   <ode-user-manualgroups-section
-    [user]="user"
+    [inUser]="user"
     [structure]="structure"
     *ngIf="!user.deleteDate"
   >

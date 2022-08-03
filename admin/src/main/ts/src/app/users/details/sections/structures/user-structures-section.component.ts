@@ -5,6 +5,7 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { globalStore } from 'src/app/core/store/global.store';
+import { UserService } from 'src/app/core/services/user.service';
 
 @Component({
     selector: 'ode-user-structures-section',
@@ -27,7 +28,8 @@ export class UserStructuresSectionComponent extends AbstractSection implements O
 
     constructor(public spinner: SpinnerService,
                 private ns: NotifyService,
-                protected cdRef: ChangeDetectorRef) {
+                protected cdRef: ChangeDetectorRef,
+                private userService: UserService) {
         super();
     }
 
@@ -57,7 +59,7 @@ export class UserStructuresSectionComponent extends AbstractSection implements O
     }
 
     addStructure = (structure) => {
-        this.spinner.perform('portal-content', this.user.addStructure(structure.id)
+        this.spinner.perform('portal-content', this.userService.addStructure(this.user, structure.id)
             .then(() => {
                 this.ns.success(
                     {
@@ -83,7 +85,7 @@ export class UserStructuresSectionComponent extends AbstractSection implements O
     }
 
     removeStructure = (structure) => {
-        this.spinner.perform('portal-content', this.user.removeStructure(structure.id)
+        this.spinner.perform('portal-content', this.userService.removeStructure(this.user, structure.id)
             .then(() => {
                 this.ns.success(
                     {
@@ -144,5 +146,21 @@ export class UserStructuresSectionComponent extends AbstractSection implements O
                 parameters: {user: this.user.firstName + ' ' + this.user.lastName}
             }, 'notify.user.remove.direction.error.title', err);
         });
+    }
+
+    isEligibleForDirection(structure: StructureModel) {
+        return this.userService.isEligibleForDirection(this.user.userDetails, structure);
+    }
+
+    visibleStructures(): Array<{id: string, name: string, externalId: string}> {
+        return this.userService.visibleStructures(this.user);
+    }
+
+    invisibleStructures(): Array<{id: string, name: string, externalId: string}> {
+        return this.userService.invisibleStructures(this.user);
+    }
+
+    visibleRemovedStructures(): Array<StructureModel> {
+        return this.userService.visibleRemovedStructures(this.user);
     }
 }

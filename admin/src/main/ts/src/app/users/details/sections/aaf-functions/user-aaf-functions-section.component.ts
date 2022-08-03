@@ -10,8 +10,16 @@ import { StructureModel } from 'src/app/core/store/models/structure.model';
     templateUrl: './user-aaf-functions-section.component.html'
 })
 export class UserAafFunctionsComponent extends AbstractSection implements OnInit {
-    @Input() user: UserModel;
     @Input() structure: StructureModel;
+
+    _inUser: UserModel;
+    get inUser() {
+      return this._inUser;
+    }
+    @Input() set inUser(user: UserModel) {
+        this._inUser = user;
+        this.user = user;
+    }
 
     sectionTitle = '';
 
