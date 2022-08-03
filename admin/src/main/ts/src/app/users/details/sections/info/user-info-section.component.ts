@@ -40,7 +40,7 @@ export class UserInfoSectionComponent
   isAdmc: boolean = false;
 
   @Input() structure: StructureModel;
-  
+
   _inUser: UserModel;
   get inUser() {
     return this._inUser;
