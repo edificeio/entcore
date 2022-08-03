@@ -3,7 +3,9 @@ import { StructureModel } from '../core/store/models/structure.model';
 import { ApplicationModel } from '../core/store/models/application.model';
 import { ConnectorModel } from '../core/store/models/connector.model';
 import { WidgetModel } from '../core/store/models/widget.model';
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class ServicesStore extends AbstractStore {
 
     constructor() {

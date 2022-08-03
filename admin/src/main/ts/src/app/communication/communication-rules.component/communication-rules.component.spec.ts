@@ -63,7 +63,7 @@ describe('CommunicationRulesComponent', () => {
             ]
 
         }).compileComponents();
-        const bundlesService = TestBed.get(BundlesService);
+        const bundlesService = TestBed.inject(BundlesService);
         bundlesService.addToBundle({
             'user.communication.groups-of-user': 'Groupes de l\'utlisateur'
         });

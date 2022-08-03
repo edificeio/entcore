@@ -34,7 +34,7 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
     private structureSubscriber: Subscription;
     private routerSubscriber: Subscription;
 
-    @ViewChild(WizardComponent, { static: false })
+    @ViewChild(WizardComponent)
     public wizardEl: WizardComponent;
 
     globalError: { message: string, param: string, profile: {}, reset: () => void } = {
@@ -367,7 +367,7 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
         }
     };
 
-    @ViewChild(ObjectURLDirective, { static: false }) objectURLEl: ObjectURLDirective;
+    @ViewChild(ObjectURLDirective) objectURLEl: ObjectURLDirective;
 
     public translate = (...args) => (this.bundles.translate as any)(...args);
 
