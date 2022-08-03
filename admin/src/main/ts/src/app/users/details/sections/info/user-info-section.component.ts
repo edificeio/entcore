@@ -49,7 +49,6 @@ export class UserInfoSectionComponent
       this._inUser = user;
       this.user = user;
   }
-
   @Input() config: Config;
   @Input() simpleUserDetails: boolean;
 
