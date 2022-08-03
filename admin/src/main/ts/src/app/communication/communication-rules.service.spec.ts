@@ -18,8 +18,8 @@ describe('CommunicationRulesService', () => {
                 HttpClientTestingModule
             ]
         });
-        communicationRulesService = TestBed.get(CommunicationRulesService);
-        httpController = TestBed.get(HttpTestingController);
+        communicationRulesService = TestBed.inject(CommunicationRulesService);
+        httpController = TestBed.inject(HttpTestingController);
     });
 
     it('should retrieve outgoing and incoming communications and emit new communication rules when giving a list of groups', () => {

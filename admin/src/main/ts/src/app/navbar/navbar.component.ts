@@ -21,7 +21,7 @@ export class NavbarComponent extends OdeComponent {
     @Output()
     selectStructure: EventEmitter<StructureModel> = new EventEmitter<StructureModel>();
 
-    @ViewChild('sidePanelOpener', { static: false }) 
+    @ViewChild('sidePanelOpener') 
     sidePanelOpener: ElementRef;
 
     openside: boolean;

@@ -50,7 +50,7 @@ describe('SmartMassRoleAssignment', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(SmartMassRoleAssignmentComponent);
         component = fixture.debugElement.componentInstance;
-        httpController = TestBed.get(HttpTestingController);
+        httpController = TestBed.inject(HttpTestingController);
         fixture.detectChanges();
         massRoleAssignmentComponent = fixture.debugElement.query(By.directive(MockMassRoleAssignment)).componentInstance;
     }));

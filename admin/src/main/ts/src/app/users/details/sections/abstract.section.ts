@@ -2,7 +2,9 @@ import { UserModel } from 'src/app/core/store/models/user.model';
 import { UserDetailsModel } from 'src/app/core/store/models/userdetails.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { globalStore } from 'src/app/core/store/global.store';
+import { Directive } from "@angular/core";
 
+@Directive()
 export abstract class AbstractSection {
     constructor() {
     }

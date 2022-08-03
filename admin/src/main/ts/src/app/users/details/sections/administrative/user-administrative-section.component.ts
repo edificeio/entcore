@@ -19,13 +19,13 @@ import {Config} from "../../../../core/resolvers/Config";
 })
 export class UserAdministrativeSectionComponent extends AbstractSection {
 
-    @ViewChild('administrativeForm', { static: false })
+    @ViewChild('administrativeForm')
     administrativeForm: NgForm;
 
-    @ViewChild('firstNameInput', { static: false })
+    @ViewChild('firstNameInput')
     firstNameInput: AbstractControl;
 
-    @ViewChild('lastNameInput', { static: false })
+    @ViewChild('lastNameInput')
     lastNameInput: AbstractControl;
 
     @Input() config: Config;

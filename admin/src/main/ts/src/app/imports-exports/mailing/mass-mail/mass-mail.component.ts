@@ -23,8 +23,8 @@ import { MassMailService } from '../mass-mail.service';
 })
 export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    @ViewChild('filtersDiv', {static: false}) filtersDivRef: ElementRef;
-    @ViewChild('filtersToggle', {static: false}) filtersToggleRef;
+    @ViewChild('filtersDiv') filtersDivRef: ElementRef;
+    @ViewChild('filtersToggle') filtersToggleRef;
     users: UserModel[];
     filters: {};
     inputFilters = {lastName: '', firstName: '', classesStr: ''};

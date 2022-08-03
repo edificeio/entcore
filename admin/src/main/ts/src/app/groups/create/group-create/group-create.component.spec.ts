@@ -54,7 +54,7 @@ describe('GroupCreateComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(GroupCreateComponent);
         component = fixture.debugElement.componentInstance;
-        httpController = TestBed.get(HttpTestingController);
+        httpController = TestBed.inject(HttpTestingController);
     }));
 
     it('should create the GroupCreateComponent component', async(() => {

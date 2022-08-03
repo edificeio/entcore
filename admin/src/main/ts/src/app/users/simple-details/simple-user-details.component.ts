@@ -23,10 +23,10 @@ import { Session } from 'src/app/core/store/mappings/session';
 })
 export class SimpleUserDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
 
-    @ViewChild('codeInput', { static: false })
+    @ViewChild('codeInput')
     codeInput: AbstractControl;
 
-    @ViewChild('administrativeForm', { static: false })
+    @ViewChild('administrativeForm')
     administrativeForm: NgForm;
 
     public config: Config;
