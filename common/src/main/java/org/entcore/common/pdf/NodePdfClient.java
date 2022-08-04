@@ -35,6 +35,8 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.ClientOptionsBase;
+import io.vertx.core.net.TCPSSLOptions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -61,7 +63,10 @@ public class NodePdfClient implements PdfGenerator {
 		final HttpClientOptions options = new HttpClientOptions()
 				.setMaxPoolSize(conf.getInteger("pdf-pool", 16))
 				.setKeepAlive(conf.getBoolean("pdf-keepalive", true))
-				.setConnectTimeout(conf.getInteger("pdf-timeout", 45000))
+				.setConnectTimeout(conf.getInteger("pdf-timeout", ClientOptionsBase.DEFAULT_CONNECT_TIMEOUT))
+				.setIdleTimeout(conf.getInteger("pdf-idle-timeout", TCPSSLOptions.DEFAULT_IDLE_TIMEOUT))
+				.setKeepAliveTimeout(conf.getInteger("pdf-keepalive-timeout", HttpClientOptions.DEFAULT_KEEP_ALIVE_TIMEOUT))
+				.setHttp2KeepAliveTimeout(conf.getInteger("pdf-keepalive-timeout", HttpClientOptions.DEFAULT_HTTP2_KEEP_ALIVE_TIMEOUT))
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
 	}
