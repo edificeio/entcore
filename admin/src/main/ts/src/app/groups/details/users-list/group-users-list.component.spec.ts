@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {Router} from '@angular/router';
 import {SijilModule} from 'sijil';
 import {GroupUsersListComponent} from './group-users-list.component';
@@ -32,7 +32,7 @@ describe('GroupUsersListComponent', () => {
         };
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
               GroupUsersListComponent
@@ -50,7 +50,7 @@ describe('GroupUsersListComponent', () => {
         component = fixture.debugElement.componentInstance;
     }));
 
-    it('should create the GroupUsersListComponent component', async(() => {
+    it('should create the GroupUsersListComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 

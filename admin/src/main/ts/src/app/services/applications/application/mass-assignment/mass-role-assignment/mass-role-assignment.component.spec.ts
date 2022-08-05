@@ -1,6 +1,6 @@
 import {MassRoleAssignment} from './mass-role-assignment.component';
 import {MassAssignment, Profile, Role} from '../../../../_shared/services-types';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {ReactiveFormsModule} from '@angular/forms';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {By} from '@angular/platform-browser';
@@ -15,7 +15,7 @@ describe('MassRoleAssignment', () => {
     let assignmentLightbox: MockLightboxConfirmComponent;
     let unassignmentLightbox: MockLightboxConfirmComponent;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
                 MassRoleAssignment,

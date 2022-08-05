@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {MassAssignment, Profile, Role, Structure} from '../../../../_shared/services-types';
@@ -32,7 +32,7 @@ describe('SmartMassRoleAssignment', () => {
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
                 SmartMassRoleAssignmentComponent,

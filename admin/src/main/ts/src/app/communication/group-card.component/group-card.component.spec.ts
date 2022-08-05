@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {UxModule} from '../../shared/ux/ux.module';
 import {GroupCardComponent, groupCardLocators as locators} from './group-card.component';
 import {SijilModule} from 'sijil';
@@ -20,7 +20,7 @@ describe('GroupCardComponent', () => {
     let activatedRoute: ActivatedRoute;
     let fixture: ComponentFixture<GroupCardComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
         notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         groupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
@@ -52,22 +52,22 @@ describe('GroupCardComponent', () => {
         fixture.detectChanges();
     }));
 
-    it('should create the GroupCardComponent component', async(() => {
+    it('should create the GroupCardComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 
-    it('should display the name of the given group "Elèves du Lycée Paul Martin" using the groupNameService', async(() => {
+    it('should display the name of the given group "Elèves du Lycée Paul Martin" using the groupNameService', waitForAsync(() => {
         expect(getText(getTitle(fixture))).toBe('Elèves du Lycée Paul Martin');
     }));
 
-    it('should display the name of the given group "test" using the groupNameService', async(() => {
+    it('should display the name of the given group "test" using the groupNameService', waitForAsync(() => {
         component.group = generateGroup('test');
         (groupNameService.getGroupName as jasmine.Spy).and.returnValue('test');
         fixture.detectChanges();
         expect(getText(getTitle(fixture))).toBe('test');
     }));
 
-    it('should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch and confirming the change', async(() => {
+    it('should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch and confirming the change', waitForAsync(() => {
         component.group = generateGroup('test');
         fixture.detectChanges();
         clickOn(getInternalCommunicationSwitch(fixture));
@@ -75,7 +75,7 @@ describe('GroupCardComponent', () => {
         expect(communicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     }));
 
-    it('should emit a clickOnRemoveCommunication event when clicking on the remove communication button', async(() => {
+    it('should emit a clickOnRemoveCommunication event when clicking on the remove communication button', waitForAsync(() => {
         let emitted = false;
         component.clickOnRemoveCommunication.subscribe(() => emitted = true);
         clickOn(getRemoveCommunicationButton(fixture));

@@ -1,5 +1,5 @@
 import {SmartConnectorComponent} from './smart-connector.component';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {Location} from '@angular/common';
 import {FormBuilder, FormsModule, NgForm} from '@angular/forms';
 import {ServicesStore} from '../../../services.store';
@@ -69,7 +69,7 @@ describe('SmartConnector', () => {
         mockBundle = jasmine.createSpyObj('BundlesService', ['translate']);
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
        TestBed.configureTestingModule({
             declarations: [
                SmartConnectorComponent,
@@ -101,7 +101,7 @@ describe('SmartConnector', () => {
        fixture.detectChanges();
     }));
 
-    it('should create the SmartConnectorComponent component', async(() => {
+    it('should create the SmartConnectorComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 
