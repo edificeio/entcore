@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {GroupModel} from '../../core/store/models/group.model';
 import {StructureModel} from '../../core/store/models/structure.model';
 import {UserDetailsModel} from '../../core/store/models/userdetails.model';
@@ -17,7 +17,7 @@ describe('GroupsCommunicationComponent', () => {
     let axellePotier: UserCommunicationTestingData;
     let harryPotter: UserCommunicationTestingData;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
                 GroupsCommunicationComponent,
@@ -63,22 +63,22 @@ describe('GroupsCommunicationComponent', () => {
         fixture.detectChanges();
     }));
 
-    it('should create the GroupsCommunicationComponent component', async(() => {
+    it('should create the GroupsCommunicationComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 
-    it('should have the title "my title" given the title "my title"', async(() => {
+    it('should have the title "my title" given the title "my title"', waitForAsync(() => {
         expect(getText(getTitle(fixture))).toBe('my title');
     }));
 
-    it('should have the title "Communication de POTTER Harry" given the title "Communication de POTTER Harry"', async(() => {
+    it('should have the title "Communication de POTTER Harry" given the title "Communication de POTTER Harry"', waitForAsync(() => {
         component.title = 'Communication de POTTER Harry';
         component.sendingCommunicationRules = harryPotter.communicationRules;
         fixture.detectChanges();
         expect(getText(getTitle(fixture))).toBe('Communication de POTTER Harry');
     }));
 
-    it('should emit a "close" event with clicking on the back button', async(() => {
+    it('should emit a "close" event with clicking on the back button', waitForAsync(() => {
         let closed = false;
         component.groupClose.subscribe(() => closed = true);
         clickOn(getBackButton(fixture));

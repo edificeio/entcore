@@ -1,5 +1,5 @@
 import {ChangeDetectorRef} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {FormsModule} from '@angular/forms';
 import {SijilModule} from 'sijil';
@@ -25,7 +25,7 @@ describe('UserInfoSectionComponent', () => {
         mockUserInfoService = jasmine.createSpyObj('UserInfoService', ['getState']);
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
               UserInfoSectionComponent
@@ -49,7 +49,7 @@ describe('UserInfoSectionComponent', () => {
         httpController = TestBed.inject(HttpTestingController);
     }));
 
-    it('should create the UserInfoSectionComponent component', async(() => {
+    it('should create the UserInfoSectionComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 

@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 import {SijilModule} from 'sijil';
@@ -54,7 +54,7 @@ describe('GroupDetailsComponent', () => {
         });
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
                 MockGroupManageUsers,
@@ -87,7 +87,7 @@ describe('GroupDetailsComponent', () => {
         fixture.detectChanges();
     }));
 
-    it('should create the GroupDetailsComponent component', async(() => {
+    it('should create the GroupDetailsComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 

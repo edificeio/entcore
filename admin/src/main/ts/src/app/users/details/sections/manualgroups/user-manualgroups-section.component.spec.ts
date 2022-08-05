@@ -1,5 +1,5 @@
 import {ChangeDetectorRef} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {SijilModule} from 'sijil';
 import {UxModule} from '../../../../shared/ux/ux.module';
@@ -20,7 +20,7 @@ describe('UserManualGroupsSection', () => {
         mockSpinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
                 UserManualGroupsSection
@@ -41,7 +41,7 @@ describe('UserManualGroupsSection', () => {
         component = fixture.debugElement.componentInstance;
     }));
 
-    it('should create the UserManualGroupsSection component', async(() => {
+    it('should create the UserManualGroupsSection component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 });

@@ -1,5 +1,5 @@
 import {SmartUsersComparisonComponent} from './smart-users-comparison.component';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {UsersService} from '../users.service';
 import {Component, Input} from '@angular/core';
 import {UserOverview} from '../user-overview/user-overview.component';
@@ -16,7 +16,7 @@ describe('SmartUsersComparisonComponent', () => {
         (userService.fetch as jasmine.Spy).and.callFake(userId => of(generateUserOveview(userId)));
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [SmartUsersComparisonComponent, MockUsersComparisonComponent],
             providers: [{useValue: userService, provide: UsersService}]
@@ -27,11 +27,11 @@ describe('SmartUsersComparisonComponent', () => {
         markForCheck = spyOn((component as any).changeDetectorRef, 'markForCheck');
     }));
 
-    it('should create the SmartUsersComparisonComponent component', async(() => {
+    it('should create the SmartUsersComparisonComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 
-    it('should fetch the user overviews when component inits', async(() => {
+    it('should fetch the user overviews when component inits', waitForAsync(() => {
         component.user1 = 'user1';
         component.user2 = 'user2';
         fixture.detectChanges();
@@ -41,7 +41,7 @@ describe('SmartUsersComparisonComponent', () => {
         expect(markForCheck).toHaveBeenCalled();
     }));
 
-    it('should fetch the user overviews when the given user ids change', async(() => {
+    it('should fetch the user overviews when the given user ids change', waitForAsync(() => {
         component.user1 = 'user3';
         component.user2 = 'user4';
         component.ngOnChanges(null);

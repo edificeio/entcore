@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {GroupCreateComponent} from './group-create.component';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, convertToParamMap, Router} from '@angular/router';
@@ -32,7 +32,7 @@ describe('GroupCreateComponent', () => {
         mockLocation = jasmine.createSpyObj('Location', ['back']);
     });
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [
               GroupCreateComponent
@@ -57,7 +57,7 @@ describe('GroupCreateComponent', () => {
         httpController = TestBed.inject(HttpTestingController);
     }));
 
-    it('should create the GroupCreateComponent component', async(() => {
+    it('should create the GroupCreateComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 

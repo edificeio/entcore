@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {Component, Input} from '@angular/core';
 import {UsersComparisonComponent} from './users-comparison.component';
 import {UserOverview} from '../user-overview/user-overview.component';
@@ -7,7 +7,7 @@ describe('UsersComparisonComponent', () => {
     let fixture: ComponentFixture<UsersComparisonComponent>;
     let component: UsersComparisonComponent;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [UsersComparisonComponent, MockUserOverviewComponent],
             imports: []
@@ -17,7 +17,7 @@ describe('UsersComparisonComponent', () => {
         component = fixture.componentInstance;
     }));
 
-    it('should create the UsersComparisonComponent component', async(() => {
+    it('should create the UsersComparisonComponent component', waitForAsync(() => {
         expect(component).toBeTruthy();
     }));
 });
