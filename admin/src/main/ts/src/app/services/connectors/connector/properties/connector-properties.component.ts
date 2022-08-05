@@ -13,49 +13,7 @@ import { Structure } from 'src/app/services/_shared/services-types';
 @Component({
     selector: 'ode-connector-properties',
     templateUrl: './connector.properties.component.html',
-    styles: [`
-        .connector-properties__action {
-            display: flex;
-            justify-content: flex-end;
-            padding: 20px 10px 10px 10px;
-        }
-    `, `
-        .connector-properties__action--cancel {
-            min-width: 80px;
-            text-align: center;
-        }
-    `, `
-        .connector-properties__action--submit {
-            margin-left: 5px;
-            min-width: 80px;
-            text-align: center;
-            import { Data, NavigationEnd } from '@angular/router';
-            import { OdeComponent } from 'ngx-ode-core';
-            import { routing } from '../../core/services/routing.service';
-        }
-    `, `
-        .connector-properties-warning {
-            padding: 0px 15px;
-        }
-    `, `
-        .connector-properties-warning__header {
-            color: #ff8352;
-            font-weight: bold;
-        }
-    `, `
-        .connector-properties-warning__content {
-            font-style: italic;
-            font-size: 0.8em;
-        }
-    `, `
-        .connector-properties-cas-casType__description {
-            padding-top: 20px;
-            font-weight: bold;
-        }
-        :host /deep/ ode-lightbox > section > div{
-            min-width: 500px;
-        }​
-    `]
+    styleUrls: ['./connector.properties.component.scss'],
 })
 export class ConnectorPropertiesComponent extends OdeComponent implements OnInit,OnChanges {
     @Input()
