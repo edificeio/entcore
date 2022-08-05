@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {GroupPickerComponent, groupPickerLocators} from './group-picker.component';
 import {Component, DebugElement, EventEmitter, Input, Output} from '@angular/core';
 import {SijilModule} from 'sijil';
@@ -16,7 +16,7 @@ describe('GroupPickerComponent', () => {
     let mockListComponent: MockListComponent;
     let mockOrderPipe: OrderPipe;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         mockOrderPipe = jasmine.createSpyObj('OrderPipe', ['transform']);
 
         TestBed.configureTestingModule({
