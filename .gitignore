@@ -82,3 +82,4 @@ tests/.cache-tests
 package-lock.json
 infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
+admin/src/main/ts/.angular

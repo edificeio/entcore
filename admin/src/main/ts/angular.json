@@ -48,7 +48,14 @@
             "buildOptimizer": false,
             "optimization": false,
             "namedChunks": true,
-            "preserveSymlinks": true
+            "preserveSymlinks": true,
+            "allowedCommonJsDependencies": [
+              "rxjs",
+              "rxjs-compat",
+              "chardet",
+              "qs",
+              "entcore-toolkit"
+            ]
           },
           "configurations": {
             "production": {
@@ -87,6 +94,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
+            "browserTarget": "admin-app:build",
+            "proxyConfig": "src/proxy.conf.js"
           },
           "configurations": {
             "production": {
@@ -122,19 +131,6 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
             ]
           }
         },

@@ -1,6 +1,5 @@
 import {ConnectorModel,IConnector, MappingModel} from '../models/connector.model';
 import {Collection, Mix} from 'entcore-toolkit';
-import { getType } from '@angular/flex-layout/extended/typings/style/style-transforms';
 
 export class MappingCollection extends Collection<MappingModel> {
     private static _instance : MappingCollection;

@@ -17,7 +17,7 @@ import { TraitementAlerteModalComponent } from './traitement-alerte-modal/traite
 
 
 @NgModule({
-  declarations: [AlertesComponent, AlerteComponent, AlertesListComponent, AlertesTraiteesListModalComponent, TraitementAlerteModalComponent],
+    declarations: [AlertesComponent, AlerteComponent, AlertesListComponent, AlertesTraiteesListModalComponent, TraitementAlerteModalComponent],
     imports: [
         CommonModule,
         NgxOdeSijilModule.forChild(),
@@ -28,7 +28,6 @@ import { TraitementAlerteModalComponent } from './traitement-alerte-modal/traite
         MatGridListModule,
         FlexLayoutModule,
         MatCardModule
-    ],
-    entryComponents: [AlertesTraiteesListModalComponent, TraitementAlerteModalComponent]
+    ]
 })
 export class AlertesModule { }
