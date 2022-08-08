@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Injector, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SelectOption } from 'ngx-ode-ui';
@@ -12,7 +12,7 @@ import { MassAssignment, Profile, Role, Structure } from '../../../../_shared/se
 })
 export class MassRoleAssignment extends OdeComponent implements OnInit, OnChanges {
 
-    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: FormBuilder) {
+    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: UntypedFormBuilder) {
         super(injector);
         this.assignmentForm = formBuilder.group({
             roles: [[], [Validators.required]],
@@ -33,7 +33,7 @@ export class MassRoleAssignment extends OdeComponent implements OnInit, OnChange
     public roleOptions: Array<SelectOption<Role>> = [];
     public profileOptions: Array<SelectOption<Profile>> = [];
 
-    public assignmentForm: FormGroup;
+    public assignmentForm: UntypedFormGroup;
     public displayedLightbox: 'assignment' | 'unassignment' | 'none' = 'none';
 
     public translatedSelectedRoles: string;
@@ -79,7 +79,7 @@ export class MassRoleAssignment extends OdeComponent implements OnInit, OnChange
         this.submitAssignment.emit({structure: this.structure, roles, profiles});
     }
 
-    public assignFromForm(form: FormGroup): void {
+    public assignFromForm(form: UntypedFormGroup): void {
         const formValue = form.getRawValue() as { roles: Array<Role>, profiles: Array<Profile> };
         this.assign(formValue.roles, formValue.profiles);
     }
@@ -88,7 +88,7 @@ export class MassRoleAssignment extends OdeComponent implements OnInit, OnChange
         this.submitUnassignment.emit({structure: this.structure, roles, profiles});
     }
 
-    public unassignFromForm(form: FormGroup): void {
+    public unassignFromForm(form: UntypedFormGroup): void {
         const formValue = form.getRawValue() as { roles: Array<Role>, profiles: Array<Profile> };
         this.unassign(formValue.roles, formValue.profiles);
     }

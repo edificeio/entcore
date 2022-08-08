@@ -113,10 +113,10 @@ buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
@@ -151,7 +151,7 @@ watch () {
 }
 
 ngWatch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node12 sh -c "npm run start"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
 }
 
 infra () {

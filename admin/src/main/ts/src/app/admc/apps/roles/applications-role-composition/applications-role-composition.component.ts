@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { RoleActionModel, RoleModel } from 'src/app/core/store/models/role.model';
@@ -28,8 +28,8 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
     @Output() onRemove: EventEmitter<RoleModel> = new EventEmitter<RoleModel>();
     @Output() onActionChange: EventEmitter<ActionChange> = new EventEmitter<ActionChange>();
 
-    nameCtl:FormControl;
-    distributionsCtl:FormControl;
+    nameCtl:UntypedFormControl;
+    distributionsCtl:UntypedFormControl;
 
     // Whether the component allows in-place edition or not.
     public editMode = false;
@@ -48,8 +48,8 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
 
     ngOnInit(): void {
         super.ngOnInit();
-        this.nameCtl = new FormControl();
-        this.distributionsCtl = new FormControl( {value:this.checkedDistributions, disabled:true} );
+        this.nameCtl = new UntypedFormControl();
+        this.distributionsCtl = new UntypedFormControl( {value:this.checkedDistributions, disabled:true} );
 
         this.editMode = (this.role as any).isNew || false;    // Sorry for the hack, but the data model is not clear.
     }
@@ -60,7 +60,7 @@ export class ApplicationsRoleCompositionComponent extends OdeComponent {
      * We fallback to using a placeholder in that precise case.
      * The placeholder must be undefined as soon as an option is selected.
      */
-    getPlaceholderFor(ctl:FormControl) {
+    getPlaceholderFor(ctl:UntypedFormControl) {
         if( ctl.value.length===0 ) return this.bundleSvc.translate('ux.multiselect.selected-distributions', {nb:ctl.value.length});
     }
 

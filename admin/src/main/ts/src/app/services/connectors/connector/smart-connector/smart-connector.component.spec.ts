@@ -1,7 +1,7 @@
 import {SmartConnectorComponent} from './smart-connector.component';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {Location} from '@angular/common';
-import {FormBuilder, FormsModule, NgForm} from '@angular/forms';
+import {UntypedFormBuilder, FormsModule, NgForm} from '@angular/forms';
 import {ServicesStore} from '../../../services.store';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ServicesService} from '../../../services.service';
@@ -133,7 +133,7 @@ describe('SmartConnector', () => {
             (mockServicesService.saveConnector as jasmine.Spy).and.returnValue(of({}));
 
             component.connectorPropertiesComponent.propertiesFormRef = {} as NgForm;
-            component.connectorPropertiesComponent.propertiesFormRef.form = new FormBuilder().group({});
+            component.connectorPropertiesComponent.propertiesFormRef.form = new UntypedFormBuilder().group({});
             spyOn(component.connectorPropertiesComponent.propertiesFormRef.form, 'markAsPristine');
 
             component.save();
@@ -253,7 +253,7 @@ describe('SmartConnector', () => {
             (mockServicesService.uploadPublicImage as jasmine.Spy).and.returnValue(of({_id: resId}));
 
             component.connectorPropertiesComponent.propertiesFormRef = {} as NgForm;
-            component.connectorPropertiesComponent.propertiesFormRef.form = new FormBuilder().group({});
+            component.connectorPropertiesComponent.propertiesFormRef.form = new UntypedFormBuilder().group({});
             spyOn(component.connectorPropertiesComponent.propertiesFormRef.form, 'markAsDirty');
 
             component.onIconFileChanged([file]);

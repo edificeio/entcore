@@ -3,7 +3,7 @@ import { OdeComponent } from 'ngx-ode-core';
 import { WidgetModel } from '../../../core/store/models/widget.model';
 import { Profile, Structure } from '../../_shared/services-types';
 import { SelectOption, SpinnerService } from 'ngx-ode-ui';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { BundlesService } from 'ngx-ode-sijil';
 import { WidgetService } from 'src/app/core/services/widgets.service';
 
@@ -21,13 +21,13 @@ export class WidgetMassAssignmentComponent extends OdeComponent implements OnIni
     public translatedSelectedProfiles: string;
     public profileTrackByFn = (p: Profile) => p;
 
-    public assignmentForm: FormGroup;
+    public assignmentForm: UntypedFormGroup;
     public displayedLightbox: 'assignment' | 'unassignment' | 'pin' | 'unpin' | 'none' = 'none';
 
     @Output() public massChange: EventEmitter<void> = new EventEmitter<void>();
 
     constructor(injector: Injector,
-                formBuilder: FormBuilder,
+                formBuilder: UntypedFormBuilder,
                 private bundlesService: BundlesService,
                 private spinner: SpinnerService,
                 private widgetService: WidgetService,

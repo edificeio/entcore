@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Injector, Input, Output } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { SelectOption, SpinnerService } from 'ngx-ode-ui';
 import { ApplicationModel } from 'src/app/core/store/models/application.model';
@@ -38,13 +38,13 @@ export class WidgetMyAppsParametersComponent extends OdeComponent {
     public widget: WidgetModel;
     public allProfiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher', 'AdminLocal'];
 
-    public addApplicationForm: FormGroup = new FormGroup({
-        selectedApp: new FormControl(),
-        profiles: new FormControl()
+    public addApplicationForm: UntypedFormGroup = new UntypedFormGroup({
+        selectedApp: new UntypedFormControl(),
+        profiles: new UntypedFormControl()
     });
-    public addConnectorForm: FormGroup = new FormGroup({
-        selectedConnector: new FormControl(),
-        profiles: new FormControl()
+    public addConnectorForm: UntypedFormGroup = new UntypedFormGroup({
+        selectedConnector: new UntypedFormControl(),
+        profiles: new UntypedFormControl()
     });
     
     public selectedApp:ApplicationModel = null;
