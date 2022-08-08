@@ -35,20 +35,31 @@ export let routes: Routes = [
                             groups: UserGroupsResolver
                         }
                     },
-                    {path:'',redirectTo:'filter'},
+                    {
+                        path:'',
+                        redirectTo:'filter',
+                        pathMatch: 'full'
+                    },
                 ]
             },
             {
                 path: 'tree-list', component: TreeUsersListComponent,
                 children: [
-                    {path: 'search', component: EmptyScreenComponent},
+                    {
+                        path: 'search', 
+                        component: EmptyScreenComponent
+                    },
                     {
                         path: ':userId/details', component: SimpleUserDetailsComponent, resolve: {
                             config: ConfigResolver,
                             user: UserDetailsResolver
                         }
                     },
-                    {path:'',redirectTo:'search'},
+                    {
+                        path:'',
+                        redirectTo:'search', 
+                        pathMatch: 'full'
+                    },
                 ]
             },
             {
@@ -67,11 +78,15 @@ export let routes: Routes = [
                             groups: UserGroupsResolver
                         }
                     },
-                    {path:'',redirectTo:'filter'},
+                    {
+                        path:'',
+                        redirectTo:'filter',
+                        pathMatch: 'full'
+                    },
                 ]
             },
             // Redirections for compatibility with old URLs
-            {path:'', redirectTo: 'list/filter'},
+            {path:'', redirectTo: 'list/filter', pathMatch: 'full'},
             {path:'create', redirectTo: 'list/create'},
             {path:'filter', redirectTo: 'list/filter'},
             {path:':userId/details', redirectTo: 'list/:userId/details'},
