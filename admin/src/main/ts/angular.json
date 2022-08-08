@@ -33,11 +33,11 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/trumbowyg/dist/trumbowyg.min.js",
-              "node_modules/trumbowyg/dist/langs/de.js",
-              "node_modules/trumbowyg/dist/langs/es.js",
-              "node_modules/trumbowyg/dist/langs/fr.js",
-              "node_modules/trumbowyg/dist/langs/it.js",
-              "node_modules/trumbowyg/dist/langs/pt.js",
+              "node_modules/trumbowyg/dist/langs/de.min.js",
+              "node_modules/trumbowyg/dist/langs/es.min.js",
+              "node_modules/trumbowyg/dist/langs/fr.min.js",
+              "node_modules/trumbowyg/dist/langs/it.min.js",
+              "node_modules/trumbowyg/dist/langs/pt.min.js",
               "node_modules/trumbowyg/plugins/colors/trumbowyg.colors.js",
               "node_modules/trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js",
               "node_modules/trumbowyg/plugins/fontsize/trumbowyg.fontsize.js",
@@ -54,7 +54,10 @@
               "rxjs-compat",
               "chardet",
               "qs",
-              "entcore-toolkit"
+              "entcore-toolkit",
+              "flatpickr",
+              "jquery",
+              "noty"
             ]
           },
           "configurations": {
@@ -150,6 +153,6 @@
           "defaultConfiguration": "development"
         }
       }
-    }},
-  "defaultProject": "admin-app"
+    }
+  }
 }

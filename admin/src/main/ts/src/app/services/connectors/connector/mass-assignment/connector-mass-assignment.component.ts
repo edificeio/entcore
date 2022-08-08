@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Injector, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { SelectOption } from 'ngx-ode-ui';
@@ -44,7 +44,7 @@ import { Profile, Structure } from '../../../_shared/services-types';
 })
 export class ConnectorMassAssignmentComponent extends OdeComponent implements OnInit {
 
-    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: FormBuilder) {
+    constructor(injector: Injector, private bundlesService: BundlesService, formBuilder: UntypedFormBuilder) {
         super(injector);
         this.massAssignmentForm = formBuilder.group({
             profiles: [[], [Validators.required]]
@@ -62,7 +62,7 @@ export class ConnectorMassAssignmentComponent extends OdeComponent implements On
 
     public profileOptions: Array<SelectOption<Profile>> = [];
 
-    public massAssignmentForm: FormGroup;
+    public massAssignmentForm: UntypedFormGroup;
     public displayedLightbox: 'assignment' | 'unassignment' | 'none' = 'none';
 
     public translatedSelectedProfiles: string;
@@ -88,7 +88,7 @@ export class ConnectorMassAssignmentComponent extends OdeComponent implements On
         this.submitAssignment.emit(profiles);
     }
 
-    public assignFromForm(form: FormGroup): void {
+    public assignFromForm(form: UntypedFormGroup): void {
         const formValue = form.getRawValue() as { profiles: Array<Profile> };
         this.assign(formValue.profiles);
     }
@@ -97,7 +97,7 @@ export class ConnectorMassAssignmentComponent extends OdeComponent implements On
         this.submitUnassignment.emit(profiles);
     }
 
-    public unassignFromForm(form: FormGroup): void {
+    public unassignFromForm(form: UntypedFormGroup): void {
         const formValue = form.getRawValue() as { profiles: Array<Profile> };
         this.unassign(formValue.profiles);
     }

@@ -18,8 +18,8 @@ node:
     - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     - ../infra-front:/home/node/infra-front 
 
-node12:
-  image: opendigitaleducation/node:12-alpine
+node16:
+  image: node:lts-gallium
   working_dir: /home/node/app
   net: host
   volumes:
