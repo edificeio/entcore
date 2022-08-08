@@ -170,9 +170,10 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
     }
 
     private ajaxDownload(blob, filename): void {
-        if (window.navigator.msSaveOrOpenBlob) {
+        const nav: any = window.navigator;
+        if (nav && nav.msSaveOrOpenBlob) {
             // IE specific
-            window.navigator.msSaveOrOpenBlob(blob, filename);
+            nav.msSaveOrOpenBlob(blob, filename);
         } else {
             // Other browsers
             if (this.downloadAnchor === null) {

@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, OnInit, SystemJsNgModuleLoader } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { routing } from 'src/app/core/services/routing.service';

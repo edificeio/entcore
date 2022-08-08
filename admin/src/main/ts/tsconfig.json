@@ -22,7 +22,8 @@
     "paths": {
       "ngx-ode-core": ["node_modules/ngx-ode-core"],
       "ngx-ode-sijil": ["node_modules/ngx-ode-sijil"]
-    }
+    },
+    "allowSyntheticDefaultImports": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
