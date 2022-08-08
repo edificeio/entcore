@@ -81,26 +81,36 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void addLinkWithUsers(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-		String createRelationship;
-		switch (direction) {
-			case INCOMING:
-				createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
-				break;
-			case OUTGOING:
-				createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
-				break;
-			default:
-				createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
-		}
-		String query =
+		if( Direction.NONE.equals(direction) ) {
+			// With a direction of NONE, only update the 'users' property.
+			String query =
 				"MATCH (g:Group { id : {groupId}}) " +
-				"SET g.users = {direction} " +
-				"WITH g " +
-				"MATCH g<-[:IN]-(u:User) " +
-				"CREATE UNIQUE " + createRelationship +
-				"RETURN COUNT(*) as number ";
-		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+				"SET g.users = {direction} "+ 
+				"RETURN 0 as number ";
+			JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
+			neo4j.execute(query, params, validUniqueResultHandler(handler));
+		} else {
+			String createRelationship;
+			switch (direction) {
+				case INCOMING:
+					createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
+					break;
+				case OUTGOING:
+					createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+					break;
+				default:
+					createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+			}
+			String query =
+					"MATCH (g:Group { id : {groupId}}) " +
+					"SET g.users = {direction} " +
+					"WITH g " +
+					"MATCH g<-[:IN]-(u:User) " +
+					"CREATE UNIQUE " + createRelationship +
+					"RETURN COUNT(*) as number ";
+			JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
+			neo4j.execute(query, params, validUniqueResultHandler(handler));
+		}
 	}
 
 	@Override
@@ -109,25 +119,34 @@ public class DefaultCommunicationService implements CommunicationService {
 			StatementsBuilder sb = new StatementsBuilder();
 
 			params.forEach((groupId, direction) -> {
-				String createRelationship;
-
-				switch (direction) {
-					case INCOMING:
-						createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
-						break;
-					case OUTGOING:
-						createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
-						break;
-					default:
-						createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
-				}
-				String query =
+				if( Direction.NONE.equals(direction) ) {
+					// With a direction of NONE, only update the 'users' property.
+					String query =
 						"MATCH (g:Group { id : {groupId}}) " +
-								"SET g.users = {direction} " +
-								"WITH g " +
-								"MATCH g<-[:IN]-(u:User) " +
-								"CREATE UNIQUE " + createRelationship;
-				sb.add(query, new JsonObject().put("groupId", groupId).put("direction", direction.name()));
+						"SET g.users = {direction} ";
+					sb.add(query, new JsonObject().put("groupId", groupId).put("direction", direction.name()));
+				} else {
+					String createRelationship = null;
+
+					switch (direction) {
+						case INCOMING:
+							createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
+							break;
+						case OUTGOING:
+							createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+							break;
+						default:
+							createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+							break;
+					}
+					String query =
+							"MATCH (g:Group { id : {groupId}}) " +
+									"SET g.users = {direction} " +
+									"WITH g " +
+									"MATCH g<-[:IN]-(u:User) " +
+									"CREATE UNIQUE " + createRelationship;
+					sb.add(query, new JsonObject().put("groupId", groupId).put("direction", direction.name()));
+				}
 			});
 
 			neo4j.executeTransaction(sb.build(), null, true, validUniqueResultHandler(handler));
@@ -819,8 +838,8 @@ public class DefaultCommunicationService implements CommunicationService {
 			// Ending group of a new link will require the OUTGOING communication rule.
 			// EXCEPT broadcast lists (previously knwown as "automatic manual groups")
 			// Broadcast lists must keep a NONE rule because no user should see members of those lists (too big !)
-			if( groupInfos.getString("type", "").equals("ManualGroup") 
-				&& groupInfos.getString("subType", "").equals("BroadcastGroup") ) {
+			if( "ManualGroup".equals(groupInfos.getString("type", "")) 
+				&& "BroadcastGroup".equals(groupInfos.getString("subType", "")) ) {
 				// Broadcast lists
 				return Direction.NONE;
 			} else {
@@ -1003,7 +1022,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				if( !addedStartRule.equals(Direction.NONE) ) {
 					newDirection.put(startGroupId, toStartDirection);
 				}
-				if( !addedStartRule.equals(Direction.NONE) ) {
+				if( !addedEndRule.equals(Direction.NONE) ) {
 					newDirection.put(endGroupId, toEndDirection);
 				}
 				
