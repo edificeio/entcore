@@ -19,7 +19,7 @@ node:
     - ../infra-front:/home/node/infra-front 
 
 node16:
-  image: node:lts-gallium
+  image: opendigitaleducation/node:16-alpine
   working_dir: /home/node/app
   net: host
   volumes:
