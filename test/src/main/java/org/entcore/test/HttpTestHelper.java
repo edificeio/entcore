@@ -63,29 +63,27 @@ public class HttpTestHelper {
         return request(HttpMethod.GET, url, params);
     }
 
-    public TestHttpServerRequest request(HttpMethod method, String url, JsonObject params) {
+    protected JsonObject urlToHttpServerRequestParams(String url) {
         final URI uri = URI.create(url);
-        JsonObject json = new JsonObject();
-        json.put("method", method.name());
-        json.put("ssl", "https".equals(uri.getScheme()));
-        json.put("scheme", uri.getScheme());
-        json.put("path", uri.getPath());
-        json.put("query", uri.getQuery());
-        json.put("uri", uri.toString());
-        json.put("params", params);
+        return new JsonObject()
+            .put("ssl", "https".equals(uri.getScheme()))
+            .put("scheme", uri.getScheme())
+            .put("path", uri.getPath())
+            .put("query", uri.getQuery())
+            .put("uri", uri.toString());
+    }
+
+    public TestHttpServerRequest request(HttpMethod method, String url, JsonObject params) {
+        JsonObject json = urlToHttpServerRequestParams(url)
+            .put("method", method.name())
+            .put("params", params);
         return new TestHttpServerRequest(json);
     }
 
     public TestHttpServerRequest request(final HttpMethod method, final String url, final JsonObject params, final JsonObject body) {
-        final URI uri = URI.create(url);
-        JsonObject json = new JsonObject();
-        json.put("method", method.name());
-        json.put("ssl", "https".equals(uri.getScheme()));
-        json.put("scheme", uri.getScheme());
-        json.put("path", uri.getPath());
-        json.put("query", uri.getQuery());
-        json.put("uri", uri.toString());
-        json.put("params", params);
+        JsonObject json = urlToHttpServerRequestParams(url)
+            .put("method", method.name())
+            .put("params", params);
         return new TestHttpServerRequest(json, body);
     }
 

@@ -26,17 +26,23 @@ public class DirectoryTestHelper {
         this.test = t;
     }
 
+    /** Fluent API to mock the functionalities at bus address "directory". */
     public DirectoryTestHelper createMock(Handler<Message<JsonObject>> handler) {
         vertx.eventBus().consumer("directory", handler);
         return this;
     }
 
+    /** Fluent API to mock the functionalities at bus address "wse.communication.users". */
     public DirectoryTestHelper createMockCommunication(Handler<Message<JsonObject>> handler) {
         vertx.eventBus().consumer("wse.communication.users", handler);
         return this;
     }
 
 
+    /**
+     * Fluent API to mock the "userbook.preferences" bus address.
+     * @param pref JsonObject in reply to the query of the "get.currentuser" action.
+     */
     public DirectoryTestHelper mockUserPreferences(final JsonObject pref) {
         vertx.eventBus().consumer("userbook.preferences", (Message<JsonObject> e) ->{
             switch (e.body().getString("action")){
@@ -51,6 +57,12 @@ public class DirectoryTestHelper {
         return this;
     }
 
+    /** 
+     * Generate a "Test Test" user.
+     * @param id of the generated user
+     * @param groupIds of the generated user
+     * @return the generated user infos
+     */
     public UserInfos generateUser(String id, String... groupIds) {
         final UserInfos user = new UserInfos();
         user.setChildrenIds(new ArrayList<>());
@@ -63,6 +75,7 @@ public class DirectoryTestHelper {
         return user;
     }
 
+    /** Create a user in the Neo4J container. */
     public Future<Void> createActiveUser(UserInfos infos) {
         final Future<Void> async = Future.future();
         final JsonObject params = new JsonObject().put("userid", infos.getUserId());
@@ -77,21 +90,35 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Create a manual group with a random ID. */
     public Future<String> createManualGroup(String name) {
         String id = UUID.randomUUID().toString();
         return createGroup(id, name, "ManualGroup").map(id);
     }
 
+    /** 
+     * Create a profile group with a random ID in Neo4j container.
+     * The associated Profile will be created too.
+     * @param name of the group and the profile
+     * @return ID of the new group.
+    */
     public Future<String> createProfileGroup(String name) {
         String id = UUID.randomUUID().toString();
         return createGroup(id, name, "ProfileGroup").compose(r -> createProfile(id, name).map(id));
     }
 
+    /** Create a function group with a random ID. */
     public Future<String> createFunctionGroup(String name) {
         String id = UUID.randomUUID().toString();
         return createGroup(id, name, "FunctionGroup").map(id);
     }
 
+    /** 
+     * Add a profile to a profile group.
+     * @param profileGroup ID of the group
+     * @param name of the profile
+     * @return ID of the created profile
+     */
     public Future<String> createProfile(String profileGroup, String name) {
         final String id = UUID.randomUUID().toString();
         final JsonObject props = new JsonObject().put("pgId", profileGroup).put("name", name).put("id", id);
@@ -107,14 +134,35 @@ public class DirectoryTestHelper {
         return future;
     }
 
+    /**
+     * Create a new structure from AAF source, in the Neo4j container.
+     * @param name of the structure
+     * @param UAI of the structure
+     * @return ID of the structure
+     */
     public Future<String> createStructure(String name, String UAI) {
         return createStructure(name, UAI, "");
     }
 
+    /**
+     * Create a new structure from AAF source, in the Neo4j container.
+     * @param name of the structure
+     * @param UAI of the structure
+     * @param externalId of the structure
+     * @return ID of the structure
+     */
     public Future<String> createStructure(String name, String UAI, String externalId) {
         return createStructure(name, UAI, externalId, "AAF");
     }
 
+    /**
+     * Create a new structure, in the Neo4j container.
+     * @param name of the structure
+     * @param UAI of the structure
+     * @param externalId of the structure
+     * @param source of the structure
+     * @return ID of the structure
+     */
     public Future<String> createStructure(String name, String UAI, String externalId, String source) {
         final String id = UUID.randomUUID().toString();
         final Future<String> async = Future.future();
@@ -133,6 +181,7 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Attach a user to a group. */
     public Future<Void> attachUserToGroup(String userId, String groupId) {
         final Future<Void> async = Future.future();
         final String query = "MATCH (u:User{id:{userId}}) WITH u MATCH (g:Group {id:{groupId}}) MERGE (u)-[i:IN]->(g) RETURN u,i,g";
@@ -147,6 +196,7 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Enable apps for a structure. */
     public Future<Void> enableAppForStruct(String id) {
         final Future<Void> async = Future.future();
         final String query = "MATCH (s:Structure {id:{structureId}}) SET s.hasApp=TRUE RETURN s";
@@ -161,6 +211,7 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Attach a group to a structure. */
     public Future<Void> attachGroupToStruct(String groupId, String structureId) {
         final Future<Void> async = Future.future();
         final String query = "MATCH (g:Group{id:{groupId}}), (s:Structure {id:{structureId}}) MERGE (g)-[d:DEPENDS]->(s) RETURN g,d,s";
@@ -175,10 +226,18 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /**
+     * Create an active user. 
+     * @return ID of the new user 
+     */
     public Future<String> createActiveUser(String login, String password, String email) {
         return createActiveUser(login, null, password, email);
     }
 
+    /**
+     * Create an active user.
+     * @return ID of the new user
+     */
     public Future<String> createActiveUser(String login, String loginAlias, String password, String email) {
         final String id = UUID.randomUUID().toString();
         final Future<String> async = Future.future();
@@ -199,10 +258,17 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /**
+     * Create an inactive user.
+     * @return ID of the new user */
     public Future<String> createInactiveUser(String login, String activationCode, String email) {
         return createInactiveUser(login, null, activationCode, email);
     }
 
+    /**
+     * Create an inactive user.
+     * @return ID of the new user
+     */
     public Future<String> createInactiveUser(String login, String loginAlias, String activationCode, String email) {
         final Future<String> async = Future.future();
         final String id = UUID.randomUUID().toString();
@@ -223,10 +289,21 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /**
+     * Create a new group with a default communication direction of BOTH, in the Neo4j container.
+     * @param id of the group
+     * @param name of the group
+     */
     public Future<Void> createGroup(String id, String name) {
         return createGroup(id, name, null);
     }
 
+    /**
+     * Create a new group with a type and with a default communication direction of BOTH, in the Neo4j container.
+     * @param id of the group
+     * @param name of the group
+     * @param type of the group
+     */
     public Future<Void> createGroup(String id, String name, String type) {
         final Future<Void> async = Future.future();
         final String safeType = type == null ? "" : ":" + type;
@@ -243,6 +320,7 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Add the AdminLocal function group to a structure. */
     public Future<String> addAdminLocalFunctionToStructure(String structureId) {
         final String query = "MATCH (s:Structure {id:{structureId}}) MERGE (s)<-[:DEPENDS]-(fg:FunctionGroup {name:'AdminLocal', id: {id}}) ";
         final Future<String> async = Future.future();
@@ -273,6 +351,10 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /**
+     * Get a user from neo4j container.
+     * @param id of the user
+     */
     public Future<JsonObject> fetchOneUser(String id) {
         final Future<JsonObject> async = Future.future();
         final JsonObject params = new JsonObject().put("userid", id);
@@ -288,6 +370,7 @@ public class DirectoryTestHelper {
         return async;
     }
 
+    /** Set the resetCode of a user */
     public Future<JsonObject> resetUser(String id, String resetCode) {
         final Promise<JsonObject> async = Promise.promise();
         final String query = "MATCH (u:User {id : {id}}) SET u.resetCode={resetCode}, u.resetDate={resetDate} RETURN u";
