@@ -27,7 +27,7 @@
         {% if feederCsvConfig is defined %}
         "csv" : {{feederCsvConfig}},
 		"csv-imports-timeout" : 900000,
-        "feeder" : "BE1D",
+        "feeder" : "CSV",
         {% else %}
         "feeder": "AAF",
             {% if feederImport is defined and feederImport %}
