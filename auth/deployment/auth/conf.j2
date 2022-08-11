@@ -58,11 +58,15 @@
         {% if not(ha) or item == 'jobs' %}
        	"new-device-warning":
         {
-          "cron": "*/30 * * * * ? *",
+		{% if authActivateNewDeviceWarning is defined and authActivateNewDeviceWarning %}
+          "cron": "0 */2 * * * ? *",
+		{% else %}
+		  "cron": "0 */2 * * * ? 2099",
+		{% endif %}
           "warn-admc": true, 
           "warn-adml": true, 
           "warn-users": false,
-          "score-threshold": 3,
+          "score-threshold": 4,
           "batch-limit": 1000 
         },
 		{% endif %}
