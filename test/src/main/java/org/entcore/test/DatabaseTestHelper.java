@@ -52,15 +52,36 @@ public class DatabaseTestHelper {
         this.vertx = v;
     }
 
+    /**
+     * Initializes PostgreSQL support. 
+     * @param context Test context to extend with PostgreSQL support.
+     * @param postgreSQLContainer PostgreSQL container to initialize, see {@link #createPostgreSQLContainer()}
+     * @param schema Name of the pgsql schema to initialize
+     */
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema) {
         return initPostgreSQL(context, postgreSQLContainer, schema, true);
     }
 
+    /**
+     * Initializes PostgreSQL support. 
+     * @param context Test context to extend with PostgreSQL support.
+     * @param postgreSQLContainer PostgreSQL container to initialize, see {@link #createPostgreSQLContainer()}
+     * @param schema Name of the pgsql schema to initialize
+     * @param loadScripts truthy to play migration scripts from the app "sql" folder
+     */
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
                                 boolean loadScripts) {
         return initPostgreSQL(context, postgreSQLContainer, schema, loadScripts, 2000L);
     }
 
+    /**
+     * Initializes PostgreSQL support. 
+     * @param context Test context to extend with PostgreSQL support.
+     * @param postgreSQLContainer The container to initialize, see {@link #createPostgreSQLContainer()}
+     * @param schema Name of the pgsql schema to initialize
+     * @param loadScripts truthy to play migration scripts from the app "sql" folder
+     * @param delay delay to wait after having started the container, in milliseconds.
+     */
     public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
                                 boolean loadScripts, long delay) {
         final Async async = context.async();
@@ -86,10 +107,17 @@ public class DatabaseTestHelper {
         return async;
     }
 
+    /* TODO */
     public DatabaseClusterTestHelper cluster(){
         return new DatabaseClusterTestHelper(vertx);
     }
 
+    /**
+     * Initializes MongoDB support.
+     * @param context Test context to extend with MongoDB support.
+     * @param mongoDBContainer The container to initialize, see {@link #createMongoContainer()}
+     * @return
+     */
     public Async initMongo(TestContext context, MongoDBContainer mongoDBContainer) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "wse.mongodb.persistor")
@@ -111,6 +139,11 @@ public class DatabaseTestHelper {
         return async;
     }
 
+    /**
+     * Initializes Neo4j support.
+     * @param context Test context to extend with Neo4j support.
+     * @param neo4jContainer The container to initialize, see {@link #createNeo4jContainer()}
+     */
     public void initNeo4j(TestContext context, Neo4jContainer<?> neo4jContainer) {
         final String base = neo4jContainer.getHttpUrl() + "/db/data/";
         final JsonObject config = new JsonObject().put("server-uri", base).put("poolSize", 1);
@@ -120,31 +153,38 @@ public class DatabaseTestHelper {
 
     }
 
+    /** @return a new docker-based PostgreSQL 9.5 container. */
     public PostgreSQLContainer<?> createPostgreSQLContainer() {
         return new PostgreSQLContainerWithParams("postgres:9.5", Collections.singletonMap("stringtype", "unspecified"));
     }
 
+    /** @return a new docker-based PostgreSQL 9.6 container. */
     public PostgreSQLContainer<?> createPostgreSQL96Container() {
         return new PostgreSQLContainerWithParams("postgres:9.6", Collections.singletonMap("stringtype", "unspecified"));
     }
 
+    /** @return a new docker-based Neo4j 3.1 container. */
     public Neo4jContainer<?> createNeo4jContainer() {
         return new Neo4jContainer("neo4j:3.1").withoutAuthentication()//
                 .withNeo4jConfig("cypher.default_language_version", "2.3");
     }
 
+    /** @return a new docker-based MongoDB 3.6 container. */
     public MongoDBContainer createMongoContainer() {
         return new MongoDBContainer("mongo:3.6.17");
     }
 
+    /** @return a new docker-based MongoDB 4 container. */
     public MongoDBContainer createMongo4Container() {
         return new MongoDBContainer("mongo:4.0.0");
     }
 
+    /** @return a new docker-based ElasticSearch OSS 7.9 container. */
     public ElasticsearchContainer createElasticContainer() {
         return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0");
     }
 
+    /** @return a new docker-based Redis 5/generic container. */
     public GenericContainer createRedisContainer() {
         return new GenericContainer("redis:5.0.3-alpine");
     }
@@ -163,10 +203,12 @@ public class DatabaseTestHelper {
 
     }
 
+    /** @return a new helper wrapping a PostgreSQL container. */
     public PostgresReactiveTestHelper pgReactive(PostgreSQLContainer<?> postgres){
         return new PostgresReactiveTestHelper(vertx, postgres);
     }
 
+    /** Look for a single object by its id, in a mongoDB collection. */
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
         QueryBuilder builder = QueryBuilder.start("_id").is(id);
         final MongoDb mongo = MongoDb.getInstance();
@@ -181,6 +223,7 @@ public class DatabaseTestHelper {
         return future;
     }
 
+    /** Query a mongoDB collection for a single object. */
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
         final Future<JsonObject> future = Future.future();
@@ -194,6 +237,7 @@ public class DatabaseTestHelper {
         return future;
     }
 
+    /** Query neo4j for a single object. */
     public Future<JsonObject> executeNeo4jWithUniqueResult(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
         final Future<JsonObject> future = Future.future();
@@ -207,6 +251,7 @@ public class DatabaseTestHelper {
         return future;
     }
 
+    /** Query neo4j for multiple objects. */
     public Future<JsonArray> executeNeo4j(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
         final Future<JsonArray> future = Future.future();
