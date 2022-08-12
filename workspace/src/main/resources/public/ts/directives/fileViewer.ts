@@ -195,7 +195,7 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 			}
 
 			scope.openOnGeogebra = () => {
-				ENABLE_GGB && window.open(`/geogebra/${scope.ngModel._id}`);
+				ENABLE_GGB && window.open(`/geogebra#/${scope.ngModel._id}?fileName=${scope.ngModel.name}.ggb`);
 			}
 
 			scope.canEditInLool = () => {

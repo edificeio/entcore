@@ -8,10 +8,10 @@ export interface GeogebraDelegateScope {
 export function GeogebraDelegate($scope: GeogebraDelegateScope, $route) {
     $scope.onInit(() => {
         $scope.canBeOpenOnGGB = ({metadata}) => {
-            return (metadata.extension === "ggb") ? true : false;
+            return metadata.extension === "ggb";
         };
         $scope.openOnGGB = (file) => {
-            window.open(`/geogebra/${file._id}?fileName=${file.metadata.filename}`);
+            window.open(`/geogebra#/${file._id}?fileName=${file.name}.ggb`);
         }
     });
 }
