@@ -181,6 +181,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 				(prefixPattern.matcher(scope).find() ||
 						request.path().contains("/auth/internal/userinfo") ||
 						(scope.contains("userinfo") && request.path().contains("/auth/oauth2/userinfo")) ||
+						(scope.contains("userinfo") && request.path().contains("/auth/oauth2/token")) ||
 						("OAuthSystemUser".equals(request.getAttribute("remote_user")) && isNotEmpty(request.getAttribute("client_id"))) ||
 						(scope.contains("myinfos") && request.path().contains("/directory/myinfos")) ||
 						(scope.contains("myinfos-ext") && request.path().contains("/directory/myinfos-ext")) ||
