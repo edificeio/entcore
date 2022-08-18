@@ -41,6 +41,7 @@ public class TenantController extends BaseController {
 
 	@Post("/tenant")
 	@SecuredAction("tenant.create")
+	@IgnoreCsrf
 	public void create(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createTenant", new Handler<JsonObject>() {
 			@Override
