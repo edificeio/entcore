@@ -28,7 +28,7 @@ public class StringValidation {
 	private static final String[] alphabet =
 		{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 
-	private static final Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$");
+	private static final Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,63}$");
 	private static final Pattern phonePattern = Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$");
 	private static final Pattern uuidPattern = Pattern.compile(
 			"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
