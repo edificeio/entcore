@@ -68,6 +68,7 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
+              "baseHref": "/admin/public/dist/",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
