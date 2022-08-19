@@ -11,7 +11,7 @@ import { AppRootComponent } from "./app-root.component";
 import {HttpClientModule} from '@angular/common/http';
 import { COMPONENT_LIFECYCLE_DEBUG_MODE } from 'ngx-ode-core';
 
-import { registerLocaleData } from '@angular/common';
+import { APP_BASE_HREF, registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import localeEs from '@angular/common/locales/es';
 import localeFr from '@angular/common/locales/fr';
@@ -48,7 +48,8 @@ registerLocaleData(localePt);
     ],
     bootstrap: [AppComponent],
     providers: [
-        { provide: COMPONENT_LIFECYCLE_DEBUG_MODE, useValue: 0 }
+        { provide: COMPONENT_LIFECYCLE_DEBUG_MODE, useValue: 0 },
+        { provide: APP_BASE_HREF, useValue: '/' }
     ]
 })
 export class AppModule {
