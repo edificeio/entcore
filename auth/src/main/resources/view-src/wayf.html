@@ -55,6 +55,11 @@
 				}
 			}
 		}
+
+		function showLoader(element)
+		{
+			element.querySelector("div").innerHTML = '<i class="loading"></i>';
+		}
 	</script>
 </head>
 
@@ -75,7 +80,7 @@
 			<section class="dominos">
 				{{#providers}}
 				<div class="item">
-					<a class="centered-text domino {{name}}" href="{{uri}}">
+					<a class="centered-text domino {{name}}" href="{{uri}}" onclick="showLoader(this);">
 						<div style="margin: 20px;"><i18n>{{name}}</i18n></div>
 					</a>
 				</div>
