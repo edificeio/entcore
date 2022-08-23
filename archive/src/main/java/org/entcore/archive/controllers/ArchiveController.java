@@ -410,6 +410,7 @@ public class ArchiveController extends BaseController {
 	}
 
 	@Get("/export")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void unitaryExport(final HttpServerRequest request)
 	{
 		final String application = request.params().get("application");
