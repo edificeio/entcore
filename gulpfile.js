@@ -79,7 +79,7 @@ function build() {
             .pipe(gulp.dest('./' + a + '/src/main/resources/public/js'));
         streams.push(refs, copyBehaviours);
     });
-    
+
     return merge(streams);
 }
 
@@ -106,7 +106,7 @@ if (argv.springboard) {
 apps.forEach((app) => {
     gulp.task('watch-' + app, () => {
         gulp.watch('./' + app + '/src/main/resources/public/ts/**/*.ts', () => startWebpack('dev'));
-        
+
         fs.readFile("./gradle.properties", "utf8", function(error, content){
             var modName = getModName(content, app);
             gulp.watch(['./' + app + '/src/main/resources/public/template/**/*.html', '!./' + app + '/src/main/resources/public/template/entcore/*.html'], () => {
@@ -114,19 +114,19 @@ apps.forEach((app) => {
                 return  gulp.src('./' + app + '/src/main/resources/**/*')
                 .pipe(gulp.dest(springboardPath + '/mods/' + modName));
             });
-            
+
             gulp.watch('./' + app + '/src/main/resources/view/**/*.html', () => {
                 console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
                 return gulp.src('./' + app + '/src/main/resources/**/*')
                 .pipe(gulp.dest(springboardPath + '/mods/' + modName));
             });
-            
+
             gulp.watch(['./' + app + '/src/main/resources/public/dist/**/*.js', '!./' + app + '/src/main/resources/public/dist/entcore/**/*.js'], () => {
                 console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
                 return gulp.src('./' + app + '/src/main/resources/**/*')
                 .pipe(gulp.dest(springboardPath + '/mods/' + modName));
             });
-            
+
             gulp.watch('./' + app + '/rev-manifest.json', (cb) => {
                 updateRefs();
                 cb();

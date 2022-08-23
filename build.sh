@@ -180,7 +180,7 @@ do
       buildAdminNode
       ;;
     buildNode)
-      buildNode && buildAdminNode
+      buildNode
       ;;
     buildGradle)
       buildGradle
