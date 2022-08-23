@@ -91,19 +91,19 @@ buildNode () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links--legacy-peer-deps  && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
@@ -143,12 +143,13 @@ localDep () {
 }
 
 watch () {
-  docker-compose run \
-    --rm \
+  docker-compose run --rm \
     -u "$USER_UID:$GROUP_GID" \
-    -v $PWD/../$SPRINGBOARD:/home/node/springboard \
-    node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE $NODE_OPTION --springboard=/home/node/springboard --max-old-space-size=8192"
+    -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
+    node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
 }
+
+# ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
@@ -179,7 +180,7 @@ do
       buildAdminNode
       ;;
     buildNode)
-      buildNode && buildAdminNode
+      buildNode
       ;;
     buildGradle)
       buildGradle
