@@ -3,6 +3,8 @@ package org.entcore.archive.controllers;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
@@ -58,6 +60,7 @@ public class DuplicationController extends BaseController
   }
 
   @Post("/duplicate")
+  @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void duplicate(final HttpServerRequest request)
   {
     request.bodyHandler(new Handler<Buffer>()
