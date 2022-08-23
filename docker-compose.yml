@@ -9,7 +9,7 @@ gradle:
     - /var/run/docker.sock:/var/run/docker.sock
 
 node:
-  image: opendigitaleducation/node
+  image: opendigitaleducation/node:16-alpine
   working_dir: /home/node/app
   net: host
   volumes:
