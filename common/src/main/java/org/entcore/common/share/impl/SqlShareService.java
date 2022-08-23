@@ -194,67 +194,6 @@ public class SqlShareService extends GenericShareService {
 	}
 
 	@Override
-	public void groupShare(final String userId, final String groupShareId, final String resourceId,
-			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		inShare(resourceId, groupShareId, new Handler<Boolean>() {
-
-			@Override
-			public void handle(Boolean event) {
-				if (Boolean.TRUE.equals(event)) {
-					share(resourceId, groupShareId, actions, "groups", handler);
-				} else {
-					groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> event) {
-							if (event.isRight()) {
-								share(resourceId, groupShareId, actions, "groups", handler);
-							} else {
-								handler.handle(event);
-							}
-						}
-					});
-				}
-			}
-		});
-	}
-
-	private void inShare(String resourceId, String shareId, final Handler<Boolean> handler) {
-		String query = "SELECT count(*) FROM " + shareTable + " WHERE resource_id = ? AND member_id = ?";
-		JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)).add(shareId);
-		sql.prepared(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> message) {
-				Long count = SqlResult.countResult(message);
-				handler.handle(count != null && count > 0);
-			}
-		});
-	}
-
-	@Override
-	public void userShare(final String userId, final String userShareId, final String resourceId,
-			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		inShare(resourceId, userShareId, new Handler<Boolean>() {
-			@Override
-			public void handle(Boolean event) {
-				if (Boolean.TRUE.equals(event)) {
-					share(resourceId, userShareId, actions, "users", handler);
-				} else {
-					userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> event) {
-							if (event.isRight()) {
-								share(resourceId, userShareId, actions, "users", handler);
-							} else {
-								handler.handle(event);
-							}
-						}
-					});
-				}
-			}
-		});
-	}
-
-	@Override
 	public void removeGroupShare(String groupId, String resourceId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler) {
 		removeShare(resourceId, groupId, actions, handler);
@@ -330,42 +269,14 @@ public class SqlShareService extends GenericShareService {
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(handler));
 	}
 
-	private void share(String resourceId, final String shareId, List<String> actions, final String membersTable,
-			final Handler<Either<String, JsonObject>> handler) {
-		final SqlStatementsBuilder s = new SqlStatementsBuilder();
-		s.raw("LOCK TABLE " + schema + membersTable + " IN SHARE ROW EXCLUSIVE MODE");
-		s.raw("LOCK TABLE " + shareTable + " IN SHARE ROW EXCLUSIVE MODE");
-		s.raw("INSERT INTO " + schema + membersTable + " (id) SELECT '" + shareId + "' WHERE NOT EXISTS (SELECT * FROM "
-				+ schema + membersTable + " WHERE id='" + shareId + "');");
-		final Object rId = Sql.parseId(resourceId);
-		final String query = "INSERT INTO " + shareTable
-				+ " (member_id, resource_id, action) SELECT ?, ?, ? WHERE NOT EXISTS " + "(SELECT * FROM " + shareTable
-				+ " WHERE member_id = ? AND resource_id = ? AND action = ?);";
-		for (String action : actions) {
-			JsonArray ar = new fr.wseduc.webutils.collections.JsonArray().add(shareId).add(rId).add(action).add(shareId)
-					.add(rId).add(action);
-			s.prepared(query, ar);
-		}
-		sql.prepared("SELECT count(*) FROM " + shareTable + " WHERE member_id = ? AND resource_id = ?",
-				new fr.wseduc.webutils.collections.JsonArray().add(shareId).add(Sql.parseId(resourceId)),
-				new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(final Message<JsonObject> message) {
-						final Long nb = SqlResult.countResult(message);
-						sql.transaction(s.build(), new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								Either<String, JsonObject> r = SqlResult.validUniqueResult(2, res);
-								if (r.isRight() && nb == 0) {
-									JsonObject notify = new JsonObject();
-									notify.put(membersTable.substring(0, membersTable.length() - 1) + "Id", shareId);
-									r.right().getValue().put("notify-timeline", notify);
-								}
-								handler.handle(r);
-							}
-						});
-					}
-				});
+	public void groupShare(String userId, String groupShareId, String resourceId, List<String> actions,
+					Handler<Either<String, JsonObject>> handler) {
+		throw new UnsupportedOperationException("Method groupShare is not implemented for PGSQL");
+	}
+
+	public void userShare(String userId, String userShareId, String resourceId, List<String> actions,
+				   Handler<Either<String, JsonObject>> handler) {
+		throw new UnsupportedOperationException("Method userShare is not implemented for PGSQL");
 	}
 
 	public static void removeShareMetadata(JsonObject data)
