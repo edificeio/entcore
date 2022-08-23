@@ -1,8 +1,159 @@
-﻿var gulp = require('gulp');
+﻿// const {task, src, dest, series} = require('gulp');
+const gulp = require('gulp');
+const webpack = require('webpack-stream');
+const merge = require('merge2');
+const rev = require('gulp-rev');
+const revReplace = require("gulp-rev-replace");
+const clean = require('gulp-clean');
+const argv = require('yargs').argv;
+const fs = require('fs');
+// const adminBuild = require('./gulpfile-admin').adminBuild;
 
-require('./gulpfile-admin.js');
-require('./gulpfile-ts.js');
-var loader = require('./gulpfile-loader');
+let apps = ['archive', 'auth', 'conversation', 'directory', 'portal', 'timeline', 'workspace'];
+let i = process.argv.indexOf("--module");
+// check if a module is specified and if it matches one of apps
+if (i > -1 && process.argv.length > (i+1) && apps.indexOf(process.argv[i+1]) > -1) {
+    apps = [process.argv[i+1]];
+}
 
-gulp.task('build', loader().buildList(), () => {});
-gulp.task('build-local', loader().buildLocalList(), () => {})
+function startWebpack(mode) {
+    var streams = [];
+    apps.forEach(a => {
+        var webpackConf = require('./' + a + '/webpack.config.js');
+        if(mode === 'dev'){
+            webpackConf.devtool = 'inline-source-map';
+        }
+        var str = gulp.src('./' + a + '/src/main/resources/public/**/*.ts')
+            .pipe(webpack(webpackConf))
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist'))
+            .pipe(rev())
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist'))
+            .pipe(rev.manifest('./' + a + '/rev-manifest.json', { merge: true }))
+            .pipe(gulp.dest('./'));
+        streams.push(str);
+    });
+
+    return merge(streams);
+}
+
+function updateRefs() {
+    console.log('Updating hashs in views');
+    var streams = [];
+    apps.forEach(a => {
+        var str = gulp.src('./' + a + '/src/main/resources/view-src/**/*.+(html|txt|json)')
+            .pipe(revReplace({manifest: gulp.src('./' + a + '/rev-manifest.json') }))
+            .pipe(gulp.dest('./' + a + '/src/main/resources/view'));
+        streams.push(str);
+    });
+
+    return merge(streams);
+}
+
+function dropOldFiles() {
+    var streams = [];
+    apps.forEach(a => {
+        var str = gulp.src([
+            './' + a + '/src/main/resources/public/dist'
+        ], { read: false })
+            .pipe(clean());
+        streams.push(str);
+    })
+    return merge(streams);
+};
+
+function updateLibs(){
+    var streams = [];
+    streams.push(
+        gulp.src('./node_modules/pixi.js/dist/pixi.min.js')
+            .pipe(gulp.dest('./infra/src/main/resources/public/js'))
+    );
+    apps.forEach(a => {
+        var html = gulp.src('./node_modules/entcore/src/template/**/*.html')
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/template/entcore'));
+        var bundle = gulp.src('./node_modules/entcore/bundle/*')
+            .pipe(rev())
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist/entcore'))
+            .pipe(rev.manifest('./' + a + '/rev-manifest.json', { merge: true }))
+            .pipe(gulp.dest('./'));
+            
+        streams.push(html, bundle);
+    });
+    return merge(streams);
+}
+
+function dropTemp() {
+    var streams = [];
+    apps.forEach(a => {
+        var copyMaps = gulp.src('./node_modules/entcore/bundle/ng-app.js.map')
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist/entcore'));
+        streams.push(copyMaps);
+    });
+
+    return merge(streams);
+}
+function build() {
+    var streams = [];
+    apps.forEach(a => {
+        var refs = updateRefs();
+        var copyBehaviours = gulp.src('./' + a + '/src/main/resources/public/dist/behaviours.js', {allowEmpty: true})
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/js'));
+        streams.push(refs, copyBehaviours);
+    });
+    
+    return merge(streams);
+}
+
+gulp.task('drop-old-files', dropOldFiles);
+gulp.task('update-libs', updateLibs);
+gulp.task('webpack', startWebpack);
+gulp.task('webpack-dev', () => startWebpack('dev'));
+gulp.task('drop-temp', dropTemp);
+gulp.task('build', build);
+
+
+function getModName(fileContent, app){
+    var getProp = function(prop){
+        return fileContent.split(prop + '=')[1].split(/\r*\n/)[0];
+    }
+    return getProp('modowner') + '~' + app + '~' + getProp('version');
+}
+
+let springboardPath = '../recette';
+if (argv.springboard) {
+    springboardPath = argv.springboard;
+    console.log('Using springboard at ' + springboardPath);
+}
+
+apps.forEach((app) => {
+    gulp.task('watch-' + app, () => {
+        gulp.watch('./' + app + '/src/main/resources/public/ts/**/*.ts', () => startWebpack('dev'));
+        
+        fs.readFile("./gradle.properties", "utf8", function(error, content){
+            var modName = getModName(content, app);
+            gulp.watch(['./' + app + '/src/main/resources/public/template/**/*.html', '!./' + app + '/src/main/resources/public/template/entcore/*.html'], () => {
+                console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
+                return  gulp.src('./' + app + '/src/main/resources/**/*')
+                .pipe(gulp.dest(springboardPath + '/mods/' + modName));
+            });
+            
+            gulp.watch('./' + app + '/src/main/resources/view/**/*.html', () => {
+                console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
+                return gulp.src('./' + app + '/src/main/resources/**/*')
+                .pipe(gulp.dest(springboardPath + '/mods/' + modName));
+            });
+            
+            gulp.watch(['./' + app + '/src/main/resources/public/dist/**/*.js', '!./' + app + '/src/main/resources/public/dist/entcore/**/*.js'], () => {
+                console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
+                return gulp.src('./' + app + '/src/main/resources/**/*')
+                .pipe(gulp.dest(springboardPath + '/mods/' + modName));
+            });
+            
+            gulp.watch('./' + app + '/rev-manifest.json', (cb) => {
+                updateRefs();
+                cb();
+            });
+        });
+    });
+})
+
+exports.build = gulp.series('drop-old-files', 'update-libs', 'webpack', 'drop-temp', 'build');
