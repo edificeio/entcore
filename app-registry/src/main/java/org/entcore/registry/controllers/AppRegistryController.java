@@ -663,7 +663,12 @@ public class AppRegistryController extends BaseController {
 			case "apply-default-bookmarks" :
 				final String userId = message.body().getString("userId");
 				final String userTheme = message.body().getString("theme");
-				final JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
+				JsonArray userSkinLevels = null;
+				if (userTheme != null) {
+					userSkinLevels = this.skinLevels.getJsonArray(userTheme);
+				} else if (this.skinLevels.size() == 1) {
+					userSkinLevels = this.skinLevels.getJsonArray(this.skinLevels.iterator().next().getKey());
+				}
 				if (userSkinLevels != null && userSkinLevels.contains("2d")) {
 					// We apply default bookmarks for 2D themes only
 					appRegistryService.applyDefaultBookmarks(userId);
