@@ -7,7 +7,7 @@ import { UserlistFiltersService } from '../../core/services/userlist.filters.ser
 import { UserListService } from '../../core/services/userlist.service';
 import { StructureModel } from '../../core/store/models/structure.model';
 import { UsersStore } from '../users.store';
-import { includes } from '../users.component';
+import { includes } from '../../utils/array';
 
 @Component({
     selector: 'ode-users-list',

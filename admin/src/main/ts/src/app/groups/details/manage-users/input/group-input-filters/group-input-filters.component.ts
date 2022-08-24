@@ -3,6 +3,7 @@ import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
 import { ProfilesService } from 'src/app/core/services/profiles.service';
 import { UserlistFiltersService } from 'src/app/core/services/userlist.filters.service';
+import { includes } from 'src/app/utils/array';
 import { StructureModel } from '../../../../../core/store/models/structure.model';
 
 
@@ -54,7 +55,11 @@ export class GroupInputFiltersComponent extends OdeComponent implements OnChange
         this.structure.syncAafFunctions().then(() => {
             const aafFunctions: Array<Array<string>> = [];
             this.structure.aafFunctions.forEach(f => {
-                f.forEach(f2 => aafFunctions.push([f2[2], f2[4]]));
+                f.forEach(f2 => {
+                    if (!includes(aafFunctions, [f2[2], f2[4]])) {
+                        aafFunctions.push([f2[2], f2[4]])
+                    }
+                });
             });
             this.listFilters.setFunctionsComboModel(aafFunctions);
             this.changeDetector.markForCheck();
