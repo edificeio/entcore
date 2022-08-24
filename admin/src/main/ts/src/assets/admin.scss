@@ -2347,6 +2347,17 @@ ode-export {
   }
 }
 
+.group-input-container {
+  ode-multi-combo {
+      div > ul > li {
+          white-space: normal !important;
+          cursor: pointer !important;
+          max-width: 200px !important;
+          text-align: left !important;
+      }
+  }
+}
+
 /* Multi-combo component */
 ode-multi-combo {
   > button {
