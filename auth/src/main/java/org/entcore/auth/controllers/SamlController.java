@@ -160,6 +160,7 @@ public class SamlController extends AbstractFederateController {
 					JsonObject o = new JsonObject()
 							.put("name", attr)
 							.put("uri", uriStr);
+
 					wmf.add(o);
 				}
 				samlWayfMustacheFormat.put(host, new JsonObject().put("providers", wmf));
@@ -184,6 +185,14 @@ public class SamlController extends AbstractFederateController {
 			} else {
 				swmf = samlWayfMustacheFormat.getJsonObject(host);
 			}
+
+			// get theme for logo image src
+			JsonObject skins = new JsonObject(vertx.sharedData().<String, Object>getLocalMap("skins"));
+			String skin = skins.getString(getHost(request));
+			if (swmf != null) {
+				swmf.put("childTheme", (skin != null && !skin.trim().isEmpty()) ? skin : "raw");
+			}
+
 			renderView(request, swmf, "wayf.html", null);
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
