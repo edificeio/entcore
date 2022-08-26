@@ -89,6 +89,11 @@ export class GroupsTypeViewComponent
             return type === 'ManualGroup' && subType === 'BroadcastGroup';
         }
 
+        // Fix JIRA #WB-976
+        if (this.groupType === 'functionGroup') {
+            return ['FunctionGroup', 'FuncGroup', 'DisciplineGroup'].indexOf(type) >= 0;
+        }
+
         return type === this.capitalize(this.groupType) && subType !== 'BroadcastGroup';
     };
 
