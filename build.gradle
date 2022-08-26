@@ -235,6 +235,7 @@ project(':auth') {
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    compile "fr.wseduc:cas-server-async:$casVersion"
     testCompile project(':test')
   }
 }

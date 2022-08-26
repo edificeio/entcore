@@ -78,6 +78,7 @@
         },
         {% if authLocations is defined %}{{ authLocations }},{% endif %}
         {% if authSaml is defined %}{{ authSaml }}{% endif %}
+        {% if authCanope is definder %}"canope-cas": {{ authCanope }},{% endif %}
         "passwordRegex": "{{ passwordRegex }}",
         "host": "https://{{ host }}"
         {% if openidConnectIss is defined %},
