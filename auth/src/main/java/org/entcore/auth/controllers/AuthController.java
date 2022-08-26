@@ -127,6 +127,7 @@ public class AuthController extends BaseController {
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
 	}
+	public static final String CREATE_SESSION_ADRESS = "auth.createSession";
 
 	private Pattern passwordPattern;
 	private String smsProvider;
@@ -848,6 +849,12 @@ public class AuthController extends BaseController {
 			userAuthAccount.storeLockEvent(message.body().getJsonArray("ids"), message.body().getBoolean("block"));
 		}
 		message.reply(new JsonObject());
+	}
+
+	public void createSession(String userId, String login, HttpServerRequest requestToAnswer, String callback)
+	{
+		eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, requestToAnswer);
+		this.createSession(userId, requestToAnswer, callback);
 	}
 
 	private void validToken(final Message<JsonObject> message) {

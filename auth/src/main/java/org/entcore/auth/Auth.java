@@ -27,6 +27,7 @@ import org.entcore.auth.controllers.AuthController;
 import org.entcore.auth.controllers.ConfigurationController;
 import org.entcore.auth.controllers.OpenIdConnectController;
 import org.entcore.auth.controllers.SamlController;
+import org.entcore.auth.controllers.CanopeCasClient;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.auth.security.SamlHelper;
@@ -191,6 +192,9 @@ public class Auth extends BaseServer {
 				new CronTrigger(vertx, cron).schedule(NDWTask);
 			}
 		}
+
+		CanopeCasClient canopeController = new CanopeCasClient(authController);
+		addController(canopeController);
 
 		setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
 	}

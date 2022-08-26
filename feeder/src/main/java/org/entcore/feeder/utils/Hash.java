@@ -35,7 +35,9 @@ public final class Hash {
 		for (byte b : hash) {
 			formatter.format("%02x", b);
 		}
-		return formatter.toString();
+		String result = formatter.toString();
+		formatter.close();
+		return result;
 	}
 
 }
