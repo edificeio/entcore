@@ -160,18 +160,26 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 				if (event.isRight()) {
 					JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 					final Set<String> userIds = new HashSet<>();
-					final JsonArray users = event.right().getValue();
-					for (Object o: users) {
+					final JsonArray usersIter = event.right().getValue();
+					final JsonArray users = new JsonArray();
+					for (Object o: usersIter) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) o;
 						if (j.getBoolean("blockedProfile", false)) {
 							handler.handle(new Either.Left<String, Object>("blocked.profile"));
 							return;
 						}
+						if (j.getBoolean("blockedUser", false)) continue;
+
 						userIds.add(j.getString("id"));
+						users.add(o);
 						if (Utils.isNotEmpty(j.getString("id")) && !j.getBoolean("federated", false)) {
 							ids.add(j.getString("id"));
 						}
+					}
+					if (users.isEmpty()) {
+						handler.handle(new Either.Left<String, Object>("blocked.user"));
+						return;
 					}
 					if (ids.size() > 0) {
 						String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federated = true ";
