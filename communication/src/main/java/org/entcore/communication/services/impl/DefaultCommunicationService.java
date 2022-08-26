@@ -160,6 +160,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		String relationship;
 		String set;
 		switch (direction) {
+			case NONE:
+				handler.handle(new Either.Right<>(new JsonObject().put("number", 0)));
+				return;	// Nothing more to do.
 			case INCOMING:
 				relationship = "g<-[r:COMMUNIQUE]-(u:User) ";
 				set = "SET g.users = CASE WHEN g.users = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
