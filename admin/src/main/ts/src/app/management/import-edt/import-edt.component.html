@@ -141,7 +141,7 @@
         ></ode-mono-select>
       </div>
       <div class="see-more">
-        <button class="active" (click)="updateClassesMapping()">
+        <button class="active" (click)="updateClassesMapping(); showMappingWarning = true">
           <s5l>confirm</s5l>
         </button>
       </div>
@@ -162,7 +162,7 @@
         ></ode-mono-select>
       </div>
       <div class="see-more">
-        <button class="active" (click)="updateGroupsMapping()">
+        <button class="active" (click)="updateGroupsMapping(); showMappingWarning = true">
           <s5l>confirm</s5l>
         </button>
       </div>
@@ -173,6 +173,12 @@
     <pre>
       {{shownReport}}
     </pre>
+  </ode-lightbox>
+
+  <ode-lightbox [show]="showMappingWarning" (onClose)="showMappingWarning = false">
+    <p>
+      <b><s5l>management.edt.correspondance.warning</s5l></b>
+    </p>
   </ode-lightbox>
 
   <ode-lightbox-confirm lightboxTitle="warning"
