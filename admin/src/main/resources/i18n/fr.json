@@ -290,6 +290,7 @@
   "management.edt.correspondance.notify.success.content": "La correspondance des classes a été effectuée",
   "management.edt.correspondance.notify.error.title": "Erreur de mise à jour",
   "management.edt.correspondance.notify.error.content": "Une erreur a été rencontrée lors de la mise en place de la correspondance des classes",
+  "management.edt.correspondance.warning": "Lors de l'enregistrement de la correspondance, les données d'emploi du temps ne sont pas mises à jour. Pour rendre effective la correspondance, veuillez relancer un import.",
   "management.edt.correspondance.group.title": "Correspondance des groupes non reconnus",
   "management.edt.correspondance.group.notify.success.title": "Correspondance mise à jour",
   "management.edt.correspondance.group.notify.success.content": "La correspondance des groupes a été effectuée",
