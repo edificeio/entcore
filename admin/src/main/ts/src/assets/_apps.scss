@@ -356,7 +356,6 @@ i.stats {
 i.cahier-textes-large,
 i.type.cahier-textes,
 i.cahier-textes,
-i.cahier-de-texte-large,
 i.type.cahier-de-texte,
 i.cahier-de-texte {
     @include fonticon;
@@ -364,6 +363,14 @@ i.cahier-de-texte {
       content: "\e86f";
       color: $green;
     }
+}
+
+i.cahier-de-texte-large {
+  @include fonticon;
+  &::before {
+    content: "\e910";
+    color: $green;
+  }
 }
 
 i.type.homeworks {
