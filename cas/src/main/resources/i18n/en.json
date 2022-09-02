@@ -44,5 +44,7 @@
   "EnseignoRegisteredService.name" : "Enseigno",
   "EnseignoRegisteredService.description" : "Enseigno",
   "AtNormandieRegisteredService.name": "AtoutNormandie",
-  "AtNormandieRegisteredService.description": "AtoutNormandie"
+  "AtNormandieRegisteredService.description": "AtoutNormandie",
+  "SpipRegisteredService.name": "SPIP",
+  "SpipRegisteredService.description": "SPIP"
 }
