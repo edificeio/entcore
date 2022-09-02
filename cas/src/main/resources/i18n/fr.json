@@ -54,5 +54,7 @@
   "EnseignoRegisteredService.name" : "Enseigno",
   "EnseignoRegisteredService.description" : "Service CAS spécifique pour Enseigno, une solution unique d’accompagnement scolaire en ligne pour les enseignants et leurs élèves, couvrant toutes les matières du CP à la terminale.",
   "AtNormandieRegisteredService.name": "AtoutNormandie",
-  "AtNormandieRegisteredService.description": "Service CAS spécifique de la région Normandie pour accompagner tous les 15-25 ans dans leur quotidien avec un dispositif d'aides conçu pour répondre à leurs besoins et à leurs envies."
+  "AtNormandieRegisteredService.description": "Service CAS spécifique de la région Normandie pour accompagner tous les 15-25 ans dans leur quotidien avec un dispositif d'aides conçu pour répondre à leurs besoins et à leurs envies.",
+  "SpipRegisteredService.name": "SPIP",
+  "SpipRegisteredService.description": "Service CAS spécifique pour le <a href='https://www.site.ac-aix-marseille.fr/' target='blank'>SPIP de l'Académie Aix-Marseille</a>"
 }
