@@ -552,7 +552,22 @@ public class Validator {
 		}
 		return null;
 	}
-	
+
+	public static String validLogin(String loginValue)
+	{
+		return validLogin(loginValue, "fr");
+	}
+
+	public static String validLogin(String loginValue, String acceptLanguage)
+	{
+		return validLogin(loginValue, acceptLanguage, I18n.getInstance());
+	}
+
+	public static String validLogin(String loginValue, String acceptLanguage, I18n i18n)
+	{
+		return validLoginAlias("login", loginValue, "loginAlias", acceptLanguage, i18n);
+	}
+
 	public String getType(String attr) {
 		JsonObject a = validate.getJsonObject(attr);
 		return a != null ? a.getString("type", "") : "";

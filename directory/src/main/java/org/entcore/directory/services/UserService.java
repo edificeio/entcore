@@ -37,6 +37,8 @@ public interface UserService {
 
 	void update(String id, JsonObject user, Handler<Either<String, JsonObject>> result);
 
+	void updateLogin(String id, String newLogin, Handler<Either<String, JsonObject>> result);
+
 	void sendUserCreatedEmail(HttpServerRequest request, String userId, Handler<Either<String, Boolean>> result);
 
 	void getForExternalService(String id, Handler<Either<String, JsonObject>> result);

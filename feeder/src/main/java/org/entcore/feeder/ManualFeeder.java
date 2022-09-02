@@ -857,6 +857,80 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void updateUserLogin(final Message<JsonObject> message)
+	{
+		final String userId = getMandatoryString("userId", message);
+		if (userId == null) return;
+
+		final String newLogin = getMandatoryString("login", message);
+		if (newLogin == null) return;
+
+		String q =
+				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"RETURN DISTINCT p.name as profile, u.login as login ";
+		neo4j.execute(q, new JsonObject().put("userId", userId), new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> r)
+			{
+				JsonArray res = r.body().getJsonArray("result");
+				JsonArray loginChangeEvents = new JsonArray();
+				Set<String> oldLogins = new HashSet<String>();
+
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
+				{
+					for (Object o : res)
+					{
+						if (!(o instanceof JsonObject)) continue;
+
+						String profile = ((JsonObject) o).getString("profile");
+						String oldLogin = ((JsonObject) o).getString("login");
+
+						if(oldLogin == null)
+						{
+							logger.error("Error reading old user login for user " + userId);
+							sendError(message, "Invalid user");
+							return;
+						}
+
+						if (!newLogin.equals(oldLogin) && !newLogin.isEmpty())
+						{
+							oldLogins.add(oldLogin);
+							loginChangeEvents.add(new JsonObject().put("event-type", "CHANGE_LOGIN").put("type", profile)
+									.put("login", oldLogin).put("loginAlias", newLogin).put("id", userId));
+						}
+					}
+
+					String loginError = Validator.validLogin(newLogin);
+					if(loginError != null)
+					{
+						logger.error(loginError);
+						sendError(message, loginError);
+						return;
+					}
+					else
+					{
+						String query = "MATCH (u:User {id: {userId}}) SET u.login = {login} RETURN u.id AS id";
+						JsonObject params = new JsonObject().put("userId", userId).put("login", newLogin);
+						neo4j.execute(query, params, new Handler<Message<JsonObject>>()
+						{
+							@Override
+							public void handle(Message<JsonObject> m)
+							{
+								Validator.removeLogins(oldLogins);
+								DeleteTask.storeDeleteUserEvent(eventStore, loginChangeEvents);
+
+								message.reply(m.body());
+							}
+						});
+					}
+				}
+				else
+					sendError(message, "Invalid user.");
+			}
+		});
+	}
+
 	public void deleteUser(final Message<JsonObject> message) {
 		final JsonArray users = message.body().getJsonArray("users");
 		if (users == null || users.size() == 0) {

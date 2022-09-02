@@ -99,6 +99,16 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void updateLogin(final String id, final String newLogin, final Handler<Either<String, JsonObject>> result)
+	{
+		JsonObject action = new JsonObject()
+				.put("action", "manual-update-user-login")
+				.put("userId", id)
+				.put("login", newLogin);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+	}
+
+	@Override
 	public void sendUserCreatedEmail(final HttpServerRequest request, String userId,
 			final Handler<Either<String, Boolean>> result) {
 		String query =

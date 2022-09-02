@@ -1,13 +1,42 @@
 <ode-panel-section section-title="users.details.section.infos">
-  <form #infoForm="ngForm">
+  <form #infoForm="ngForm" style="margin-bottom: 0;">
     <fieldset>
       <ode-form-field label="profile">
         <span>{{ user.type | translate }}</span>
       </ode-form-field>
       <ode-form-field label="login">
-        <span>{{ details.login }}</span>
+        <span *ngIf="isAdmc == false">{{ details.login }}</span>
+        <div *ngIf="isAdmc">
+          <input
+            type="text"
+            [(ngModel)]="details.login"
+            name="login"
+            [pattern]="loginAliasPattern"
+            #loginInput="ngModel"
+          />
+          <button
+            type="button"
+            (click)="updateLogin()"
+            [disabled]="
+              infoForm.pristine ||
+              infoForm.invalid ||
+              spinner.isLoading('portal-content')
+            "
+          >
+            <s5l>login.update</s5l>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+          <ode-form-errors
+            [control]="loginInput"
+            [expectedPatternMsg]="'form.user.alias.pattern' | translate"
+          >
+          </ode-form-errors>
+        </div>
       </ode-form-field>
-
+    </fieldset>
+  </form>
+  <form #aliasForm="ngForm">
+    <fieldset>
       <ode-form-field label="loginAlias">
         <div>
           <input
@@ -21,8 +50,8 @@
             type="button"
             (click)="updateLoginAlias()"
             [disabled]="
-              infoForm.pristine ||
-              infoForm.invalid ||
+              aliasForm.pristine ||
+              aliasForm.invalid ||
               spinner.isLoading('portal-content')
             "
           >

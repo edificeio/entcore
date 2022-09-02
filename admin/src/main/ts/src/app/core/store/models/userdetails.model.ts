@@ -302,6 +302,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.put(`/directory/user/${this.id}`, {loginAlias: this.loginAlias});
     }
 
+    updateLogin() {
+        return this.http.put(`/directory/user/login/${this.id}`, {login: this.login});
+    }
+
     removeFromStructure(struct: StructureModel)
     {
         if(this.removedFromStructures == null)

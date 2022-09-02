@@ -147,6 +147,28 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Put("/user/login/:userId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void updateUserLogin(final HttpServerRequest request)
+	{
+		bodyToJson(request, new Handler<JsonObject>()
+		{
+			@Override
+			public void handle(final JsonObject body)
+			{
+				String userId = request.params().get("userId");
+				String login = body.getString("login");
+
+				if(login == null)
+					badRequest(request);
+				else
+					userService.updateLogin(userId, login, notEmptyResponseHandler(request));
+			}
+		});
+	}
+
+
 	@Put("/userbook/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void updateUserBook(final HttpServerRequest request) {
