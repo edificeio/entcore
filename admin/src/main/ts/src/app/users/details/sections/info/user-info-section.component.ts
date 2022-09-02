@@ -60,6 +60,9 @@ export class UserInfoSectionComponent
   @ViewChild("loginAliasInput", { static: false })
   loginAliasInput: AbstractControl;
 
+  @ViewChild("loginInput", { static: false })
+  loginInput: AbstractControl;
+
   private SECONDS_IN_DAYS = 24 * 3600;
   private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
 
@@ -395,6 +398,59 @@ export class UserInfoSectionComponent
           }
           this.details.loginAlias = "";
           this.loginAliasInput.setErrors({ incorrect: true });
+        })
+    );
+  }
+
+  updateLogin() {
+    this.spinner.perform(
+      "portal-content",
+      this.details
+        .updateLogin()
+        .then(res => {
+          this.ns.success(
+            {
+              key: "notify.user.updateLogin.content",
+              parameters: {
+                user: this.details.firstName + " " + this.details.lastName,
+              },
+            },
+            "notify.user.updateLogin.title"
+          );
+          this.infoForm.reset(this.details);
+        })
+        .catch(err => {
+          if (
+            err &&
+            err.response &&
+            err.response.data &&
+            err.response.data.error &&
+            (err.response.data.error.includes("already exists") ||
+              err.response.data.error.includes("existe déjà"))
+          ) {
+            this.ns.error(
+              {
+                key: "notify.user.updateLogin.uniqueConstraint.content",
+                parameters: {
+                  login: this.details.login,
+                },
+              },
+              "notify.user.updateLogin.uniqueConstraint.title"
+            );
+          } else {
+            this.ns.error(
+              {
+                key: "notify.user.updateLogin.error.content",
+                parameters: {
+                  user: this.user.firstName + " " + this.user.lastName,
+                },
+              },
+              "notify.user.updateLogin.error.title",
+              err
+            );
+          }
+          this.details.login = "";
+          this.loginInput.setErrors({ incorrect: true });
         })
     );
   }
