@@ -76,6 +76,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private String defaultFeed;
 	private final Map<String, Feed> feeds = new HashMap<>();
 	private ManualFeeder manual;
+	private boolean allowManualActionsDuringFeeds = false;
 	private Neo4j neo4j;
 	private Exporter exporter;
 	private DuplicateUsers duplicateUsers;
@@ -111,6 +112,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
 		feeds.put("CSV", new CsvFeeder(vertx));
+		this.allowManualActionsDuringFeeds = config.getBoolean("allow-manual-actions-during-feeds", false);
 		final long deleteUserDelay = config.getLong("delete-user-delay", defaultDeleteUserDelay);
 		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay);
 
@@ -278,7 +280,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	@Override
 	public void handle(Message<JsonObject> message) {
 		String action = getOrElse(message.body().getString("action"), "");
-		if (action.startsWith("manual-") && !Importer.getInstance().isReady()) {
+		if (action.startsWith("manual-") && (!Importer.getInstance().isReady() && !this.allowManualActionsDuringFeeds)) {
 			eventQueue.add(message);
 			return;
 		}
