@@ -70,6 +70,7 @@ export class ImportEDTComponent extends OdeComponent implements OnInit, OnDestro
   public seeMore: boolean = false;
   public shownReport: string;
   public showFluxChangeWarning: boolean = false;
+  public showMappingWarning: boolean = false;
 
   public mainFlux: EDTImportFlux = null;
   public importMode: EDTImportMode = EDTImportMode.DEFAULT;
