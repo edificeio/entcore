@@ -16,7 +16,7 @@
           />
           <button
             type="button"
-            (click)="updateLogin()"
+            (click)="showChangeLoginConfirmation = true"
             [disabled]="
               infoForm.pristine ||
               infoForm.invalid ||
@@ -31,6 +31,16 @@
             [expectedPatternMsg]="'form.user.alias.pattern' | translate"
           >
           </ode-form-errors>
+          <ode-lightbox-confirm
+            [show]="showChangeLoginConfirmation"
+            [lightboxTitle]="'warning'"
+            (onConfirm)="updateLogin(); showChangeLoginConfirmation = false"
+            (onCancel)="showChangeLoginConfirmation = false"
+          >
+            <p>
+              <s5l>user.change.login.disclaimer.confirm</s5l>
+            </p>
+          </ode-lightbox-confirm>
         </div>
       </ode-form-field>
     </fieldset>

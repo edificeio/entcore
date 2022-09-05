@@ -37,6 +37,7 @@ export class UserInfoSectionComponent
   passwordResetMobile: string;
   smsModule: boolean | string;
   showMergedLogins: boolean = false;
+  showChangeLoginConfirmation: boolean = false;
   showAddAdmlConfirmation: boolean = false;
   showRemoveAdmlConfirmation: boolean = false;
   showMassMailConfirmation = false;
