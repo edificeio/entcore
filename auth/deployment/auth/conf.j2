@@ -76,6 +76,9 @@
             "loginCallback": "",
             "logoutCallback": ""
         },
+        {% if authCanopeCas is defined %}
+            "canope-cas":  {{authCanopeCas}},
+        {% endif %}
         {% if authLocations is defined %}{{ authLocations }},{% endif %}
         {% if authSaml is defined %}{{ authSaml }}{% endif %}
         {% if authCanope is definder %}"canope-cas": {{ authCanope }},{% endif %}
