@@ -174,15 +174,15 @@
 		"principalAttributeName":"id",
 		"patterns":[]
 		},
-		{
-		"class":"org.entcore.cas.services.AtNormandieRegisteredService",
-		"principalAttributeName":"id",
-		"patterns":[]
-		},
         {
             "class": "org.entcore.cas.services.DefaultRegisteredService",
             "principalAttributeName": "login",
             "patterns": []
+        },
+        {
+            "class": "org.entcore.cas.services.SpipRegisteredService",
+            "principalAttributeName": "externalId",
+            "patterns": ["^(http|https):\/\/www.site.ac-aix-marseille.fr.*"]
         }
         ]
     }
