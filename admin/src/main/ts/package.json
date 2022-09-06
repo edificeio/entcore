@@ -42,7 +42,7 @@
     "noty": "2.4.1",
     "reflect-metadata": "0.1.10",
     "rxjs": "~6.5.3",
-    "trumbowyg": "^2.20.0",
+    "trumbowyg": "2.25.1",
     "tslib": "^1.10.0",
     "web-animations-js": "^2.3.2",
     "zone.js": "~0.9.1"
