@@ -20,6 +20,7 @@
         "apply-communication-rules": true,
         "aafNeo4jPlugin": false,
         "store-delete-user-event": {{ storeDeleteUserEvent | default('false') }},
+        "allow-manual-actions-during-feeds": {{ feederAllowManualActionsDuringFeeds | default('false') }},
         "exclude-mark-duplicates-by-source" : ["CSV"],
         "import-files": "{{ importAAF }}",
         "execute-merge-ine": {{ executeMergeIne | default('true') }},
