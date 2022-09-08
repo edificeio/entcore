@@ -777,7 +777,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (importer.isReady()) {
 			logger.info(t -> "START init import with path: "+importPath, true);
 			final long start = System.currentTimeMillis();
-			importer.init(neo4j, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
+			importer.init(neo4j, vertx, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
 					config.getBoolean("support-perseducnat-1d-2d", false),
 					new Handler<Message<JsonObject>>() {
 				@Override

@@ -574,12 +574,15 @@ public class Validator {
 	}
 
 	public static void initLogin(Neo4j neo4j, Vertx vertx) {
+		initLogin(neo4j, vertx, null);
+	}
+	public static void initLogin(Neo4j neo4j, Vertx vertx, Handler<Void> callback) {
 		final long startInit = System.currentTimeMillis();
 		if (logins == null) {
 			logins = new HashMap<>();
-			initLogins(neo4j, startInit, false);
+			initLogins(neo4j, startInit, false, callback);
 		} else {
-			initLogins(neo4j, startInit, true);
+			initLogins(neo4j, startInit, true, callback);
 		}
 
 		if (invalidEmails == null) {
@@ -587,7 +590,7 @@ public class Validator {
 		}
 	}
 
-	protected static void initLogins(Neo4j neo4j, final long startInit, final boolean remove) {
+	protected static void initLogins(Neo4j neo4j, final long startInit, final boolean remove, final Handler<Void> callback) {
 		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins, COLLECT(DISTINCT u.loginAlias) as loginAliases";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
@@ -618,6 +621,9 @@ public class Validator {
 						}
 					}
 				}
+				log.info("Init login map finished");
+				if(callback != null)
+					callback.handle(null);
 			}
 
 			protected void putLogin(Set<Object> tmp) {
