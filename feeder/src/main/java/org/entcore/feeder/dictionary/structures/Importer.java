@@ -21,6 +21,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.FeederLogger;
@@ -87,7 +88,7 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, final String source, String acceptLanguage, boolean blockCreateByIne,
+	public void init(final Neo4j neo4j, final Vertx vertx, final String source, String acceptLanguage, boolean blockCreateByIne,
 			boolean supportPersEducnat1D2D, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
@@ -102,6 +103,16 @@ public class Importer {
 				externalIdMapping = GraphData.getExternalIdMapping();
 				profiles = GraphData.getProfiles();
 				persEducNat = new PersEducNat(transactionHelper, externalIdMapping, userImportedExternalId, report, currentSource);
+
+				Handler<Void> handlerCaller = new Handler<Void>()
+				{
+					@Override
+					public void handle(Void v)
+					{
+						if(handler != null)
+							handler.handle(event);
+					}
+				};
 				if ("ok".equals(event.body().getString("status"))) {
 					final List<Future> futures = new ArrayList<>();
 					if ("CSV".equals(source)) {
@@ -115,15 +126,13 @@ public class Importer {
 					}
 					if (!futures.isEmpty()) {
 						CompositeFuture.all(futures).onComplete(ar -> {
-							if (handler != null) {
-								handler.handle(event);
-							}
+							Validator.initLogin(neo4j, vertx, handlerCaller);
 						});
-					} else if (handler != null) {
-						handler.handle(event);
+					} else {
+						Validator.initLogin(neo4j, vertx, handlerCaller);
 					}
-				} else if (handler != null) {
-					handler.handle(event);
+				} else {
+					Validator.initLogin(neo4j, vertx, handlerCaller);
 				}
 			}
 		});
