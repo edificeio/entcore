@@ -962,7 +962,26 @@ public class User {
 					JsonObject update = new JsonObject().put("$set",
 						new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED).put(UserDataSync.NEW_ID_FIELD, u.getString("userId"))
 					);
-					MongoDb.getInstance().update(OLD_PLATFORM_USERS, new JsonObject().put(UserDataSync.OLD_ID_FIELD, j.getString(UserDataSync.OLD_ID_FIELD)), update);
+
+					JsonObject criteria = new JsonObject()
+											.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED)
+											.put(UserDataSync.OLD_ID_FIELD, j.getString(UserDataSync.OLD_ID_FIELD));
+					MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, update, false, false, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> message)
+						{
+							if ("ok".equals(message.body().getString("status")))
+							{
+								JsonObject updateDoublons = new JsonObject().put("$set", new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.DOUBLON));
+								MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, updateDoublons, false, true);
+							}
+							else
+							{
+								log.error("Failed to set activated status for " + j.getString(UserDataSync.OLD_ID_FIELD));
+							}
+						}
+					});
 
 					String login = u.getString("login");
 					boolean updatedLogin = login.equals(oldLogin.getString("login")) == false && login.equals(oldLogin.getString("loginAlias")) == false;
