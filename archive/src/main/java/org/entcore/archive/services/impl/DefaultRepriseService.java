@@ -136,7 +136,7 @@ public class DefaultRepriseService implements RepriseService {
                 log.info("[Reprise] Export for " + login + " (" + userId + ") has started");
                 Future<String> export = this.launchExportForUser(userId, login);
                 export.onComplete(asyncResult -> {
-                    final JsonObject criteria = new JsonObject().put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
+                    final JsonObject criteria = new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED).put(UserDataSync.OLD_ID_FIELD, user.getString("_old_id"));
                     final JsonObject set = new JsonObject();
                     if (asyncResult.failed()) {
                         set.put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ERROR_EXPORT);
@@ -326,6 +326,7 @@ public class DefaultRepriseService implements RepriseService {
                     JsonObject action2 = new JsonObject()
                             .put("action", "update-users-old-platform")
                             .put("criteria", new JsonObject()
+                                    .put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.EXPORTED)
                                     .put(UserDataSync.NEW_ID_FIELD, userId)
                             )
                             .put("update", new JsonObject()

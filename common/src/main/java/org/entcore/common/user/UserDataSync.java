@@ -41,6 +41,7 @@ public interface UserDataSync
     {
         UNPROCESSED,
         ACTIVATED,
+        DOUBLON,
         EXPORTED,
         IMPORTED,
         ERROR_EXPORT,
