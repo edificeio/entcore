@@ -50,6 +50,7 @@ public class Importer {
 	private ConcurrentMap<String, ImporterStructure> structures;
 	private ConcurrentMap<String, Profile> profiles;
 	private Set<String> userImportedExternalId = new HashSet<>();
+	private Set<String> structuresImportedExternalId = new HashSet<>();
 	private TransactionHelper transactionHelper;
 	private final Validator structureValidator;
 	private final Validator profileValidator;
@@ -213,6 +214,7 @@ public class Importer {
 		structures.clear();
 		profiles.clear();
 		userImportedExternalId.clear();
+		structuresImportedExternalId.clear();
 		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
@@ -311,6 +313,8 @@ public class Importer {
 				}
 			}
 		}
+		if(s != null)
+			structuresImportedExternalId.add(s.getExternalId());
 		return s;
 	}
 
@@ -1066,6 +1070,10 @@ public class Importer {
 
 	public Set<String> getUserImportedExternalId() {
 		return userImportedExternalId;
+	}
+
+	public Set<String> getStructureImportedExternalId() {
+		return structuresImportedExternalId;
 	}
 
 	public ConcurrentHashMap<String, List<String>> getGroupClasses() {

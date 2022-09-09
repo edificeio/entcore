@@ -59,6 +59,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -802,7 +804,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(t -> "SUCCEED to launch feeder | details: "+m.body().encode(), true);
 									if (executePostImport) {
-										postImport.execute(feed.getFeederSource());
+										postImport.execute(feed.getFeederSource(), new HashSet<String>(importer.getStructureImportedExternalId()));
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
