@@ -1,15 +1,19 @@
 package org.entcore.admin.controllers;
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import org.entcore.admin.services.BlockProfileTraceService;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.mongodb.MongoDbControllerHelper;
+import org.entcore.common.service.impl.MongoDbCrudService;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
@@ -20,12 +24,15 @@ public class BlockProfileTraceController extends MongoDbControllerHelper {
         super(collection);
     }
 
-    @Post("/api/block/trace")
-    @ApiDoc("Add a Profile blocking trace.")
-    @SecuredAction(type = ActionType.RESOURCE, value = "")
-    @ResourceFilter(AdminFilter.class)
-    public void addTrace(HttpServerRequest request) {
-        create(request);
+    @BusAddress("wse.admin.block.trace")
+    public void createTrace(Message<JsonObject> message) {
+        this.blockProfileTraceService.createTrace(message.body(), event -> {
+            if (event.isRight()) {
+                message.reply(event.right().getValue());
+            } else {
+                message.reply(new JsonObject().put("error", event.left().getValue()));
+            }
+        });
     }
 
     @Get("/api/block/traces/:structureId")
