@@ -7,7 +7,7 @@
         "app-type" : "END_USER",
         "mode": "prod",
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if overrideTheme %}"override-theme": {},{% endif %}
         "optimized-thread-list" : {{ optimizedThreadList | default('false') }},
         "auto-redeploy": false,

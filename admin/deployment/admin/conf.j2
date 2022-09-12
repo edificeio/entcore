@@ -5,7 +5,7 @@
         "main":"org.entcore.admin.Admin",
         "port": 8089,
         "csrf-token" : false,
-        "ssl" : true,
+        "ssl": {{ enableSsl|default(true) }},
         "mode": "prod",
         "auto-redeploy": false,
         "app-type" : "END_USER",

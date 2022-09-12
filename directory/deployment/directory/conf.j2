@@ -4,7 +4,7 @@
         "config": {
             "main": "org.entcore.directory.Directory",
             "auto-redeploy": false,
-            "ssl": true,
+            "ssl": {{ enableSsl|default(true) }},
             {% if ha and directoryInstance is defined %}
             "instances": {{ directoryInstance }},
             {% endif %}

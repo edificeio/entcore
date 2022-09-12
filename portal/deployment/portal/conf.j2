@@ -17,7 +17,7 @@
             {% endif %}
         },
         {% endif %}
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         "app-type" : "SYSTEM",
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         {% if smartBanner is defined %} "smartBanner": {{ smartBanner }}, {% endif %}
