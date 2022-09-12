@@ -7,7 +7,7 @@
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "mode": "prod",
         "host": "https://{{ host }}",
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         "email": "{{ fromEmail }}",
         "auto-redeploy": false,

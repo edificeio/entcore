@@ -8,7 +8,7 @@
         "app-type" : "SYSTEM",
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "mode": "prod",
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if bprEnabled is defined %}
         "library-enabled": true,
         "library-api-url": "{{ bprUrl }}",

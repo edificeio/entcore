@@ -19,7 +19,7 @@
         "sql": true,
         "db-schema": "flashmsg",
         "auto-redeploy": false,
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         "maxRecipientLength": {{ timelineMaxRecipientLength|default(10000) }},
         {% if timelineRedisHost is defined %}
         "redisConfig": {

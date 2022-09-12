@@ -11,7 +11,7 @@
         "mongo-address": "{{ipMongodbAuth}}",
         {% endif %}
         "auto-redeploy": false,
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if passwordEventMinDate is defined %}
         "password-event-min-date": "{{ passwordEventMinDate }}", 
         {% endif %}

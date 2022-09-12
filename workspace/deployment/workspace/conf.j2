@@ -7,7 +7,7 @@
         "mode": "prod",
         "wsPort": 6502,
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         "app-type" : "END_USER",
         "host": "https://{{ host }}",

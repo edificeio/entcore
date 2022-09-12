@@ -11,7 +11,7 @@
         "app-address": "/cas",
         "app-icon": "cas-large",
         "host": "https://{{ host }}",
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         "app-type" : "SYSTEM",
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         "auto-redeploy": false,
