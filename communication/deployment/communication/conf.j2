@@ -4,7 +4,7 @@
     "config": {
         "main": "org.entcore.communication.Communication",
         "auto-redeploy": false,
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         "app-type" : "SYSTEM",
         "xp-com-rules": true,
         {% if overrideTheme %} "override-theme": {}, {% endif %}

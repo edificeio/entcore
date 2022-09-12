@@ -19,7 +19,7 @@
         {% endif %}
         "auto-redeploy": false,
         "path-prefix": "infra",
-        "ssl": true,
+        "ssl": {{ enableSsl|default(true) }},
         {% if antivirus is defined and antivirus %}
         "antivirus": true,
         {% endif %}
