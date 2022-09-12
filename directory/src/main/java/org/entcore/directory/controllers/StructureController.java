@@ -667,6 +667,22 @@ public class StructureController extends BaseController {
 								if ("ok".equals(r.getString("status"))) {
 									request.response().setStatusCode(204);
 									request.response().end();
+
+									// Create a Trace
+									JsonObject traceData = new JsonObject()
+											.put("action", block ? "BLOCK" : "UNBLOCK")
+											.put("profile", profile)
+											.put("structureId", structureId)
+											.put("userId", user.getUserId())
+											.put("userName", user.getUsername());
+									eb.request("wse.admin.block.trace", traceData, response -> {
+										if (response.succeeded()) {
+											log.info("Trace created successfully: " + traceData.toString());
+										} else {
+											log.error("An error occurred during the trace creation", response.cause());
+										}
+									});
+
 									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
 									for (Object userId : usersId) {
