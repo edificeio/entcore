@@ -1,6 +1,7 @@
 package org.entcore.admin.services.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -13,12 +14,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.entcore.common.mongodb.MongoDbResult.validResultsHandler;
+import static org.entcore.common.mongodb.MongoDbResult.*;
 
 public class DefaultBlockProfileTraceService extends MongoDbCrudService implements BlockProfileTraceService {
 
     public DefaultBlockProfileTraceService(String collection) {
         super(collection);
+    }
+
+    @Override
+    public void createTrace(JsonObject data, Handler<Either<String, JsonObject>> handler) {
+        JsonObject queryData = new JsonObject()
+                .put("action", data.getString("action"))
+                .put("profile", data.getString("profile"))
+                .put("structureId", data.getString("structureId"));
+
+        JsonObject now = MongoDb.now();
+        queryData.put("created", now).put("modified", now);
+
+        MongoDbCrudService.setUserMetadata(queryData, data.getString("userId"), data.getString("userName"));
+
+        mongo.save(this.collection, queryData, validResultHandler(handler));
     }
 
     @Override
