@@ -5,7 +5,7 @@
         "main": "org.entcore.conversation.Conversation",
         "host": "https://{{ host }}",
         "app-type" : "END_USER",
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "ssl": {{ enableSsl|default(true) }},
         {% if overrideTheme %}"override-theme": {},{% endif %}

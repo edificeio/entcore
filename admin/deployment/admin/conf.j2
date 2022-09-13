@@ -6,7 +6,7 @@
         "port": 8089,
         "csrf-token" : false,
         "ssl": {{ enableSsl|default(true) }},
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "auto-redeploy": false,
         "app-type" : "END_USER",
         "host": "https://{{ host }}",

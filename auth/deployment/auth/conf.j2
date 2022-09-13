@@ -45,7 +45,7 @@
         {% if csrfToken %}
         "csrf-token": true,
         {% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         {% if cookieTimeout is defined and (not(inactivity is defined) or not(inactivity))  %}
         "cookie_timeout" : {{ cookieTimeout }},
         {% endif %}

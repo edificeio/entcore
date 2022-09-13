@@ -22,7 +22,7 @@
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         {% if smartBanner is defined %} "smartBanner": {{ smartBanner }}, {% endif %}
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "assets-path": "{{ assetsPath|default('/srv/vertx/entcore') }}",
         "path-prefix": "",
         "root-page": "{{ rootPage | default('/timeline/timeline') }}",
