@@ -31,7 +31,7 @@
     "entcore-generic-icons": "https://github.com/opendigitaleducation/generic-icons.git",
     "entcore-toolkit": "^1.0.1",
     "humane-js": "^3.2.2",
-    "jquery": "^3.2.1",
+    "jquery": "^3.5.0",
     "moment": "^2.29.1",
     "pixi.js": "^4.5.4",
     "reflect-metadata": "0.1.10",
