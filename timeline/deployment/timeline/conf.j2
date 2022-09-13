@@ -43,7 +43,7 @@
         "daily-mailing-cron" : "0 0 0 1 1 ? 2099",
         "weekly-mailing-cron": "0 0 0 1 1 ? 2099",
         {% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {

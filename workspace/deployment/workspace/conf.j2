@@ -4,7 +4,7 @@
     "config": {
         "main": "org.entcore.workspace.Workspace",
         "auto-redeploy": false,
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "wsPort": 6502,
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "ssl": {{ enableSsl|default(true) }},

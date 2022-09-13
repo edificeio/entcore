@@ -5,7 +5,7 @@
         "main": "org.entcore.archive.Archive",
         "port": 8004,
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "host": "https://{{ host }}",
         "ssl": {{ enableSsl|default(true) }},
         {% if overrideTheme %} "override-theme": {}, {% endif %}

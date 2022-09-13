@@ -12,7 +12,7 @@
             {% if csrfToken %}"csrf-token": true,{% endif %}
             "wizard-path": "{{storagePath |default('/srv/storage')}}/wizard",
             "timetable-path": "{{storagePath |default('/srv/storage')}}/timetable",
-            "mode": "prod",
+            "mode": "{{ envMode|default('prod') }}",
             "app-type" : "SYSTEM",
             "host": "https://{{ host }}",
             "port": 8003,
