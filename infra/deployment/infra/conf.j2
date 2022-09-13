@@ -5,7 +5,7 @@
     "config" : {
         "main": "org.entcore.infra.Starter",
         "port": 8001,
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
 	    "sameSiteValue": "{{ cookieSameSiteValue  | default('None') }}",
 	    "encoding-available": ["Cp858", "Cp1250", "ISO-8859-1"],
 	    "neo4jMetricsEnable": {{ neo4jMetricsEnable  | default('true') }},

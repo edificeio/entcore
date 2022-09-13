@@ -20,7 +20,7 @@
         {% if casExternalLogin is defined %}{{ casExternalLogin }},{% endif %}
         "integration-mode": "HTTP",
         "app-registry.port": 8012,
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "entcore.port": 8009,
         "services": [
         {

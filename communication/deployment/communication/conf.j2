@@ -9,7 +9,7 @@
         "xp-com-rules": true,
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "port": 8015,
         "initDefaultCommunicationRules": {{ defaultComRules }},
         "publicConf": {

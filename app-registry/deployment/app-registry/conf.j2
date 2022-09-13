@@ -7,7 +7,7 @@
         "auto-redeploy": false,
         "app-type" : "SYSTEM",
         {% if csrfToken %}"csrf-token": true,{% endif %}
-        "mode": "prod",
+        "mode": "{{ envMode|default('prod') }}",
         "ssl": {{ enableSsl|default(true) }},
         {% if bprEnabled is defined %}
         "library-enabled": true,
