@@ -482,8 +482,10 @@ public class UserUtils {
 						handler.handle(session);
 					} else {
 						handler.handle(null);
-						final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
-						log.warn("Could not found session: "+ key + " error: " + body.getString("error") + " message: " + body.getString("message"));
+						if (log.isDebugEnabled()) {
+							final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
+							log.debug("Could not found session: "+ key + " error: " + body.getString("error") + " message: " + body.getString("message"));
+						}
 					}
 				} else {
 					handler.handle(null);
