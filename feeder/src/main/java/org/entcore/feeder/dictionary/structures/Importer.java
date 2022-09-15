@@ -67,9 +67,12 @@ public class Importer {
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
 	private ConcurrentMap<String, JsonObject> toSupportPerseducnat1D2D = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, JsonObject> studentsStructuresClassesGroups = new ConcurrentHashMap<>();
 	private Set<String> blockedIne;
 	private Report report;
 	private JsonArray importsPrefixList;
+
+	private enum CheckRelationshipsTypes { STRUCTURES, CLASSES, FOS, GROUPS, MODULES }
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -90,7 +93,7 @@ public class Importer {
 	}
 
 	public void init(final Neo4j neo4j, final Vertx vertx, final String source, String acceptLanguage, boolean blockCreateByIne,
-			boolean supportPersEducnat1D2D, final Handler<Message<JsonObject>> handler) {
+			boolean supportPersEducnat1D2D, boolean checkStudentsRelationships, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
@@ -98,6 +101,7 @@ public class Importer {
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				Importer.this.transactionHelper = new TransactionHelper(neo4j, 1000);
 				firstImport = GraphData.getStructures().isEmpty();
 				structures = GraphData.getStructures();
 				structuresByUAI = GraphData.getStructuresByUAI();
@@ -124,6 +128,24 @@ public class Importer {
 					}
 					if (supportPersEducnat1D2D && "AAF1D".equals(source)) {
 						futures.add(loadPersEducnat2D());
+					}
+					if (checkStudentsRelationships && ("AAF1D".equals(source) || "AAF".equals(source))) {
+						futures.add(loadStudentsStructuresClassesGroups("0"));
+						futures.add(loadStudentsStructuresClassesGroups("1"));
+						futures.add(loadStudentsStructuresClassesGroups("2"));
+						futures.add(loadStudentsStructuresClassesGroups("3"));
+						futures.add(loadStudentsStructuresClassesGroups("4"));
+						futures.add(loadStudentsStructuresClassesGroups("5"));
+						futures.add(loadStudentsStructuresClassesGroups("6"));
+						futures.add(loadStudentsStructuresClassesGroups("7"));
+						futures.add(loadStudentsStructuresClassesGroups("8"));
+						futures.add(loadStudentsStructuresClassesGroups("9"));
+						futures.add(loadStudentsStructuresClassesGroups("a"));
+						futures.add(loadStudentsStructuresClassesGroups("b"));
+						futures.add(loadStudentsStructuresClassesGroups("c"));
+						futures.add(loadStudentsStructuresClassesGroups("d"));
+						futures.add(loadStudentsStructuresClassesGroups("e"));
+						futures.add(loadStudentsStructuresClassesGroups("f"));
 					}
 					if (!futures.isEmpty()) {
 						CompositeFuture.all(futures).onComplete(ar -> {
@@ -154,6 +176,49 @@ public class Importer {
 					final JsonObject j = (JsonObject) o;
 					toSupportPerseducnat1D2D.putIfAbsent(j.getString("externalId"), j);
 				}
+				promise.complete();
+			} else {
+				promise.fail("Error when load perseducnat 2D");
+			}
+		});
+		return promise.future();
+	}
+
+	private Future<Void> loadStudentsStructuresClassesGroups(String suffix) {
+		final Promise<Void> promise = Promise.promise();
+		final String query =
+			"MATCH (s:Structure {source:{source}})<-[:DEPENDS]-(:ProfileGroup)<-[r:IN]-(u:User) " +
+			"where s.id ends with '" + suffix + "' " +
+			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+			"OPTIONAL MATCH u-[:COURSE]->(f:FieldOfStudy) " +
+			"OPTIONAL MATCH u-[:FOLLOW]->(m:Module) " +
+			// "OPTIONAL MATCH u-[:IN]->(g:Group) " +
+			"RETURN u.externalId as externalId, COLLECT(s.externalId) as structures, " +
+			"COLLECT(f.externalId) as fos, COLLECT(m.externalId) as modules, " +
+			// "COLLECT(g.externalId) as groups, " +
+			"COLLECT(c.externalId) as classes";
+			// "MATCH (s:Structure {source:{source}})<-[:DEPENDS]-(:ProfileGroup)<-[r:IN]-(u:User {source:{source}}) " +
+			// "WHERE head(u.profiles) = 'Student' and not(has(r.source)) " +
+			// "OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+			// "OPTIONAL MATCH u-[:COURSE]->(f:FieldOfStudy) " +
+			// "OPTIONAL MATCH u-[:FOLLOW]->(m:Module) " +
+			// "OPTIONAL MATCH u-[:IN]->(g:Group {source:{source}}) " +
+			// "WHERE (g:FunctionalGroup OR g:FunctionGroup) " +
+			// "RETURN DISTINCT u.externalId as externalId, " +
+			// "COLLECT(distinct s.externalId) as structures, " +
+			// "COLLECT(distinct f.externalId) as fos, " +
+			// "COLLECT(distinct m.externalId) as modules, " +
+			// "COLLECT(distinct g.externalId) as groups, " +
+			// "COLLECT(distinct c.externalId) as classes";
+		Neo4j.getInstance().execute(query, new JsonObject().put("source", currentSource), event -> {
+			final JsonArray res = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status")) && res != null) {
+				for (Object o : res) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject j = (JsonObject) o;
+					studentsStructuresClassesGroups.putIfAbsent(j.getString("externalId"), j);
+				}
+				log.info("Users structures... loaded suffix " + suffix + ". Map numbers : " + studentsStructuresClassesGroups.size());
 				promise.complete();
 			} else {
 				promise.fail("Error when load perseducnat 2D");
@@ -598,28 +663,30 @@ public class Importer {
 				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
-					JsonObject p = new JsonObject().put("userExternalId", externalId);
-					if (structures.size() == 1) {
-						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
-								"(u:User { externalId : {userExternalId}}) " +
-								"WHERE NOT(HAS(u.mergedWith)) " +
-								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-								"WITH u, g " +
-								"MERGE u-[:IN]->g";
-						p.put("structureAdmin", structures.getString(0))
-								.put("profileExternalId", profileExternalId);
-					} else {
-						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"(u:User { externalId : {userExternalId}})) " +
-								"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
-								"AND p.externalId = {profileExternalId} " +
-								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-								"WITH u, g " +
-								"MERGE u-[:IN]->g";
-						p.put("structuresAdmin", structures)
-								.put("profileExternalId", profileExternalId);
+					if (studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.STRUCTURES, structures)) {
+						JsonObject p = new JsonObject().put("userExternalId", externalId);
+						if (structures.size() == 1) {
+							query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
+									"(u:User { externalId : {userExternalId}}) " +
+									"WHERE NOT(HAS(u.mergedWith)) " +
+									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+									"WITH u, g " +
+									"MERGE u-[:IN]->g";
+							p.put("structureAdmin", structures.getString(0))
+									.put("profileExternalId", profileExternalId);
+						} else {
+							query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+									"(u:User { externalId : {userExternalId}})) " +
+									"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
+									"AND p.externalId = {profileExternalId} " +
+									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+									"WITH u, g " +
+									"MERGE u-[:IN]->g";
+							p.put("structuresAdmin", structures)
+									.put("profileExternalId", profileExternalId);
+						}
+						transactionHelper.add(query, p);
 					}
-					transactionHelper.add(query, p);
 					String qs =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
 							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
@@ -642,17 +709,19 @@ public class Importer {
 							classes.add(structClass[1]);
 						}
 					}
-					String query =
-							"MATCH (c:Class)<-[:DEPENDS]-(g:ProfileGroup)" +
-							"-[:DEPENDS]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile {externalId : {profileExternalId}}), " +
-							"(u:User { externalId : {userExternalId}}) " +
-							"WHERE c.externalId IN {classes} AND NOT(HAS(u.mergedWith))  " +
-							"MERGE u-[:IN]->g";
-					JsonObject p0 = new JsonObject()
-							.put("userExternalId", externalId)
-							.put("profileExternalId", profileExternalId)
-							.put("classes", classes);
-					transactionHelper.add(query, p0);
+					if (studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.CLASSES, classes)) {
+						String query =
+								"MATCH (c:Class)<-[:DEPENDS]-(g:ProfileGroup)" +
+								"-[:DEPENDS]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile {externalId : {profileExternalId}}), " +
+								"(u:User { externalId : {userExternalId}}) " +
+								"WHERE c.externalId IN {classes} AND NOT(HAS(u.mergedWith))  " +
+								"MERGE u-[:IN]->g";
+						JsonObject p0 = new JsonObject()
+								.put("userExternalId", externalId)
+								.put("profileExternalId", profileExternalId)
+								.put("classes", classes);
+						transactionHelper.add(query, p0);
+					}
 				}
 				if (externalId != null) {
 					String q =
@@ -672,18 +741,20 @@ public class Importer {
 							groups.add(structGroup[1]);
 						}
 					}
-					String query =
-							"MATCH (u:User { externalId: {userExternalId}}) " +
-							"WHERE NOT(HAS(u.mergedWith)) " +
-							"WITH u " +
-							"MATCH (g:Group) " +
-							"WHERE (g:FunctionalGroup OR g:FunctionGroup) AND g.externalId IN {groups} AND g.source = {source} " +
-							"MERGE (u)-[:IN]->(g) ";
-					JsonObject p = new JsonObject()
-							.put("userExternalId", externalId)
-							.put("source", currentSource)
-							.put("groups", groups);
-					transactionHelper.add(query, p);
+					// if (studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.GROUPS, groups)) {
+						String query =
+								"MATCH (u:User { externalId: {userExternalId}}) " +
+								"WHERE NOT(HAS(u.mergedWith)) " +
+								"WITH u " +
+								"MATCH (g:Group) " +
+								"WHERE (g:FunctionalGroup OR g:FunctionGroup) AND g.externalId IN {groups} AND g.source = {source} " +
+								"MERGE (u)-[:IN]->(g) ";
+						JsonObject p = new JsonObject()
+								.put("userExternalId", externalId)
+								.put("source", currentSource)
+								.put("groups", groups);
+						transactionHelper.add(query, p);
+					// }
 				}
 				if (externalId != null) {
 					final String qdfg =
@@ -698,7 +769,8 @@ public class Importer {
 					transactionHelper.add(qdfg, pdfg);
 				}
 
-				if (externalId != null && module != null) {
+				if (externalId != null && module != null &&
+						studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.MODULES, new JsonArray().add(module))) {
 					String query =
 							"MATCH (u:User {externalId:{userExternalId}}), " +
 							"(m:Module {externalId:{moduleStudent}}) " +
@@ -708,7 +780,8 @@ public class Importer {
 							.put("moduleStudent", module);
 					transactionHelper.add(query, p);
 				}
-				if (externalId != null && fieldOfStudy != null && fieldOfStudy.size() > 0) {
+				if (externalId != null && fieldOfStudy != null && fieldOfStudy.size() > 0 &&
+						studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.FOS, fieldOfStudy)) {
 					String query =
 								"MATCH (u:User {externalId:{userExternalId}}), (f:FieldOfStudy) " +
 								"WHERE f.externalId IN {fieldOfStudyStudent} " +
@@ -746,6 +819,21 @@ public class Importer {
 				}
 			}
 		}
+	}
+
+	private boolean studentsRelationshipsNotExists(String externalId, CheckRelationshipsTypes checkType,
+			JsonArray importElements) {
+		final JsonObject user = studentsStructuresClassesGroups.get(externalId);
+		if (user != null && importElements != null) {
+			final JsonArray dbElements = user.getJsonArray(checkType.name().toLowerCase());
+			for (Object e: importElements) {
+				if (dbElements == null || !dbElements.contains(e)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 
 	public void linkRelativeToStructure(String profileExternalId) {
