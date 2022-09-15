@@ -781,6 +781,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			final long start = System.currentTimeMillis();
 			importer.init(neo4j, vertx, feed.getFeederSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
 					config.getBoolean("support-perseducnat-1d-2d", false),
+					config.getBoolean("check-exists-relationships", false),
 					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
