@@ -101,7 +101,6 @@ public class Importer {
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				Importer.this.transactionHelper = new TransactionHelper(neo4j, 1000);
 				firstImport = GraphData.getStructures().isEmpty();
 				structures = GraphData.getStructures();
 				structuresByUAI = GraphData.getStructuresByUAI();
@@ -114,10 +113,23 @@ public class Importer {
 					@Override
 					public void handle(Void v)
 					{
+						reinitTransaction(); // Resets the neo4j transaction timeout
 						if(handler != null)
 							handler.handle(event);
 					}
 				};
+				Handler<Void> loginIniter = new Handler<Void>()
+				{
+					@Override
+					public void handle(Void v)
+					{
+						if("CSV".equals(source))
+							handlerCaller.handle(null);
+						else
+							Validator.initLogin(neo4j, vertx, handlerCaller);
+					}
+				};
+
 				if ("ok".equals(event.body().getString("status"))) {
 					final List<Future> futures = new ArrayList<>();
 					if ("CSV".equals(source)) {
@@ -149,13 +161,13 @@ public class Importer {
 					}
 					if (!futures.isEmpty()) {
 						CompositeFuture.all(futures).onComplete(ar -> {
-							Validator.initLogin(neo4j, vertx, handlerCaller);
+							loginIniter.handle(null);
 						});
 					} else {
-						Validator.initLogin(neo4j, vertx, handlerCaller);
+						loginIniter.handle(null);
 					}
 				} else {
-					Validator.initLogin(neo4j, vertx, handlerCaller);
+					loginIniter.handle(null);
 				}
 			}
 		});
@@ -294,8 +306,7 @@ public class Importer {
 			transactionHelper.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					transactionHelper = new TransactionHelper(neo4j, 1000);
-					persEducNat.setTransactionHelper(transactionHelper);
+					reinitTransaction();
 					if (handler != null) {
 						handler.handle(message);
 					}
@@ -316,6 +327,8 @@ public class Importer {
 	 */
 	public void reinitTransaction() {
 		transactionHelper = new TransactionHelper(neo4j, 1000);
+		if(persEducNat != null)
+			persEducNat.setTransactionHelper(transactionHelper);
 	}
 
 	public ImporterStructure createOrUpdateStructure(JsonObject struct) {
