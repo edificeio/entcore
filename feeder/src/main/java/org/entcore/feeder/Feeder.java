@@ -166,7 +166,28 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			vertx.close();
 			return;
 		}
+		final String reinitLoginCron = config.getString("reinit-login-cron", null);
 		Validator.initLogin(neo4j, vertx);
+		if(reinitLoginCron != null)
+		{
+			try
+			{
+				new CronTrigger(vertx, reinitLoginCron).schedule(new Handler<Long>()
+				{
+					@Override
+					public void handle(Long l)
+					{
+						logger.info("Reinit login cron");
+						Validator.initLogin(neo4j, vertx);
+					}
+				});
+			}
+			catch (ParseException e)
+			{
+				logger.fatal(e.getMessage(), e);
+			}
+		}
+
 		manual = new ManualFeeder(neo4j, eb);
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
