@@ -60,6 +60,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 					new NumericEntityUnescaper()
 			);
 	private static final int MAX_DEADLOCK_RETRIES = 1;
+	private static final Pattern DEADLOCK_PATTERN = Pattern.compile("(deadlock|EntityNotFound)", Pattern.CASE_INSENSITIVE);
 
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
@@ -134,7 +135,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 									log.error(e -> "FAILED persist for file : " + file);
 
 									String msg = message.body().getString("message", "");
-									if(nbRetries < MAX_DEADLOCK_RETRIES && Pattern.compile("deadlock", Pattern.CASE_INSENSITIVE).matcher(msg).find() == true)
+									if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
 									{
 										log.info(e -> "RETRY persist for file : " + file);
 										handlers[j].handle(nbRetries + 1);
