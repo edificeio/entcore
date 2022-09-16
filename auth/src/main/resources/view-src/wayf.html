@@ -58,9 +58,21 @@
 
 		function showLoader(element)
 		{
-			element.querySelector("div").innerHTML = '<i class="loading"></i>';
+			element.querySelector("i18n").classList.add("loader-hide");
+			element.querySelector("i").classList.remove("loader-hide");
 		}
+
+		function hideLoaders()
+		{
+			document.body.querySelectorAll("a.domino").forEach(function(element)
+			{
+				element.querySelector("i18n").classList.remove("loader-hide");
+				element.querySelector("i").classList.add("loader-hide");
+			});
+		}
+		addEventListener('pageshow', hideLoaders);
 	</script>
+	<style> .loader-hide.loader-hide { display: none; } </style>
 </head>
 
 <body class="wayf" onload="addAnchor()">
@@ -81,7 +93,7 @@
 				{{#providers}}
 				<div class="item">
 					<a class="centered-text domino {{name}}" href="{{uri}}" onclick="showLoader(this);">
-						<div style="margin: 20px;"><i18n>{{name}}</i18n></div>
+						<div style="margin: 20px;"><i18n>{{name}}</i18n><i class="loader-hide loading"></i></div>
 					</a>
 				</div>
 				{{/providers}}
