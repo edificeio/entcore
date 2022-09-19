@@ -84,6 +84,7 @@ import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -398,28 +399,13 @@ public class AuthController extends BaseController {
 										storeLoginEventAndDomain(request, clientCredential, id);
 									}
 								});
-							} else if ("saml2".equals(req.getParameter("grant_type"))) {
-								final DataHandler data = oauthDataFactory.create(req);
-								data.getUserIdByAssertion(req.getParameter("assertion"), userId -> {
-									if (userId != null) {
-										try {
-											storeLoginEventAndDomain(request, clientCredential, userId.get());
-										} catch (Throwable e) {
-											log.error("Error when try get user id from assertion in oauth2 token endpoint", e);
-										}
-									}
-								});
-							} else if ("custom_token".equals(req.getParameter("grant_type"))) {
-								final DataHandler data = oauthDataFactory.create(req);
-								data.getUserIdByCustomToken(req.getParameter("custom_token"), userId -> {
-									if (userId != null) {
-										try {
-											storeLoginEventAndDomain(request, clientCredential, userId.get());
-										} catch (Throwable e) {
-											log.error("Error when try get user id from custom_token in oauth2 token endpoint", e);
-										}
-									}
-								});
+							} else if ("saml2".equals(req.getParameter("grant_type")) || "custom_token".equals(req.getParameter("grant_type"))) {
+								final UserData userData = response.getUserData();
+								storeLoginEventAndDomain(request, clientCredential, userData.getId());
+								if (isNotEmpty(userData.getActivationCode())) {
+									activateUser(userData.getActivationCode(), userData.getLogin(),
+											userData.getEmail(), userData.getMobile(), userData.getSource(), request);
+								}
 							}
 						}
 						renderJson(request, new JsonObject(response.getBody()), response.getCode());
@@ -437,6 +423,22 @@ public class AuthController extends BaseController {
 							}
 						});
 					}
+
+					private void activateUser(final String activationCode, final String login, String email, String mobile, String source,
+							final HttpServerRequest request) {
+						final String theme = config.getJsonObject("activation-themes", new JsonObject())
+								.getJsonObject(Renders.getHost(request), new JsonObject()).getString(source);
+						userAuthAccount.activateAccountWithRevalidateTerms(login, activationCode, UUID.randomUUID().toString(),
+								email, mobile, theme, request, activated -> {
+								if (activated.isRight() && activated.right().getValue() != null) {
+									trace.info("Activation fédérée mobile du compte utilisateur " + login);
+									eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login, request);
+								} else {
+									trace.info("Echec de l'activation fédérée mobile : compte utilisateur " + login + " introuvable ou déjà activé.");
+								}
+						});
+					}
+
 				});
 			}
 		});
