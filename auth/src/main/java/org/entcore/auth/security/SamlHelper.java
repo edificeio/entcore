@@ -23,6 +23,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.MultipleVectorChoice;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -104,7 +105,7 @@ public class SamlHelper {
         sp.execute(assertion, handler);
     }
 
-    public void processACSOAuth2(String base64SamlResponse, jp.eisbahn.oauth2.server.async.Handler<Try<OAuthError, String>> handler) {
+    public void processACSOAuth2(String base64SamlResponse, jp.eisbahn.oauth2.server.async.Handler<Try<OAuthError, UserData>> handler) {
         if (isNotEmpty(base64SamlResponse)) {
             validateSamlResponseAndGetAssertion(new String(Base64.getDecoder().decode(base64SamlResponse)), ar -> {
                 if (ar.succeeded()) {
@@ -112,22 +113,22 @@ public class SamlHelper {
                         if (event.isLeft()) {
                             String value = event.left().getValue();
                             if(value != null && value.equals("blocked.profile"))
-                                handler.handle(new Try<OAuthError, String>(
+                                handler.handle(new Try<OAuthError, UserData>(
                                     new AccessDenied(OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE)));
                             else if(value != null && value.equals("blocked.user"))
-                                handler.handle(new Try<OAuthError, String>(
+                                handler.handle(new Try<OAuthError, UserData>(
                                     new AccessDenied(OAuthDataHandler.AUTH_ERROR_BLOCKED_USER)));
                             else
-                                handler.handle(new Try<OAuthError, String>(
+                                handler.handle(new Try<OAuthError, UserData>(
                                     new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                         } else {
                             if (event.right().getValue() != null && event.right().getValue() instanceof JsonObject) {
                                 final JsonObject res = (JsonObject) event.right().getValue();
                                 if (res.size() == 0) {
-                                    handler.handle(new Try<OAuthError, String>(
+                                    handler.handle(new Try<OAuthError, UserData>(
                                             new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                                 } else {
-                                    handler.handle(new Try<OAuthError, String>(res.getString("id")));
+                                    handler.handle(new Try<OAuthError, UserData>(json2UserData(res)));
                                 }
                             } else if (event.right().getValue() != null && event.right().getValue() instanceof JsonArray
                                     && isNotEmpty(signKey)) {
@@ -135,26 +136,26 @@ public class SamlHelper {
                                     final JsonObject params = getUsersWithSignaturesAndEncryption(
                                             (JsonArray) event.right().getValue(), "", "");
                                     handler.handle(
-                                            new Try<OAuthError, String>(new MultipleVectorChoice(params.encode())));
+                                            new Try<OAuthError, UserData>(new MultipleVectorChoice(params.encode())));
                                 } catch (UnsupportedEncodingException | GeneralSecurityException e) {
                                     log.error("Error signing saml2 federated users for oauth2 token", e);
-                                    handler.handle(new Try<OAuthError, String>(
+                                    handler.handle(new Try<OAuthError, UserData>(
                                             new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                                 }
                             } else {
-                                handler.handle(new Try<OAuthError, String>(
+                                handler.handle(new Try<OAuthError, UserData>(
                                         new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                             }
                         }
                     });
                 } else {
-                    handler.handle(new Try<OAuthError, String>(
+                    handler.handle(new Try<OAuthError, UserData>(
                             new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                 }
             });
         } else {
             handler.handle(
-                    new Try<OAuthError, String>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
+                    new Try<OAuthError, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
         }
     }
 
@@ -205,7 +206,7 @@ public class SamlHelper {
 		return new JsonObject().put("users", users);
     }
 
-	public void processCustomToken(String customToken, jp.eisbahn.oauth2.server.async.Handler<Try<AccessDenied, String>> handler) {
+	public void processCustomToken(String customToken, jp.eisbahn.oauth2.server.async.Handler<Try<AccessDenied, UserData>> handler) {
         if (isNotEmpty(customToken)) {
             try {
                 final String encodedJson = Blowfish.decrypt(customToken, encryptKey);
@@ -215,17 +216,28 @@ public class SamlHelper {
                 if (j.size() > 0 && isNotEmpty(signature) &&
                         signature.equals(j.getString("key", "")) &&
                         (j.getLong("iat") + CUSTOM_TOKEN_LIFETIME) > System.currentTimeMillis()) {
-                    handler.handle(new Try<AccessDenied, String>(j.getString("id")));
+                    handler.handle(new Try<AccessDenied, UserData>(json2UserData(j)));
                 } else {
-                    handler.handle(new Try<AccessDenied, String>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
+                    handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
                 }
             } catch (GeneralSecurityException | UnsupportedEncodingException e) {
                 log.error("Error decrypting custom token or validating signature", e);
-                handler.handle(new Try<AccessDenied, String>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
+                handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
             }
         } else {
-            handler.handle(new Try<AccessDenied, String>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
+            handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
         }
 	}
+
+    private UserData json2UserData(JsonObject j) {
+        if (j == null) {
+            return null;
+        } else if (isNotEmpty(j.getString("activationCode"))) {
+            return new UserData(j.getString("id"), j.getString("activationCode"),
+                j.getString("login"), j.getString("email"), j.getString("mobile"), j.getString("source"));
+        } else {
+            return new UserData(j.getString("id"));
+        }
+    }
 
 }

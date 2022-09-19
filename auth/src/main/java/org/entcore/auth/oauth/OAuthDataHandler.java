@@ -33,6 +33,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
@@ -696,20 +697,20 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	@Override
-	public void getUserIdByAssertion(String samlResponse, Handler<Try<OAuthError, String>> handler) {
+	public void getUserIdByAssertion(String samlResponse, Handler<Try<OAuthError, UserData>> handler) {
 		if (samlHelper != null) {
 			samlHelper.processACSOAuth2(samlResponse, handler);
 		} else {
-			handler.handle(new Try<OAuthError, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+			handler.handle(new Try<OAuthError, UserData>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 		}
 	}
 
 	@Override
-	public void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, String>> handler) {
+	public void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, UserData>> handler) {
 		if (samlHelper != null) {
 			samlHelper.processCustomToken(customToken, handler);
 		} else {
-			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+			handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 		}
 	}
 
