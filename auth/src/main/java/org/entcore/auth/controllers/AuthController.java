@@ -924,6 +924,15 @@ public class AuthController extends BaseController {
 
 	@Post("/activation")
 	public void activeAccountSubmit(final HttpServerRequest request) {
+		activeAccountSubmit(request, true);
+	}
+
+	@Post("/activation/no-login")
+	public void activeAccountSubmitNoLogin(final HttpServerRequest request) {
+		activeAccountSubmit(request, false);
+	}
+
+	private void activeAccountSubmit(final HttpServerRequest request, final boolean autoLogin) {
 		request.setExpectMultipart(true);
 		request.endHandler(new io.vertx.core.Handler<Void>() {
 
@@ -978,7 +987,7 @@ public class AuthController extends BaseController {
 								@Override
 								public void handle(Either<String, String> activated) {
 									if (activated.isRight() && activated.right().getValue() != null) {
-										handleActivation(login, request, activated);
+										handleActivation(login, request, activated, autoLogin);
 									} else {
 										// if failed because duplicated user
 										if (activated.isLeft()
@@ -999,7 +1008,7 @@ public class AuthController extends BaseController {
 														public void handle(Either<String, String> activated) {
 															if (activated.isRight()
 																	&& activated.right().getValue() != null) {
-																handleActivation(login, request, activated);
+																handleActivation(login, request, activated, autoLogin);
 															} else {
 																trace.info("Echec de l'activation : compte utilisateur "
 																		+ login + " introuvable ou déjà activé.");
@@ -1023,11 +1032,12 @@ public class AuthController extends BaseController {
 		});
 	}
 
-	private void handleActivation(String login, HttpServerRequest request, Either<String, String> activated) {
+	private void handleActivation(String login, HttpServerRequest request, Either<String, String> activated,
+								  boolean autoLogin) {
 		final String userId = activated.right().getValue();
 		trace.info("Activation du compte utilisateur " + login);
 		eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login, request);
-		if (config.getBoolean("activationAutoLogin", false)) {
+		if (config.getBoolean("activationAutoLogin", false) && autoLogin) {
 			trace.info("Connexion de l'utilisateur " + login);
 			userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
 					new io.vertx.core.Handler<Boolean>() {
