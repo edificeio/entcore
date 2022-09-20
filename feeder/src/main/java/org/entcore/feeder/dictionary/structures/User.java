@@ -243,7 +243,7 @@ public class User {
 					"MATCH (u:User) " +
 					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) AND u.disappearanceDate < {date} " +
 					filter +
-					"RETURN u.id as id " +
+					"RETURN u.id as id, TOSTRING(ID(u)) AS nodeId " +
 					"LIMIT {limit} ";
 			TransactionManager.getInstance().getNeo4j().execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
@@ -293,7 +293,7 @@ public class User {
 					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 					"WHERE u.source = {source} AND HEAD(u.profiles) IN {profiles} AND NOT(u.externalId IN {existingUsers}) " +
 					"RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
-							"u.firstName as firstName, HEAD(u.profiles) as profile";
+							"u.firstName as firstName, HEAD(u.profiles) as profile, TOSTRING(ID(u)) AS nodeId";
 			final JsonObject params = new JsonObject()
 					.put("structureExternalId", structureExternalId)
 					.put("source", source)
@@ -319,12 +319,26 @@ public class User {
 
 		private void preDeleteUsers(final JsonArray users, final Handler<Message<JsonObject>> handler) {
 			try {
+				JsonArray nullIdUserNodes = new JsonArray();
 				TransactionHelper tx = TransactionManager.getInstance().begin();
 				for (Object o : users) {
 					if (!(o instanceof JsonObject)) continue;
 					String userId = ((JsonObject) o).getString("id");
-					backupRelationship(userId, tx);
-					preDelete(userId, tx);
+					String nodeId = ((JsonObject) o).getString("nodeId");
+					if(userId == null && nodeId != null)
+						nullIdUserNodes.add(nodeId);
+					else
+					{
+						backupRelationship(userId, tx);
+						preDelete(userId, tx);
+					}
+				}
+				if(nullIdUserNodes.size() > 0)
+				{
+					String deleteNullQuery = "MATCH (u:User) " +
+												"WHERE ID(u) IN {nodeIds} AND u.id IS NULL " +
+												"DETACH DELETE u";
+					tx.add(deleteNullQuery, new JsonObject().put("nodeIds", nullIdUserNodes));
 				}
 				tx.commit(new Handler<Message<JsonObject>>() {
 					@Override
