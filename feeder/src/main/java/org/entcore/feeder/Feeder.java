@@ -177,8 +177,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					@Override
 					public void handle(Long l)
 					{
-						logger.info("Reinit login cron");
-						Validator.initLogin(neo4j, vertx);
+						if(Importer.getInstance().isReady())
+						{
+							logger.info("Reinit login cron");
+							Validator.initLogin(neo4j, vertx);
+						}
 					}
 				});
 			}
