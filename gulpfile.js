@@ -3,10 +3,11 @@ const gulp = require('gulp');
 const webpack = require('webpack-stream');
 const merge = require('merge2');
 const rev = require('gulp-rev');
-const revReplace = require("gulp-rev-replace");
 const clean = require('gulp-clean');
 const argv = require('yargs').argv;
 const fs = require('fs');
+const replace = require('gulp-replace');
+
 // const adminBuild = require('./gulpfile-admin').adminBuild;
 
 let apps = ['archive', 'auth', 'conversation', 'directory', 'portal', 'timeline', 'workspace'];
@@ -41,7 +42,7 @@ function updateRefs() {
     var streams = [];
     apps.forEach(a => {
         var str = gulp.src('./' + a + '/src/main/resources/view-src/**/*.+(html|txt|json)')
-            .pipe(revReplace({manifest: gulp.src('./' + a + '/rev-manifest.json') }))
+            .pipe(replace('@@VERSION', Date.now()))
             .pipe(gulp.dest('./' + a + '/src/main/resources/view'));
         streams.push(str);
     });
@@ -67,30 +68,9 @@ function updateLibs(){
         gulp.src('./node_modules/pixi.js/dist/pixi.min.js')
             .pipe(gulp.dest('./infra/src/main/resources/public/js'))
     );
-    apps.forEach(a => {
-        var html = gulp.src('./node_modules/entcore/src/template/**/*.html')
-            .pipe(gulp.dest('./' + a + '/src/main/resources/public/template/entcore'));
-        var bundle = gulp.src('./node_modules/entcore/bundle/*')
-            .pipe(rev())
-            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist/entcore'))
-            .pipe(rev.manifest('./' + a + '/rev-manifest.json', { merge: true }))
-            .pipe(gulp.dest('./'));
-            
-        streams.push(html, bundle);
-    });
     return merge(streams);
 }
 
-function dropTemp() {
-    var streams = [];
-    apps.forEach(a => {
-        var copyMaps = gulp.src('./node_modules/entcore/bundle/ng-app.js.map')
-            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist/entcore'));
-        streams.push(copyMaps);
-    });
-
-    return merge(streams);
-}
 function build() {
     var streams = [];
     apps.forEach(a => {
@@ -107,7 +87,6 @@ gulp.task('drop-old-files', dropOldFiles);
 gulp.task('update-libs', updateLibs);
 gulp.task('webpack', startWebpack);
 gulp.task('webpack-dev', () => startWebpack('dev'));
-gulp.task('drop-temp', dropTemp);
 gulp.task('build', build);
 
 
@@ -156,4 +135,4 @@ apps.forEach((app) => {
     });
 })
 
-exports.build = gulp.series('drop-old-files', 'update-libs', 'webpack', 'drop-temp', 'build');
+exports.build = gulp.series('drop-old-files', 'update-libs', 'webpack', 'build');
