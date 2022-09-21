@@ -55,7 +55,7 @@ function dropOldFiles() {
     apps.forEach(a => {
         var str = gulp.src([
             './' + a + '/src/main/resources/public/dist'
-        ], { read: false })
+        ], { read: false, "allowEmpty": true })
             .pipe(clean());
         streams.push(str);
     })
