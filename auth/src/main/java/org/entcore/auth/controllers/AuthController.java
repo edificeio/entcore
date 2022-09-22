@@ -559,7 +559,7 @@ public class AuthController extends BaseController {
 						callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 					}
 				} else {
-					callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
+					checkAndAppendCookieCallback(callBack, request);
 				}
 				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				final String login = request.formAttributes().get("email");
@@ -641,6 +641,23 @@ public class AuthController extends BaseController {
 
 			}
 		});
+	}
+
+	/**
+	 * This method occurs when there is no "callBack" param in request {@link io.vertx.core.MultiMap}
+	 * We check if we have a "callback" in a getSignedCookie {@link CookieHelper} to assign to our callBack {@link StringBuilder}
+	 *
+	 * @param callBack  String builder containing callback for redirect option... {@link StringBuilder}
+	 * @param request 	Request where we attempt to fetch our "callback" {@link CookieHelper} {@link HttpServerRequest}
+	 */
+	private void checkAndAppendCookieCallback(StringBuilder callBack, HttpServerRequest request) {
+		final String callbackCookie = CookieHelper.getInstance().getSigned("callback", request);
+		if (isNotEmpty(callbackCookie)) {
+			CookieHelper.getInstance().setSigned("callback", "", 0, request);
+			callBack.append(callbackCookie);
+			return;
+		}
+		callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 	}
 
 	private void handleGetUserId(String login, String userId, HttpServerRequest request, String callback) {
