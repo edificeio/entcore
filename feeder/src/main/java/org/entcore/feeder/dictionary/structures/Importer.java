@@ -40,6 +40,7 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -60,6 +61,7 @@ public class Importer {
 	private final Validator studentValidator;
 	private PersEducNat persEducNat;
 	private boolean firstImport = false;
+	private AtomicBoolean isInUse = new AtomicBoolean(false);
 	private String currentSource;
 	private Neo4j neo4j;
 	private ConcurrentMap<String, ImporterStructure> structuresByUAI;
@@ -94,6 +96,7 @@ public class Importer {
 
 	public void init(final Neo4j neo4j, final Vertx vertx, final String source, String acceptLanguage, boolean blockCreateByIne,
 			boolean supportPersEducnat1D2D, boolean checkStudentsRelationships, final Handler<Message<JsonObject>> handler) {
+		this.isInUse.set(true);
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
@@ -295,10 +298,11 @@ public class Importer {
 		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
+		this.isInUse.set(false);
 	}
 
 	public boolean isReady() {
-		return transactionHelper == null;
+		return this.isInUse.get() == false; //return transactionHelper == null;
 	}
 
 	public void persist(final Handler<Message<JsonObject>> handler) {
