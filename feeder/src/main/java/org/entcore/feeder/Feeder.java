@@ -29,6 +29,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.bus.MessageReplyNotifier;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
@@ -83,7 +84,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private Exporter exporter;
 	private DuplicateUsers duplicateUsers;
 	private PostImport postImport;
-	private final ConcurrentLinkedQueue<Message<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<MessageReplyNotifier<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
 	private Storage storage;
 
 	public enum FeederEvent {
@@ -304,12 +305,43 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	@Override
-	public void handle(Message<JsonObject> message) {
+	public void handle(Message<JsonObject> message)
+	{
 		String action = getOrElse(message.body().getString("action"), "");
-		if (action.startsWith("manual-") && (!Importer.getInstance().isReady() && !this.allowManualActionsDuringFeeds)) {
-			eventQueue.add(message);
-			return;
+		MessageReplyNotifier<JsonObject> queueMessage = messageToReplyNotifier(message);
+
+		if(!Importer.getInstance().isReady())
+		{
+			if((action.startsWith("manual-") && this.allowManualActionsDuringFeeds) == false)
+			{
+				eventQueue.add(queueMessage);
+				return;
+			}
 		}
+		
+		this.handleAction(queueMessage);
+	}
+
+	private MessageReplyNotifier messageToReplyNotifier(Message msg)
+	{
+		Message queueMessage = msg;
+		if((msg instanceof MessageReplyNotifier) == false)
+		{
+			queueMessage = new MessageReplyNotifier(msg, new Handler<Void>()
+			{
+				@Override
+				public void handle(Void v)
+				{
+					checkEventQueue();
+				}
+			});
+		}
+
+		return (MessageReplyNotifier) queueMessage;
+	}
+
+	private void handleAction(MessageReplyNotifier<JsonObject> message) {
+		String action = getOrElse(message.body().getString("action"), "");
 		switch (action) {
 			case "manual-create-structure" : manual.createStructure(message);
 				break;
@@ -428,6 +460,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					@Override
 					public void handle(AsyncResult<JsonArray> event) {
 						logger.info("auto merged : " + event.succeeded());
+						message.reply(new JsonObject().put("status", "ok"));
 					}
 				});
 				break;
@@ -444,6 +477,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "reinit-logins" :
 				Validator.initLogin(neo4j, vertx);
+				message.reply(new JsonObject().put("status", "ok"));
 				break;
 			case "find-users-old-platform":
 				User.findAndModifyUserFromOldPlatform(message);
@@ -462,7 +496,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			default:
 				sendError(message, "invalid.action");
 		}
-		checkEventQueue();
 	}
 
 	private void csvClassesMapping(final Message<JsonObject> message) {
@@ -700,7 +733,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				}
 			});
 		} else {
-			eventQueue.add(message);
+			eventQueue.add(messageToReplyNotifier(message));
 		}
 	}
 
@@ -811,9 +844,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				public void handle(Message<JsonObject> res) {
 					if (!"ok".equals(res.body().getString("status"))) {
 						logger.error(t -> "FAILED to init import | details: " + res.body().getString("message"));
-						h.handle(new Report(acceptLanguage).addError("init.importer.error"));
 						importer.clear();
-						checkEventQueue();
+						h.handle(new Report(acceptLanguage).addError("init.importer.error"));
 						return;
 					}else{
 						logger.info(t -> "SUCCEED init import with path: "+importPath);
@@ -842,14 +874,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 									}
 								}
 								report.setUsersExternalId(new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(importer.getUserImportedExternalId())));
-								h.handle(report);
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);
 								report.setStartTime(start);
 								report.sendEmails(vertx, config,feed.getFeederSource());
 								logger.info(t -> "Elapsed time " + (endTime - start) + " ms.", true);
 								importer.clear();
-								checkEventQueue();
+								h.handle(report);
 							}
 						};
 						if (importPath != null && !importPath.trim().isEmpty()) {
@@ -864,26 +895,18 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						importer.clear();
 						h.handle(report.addError("import.error"));
 						logger.error(t -> "FAILED to launch feeder | details: "+e.getMessage(), e);
-						checkEventQueue();
 					}
 				}
 			});
 		} else {
-			eventQueue.add(message);
+			eventQueue.add(messageToReplyNotifier(message));
 		}
 	}
 
 	private void checkEventQueue() {
 		Message<JsonObject> event = eventQueue.poll();
 		if (event != null) {
-			switch (getOrElse(event.body().getString("action"), "")) {
-				case "import": launchImport(event);
-					break;
-				case "transition": launchTransition(event, null);
-					break;
-				default:
-					handle(event);
-			}
+			handle(event);
 		}
 	}
 
