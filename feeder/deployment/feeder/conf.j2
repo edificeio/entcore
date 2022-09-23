@@ -50,9 +50,6 @@
                 {% endif %}
         },
             {% endif %}
-            {% if ha and wsCallAfterImport is defined %}
-        "ws-call-after-import": {{ wsCallAfterImport }},
-            {% endif %}
             {% if edtKey is defined %}
         "edt" : {
             "pronote-private-key" : "{{ edtKey }}"
