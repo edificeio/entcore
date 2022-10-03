@@ -1,0 +1,71 @@
+/* Copyright © "Open Digital Education", 2014
+ *
+ * This program is published by "Open Digital Education".
+ * You must indicate the name of the software and the company in any production /contribution
+ * using the software and indicate on the home page of the software industry in question,
+ * "powered by Open Digital Education" with a reference to the website: https://opendigitaleducation.com/.
+ *
+ * This program is free software, licensed under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation, version 3 of the License.
+ *
+ * You can redistribute this application and/or modify it since you respect the terms of the GNU Affero General Public License.
+ * If you modify the source code and then use this modified source code in your creation, you must make available the source code of your modifications.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with the software.
+ * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
+
+ *
+ */
+
+package org.entcore.directory.services;
+
+import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+
+public interface MailValidationService {
+
+	/**
+	 * Check if a user has a verified email address
+	 * @param userId user ID
+	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
+	 */
+	Future<JsonObject> hasValidMail(String userId);
+
+	/**
+	 * Start a new mail validation workflow.
+	 * @param userId user ID
+	 * @param email the mail address to be checked
+	 * @return the new emailState
+	 */
+	Future<JsonObject> setPendingMail(String userId, String email, final long validDurationS, final int triesLimit);
+
+	/**
+	 * Verify a pending email address of a user, by checking a code.
+	 * @param userId user ID
+	 * @param code validation code to check
+	 * @return an emailState like { 
+	 * 	state: "unchecked"|"pending"|"outdated"|"valid", 
+	 *  valid: latest known valid email address,
+	 * 	tries?: number of remaining retries,
+	 *  ttl?: number of seconds remaining before expiration of the code
+	 * }
+	 */
+	Future<JsonObject> tryValidateMail(String userId, String code);
+
+	/**
+	 * Get current mail validation state.
+	 * @param userId user ID
+	 * @return {email:string, emailState:object|null}
+	 */
+	Future<JsonObject> getMailState(String userId);
+
+	/**
+	 * Send the validation email.
+	 * @param request required for EmailSender to translate things...
+	 * @param email address where to send
+	 * @param templateParams for the "email/emailValidationCode.html" template
+	 * @return the email ID
+	 */
+	Future<Long> sendValidationEmail(HttpServerRequest request, String email, JsonObject templateParams);
+}

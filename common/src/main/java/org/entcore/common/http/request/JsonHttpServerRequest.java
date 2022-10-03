@@ -43,6 +43,16 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 		this.object = object;
 	}
 
+	public JsonHttpServerRequest(JsonObject object, MultiMap headers) {
+		final JsonObject h = new JsonObject();
+		if(headers!=null) {
+			headers.names().forEach( header -> {
+				h.put( header, headers.get(header) );
+			});
+		}
+		this.object = object.put("headers", h);
+	}
+
 	public JsonHttpServerRequest(JsonObject object, HttpServerResponse response) {
 		this.object = object;
 		this.response = response;
