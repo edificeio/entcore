@@ -1,0 +1,2 @@
+
+type ValidationStep = "email"|"code";

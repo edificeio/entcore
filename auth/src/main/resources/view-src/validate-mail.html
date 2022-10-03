@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
+	<head>
+		<title>[[app.lang.translate('validate-mail.title')]]</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.9/angular.min.js" integrity="sha512-CjpXuCK2f47gfxIjQvOwKRVGj01yHWI5qdMTO0qzERireNL30uf+fXLeZ5OxKGDj7r8xpRK4XVxgqXhBbW8Tbg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.7.9/angular-route.min.js" integrity="sha512-xI+5CA/dWcCSEtcnBohNOo6SuqCjePmu4fOqPYOp70rhpbzd+KBYJPclQCsSX3iBc/Qe3s8LITKixOy1gZCGwg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.7.9/angular-sanitize.min.js" integrity="sha512-eY2WqVT7O50HLSp/1/tZOUWYlAcPUl+WH3wu5NynvKNV5l/sKowxffGe1I91y3AuMvpyVvevOBOA3LEOBaemTw==" crossorigin="anonymous"></script>
+
+		<script>if(typeof window!=='undefined'){window.entcore=window.entcore||{};window.entcore["deploymentTag"]='{{#modVersion}}deployment-tag{{/modVersion}}';}</script>
+		<script src="/assets/js/ode-ts-client/ode-ts-client.js?version={{#modVersion}}ode-ts-client{{/modVersion}}" type="text/javascript"></script>
+		<script src="/assets/js/ode-ngjs-front/ode-ngjs-front.js?version={{#modVersion}}ode-ngjs-front{{/modVersion}}" type="text/javascript"></script>
+		<script type="text/javascript" src="/auth/public/dist/validate-mail/application.js"></script>
+	</head>
+	<body class="validate-mail">
+		<div ng-if="app.fullscreen">
+			<!-- navbar Theme 2D -->
+			<ode-navbar class="no-1d" title="[[app.lang.translate('validate-mail.title')]]"></ode-navbar>
+
+			<!-- navbar Theme 1D -->
+			<ode-navbar-legacy class="no-2d" title="[[app.lang.translate('validate-mail.title')]]"></ode-navbar-legacy>
+		</div>
+
+		<!-- Main -->
+		<main role="main" class="main container">
+			<validate-mail step="app.step" force="app.force" redirect="app.redirect">
+			</validate-mail>
+		</main>
+	</body>
+</html>

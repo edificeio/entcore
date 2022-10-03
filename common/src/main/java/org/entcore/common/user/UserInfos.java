@@ -315,6 +315,11 @@ public class UserInfos {
 		this.functions = functions;
 	}
 
+	public boolean isADML()
+	{
+		return this.functions != null && this.functions.containsKey(DefaultFunctions.ADMIN_LOCAL);
+	}
+
 	public boolean isADMC()
 	{
 		return isSuperAdmin();

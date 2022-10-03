@@ -22,8 +22,8 @@ package org.entcore.directory;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.emailstate.EmailState;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.http.BasicFilter;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
@@ -34,6 +34,7 @@ import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
+import org.entcore.directory.emailstate.EmailStateHandler;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
@@ -158,6 +159,12 @@ public class Directory extends BaseServer {
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+
+		// See client class {@link EmailState}
+		vertx.eventBus().localConsumer(EmailState.BUS_ADDRESS, new EmailStateHandler(
+			config.getJsonObject("mail-state", new JsonObject()),
+			new DefaultMailValidationService(emailSender)
+		));
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
