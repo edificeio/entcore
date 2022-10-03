@@ -41,6 +41,8 @@ import javax.xml.bind.Marshaller;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.emailstate.EmailState;
+import org.entcore.common.emailstate.EmailStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -883,6 +885,71 @@ public class UserController extends BaseController {
 		String userId = request.params().get("userId");
 		JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
 		userService.getAttachmentSchool(userId, structuresToExclude, notEmptyResponseHandler(request));
+	}
+
+	@Get("/user/mailstate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getMailState(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, infos -> {
+			if (infos != null) {
+				EmailState.getDetails(eb, infos.getUserId())
+				.onSuccess( details -> {
+					EmailStateUtils.formatAsResponse( details.getJsonObject("emailState") );
+					renderJson( request, details );
+				})
+				.onFailure( e -> {
+					badRequest( request, e.getMessage() );
+				});
+			} else {
+				notFound(request, "user.not.found");
+			}
+		});
+	}
+
+	@Put("/user/mailstate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void putMailState(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "putMailState", payload -> {
+			UserUtils.getUserInfos(eb, request, infos -> {
+				if (infos != null) {
+					// Initialize a new mail validation flow
+					EmailState.setPending(eb, infos.getUserId(), payload.getString("email"))
+					.compose( pendingEmailState -> {
+						// Send the validation email to the user
+						return EmailState.sendMail(eb, request, infos, pendingEmailState);
+					})
+					.onSuccess( emailId -> {
+						ok(request);
+					})
+					.onFailure( e -> {
+						renderError( request, new JsonObject().put("error", e.getMessage()) );
+					});
+				} else {
+					notFound(request, "user.not.found");
+				}
+			});
+		});
+	}
+
+	@Post("/user/mailstate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void postMailState(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "postMailState", payload -> {
+			UserUtils.getUserInfos(eb, request, infos -> {
+				if (infos != null) {
+					// Try a validation code
+					EmailState.tryValidate(eb, infos.getUserId(), payload.getString("key"))
+					.onSuccess( emailState -> {
+						renderJson( request, emailState );
+					})
+					.onFailure( e -> {
+						renderError( request, new JsonObject().put("error", e.getMessage()) );
+					});
+				} else {
+					notFound(request, "user.not.found");
+				}
+			});
+		});
 	}
 
 
