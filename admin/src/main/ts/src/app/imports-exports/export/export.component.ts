@@ -69,7 +69,7 @@ export class ExportComponent extends OdeComponent implements OnInit {
     }
 
     launchExport(): void {
-        let link = `directory/export/users?format=csv&filterActive=${this.filter}`;
+        let link = `/directory/export/users?format=csv&filterActive=${this.filter}`;
 
         if (this.classe.length > 0) {
             link = `${link}&classId=${this.classe}`;
