@@ -685,10 +685,7 @@ public class ManualFeeder extends BusModBase {
 					.put("classId", classId)
 					.put("userId", userId);
 			String query =
-					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-							"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-							"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-							"CREATE UNIQUE dpg<-[:IN]-u " +
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->(c:Class  {id : {classId}}) " +
 							"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
 							"DELETE r " +
 							"RETURN DISTINCT u.id as id";
@@ -758,10 +755,7 @@ public class ManualFeeder extends BusModBase {
 						.put("classId", classIdObj.toString())
 						.put("userId", userId);
 				String query =
-						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-								"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-								"CREATE UNIQUE dpg<-[:IN]-u " +
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->(c:Class  {id : {classId}}) " +
 								"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
 								"DELETE r " +
 								"RETURN DISTINCT u.id as id";
