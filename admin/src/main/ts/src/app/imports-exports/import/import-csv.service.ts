@@ -40,7 +40,7 @@ export class ImportCSVService {
         }
         let response;
         try {
-            response = await http.post('directory/wizard/' + apiPath,
+            response = await http.post('/directory/wizard/' + apiPath,
                 formData, {headers : { 'Content-Type': 'multipart/form-data' }});
         } catch (error) {
             return error.response.data;
@@ -50,7 +50,7 @@ export class ImportCSVService {
 
     static async updateReport(action, importId, profile, data): Promise<any> {
         let response;
-        const path = ['directory/wizard/update', importId, profile].join('/');
+        const path = ['/directory/wizard/update', importId, profile].join('/');
         try {
             response = await http[action](path, data);
         } catch (error) {
@@ -62,7 +62,7 @@ export class ImportCSVService {
     static async deleteLineReport(importId, profile, line): Promise<any> {
         let response;
         try {
-            response = await http.delete(['directory/wizard/update', importId, profile, line].join('/'));
+            response = await http.delete(['/directory/wizard/update', importId, profile, line].join('/'));
         } catch (error) {
             return error.response.data;
         }
@@ -72,7 +72,7 @@ export class ImportCSVService {
     static async import(importId): Promise<any> {
         let response;
         try {
-            response = await http.put('directory/wizard/import/' + importId);
+            response = await http.put('/directory/wizard/import/' + importId);
         } catch (error) {
             if (error.response) {
                 return error.response.data;
