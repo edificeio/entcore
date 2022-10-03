@@ -237,7 +237,16 @@ public abstract class BaseServer extends Server {
 			Sql.getInstance().init(getEventBus(vertx), node +
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
-			DB.loadScripts(schema, vertx, FileResolver.absolutePath(config.getString("init-scripts", "sql")));
+
+			final JsonObject postgresConfig = config.getJsonObject("postgresConfig");
+			if( postgresConfig!=null ) {
+				Sql sqlAdmin = Sql.createInstance(
+					getEventBus(vertx), 
+					postgresConfig.getString("sqlAdminAdress", "sql.persistor.admin")
+				);
+				DB migration = new DB(vertx, sqlAdmin, schema);
+				migration.loadScripts(FileResolver.absolutePath(config.getString("init-scripts", "sql")));
+			}
 		}
 		if (config.getBoolean("elasticsearch", false)) {
 			if (config.getJsonObject("elasticsearchConfig") != null) {

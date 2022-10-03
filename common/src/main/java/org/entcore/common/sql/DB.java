@@ -37,12 +37,24 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DB {
-
 	private static final Logger log = LoggerFactory.getLogger(DB.class);
 
-	public static void loadScripts(final String schema, final Vertx vertx, final String path) {
+	private Sql sql;
+	private String schema;
+	private Vertx vertx;
+
+	public DB( final Vertx vertx, final Sql sql, final String schema ) {
+		this.vertx = vertx;
+		this.sql = sql;
+		this.schema = schema;
+	}
+
+	public void loadScripts(final String path) {
+		if( sql == null ) {
+			log.warn("Sql instance is null.");
+			return;
+		}
 		final String s = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
-		final Sql sql = Sql.getInstance();
 		String query = "SELECT count(*) FROM information_schema.tables WHERE table_name = 'scripts'" +
 			" AND table_schema = '" + ((!s.isEmpty()) ? schema : "public") + "'";
 		sql.raw(query, new Handler<Message<JsonObject>>() {
@@ -57,18 +69,18 @@ public class DB {
 						public void handle(Message<JsonObject> message) {
 							if ("ok".equals(message.body().getString("status"))) {
 								JsonArray fileNames = Utils.flatten(message.body().getJsonArray("results"));
-								loadAndExecute(s, vertx, path, fileNames);
+								loadAndExecute(s, path, fileNames);
 							}
 						}
 					});
 				} else if (nb == 0) {
-					loadAndExecute(s, vertx, path, new fr.wseduc.webutils.collections.JsonArray());
+					loadAndExecute(s, path, new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
 	}
 
-	private static void loadAndExecute(final String schema, final Vertx vertx,
+	private void loadAndExecute(final String schema, 
 			final String path, final JsonArray excludeFileNames) {
 		vertx.fileSystem().readDir(path, ".*?\\.sql$", new Handler<AsyncResult<List<String>>>() {
 			@Override
@@ -112,7 +124,7 @@ public class DB {
 
 			private void commit(final String schema, SqlStatementsBuilder s, final JsonArray newFiles) {
 				s.insert(schema + "scripts", new fr.wseduc.webutils.collections.JsonArray().add("filename"), newFiles);
-				Sql.getInstance().transaction(s.build(), new Handler<Message<JsonObject>>() {
+				sql.transaction(s.build(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {
 						if ("ok".equals(message.body().getString("status"))) {
