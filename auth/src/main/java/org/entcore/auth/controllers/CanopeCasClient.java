@@ -21,6 +21,7 @@ package org.entcore.auth.controllers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBElement;
 
@@ -33,6 +34,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.AsyncResult;
 
 import edu.yale.tp.cas.AttributesType;
 import edu.yale.tp.cas.AuthenticationSuccessType;
@@ -52,6 +54,7 @@ public class CanopeCasClient extends CasClientController
     public String eligibiliteTneUrl;
     public String eligibiliteTneVerbe;
     public Integer eligibiliteTneNoticeId;
+    public String userCreationStructureId;
 
     private Neo4j neo4j = Neo4j.getInstance();
 
@@ -73,6 +76,63 @@ public class CanopeCasClient extends CasClientController
             this.eligibiliteTneUrl = canopeConf.getString("eligibilite-tne-url");
             this.eligibiliteTneVerbe = canopeConf.getString("eligibilite-tne-verbe");
             this.eligibiliteTneNoticeId = canopeConf.getInteger("eligibilite-tne-notice-id");
+            this.userCreationStructureId = canopeConf.getString("user-creation-structure-id");
+        }
+    }
+
+    private static class CanopeUser
+    {
+        private String id;
+        public String email;
+        public String firstName;
+        public String lastName;
+        public String profile;
+
+        private static final Map<String, String> ROLE_CODE_TO_PROFILE = new HashMap<String , String>() {{
+            put("MEE", "Teacher");
+            put("GEST", "Personnel");
+            put("PART", "Guest");
+            put("ASSO", "Guest");
+        }};
+
+        public CanopeUser(AuthenticationSuccessType authData)
+        {
+            List<Node> userProps = authData.getAttributes().getAny();
+            JsonObject userData = new JsonObject();
+            for(Node o : userProps)
+                userData.put(o.getLocalName(), o.getTextContent());
+
+            this.id = userData.getString("idAbonne");
+            this.email = authData.getUser();
+            this.firstName = userData.getString("prenomUser");
+            this.lastName = userData.getString("nomUser");
+
+            this.profile = ROLE_CODE_TO_PROFILE.get(userData.getString("roleCode"));
+            if(this.profile == null)
+                this.profile = "Guest";
+        }
+
+        public String getExternalId()
+        {
+            return "CANOPE-" + this.id;
+        }
+
+        public JsonObject toJson()
+        {
+            return new JsonObject()
+                        .put("externalId", this.getExternalId())
+                        .put("email", this.email)
+                        .put("emailAcademy", this.email)
+                        .put("firstName", this.firstName)
+                        .put("lastName", this.lastName)
+                        .put("profile", this.profile)
+                        .put("profiles", new JsonArray().add(this.profile));
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.toJson().toString();
         }
     }
 
@@ -90,102 +150,139 @@ public class CanopeCasClient extends CasClientController
             @Override
             public void handle(AuthenticationSuccessType authData)
             {
-                String userIdentifier = authData.getUser();
-                List<Node> userProps = authData.getAttributes().getAny();
-                JsonObject userData = new JsonObject();
-                for(Node o : userProps)
-                    userData.put(o.getLocalName(), o.getTextContent());
+                CanopeUser user = new CanopeUser(authData);
+                checkTneEligibilty(request, user);
+            }
+        });
+    }
 
-                log.info("CANOPE USER " + userIdentifier + " >>> " + userData);
+    private void loginOrCreateUser(HttpServerRequest request, CanopeUser user)
+    {
+        String query = "MATCH (u:User) " +
+                        "WHERE (u.email = {email} OR u.emailAcademy = {email} OR u.externalId = {externalId}) AND HEAD(u.profiles) = {profile} " +
+                        "RETURN u.id AS id, u.login AS login";
+        JsonObject params = user.toJson();
 
-                String query = "MATCH (u:User) " +
-                                "WHERE u.email = {email} AND HEAD(u.profiles) = 'Teacher' " +
-                                "RETURN u.id AS id, u.login AS login";
-                JsonObject params = new JsonObject().put("email", userIdentifier);
+        request.pause();
+        neo4j.execute(query, params, new Handler<Message<JsonObject>>()
+        {
+            @Override
+            public void handle(Message<JsonObject> result)
+            {
+                String status = result.body().getString("status");
+                JsonArray resultArray = result.body().getJsonArray("result");
 
-                request.pause();
-                neo4j.execute(query, params, new Handler<Message<JsonObject>>()
+                if("ok".equals(status) == false || resultArray == null)
                 {
-                    @Override
-                    public void handle(Message<JsonObject> result)
+                    Renders.renderError(request, new JsonObject().put("error", "canope.user.find.error"));
+                    return;
+                }
+
+                if(resultArray.size() == 1)
+                {
+                    JsonObject neo4jRes = resultArray.getJsonObject(0);
+                    loginUser(neo4jRes.getString("id"), neo4jRes.getString("login"), request);
+                }
+                else if(resultArray.size() == 0)
+                {
+                    if(userCreationStructureId == null)
+                        Renders.unauthorized(request, "canope.user.find.none");
+                    else
                     {
-                        String status = result.body().getString("status");
-                        JsonArray resultArray = result.body().getJsonArray("result");
+                        JsonObject action = new JsonObject()
+                                .put("action", "manual-create-user")
+                                .put("structureId", userCreationStructureId)
+                                .put("profile", user.profile)
+                                .put("data", user.toJson());
 
-                        if("ok".equals(status) && resultArray != null && resultArray.size() == 1)
+                        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
                         {
-                            String inputHash = Sha1.hash(userIdentifier + "CANOP3" + eligibiliteTneNoticeId);
-                            String outputHash = Sha1.hash(eligibiliteTneNoticeId + "CANOP3" + userIdentifier);
-
-                            HttpClientRequest tneRequest = httpClient.postAbs(eligibiliteTneUrl, new Handler<HttpClientResponse>()
+                            @Override
+                            public void handle(AsyncResult<Message<JsonObject>> result)
                             {
-                                @Override
-                                public void handle(final HttpClientResponse response)
+                                if(result.succeeded())
                                 {
-                                    log.info("TNE RETURN >>> " + response.statusCode());
-                                    if (response.statusCode() == 200)
-                                    {
-                                        response.bodyHandler(new Handler<Buffer>()
-                                        {
-                                            @Override
-                                            public void handle(Buffer tneBuffer)
-                                            {
-                                                request.resume();
-                                                log.info("TNE BODY >>> " + tneBuffer.toString());
-                                                JsonObject tneResult = new JsonObject(tneBuffer.toString());
+                                    JsonObject creationBody = result.result().body();
+                                    JsonArray creationResult = creationBody.getJsonArray("result");
 
-                                                switch(tneResult.getInteger("errorCode"))
-                                                {
-                                                    case 0:
-                                                        if(outputHash.equals(tneResult.getString("hash")))
-                                                            createSession(resultArray.getJsonObject(0).getString("id"), resultArray.getJsonObject(0).getString("login"), request);
-                                                        else
-                                                            Renders.renderError(request, new JsonObject().put("error", "tne.mismatch"));
-                                                        break;
-                                                    case 1:
-                                                    case 3:
-                                                        Renders.renderError(request, new JsonObject().put("error", "tne.request.error"));
-                                                        break;
-                                                    case 4:
-                                                    case 5:
-                                                        Renders.forbidden(request, "tne.ineligible");
-                                                        break;
-                                                    default:
-                                                        Renders.renderError(request, new JsonObject().put("error", "tne.request.unknown"));
-                                                        break;
-                                                }
-                                            }
-                                        });
+                                    if("ok".equals(creationBody.getString("status")) && creationResult != null && creationResult.size() == 1)
+                                    {
+                                        JsonObject creationUser = creationResult.getJsonObject(0);
+                                        loginUser(creationUser.getString("id"), creationUser.getString("login"), request);
                                     }
                                     else
                                     {
-                                        log.error("Canope TNE eligibility error: " + response.statusCode() + " " + response.headers());
-                                        request.resume();
-                                        request.response().setStatusCode(response.statusCode());
-                                        request.response().end();
+                                        String error = creationBody.getString("error", creationBody.getString("message", "canope.user.creation.error"));
+                                        Renders.renderError(request, new JsonObject().put("error", error));
                                     }
                                 }
-                            });
+                                else
+                                    Renders.renderError(request, new JsonObject().put("error", result.cause().getMessage()));
+                            }
+                        });
+                    }
+                }
+                else
+                    Renders.renderError(request, new JsonObject().put("error", "canope.user.find.multiple"));
+            }
+        });
+    }
 
-                            JsonObject tneBody = new JsonObject()
-                                                    .put("tx_cndpusager_usagercndp[verbe]", eligibiliteTneVerbe)
-                                                    .put("login", userIdentifier)
-                                                    .put("noticeid", eligibiliteTneNoticeId)
-                                                    .put("hash", inputHash);
+    private void checkTneEligibilty(HttpServerRequest request, CanopeUser user)
+    {
+        String canopeId = user.email;
 
-                            log.info("TNE REQUEST >>> " + tneBody);
+        String inputHash = Sha1.hash(canopeId + "CANOP3" + eligibiliteTneNoticeId);
+        String outputHash = Sha1.hash(eligibiliteTneNoticeId + "CANOP3" + canopeId);
 
-                            addHeaders(tneRequest);
-                            tneRequest.putHeader("Content-Type", "application/json");
-                            tneRequest.putHeader("Accept", "application/json");
-                            tneRequest.end(tneBody.toString());
+        HttpClientRequest tneRequest = httpClient.postAbs(eligibiliteTneUrl, new Handler<HttpClientResponse>()
+        {
+            @Override
+            public void handle(final HttpClientResponse response)
+            {
+                response.bodyHandler(new Handler<Buffer>()
+                {
+                    @Override
+                    public void handle(Buffer tneBuffer)
+                    {
+                        request.resume();
+                        JsonObject tneResult = new JsonObject(tneBuffer.toString());
+
+                        switch(tneResult.getInteger("errorCode"))
+                        {
+                            case 0:
+                                if(outputHash.equals(tneResult.getString("hash")))
+                                    loginOrCreateUser(request, user);
+                                else
+                                    Renders.renderError(request, new JsonObject().put("error", "tne.mismatch"));
+                                break;
+                            case 1:
+                            case 3:
+                                Renders.renderError(request, new JsonObject().put("error", "tne.request.error"));
+                                break;
+                            case 4:
+                            case 5:
+                                Renders.forbidden(request, "tne.ineligible");
+                                break;
+                            default:
+                                Renders.renderError(request, new JsonObject().put("error", "tne.request.unknown"));
+                                break;
                         }
-                        else
-                            Renders.unauthorized(request, "User not found");
                     }
                 });
             }
         });
+
+        JsonObject tneBody = new JsonObject()
+                                .put("tx_cndpusager_usagercndp[verbe]", eligibiliteTneVerbe)
+                                .put("login", canopeId)
+                                .put("noticeid", eligibiliteTneNoticeId)
+                                .put("hash", inputHash);
+
+        addHeaders(tneRequest);
+        tneRequest.putHeader("Content-Type", "application/json");
+        tneRequest.putHeader("Accept", "application/json");
+        tneRequest.end(tneBody.toString());
     }
 
     @Get("/canope/logout")

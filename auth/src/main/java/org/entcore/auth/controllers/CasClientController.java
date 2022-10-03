@@ -180,9 +180,9 @@ public class CasClientController extends BaseController
         validateRequest.end();
     }
 
-    protected void createSession(String userId, String login, HttpServerRequest request)
+    protected void loginUser(String userId, String login, HttpServerRequest request)
     {
-        authController.createSession(userId, login, request, this.loginRedirection);
+        authController.loginUser(userId, login, request, this.loginRedirection);
     }
 
     protected void logout(HttpServerRequest request)
