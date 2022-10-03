@@ -107,6 +107,10 @@ public class Starter extends BaseServer {
 			if (filesystem != null) {
 				serverMap.put("file-system", filesystem.encode());
 			}
+			JsonObject postgresConfig = config.getJsonObject("postgresConfig");
+			if (postgresConfig != null) {
+				serverMap.put("postgresConfig", postgresConfig.encode());
+			}
 			JsonObject neo4jConfig = config.getJsonObject("neo4jConfig");
 			if (neo4jConfig != null) {
 				serverMap.put("neo4jConfig", neo4jConfig.encode());

@@ -114,7 +114,8 @@ public class DatabaseTestHelper {
                                 boolean loadScripts, long delay) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "sql.persistor")
-                .put("url", postgreSQLContainer.getJdbcUrl()).put("username", postgreSQLContainer.getUsername())
+                .put("url", postgreSQLContainer.getJdbcUrl())
+                .put("username", postgreSQLContainer.getUsername())
                 .put("password", postgreSQLContainer.getPassword());
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
@@ -125,7 +126,8 @@ public class DatabaseTestHelper {
                 Sql sql = Sql.getInstance();
                 sql.init(vertx.eventBus(), "sql.persistor");
                 if (loadScripts) {
-                    DB.loadScripts(schema, vertx, "sql");
+                    DB migration = new DB(vertx, sql, schema);
+                    migration.loadScripts("sql");
                 }
                 vertx.setTimer(delay, t -> async.complete());
             } else {

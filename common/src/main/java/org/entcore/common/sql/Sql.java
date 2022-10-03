@@ -47,9 +47,18 @@ public class Sql {
 		return SqlHolder.instance;
 	}
 
-	public void init(EventBus eb, String address) {
+	/**
+	 * Warning : use in some specifics case as two verticle with postgres in same module.
+	 * In others cases use getInstance() method.
+	 */
+	public static Sql createInstance(EventBus eb, String address) {
+		return new Sql().init(eb, address);
+	}
+
+	public Sql init(EventBus eb, String address) {
 		this.address = address;
 		this.eb = eb;
+		return this;
 	}
 
 	public void prepared(String query, JsonArray values, Handler<Message<JsonObject>> handler) {
