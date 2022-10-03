@@ -315,7 +315,7 @@ public class ManualFeeder extends BusModBase {
 				"CREATE UNIQUE pg<-[:IN]-(u:User {props}) " +
 				"SET u.structures = [s.externalId] " +
 				related +
-				"RETURN DISTINCT u.id as id";
+				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
@@ -597,7 +597,7 @@ public class ManualFeeder extends BusModBase {
 				"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
 				"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
 				related +
-				"RETURN DISTINCT u.id as id";
+				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
