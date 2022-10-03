@@ -302,7 +302,7 @@ public class DefaultClassService implements ClassService {
 		params.put("structureIds",structureIds);
 		//=== Make query
 		String customReturn =
-				"MATCH (p:Profile)<-[:HAS_PROFILE]-(g:ProfileGroup)<-[:IN]-(visibles:User)-[:IN]->()-[:DEPENDS]->(s:Structure) " +
+				"MATCH (visibles:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure), (pg)-[:HAS_PROFILE]->(p:Profile) " +
 						"WHERE s.id IN {structureIds} AND NOT (visibles)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class) "+
 						" WITH visibles, p, s " +
 						"OPTIONAL MATCH (visibles)-[:RELATED]->(relative) WITH visibles, p, s, relative "+
