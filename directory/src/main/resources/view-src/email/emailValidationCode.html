@@ -1,0 +1,67 @@
+<!--
+
+ -->
+
+<html>
+	<head>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto">
+		<style>
+		body {
+			max-width:737px;
+			font-family:"Roboto", "Sans serif";
+			font-size:16px;
+			font-weight:400;
+			line-height:22px;
+			color:#4A4A4A;
+		}
+		header {
+			border-radius:8px 8px 0 0;
+			background:#2A9CC8;
+			height:74px;
+		}
+		header img {
+			position:relative;
+			left:24px;
+			top:12px;
+			height:50px;
+		}
+		header+article>p:first-child {
+			font-size:18px;
+		}
+		article {
+			margin:0 36px;
+		}
+		.activationCode {
+			text-align:center;
+			margin:36px;
+		}
+		.activationCode code {
+			padding:12px;
+			display: block;
+			font-size:26px;
+			background:#E4F4FF;
+			border:1px solid #2A9CC8;
+			border-radius:4px;
+		}
+		.activationCode small {
+			margin-top:12px;
+			display:inline-block;
+		}
+		</style>
+	</head>
+	<body class="emailValidationCode">
+		<header>
+			<img src="{{scheme}}://{{host}}/current/assets/img/logo.png" height="50" />
+		</header>
+		<p>{{#i18n}}email.validation.hi{{/i18n}} {{firstName}},</p>
+		<p>{{#i18n}}email.validation.intro{{/i18n}} :</p>
+		<div class="activationCode">
+			<code>{{code}}</code>
+			<small>{{#i18n}}email.validation.duration.part1{{/i18n}} {{duration}} {{#i18n}}email.validation.duration.part2{{/i18n}}</small>
+		</div>
+		<p>{{#i18n}}email.validation.outro{{/i18n}}</p>
+		<br /><br />
+		{{#i18n}}email.regards{{/i18n}}<br /><br />
+		{{#i18n}}email.signature{{/i18n}}<br /><br />
+	</body>
+</html>

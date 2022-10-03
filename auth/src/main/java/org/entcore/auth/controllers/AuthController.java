@@ -1591,6 +1591,12 @@ public class AuthController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/validate-mail")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void validateMail(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
 		this.userAuthAccount = userAuthAccount;
 	}

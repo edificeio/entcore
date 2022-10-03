@@ -1,0 +1,92 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+-->
+<header class="no-2d navbar navbar-light bg-white">
+    <a class="application__title d-desktop-none text-truncate" href="/welcome?token=[[version]]">
+        <i18n>portal.header.navigation.myapps</i18n>
+    </a>
+    
+    <div class="d-mobile-none">
+        <img ng-src="[[ctrl.avatar]]" id="my-photo" />
+        <span><i18n>welcome</i18n></span>
+    </div>
+    
+    <nav class="navigation">
+        <div class="navigation__item">
+            <span>
+                <a 
+                    href="/conversation/conversation" 
+                    title="[[lang.translate('navbar.messages')]]" 
+                    ng-if="me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|view')"
+                >
+                    <i class="ic-conversation"><span class="new-mails" ng-if="nbNewMessages">[[nbNewMessages]]</span></i>
+                </a>    
+            </span>
+        </div>
+        
+        <div class="navigation__item">
+            <a href="/userbook/mon-compte" title="[[lang.translate('navbar.myaccount')]]">
+                <i class="ic-avatar"></i>
+            </a>
+        </div>
+        
+        <div ng-if="ctrl.currentLanguage == 'fr'" class="navigation__item">
+            <a 
+                href=""
+                title="[[lang.translate('navbar.help')]]" 
+                aria-label="[[lang.translate('navbar.help')]]" 
+                pulsar="{ index: 6, i18n: 'portal.pulsar.help', position: 'bottom center'}" 
+            >
+                <i18n>help.icon</i18n>
+            </a>
+        </div>
+        
+        <div class="navigation__item">
+            <a href="" logout title="[[lang.translate('navbar.disconnect')]]">
+                <i class="ic-disconnect"></i>
+            </a>
+        </div>
+    </nav>
+</header>
+
+<div class="no-2d navigation--secondary">
+    <a class="d-mobile-none" href="/timeline/timeline">
+        <img class="logo" skin-src="img/illustrations/logo.png" alt="Logo de l'ENT">
+        <span class="text-truncate d-desktop-none">
+            <i18n>portal.header.navigation.myapps</i18n>
+        </span>
+    </a>
+    
+    <nav class="navigation">
+        <a class="button" href="/timeline/timeline?token=[[version]]">
+          <i class="ic-notifications d-desktop-none"></i>
+          <span class="d-mobile-none"><i18n>portal.header.navigation.whatsnew</i18n></span>
+        </a>
+        
+        <a class="button" href="/userbook/annuaire?myClass&token=[[version]]">
+          <i class="ic-userbook d-desktop-none"></i> 
+          <span class="d-mobile-none"><i18n>portal.header.navigation.classMembers</i18n></span>
+        </a>
+        
+        <a class="button" href="/welcome?token=[[version]]">
+          <i class="ic-apps d-desktop-none"></i>
+          <span class="d-mobile-none"><i18n>portal.header.navigation.myapps</i18n></span>
+        </a>
+      </nav>
+</div>
