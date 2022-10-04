@@ -8,6 +8,7 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.sql.SqlStatementsBuilder;
 import org.junit.ClassRule;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
@@ -18,6 +19,7 @@ import org.vertx.mods.MongoPersistor;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -98,8 +100,22 @@ public class DatabaseTestHelper {
                 Sql sql = Sql.getInstance();
                 sql.init(vertx.eventBus(), "sql.persistor");
                 if (loadScripts) {
-                    DB migration = new DB(vertx, sql, schema);
-                    migration.loadScripts("sql");
+                    // The (hard-coded) "apps" postgres user MUST exist for migration scripts to pass.
+                    SqlStatementsBuilder s = new SqlStatementsBuilder();
+                    s.raw("CREATE USER \"apps\" WITH PASSWORD 'apps'");
+                    s.raw("GRANT TEMPORARY ON DATABASE test TO \"apps\"");
+                    s.raw("GRANT USAGE ON SCHEMA information_schema TO \"apps\"");
+                    s.raw("GRANT SELECT ON information_schema.tables TO \"apps\"");
+                    sql.transaction(s.build(), res -> {
+                        Either<String, JsonArray>  either = SqlResult.validResults(res);
+                        if( either.isLeft() ) {
+                            context.fail( either.left().getValue() );
+                        } else {
+                            // Play migration scripts
+                            DB migration = new DB(vertx, sql, schema);
+                            migration.loadScripts("sql");
+                        }
+                    });
                 }
                 vertx.setTimer(delay, t -> async.complete());
             } else {
