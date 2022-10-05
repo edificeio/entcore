@@ -56,15 +56,13 @@ export class Controller implements IController {
  *	/!\ Required for compatibility with old portal templates. /!\
  */
 interface Scope extends IScope {
+	canRenderUi: boolean;
 	lang?:IIdiom;
 	nbNewMessages?:number;
 	version?:string;
 	me?:{
 		hasWorkflow(right:string):boolean;
 	};
-
-	username?:string;
-
 	messagerieLink?: string;
 	goToMessagerie?: () => void;
 	refreshMails?: () => void;
@@ -82,12 +80,14 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 	bindToController = true;
 	controller = ['odeSession', "odeNgHelperService", "odeThemeHelperService", Controller];
 	controllerAs = 'ctrl';
-	require = ['odeNavbarLegacy'];
+	require = ['navbarLegacy'];
 
     link(scope:Scope, elem:JQLite, attrs:IAttributes, controllers?:IController[]): void {
 		if( !controllers ) return;
 		const ctrl:Controller = controllers[0] as Controller;
 		const platform = conf().Platform;
+
+		scope.canRenderUi = false;
 
 		// Legacy code (angular templates in old format)
 		scope.lang = platform.idiom;
@@ -152,11 +152,11 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 				}
 			}
 			ctrl.refreshAvatar();
-			scope.username = ctrl.username;
 			scope.refreshMails && scope.refreshMails();
 
 			ctrl.apps = values[2];
 
+			scope.canRenderUi = true;
 			scope.$apply();
 		});
 	}

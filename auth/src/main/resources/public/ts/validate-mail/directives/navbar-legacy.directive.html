@@ -24,7 +24,7 @@
     
     <div class="d-mobile-none">
         <img ng-src="[[ctrl.avatar]]" id="my-photo" />
-        <span><i18n>welcome</i18n></span>
+        <span>[[ctrl.username]]</span>
     </div>
     
     <nav class="navigation">
@@ -65,7 +65,7 @@
     </nav>
 </header>
 
-<div class="no-2d navigation--secondary">
+<div class="no-2d navigation--secondary" ng-if="canRenderUi">
     <a class="d-mobile-none" href="/timeline/timeline">
         <img class="logo" skin-src="img/illustrations/logo.png" alt="Logo de l'ENT">
         <span class="text-truncate d-desktop-none">
