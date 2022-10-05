@@ -900,15 +900,14 @@ public class DuplicateUsers {
 		final String query4 =
 				"MATCH (old:User {id: {oldId}}) " +
 				"WHERE old.oldId IS NULL OR old.oldId <> {id} " +
-				"SET old.oldId = old.id, old.id = null, old.oldLogin = old.login, old.login = null " +
-				"WITH old " +
-				"MATCH (u:User {id: {id}}) " +
-				"SET u.oldId = u.id, u.id = old.oldId, u.oldLogin = u.login, u.login = old.oldLogin, " +
-				"u.activationCode = null, u.password = old.password, u.email = old.email " +
-				"WITH old " +
-				"OPTIONAL MATCH old-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
-				"OPTIONAL MATCH old-[r]-() " +
-				"DELETE r, rb, b, old ";
+				"WITH old, old.id AS oldId, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail " +
+				"OPTIONAL MATCH (old)-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH (old)-[r]-() " +
+				"DELETE r, rb, b, old " +
+				"WITH oldId, oldLogin, oldPassword, oldEmail " +
+				"MATCH (u:User {login: {id}}) " +
+				"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +
+				"u.activationCode = null, u.password = oldPassword, u.email = oldEmail ";
 		tx.add(query4, params);
 		log.info("Merge duplicate INE " + ine + ".\nOld user : " + oldUser.encode() + "\nNew user : " + principalUser.encode());
 	}
