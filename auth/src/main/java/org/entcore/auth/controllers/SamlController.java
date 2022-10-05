@@ -464,9 +464,9 @@ public class SamlController extends AbstractFederateController {
 				location = String.format("%s?callback=%s", WAYF_PAGE, callback);
 			} else {
 				//external login page
-				CookieHelper.getInstance().setSigned("callback", cookieCallback, 600, request);
 				location = authLocation;
 			}
+			CookieHelper.getInstance().setSigned("callback", cookieCallback, 600, request);
 		}
 		return location;
 	}
