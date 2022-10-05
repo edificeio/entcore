@@ -9,6 +9,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
@@ -28,7 +29,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
 
     public PostgresEmailHelperDefault(Vertx vertx, JsonObject pgConfig) {
         final SslMode sslMode = SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE"));
-        final PgPoolOptions options = new PgPoolOptions()
+        final PgConnectOptions options = new PgConnectOptions()
                 .setPort(pgConfig.getInteger("port", 5432))
                 .setHost(pgConfig.getString("host"))
                 .setDatabase(pgConfig.getString("database"))
@@ -41,7 +42,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 .setSslMode(sslMode)
                 .setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
         }
-        this.pool = PgClient.pool(vertx, options);
+        this.pool = PgPool.pool(vertx, options, poolOptions);
         this.tableName = pgConfig.getString("tablename", "mail.mail_events");
         this.attachementTableName = pgConfig.getString("attachment-tablename", "mail.attachments_events");
         this.readTableName = pgConfig.getString("read-tablename", "mail.read_events");
