@@ -23,6 +23,7 @@ import fr.wseduc.cas.entities.LoginTicket;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.cas.http.Response;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.json.JsonObject;
 import org.entcore.cas.http.WrappedRequest;
 
@@ -51,6 +52,7 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 	public void loginRequestorResponse(Request request, LoginTicket loginTicket, String service,
 			boolean renew, boolean gateway, String method) {
 		Response response = request.getResponse();
+		WrappedRequest wrappedRequest = (WrappedRequest) request;
 		try {
 			String cUri;
 			final String cHost;
@@ -58,7 +60,6 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 				cUri = uri;
 				cHost = host;
 			} else {
-				WrappedRequest wrappedRequest = (WrappedRequest) request;
 				cHost = Renders.getScheme(wrappedRequest.getServerRequest()) + "://" +  Renders.getHost(wrappedRequest.getServerRequest());
 				cUri = externalUriByHost.getString(Renders.getHost(wrappedRequest.getServerRequest()));
 				if (cUri == null || cUri.isEmpty()) {
@@ -66,6 +67,11 @@ public class ExternalCredentialResponse extends EntCoreCredentialResponse {
 				}
 			}
 
+			//set a callback cookie
+			if (!"/auth/login".equals(cUri)) {
+				final String cookieCallback = cHost + "/cas/login?" + serializeParams(request);
+				CookieHelper.getInstance().setSigned("callback", cookieCallback, 600, wrappedRequest.getServerRequest());
+			}
 			response.putHeader("Location", cUri + "?callback=" +
 					URLEncoder.encode(cHost + "/cas/login?" + serializeParams(request), "UTF-8"));
 			response.setStatusCode(302);
