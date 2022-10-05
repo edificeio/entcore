@@ -36,11 +36,10 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.validation.ValidationException;
 
 import fr.wseduc.webutils.Either;
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgPool;
-import io.reactiverse.pgclient.PgPoolOptions;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.SslMode;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.pgclient.SslMode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -76,7 +75,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			final JsonObject eventStorePGConfig = eventStoreConfig.getJsonObject("postgresql");
 			if (eventStorePGConfig != null) {
 				final SslMode sslMode = SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE"));
-				final PgPoolOptions options = new PgPoolOptions()
+				final PgConnectOptions options = new PgConnectOptions()
 					.setPort(eventStorePGConfig.getInteger("port", 5432))
 					.setHost(eventStorePGConfig.getString("host"))
 					.setDatabase(eventStorePGConfig.getString("database"))
@@ -91,7 +90,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 						.setSslMode(sslMode)
 						.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
 				}
-				pgClient = PgClient.pool(vertx, options);
+				pgClient = PgPool.pool(vertx, options, poolOptions);
 				listKnownEvents(ar -> {
 					if (ar.succeeded()) {
 						knownEvents = ar.result();
