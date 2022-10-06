@@ -1,46 +1,9 @@
-<ode-panel-section section-title="users.details.section.infos">
-  <form #infoForm="ngForm">
+<ode-panel-section section-title="users.details.section.infos" [folded]="false">
+  <form>
     <fieldset>
       <ode-form-field label="profile">
         <span>{{ user.type | translate }}</span>
       </ode-form-field>
-      <ode-form-field label="login">
-        <span>{{ details.login }}</span>
-      </ode-form-field>
-
-      <ode-form-field label="loginAlias">
-        <div>
-          <input
-            type="text"
-            [(ngModel)]="details.loginAlias"
-            name="loginAlias"
-            [pattern]="loginAliasPattern"
-            #loginAliasInput="ngModel"
-          />
-          <button
-            type="button"
-            (click)="updateLoginAlias()"
-            [disabled]="
-              infoForm.pristine ||
-              infoForm.invalid ||
-              spinner.isLoading('portal-content')
-            "
-          >
-            <s5l>login.update</s5l>
-            <i class="fa fa-floppy-o"></i>
-          </button>
-          <ode-form-errors
-            [control]="loginAliasInput"
-            [expectedPatternMsg]="'form.user.alias.pattern' | translate"
-          >
-          </ode-form-errors>
-        </div>
-      </ode-form-field>
-    </fieldset>
-  </form>
-
-  <form>
-    <fieldset>
       <ode-form-field label="activation.code" *ngIf="details.activationCode">
         <span>{{ details.activationCode }}</span>
       </ode-form-field>
@@ -58,51 +21,6 @@
       </ode-form-field>
       <ode-form-field *ngIf="details.modified" label="modification.date">
         <span>{{ displayDate(details.modified) }}</span>
-      </ode-form-field>
-      <ode-form-field label="mergeKey" *ngIf="user.type === 'Relative'">
-        <div>
-          <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
-          <button
-            type="button"
-            class="noflex"
-            *ngIf="!details.mergeKey"
-            (click)="generateMergeKey()"
-            [disabled]="user.deleteDate != null"
-          >
-            <s5l>generate</s5l>
-            <i class="fa fa-cog"></i>
-          </button>
-        </div>
-      </ode-form-field>
-      <ode-form-field label="mergedLogins" *ngIf="details.mergedLogins && details.mergedLogins.length" >
-        <div>
-          <span>{{ details.mergeKey }}</span>
-          <button type="button" class="noflex"
-                  (click)="showMergedLogins = true">
-            <s5l>mergedLogins.view</s5l>
-            <i class="fa fa-eye"></i>
-          </button>
-
-          <ode-lightbox class="merge-info" [show]="showMergedLogins" (onClose)="showMergedLogins = false">
-            <h2><s5l [s5l-params]="{displayName: details.displayName}">mergedLogins.box.title</s5l></h2>
-            <div>
-              <div *ngIf="isAdmc" class="message is-info">
-                <div class="message-body">&nbsp;<s5l>mergedLogins.box.content</s5l></div>
-              </div>
-              <ul>
-                <li *ngFor="let item of details.mergedLogins">
-                  <div class="is-display-flex has-space-between has-align-items-center">
-                    <div>{{ item }}</div>
-                    <button type="button" class="button is-primary" *ngIf="isAdmc" (click)="unmerge(item)">
-                      <s5l>mergedLogins.unmerge</s5l>
-                      <i class="fa fa-scissors"></i>
-                    </button>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </ode-lightbox>
-        </div>
       </ode-form-field>
       <ode-form-field
         label="functions"
@@ -173,109 +91,6 @@
               </ode-lightbox-confirm>
             </div>
           </div>
-        </div>
-      </ode-form-field>
-    </fieldset>
-  </form>
-  <form>
-    <fieldset>
-      <ode-form-field
-        label="send.reset.password"
-        *ngIf="!details.activationCode"
-      >
-        <div>
-          <div class="sendPassword">
-            <input
-              type="email"
-              [(ngModel)]="passwordResetMail"
-              name="passwordResetMail"
-              [attr.placeholder]="
-                'send.reset.password.email.placeholder' | translate
-              "
-              #passwordMailInput="ngModel"
-              [pattern]="emailPattern"
-            />
-            <button
-              type="button"
-              (click)="sendResetPasswordMail(passwordResetMail)"
-              [disabled]="!passwordResetMail || passwordMailInput.errors"
-            >
-              <span><s5l>send.reset.password.button</s5l></span>
-              <i class="fa fa-envelope"></i>
-            </button>
-          </div>
-
-          <div class="sendPassword" *ngIf="smsModule">
-            <input
-              type="tel"
-              [(ngModel)]="passwordResetMobile"
-              name="passwordResetMobile"
-              [attr.placeholder]="
-                'send.reset.password.mobile.placeholder' | translate
-              "
-              #passwordMobileInput="ngModel"
-            />
-            <button
-              type="button"
-              class="mobile"
-              (click)="sendResetPasswordMobile(passwordResetMobile)"
-              [disabled]="!passwordResetMobile || passwordMobileInput.errors"
-            >
-              <span><s5l>send.reset.password.button</s5l></span>
-              <i class="fa fa-mobile"></i>
-            </button>
-          </div>
-        </div>
-      </ode-form-field>
-
-      <ode-form-field
-        label="password.renewal.code"
-        *ngIf="!details.activationCode"
-      >
-        <div>
-          <button type="button" (click)="clickOnGenerateRenewalCode()">
-            <span><s5l>generate.password.renewal.code</s5l></span>
-          </button>
-          <span *ngIf="renewalCode">
-            <s5l
-              *ngIf="
-                config['reset-code-delay'] && config['reset-code-delay'] > 0
-              "
-              [s5l-params]="{
-                numberOfDays: millisecondToDays(config['reset-code-delay'])
-              }"
-              >generated.password.renewal.code.with.lifespan</s5l
-            >
-            <s5l *ngIf="config['reset-code-delay'] == 0"
-              >generated.password.renewal.code</s5l
-            >
-            : {{ renewalCode }}</span
-          >
-        </div>
-      </ode-form-field>
-
-      <ode-form-field label="massmail">
-        <div>
-          <button type="button" (click)="sendIndividualMassMail('pdf')">
-            <span><s5l>individual.massmail.pdf</s5l></span>
-            <i class="fa fa-file-pdf-o"></i>
-          </button>
-          <button
-            type="button"
-            (click)="showMassMailConfirmation = true"
-            [disabled]="!details.email"
-          >
-            <span><s5l>individual.massmail.mail</s5l></span>
-            <i class="fa fa-envelope"></i>
-          </button>
-          <ode-lightbox-confirm
-            [show]="showMassMailConfirmation"
-            [lightboxTitle]="'warning'"
-            (onConfirm)="sendIndividualMassMail('mail')"
-            (onCancel)="showMassMailConfirmation = false"
-          >
-            <s5l>individual.massmail.confirm</s5l>
-          </ode-lightbox-confirm>
         </div>
       </ode-form-field>
     </fieldset>
