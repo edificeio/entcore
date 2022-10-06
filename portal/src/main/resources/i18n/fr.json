@@ -504,7 +504,7 @@
   "recorder.encoding": "Création du fichier...",
   "recorder.filename": "Capture ",
   "recorder.idle": "En attente",
-  "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio",
+  "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio ou vidéo",
   "recorder.paused": "Pause",
   "recorder.playing": "Ecoute du morceau",
   "recorder.recording": "Enregistrement",
