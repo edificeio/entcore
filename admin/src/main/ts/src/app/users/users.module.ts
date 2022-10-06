@@ -30,6 +30,7 @@ import {CommunicationModule} from '../communication/communication.module';
 import { UserChildrenSectionComponent } from './details/sections/children/user-children-section.component';
 import { UserAafFunctionsComponent } from './details/sections/aaf-functions/user-aaf-functions-section.component';
 import { UserAdministrativeSectionComponent } from './details/sections/administrative/user-administrative-section.component';
+import { UserConnectionSectionComponent } from './details/sections/connection/user-connection-section.component';
 import { UserInfoSectionComponent } from './details/sections/info/user-info-section.component';
 import { UserRelativesSectionComponent } from './details/sections/relatives/user-relatives-section.component';
 import { UserStructuresSectionComponent } from './details/sections/structures/user-structures-section.component';
@@ -65,6 +66,7 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
         UserChildrenSectionComponent,
         UserAafFunctionsComponent,
         UserAdministrativeSectionComponent,
+        UserConnectionSectionComponent,
         UserInfoSectionComponent,
         UserRelativesSectionComponent,
         UserStructuresSectionComponent,

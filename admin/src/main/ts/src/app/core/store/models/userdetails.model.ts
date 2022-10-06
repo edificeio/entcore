@@ -186,9 +186,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         if (this.functions && this.functions.length > 0) {
             const admlIndex = this.functions.findIndex((f) => f[0] === 'ADMIN_LOCAL');
             if (admlIndex >= 0) {
-                return this.functions[admlIndex][1].includes(structureId);
+                return !structureId || this.functions[admlIndex][1].includes(structureId);
             }
         }
+        return false;
     }
 
     isAdmc() {
@@ -298,6 +299,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     updateLogin() {
         return this.http.put(`/directory/user/login/${this.id}`, {login: this.login});
+    }
+    
+    updateMail() {
+        return this.http.put(`/directory/user/${this.id}`, {email: this.email});
     }
 
     removeFromStructure(struct: StructureModel)
