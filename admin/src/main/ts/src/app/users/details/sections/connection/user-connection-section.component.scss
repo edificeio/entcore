@@ -1,0 +1,30 @@
+.merge-info {
+  h2 {
+    margin-right: 30px;
+  }
+
+  .message.is-info {
+    margin-bottom: 0px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+
+    li {
+      border-top: 1px solid #E4E4E4;
+      padding: 16px 10px;
+      color: #4A4A4A;
+      font-weight: 700;
+
+      &:first-child {
+        padding-top: 24px;
+        border-top: 0;
+      }
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+    }
+  }
+}

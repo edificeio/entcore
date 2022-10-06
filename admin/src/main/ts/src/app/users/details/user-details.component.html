@@ -240,6 +240,13 @@
   >
   </ode-user-administrative-section>
 
+  <ode-user-connection-section
+    [inUser]="user"
+    [structure]="structure"
+    [config]="config"
+  >
+  </ode-user-connection-section>
+
   <ode-user-quota-section
     [inUser]="user"
     *ngIf="!details.activationCode && !user.deleteDate"

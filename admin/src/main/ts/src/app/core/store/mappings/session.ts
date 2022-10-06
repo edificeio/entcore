@@ -75,6 +75,11 @@ export class Session {
         return this.functions && this.functions.SUPER_ADMIN != null;
     }
 
+    isADML(): boolean
+    {
+        return this.functions && this.functions.ADMIN_LOCAL != null;
+    }
+
     hasRight(right: string): boolean
     {
         if(this.authorizedActions != null)

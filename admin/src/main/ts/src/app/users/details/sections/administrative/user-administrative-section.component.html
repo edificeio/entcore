@@ -1,4 +1,4 @@
-<ode-panel-section section-title="users.details.section.administrative">
+<ode-panel-section section-title="users.details.section.administrative" [folded]="false">
 
   <form #administrativeForm="ngForm">
     <fieldset disabled="{{ user.deleteDate != null ? 'disabled' : '' }}">
@@ -32,11 +32,6 @@
       </ode-form-field>
       <ode-form-field label="city" *ngIf="!config['hide-personal-data']">
         <input type="text" [(ngModel)]="details.city" name="city">
-      </ode-form-field>
-      <ode-form-field label="email">
-        <input type="email" [(ngModel)]="details.email" name="email"
-               #emailInput="ngModel" [pattern]="emailPattern" >
-        <ode-form-errors [control]="emailInput"></ode-form-errors>
       </ode-form-field>
       <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
         <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" >
