@@ -26,6 +26,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.PgPool;
 import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.events.impl.PostgresqlEventStoreFactory;
 import org.entcore.common.user.UserInfos;
@@ -36,8 +39,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgConnectOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -66,11 +67,11 @@ public class PostgresqlEventStoreTest {
         final PgConnectOptions options = new PgConnectOptions().setPort(postresql.getInteger("port", 5432))
                 .setHost(postresql.getString("host")).setDatabase(postresql.getString("database"))
                 .setUser(postresql.getString("user")).setPassword(postresql.getString("password"));
-        PgClient.connect(Vertx.vertx(), options, res -> {
+        PgConnection.connect(Vertx.vertx(), options, res -> {
             context.assertTrue(res.succeeded());
-            res.result().query("CREATE SCHEMA events", resSch -> {
+            res.result().query("CREATE SCHEMA events").execute(resSch -> {
                 context.assertTrue(resSch.succeeded());
-                res.result().query("CREATE TABLE events.login_events(id VARCHAR(36) PRIMARY KEY)", resSql -> {
+                res.result().query("CREATE TABLE events.login_events(id VARCHAR(36) PRIMARY KEY)").execute(resSql -> {
                     context.assertTrue(resSql.succeeded());
                     async.complete();
                 });
