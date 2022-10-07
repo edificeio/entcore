@@ -34,6 +34,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
@@ -1001,7 +1002,17 @@ public class DefaultUserService implements UserService {
 			if(res.isRight()){
 				final JsonObject result = res.right().getValue();
 				result.put("hobbies", UserBookService.extractHobbies(userBookData, result, true));
-				handler.handle(new Either.Right<>(result));
+				// Add an information about this user's email being updatable or not
+				// As of 2022-10-07, ADML emails cannot be changed except by the ADML himself.
+				listFunctions(userId, funcs -> {
+					if( funcs.isRight() ) {
+						final JsonArray functions = funcs.right().getValue();
+						if( functions!=null && functions.encode().contains(DefaultFunctions.ADMIN_LOCAL)) {
+							result.put("lockedEmail", true);
+						}
+					}
+					handler.handle(new Either.Right<>(result));
+				});
 			}else{
 				handler.handle(res);
 			}

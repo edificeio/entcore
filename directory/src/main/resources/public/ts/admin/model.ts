@@ -101,6 +101,8 @@ export class User extends Model {
     picture: string;
     address: string;
     hasEmail: boolean;
+    //from directory/class-admin/:id
+    lockedEmail?: boolean;  // defined only in some cases
     //
     constructor(data?: Partial<User>) {
         super({});

@@ -261,15 +261,6 @@ public class DefaultMailValidationService implements MailValidationService {
 			promise.fail("Invalid parameters.");
 		} else {
 			String code = templateParams.getString("code");
-			/*
-			JsonObject json = new JsonObject()
-				.put("activationUri", notification.getHost(request) +
-						"/auth/activation?login=" + login +
-						"&activationCode=" + activationCode)
-				.put("host", notification.getHost(request))
-				.put("login", login);
-			*/
-			//Promise<Message<JsonObject>> handleSend = Promise.promise();
 			emailSender.sendEmail(
 					request, email, null, null,
 					"email.validation.subject", "email/emailValidationCode.html", templateParams, true, ar -> {
@@ -287,85 +278,6 @@ public class DefaultMailValidationService implements MailValidationService {
 			});
 
 		}
-
-/*
-		try {
-    		String locale = email.getString("locale");
-	        JsonObject i18n = I18n.getInstance().load( locale );
-	        JsonArray recipients = new JsonArray( email.getString("recipients", "[]") );
-	        JsonObject content = new JsonObject( email.getString("content", "{}") );
-	        JsonArray headers = new JsonArray( email.getString("headers", "[]") );
-	        String templateName = email.getString("template_name");
-	        String titleKey = email.getString("title_key");
-	        Long orderId = email.getLong("order_id");
-	        
-	        content.put("host", config.getString("host"));
-	        
-	        this.renderer.readTemplate(templateName).setHandler(templateBufferResult -> {
-	            if (templateBufferResult.failed()) {
-	                log.error("[CRM] Error reading template on file system: " + templateBufferResult.cause().toString());
-	                promise.complete(false);
-	                return;
-	            }
-                Buffer templateBuffer = templateBufferResult.result();
-                StringReader reader = new StringReader(templateBuffer.toString("UTF-8"));
-                HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
-                    .put("headers", new JsonObject().put("Accept-Language", locale)));
-                
-            	for (int i = 0; i < recipients.size(); i++) {
-                    JsonObject mail_data = recipients.getJsonObject(i);
-                    mail_data.mergeIn(content, true);
-                    
-                    this.renderer.generateHtmlFile(request, mail_data, templateName, reader).setHandler(htmlContentResult -> {
-                    	if( htmlContentResult.failed() ) {
-                    		log.error("[CRM] Error generating email from template: " + htmlContentResult.cause().toString());
-                    		promise.complete(false);
-                    		return;
-                    	}
-                    	final String mailTitle = i18n.getString(titleKey);
-                    	final String htmlContent = htmlContentResult.result();
-                        this.emailSender.sendEmail(
-                            request,
-                            mail_data.getString("email"),	// to
-                            null,							// cc
-                            null,							// bcc
-                            mailTitle,						// subject
-                            htmlContent,					// templateBody
-                            null,							// templateParams 
-                            false, 							// translateSubject
-                            headers,						// headers
-                            handlerToAsyncHandler( event -> {
-                                if ("error".equals(event.body().getString("status"))) {
-                                    log.error( "[CRM] Error while sending mail (" + event.body().getString("message", "") + ")" );
-                                    promise.complete( false );
-                                } else {
-                                	if( orderId!=null ) {
-                                		try {
-		                                    emailService.create(
-		                                		mail_data.getString("firstname"), mail_data.getString("lastname"),
-		                                		mail_data.getString("email"), mail_data.getString("relation", ""), 
-		                                        mailTitle, StringUtils.stripSpacesSentence(substringBetween(htmlContent, "<!--Content-->", "<!--End-->")),
-		                                        orderId, done -> {
-		                                        if (done.isLeft()) {
-		                                            log.error("[CRM] Error while creating email_history row (" + done.left().getValue() + ")");
-		                                        }
-		                                    });
-                                		} catch (NumberFormatException nfe ) {
-                                			// no order id => no email history.
-                                		}
-                                	}
-                                    promise.complete(true);
-                                }
-                            })
-                        );
-                	});
-                }
-            });
-    	} catch( Exception e ) {
-    		log.error("[CRM] Unknown error while sending an email from the sendbox", e);
-    		promise.complete(false);
-    	}
- */		
     	return promise.future();
     }
 

@@ -66,8 +66,15 @@
 			</div>
 			<div class="row">
 				<label translate content="userBook.profile.email" class="four cell"><span class="no-style"></span></label>
-				<input class="eight cell inline-editing" ng-model="selectedUser.email" complete-change="saveUserInfoChanges()"
-				 type="email">
+
+				<label ng-if="!showEmailInput" class="six cell">[[selectedUser.email]]</span></label>
+				<input type="email" class="six cell inline-editing" name="tempEmail"
+					   ng-if="showEmailInput"
+					   ng-model="temp.email" />
+ 
+				<label ng-if="!showEmailInput && !isForbidden()"><a ng-click="openEmailInput()" href="#"><i18n>directory.modify</i18n></a></label>
+				<label ng-if="showEmailInput && !isEmailWellFormatted()"><i18n>classAdmin.save</i18n></label>
+				<label ng-if="showEmailInput && isEmailWellFormatted()"><a ng-click="saveAndCloseEmailInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
 				<label translate content="userBook.profile.telephone" class="four cell"><span class="no-style"></span></label>
