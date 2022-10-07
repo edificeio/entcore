@@ -30,6 +30,16 @@
 		</form>
 	</lightbox>
 
+	<lightbox ng-if="display.email" show="display.email" on-close="display.email = false">
+		<iframe src="/auth/validate-mail?headless=true"
+			style="height:400px;width:100%;border:none;overflow:hidden;"
+			onload="setTimeout(frame=>{
+					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'});
+					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight,800)+'px';
+				}, 350, this);"
+		></iframe>
+	</lightbox>
+
 	<lightbox show="display.otp" on-close="display.otp = false">
 		<h2><i18n>directory.otp.title</i18n></h2>
 		<span ng-if="account.otp"><i18n>directory.otp.content</i18n></span>
@@ -111,15 +121,17 @@
 			</div>
 
 			<div class="row">
-				<label translate content="userBook.profile.email" class="four cell"></label>
-				<div class="seven cell">
-					<input class="twelve inline-editing" type="email" name="mail" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.email" />
-					<span class="twelve input-errors" ng-if="userForm.mail.$invalid && userForm.mail.$dirty">
-						<span ng-repeat="(key, value) in userForm.mail.$error">
-							<label ng-if="value">[[lang.translate(key)]]</label>
-						</span>
-					</span>
+				<div class="four cell">
+					<i18n>userBook.profile.email</i18n>
 				</div>
+
+				<em class="seven cell">
+					[[ account.email ]]
+					<a class="left-spacing-twice" ng-click="display.email = true;">
+						<i18n>directory.login.update.button</i18n>
+					</a>
+				</em>
+
 				<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 				<div class="clear"></div>
 			</div>

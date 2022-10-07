@@ -25,10 +25,8 @@
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
                 <div class="mb-5 text-center">
-                    <span ng-if="ctrl.force"><i18n>validate-mail.step1.hint.force</i18n></span>
-                    <br/>
-                    <span ng-if="ctrl.isAdml || ctrl.isAdmc"><i18n>validate-mail.step1.hint.adml</i18n></span>
-                    <br/>
+                    <span class="mb-8" ng-if="ctrl.force"><i18n>validate-mail.step1.hint.force</i18n></span>
+                    <span class="mb-8" ng-if="ctrl.force && (ctrl.isAdml || ctrl.isAdmc)"><i18n>validate-mail.step1.hint.adml</i18n></span>
                     <span><i18n>validate-mail.step1.hint</i18n></span>
                 </div>
 
