@@ -1,6 +1,6 @@
 import { EventDelegateScope, TRACK } from "./events";
 import { User, UserTypes, Mood, ClassRoom, School } from "../model";
-import { notify } from "entcore";
+import { $, angular, Me, notify } from "entcore";
 import { directoryService } from "../service";
 
 export interface UserInfosDelegateScope extends EventDelegateScope {
@@ -18,6 +18,9 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     openLoginInput(): void;
     saveAndCloseLoginInput(): void;
     isLoginAliasWellFormatted(): boolean;
+    openEmailInput(): void;
+    saveAndCloseEmailInput(): void;
+    isEmailWellFormatted(): boolean;
     userInfosDisplayChildren(): boolean
     userInfosDisplayRelative(): boolean
     userInfosDisplayUserbook(): boolean
@@ -26,7 +29,9 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
-    tempLoginAlias: string;
+    temp: { email?:string; };
+    showEmailInput: boolean;
+    isForbidden(): boolean;
     //from others
     usersForType(type?: UserTypes): User[]
     openLightbox(path: string): void;
@@ -37,6 +42,8 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     //init
     $scope.mottoShouldPublish = false;
     $scope.showLoginInput = false;
+    $scope.showEmailInput = false;
+    $scope.temp = {};
     // === Private attributs
     let _classroom: ClassRoom;
     let _schools: School[] = [];
@@ -60,6 +67,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     const setSelectedUser = async (user: User) => {
         $scope.mottoShouldPublish = false;
         $scope.showLoginInput = false;
+        $scope.showEmailInput = false;
         await user.open({ withChildren: true });
         $scope.selectedUser = user;
         $scope.selectedUser.picture = user.picture || user.avatarUri;
@@ -89,6 +97,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         try {
             await selectFirstUser(user);
             $scope.showLoginInput = false;
+            $scope.showEmailInput = false;
             $scope.openLightbox('admin/user-infos');
             $scope.safeApply();
         } catch (e) {
@@ -178,6 +187,43 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     }
     $scope.isLoginAliasWellFormatted = function () {
         return (/^[a-z\d\.-]*$/).test($scope.selectedUser.tempLoginAlias);
+    }
+    $scope.openEmailInput = function () {
+        // An ADML changing his own email address must be redirected to "my account"
+        if( Me.session.functions.ADMIN_LOCAL && $scope.selectedUser.id == Me.session.userId ) {
+            window.location.href = "/userbook/mon-compte#/edit-me";
+            return;
+        }
+        $scope.temp.email = $scope.selectedUser.email;
+        $scope.showEmailInput = true;
+    }
+    let savingEmail = false;
+    $scope.saveAndCloseEmailInput = async function () {
+        if (savingEmail) return;
+        try {
+            savingEmail = true;
+            if ($scope.selectedUser.email !== $scope.temp.email && $scope.isEmailWellFormatted()) {
+                $scope.selectedUser.email = $scope.temp.email;
+                await directoryService.updateUserEmail($scope.selectedUser);
+                $scope.showEmailInput = false;
+                $scope.safeApply();
+            }
+        } catch (e) {
+            notify.error('directory.form.email');
+        } finally {
+            savingEmail = false;
+        }
+    }
+    $scope.isEmailWellFormatted = function () {
+        return angular.element("input[type=\"email\"][name=\"tempEmail\"]").hasClass('ng-valid');
+    }
+    $scope.isForbidden = function() {
+        if( Me.session.functions.ADMIN_LOCAL 
+            && $scope.selectedUser && $scope.selectedUser.lockedEmail
+            && $scope.selectedUser.id != Me.session.userId ) {
+            return true;
+        }
+        return false;
     }
     $scope.userInfosDisplayChildren = function () {
         return $scope.selectedUser && $scope.selectedUser.type == "Relative";
