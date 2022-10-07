@@ -16,7 +16,7 @@
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         "auto-redeploy": false,
         "userbook-host": "https://{{ host }}",
-        "external-login-uri": "",
+        {% if casExternalLoginUri is defined %}{{ casExternalLoginUri }},{% endif %}
         {% if casExternalLogin is defined %}{{ casExternalLogin }},{% endif %}
         "integration-mode": "HTTP",
         "app-registry.port": 8012,
