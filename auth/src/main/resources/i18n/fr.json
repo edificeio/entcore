@@ -150,7 +150,7 @@
     "validate-mail.step2.btn": "Renvoyer un code",
     "validate-mail.step2.renewed": "Un nouveau code vous a été envoyé sur l’adresse mail que vous avez renseignée.",
     "validate-mail.success.paragraph1": "Vérification de l’adresse mail réussie !",
-    "validate-mail.success.paragraph2": "Vous allez êtes redirigé.",
+    "validate-mail.success.paragraph2": "Vous allez être redirigé.",
     "validate-mail.error.network": "Un problème technique empêche actuellement la vérification de votre adresse mail, merci de réessayer dans quelques instants ou de contacter votre administrateur.",
     "validate-mail.error.same": "L’adresse mail saisie est déjà celle actuellement renseignée et vérifiée.",
     "validate-mail.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
