@@ -30,12 +30,12 @@
 		</form>
 	</lightbox>
 
-	<lightbox ng-if="display.email" show="display.email" on-close="display.email = false">
+	<lightbox ng-if="display.email" show="display.email" on-close="onCloseEmailLightbox()">
 		<iframe src="/auth/validate-mail?headless=true"
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
-					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'});
-					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight,800)+'px';
+					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css('boxShadow', 'none');
+					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
 				}, 350, this);"
 		></iframe>
 	</lightbox>

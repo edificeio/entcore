@@ -424,6 +424,10 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		}, 250);
 	}
 
+	$scope.onCloseEmailLightbox = function(){
+		window.location.reload();
+	}
+
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
 	})
