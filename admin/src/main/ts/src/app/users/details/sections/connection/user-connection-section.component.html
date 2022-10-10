@@ -197,7 +197,7 @@
 
       <ode-form-field label="massmail">
         <div>
-          <button type="button" (click)="sendIndividualMassMail('pdf')">
+          <button type="button" (click)="sendIndividualMassMail('pdf')" [disabled]="isForbidden">
             <span><s5l>individual.massmail.pdf</s5l></span>
             <i class="fa fa-file-pdf-o"></i>
           </button>
