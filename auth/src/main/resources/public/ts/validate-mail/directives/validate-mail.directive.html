@@ -11,11 +11,11 @@
 
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
-            <div class="mb-5 text-center">
+            <div class="mb-3 text-center">
                 <img src="/auth/public/img/validate-mail.svg" height="150"></img>
             </div>
 
-            <div class="text-center fs-4">
+            <div class="mb-3 text-center fs-4">
                 <i18n>validate-mail.step1.title</i18n>
             </div>
         </div>
@@ -25,46 +25,50 @@
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
                 <div class="mb-5 text-center">
-                    <span class="mb-8" ng-if="ctrl.force"><i18n>validate-mail.step1.hint.force</i18n></span>
-                    <span class="mb-8" ng-if="ctrl.force && (ctrl.isAdml || ctrl.isAdmc)"><i18n>validate-mail.step1.hint.adml</i18n></span>
-                    <span><i18n>validate-mail.step1.hint</i18n></span>
+                    <div ng-if="ctrl.force"><i18n>validate-mail.step1.hint.force</i18n></div>
+                    <div ng-if="ctrl.force && (ctrl.isAdml || ctrl.isAdmc)"><i18n>validate-mail.step1.hint.adml</i18n></div>
+                    <div><i18n>validate-mail.step1.hint</i18n></div>
                 </div>
 
-                <div class="">
-                    <form novalidate autocomplete="off" name="formEmail" ng-submit="onValidate('email')">
-                        <label class="mb-2 fw-bold" for="input-data" class="mb-5">
-                            <img src="/auth/public/icons/mail.svg" width="20" height="20"></img>
-                            <span class="align-middle" translate content="validate-mail.step1.form.mail"></span>
-                        </label>
-                        <input type="email" id="input-data" name="inputEmail" required
-                                ng-pattern="ctrl.acceptableEmailPattern"
-                                ng-model="ctrl.emailAddress"
-                                ng-class="ctrl.inputToBTCss(formEmail.inputEmail)"
-                                i18n-placeholder="validate-mail.step1.form.placeholder" />
+                <form novalidate autocomplete="off" name="formEmail" ng-submit="onValidate('email')">
+                    <label class="mb-2 fw-bold" for="input-data">
+                        <img src="/auth/public/icons/mail.svg" width="20" height="20"></img>
+                        <span class="align-middle" translate content="validate-mail.step1.form.mail"></span>
+                    </label>
+                    <input type="email" id="input-data" name="inputEmail" required
+                            ng-pattern="ctrl.acceptableEmailPattern"
+                            ng-model="ctrl.emailAddress"
+                            ng-class="ctrl.inputToBTCss(formEmail.inputEmail)"
+                            i18n-placeholder="validate-mail.step1.form.placeholder" />
 
-                        <div class="text-danger mt-1">
-                            <small class="d-inline-block">
-                                <label for="input-data" ng-if="formEmail.inputEmail.$error.required"><i18n>required</i18n></label>
-                            </small class="d-inline-block">
-                            <small>
-                                <label for="input-data" ng-if="formEmail.inputEmail.$error.email"><i18n>email</i18n></label>
-                            </small>
-                            <small class="d-inline-block">
-                                <label for="input-data" ng-if="formEmail.inputEmail.$error.pattern"><i18n>validate-mail.error.same</i18n></label>
-                            </small>
+                    <div class="text-danger mt-1">
+                        <small class="d-inline-block">
+                            <label for="input-data" ng-if="formEmail.inputEmail.$error.required"><i18n>required</i18n></label>
+                        </small class="d-inline-block">
+                        <small>
+                            <label for="input-data" ng-if="formEmail.inputEmail.$error.email"><i18n>email</i18n></label>
+                        </small>
+                        <small class="d-inline-block">
+                            <label for="input-data" ng-if="formEmail.inputEmail.$error.pattern"><i18n>validate-mail.error.same</i18n></label>
+                        </small>
+                    </div>
+
+                    <div class="text-center">
+                        <div ng-show="ctrl.status==='wait'" class="text-primary mb-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
                         </div>
 
-                        <div class="row mt-4">
-                            <button type="submit" class="btn btn-primary fs-5 align-middle"
-                                    ng-disabled="!formEmail.$valid">
-                                <i18n>validate-mail.step1.btn</i18n>
-                                <svg class="icon-svg" width="20" height="20">
-                                    <use href="/auth/public/icons/validate-mail-icons.svg#chevronRight"></use>
-                                </svg>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        <button type="submit" class="btn btn-primary fs-5 align-middle"
+                                ng-disabled="!formEmail.$valid || ctrl.status==='wait'">
+                            <i18n>validate-mail.step1.btn</i18n>
+                            <svg class="icon-svg" width="20" height="20">
+                                <use href="/auth/public/icons/validate-mail-icons.svg#chevronRight"></use>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -73,11 +77,9 @@
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
                 <div class="mb-5 text-center">
-                    <i18n>validate-mail.step2.hint.paragraph1</i18n><span> [[ctrl.emailAddress]].</span>
-                    <br/>
-                    <i18n>validate-mail.step2.hint.paragraph2</i18n>
-                    <br/>
-                    <i18n>validate-mail.step2.hint.paragraph3</i18n>
+                    <div><i18n>validate-mail.step2.hint.paragraph1</i18n><span> [[ctrl.emailAddress]].</span></div>
+                    <div><i18n>validate-mail.step2.hint.paragraph2</i18n></div>
+                    <div><i18n>validate-mail.step2.hint.paragraph3</i18n></div>
                 </div>
 
                 <div class="text-center">
@@ -101,7 +103,7 @@
                                 <use href="/auth/public/icons/validate-mail-icons.svg#successOutline"></use>
                             </svg>
                             <div><i18n>validate-mail.success.paragraph1</i18n></div>
-                            <div><i18n>validate-mail.success.paragraph2</i18n></div>
+                            <div ng-if="ctrl.redirect"><i18n>validate-mail.success.paragraph2</i18n></div>
                         </div>
                         <div ng-if="ctrl.status==='ko'" class="text-danger">
                             <svg class="icon-svg" width="20" height="20">
@@ -112,17 +114,19 @@
                     </footer>
                 </div>
 
-                <div class="text-center mb-4">
-                    <span class="fs-6"><i18n>validate-mail.step2.hint.paragraph4</i18n></span>
-                </div>
+                <div class="text-center" ng-if="ctrl.status!=='ok'">
+                    <div class="mb-4">
+                        <span class="fs-6"><i18n>validate-mail.step2.hint.paragraph4</i18n></span>
+                    </div>
 
-                <div class="text-center">
-                    <button type="button" id="btnRenew" class="btn btn-tertiary fw-bold" ng-click="onCodeRenew()">
-                        <svg class="icon-svg" width="20" height="20">
-                            <use href="/auth/public/icons/validate-mail-icons.svg#redo"></use>
-                        </svg>
-                        <i18n class="align-text-top">validate-mail.step2.btn</i18n>
-                    </button>
+                    <div>
+                        <button type="button" id="btnRenew" class="btn btn-tertiary fw-bold" ng-click="onCodeRenew()">
+                            <svg class="icon-svg" width="20" height="20">
+                                <use href="/auth/public/icons/validate-mail-icons.svg#redo"></use>
+                            </svg>
+                            <i18n class="align-text-top">validate-mail.step2.btn</i18n>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>        

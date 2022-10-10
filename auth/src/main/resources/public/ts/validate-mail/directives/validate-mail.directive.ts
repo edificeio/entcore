@@ -71,6 +71,9 @@ export class ValidateMailController implements IController {
 	}
 
 	public validateMail() {
+		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
+		const time = new Date().getTime();
+
 		return session().checkEmail(this.emailAddress)
 		.then( () => {
 			this.step = "code";
@@ -78,7 +81,15 @@ export class ValidateMailController implements IController {
 		})
 		.catch( e => {
 			notify.error('validate-mail.error.network');
-		});
+		})
+		.then( () => {
+			const waitMs = (this.infos ? this.infos.waitInSeconds:10) * 1000;
+			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
+			const debounceTime:IPromisified<void> = notif().promisify();
+			setTimeout( () => debounceTime.resolve(), duration);
+			return debounceTime.promise;
+		})
+		;
 	}
 
 	public validateCode():Promise<OTPStatus> {
@@ -106,7 +117,6 @@ export class ValidateMailController implements IController {
 			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
 			const debounceTime:IPromisified<void> = notif().promisify();
 			setTimeout( () => debounceTime.resolve(), duration);
-console.log( "waiting "+duration+" ms" );
 			return debounceTime.promise;
 		})
 		.then( () => this.status );
@@ -161,7 +171,9 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 		scope.canRenderUi = false;
 
 		scope.onValidate = async (step:ValidationStep): Promise<void> => {
+			ctrl.status = "wait";
 			if( step=="email" ) await ctrl.validateMail();
+			ctrl.status = "";
 			scope.$apply();
 			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
 		}
