@@ -31,6 +31,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 .setDatabase(pgConfig.getString("database"))
                 .setUser(pgConfig.getString("user"))
                 .setPassword(pgConfig.getString("password"))
+                .setIdleTimeout(pgConfig.getInteger("idle-timeout", 300)) // unit seconds
                 .setMaxSize(pgConfig.getInteger("pool-size", 5));
         if (!SslMode.DISABLE.equals(sslMode)) {
             options
