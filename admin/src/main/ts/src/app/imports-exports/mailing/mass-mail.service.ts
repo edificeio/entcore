@@ -9,7 +9,7 @@ export class MassMailService {
     static async getUsers(structureId): Promise<UserModel[]> {
         let response;
         try {
-            response = await http.get(`directory/structure/${structureId}/massMail/allUsers`);
+            response = await http.get(`/directory/structure/${structureId}/massMail/allUsers`);
         } catch (error) {
             return error.response.data;
         }
@@ -22,7 +22,7 @@ export class MassMailService {
     static async massMailProcess(structureId, type, filters) {
         let response;
         try {
-            response = await http.get(`directory/structure/${structureId}/massMail/process/${type}`, {
+            response = await http.get(`/directory/structure/${structureId}/massMail/process/${type}`, {
                 params: filters,
                 paramsSerializer(params) {
                 return qs.stringify(params, {arrayFormat: 'repeat'});
