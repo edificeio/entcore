@@ -9,7 +9,7 @@ export class MessageFlashService {
     static async getMessagesByStructure(structureId: string): Promise<FlashMessageModel[]> {
         let response;
         try {
-            response = await http.get(`timeline/flashmsg/listadmin/${structureId}`);
+            response = await http.get(`/timeline/flashmsg/listadmin/${structureId}`);
         } catch (error) {
             return error.response.data;
         }
@@ -19,7 +19,7 @@ export class MessageFlashService {
     static async getSubStructuresByMessageId(messageId: string): Promise<string[]> {
         let response;
         try {
-            response = await http.get(`timeline/flashmsg/${messageId}/substructures`);
+            response = await http.get(`/timeline/flashmsg/${messageId}/substructures`);
         } catch (error) {
             return error.response.data;
         }
@@ -31,7 +31,7 @@ export class MessageFlashService {
         messageIds.forEach(id => params += `id=${id}&`);
         let response;
         try {
-            response = await http.delete(`timeline/flashmsg/structure/${structureId}?${params}`);
+            response = await http.delete(`/timeline/flashmsg/structure/${structureId}?${params}`);
         } catch (error) {
             return error.response.data;
         }
@@ -51,7 +51,7 @@ export class MessageFlashService {
     static async createMessage(message: FlashMessageModel) {
         let response;
         try {
-            await http.post(`timeline/flashmsg/structure/${message.structureId}`,
+            await http.post(`/timeline/flashmsg/structure/${message.structureId}`,
             {
                 title: message.title,
                 contents: message.contents,
@@ -64,7 +64,7 @@ export class MessageFlashService {
                 signature: message.signature,
                 signatureColor: message.signatureColor
             }).then( async (data) => {
-                response = await http.post(`timeline/flashmsg/structure/${message.structureId}/${data.data.id}/substructures`,
+                response = await http.post(`/timeline/flashmsg/structure/${message.structureId}/${data.data.id}/substructures`,
                 {
                     subStructures: message.subStructures
                 });
@@ -78,7 +78,7 @@ export class MessageFlashService {
     static async editMessage(message: FlashMessageModel) {
         let response1, response2, res;
         try {
-            response1 = await http.put(`timeline/flashmsg/structure/${message.structureId}/${message.id}`,
+            response1 = await http.put(`/timeline/flashmsg/structure/${message.structureId}/${message.id}`,
             {
                 title: message.title,
                 contents: message.contents,
@@ -91,7 +91,7 @@ export class MessageFlashService {
                 signature: message.signature,
                 signatureColor: message.signatureColor
             });
-            response2 = await http.post(`timeline/flashmsg/structure/${message.structureId}/${message.id}/substructures`,
+            response2 = await http.post(`/timeline/flashmsg/structure/${message.structureId}/${message.id}/substructures`,
             {
                 subStructures: message.subStructures
             });
@@ -120,7 +120,7 @@ export class MessageFlashService {
                         return false;
                     })
                 ).map(user => user.id);
-                response = await http.post(`timeline/flashmsg/notify`,
+                response = await http.post(`/timeline/flashmsg/notify`,
                     {
                         recipientIds: recipients,
                         content: message.contents[lang],
