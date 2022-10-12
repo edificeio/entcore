@@ -35,7 +35,7 @@ export class AlertesTraiteesListModalComponent extends OdeComponent implements O
   }
 
   getDoneAlertes(): Observable<AlerteModel[]> {
-    return this.httpClient.get(`timeline/reported?structure=${this.data.structure.id}&page=0&pending=false`)
+    return this.httpClient.get(`/timeline/reported?structure=${this.data.structure.id}&page=0&pending=false`)
         .pipe(
             tap( (data: AlerteModel[]) => {
               this.info('getDoneAlertes');

@@ -41,7 +41,7 @@ export class AlertesListComponent extends OdeComponent implements OnInit {
     }
 
     getPendingAlertes(): Observable<AlerteModel[]> {
-      return this.httpClient.get(`timeline/reported?structure=${this.structure.id}&page=0&pending=true`)
+      return this.httpClient.get(`/timeline/reported?structure=${this.structure.id}&page=0&pending=true`)
           .pipe(
               tap( (data: AlerteModel[]) => {
                   this.$pendingAlertes.next(data) ;
