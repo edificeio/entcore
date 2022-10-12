@@ -94,7 +94,9 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             }
             if (this.action === 'create') {
                 this.message.color = 'red';
-                this.message.signature = this.structure.name;
+                if (this.structure) {
+                    this.message.signature = this.structure.name;
+                }
                 this.message.signatureColor = '#ffffff';
             }
             this.changeDetector.detectChanges();
