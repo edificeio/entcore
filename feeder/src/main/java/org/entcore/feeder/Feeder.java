@@ -464,6 +464,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					}
 				});
 				break;
+			case "check-duplicates" :
+				duplicateUsers.checkDuplicatesIntegrity(message);
+				break;
 			case "manual-init-timetable-structure" :
 				AbstractTimetableImporter.initStructure(eb, message);
 				break;

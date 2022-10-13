@@ -166,6 +166,16 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
+					vertx.eventBus().send("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> message)
+						{
+							if("ok".equals(message.body().getString("status")) == false)
+								log.error("Failed to check duplicates for activated user " + jo.getString("userId"));
+						}
+					}));
+
 					storePasswordEvent(res.body().getJsonObject("result").getJsonObject("0").getString("login"),
 							res.body().getJsonObject("result").getJsonObject("0").getString("loginAlias"),
 							password,
