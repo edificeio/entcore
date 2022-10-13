@@ -23,7 +23,8 @@ import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.file.OpenOptions;
+import io.vertx.core.*;
+import io.vertx.core.file.*;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
@@ -32,14 +33,7 @@ import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileProps;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.FileSystemProps;
 import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -198,10 +192,26 @@ public class FileStorage implements Storage {
 		});
 	}
 
-	private void scanFile(String path) {
+	@Override
+	public void scanFile(String path) {
 		if (antivirus != null) {
 			antivirus.scan(path);
 		}
+	}
+
+	private Future<Void> mkdirsIfNotExists(String id, String path) {
+		Promise<Void> promise = Promise.promise();
+		mkdirsIfNotExists(fs, id, path, event -> {
+			if (event.failed()) {
+				String message = String.format("[entcore@%s - mkdirsIfNotExists] Failed to proceed : %s",
+						this.getClass().getSimpleName(), event.cause().getMessage());
+				log.error(message);
+				promise.fail(event.cause().getMessage());
+			} else {
+				promise.complete();
+			}
+		});
+		return promise.future();
 	}
 
 	private void mkdirsIfNotExists(String id, String path, final Handler<AsyncResult<Void>> h) {
@@ -270,6 +280,104 @@ public class FileStorage implements Storage {
 				});
 			}
 		});
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		return writeBufferStream(UUID.randomUUID().toString(), bufferReadStream, contentType, filename);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		try {
+			return writeBufferStream(getWritePath(id), id, bufferReadStream, contentType, filename);
+		} catch (FileNotFoundException e) {
+			log.warn(e.getMessage(), e);
+			return Future.failedFuture(String.format("%s: invalid.path", e.getMessage()));
+		}
+	}
+	private Future<JsonObject> writeBufferStream(final String path, final String id, final ReadStream<Buffer> bufferReadStream,
+								  final String contentType, final String filename) {
+		Promise<JsonObject> promise = Promise.promise();
+		final JsonObject res = new JsonObject();
+		mkdirsIfNotExists(id, path)
+				.compose(v -> streamBufferToFileSystem(path, bufferReadStream))
+				.onSuccess(streamedFileResult -> {
+					final JsonObject metadata = new JsonObject()
+							.put("content-type", contentType)
+							.put("filename", filename)
+							.put("size", streamedFileResult.getWritePos());
+					res.put("status", "ok")
+							.put("_id", id)
+							.put("metadata", metadata);
+					promise.complete(res);
+					scanFile(path);
+				})
+				.onFailure(err -> {
+					String message = String.format("[entcore@%s - streamFile - writeBufferStream] " +
+									"Failed to mkdirsIfNotExists or streamBufferToFileSystem : %s",
+							this.getClass().getSimpleName(), err.getMessage());
+					log.error(message);
+					promise.fail(err.getMessage());
+				});
+		return promise.future();
+	}
+
+	/**
+	 * open/create a file and use buffer in read stream to pipe its content to the new file
+	 * close buffer read stream after transfer
+	 *
+	 * return the piped file {@link AsyncFile}
+	 *
+	 * @param path				identifier chosen for the file
+	 * @param bufferReadStream	Buffer in read stream
+	 * @return Future {@link AsyncFile } streamed file
+	 */
+	private Future<AsyncFile> streamBufferToFileSystem(final String path, final ReadStream<Buffer> bufferReadStream) {
+		Promise<AsyncFile> promise = Promise.promise();
+		bufferReadStream.pause();
+		this.fs.open(path, new OpenOptions(), fileResult -> {
+			if (fileResult.failed()) {
+				String message = String.format("[entcore@%s - streamFile] Failed to open/create file system : %s",
+						this.getClass().getSimpleName(), fileResult.cause().getMessage());
+				log.error(message);
+				promise.fail(fileResult.cause().getMessage());
+				bufferReadStream.pipe().close();
+			} else {
+				AsyncFile file = fileResult.result();
+				try {
+					bufferReadStream.pipe().to(file, pipeResult -> {
+						if (pipeResult.failed()) {
+							String message = String.format("[entcore@%s - streamFile] Failed to pipe used buffer to new file : %s",
+									this.getClass().getSimpleName(), pipeResult.cause().getMessage());
+							log.error(message);
+							promise.fail(pipeResult.cause().getMessage());
+							this.fs.delete(path, deleteRes -> {
+								if (deleteRes.failed()) {
+									log.error(String.format("[entcore@%s - streamFile - delete] Failed to delete new file : %s",
+											this.getClass().getSimpleName(), deleteRes.cause().getMessage()));
+								}
+							});
+							bufferReadStream.pipe().close();
+						} else {
+							promise.complete(file);
+						}
+					});
+				} catch (IllegalStateException e) {
+					String message = String.format("[entcore@%s - streamFile] Failed to init Pipe in buffer : %s",
+							this.getClass().getSimpleName(), e.getMessage());
+					log.error(message);
+					promise.fail(e.getMessage());
+					this.fs.delete(path, deleteRes -> {
+						if (deleteRes.failed()) {
+							log.error(String.format("[entcore@%s - streamFile - delete] Failed to delete new file : %s",
+									this.getClass().getSimpleName(), deleteRes.cause().getMessage()));
+						}
+					});
+				}
+			}
+		});
+		return promise.future();
 	}
 
 	@Override

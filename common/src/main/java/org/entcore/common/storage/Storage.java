@@ -19,6 +19,7 @@
 
 package org.entcore.common.storage;
 
+import io.vertx.core.Future;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.validation.FileValidator;
 import io.vertx.core.AsyncResult;
@@ -41,6 +42,27 @@ public interface Storage {
 	void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
 	void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
+
+	/**
+	 * write file in file system with buffer stream
+	 *
+	 * @param bufferReadStream	Buffer in read stream
+	 * @param contentType		content type data of the read buffer
+	 * @param filename			filename
+	 * @return Future {@link Future <JsonObject>} containing "_id" which corresponds to the written file identifier and its "metadata" content
+	 */
+	Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename);
+
+	/**
+	 * write file in file system with buffer stream
+	 *
+	 * @param id				identifier chosen for the file
+	 * @param bufferReadStream	Buffer in read stream
+	 * @param contentType		content type data of the read buffer
+	 * @param filename			filename
+	 * @return Future {@link Future <JsonObject>} containing "_id" which corresponds to the written file identifier and its "metadata" content
+	 */
+	Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename);
 
 	void writeFsFile(String filename, Handler<JsonObject> handler);
 
@@ -76,6 +98,8 @@ public interface Storage {
 	String getProtocol();
 
 	String getBucket();
+
+	void scanFile(String path);
 
 	void stats(Handler<AsyncResult<BucketStats>> handler);
 
