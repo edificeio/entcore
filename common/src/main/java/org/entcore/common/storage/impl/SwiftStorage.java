@@ -22,6 +22,7 @@ package org.entcore.common.storage.impl;
 import fr.wseduc.swift.SwiftClient;
 import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.streams.ReadStream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.storage.BucketStats;
@@ -97,6 +98,16 @@ public class SwiftStorage implements Storage {
 	public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
 		StorageObject o = new StorageObject(id, buff, filename, contentType);
 		writeStorageObject(handler, o);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		return writeBufferStream(null, bufferReadStream, contentType, filename);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		throw new NotImplementedException("writeBufferStream not implemented");
 	}
 
 	@Override
@@ -255,6 +266,11 @@ public class SwiftStorage implements Storage {
 	@Override
 	public String getBucket() {
 		return container;
+	}
+
+	@Override
+	public void scanFile(String path) {
+		throw new NotImplementedException("ScanFile not implemented");
 	}
 
 	@Override
