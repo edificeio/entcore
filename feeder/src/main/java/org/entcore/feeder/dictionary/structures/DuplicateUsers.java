@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import fr.wseduc.webutils.Either;
 
 public class DuplicateUsers {
 
@@ -92,7 +93,7 @@ public class DuplicateUsers {
 			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
 			"SET u1.IDPN = IDPN " +
 			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
-	private final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
+	private static final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
 	private final boolean autoMergeOnlyInSameStructure;
@@ -355,16 +356,34 @@ public class DuplicateUsers {
 			message.reply(error.put("message", "invalid.merge.case"));
 			return;
 		}
+		Handler<Either<String, JsonArray>> duplicatesChecker = new Handler<Either<String, JsonArray>>()
+		{
+			@Override
+			public void handle(Either<String, JsonArray> res)
+			{
+				String userId = params.getString("userId1");
+				DuplicateUsers.checkDuplicatesIntegrity(userId, new Handler<Message<JsonObject>>()
+				{
+					@Override
+					public void handle(Message<JsonObject> msg)
+					{
+						if("ok".equals(msg.body().getString("status")) == false)
+							log.error("Failed to check duplicates for user " + userId);
+					}
+				});
+			}
+		};
+
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
-			tx.add(query, params);
+			tx.add(query, params, duplicatesChecker);
 			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
 			message.reply(new JsonObject().put("status", "ok"));
 		} else {
 			try {
 				TransactionHelper txl = TransactionManager.getTransaction();
 				txl.add(INCREMENT_RELATIVE_SCORE, params);
-				txl.add(query, params);
+				txl.add(query, params, duplicatesChecker);
 				txl.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
@@ -561,6 +580,37 @@ public class DuplicateUsers {
 		}
 	}
 
+	public static void checkDuplicatesIntegrity(final Message<JsonObject> message)
+	{
+		checkDuplicatesIntegrity(message.body().getString("userId"), new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> event)
+			{
+				message.reply(event.body());
+			}
+		});
+	}
+
+	public static void checkDuplicatesIntegrity(String userId, Handler<Message<JsonObject>> handler)
+	{
+		checkDuplicatesIntegrity(new JsonArray().add(userId), handler);
+	}
+
+	public static void checkDuplicatesIntegrity(JsonArray userIds, Handler<Message<JsonObject>> handler)
+	{
+		String query = "MATCH (u1:User)-[r:DUPLICATE]-(u2:User) " +
+						"WHERE u1.id IN {ids} AND u1.disappearanceDate IS NULL AND u2.disappearanceDate IS NULL " +
+						"AND ( " +
+						" (u1.source IN {notDuplicateSource} AND u2.source IN {notDuplicateSource}) " +
+						" OR " +
+						" (NOT(u1.source IN {notDuplicateSource}) AND NOT(u2.source IN {notDuplicateSource})) " +
+						") " +
+						"DELETE r";
+		JsonObject params = new JsonObject().put("ids", userIds).put("notDuplicateSource", new JsonArray(notDeduplicateSource));
+
+		TransactionManager.getNeo4jHelper().execute(query, params, handler);
+	}
 
 	private int prioritySource(String source) {
 		Integer priority = sourcePriority.get(source);
