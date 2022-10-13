@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import fr.wseduc.webutils.Either;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -1089,9 +1090,34 @@ public class Importer {
 					String q2 = // remove mark of imported users
 							"START u=node:node_auto_index(externalId={externalId}) " +
 									"WHERE HAS(u.disappearanceDate) " +
-									"REMOVE u.disappearanceDate ";
+									"REMOVE u.disappearanceDate " +
+									"RETURN u.id AS id, u.login AS login";
 					for (String eId : userImportedExternalId) {
-						transactionHelper.add(q2, new JsonObject().put("externalId", eId));
+						transactionHelper.add(q2, new JsonObject().put("externalId", eId), new Handler<Either<String, JsonArray>>()
+						{
+							@Override
+							public void handle(Either<String, JsonArray> result)
+							{
+								if(result.isRight())
+								{
+									if(result.right().getValue().size() > 0)
+									{
+										JsonObject unmarkedUser = result.right().getValue().getJsonObject(0);
+										DuplicateUsers.checkDuplicatesIntegrity(unmarkedUser.getString("id"), new Handler<Message<JsonObject>>()
+										{
+											@Override
+											public void handle(Message<JsonObject> msg)
+											{
+												if("ok".equals(msg.body().getString("status")) == false)
+													log.error(t -> String.format("FAILED check duplicates for returned user %s", unmarkedUser.getString("login")));
+											}
+										});
+									}
+								}
+								else
+									log.error(t -> String.format("FAILED unmark user %s", eId));
+							}
+						});
 					}
 					log.info(t -> String.format("SUCCEED mark missing user | source: %s | structureExternalId: %s ",currentSource, structureExternalId));
 				}else{
@@ -1208,5 +1234,4 @@ public class Importer {
 	public JsonArray getPrefixToImportList() {
 		return this.importsPrefixList;
 	}
-
 }

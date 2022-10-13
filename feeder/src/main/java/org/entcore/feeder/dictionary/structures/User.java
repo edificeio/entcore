@@ -467,7 +467,22 @@ public class User {
 			"MATCH (u:User {id: {userId}})-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
 			"REMOVE u.disappearanceDate, u.deleteDate " +
 			"DELETE r, r2, b";
-		transaction.add(query, params);
+		transaction.add(query, params, new Handler<Either<String, JsonArray>>()
+		{
+			@Override
+			public void handle(Either<String, JsonArray> res)
+			{
+				DuplicateUsers.checkDuplicatesIntegrity(userId, new Handler<Message<JsonObject>>()
+				{
+					@Override
+					public void handle(Message<JsonObject> msg)
+					{
+						if("ok".equals(msg.body().getString("status")) == false)
+							log.error("Failed to check duplicates for user " + userId);
+					}
+				});
+			}
+		});
 	}
 
 	public static void transition(String userId, TransactionHelper transaction) {
