@@ -72,6 +72,7 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
                         this.dateFormat = Intl.DateTimeFormat(this.bundles.currentLanguage);
                         this.initFilters(structure);
                         this.filters = this.userlistFiltersService.getFormattedFilters();
+                        this.getFilteredUsers();
                         this.changeDetector.detectChanges();
                     }).catch(err => {
                         this.ns.error('massmail.error', 'error', err);
