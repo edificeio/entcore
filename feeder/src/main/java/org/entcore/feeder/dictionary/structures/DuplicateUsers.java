@@ -965,7 +965,23 @@ public class DuplicateUsers {
 				"MATCH (u:User {login: {id}}) " +
 				"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +
 				"u.activationCode = null, u.password = oldPassword, u.email = oldEmail ";
-		tx.add(query4, params);
+		tx.add(query4, params, new Handler<Either<String, JsonArray>>()
+		{
+			@Override
+			public void handle(Either<String, JsonArray> res)
+			{
+				String userId = principalUser.getString("id");
+				DuplicateUsers.checkDuplicatesIntegrity(userId, new Handler<Message<JsonObject>>()
+				{
+					@Override
+					public void handle(Message<JsonObject> msg)
+					{
+						if("ok".equals(msg.body().getString("status")) == false)
+							log.error("Failed to check duplicates for fused ine user " + userId);
+					}
+				});
+			}
+		});
 		log.info("Merge duplicate INE " + ine + ".\nOld user : " + oldUser.encode() + "\nNew user : " + principalUser.encode());
 	}
 

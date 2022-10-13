@@ -985,8 +985,19 @@ public class User {
 				final JsonArray res = r.body().getJsonArray("result");
 				if (res.size() == 1) {
 					final JsonObject u = res.getJsonObject(0);
+					final String userId = u.getString("userId");
 					log.info("Activate user " + u.encode() + " : " + j.encode());
 					Server.getEventBus(vertx).publish("activation.ack", u);
+
+					DuplicateUsers.checkDuplicatesIntegrity(userId, new Handler<Message<JsonObject>>()
+					{
+						@Override
+						public void handle(Message<JsonObject> msg)
+						{
+							if("ok".equals(msg.body().getString("status")) == false)
+								log.error("Failed to check duplicates for activated oldplatform user " + userId);
+						}
+					});
 
 					JsonObject update = new JsonObject().put("$set",
 						new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.ACTIVATED).put(UserDataSync.NEW_ID_FIELD, u.getString("userId"))
