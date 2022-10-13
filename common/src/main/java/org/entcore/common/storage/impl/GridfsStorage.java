@@ -24,6 +24,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
+import io.vertx.core.Future;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.streams.ReadStream;
@@ -146,6 +147,16 @@ public class GridfsStorage implements Storage {
 	@Override
 	public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
 		writeBuffer(id, buff, null, contentType, filename, null, handler);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		return writeBufferStream(null, bufferReadStream, contentType, filename);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		throw new NotImplementedException("writeBufferStream not implemented");
 	}
 
 	private void writeBuffer(String id, Buffer buff, Long maxSize, String contentType, String filename, final JsonObject m, Handler<JsonObject> handler) {
@@ -333,7 +344,7 @@ public class GridfsStorage implements Storage {
 					handler.handle(null);
 				}
 			}
-		});
+			});
 		}
 	}
 
@@ -603,6 +614,11 @@ public class GridfsStorage implements Storage {
 	@Override
 	public String getBucket() {
 		return bucket;
+	}
+
+	@Override
+	public void scanFile(String path) {
+		throw new NotImplementedException("ScanFile not implemented");
 	}
 
 	@Override
