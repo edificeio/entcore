@@ -28,6 +28,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     @Input() messageId = 'none';
 
     structure: StructureModel;
+    items: StructureListItem[];
     originalMessage: FlashMessageModel;
     message: FlashMessageModel = new FlashMessageModel();
     messages: FlashMessageModel[] = [];
@@ -62,6 +63,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             if (data.structure) {
                 this.structure = data.structure;
                 this.message.structureId = this.structure.id;
+                this.items = this.getItems();
             }
             if (this.action !== 'create' && data.messages) {
                 this.messages = data.messages;
@@ -227,7 +229,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         });
     }
 
-    getItems(): StructureListItem[] {
+    private getItems(): StructureListItem[] {
         const that = this;
         const myMap = (child: StructureModel) => {
             return {
