@@ -713,10 +713,17 @@ public class DuplicateUsers {
 			score += exactMatch(firstName, cleanAttribute(fu.getString("firstName")));
 			score += exactMatch(birthDate, cleanAttribute(fu.getString("birthDate")));
 			score += exactMatch(email, cleanAttribute(fu.getString("email")));
-			if (score > 3 && ((!source.equals(fu.getString("source")) &&
-					(notDeduplicateSource.contains(source) ^ notDeduplicateSource.contains(fu.getString("source")))) ||
-					disappearanceDate != null || fu.getLong("disappearanceDate") != null)) {
-				tx.add(query, params.copy().put("dId", fu.getString("id")).put("score", score));
+
+			if(score > 3)
+			{
+				boolean isSameSource = source.equals(fu.getString("source"));
+				boolean compatibleSources = notDeduplicateSource.contains(source) ^ notDeduplicateSource.contains(fu.getString("source"));
+				boolean oneIsDisappearing = disappearanceDate != null || fu.getLong("disappearanceDate") != null;
+
+				if(oneIsDisappearing || (!isSameSource && compatibleSources))
+				{
+					tx.add(query, params.copy().put("dId", fu.getString("id")).put("score", score));
+				}
 			}
 		}
 	}
