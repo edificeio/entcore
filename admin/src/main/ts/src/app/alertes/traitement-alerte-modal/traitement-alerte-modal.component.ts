@@ -31,7 +31,7 @@ export class TraitementAlerteModalComponent extends OdeComponent implements OnIn
 
   conserver() {
     this.subscriptions.add(
-    this.httpClient.put(`timeline/${this.data.alertId}/action/keep?structure=${this.data.structureId}`, { structure: this.data.structureId})
+    this.httpClient.put(`/timeline/${this.data.alertId}/action/keep?structure=${this.data.structureId}`, { structure: this.data.structureId})
         .subscribe(() => {
           this.close();
         }));
@@ -39,7 +39,7 @@ export class TraitementAlerteModalComponent extends OdeComponent implements OnIn
 
   supprimer() {
     this.subscriptions.add(
-        this.httpClient.put(`timeline/${this.data.alertId}/action/delete?structure=${this.data.structureId}`, { structure: this.data.structureId})
+        this.httpClient.put(`/timeline/${this.data.alertId}/action/delete?structure=${this.data.structureId}`, { structure: this.data.structureId})
         .subscribe(() => {
           this.close();
         })
