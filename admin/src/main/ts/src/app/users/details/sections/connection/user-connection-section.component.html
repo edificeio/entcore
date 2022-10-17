@@ -11,19 +11,27 @@
 
       <ode-form-field label="email">
         <div>
-          <input type="email" [(ngModel)]="email" name="email" [disabled]="isForbidden"
-                #emailInput="ngModel" [pattern]="emailPattern" />
+          <input 
+            type="email" 
+            [(ngModel)]="email" 
+            name="email" 
+            [disabled]="isForbidden || isMyAdmlAccount"
+            #emailInput="ngModel" 
+            [pattern]="emailPattern" 
+          />
           <ode-form-errors [control]="emailInput"></ode-form-errors>
           <button
             type="button"
             (click)="updateMail()"
             [disabled]="
-              mailForm.pristine ||
+              (mailForm.pristine ||
               mailForm.invalid ||
               spinner.isLoading('portal-content') ||
-              isForbidden
+              isForbidden) 
+              && !isMyAdmlAccount
             ">
-            <s5l>login.update</s5l>
+            <s5l *ngIf="!isMyAdmlAccount">save</s5l>
+            <s5l *ngIf="isMyAdmlAccount">edit</s5l>
             <i class="fa fa-floppy-o"></i>
           </button>
         </div>
