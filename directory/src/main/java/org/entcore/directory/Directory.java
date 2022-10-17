@@ -163,7 +163,7 @@ public class Directory extends BaseServer {
 		// See client class {@link EmailState}
 		vertx.eventBus().localConsumer(EmailState.BUS_ADDRESS, new EmailStateHandler(
 			config.getJsonObject("mail-state", new JsonObject()),
-			new DefaultMailValidationService(emailSender)
+			new DefaultMailValidationService(vertx, config)
 		));
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");

@@ -32,6 +32,7 @@ import io.vertx.core.file.FileSystemException;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
@@ -476,6 +477,13 @@ public class PortalController extends BaseController {
 				else
 					message.reply(new JsonObject().put("label", i18n.getString(label)));
 				break;
+
+			case "getTheme" : 
+				HttpServerRequest fakeRequest = new JsonHttpServerRequest( new JsonObject(), message.headers() );
+				String theme = this.getSkinFromConditions(fakeRequest);
+				message.reply( new JsonObject().put("theme", theme) );
+				break;
+
 			default: log.error("Archive : invalid action " + action);
 		}
 	}

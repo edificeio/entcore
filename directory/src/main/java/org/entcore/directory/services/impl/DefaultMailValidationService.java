@@ -20,29 +20,53 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 
 import org.entcore.common.neo4j.Neo4j;
 
 import static org.entcore.common.emailstate.EmailStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.emailstate.EmailStateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.services.MailValidationService;
 
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
+
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-public class DefaultMailValidationService implements MailValidationService {
+public class DefaultMailValidationService extends Renders implements MailValidationService {
 	private final Neo4j neo = Neo4j.getInstance();
 	private EmailSender emailSender = null;
 
-	public DefaultMailValidationService(EmailSender sender) {
-		this.emailSender = sender;
+	public DefaultMailValidationService(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+		super(vertx, config);
+		emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
 	}
 
 	/** 
@@ -265,24 +289,165 @@ public class DefaultMailValidationService implements MailValidationService {
 			promise.fail("Invalid parameters.");
 		} else {
 			String code = templateParams.getString("code");
-			emailSender.sendEmail(
-					request, email, null, null,
-					"email.validation.subject", "email/emailValidationCode.html", templateParams, true, ar -> {
-				if (ar.succeeded()) {
-					Message<JsonObject> reply = ar.result();
-					if ("ok".equals(reply.body().getString("status"))) {
-						Object r = reply.body().getValue("result");
-						promise.complete( 0l );
-					} else {
-						promise.fail( reply.body().getString("message", "") );
-					}
-				} else {
-					promise.fail(ar.cause().getMessage());
-				}
-			});
+			// TODO inject code in title translation ?
 
+			processEmailTemplate(request, templateParams, "email/emailValidationCode.html", false, processedTemplate -> {
+				emailSender.sendEmail(request, email, null, null,
+					I18n.getInstance().translate("email.validation.subject", getHost(request), I18n.acceptLanguage(request), code),
+					processedTemplate,
+					null,
+					false,
+					ar -> {
+						if (ar.succeeded()) {
+							Message<JsonObject> reply = ar.result();
+							if ("ok".equals(reply.body().getString("status"))) {
+								Object r = reply.body().getValue("result");
+								promise.complete( 0l );
+							} else {
+								promise.fail( reply.body().getString("message", "") );
+							}
+						} else {
+							promise.fail(ar.cause().getMessage());
+						}
+					}
+				);
+			});
 		}
     	return promise.future();
     }
 
+	private void processEmailTemplate(
+			final HttpServerRequest request, 
+			JsonObject parameters, 
+			String template, 
+			boolean reader, 
+			final Handler<String> handler
+			) {
+		setLambdaTemplateRequest(request);
+		if(reader){
+			final StringReader templateReader = new StringReader(template);
+			processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
+				public void handle(Writer writer) {
+					handler.handle(writer.toString());
+				}
+			});
+
+		} else {
+			processTemplate(request, template, parameters, handler);
+		}
+	}
+
+	//FIXME The whole methods below are intended to load i18n from /Timeline/timeline because it contains variables for email templating...
+
+	private Future<String> getThemePath(HttpServerRequest request) {
+        Promise<String> promise = Promise.promise();
+		vertx.eventBus().request( 
+			"portal",
+			new JsonObject().put("action", "getTheme"),
+			new DeliveryOptions().setHeaders(request.headers()), 
+			handlerToAsyncHandler( reply -> {
+				promise.complete( String.join(File.separator, config.getString("assets-path", "../.."), "assets", "themes", reply.body().getString("theme")) );
+			})
+		);
+		return promise.future();
+	}
+
+	private Future<Map<String, JsonObject>> loadThemeKVs(final HttpServerRequest request) {
+        Promise<Map<String, JsonObject>> promise = Promise.promise();
+		getThemePath(request).onComplete( result -> {
+			if( result.succeeded() ) {
+				final String i18nDirectory = String.join(File.separator, result.result(), "i18n", "Timeline");
+				vertx.fileSystem().exists(i18nDirectory, ar -> {
+					final Map<String, JsonObject> themeKV = initThemeDefaults();
+					if (ar.succeeded() && ar.result()) {
+						vertx.fileSystem().readDir(i18nDirectory, asyncResult -> {
+							if (asyncResult.succeeded()) {
+								readI18nTimeline(themeKV, asyncResult)
+								.onComplete( nil -> promise.complete(themeKV) );
+							} else {
+								log.error("Error loading assets at "+i18nDirectory, asyncResult.cause());
+								promise.complete(themeKV);
+							}
+						});
+					} else if (ar.failed()) {
+						log.error("Error loading assets at "+i18nDirectory, ar.cause());
+						promise.complete(themeKV);
+					}
+				});
+			}
+		});
+		return promise.future();
+	}
+
+	private Map<String, JsonObject> initThemeDefaults() {
+		Map<String, JsonObject> themeKVs = new HashMap<String, JsonObject>();
+		themeKVs.put("fr", new JsonObject()
+			.put("timeline.mail.body.bgcolor", "#f9f9f9")
+			.put("timeline.mail.body.bg", "background-color: #f9f9f9;")
+			.put("timeline.mail.main", "background-color: #fff;")
+			.put("timeline.mail.main.border", "border: 1px solid #e9e9e9;")
+			.put("timeline.mail.maincolor", "#fff")
+			.put("timeline.mail.text.color", "color: #fff;")
+			.put("timeline.mail.header.bg", "background-color: #209DCC;")
+			.put("timeline.mail.header.bgcolor", "#209DCC")
+			.put("timeline.mail.main.text.color", "color: #fff;")
+			.put("timeline.mail.footer.color", "color: #999;")
+		);
+		return themeKVs;
+	}
+
+	private Future<Void> readI18nTimeline(Map<String, JsonObject> themeKV, AsyncResult<List<String>> ar) {
+		Promise<Void> promise = Promise.promise();
+		final AtomicInteger count = new AtomicInteger(ar.result().size());
+		for(final String path : ar.result()) {
+			vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
+				@Override
+				public void handle(AsyncResult<FileProps> ar) {
+					if (ar.succeeded() && ar.result().isRegularFile()) {
+						final String k = new File(path).getName().split("\\.")[0];
+						vertx.fileSystem().readFile(path, ar2 -> {
+							if (ar2.succeeded()) {
+								JsonObject jo = new JsonObject(ar2.result().toString("UTF-8"));
+								themeKV.put(k, jo);
+							}
+							if (count.decrementAndGet() == 0) {
+								promise.complete();
+							}
+						});
+					} else {
+						if (count.decrementAndGet() == 0) {
+							promise.complete();
+						}
+					}
+				}
+			});
+		}
+		return promise.future();
+	}
+
+	/* Override i18n to use additional theme variables */
+	@Override
+	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
+		super.setLambdaTemplateRequest(request);
+
+		this.templateProcessor.setLambda("theme", new Mustache.Lambda() {
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException {
+				String key = frag.execute();
+				String language = Utils.getOrElse(I18n.acceptLanguage(request), "fr", false);
+
+				// #46383, translations from the theme takes precedence over those from the domain
+				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
+				if (!translatedContents.equals(key)) {
+					Mustache.compiler().compile(translatedContents).execute(frag, out);
+				} else {
+					loadThemeKVs(request)
+					.onSuccess( themeKV -> {
+						JsonObject timelineI18n = themeKV.getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
+						Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(frag, out);
+					});
+				}
+			}
+		});
+	}
 }
