@@ -293,9 +293,18 @@ export class UserConnectionSectionComponent
     return this.isAdml && this.details && (this.details.isAdmc() || this.details.isAdml()) && this.details.id != this.myID;
   }
 
+  get isMyAdmlAccount(): boolean {
+    return this.isAdml && this.details.id === this.myID;
+  }
+
   updateMail() {
     if( this.isForbidden )
       return;
+    if (this.isMyAdmlAccount) {
+      const redirectUrl = encodeURI(document.location.href);
+      window.location.href = `/auth/validate-mail?force=true&redirect=${redirectUrl}`;
+      return;
+    }
     this.details.email = this.email;
     this.spinner.perform('portal-content', this.details.updateMail())
       .then(() => {
