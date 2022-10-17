@@ -104,6 +104,7 @@
                             </svg>
                             <div><i18n>validate-mail.success.paragraph1</i18n></div>
                             <div ng-if="ctrl.redirect"><i18n>validate-mail.success.paragraph2</i18n></div>
+                            <div ng-if="!ctrl.fullscreen"><i18n>validate-mail.success.paragraph2.fullscreen</i18n></div>
                         </div>
                         <div ng-if="ctrl.status==='ko'" class="text-danger">
                             <svg class="icon-svg" width="20" height="20">
