@@ -146,6 +146,7 @@ public class Importer {
 						futures.add(loadPersEducnat2D());
 					}
 					if (checkStudentsRelationships && ("AAF1D".equals(source) || "AAF".equals(source))) {
+						studentsStructuresClassesGroups.clear();
 						futures.add(loadStudentsStructuresClassesGroups("0"));
 						futures.add(loadStudentsStructuresClassesGroups("1"));
 						futures.add(loadStudentsStructuresClassesGroups("2"));
