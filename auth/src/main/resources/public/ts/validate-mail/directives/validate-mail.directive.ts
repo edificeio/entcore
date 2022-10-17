@@ -14,6 +14,7 @@ export class ValidateMailController implements IController {
 	public step:ValidationStep = "email"; // by default
 	public force?:Boolean;
 	public redirect?:string;
+	public fullscreen?:Boolean;
 
 	// Input data
 	public emailAddress?:String;
@@ -150,7 +151,8 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
     scope = {
 		step: "=?",
 		force: "=?",
-		redirect: "=?"
+		redirect: "=?",
+		fullscreen: "=?"
     };
 	bindToController = true;
 	controller = [ValidateMailController];
@@ -234,6 +236,7 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
  * Set step="code"  to display the second screen (=code input).
  * Set force="true" when the user MUST validate his email address.
  * Set redirect="URL" when the user must be redirected after validation.
+ * Set fullscreen="true" when no need of header (example when embedded in an iframe)
  *
  * Usage:
  *   &lt;validate-mail step?="email|code" force?="true" redirect?="URL"></validate-mail&gt;
