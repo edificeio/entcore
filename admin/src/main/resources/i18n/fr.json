@@ -467,6 +467,7 @@
   "user.removedFromStructure": "Utilisateur retiré de cet établissement",
   "users.relink.info": "Vous retrouverez ici les utilisateurs qui ont été manuellement retirés de cet établissement mais qui, d'après l'AAF, y sont toujours rattachés.<br/>Si vous le souhaitez vous pouvez rétablir ce rattachement.",
   "save": "Enregistrer",
+  "edit": "Modifier",
   "save.modifications": "Enregistrer les modifications",
   "send.reset.password": "Réinitialisation de mot de passe",
   "send.reset.password.button": "Envoyer",
