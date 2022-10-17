@@ -198,6 +198,10 @@ public class DefaultMailValidationService implements MailValidationService {
 					setState(emailState, OUTDATED);
 					break;
 				}
+				// if TTL or max tries reached don't check code
+				if (getState(emailState) == OUTDATED) {
+					break;
+				}
 				// Check code
 				String key = StringUtils.trimToNull( getKey(emailState) );
 				if( key == null || !key.equals(StringUtils.trimToNull(code)) ) {
