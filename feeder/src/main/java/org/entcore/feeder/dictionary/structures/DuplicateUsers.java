@@ -473,27 +473,32 @@ public class DuplicateUsers {
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE u-[:IN]->gin " +
+												"MERGE u-[r:IN]->gin " +
+												"SET r.source = rin.source " +
 												"DELETE rin ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE  u-[:COMMUNIQUE]->gcom " +
+												"MERGE  u-[r:COMMUNIQUE]->gcom " +
+												"SET r.source = rcom.source " +
 												"DELETE rcom ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE u<-[:COMMUNIQUE]-gcomr " +
+												"MERGE u<-[r:COMMUNIQUE]-gcomr " +
+												"SET r.source = rcomr.source " +
 												"DELETE rcomr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE u-[:RELATED]->ur " +
+												"MERGE u-[r:RELATED]->ur " +
+												"SET r.source = rr.source " +
 												"DELETE rr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)<-[rrr:RELATED]-(urr:User) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE u<-[:RELATED]-urr " +
+												"MERGE u<-[r:RELATED]-urr " +
+												"SET r.source = rrr.source " +
 												"DELETE rrr ", params);
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User) " +
