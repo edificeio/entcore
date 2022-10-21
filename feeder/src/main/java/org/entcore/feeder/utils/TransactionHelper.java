@@ -159,7 +159,7 @@ public class TransactionHelper {
 			throw new IllegalStateException(error.body().getString("message"));
 		}
 		waitingQuery = true;
-		neo4j.executeTransaction(Statement.toNeoStatements(statements), transactionId, false, new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(Statement.toNeoStatements(s), transactionId, false, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if (handler != null) {
@@ -228,7 +228,8 @@ public class TransactionHelper {
 							commitStatements.get(i).handleError(error);
 					}
 
-					handler.handle(msg);
+					if(handler != null)
+						handler.handle(msg);
 				}
 			});
 			if (transactionId != null) {
