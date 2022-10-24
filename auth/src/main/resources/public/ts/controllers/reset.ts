@@ -1,4 +1,4 @@
-import { ng, http, template, idiom as lang } from 'entcore';
+import { ng, http, template, idiom as lang, skin } from 'entcore';
 
 declare let resetCode: string;
 declare let login: string;
@@ -38,6 +38,16 @@ export let resetController = ng.controller('ResetController', ['$scope', ($scope
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
 	});
+
+	let conf = { overriding: [] };
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', '/assets/theme-conf.js');
+	xhr.onload = async () => {
+		eval(xhr.responseText.split('exports.')[1]);
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		$scope.childTheme = currentTheme.child;
+	};
+	xhr.send();
 
 	$scope.identicalRegex = function(str){
 		if(!str)
