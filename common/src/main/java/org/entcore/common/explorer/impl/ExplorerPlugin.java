@@ -423,6 +423,12 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
+    public ShareService createPostgresShareService(String schema, String shareTable, EventBus eb, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions){
+        final ShareService inner = new SqlShareService(schema, shareTable, eb, securedActions, groupedActions);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
+    }
+
+    @Override
     public ShareService createPostgresShareService(Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
         return createPostgresShareService(communication.vertx().eventBus(), securedActions, groupedActions);
     }
