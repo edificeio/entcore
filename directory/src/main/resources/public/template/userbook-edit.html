@@ -99,17 +99,33 @@
 
 <div class="row reduce-block-six twelve-mobile">
 	<article>
-		<h2>
+		<h2 class="h2-hobbies">
 			<i18n>userBook.interests</i18n>
 		</h2>
 
-		<div class="row" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
-			<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
-			<div class="nine cell">
-				<input type="text" complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing" />
+		<div class="bloc-hobbies" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
+			<div class="two reduce-block-six">
+				<span>[[translate('userBook.hobby.' + hobby.category)]]</span>
 			</div>
-			<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]"
-				 data-ng-click="changeVisibility(hobby)"></i></div>
+			<div class="nine">
+				<input type="text" complete-change="saveChanges()" ng-model="hobby.values" class="twelve inline-editing" />
+			</div>
+			<div class="one">
+				<svg
+					class="[[hobby.visibility.toLowerCase()]] right-magnet icon-see"
+					ng-if="hobby.visibility.toLowerCase() === 'public'"
+					data-ng-click="changeVisibility(hobby)" width="18" height="18">
+					<title>[[translate(hobby.visibility.toLowerCase())]]</title>
+					<use href="/directory/public/assets/icons/icons.svg#see"></use>
+				</svg>
+				<svg 
+					class="[[hobby.visibility.toLowerCase()]] right-magnet icon-hide"
+					ng-if="hobby.visibility.toLowerCase() === 'prive'"
+					data-ng-click="changeVisibility(hobby)" width="18" height="18">
+					<title>[[translate(hobby.visibility.toLowerCase())]]</title>
+					<use href="/directory/public/assets/icons/icons.svg#hide"></use>
+				</svg>
+			</div>
 			<div class="clear"></div>
 		</div>
 	</article>
@@ -121,8 +137,21 @@
 	<article>
 		<h2>
 			<span translate content="userBook.profile.health"></span>
-			<i class="[[account.visible.health]] right-magnet" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)"></i></h2>
-
+			<svg
+				class="[[account.visible.health]] right-magnet blue icon-see"
+				ng-if="account.visible.health === 'public'"
+				data-ng-click="changeInfosVisibility('health', account.visible.health)" width="18" height="18">
+				<title>[[translate(account.visible.health)]]</title>
+				<use href="/directory/public/assets/icons/icons.svg#see"></use>
+			</svg>
+			<svg 
+				class="[[account.visible.health]] right-magnet blue icon-hide"
+				ng-if="account.visible.health === 'prive'"
+				data-ng-click="changeInfosVisibility('health', account.visible.health)" width="18" height="18">
+				<title>[[translate(account.visible.health)]]</title>
+				<use href="/directory/public/assets/icons/icons.svg#hide"></use>
+			</svg>
+		</h2>
 		<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
 	</article>
 </div>
