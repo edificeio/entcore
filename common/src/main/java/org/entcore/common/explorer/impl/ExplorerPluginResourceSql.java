@@ -46,37 +46,42 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
 
     @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
-        //TODO cursor and filter by date
-        int i = 1;
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
         query.append(String.format("SELECT * FROM %s ", getTableName()));
-        if (from.isPresent() || to.isPresent()) {
-            query.append("WHERE ");
-            if (from.isPresent()) {
-                query.append(String.format("%s >= $%s", getCreatedAtColumn(), i++));
-                final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                tuple.addLocalDateTime(localFrom);
-            }
-            if (to.isPresent()) {
-                query.append(String.format("%s < $%s", getCreatedAtColumn(), i++));
-                final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                tuple.addLocalDateTime(localTo);
-            }
+        if (from.isPresent() && to.isPresent()) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            tuple.addValue(localFrom);
+            tuple.addValue(localTo);
+            query.append(String.format("WHERE %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
+        } else if (from.isPresent()) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            tuple.addValue(localFrom);
+            query.append(String.format("WHERE %s >= $1 ",getCreatedAtColumn()));
+        } else if (to.isPresent()) {
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            tuple.addValue(localTo);
+            query.append(String.format("WHERE %s < $1 ",getCreatedAtColumn()));
         }
-        pgPool.preparedQuery(query.toString(), tuple).onSuccess(rows -> {
-            final List<JsonObject> jsons = new ArrayList<>();
-            for (final Row row : rows) {
-                jsons.add(PostgresClient.toJson(row, rows));
-            }
-            stream.end(jsons);
-        }).onFailure(e -> {
-            stream.end();
-            log.error("Failed to fetch folders for index: ", e.getCause());
+        pgPool.queryStream(query.toString(),tuple, getBatchSize()).onSuccess(result -> {
+            result.handler(row -> {
+                stream.add(PostgresClient.toJson(row));
+            }).endHandler(finish -> {
+                stream.end();
+            }).exceptionHandler(e->{
+                log.error("Failed to sqlSelect resources "+getTableName()+ "for reindex : ", e);
+            });
+        }).onFailure(e->{
+            log.error("Failed to create sqlCursor resources "+getTableName()+ "for reindex : ", e);
         });
     }
 
@@ -130,6 +135,8 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     //overridable
+    protected int getBatchSize() { return 50; }
+
     protected String getCreatedAtColumn() {
         return "created_at";
     }

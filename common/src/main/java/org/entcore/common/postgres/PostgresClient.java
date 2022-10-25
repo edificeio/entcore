@@ -131,6 +131,83 @@ public class PostgresClient {
         return tuple;
     }
 
+    public static String toInsertQuery(final String table, final JsonObject json) {
+        final StringBuilder query = new StringBuilder();
+        final List<String> columns = new ArrayList<>();
+        final List<String> values = new ArrayList<>();
+        for(final String key : json.fieldNames()){
+            final int count = values.size()+1;
+            columns.add(String.format("\"%s\"",key));
+            values.add("$" + count);
+        }
+        final String columnPart = String.join(",", columns);
+        final String valuesPart = String.join(",", values);
+        query.append(String.format("INSERT INTO %s (%s) VALUES(%s) RETURNING *",table, columnPart, valuesPart));
+        return query.toString();
+    }
+
+    public static Tuple toInsertTuple(final JsonObject json) {
+        final Tuple tuple = Tuple.tuple();
+        for(final String key : json.fieldNames()){
+            tuple.addValue(json.getValue(key));
+        }
+        return tuple;
+    }
+
+    public static String toUpdateQuery(final String table, final JsonObject json, final String idColumn) {
+        final StringBuilder query = new StringBuilder();
+        final List<String> vals = new ArrayList<>();
+        final String wherePart = String.format("\"%s\" = $1", idColumn);
+        for(final String key : json.fieldNames()){
+            if(!idColumn.equalsIgnoreCase(key)){
+                final int count = vals.size()+2;
+                vals.add(String.format("\"%s\" = $%s", key, count));
+            }
+        }
+        final String valuesPart = String.join(",", vals);
+        query.append(String.format("UPDATE %s SET %s WHERE %s RETURNING *",table, valuesPart, wherePart));
+        return query.toString();
+    }
+
+    public static Tuple toUpdateTuple(final JsonObject json, final String idColumn) {
+        final Tuple tuple = Tuple.tuple();
+        tuple.addValue(json.getValue(idColumn));
+        for(final String key : json.fieldNames()){
+            if(!idColumn.equalsIgnoreCase(key)) {
+                tuple.addValue(json.getValue(key));
+            }
+        }
+        return tuple;
+    }
+
+    public static Tuple toUpdateTuple(final JsonObject json, final String idColumn, final Set<Integer> ids) {
+        final Tuple tuple = Tuple.tuple();
+        for(final Integer id : ids){
+            tuple.addValue(id);
+        }
+        for(final String key : json.fieldNames()){
+            if(!idColumn.equalsIgnoreCase(key)) {
+                tuple.addValue(json.getValue(key));
+            }
+        }
+        return tuple;
+    }
+
+    public static String toUpdateQuery(final String table, final JsonObject json, final String idColumn, final Set<Integer> ids) {
+        final StringBuilder query = new StringBuilder();
+        final List<String> vals = new ArrayList<>();
+        final String wherePart = String.format("\"%s\" IN (%s)", idColumn, inPlaceholder(ids, 1));
+        for(final String key : json.fieldNames()){
+            if(!idColumn.equalsIgnoreCase(key)){
+                final int count = vals.size()+ids.size()+1;
+                vals.add(String.format("\"%s\" = $%s", key, count));
+            }
+        }
+        final String valuesPart = String.join(",", vals);
+        query.append(String.format("UPDATE %s SET %s WHERE %s RETURNING *",table, valuesPart, wherePart));
+        return query.toString();
+    }
+
     public static Tuple insertValuesWithDefault(final Collection<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final List<String> column) {
         return insertValuesWithDefault(rows, tuple, defaultValues, column.toArray(new String[column.size()]));
     }
@@ -199,6 +276,22 @@ public class PostgresClient {
             }
         }
         return tuple;
+    }
+
+    public static JsonObject toJson(final Row row) {
+        final JsonObject json = new JsonObject();
+        for(int i = 0 ; i < row.size(); i++){
+            final String key = row.getColumnName(i);
+            final Object value = row.getValue(key);
+            if (value instanceof UUID) {
+                json.put(key, value.toString());
+            } else if (value instanceof LocalDateTime) {
+                json.put(key, value.toString());
+            } else {
+                json.put(key, value);
+            }
+        }
+        return json;
     }
 
     public static JsonObject toJson(final Row row, final RowSet result) {
