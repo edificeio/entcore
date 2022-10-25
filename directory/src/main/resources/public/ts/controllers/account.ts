@@ -91,6 +91,25 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	$scope.tracker = tracker;
 
+	$scope.matchTelRegex = function (tel) {
+		if((tel) && (tel.match(/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/))) {
+			return true;
+		}
+		return false;
+	}
+
+	const checkEmailValidation = function(){
+		http().get('/directory/user/mailstate').done(function(infos){
+			if(infos.emailState	&& infos.emailState.valid === infos.email){
+				$scope.validateMail = true;
+			}
+			else{
+				$scope.validateMail = false;
+			}
+			$scope.$apply();
+		});
+	};
+
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){
 		await skin.listSkins();
@@ -160,6 +179,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		$scope.hidePersonalData = window.hidePersonalData;
 
 		loadThemeConf();
+		checkEmailValidation();
 	}
 
 	$scope.display = {};
