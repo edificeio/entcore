@@ -26,6 +26,19 @@ public class ExplorerStream<T> {
         this.batchSize = batchSize;
     }
 
+    public Future<Void> add(final T batch){
+        metrics.put("nb_batch", metrics.getInteger("nb_batch", 0)+1);
+        metrics.put("nb_message", metrics.getInteger("nb_message", 0)+1);
+        pending.add(batch);
+        if(batchSize <= pending.size()){
+            final List<T> toTrigger = new ArrayList<>(pending);
+            pending.clear();
+            return this.handler.apply(toTrigger);
+        }else{
+            return Future.succeededFuture();
+        }
+    }
+
     public Future<Void> add(List<T> batch){
         metrics.put("nb_batch", metrics.getInteger("nb_batch", 0)+1);
         metrics.put("nb_message", metrics.getInteger("nb_message", 0)+batch.size());

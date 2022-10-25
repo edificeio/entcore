@@ -86,7 +86,7 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
         }
         final JsonObject queryJson = MongoQueryBuilder.build(query);
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
-            stream.add(Arrays.asList(result));
+            stream.add(result);
         }).endHandler(e->{
             stream.end();
         });
