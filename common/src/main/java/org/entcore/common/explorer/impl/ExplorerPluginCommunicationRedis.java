@@ -31,10 +31,16 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
     private final List<RedisExplorerFailed> pendingFailed = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
+    private boolean isEnabled = true;
 
     public ExplorerPluginCommunicationRedis(final Vertx vertx, final RedisClient redisClient) {
         this.redisClient = redisClient;
         this.vertx = vertx;
+    }
+
+    public IExplorerPluginCommunication setEnabled(boolean enabled) {
+        isEnabled = enabled;
+        return this;
     }
 
     @Override
@@ -44,6 +50,9 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
 
     @Override
     public Future<Void> pushMessage(final List<ExplorerMessage> messages) {
+        if(!this.isEnabled){
+            return Future.succeededFuture();
+        }
         if (messages.isEmpty()) {
             return Future.succeededFuture();
         }
