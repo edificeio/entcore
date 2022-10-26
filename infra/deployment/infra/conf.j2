@@ -97,6 +97,42 @@
             "auth": "{{ nodePdfToken }}",
             "url" : "{{ nodePdfUrl }}"
         },
+        {% if explorerEnabled is defined %}
+        "explorerConfig": {
+            "enabled": true,
+            "redis": {{ explorerRedis|default('true') }},
+            "postgres": {{ explorerPostgres|default('false') }}
+            {% if explorerRedisHost is defined %}
+            ,"redisConfig": {
+                "select": {{ explorerRedisSelect|default('0') }},
+                "host": "{{ explorerRedisHost }}",
+                "port": {{ explorerRedisHostPort |default('6379') }}
+                {% if explorerRedisPassword is defined %},
+                "auth": "{{ explorerRedisPassword }}"
+                {% endif %}
+                {% if explorerRedisMaxWaitingHandlers is defined %},
+                "maxWaitingHandlers": {{ explorerRedisMaxWaitingHandlers }}
+                {% endif %}
+                {% if explorerRedisMaxPoolSize is defined %},
+                "maxPoolSize": {{ explorerRedisMaxPoolSize }}
+                {% endif %}
+                {% if explorerRedisMaxPoolWaiting is defined %},
+                "maxPoolWaiting": {{ explorerRedisMaxPoolWaiting }}
+                {% endif %}
+            }
+           {% endif %}
+           {% if explorerPostgresHost is defined %}
+            ,"postgresConfig":{
+                "host": "{{ explorerPostgresHost }}",
+                "database": "{{explorerPostgresHostDb}}",
+                "port": {{explorerPostgresPort | default(5432)}},
+                "user": "{{ explorerPostgresUser }}",
+                "password": "{{ explorerPostgresPassword }}",
+                "pool-size": {{explorerPostgresPoolSize | default(50)}}
+            }
+           {% endif %}
+        },
+        {% endif %}
         {% if redisHost is defined %}
         "redisConfig": {
             "select": {{ redisSelect|default('0') }},
