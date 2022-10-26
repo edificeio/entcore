@@ -37,16 +37,32 @@ public class ExplorerPluginFactory {
         return explorerConfig;
     }
 
+    public static JsonObject getRedisConfig() throws Exception {
+        final JsonObject explorerConfig = getExplorerConfig();
+        if(explorerConfig.containsKey("redisConfig")){
+            return explorerConfig;
+        }
+        return globalConfig;
+    }
+
+    public static JsonObject getPostgresConfig() throws Exception {
+        final JsonObject explorerConfig = getExplorerConfig();
+        if(explorerConfig.containsKey("postgresConfig")){
+            return explorerConfig;
+        }
+        return globalConfig;
+    }
+
     public static IExplorerPluginCommunication getCommunication() throws Exception {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
         }
         if(explorerConfig.getBoolean("postgres", false)){
-            final PostgresClient postgresClient = PostgresClient.create(vertxInstance, globalConfig);
+            final PostgresClient postgresClient = PostgresClient.create(vertxInstance, getPostgresConfig());
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient);
             return communication;
         }else {
-            final RedisClient redisClient = RedisClient.create(vertxInstance, globalConfig);
+            final RedisClient redisClient = RedisClient.create(vertxInstance, getRedisConfig());
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient);
             return communication;
         }
