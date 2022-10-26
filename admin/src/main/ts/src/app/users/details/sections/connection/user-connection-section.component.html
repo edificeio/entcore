@@ -68,7 +68,8 @@
             ">
             <s5l *ngIf="!isMyAdmlAccount">save</s5l>
             <s5l *ngIf="isMyAdmlAccount">edit</s5l>
-            <i class="fa fa-floppy-o"></i>
+            <i *ngIf="!isMyAdmlAccount" class="fa fa-floppy-o"></i>
+            <i *ngIf="isMyAdmlAccount" class="fa fa-pencil"></i>
           </button>
         </div>
       </ode-form-field>
