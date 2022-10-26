@@ -24,10 +24,16 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
     private final List<Promise> pending = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
+    private boolean isEnabled = true;
 
     public ExplorerPluginCommunicationPostgres(final Vertx vertx, final PostgresClient pgClient) {
         this.pgPool = pgClient.getClientPool();
         this.vertx = vertx;
+    }
+
+    public IExplorerPluginCommunication setEnabled(boolean enabled) {
+        isEnabled = enabled;
+        return this;
     }
 
     @Override
@@ -37,6 +43,9 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
 
     @Override
     public Future<Void> pushMessage(final List<ExplorerMessage> messages) {
+        if(!this.isEnabled){
+            return Future.succeededFuture();
+        }
         if (messages.isEmpty()) {
             return Future.succeededFuture();
         }
