@@ -30,6 +30,10 @@ public class ExplorerPluginFactory {
         }
     }
 
+    public static boolean isEnabled() throws Exception {
+        return getExplorerConfig().getBoolean("enabled", true);
+    }
+
     public static JsonObject getExplorerConfig() throws Exception {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
@@ -59,11 +63,11 @@ public class ExplorerPluginFactory {
         }
         if(explorerConfig.getBoolean("postgres", false)){
             final PostgresClient postgresClient = PostgresClient.create(vertxInstance, getPostgresConfig());
-            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient);
+            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient).setEnabled(isEnabled());
             return communication;
         }else {
             final RedisClient redisClient = RedisClient.create(vertxInstance, getRedisConfig());
-            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient);
+            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient).setEnabled(isEnabled());
             return communication;
         }
     }
