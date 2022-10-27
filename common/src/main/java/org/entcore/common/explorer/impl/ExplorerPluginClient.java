@@ -90,6 +90,24 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     }
 
     @Override
+    public Future<ShareResponse> shareByIds(final UserInfos user, final Set<String> ids, final JsonObject shares){
+        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryShare.name());
+        headers.add("userId", user.getUserId());
+        headers.add("userName", user.getUsername());
+        final JsonObject payload = new JsonObject();
+        payload.put("resources", new JsonArray(new ArrayList(ids)));
+        payload.put("shares", shares);
+        final Future<JsonObject> future = send(headers, payload, Duration.ofMinutes(5));
+        return future.map(res->{
+            final int nbShared = res.getInteger("nbShared", 0);
+            final JsonObject notifyTimelineMap = res.getJsonObject("notifyTimelineMap", new JsonObject());
+            final ShareResponse sres = new ShareResponse(nbShared, notifyTimelineMap);
+            return sres;
+        });
+    }
+
+    @Override
     public Future<JsonObject> getMetrics(final UserInfos user){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMetrics.name());
