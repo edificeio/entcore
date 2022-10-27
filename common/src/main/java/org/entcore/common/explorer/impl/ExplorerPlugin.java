@@ -70,6 +70,15 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final String userName = message.headers().get("userName");
         final ExplorerRemoteAction action = ExplorerRemoteAction.valueOf(actionStr);
         switch (action) {
+            case QueryShare: {
+                final UserInfos user = new UserInfos();
+                user.setUserId(userId);
+                user.setUsername(userName);
+                final JsonObject shares = message.body().getJsonObject("shares", new JsonObject());
+                final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
+                onShareAction(message, user, values, shares);
+                break;
+            }
             case QueryCreate: {
                 final UserInfos user = new UserInfos();
                 user.setUserId(userId);
@@ -172,6 +181,58 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 log.error("Failed to delete resource coming from explorer: ", idsRes.cause());
             }
         });
+    }
+
+    protected void onShareAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values, final JsonObject shares){
+        final List<String> ids = values.stream().filter(e -> e instanceof String).map(e -> (String) e).collect(Collectors.toList());
+        final Optional<ShareService> shareServiceOpt = getShareService();
+        if(shareServiceOpt.isPresent()){
+            final List<Future> futures = new ArrayList<>();
+            final String userId = user.getUserId();
+            final Map<String, JsonObject> generatedShared = new HashMap<>();
+            final JsonObject notifyTimeline = new JsonObject();
+            for(final String resourceId: ids){
+                final Promise<Void> promise = Promise.promise();
+                futures.add(promise.future());
+                futures.add(shareServiceOpt.get().share(userId,resourceId,shares, e->{
+                    if(e.isRight()){
+                        final JsonArray nta = e.right().getValue().getJsonArray("notify-timeline-array");
+                        notifyTimeline.put(resourceId, nta);
+                        promise.complete(null);
+                        //TODO notify timeline....
+                    }
+
+                }).compose(e->{
+                    generatedShared.put(resourceId, e);
+                    return Future.succeededFuture(e);
+                }));
+            }
+            CompositeFuture.all(futures).onComplete(all->{
+                if (all.succeeded()) {
+                    final List<ExplorerMessage> messages = new ArrayList<>();
+                    for(final String id : ids) {
+                        final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getResourceType());
+                        mess.withShared(generatedShared.get(id).getJsonArray("shared"));
+                        messages.add(mess);
+                    }
+                    communication.pushMessage(messages).onComplete(resPush -> {
+                        final JsonObject payload = new JsonObject().put("nbShared", ids.size()).put("notifyTimelineMap", notifyTimeline);
+                        if (resPush.succeeded()) {
+                            message.reply(payload);
+                        } else {
+                            message.reply(payload, new DeliveryOptions().addHeader("error", ExplorerRemoteError.ShareFailedPush.getError()));
+                            log.error("Failed to push shared resource coming from explorer: ", resPush.cause());
+                        }
+                    });
+                } else {
+                    message.fail(500, ExplorerRemoteError.ShareFailed.getError());
+                    log.error("Failed to share resource coming from explorer: ", all.cause());
+                }
+            });
+        }else{
+            message.fail(500, ExplorerRemoteError.ShareFailedMissing.getError());
+            log.error("Missing share service");
+        }
     }
 
     protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps, final boolean includeFolders){
@@ -451,6 +512,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected abstract boolean isForSearch();
 
     protected abstract String getResourceType();
+
+    protected abstract Optional<ShareService> getShareService();
 
     protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
 
