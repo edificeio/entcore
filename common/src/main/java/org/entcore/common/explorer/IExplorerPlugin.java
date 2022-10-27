@@ -77,6 +77,7 @@ public interface IExplorerPlugin {
         QueryReindex,
         QueryCreate,
         QueryDelete,
+        QueryShare,
         QueryMetrics,
     }
 
@@ -85,7 +86,10 @@ public interface IExplorerPlugin {
         CreatePushFailed("explorer.remote.error.create_push"),
         ReindexFailed("explorer.remote.error.reindex"),
         DeleteFailed("explorer.remote.error.delete"),
-        DeletePushFailed("explorer.remote.error.delete_push");
+        DeletePushFailed("explorer.remote.error.delete_push"),
+        ShareFailed("explorer.remote.error.share"),
+        ShareFailedMissing("explorer.remote.error.share.missing"),
+        ShareFailedPush("explorer.remote.error.share_push");
         private final String error;
 
         ExplorerRemoteError(final String e) {
