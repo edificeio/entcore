@@ -6,10 +6,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
     <style type="text/css">
-        img {
-            max-width: 100%;
-        }
-
         body {
             -webkit-font-smoothing: antialiased;
             -webkit-text-size-adjust: none;
@@ -25,9 +21,14 @@
 
 		header {
 			border-radius:8px 8px 0 0;
-			background:#2A9CC8;
+			background:{{#theme}}timeline.mail.header.bgcolor{{/theme}};
 			height:74px;
 		}
+
+        header img {
+            max-width: 100%;
+            margin-top: 12px;
+        }
 
         table {
 			width: 100%;
@@ -134,7 +135,7 @@
                             <td class="alert alert-warning" style="font-size: 16px; {{#theme}}timeline.mail.text.color{{/theme}} font-weight: 500; text-align: left; border-radius: 3px 3px 0 0; {{#theme}}timeline.mail.header.bg{{/theme}} padding: 0;"
                                 align="left" bgcolor="{{#theme}}timeline.mail.header.bgcolor{{/theme}}" valign="top">
 								<header>
-								 	<img src="{{scheme}}://{{host}}/current/assets/img/logo.png" height="50" alt="logo"/>
+								 	<img src="{{#theme}}timeline.mail.logo.src{{/theme}}" height="50" alt="logo"/>
 								</header>
                             </td>
                         </tr>
