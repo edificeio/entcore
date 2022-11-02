@@ -86,6 +86,7 @@
             name="loginAlias"
             [pattern]="loginAliasPattern"
             #loginAliasInput="ngModel"
+            [disabled]="isForbidden"
           />
           <button
             type="button"
