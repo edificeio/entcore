@@ -22,6 +22,7 @@ package org.entcore.auth.controllers;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 
@@ -46,6 +47,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.webutils.security.SecuredAction;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.Sha1;
+import fr.wseduc.webutils.security.BCrypt;
 
 import org.entcore.common.neo4j.Neo4j;
 
@@ -57,6 +59,8 @@ public class CanopeCasClient extends CasClientController
     public String userCreationStructureId;
 
     private Neo4j neo4j = Neo4j.getInstance();
+
+    private static final String CLASS_PREFIX = "Classe de";
 
     public CanopeCasClient(AuthController authController)
     {
@@ -80,6 +84,18 @@ public class CanopeCasClient extends CasClientController
         }
     }
 
+    private static class ENTAccount
+    {
+        public String id;
+        public String login;
+
+        public ENTAccount(String id, String login)
+        {
+            this.id = id;
+            this.login = login;
+        }
+    }
+
     private static class CanopeUser
     {
         private String id;
@@ -87,6 +103,8 @@ public class CanopeCasClient extends CasClientController
         public String firstName;
         public String lastName;
         public String profile;
+
+        public ENTAccount account = null;
 
         private static final Map<String, String> ROLE_CODE_TO_PROFILE = new HashMap<String , String>() {{
             put("MEE", "Teacher");
@@ -115,6 +133,17 @@ public class CanopeCasClient extends CasClientController
         public String getExternalId()
         {
             return "CANOPE-" + this.id;
+        }
+
+        public JsonObject getClasse()
+        {
+            return this.getClasse(0);
+        }
+
+        public JsonObject getClasse(int suffix)
+        {
+            String suffixStr = suffix > 0 ? " " + suffix : "";
+            return new JsonObject().put("name", CanopeCasClient.CLASS_PREFIX + " " + this.firstName + " " + this.lastName + suffixStr);
         }
 
         public JsonObject toJson()
@@ -156,6 +185,108 @@ public class CanopeCasClient extends CasClientController
         });
     }
 
+    private void addUserToClass(HttpServerRequest request, CanopeUser user, String classId)
+    {
+        if(user.account == null)
+        {
+            Renders.renderError(request, new JsonObject().put("error", "canope.class.link.account"));
+            return;
+        }
+
+        JsonObject action = new JsonObject()
+                .put("action", "manual-add-user")
+                .put("classId", classId)
+                .put("userId", user.account.id);
+
+        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        {
+            @Override
+            public void handle(AsyncResult<Message<JsonObject>> result)
+            {
+                if(result.succeeded())
+                {
+                    JsonObject linkBody = result.result().body();
+                    JsonArray linkResult = linkBody.getJsonArray("result");
+                }
+                else
+                    Renders.renderError(request, new JsonObject().put("error", result.cause().getMessage()));
+            }
+        });
+    }
+
+    private void createUserClass(HttpServerRequest request, CanopeUser user)
+    {
+        this.createUserClass(request, user, 0);
+    }
+
+    private void createUserClass(HttpServerRequest request, CanopeUser user, int suffix)
+    {
+        JsonObject action = new JsonObject()
+                .put("action", "manual-create-class")
+                .put("structureId", userCreationStructureId)
+                .put("data", user.getClasse(suffix));
+
+        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        {
+            @Override
+            public void handle(AsyncResult<Message<JsonObject>> result)
+            {
+                if(result.succeeded())
+                {
+                    JsonObject creationBody = result.result().body();
+                    JsonArray creationResult = creationBody.getJsonArray("result");
+
+                    if("ok".equals(creationBody.getString("status")) && creationResult != null && creationResult.size() == 1)
+                    {
+                        JsonObject creationClass = creationResult.getJsonObject(0);
+                        addUserToClass(request, user, creationClass.getString("id"));
+                    }
+                    else if(creationBody.getString("message", "").contains("ConstraintValidationFailed"))
+                    {
+                        createUserClass(request, user, suffix == 0 ? 2 : suffix + 1);
+                    }
+                    else
+                    {
+                        String error = creationBody.getString("error", creationBody.getString("message", "canope.class.creation.error"));
+                        Renders.renderError(request, new JsonObject().put("error", error));
+                    }
+                }
+                else
+                    Renders.renderError(request, new JsonObject().put("error", result.cause().getMessage()));
+            }
+        });
+    }
+
+    private void activateUser(HttpServerRequest request, CanopeUser user)
+    {
+        if(user.account == null)
+        {
+            Renders.renderError(request, new JsonObject().put("error", "canope.user.activate.account"));
+            return;
+        }
+
+        String query = "MATCH (u:User {id: {id}}) " +
+                        "SET u.password = {password}, u.activationCode = NULL";
+        JsonObject params = new JsonObject()
+                                .put("id", user.account.id)
+                                .put("password", BCrypt.hashpw(UUID.randomUUID().toString(), BCrypt.gensalt()));
+
+        neo4j.execute(query, params, new Handler<Message<JsonObject>>()
+        {
+            @Override
+            public void handle(Message<JsonObject> result)
+            {
+                String status = result.body().getString("status");
+
+                if("ok".equals(status) == false)
+                {
+                    Renders.renderError(request, new JsonObject().put("error", "canope.user.find.error"));
+                    return;
+                }
+            }
+        });
+    }
+
     private void loginOrCreateUser(HttpServerRequest request, CanopeUser user)
     {
         String query = "MATCH (u:User) " +
@@ -181,6 +312,7 @@ public class CanopeCasClient extends CasClientController
                 if(resultArray.size() == 1)
                 {
                     JsonObject neo4jRes = resultArray.getJsonObject(0);
+                    user.account = new ENTAccount(neo4jRes.getString("id"), neo4jRes.getString("login"));
                     loginUser(neo4jRes.getString("id"), neo4jRes.getString("login"), request);
                 }
                 else if(resultArray.size() == 0)
@@ -208,7 +340,10 @@ public class CanopeCasClient extends CasClientController
                                     if("ok".equals(creationBody.getString("status")) && creationResult != null && creationResult.size() == 1)
                                     {
                                         JsonObject creationUser = creationResult.getJsonObject(0);
-                                        loginUser(creationUser.getString("id"), creationUser.getString("login"), request);
+                                        user.account = new ENTAccount(creationUser.getString("id"), creationUser.getString("login"));
+                                        loginUser(user.account.id, user.account.login, request);
+                                        activateUser(request, user);
+                                        createUserClass(request, user);
                                     }
                                     else
                                     {
