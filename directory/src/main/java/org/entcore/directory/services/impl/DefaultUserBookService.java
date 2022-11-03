@@ -321,7 +321,7 @@ public class DefaultUserBookService implements UserBookService {
 		query.append("OPTIONAL MATCH (user)-[:USERBOOK]->(ub) ");
 		query.append("OPTIONAL MATCH (user)-[:RELATED]-(relative) ");
 		query.append("WITH DISTINCT struct, user, ub, relative, COLLECT(DISTINCT clazz.name) as classes ");
-		query.append("WITH user, ub, relative, COLLECT(DISTINCT {name: struct.name, id: struct.id, classes: classes}) as schools ");
+		query.append("WITH user, ub, relative, COLLECT(DISTINCT {name: struct.name, id: struct.id, UAI: struct.UAI, classes: classes}) as schools ");
 		query.append("RETURN DISTINCT ");
 		query.append("user.id as id, ");
 		query.append("user.login as login, ");
