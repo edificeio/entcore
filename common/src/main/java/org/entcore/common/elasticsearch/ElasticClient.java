@@ -15,20 +15,33 @@ import java.util.stream.Collectors;
 
 public class ElasticClient {
     private final HttpClient httpClient;
+    private final Optional<String> authorization;
     private Handler<Throwable> onError = (e) -> {
     };
 
     public ElasticClient(final HttpClient aClient) {
+        this(aClient, Optional.empty());
+    }
+
+    public ElasticClient(final HttpClient aClient,final Optional<String> authorization) {
         this.httpClient = aClient;
+        this.authorization = authorization;
     }
 
     public void setOnError(final Handler<Throwable> onError) {
         this.onError = onError;
     }
 
+    protected HttpClientRequest authorize(final HttpClientRequest req){
+        if(authorization.isPresent()){
+            req.putHeader("Authorization",authorization.get());
+        }
+        return req;
+    }
+
     public Future<Void> createMapping(final String index, final Buffer payload) {
         final Promise<Void> future = Promise.promise();
-        httpClient.put("/" + index).handler(res -> {
+        authorize(httpClient.put("/" + index).handler(res -> {
             if (res.statusCode() == 200 || res.statusCode() == 201) {
                 future.complete();
             } else {
@@ -40,14 +53,14 @@ public class ElasticClient {
                     }
                 });
             }
-        }).putHeader("content-type", "application/json")
+        })).putHeader("content-type", "application/json")
                 .exceptionHandler(onError).end(payload);
         return future.future();
     }
 
     public Future<Void> deleteMapping(final String index) {
         final Promise<Void> future = Promise.promise();
-        httpClient.delete("/" + index).handler(res -> {
+        authorize(httpClient.delete("/" + index).handler(res -> {
                     if (res.statusCode() == 200 || res.statusCode() == 201) {
                         future.complete();
                     } else {
@@ -55,7 +68,7 @@ public class ElasticClient {
                             future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                         });
                     }
-                }).putHeader("content-type", "application/json")
+                })).putHeader("content-type", "application/json")
                 .exceptionHandler(onError).end();
         return future.future();
     }
@@ -63,7 +76,7 @@ public class ElasticClient {
     public Future<String> createDocument(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_doc" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_doc" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -72,14 +85,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
     public Future<String> updateDocument(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -88,14 +101,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(new JsonObject().put("doc",payload).toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(new JsonObject().put("doc",payload).toString());
         return future.future();
     }
 
     public Future<JsonObject> getDocument(final String index, final String id, final ElasticOptions options) {
         final Promise<JsonObject> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.get("/" + index + "/" + id + queryParams).handler(res -> {
+        authorize(httpClient.get("/" + index + "/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -104,14 +117,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end();
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end();
         return future.future();
     }
 
     public Future<String> updateByQuery(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -120,7 +133,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
@@ -134,7 +147,7 @@ public class ElasticClient {
         final Promise<Void> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         payload.put("query", new JsonObject("terms").put("_id", new JsonArray(new ArrayList(id))));
-        httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
             if (res.statusCode() == 200 || res.statusCode() == 201) {
                 future.complete();
             } else {
@@ -142,14 +155,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 });
             }
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
     public Future<JsonArray> search(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<JsonArray> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -163,14 +176,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
     public Future<SearchResult> searchWithMeta(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<SearchResult> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -186,14 +199,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
     public Future<Integer> count(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<Integer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_count" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_count" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -202,14 +215,14 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
         return future.future();
     }
 
     public ElasticBulkBuilder bulk(final String index, final ElasticOptions options) {
         final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        final HttpClientRequest req = httpClient.post("/" + index + "/_bulk" + queryParams).handler(res -> {
+        final HttpClientRequest req = authorize(httpClient.post("/" + index + "/_bulk" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     future.complete(resBody);
@@ -217,7 +230,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("Content-Type", "application/x-ndjson")
+        })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
                 .setChunked(true).exceptionHandler(onError);
         return new ElasticBulkBuilder(req, future.future());
@@ -226,7 +239,7 @@ public class ElasticClient {
     public ElasticBulkBuilder bulk(final ElasticOptions options) {
         final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        final HttpClientRequest req = httpClient.post( "/_bulk" + queryParams).handler(res -> {
+        final HttpClientRequest req = authorize(httpClient.post( "/_bulk" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     future.complete(resBody);
@@ -234,7 +247,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("Content-Type", "application/x-ndjson")
+        })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
                 .setChunked(true).exceptionHandler(onError);
         return new ElasticBulkBuilder(req, future.future());
