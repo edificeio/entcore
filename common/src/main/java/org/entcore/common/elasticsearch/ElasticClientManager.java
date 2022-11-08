@@ -8,11 +8,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-//TODO merge with entcore (onerror circuit breaker...)
+//TODO onerror circuit breaker...
 public class ElasticClientManager {
     static final Logger log = LoggerFactory.getLogger(ElasticClientManager.class);
     private final Random rnd = new Random();
@@ -59,16 +57,21 @@ public class ElasticClientManager {
 
     public ElasticClientManager(final Vertx vertx, final URI[] uris, final JsonObject config) {
         try {
-            final int poolSize = config.getInteger("poolSize", 16);
-            final boolean keepAlive = config.getBoolean("keepAlive", true);
-            for (final URI uri : uris) {
+        final int poolSize = config.getInteger("poolSize", 16);
+        Optional<String> autorization =Optional.empty();
+        if(config.containsKey("username") && config.containsKey("password")){
+            final String userCredentials = config.getString("username") + ":" + config.getString("password");
+            autorization = Optional.of("Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes())));
+        }
+        final boolean keepAlive = config.getBoolean("keepAlive", true);
+        for (final URI uri : uris) {
                 HttpClientOptions httpClientOptions = new HttpClientOptions()
                         .setKeepAlive(keepAlive)
                         .setMaxPoolSize(poolSize)
                         .setDefaultHost(uri.getHost())
                         .setDefaultPort(uri.getPort())
                         .setConnectTimeout(20000);
-                clients.add(new ElasticClient(vertx.createHttpClient(httpClientOptions)));
+                clients.add(new ElasticClient(vertx.createHttpClient(httpClientOptions), autorization));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
