@@ -207,7 +207,8 @@
             {% if mongoMinPoolSize is defined %}
             "minPoolSize":{{mongoMinPoolSize}},
             {% endif %}
-            "use_mongo_types": true
+            "use_mongo_types": true,
+            "ssl": {{mongoSsl | default('false')}}
 	    },
         "postgresConfig":{
             {% if ipPostgresMaster is defined %}
