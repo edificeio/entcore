@@ -314,6 +314,7 @@ public class PostgresClient {
     private PgConnectOptions setSsl(final PgConnectOptions options){
         final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
         if (!SslMode.DISABLE.equals(sslMode)) {
+            options.setSsl(true);
             options.setSslMode(sslMode);
             options.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
         }
