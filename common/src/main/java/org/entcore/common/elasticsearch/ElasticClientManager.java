@@ -59,8 +59,8 @@ public class ElasticClientManager {
         try {
         final int poolSize = config.getInteger("poolSize", 16);
         Optional<String> autorization =Optional.empty();
-        if(config.containsKey("username") && config.containsKey("password")){
-            final String userCredentials = config.getString("username") + ":" + config.getString("password");
+        if(config.containsKey("user") && config.containsKey("password")){
+            final String userCredentials = config.getString("user") + ":" + config.getString("password");
             autorization = Optional.of("Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes())));
         }
         final boolean keepAlive = config.getBoolean("keepAlive", true);
