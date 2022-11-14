@@ -8,6 +8,8 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +18,9 @@ import java.util.stream.Collectors;
 public class ElasticClient {
     private final HttpClient httpClient;
     private final Optional<String> authorization;
+    private Logger log = LoggerFactory.getLogger(ElasticClient.class);
     private Handler<Throwable> onError = (e) -> {
+        log.error("Elastic Query failed: ",e);
     };
 
     public ElasticClient(final HttpClient aClient) {
