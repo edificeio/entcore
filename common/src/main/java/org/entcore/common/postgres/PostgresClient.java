@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 
@@ -310,14 +311,23 @@ public class PostgresClient {
         return json;
     }
 
+    private PgConnectOptions setSsl(final PgConnectOptions options){
+        final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
+        if (!SslMode.DISABLE.equals(sslMode)) {
+            options.setSslMode(sslMode);
+            options.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+        }
+        return options;
+    }
+
     public PostgresClientChannel getClientChannel() {
-        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
+        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, setSsl(new PgConnectOptions()
                 .setPort(config.getInteger("port", 5432))
                 .setHost(config.getString("host"))
                 .setDatabase(config.getString("database"))
                 .setUser(config.getString("user"))
                 .setPassword(config.getString("password"))
-        );
+        ));
         return new PostgresClientChannel(pgSubscriber, config);
     }
 
@@ -328,12 +338,12 @@ public class PostgresClient {
     public PostgresClientPool getClientPool(boolean reuse) {
         if (reuse) {
             if (pool == null) {
-                final PgPool pgPool = PgPool.pool(vertx, new PgConnectOptions()
+                final PgPool pgPool = PgPool.pool(vertx, setSsl(new PgConnectOptions()
                         .setPort(config.getInteger("port", 5432))
                         .setHost(config.getString("host"))
                         .setDatabase(config.getString("database"))
                         .setUser(config.getString("user"))
-                        .setPassword(config.getString("password")),
+                        .setPassword(config.getString("password"))),
                         new PoolOptions()
                         .setMaxSize(config.getInteger("pool-size", 10))
                 );
@@ -341,12 +351,12 @@ public class PostgresClient {
             }
             return pool;
         } else {
-            final PgPool pgPool = PgPool.pool(vertx, new PgConnectOptions()
+            final PgPool pgPool = PgPool.pool(vertx, setSsl(new PgConnectOptions()
                     .setPort(config.getInteger("port", 5432))
                     .setHost(config.getString("host"))
                     .setDatabase(config.getString("database"))
                     .setUser(config.getString("user"))
-                    .setPassword(config.getString("password")),
+                    .setPassword(config.getString("password"))),
                     new PoolOptions()
                     .setMaxSize(config.getInteger("pool-size", 10))
             );
