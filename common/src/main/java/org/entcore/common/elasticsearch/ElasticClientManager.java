@@ -70,7 +70,8 @@ public class ElasticClientManager {
                         .setMaxPoolSize(poolSize)
                         .setDefaultHost(uri.getHost())
                         .setDefaultPort(uri.getPort())
-                        .setConnectTimeout(20000);
+                        .setConnectTimeout(20000)
+                        .setSsl(uri.toString().startsWith("https"));
                 clients.add(new ElasticClient(vertx.createHttpClient(httpClientOptions), autorization));
             }
         } catch (Exception e) {
