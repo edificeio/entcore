@@ -311,24 +311,18 @@ public class PostgresClient {
         return json;
     }
 
-    private PgConnectOptions setSsl(final PgConnectOptions options){
-        final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
-        if (!SslMode.DISABLE.equals(sslMode)) {
-            options.setSsl(true);
-            options.setSslMode(sslMode);
-            options.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
-        }
-        return options;
-    }
-
     public PostgresClientChannel getClientChannel() {
-        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, setSsl(new PgConnectOptions()
+        final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
+        final PgConnectOptions options = new PgConnectOptions()
                 .setPort(config.getInteger("port", 5432))
                 .setHost(config.getString("host"))
                 .setDatabase(config.getString("database"))
                 .setUser(config.getString("user"))
-                .setPassword(config.getString("password"))
-        ));
+                .setPassword(config.getString("password"));
+        if (!SslMode.DISABLE.equals(sslMode)) {
+            options.setSslMode(sslMode).setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+        }
+        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, options);
         return new PostgresClientChannel(pgSubscriber, config);
     }
 
@@ -337,30 +331,25 @@ public class PostgresClient {
     }
 
     public PostgresClientPool getClientPool(boolean reuse) {
+        final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
+        final PgConnectOptions options = new PgConnectOptions()
+                .setPort(config.getInteger("port", 5432))
+                .setHost(config.getString("host"))
+                .setDatabase(config.getString("database"))
+                .setUser(config.getString("user"))
+                .setPassword(config.getString("password"));
+        final PoolOptions poolOptions = new PoolOptions().setMaxSize(config.getInteger("pool-size", 10));
+        if (!SslMode.DISABLE.equals(sslMode)) {
+            options.setSslMode(sslMode).setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+        }
         if (reuse) {
             if (pool == null) {
-                final PgPool pgPool = PgPool.pool(vertx, setSsl(new PgConnectOptions()
-                        .setPort(config.getInteger("port", 5432))
-                        .setHost(config.getString("host"))
-                        .setDatabase(config.getString("database"))
-                        .setUser(config.getString("user"))
-                        .setPassword(config.getString("password"))),
-                        new PoolOptions()
-                        .setMaxSize(config.getInteger("pool-size", 10))
-                );
+                final PgPool pgPool = PgPool.pool(vertx, options,poolOptions);
                 pool = new PostgresClientPool(pgPool, config);
             }
             return pool;
         } else {
-            final PgPool pgPool = PgPool.pool(vertx, setSsl(new PgConnectOptions()
-                    .setPort(config.getInteger("port", 5432))
-                    .setHost(config.getString("host"))
-                    .setDatabase(config.getString("database"))
-                    .setUser(config.getString("user"))
-                    .setPassword(config.getString("password"))),
-                    new PoolOptions()
-                    .setMaxSize(config.getInteger("pool-size", 10))
-            );
+            final PgPool pgPool = PgPool.pool(vertx, options, poolOptions);
             return new PostgresClientPool(pgPool, config);
         }
     }
