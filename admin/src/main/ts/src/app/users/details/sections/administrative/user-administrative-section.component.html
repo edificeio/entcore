@@ -33,12 +33,6 @@
       <ode-form-field label="city" *ngIf="!config['hide-personal-data']">
         <input type="text" [(ngModel)]="details.city" name="city">
       </ode-form-field>
-      <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
-        <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" >
-      </ode-form-field>
-      <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
-        <input type="tel" [(ngModel)]="details.mobile" name="mobile" >
-      </ode-form-field>
     </fieldset>
   </form>
 

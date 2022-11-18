@@ -214,7 +214,51 @@
           </div>
         </div>
       </ode-form-field>
+    </fieldset>
+  </form>
 
+  <form #phoneForm="ngForm">
+    <fieldset>
+      <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
+        <div>
+          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" />
+          <button
+            type="button"
+            (click)="updateHomePhone()"
+            [disabled]="
+              phoneForm.pristine ||
+              phoneForm.invalid ||
+              spinner.isLoading('portal-content')
+            "
+          >
+            <s5l>save</s5l>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+        </div>
+      </ode-form-field>
+
+      <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
+        <div>
+          <input type="tel" [(ngModel)]="details.mobile" name="mobile" />
+          <button
+            type="button"
+            (click)="updateMobile()"
+            [disabled]="
+              phoneForm.pristine ||
+              phoneForm.invalid ||
+              spinner.isLoading('portal-content')
+            "
+          >
+            <s5l>save</s5l>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+        </div>
+      </ode-form-field>
+    </fieldset>
+  </form>
+
+  <form>
+    <fieldset>
       <ode-form-field
         label="password.renewal.code"
         *ngIf="!details.activationCode"
