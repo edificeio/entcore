@@ -329,6 +329,54 @@ export class UserConnectionSectionComponent
       });
   }
 
+  updateHomePhone() {
+    this.spinner.perform('portal-content', this.details.updateHomePhone())
+      .then(() => {
+        this.ns.success(
+          {
+            key: 'notify.user.updatePhone.content',
+            parameters: {
+              user: this.details.firstName + ' ' + this.details.lastName
+            }
+          }, 'notify.user.updatePhone.title');
+
+        this.userInfoService.setState(this.details);
+      })
+      .catch(err => {
+        this.ns.error(
+          {
+            key: 'notify.user.updatePhone.error.content',
+            parameters: {
+              user: this.user.firstName + ' ' + this.user.lastName
+            }
+          }, 'notify.user.updatePhone.error.title', err);
+      });
+  }
+
+  updateMobile() {
+    this.spinner.perform('portal-content', this.details.updateMobile())
+      .then(() => {
+        this.ns.success(
+          {
+            key: 'notify.user.updatePhone.content',
+            parameters: {
+              user: this.details.firstName + ' ' + this.details.lastName
+            }
+          }, 'notify.user.updatePhone.title');
+
+        this.userInfoService.setState(this.details);
+      })
+      .catch(err => {
+        this.ns.error(
+          {
+            key: 'notify.user.updatePhone.error.content',
+            parameters: {
+              user: this.user.firstName + ' ' + this.user.lastName
+            }
+          }, 'notify.user.updatePhone.error.title', err);
+      });
+  }
+
   updateLoginAlias() {
     this.spinner.perform(
       "portal-content",

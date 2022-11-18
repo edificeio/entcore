@@ -297,6 +297,14 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.put(`/directory/user/${this.id}`, {loginAlias: this.loginAlias});
     }
 
+    updateHomePhone() {
+        return this.http.put(`/directory/user/${this.id}`, {homePhone: this.homePhone});
+    }
+
+    updateMobile() {
+        return this.http.put(`/directory/user/${this.id}`, {mobile: this.mobile});
+    }
+
     updateLogin() {
         return this.http.put(`/directory/user/login/${this.id}`, {login: this.login});
     }
@@ -328,9 +336,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             address:        this.address,
             city:           this.city,
             zipCode:        this.zipCode,
-            email:          this.email,
-            homePhone:      this.homePhone,
-            mobile:         this.mobile
+            email:          this.email
         };
     }
 }
