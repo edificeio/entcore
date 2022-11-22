@@ -6,6 +6,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -19,11 +20,11 @@ import java.util.stream.Collectors;
 
 public abstract class ExplorerFolderTreeSql extends ExplorerFolderTree{
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    protected final PostgresClientPool postgresClient;
+    protected final IPostgresClient postgresClient;
 
-    protected ExplorerFolderTreeSql(final ExplorerPlugin parent, final PostgresClient postgresClient) {
+    protected ExplorerFolderTreeSql(final ExplorerPlugin parent, final IPostgresClient postgresClient) {
         super(parent);
-        this.postgresClient = postgresClient.getClientPool();
+        this.postgresClient = postgresClient;
     }
 
     @Override

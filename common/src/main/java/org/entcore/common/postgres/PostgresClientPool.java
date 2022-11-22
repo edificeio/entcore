@@ -1,27 +1,35 @@
 package org.entcore.common.postgres;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
-public class PostgresClientPool {
+public class PostgresClientPool implements IPostgresClient {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
     private final PgPool pgPool;
-    private Future<Void> onReady;
+    private final JsonObject config;
+    private final Vertx vertx;
 
-    PostgresClientPool(final PgPool pgPool, final JsonObject config) {
+    PostgresClientPool(final Vertx vertx, final PgPool pgPool, final JsonObject config) {
+        this.vertx = vertx;
+        this.config = config;
         this.pgPool = pgPool;
+    }
+
+    @Override
+    public PostgresClientChannel getClientChannel() {
+        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, IPostgresClient.getConnectOption(config));
+        return new PostgresClientChannel(pgSubscriber, config);
     }
 
     public Future<JsonObject> insert(final String table, final JsonObject json){
@@ -100,8 +108,8 @@ public class PostgresClientPool {
         return future;
     }
 
-    public Future<PostgresClient.PostgresTransaction> transaction() {
-        final Future<PostgresClient.PostgresTransaction> future = Future.future();
+    public Future<IPostgresTransaction> transaction() {
+        final Future<IPostgresTransaction> future = Future.future();
         this.pgPool.begin(r -> {
             if (r.succeeded()) {
                 future.complete(new PostgresClient.PostgresTransaction(r.result()));

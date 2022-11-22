@@ -1,14 +1,12 @@
 package org.entcore.common.postgres;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.pubsub.PgSubscriber;
@@ -17,26 +15,11 @@ import io.vertx.sqlclient.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class PostgresClient {
+public class PostgresClient implements IPostgresClient {
     private final Vertx vertx;
     private final JsonObject config;
     private PostgresClientPool pool;
 
-    public static PostgresClient create(final Vertx vertx, final JsonObject config) throws Exception{
-        if (config.getJsonObject("postgresConfig") != null) {
-            final JsonObject postgresqlConfig = config.getJsonObject("postgresConfig");
-            final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
-            return postgresClient;
-        }else{
-            final String postgresConfig = (String) vertx.sharedData().getLocalMap("server").get("postgresConfig");
-            if(postgresConfig!=null){
-                final PostgresClient postgresClient = new PostgresClient(vertx, new JsonObject(postgresConfig));
-                return postgresClient;
-            }else{
-                throw new Exception("Missing postgresConfig config");
-            }
-        }
-    }
 
     public PostgresClient(final Vertx vertx, final JsonObject config) {
         this.vertx = vertx;
@@ -311,18 +294,9 @@ public class PostgresClient {
         return json;
     }
 
+    @Override
     public PostgresClientChannel getClientChannel() {
-        final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
-        final PgConnectOptions options = new PgConnectOptions()
-                .setPort(config.getInteger("port", 5432))
-                .setHost(config.getString("host"))
-                .setDatabase(config.getString("database"))
-                .setUser(config.getString("user"))
-                .setPassword(config.getString("password"));
-        if (!SslMode.DISABLE.equals(sslMode)) {
-            options.setSslMode(sslMode).setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
-        }
-        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, options);
+        final PgSubscriber pgSubscriber = PgSubscriber.subscriber(vertx, IPostgresClient.getConnectOption(config));
         return new PostgresClientChannel(pgSubscriber, config);
     }
 
@@ -332,37 +306,73 @@ public class PostgresClient {
 
     public PostgresClientPool getClientPool(boolean reuse) {
         final SslMode sslMode = SslMode.valueOf(config.getString("ssl-mode", "DISABLE"));
-        final PgConnectOptions options = new PgConnectOptions()
-                .setPort(config.getInteger("port", 5432))
-                .setHost(config.getString("host"))
-                .setDatabase(config.getString("database"))
-                .setUser(config.getString("user"))
-                .setPassword(config.getString("password"));
         final PoolOptions poolOptions = new PoolOptions().setMaxSize(config.getInteger("pool-size", 10));
-        if (!SslMode.DISABLE.equals(sslMode)) {
-            options.setSslMode(sslMode).setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
-        }
         if (reuse) {
             if (pool == null) {
-                final PgPool pgPool = PgPool.pool(vertx, options,poolOptions);
-                pool = new PostgresClientPool(pgPool, config);
+                final PgPool pgPool = PgPool.pool(vertx, IPostgresClient.getConnectOption(config),poolOptions);
+                pool = new PostgresClientPool(vertx, pgPool, config);
             }
             return pool;
         } else {
-            final PgPool pgPool = PgPool.pool(vertx, options, poolOptions);
-            return new PostgresClientPool(pgPool, config);
+            final PgPool pgPool = PgPool.pool(vertx, IPostgresClient.getConnectOption(config), poolOptions);
+            return new PostgresClientPool(vertx, pgPool, config);
         }
     }
 
-    public static class PostgresTransaction {
+    @Override
+    public Future<io.vertx.sqlclient.RowSet<io.vertx.sqlclient.Row>> preparedQuery(final String query, final Tuple tuple){
+        final Promise<io.vertx.sqlclient.RowSet<io.vertx.sqlclient.Row>> future = Promise.promise();
+        PgConnection.connect(vertx, IPostgresClient.getConnectOption(config), connection -> {
+            if(connection.succeeded()){
+                connection.result().preparedQuery(query).execute(tuple,e->{
+                    future.handle(e);
+                    connection.result().close();
+                });
+            }else{
+                future.fail(connection.cause());
+                connection.result().close();
+            }
+        });
+        return future.future();
+    }
+
+    @Override
+    public Future<IPostgresTransaction> transaction(){
+        Promise<IPostgresTransaction> promise = Promise.promise();
+        PgConnection.connect(vertx, IPostgresClient.getConnectOption(config), connection -> {
+            if(connection.succeeded()){
+                promise.complete(new PostgresTransaction(connection.result().begin(), e->{
+                    connection.result().close();
+                }));
+            }else{
+                promise.fail(connection.cause());
+                connection.result().close();
+            }
+        });
+        return promise.future();
+    }
+
+    @Override
+    public Future<RowStream<Row>> queryStream(String query, Tuple tuple, int batchSize) {
+        return this.pool.queryStream(query, tuple, batchSize);
+    }
+
+    public static class PostgresTransaction implements IPostgresTransaction {
         private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
         private final Transaction pgTransaction;
+        private final Handler<AsyncResult<Void>> onFinish;
         private final List<Future> futures = new ArrayList<>();
 
         PostgresTransaction(final Transaction pgTransaction) {
-            this.pgTransaction = pgTransaction;
+            this(pgTransaction, e->{});
         }
 
+        PostgresTransaction(final Transaction pgTransaction, final Handler<AsyncResult<Void>> onFinish) {
+            this.pgTransaction = pgTransaction;
+            this.onFinish = onFinish;
+        }
+
+        @Override
         public Future<RowSet<Row>> addPreparedQuery(String query, Tuple tuple) {
             final Future<RowSet<Row>> future = Future.future();
             this.pgTransaction.preparedQuery(query).execute(tuple,future.completer());
@@ -370,6 +380,7 @@ public class PostgresClient {
             return future;
         }
 
+        @Override
         public Future<Void> notify(final String channel, final String message) {
             final Future<Void> future = Future.future();
             //prepareQuery not works with notify allow only internal safe message
@@ -384,18 +395,20 @@ public class PostgresClient {
             return future;
         }
 
+        @Override
         public Future<Void> commit() {
             return CompositeFuture.all(futures).compose(r -> {
                 final Promise<Void> future = Promise.promise();
                 this.pgTransaction.commit(future);
                 return future.future();
-            });
+            }).onComplete(onFinish);
         }
 
+        @Override
         public Future<Void> rollback() {
             final Promise<Void> future = Promise.promise();
             this.pgTransaction.rollback(future);
-            return future.future();
+            return future.future().onComplete(onFinish);
         }
     }
 }

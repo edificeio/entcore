@@ -6,6 +6,7 @@ import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.mongodb.MongoClientFactory;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
@@ -62,7 +63,7 @@ public class ExplorerPluginFactory {
             throw new Exception("Explorer config not initialized");
         }
         if(explorerConfig.getBoolean("postgres", false)){
-            final PostgresClient postgresClient = PostgresClient.create(vertxInstance, getPostgresConfig());
+            final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, getPostgresConfig(), false, true);
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient).setEnabled(isEnabled());
             return communication;
         }else {
@@ -79,10 +80,10 @@ public class ExplorerPluginFactory {
         return instance.apply(params).setConfig(getExplorerConfig());
     }
 
-    public static IExplorerPlugin createPostgresPlugin(final Function<ExplorerFactoryParams<PostgresClient>, IExplorerPlugin> instance) throws Exception {
+    public static IExplorerPlugin createPostgresPlugin(final Function<ExplorerFactoryParams<IPostgresClient>, IExplorerPlugin> instance) throws Exception {
         final IExplorerPluginCommunication communication = getCommunication();
-        final PostgresClient postgresClient = PostgresClient.create(vertxInstance, globalConfig);
-        final ExplorerFactoryParams<PostgresClient> params = new ExplorerFactoryParams<PostgresClient>(postgresClient,communication);
+        final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, globalConfig, false, true);
+        final ExplorerFactoryParams<IPostgresClient> params = new ExplorerFactoryParams<IPostgresClient>(postgresClient,communication);
         return instance.apply(params).setConfig(getExplorerConfig());
     }
 
