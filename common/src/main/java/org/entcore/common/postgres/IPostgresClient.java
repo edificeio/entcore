@@ -25,11 +25,18 @@ public interface IPostgresClient {
         final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
         final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
         if(worker){
-            PostgresClientBusConsumer.initInstance(vertx, postgresClient);
             return new PostgresClientBusPublisher(vertx, postgresConfig);
         }else{
             return postgresClient;
         }
+    }
+
+
+    static IPostgresClient initPostgresConsumer(final Vertx vertx, final JsonObject config, final boolean pool) throws Exception{
+        final JsonObject postgresConfig = getPostgresConfig(vertx, config);
+        final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
+        final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
+        return PostgresClientBusConsumer.initInstance(vertx, postgresClient);
     }
 
     static JsonObject getPostgresConfig(final Vertx vertx, final JsonObject config) throws Exception{
