@@ -9,6 +9,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 
@@ -19,15 +20,15 @@ import java.util.stream.Collectors;
 public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommunication {
     public static final String RESOURCE_CHANNEL = "channel_resource";
     static Logger log = LoggerFactory.getLogger(ExplorerPluginCommunicationPostgres.class);
-    private final PostgresClientPool pgPool;
+    private final IPostgresClient pgPool;
     private final List<PostgresExplorerFailed> pendingFailed = new ArrayList<>();
     private final List<Promise> pending = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
     private boolean isEnabled = true;
 
-    public ExplorerPluginCommunicationPostgres(final Vertx vertx, final PostgresClient pgClient) {
-        this.pgPool = pgClient.getClientPool();
+    public ExplorerPluginCommunicationPostgres(final Vertx vertx, final IPostgresClient pgClient) {
+        this.pgPool = pgClient;
         this.vertx = vertx;
     }
 
