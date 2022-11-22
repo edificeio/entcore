@@ -186,6 +186,11 @@ public class DatabaseTestHelper {
         return new PostgreSQLContainerWithParams("postgres:9.5", Collections.singletonMap("stringtype", "unspecified"));
     }
 
+    /** @return a new docker-based PostgreSQL 14.0 container. */
+    public PostgreSQLContainer<?> createPostgreSQL14Container() {
+        return new PostgreSQLContainerWithParams("postgres:14.0", Collections.singletonMap("stringtype", "unspecified"));
+    }
+
     /** @return a new docker-based PostgreSQL 9.6 container. */
     public PostgreSQLContainer<?> createPostgreSQL96Container() {
         return new PostgreSQLContainerWithParams("postgres:9.6", Collections.singletonMap("stringtype", "unspecified"));
