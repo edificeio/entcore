@@ -6,6 +6,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -17,9 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
-    protected final PostgresClientPool pgPool;
+    protected final IPostgresClient pgPool;
 
-    protected ExplorerPluginResourceSql(final IExplorerPluginCommunication communication, final PostgresClientPool pool) {
+    protected ExplorerPluginResourceSql(final IExplorerPluginCommunication communication, final IPostgresClient pool) {
         super(communication);
         this.pgPool = pool;
     }

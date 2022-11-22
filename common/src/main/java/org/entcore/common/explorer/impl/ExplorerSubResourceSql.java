@@ -3,6 +3,7 @@ package org.entcore.common.explorer.impl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -16,11 +17,11 @@ import java.util.Date;
 import java.util.Optional;
 
 public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
-    protected final PostgresClientPool postgresClient;
+    protected final IPostgresClient postgresClient;
 
-    protected ExplorerSubResourceSql(final ExplorerPlugin parent, final PostgresClient postgresClient) {
+    protected ExplorerSubResourceSql(final ExplorerPlugin parent, final IPostgresClient postgresClient) {
         super(parent);
-        this.postgresClient = postgresClient.getClientPool();
+        this.postgresClient = postgresClient;
     }
 
     @Override
