@@ -17,13 +17,13 @@ import fr.wseduc.webutils.http.Renders;
 /**
  * @see {@link EmailState} utility class for easier use
  */
-public class EmailStateHandler implements Handler<Message<JsonObject>> {
+public class UserValidationHandler implements Handler<Message<JsonObject>> {
     private MailValidationService validationSvc = null;
     private int ttlInSeconds     = 600;  // Validation codes are valid 10 minutes by default
     private int retryNumber      = 5;    // Validation code can be typed in 5 times by default
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
 
-    public EmailStateHandler(final JsonObject params, final MailValidationService svc) {
+    public UserValidationHandler(final JsonObject params, final MailValidationService svc) {
         if( params != null ) {
             ttlInSeconds    = params.getInteger("ttlInSeconds", 600);
             retryNumber     = params.getInteger("retryNumber",  5);
@@ -52,6 +52,14 @@ public class EmailStateHandler implements Handler<Message<JsonObject>> {
     public void handle(final Message<JsonObject> message) {
 		String action = getOrElse(message.body().getString("action"), "");
 		switch (action) {
+            case "get-user-validation" : {
+                validationSvc.getMandatoryUserValidation(
+                    message.body().getString("userId")
+                )
+                .onSuccess( t -> { replyWithOk(message, t); })
+                .onFailure( e -> { replyWithError(message, e.getMessage()); });
+                break;
+            }
 			case "set-pending" : {
                 validationSvc.setPendingMail(
                     message.body().getString("userId"), 

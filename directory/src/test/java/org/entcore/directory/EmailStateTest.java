@@ -8,7 +8,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.entcore.common.emailstate.EmailState;
 import org.entcore.common.emailstate.EmailStateUtils;
-import org.entcore.directory.emailstate.EmailStateHandler;
+import org.entcore.directory.emailstate.UserValidationHandler;
 import org.entcore.directory.services.impl.DefaultMailValidationService;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -32,7 +32,7 @@ public class EmailStateTest {
         test.database().initNeo4j(context, neo4jContainer);
 
         // Instanciate an email validation service
-		test.vertx().eventBus().localConsumer(EmailState.BUS_ADDRESS, new EmailStateHandler(
+		test.vertx().eventBus().localConsumer(EmailState.BUS_ADDRESS, new UserValidationHandler(
 			new JsonObject(),
 			new DefaultMailValidationService(null)
 		));
