@@ -5,9 +5,9 @@ import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import org.entcore.common.emailstate.EmailState;
 import org.entcore.common.http.response.DefaultPages;
@@ -15,7 +15,8 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
-import static org.entcore.common.user.SessionAttributes.*;
+import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_TERMS;
+import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_EMAIL;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -54,9 +55,10 @@ public class MandatoryUserValidationFilter implements Filter {
             handler.handle(true);
             return;
         }
+
         UserUtils.getUserInfos(this.eventBus, request, userInfos -> {
             if (userInfos == null) {
-                // Mandatory validations for deconnected users :
+                // Mandatory validations for disconnected users :
                 // - none !
                 handler.handle(true);
             } else {
@@ -70,12 +72,12 @@ public class MandatoryUserValidationFilter implements Filter {
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
                 request.pause();
-                Future.succeededFuture()
-                .compose( ignored -> {
-                    return checkTermsOfUse(sreq, userInfos);
+                EmailState.getMandatoryUserValidation(this.eventBus, userInfos.getUserId())
+                .compose( validations -> {
+                    return checkTermsOfUse(sreq, userInfos, validations);
                 })
-                .compose( ignored -> {
-                    return checkEmailAddress(sreq, userInfos);
+                .compose( validations -> {
+                    return checkEmailAddress(sreq, userInfos, validations);
                 })
                 .onComplete( ar -> {
                     request.resume();
@@ -111,73 +113,31 @@ public class MandatoryUserValidationFilter implements Filter {
         return false;
     }
 
-    private Future<Void> checkTermsOfUse(final SecureHttpServerRequest request, UserInfos userInfos) {
-        if( isInWhiteList(request.path(), request.method().name(), TERMS_OF_USE_IDX) ) {
-            return Future.succeededFuture(); // white-listed url
+    private Future<JsonObject> checkTermsOfUse(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
+        if( isInWhiteList(request.path(), request.method().name(), TERMS_OF_USE_IDX)    // White-listed url reqquested => OK
+            || request.headers().contains("Authorization") // Clients with Authorization header have terms of use validated beforehand => OK
+            || Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_TERMS, false)) // No need to revalidate => OK
+        ) {
+            return Future.succeededFuture(validations); 
         }
-        
-        return request.headers().contains("Authorization") ? Future.succeededFuture() : checkTermsOfUse(userInfos);
+        // KO
+        return Future.failedFuture("/auth/revalidate-terms"); // Where to redirect (must be white-listed !)
     }
 
-    private Future<Void> checkEmailAddress(final SecureHttpServerRequest request, UserInfos userInfos) {
-        if( isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX) ) {
-            return Future.succeededFuture(); // white-listed url
+    private Future<JsonObject> checkEmailAddress(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
+        if( isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url => OK
+            || Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false))  // No need to revalidate => OK
+        ) {
+            return Future.succeededFuture(validations);
         }
-        return checkEmailAddress(userInfos, request.absoluteURI());
-    }
-
-    /** 
-     * Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
-     */
-    private Future<Void> checkTermsOfUse(UserInfos userInfos) {
-        Promise<Void> promise = Promise.promise();
-        boolean needRevalidateTerms = false;
-        //check whether user has validate terms in current session
-        final Object needRevalidateTermsFromSession = userInfos.getAttribute(NEED_REVALIDATE_TERMS);
-        if (needRevalidateTermsFromSession != null) {
-            needRevalidateTerms = Boolean.valueOf(needRevalidateTermsFromSession.toString());
-        } else {
-            //check whether he has validated previously
-            final Map<String, Object> otherProperties = userInfos.getOtherProperties();
-            if (otherProperties != null && otherProperties.get(NEED_REVALIDATE_TERMS) != null) {
-                needRevalidateTerms = (Boolean) otherProperties.get(NEED_REVALIDATE_TERMS);
-            } else {
-                needRevalidateTerms = true;
-            }
+        // KO
+        String url = "/auth/validate-mail?force=true"; // Where to redirect (must be white-listed !)
+        try {
+            url = url +"&redirect="+ URLEncoder.encode(request.absoluteURI(), "UTF-8");
+        } catch( Exception e ) {
+            // silent failure
         }
-        if( needRevalidateTerms ) {
-            promise.fail("/auth/revalidate-terms"); // Where to redirect. Must be white-listed...
-        } else {
-            promise.complete();
-        }
-        return promise.future();
-    }
-
-    /**
-     * Only ADMLs are currently required to validate their email address.
-     */
-    private Future<Void> checkEmailAddress(UserInfos userInfos, String redirectTo) {
-        if (userInfos.isADML()) {
-            Promise<Void> promise = Promise.promise();
-            EmailState.isValid(eventBus, userInfos.getUserId())
-            .onSuccess( emailState -> {
-                if( "valid".equals(emailState.getString("state")) ) {
-                    promise.complete();
-                } else {
-                    String url = "/auth/validate-mail?force=true";
-                    try {
-                        url = url +"&redirect="+ URLEncoder.encode(redirectTo, "UTF-8");
-                    } catch( Exception e ) {
-                        // silent failure
-                    }
-                    promise.fail(url); // Where to redirect. Must be white-listed...
-                }
-            })
-            .onFailure( e -> {promise.fail("");});
-            return promise.future();
-        } else {
-            return Future.succeededFuture();
-        }
+        return Future.failedFuture(url);
     }
 
     @Override
@@ -188,7 +148,8 @@ public class MandatoryUserValidationFilter implements Filter {
 		} else {
             final SecureHttpServerRequest sreq = (SecureHttpServerRequest) request;
             String to = sreq.getAttribute(REDIRECT_TO_KEY);
-            if( StringUtils.isEmpty(to) ) {
+            // Failure due to an unexpected error ?
+            if( StringUtils.isEmpty(to) || to.charAt(0) != '/' ) { 
                 request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 				.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
             }

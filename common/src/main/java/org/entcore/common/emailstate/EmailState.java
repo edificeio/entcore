@@ -14,6 +14,25 @@ import org.entcore.common.user.UserInfos;
 
 public class EmailState {
     static public String BUS_ADDRESS = "mail.state";
+	static public String FIELD_MUST_CHANGE_PWD     = "forceChangePassword";
+	static public String FIELD_MUST_VALIDATE_TERMS = "needRevalidateTerms";
+	static public String FIELD_MUST_VALIDATE_EMAIL = "needRevalidateEmail";
+
+	/** 
+	 * Send an email with actual validation code.
+	 * @param infos User infos
+	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
+	*/
+	static public Future<JsonObject> getMandatoryUserValidation(EventBus eb, String userId) {
+        Promise<JsonObject> promise = Promise.promise();
+		JsonObject action = new JsonObject()
+            .put("action", "get-user-validation")
+            .put("userId", userId);
+		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
+            completePromise(reply, promise);
+        }));
+        return promise.future();
+	}
 
 	/**
 	 * Start a new mail validation workflow.
