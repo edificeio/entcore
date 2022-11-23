@@ -25,6 +25,17 @@ import io.vertx.core.json.JsonObject;
 
 public interface MailValidationService {
 
+	/** 
+	 * Check if the user has to fulfill some mandatory actions, such as :
+	 * - re/validate terms of use,
+	 * - validating his email address,
+	 * - change his passsword.
+	 * 
+	 * @param userId user ID
+	 * @return { forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean }
+	 */
+	Future<JsonObject> getMandatoryUserValidation(String userId);
+
 	/**
 	 * Check if a user has a verified email address
 	 * @param userId user ID

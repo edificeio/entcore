@@ -27,9 +27,16 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 
+import static org.entcore.common.user.SessionAttributes.*;
+import static org.entcore.common.emailstate.EmailState.FIELD_MUST_CHANGE_PWD;
+import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_TERMS;
+import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_EMAIL;
 import static org.entcore.common.emailstate.EmailStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -68,6 +75,64 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 	public DefaultMailValidationService(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
 		super(vertx, config);
 		emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
+	}
+
+	@Override
+	public Future<JsonObject> getMandatoryUserValidation(String userId) {
+        Promise<JsonObject> promise = Promise.promise();
+        UserUtils.getSessionByUserId(vertx.eventBus(), userId, session -> {
+			final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
+			final JsonObject required = new JsonObject()
+				.put(FIELD_MUST_CHANGE_PWD, getOrElse(session.getBoolean("forceChangePassword"), false))
+				.put(FIELD_MUST_VALIDATE_EMAIL, false)
+				.put(FIELD_MUST_VALIDATE_TERMS, false);
+
+            if (userInfos == null) {
+                // Disconnected user => nothing to validate
+				//---
+				promise.complete( required );
+            } else {
+				// force change password ?
+				//---
+				if( session != null ) {
+					required.put(FIELD_MUST_CHANGE_PWD, getOrElse(session.getBoolean("forceChangePassword"), false));
+				}
+	
+				// Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
+				//---
+				boolean needRevalidateTerms = false;
+				//check whether user has validate terms in current session
+				final Object needRevalidateTermsFromSession = userInfos.getAttribute(NEED_REVALIDATE_TERMS);
+				if (needRevalidateTermsFromSession != null) {
+					needRevalidateTerms = Boolean.valueOf(needRevalidateTermsFromSession.toString());
+				} else {
+					//check whether he has validated previously
+					final Map<String, Object> otherProperties = userInfos.getOtherProperties();
+					if (otherProperties != null && otherProperties.get(NEED_REVALIDATE_TERMS) != null) {
+						needRevalidateTerms = (Boolean) otherProperties.get(NEED_REVALIDATE_TERMS);
+					} else {
+						needRevalidateTerms = true;
+					}
+				}
+				required.put(FIELD_MUST_VALIDATE_TERMS, needRevalidateTerms);
+				
+				// As of 2022-11-23, only ADMLs are required to validate their email address (if not done already).
+				//---
+				if( ! userInfos.isADML() ) {
+					promise.complete( required );
+				} else {
+					hasValidMail(userId)
+					.onSuccess( emailState -> {
+						if( ! "valid".equals(emailState.getString("state")) ) {
+							required.put(FIELD_MUST_VALIDATE_EMAIL, true);
+						}
+						promise.complete( required );
+					})
+					.onFailure( e -> {promise.complete(required);} );
+				}
+			}
+		});
+		return promise.future();
 	}
 
 	/** 
@@ -443,7 +508,7 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String key = frag.execute();
-				String language = Utils.getOrElse(I18n.acceptLanguage(request), "fr", false);
+				String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
 
 				// #46383, translations from the theme takes precedence over those from the domain
 				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
