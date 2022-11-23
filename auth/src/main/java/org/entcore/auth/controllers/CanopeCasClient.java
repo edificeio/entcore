@@ -44,6 +44,7 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.w3c.dom.Node;
 
 import fr.wseduc.rs.Get;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.security.SecuredAction;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.Sha1;
@@ -283,6 +284,8 @@ public class CanopeCasClient extends CasClientController
                     Renders.renderError(request, new JsonObject().put("error", "canope.user.find.error"));
                     return;
                 }
+                else
+					Server.getEventBus(vertx).publish("activation.ack", new JsonObject().put("userId", user.account.id));
             }
         });
     }
