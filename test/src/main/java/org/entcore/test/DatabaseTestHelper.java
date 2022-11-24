@@ -198,7 +198,14 @@ public class DatabaseTestHelper {
 
     /** @return a new docker-based Neo4j 3.1 container. */
     public Neo4jContainer<?> createNeo4jContainer() {
-        return new Neo4jContainer("neo4j:3.1").withoutAuthentication()//
+        final DockerImageName imageName;
+        if(System.getenv("IS_M1").equals("true") || System.getProperty("os.arch").equals("aarch64")) {
+            imageName = DockerImageName.parse("opendigitaleducation/neo4j:3.1.9-arm").asCompatibleSubstituteFor("neo4j");
+        } else {
+            imageName = DockerImageName.parse("neo4j:3.1");
+        }
+        final Neo4jContainer container = new Neo4jContainer(imageName);
+        return container.withoutAuthentication()//
                 .withNeo4jConfig("cypher.default_language_version", "2.3");
     }
 
