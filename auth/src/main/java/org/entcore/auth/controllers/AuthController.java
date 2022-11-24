@@ -65,6 +65,7 @@ import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.common.emailstate.EmailState;
 
 import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -468,12 +469,29 @@ public class AuthController extends BaseController {
 
 	@Get("/context")
 	public void context(final HttpServerRequest request) {
-		final JsonObject context = new JsonObject();
-		context.put("callBack", config.getJsonObject("authenticationServer").getString("loginCallback"));
-		context.put("cgu", config.getBoolean("cgu", true));
-		context.put("passwordRegex", passwordPattern.toString());
-		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
-		renderJson(request, context);
+		UserUtils.getUserInfos(eb, request, user -> {
+			final JsonObject context = new JsonObject();
+			context.put("callBack", config.getJsonObject("authenticationServer").getString("loginCallback"));
+			context.put("cgu", config.getBoolean("cgu", true));
+			context.put("passwordRegex", passwordPattern.toString());
+			context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
+			if( user != null ) {
+				EmailState.getMandatoryUserValidation(eb, user.getUserId())
+				.onSuccess( validations -> {
+					if( validations != null ) {
+						context.getJsonObject("mandatory").mergeIn(validations);
+					}
+				})
+				.onComplete( ar -> {
+					if( ar.failed() ) {
+						log.debug("Unexpected failure during context creation");
+					}
+					renderJson(request, context);
+				});
+			} else {
+				renderJson(request, context);
+			}
+		});
 	}
 
 	@Get("/admin-welcome-message")
