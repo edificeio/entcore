@@ -25,22 +25,29 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.UserInfos;
 import org.entcore.registry.filters.AnyAdmin;
 import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.filters.WidgetLinkFilter;
 import org.entcore.registry.services.WidgetService;
 import org.entcore.registry.services.impl.DefaultWidgetService;
+import org.entcore.registry.services.WidgetExternalCacheService;
+import org.entcore.registry.services.impl.DefaultWidgetExternalCacheService;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.*;
@@ -49,8 +56,17 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 
-public class WidgetController extends BaseController {
+public class WidgetController extends BaseController
+{
 	private final WidgetService service = new DefaultWidgetService();
+	private WidgetExternalCacheService externalCacheService;
+
+	@Override
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map securedActions)
+	{
+        this.externalCacheService = new DefaultWidgetExternalCacheService(config, vertx.createHttpClient(new HttpClientOptions()));
+		super.init(vertx, config, rm, securedActions);
+    }
 
 	@Get("/widget-preview")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -253,5 +269,32 @@ public class WidgetController extends BaseController {
 		} else {
 			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.parameters"));
 		}
+	}
+
+	@Get("/widget/cache/external/:cacheId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getExternalCacheEntry(final HttpServerRequest request)
+	{
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>()
+		{
+			@Override
+			public void handle(UserInfos infos)
+			{
+				externalCacheService.getCache(request.params().get("cacheId"), infos, new Handler<Either<String, JsonObject>>()
+				{
+					@Override
+					public void handle(Either<String, JsonObject> result)
+					{
+						if(result.isLeft())
+							renderJson(request, new JsonObject().put("error", result.left().getValue()));
+						else
+						{
+							String cache = result.right().getValue().getString("cache");
+							renderJson(request, cache == null ? result.right().getValue() : new JsonObject(cache));
+						}
+					}
+				});
+			}
+		});
 	}
 }
