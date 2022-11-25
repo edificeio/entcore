@@ -475,6 +475,23 @@ public class AuthController extends BaseController {
 			context.put("cgu", config.getBoolean("cgu", true));
 			context.put("passwordRegex", passwordPattern.toString());
 			context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
+			// Human-readable password format :
+			final I18n i18n = I18n.getInstance();
+			final JsonObject pwdFormatByLang = new JsonObject();
+			i18n.getLanguages(Renders.getHost(request))
+			.stream()
+			.map(String.class::cast)
+			.forEach( (String lang) -> {
+				if( lang != null ) {
+					try {
+						pwdFormatByLang.put(lang, i18n.translate("password.errors", Renders.getHost(request), lang));
+					} catch( Exception e ) {
+						pwdFormatByLang.put(lang, "");
+					}
+				}
+			});
+			context.put("passwordRegexI18n", pwdFormatByLang);
+			// Mandatory user validations :
 			if( user != null ) {
 				EmailState.getMandatoryUserValidation(eb, user.getUserId())
 				.onSuccess( validations -> {
