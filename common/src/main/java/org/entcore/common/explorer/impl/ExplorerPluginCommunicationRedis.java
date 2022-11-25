@@ -21,6 +21,12 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
     static Map<ExplorerMessage.ExplorerPriority, String> STREAMS = new HashMap<>();
     private final List<Promise> pending = new ArrayList<>();
 
+    private static final List<String> STREAM_NAMES_ORDERED_BY_PRIO_DESC = Arrays.asList(
+            "explorer_high",
+            "explorer_medium",
+            "explorer_low"
+    );
+
     static {
         STREAMS.put(ExplorerMessage.ExplorerPriority.Low, "explorer_low");
         STREAMS.put(ExplorerMessage.ExplorerPriority.Medium, "explorer_medium");
@@ -59,18 +65,26 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
         final List<Future> futures = new ArrayList<>();
         Future<List<String>> previous = Future.succeededFuture();
         final Map<String, List<JsonObject>> map = toRedisMap(messages);
-        for (final String stream : map.keySet()) {
-            final Future<List<String>> tmp = previous.compose(ee-> redisClient.xAdd(stream, map.get(stream)).onFailure(e -> {
-                //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
-                final RedisExplorerFailed fail = new RedisExplorerFailed(stream, map.get(stream));
-                pendingFailed.add(fail);
-                vertx.setTimer(retryUntil, rr -> {
-                    pendingFailed.remove(fail);
-                });
-                log.error("Failed to push resources to stream " + stream, e);
-            }));
-            previous = tmp;
-            futures.add(tmp);
+        // Send messages by descending priority of streams
+        // TODO JBE this works without versionning just because for now one type of resources is bound
+        // to exactly one type of stream. As soon as a resource can be in two streams it needs to have an explicit
+        // version field
+        for (final String stream : STREAM_NAMES_ORDERED_BY_PRIO_DESC) {
+            if(map.containsKey(stream)) {
+                final Future<List<String>> tmp = previous.compose(ee -> redisClient.xAdd(stream, map.get(stream)).onFailure(e -> {
+                    // TODO JBE => if xAdd fails the message is lost
+                    // TODO JBE => increment here a metric
+                    // TODO push somewhere else to retry? limit in size? in time? fallback to redis?
+                    final RedisExplorerFailed fail = new RedisExplorerFailed(stream, map.get(stream));
+                    pendingFailed.add(fail);
+                    vertx.setTimer(retryUntil, rr -> {
+                        pendingFailed.remove(fail);
+                    });
+                    log.error("Failed to push resources to stream " + stream, e);
+                }));
+                previous = tmp;
+                futures.add(tmp);
+            }
         }
         final Promise promise = Promise.promise();
         pending.add(promise);
@@ -104,8 +118,16 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
         final Map<String, List<JsonObject>> map = new HashMap<>();
         for (final ExplorerMessage m : messages) {
             final String stream = STREAMS.get(m.getPriority());
-            map.putIfAbsent(stream, new ArrayList<>());
-            map.get(stream).add(toRedisJson(m));
+            map.compute(stream, (k, listOfMessages) -> {
+                final List<JsonObject> augmentedListOfMessages;
+                if(listOfMessages == null) {
+                    augmentedListOfMessages = new ArrayList<>();
+                } else {
+                    augmentedListOfMessages = listOfMessages;
+                }
+                augmentedListOfMessages.add(toRedisJson(m));
+                return augmentedListOfMessages;
+            });
         }
         return map;
     }
