@@ -199,7 +199,7 @@ public class DatabaseTestHelper {
     /** @return a new docker-based Neo4j 3.1 container. */
     public Neo4jContainer<?> createNeo4jContainer() {
         final DockerImageName imageName;
-        if(System.getenv("IS_M1").equals("true") || System.getProperty("os.arch").equals("aarch64")) {
+        if("true".equalsIgnoreCase(System.getenv("IS_M1")) || "aarch64".equalsIgnoreCase(System.getProperty("os.arch"))) {
             imageName = DockerImageName.parse("opendigitaleducation/neo4j:3.1.9-arm").asCompatibleSubstituteFor("neo4j");
         } else {
             imageName = DockerImageName.parse("neo4j:3.1");
