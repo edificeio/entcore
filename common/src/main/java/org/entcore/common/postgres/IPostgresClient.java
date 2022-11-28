@@ -1,5 +1,6 @@
 package org.entcore.common.postgres;
 
+import fr.wseduc.webutils.security.Md5;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -25,7 +26,9 @@ public interface IPostgresClient {
         final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
         final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
         if(worker){
-            return new PostgresClientBusPublisher(vertx, postgresConfig);
+            //one consumer per config
+            final String suffix = Md5.hash(postgresConfig.encode());
+            return new PostgresClientBusPublisher(vertx, postgresConfig, suffix);
         }else{
             return postgresClient;
         }
@@ -36,7 +39,9 @@ public interface IPostgresClient {
         final JsonObject postgresConfig = getPostgresConfig(vertx, config);
         final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
         final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
-        return PostgresClientBusConsumer.initInstance(vertx, postgresClient);
+        //one consumer per config
+        final String suffix = Md5.hash(postgresConfig.encode());
+        return PostgresClientBusConsumer.initInstance(vertx, postgresClient, suffix);
     }
 
     static JsonObject getPostgresConfig(final Vertx vertx, final JsonObject config) throws Exception{

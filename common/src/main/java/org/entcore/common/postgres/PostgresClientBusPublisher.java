@@ -22,18 +22,20 @@ public class PostgresClientBusPublisher implements IPostgresClient {
     private final EventBus bus;
     private final Vertx vertx;
     private final JsonObject config;
+    private final String suffix;
 
-    public PostgresClientBusPublisher(final Vertx vertx, final JsonObject config) {
+    public PostgresClientBusPublisher(final Vertx vertx, final JsonObject config, final String suffix) {
         this.bus = vertx.eventBus();
         this.vertx = vertx;
         this.config = config;
+        this.suffix = suffix;
     }
 
     @Override
     public Future<RowSet<Row>> preparedQuery(final String query, final Tuple tuple) {
         final Promise<RowSet<Row>> promise = Promise.promise();
         final DeliveryOptions options = new DeliveryOptions().setLocalOnly(true);
-        this.bus.request(ADDRESS, queryToJson(query, tuple), options, res -> {
+        this.bus.request(getAddress(suffix), queryToJson(query, tuple), options, res -> {
             if(res.succeeded()){
                 final JsonObject result = (JsonObject) res.result().body();
                 promise.complete(resultToRowset(result));
@@ -50,7 +52,7 @@ public class PostgresClientBusPublisher implements IPostgresClient {
             final Promise<Void> promise = Promise.promise();
             if(transaction.isCommit()) {
                 final DeliveryOptions options = new DeliveryOptions().setLocalOnly(true);
-                this.bus.request(ADDRESS, transactionToJson(transaction.getParams()), options, resBus -> {
+                this.bus.request(getAddress(suffix), transactionToJson(transaction.getParams()), options, resBus -> {
                     if(resBus.succeeded()){
                         final JsonObject result = (JsonObject) resBus.result().body();
                         final JsonArray array = jsonToTransactionParams(result);
