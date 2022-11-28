@@ -186,6 +186,8 @@
     "timeline.settings.cursus-widget": "#HDF",
     "timeline.settings.maxicours-widget": "Aide aux devoirs",
     "timeline.settings.school-widget": "Mon réseau",
+    "timeline.settings.universalis-widget": "Universalis",
+    "timeline.settings.briefme-widget": "Brief.me",
 
     "assistant.welcome.title": "Bienvenue dans L'ENT !",
     "assistant.welcome.message": "L'ENT est l'espace numérique de travail à destination de l'ensemble de la communauté éducative. Élèves, parents, professeurs, personnels, vous trouverez tous les services vous permettant d'être informé, de communiquer, de collaborer et de réaliser ou de participer à des activités éducatives.",
