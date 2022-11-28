@@ -277,7 +277,7 @@ public class SqlResult {
 		};
 	}
 
-	private static void parseShared(JsonObject j) {
+	public static void parseShared(JsonObject j) {
 		Map<String, JsonObject> shared = new HashMap<>();
 		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
 		JsonArray s = new fr.wseduc.webutils.collections.JsonArray(j.getString("shared"));

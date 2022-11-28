@@ -9,6 +9,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
+import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -54,6 +55,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             final String shareTable = getShareTableName().get();
             query.append(String.format("SELECT t.*, JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared FROM %s AS t ", schema, getTableName()));
             query.append(String.format(" LEFT JOIN %s s ON t.id = s.resource_id ", shareTable));
+            query.append(String.format(" LEFT JOIN %s.members ON (member_id = %s.members.id AND group_id IS NOT NULL) ",schema, schema));
         }else{
             query.append(String.format("SELECT * FROM %s ", getTableName()));
         }
@@ -85,7 +87,11 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
         }
         pgPool.queryStream(query.toString(),tuple, getBatchSize()).onSuccess(result -> {
             result.handler(row -> {
-                stream.add(PostgresClient.toJson(row));
+                final JsonObject json = PostgresClient.toJson(row);
+                if(getShareTableName().isPresent()) {
+                    SqlResult.parseShared(json);
+                }
+                stream.add(json);
             }).endHandler(finish -> {
                 stream.end();
             }).exceptionHandler(e->{
