@@ -257,7 +257,7 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 			String email = j.getString("email");
 			JsonObject emailState = j.getJsonObject("emailState");
 
-			if (email == null || emailState == null) {
+			if (StringUtils.isEmpty(email) || emailState == null) {
 				state = UNCHECKED;
 			} else if( !email.equalsIgnoreCase( getValid(emailState) )) {
 				// Case where the email was first validated and then changed.
