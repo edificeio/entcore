@@ -22,9 +22,13 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public class PostgresClientBusHelper  {
-    public static final String ADDRESS = "local:postgres.client.bus";
+    private static final String ADDRESS = "local:postgres.client.bus";
 
     private static final Logger log = LoggerFactory.getLogger(PostgresClientBusHelper.class);
+
+    public static String getAddress(final String suffix){
+        return ADDRESS + "." + suffix;
+    }
 
     public static JsonArray tupleToJson(final Tuple tuple){
         final JsonArray json = new JsonArray();
