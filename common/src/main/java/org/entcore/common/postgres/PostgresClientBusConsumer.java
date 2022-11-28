@@ -21,16 +21,16 @@ public class PostgresClientBusConsumer implements IPostgresClient {
     private final MessageConsumer<JsonObject> consumer;
     private static PostgresClientBusConsumer instance;
 
-    public static PostgresClientBusConsumer initInstance(final Vertx vertx, final IPostgresClient inner){
+    public static PostgresClientBusConsumer initInstance(final Vertx vertx, final IPostgresClient inner, final String suffix){
         if(instance == null){
-            instance =  new PostgresClientBusConsumer(vertx, inner);
+            instance =  new PostgresClientBusConsumer(vertx, inner, suffix);
         }
         return instance;
     }
 
-    PostgresClientBusConsumer(final Vertx vertx, final IPostgresClient inner){
+    PostgresClientBusConsumer(final Vertx vertx, final IPostgresClient inner, final String suffix){
         this.pgClient = inner;
-        this.consumer = vertx.eventBus().localConsumer(PostgresClientBusHelper.ADDRESS);
+        this.consumer = vertx.eventBus().localConsumer(PostgresClientBusHelper.getAddress(suffix));
         this.consumer.handler(message -> {
             final JsonObject payload = message.body();
             if(isQuery(payload)){
