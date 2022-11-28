@@ -43,7 +43,14 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
-        query.append(String.format("SELECT * FROM %s ", getTableName()));
+        if(getShareTableName().isPresent()){
+            final String schema = getTableName().split("\\.")[0];
+            final String shareTable = getShareTableName().get();
+            query.append(String.format("SELECT t.*, JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared FROM %s AS t ", schema, getTableName()));
+            query.append(String.format(" LEFT JOIN %s s ON t.id = s.resource_id ", shareTable));
+        }else{
+            query.append(String.format("SELECT * FROM %s ", getTableName()));
+        }
         if (from.isPresent() && to.isPresent()) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
                     .atZone(ZoneId.systemDefault())
@@ -66,6 +73,9 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
                     .toLocalDateTime();
             tuple.addValue(localTo);
             query.append(String.format("WHERE %s < $1 ",getCreatedAtColumn()));
+        }
+        if(getShareTableName().isPresent()){
+            query.append(" GROUP BY t.id ");
         }
         postgresClient.queryStream(query.toString(),tuple, getBatchSize()).onSuccess(result -> {
             result.handler(row -> {
@@ -102,6 +112,11 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
         ZonedDateTime zonedDateTime = date.atZone(ZoneId.systemDefault());
         return Date.from(zonedDateTime.toInstant());
     }
+
+    protected Optional<String> getShareTableName(){
+        return Optional.empty();
+    }
+
     //abstract
     protected abstract String getTableName();
 }
