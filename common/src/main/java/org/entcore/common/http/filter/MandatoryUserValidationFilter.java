@@ -114,9 +114,9 @@ public class MandatoryUserValidationFilter implements Filter {
     }
 
     private Future<JsonObject> checkTermsOfUse(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
-        if( isInWhiteList(request.path(), request.method().name(), TERMS_OF_USE_IDX)    // White-listed url reqquested => OK
+        if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_TERMS, false)) // No need to revalidate => OK
             || request.headers().contains("Authorization") // Clients with Authorization header have terms of use validated beforehand => OK
-            || Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_TERMS, false)) // No need to revalidate => OK
+            || isInWhiteList(request.path(), request.method().name(), TERMS_OF_USE_IDX)    // White-listed url reqquested => OK
         ) {
             return Future.succeededFuture(validations); 
         }
@@ -125,8 +125,11 @@ public class MandatoryUserValidationFilter implements Filter {
     }
 
     private Future<JsonObject> checkEmailAddress(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
-        if( isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url => OK
-            || Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false))  // No need to revalidate => OK
+        if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false)) // No need to revalidate => OK
+            || (
+                isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url => OK
+                   && !request.path().contains("mon-compte") // OK but these restrictions
+            )
         ) {
             return Future.succeededFuture(validations);
         }
