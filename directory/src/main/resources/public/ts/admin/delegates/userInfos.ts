@@ -21,6 +21,12 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     openEmailInput(): void;
     saveAndCloseEmailInput(): void;
     isEmailWellFormatted(): boolean;
+    openPhoneInput(): void;
+    saveAndClosePhoneInput(): void;
+    isPhoneWellFormatted(): boolean;
+    openMobileInput(): void;
+    saveAndCloseMobileInput(): void;
+    isMobileWellFormatted(): boolean;
     userInfosDisplayChildren(): boolean
     userInfosDisplayRelative(): boolean
     userInfosDisplayUserbook(): boolean
@@ -29,8 +35,10 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
-    temp: { email?:string; };
+    temp: { email?:string; homePhone?: string; mobile?: string;};
     showEmailInput: boolean;
+    showPhoneInput: boolean;
+    showMobileInput: boolean;
     isForbidden(): boolean;
     //from others
     usersForType(type?: UserTypes): User[]
@@ -216,6 +224,54 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     }
     $scope.isEmailWellFormatted = function () {
         return angular.element("input[type=\"email\"][name=\"tempEmail\"]").hasClass('ng-valid');
+    }
+    $scope.openPhoneInput = function () {
+        $scope.temp.homePhone = $scope.selectedUser.homePhone;
+        $scope.showPhoneInput = true;
+    }
+    let savingPhone = false;
+    $scope.saveAndClosePhoneInput = async function () {
+        if (savingPhone) return;
+        try {
+            savingPhone = true;
+            if ($scope.selectedUser.homePhone !== $scope.temp.homePhone && $scope.isPhoneWellFormatted()) {
+                $scope.selectedUser.homePhone = $scope.temp.homePhone;
+                await directoryService.updateUserHomePhone($scope.selectedUser);
+                $scope.showPhoneInput = false;
+                $scope.safeApply();
+            }
+        } catch (e) {
+            notify.error('directory.form.phone');
+        } finally {
+            savingPhone = false;
+        }
+    }
+    $scope.isPhoneWellFormatted = function () {
+        return angular.element("input[type=\"tel\"][name=\"tempPhone\"]").hasClass('ng-valid');
+    }
+    $scope.openMobileInput = function () {
+        $scope.temp.mobile = $scope.selectedUser.mobile;
+        $scope.showMobileInput = true;
+    }
+    let savingMobile = false;
+    $scope.saveAndCloseMobileInput = async function () {
+        if (savingMobile) return;
+        try {
+            savingMobile = true;
+            if ($scope.selectedUser.mobile !== $scope.temp.mobile && $scope.isMobileWellFormatted()) {
+                $scope.selectedUser.mobile = $scope.temp.mobile;
+                await directoryService.updateUserMobile($scope.selectedUser);
+                $scope.showMobileInput = false;
+                $scope.safeApply();
+            }
+        } catch (e) {
+            notify.error('directory.form.phone');
+        } finally {
+            savingMobile = false;
+        }
+    }
+    $scope.isMobileWellFormatted = function () {
+        return angular.element("input[type=\"tel\"][name=\"mobile\"]").hasClass('ng-valid');
     }
     $scope.isForbidden = function() {
         if( Me.session.functions.ADMIN_LOCAL 
