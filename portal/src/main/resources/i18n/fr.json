@@ -674,6 +674,7 @@
   "folders.errors.duplicate.folder": "Le dossier n'a pas été crée car un élement du même nom existe déjà",
   "folders.errors.duplicate.file": "Le fichier n'a pas été importé car un élement du même nom existe déjà",
   "rgpd.cookies.banner.text1": "Parce que nous sommes soucieux de la protection de vos données personnelles, les cookies que nous utilisons collectent des informations anonymisées. Notre seule utilisation de ces cookies vise à améliorer votre expérience utilisateur. Vous pouvez consulter à tout moment ces cookies depuis la page « Mon compte » dans la section « Cookies ».",
+  "rgpd.cookies.banner.text2": "Parce que nous sommes soucieux de la protection de vos données personnelles, les cookies que nous utilisons collectent des informations anonymisées. Notre seule utilisation de ces cookies vise à améliorer votre expérience utilisateur.",
   "rgpd.cookies.banner.button.consult": "Consulter",
   "rgpd.cookies.banner.button.close": "Fermer",
   "rgpd.cookies.banner.link": "paramètres de vie privée",
