@@ -86,7 +86,8 @@
                     <form novalidate autocomplete="off" name="formCode" class="col-sm-5 mx-auto" ng-submit="onValidate('code')">
                         <label class="mb-2 row fw-bold" for="input-data"><i18n>validate-mail.step2.form.code</i18n></label>
                         <input type="text" id="input-data" name="inputCode" required
-                                min="6" max="6"
+                                maxlength="6"
+                                onkeypress="return event.charCode>=48 && event.charCode<=57"
                                 pattern="[0-9]{6}"
                                 ng-model="ctrl.inputCode" 
                                 ng-model-options="{ debounce: 500 }"
