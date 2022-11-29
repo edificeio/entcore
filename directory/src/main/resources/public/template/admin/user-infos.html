@@ -31,7 +31,7 @@
 				<label translate content="userBook.profile.login" class="four cell"><span class="no-style ng-scope"></span></label>
 				<label ng-if="!showLoginInput" class="six cell"><span class="no-style">[[selectedUser.login]]</span></label>
 				<input ng-if="showLoginInput" class="four cell inline-editing" ng-model="selectedUser.tempLoginAlias" type="text">
-				<label ng-if="!showLoginInput"><a ng-click="openLoginInput()" href="#" translate content="directory.modify"></a></label>
+				<label ng-if="!showLoginInput && !isForbidden()"><a ng-click="openLoginInput()" href="#" translate content="directory.modify"></a></label>
 				<label ng-if="showLoginInput && !isLoginAliasWellFormatted()" tooltip="classAdmin.pattern">
 					<a disabled="disabled" href="#" translate content="classAdmin.save"></a>
 				</label>
