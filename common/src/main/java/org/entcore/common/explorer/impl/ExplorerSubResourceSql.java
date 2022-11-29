@@ -47,7 +47,10 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
         if(getShareTableName().isPresent()){
             final String schema = getTableName().split("\\.")[0];
             final String shareTable = getShareTableName().get();
-            query.append(String.format("SELECT t.*, JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared FROM %s AS t ", schema, getTableName()));
+            query.append(" SELECT t.*, ");
+            query.append(String.format(" JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared, ", schema));
+            query.append(" ARRAY_TO_JSON(ARRAY_AGG(group_id)) AS groups ");
+            query.append(String.format(" FROM %s AS t ", getTableName()));
             query.append(String.format(" LEFT JOIN %s s ON t.id = s.resource_id ", shareTable));
             query.append(String.format(" LEFT JOIN %s.members ON (member_id = %s.members.id AND group_id IS NOT NULL) ",schema, schema));
         }else{
@@ -83,7 +86,7 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
             result.handler(row -> {
                 final JsonObject json = PostgresClient.toJson(row);
                 if(getShareTableName().isPresent()) {
-                    SqlResult.parseShared(json);
+                    SqlResult.parseSharedFromArray(json);
                 }
                 stream.add(json);
             }).endHandler(finish -> {

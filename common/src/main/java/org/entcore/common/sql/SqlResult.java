@@ -306,6 +306,35 @@ public class SqlResult {
 		j.put("shared", a);
 	}
 
+	public static void parseSharedFromArray(JsonObject j) {
+		Map<String, JsonObject> shared = new HashMap<>();
+		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray s = j.getJsonArray("shared");
+		JsonArray m = j.getJsonArray("groups");
+		for (Object o : s) {
+			if (o == null || !(o instanceof JsonObject)) continue;
+			JsonObject json = (JsonObject) o;
+			String member = json.getString("member_id");
+			String action = json.getString("action");
+			if (member != null && action != null) {
+				if (shared.containsKey(member)) {
+					shared.get(member).put(action, true);
+				} else {
+					JsonObject sj = new JsonObject().put(action, true);
+					if (m.contains(member)) {
+						sj.put("groupId", member);
+					} else {
+						sj.put("userId", member);
+					}
+					shared.put(member, sj);
+					a.add(sj);
+				}
+			}
+		}
+		j.remove("groups");
+		j.put("shared", a);
+	}
+
 	public static Handler<Message<JsonObject>> parseShared(final Handler<Either<String, JsonArray>> handler) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
