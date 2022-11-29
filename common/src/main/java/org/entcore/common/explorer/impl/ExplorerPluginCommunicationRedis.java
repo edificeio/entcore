@@ -66,7 +66,7 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
         Future<List<String>> previous = Future.succeededFuture();
         final Map<String, List<JsonObject>> map = toRedisMap(messages);
         // Send messages by descending priority of streams
-        // TODO JBE this works without versionning just because for now one type of resources is bound
+        // This works without versionning just because for now one type of resources is bound
         // to exactly one type of stream. As soon as a resource can be in two streams it needs to have an explicit
         // version field
         for (final String stream : STREAM_NAMES_ORDERED_BY_PRIO_DESC) {
@@ -88,10 +88,12 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
         }
         final Promise promise = Promise.promise();
         pending.add(promise);
-        return CompositeFuture.all(futures).onComplete(e->{
+        return (Future)CompositeFuture.all(futures).onComplete(e->{
             pending.remove(promise);
             promise.complete();
-        }).mapEmpty();
+        })
+        .mapEmpty()
+        .otherwiseEmpty();
     }
 
     @Override
