@@ -78,13 +78,27 @@
 			</div>
 			<div class="row">
 				<label translate content="userBook.profile.telephone" class="four cell"><span class="no-style"></span></label>
-				<input name="phone" class="eight cell inline-editing" ng-model="selectedUser.homePhone" complete-change="saveUserInfoChanges()"
-				 type="tel">
+
+				<label ng-if="!showPhoneInput" class="six cell">[[selectedUser.homePhone]]</span></label>
+				<input type="tel" class="eight cell inline-editing" name="tempPhone"
+					   ng-if="showPhoneInput"
+					   ng-model="temp.homePhone" />
+
+				<label ng-if="!showPhoneInput && !isForbidden()"><a ng-click="openPhoneInput()" href="#"><i18n>directory.modify</i18n></a></label>
+				<label ng-if="showPhoneInput && !isPhoneWellFormatted()"><i18n>classAdmin.save</i18n></label>
+				<label ng-if="showPhoneInput && isPhoneWellFormatted()"><a ng-click="saveAndClosePhoneInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
 				<label translate content="userBook.profile.mobilePhone" class="four cell"><span class="no-style"></span></label>
-				<input class="eight cell inline-editing" ng-model="selectedUser.mobile" complete-change="saveUserInfoChanges()"
-				 type="tel">
+
+				<label ng-if="!showMobileInput" class="six cell">[[selectedUser.mobile]]</span></label>
+				<input type="tel" class="eight cell inline-editing" name="mobile"
+					   ng-if="showMobileInput"
+					   ng-model="temp.mobile" />
+
+				<label ng-if="!showMobileInput && !isForbidden()"><a ng-click="openMobileInput()" href="#"><i18n>directory.modify</i18n></a></label>
+				<label ng-if="showMobileInput && !isMobileWellFormatted()"><i18n>classAdmin.save</i18n></label>
+				<label ng-if="showMobileInput && isMobileWellFormatted()"><a ng-click="saveAndCloseMobileInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
 				<label translate content="userBook.profile.birthdate" class="four cell"><span class="no-style"></span></label>
@@ -99,7 +113,7 @@
 	</div>
 	<!--END FORM-->
 	<!--BUTTONS-->
-	<div class="row twelve bottom-spacing-three">
+	<div class="row twelve bottom-spacing-three" ng-if="!isForbidden()">
 		<a workflow="directory.allowClassAdminResetPassword" ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
 		<a class="button" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></a>
 	</div>

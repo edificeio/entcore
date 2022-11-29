@@ -58,6 +58,12 @@ export const directoryService = {
     async updateUserEmail(user: User) {
         return await http.put('/directory/user/' + user.id, { email: user.email });
     },
+    async updateUserHomePhone(user: User) {
+        return await http.put('/directory/user/' + user.id, { homePhone: user.homePhone });
+    },
+    async updateUserMobile(user: User) {
+        return await http.put('/directory/user/' + user.id, { mobile: user.mobile });
+    },
     async getPreference(): Promise<ClassAdminPreferences> {
         if (preferences) {
             return preferences;
