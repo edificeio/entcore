@@ -17,7 +17,7 @@
 	<lightbox show="display.homePhone" on-close="display.homePhone = false">
 		<h1><i18n>directory.telephone.update.title</i18n></h1>
 
-		<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="phone" class="twelve inline-editing" ng-model="account.newHomePhone" />
+		<input type="tel" ng-pattern="/^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$/" name="phone" class="twelve inline-editing" ng-model="account.newHomePhone" ng-trim="false"/>
 
 		<div class="row">
 			<p class="input-errors small-text" ng-if="!matchTelRegex(account.newHomePhone);">
@@ -34,7 +34,7 @@
 	<lightbox show="display.mobile" on-close="display.mobile = false">
 		<h1><i18n>directory.mobilePhone.update.title</i18n></h1>
 
-		<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="mobilePhone" class="twelve inline-editing" ng-model="account.newMobile" />
+		<input type="tel" ng-pattern="/^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$/" name="mobilePhone" class="twelve inline-editing" ng-model="account.newMobile" ng-trim="false"/>
 
 		<div class="row">
 			<p class="input-errors small-text" ng-if="!matchTelRegex(account.newMobile);">
