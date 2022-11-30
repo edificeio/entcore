@@ -92,7 +92,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.tracker = tracker;
 
 	$scope.matchTelRegex = function (tel) {
-		if((tel) && (tel.match(/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/))) {
+		if((tel || tel=="") && (tel.match(/^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$/))) {
 			return true;
 		}
 		return false;
