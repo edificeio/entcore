@@ -36,4 +36,15 @@ public interface IExplorerSubResource {
     Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to);
 
     Future<Void> onDeleteParent(final Collection<String> parentIds);
+
+    /**
+     * @return The type of content of this subresource
+     */
+    ExplorerMessage.ExplorerContentType getContentType();
+
+    /**
+     * @return The name of the attribute in which the reference object to this subresource's parent
+     * can be found
+     */
+    String getParentRefAttributeNameInSource();
 }
