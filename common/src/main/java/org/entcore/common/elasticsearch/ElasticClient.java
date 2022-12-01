@@ -180,7 +180,8 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json")
+        .exceptionHandler(th -> future.fail(th)).end(payload.toString());
         return future.future();
     }
 
@@ -236,7 +237,7 @@ public class ElasticClient {
             });
         })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(onError);
+                .setChunked(true).exceptionHandler(h -> future.fail(h));
         return new ElasticBulkBuilder(req, future.future());
     }
 
@@ -253,7 +254,7 @@ public class ElasticClient {
             });
         })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(onError);
+                .setChunked(true).exceptionHandler(h -> future.fail(h));
         return new ElasticBulkBuilder(req, future.future());
     }
 
