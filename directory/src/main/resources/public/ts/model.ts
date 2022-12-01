@@ -531,7 +531,7 @@ directory.User.prototype.saveInfos = function(){
 			return user.id;
 		});
 	}
-	oldHttp().putJson('/directory/user/' + this.id, userData);
+	return oldHttp().putJson('/directory/user/' + this.id, userData);
 };
 
 directory.User.prototype.saveLogin = function(newLoginAlias) {

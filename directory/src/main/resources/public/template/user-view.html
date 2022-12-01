@@ -39,6 +39,53 @@
 		<span ng-if="account.otp"><i18n>directory.otp.info</i18n></span>
 	</lightbox>
 
+	<lightbox ng-if="display.editLightbox"
+	          ng-switch="display.editLightbox"
+			  show="display.editLightbox" on-close="display.editLightbox = ''">
+		<h1>
+			<i18n ng-switch-when="email">directory.email.update.title</i18n>
+			<i18n ng-switch-when="homePhone">directory.telephone.update.title</i18n>
+			<i18n ng-switch-when="mobile">directory.mobilePhone.update.title</i18n>
+			<i18n ng-switch-default>directory.modify</i18n>
+		</h1>
+
+		<form name="editForm" novalidate>
+			<div class="row">
+				<p>
+					<label ng-switch-when="email" class="three cell twelve-mobile"><i18n>userBook.profile.email</i18n></label>
+					<input ng-switch-when="email" type="email" name="editFormInput" class="nine cell twelve-mobile" ng-model="boxEdit.value">
+					<input ng-switch-when="homePhone|mobile" ng-switch-when-separator="|"
+					       type="tel" name="editFormInput" ng-pattern="/^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$/" class="twelve inline-editing" ng-model="boxEdit.value" ng-trim="false"/>
+					<input ng-switch-default type="text" name="editFormInput" class="nine cell twelve-mobile" ng-model="boxEdit.value">
+				</p>
+			</div>
+
+			<div class="row">
+				<p class="input-errors small-text"
+				   ng-switch-when="email"
+				   ng-if="editForm.editFormInput.$invalid && editForm.editFormInput.$dirty">
+					<span ng-repeat="(key, value) in editForm.editFormInput.$error">
+						<label ng-if="value">[[lang.translate(key)]]</label>
+					</span>
+				</p>
+
+				<p class="input-errors small-text"
+				   ng-switch-when="homePhone|mobile" ng-switch-when-separator="|"
+				   ng-if="editForm.editFormInput.$invalid && editForm.editFormInput.$dirty">
+					<i18n>pattern</i18n>
+				</p>
+			</div>
+
+			<hr>
+
+			<div class="row">
+				<button type="button" class="submit right-magnet cell" ng-click="saveEditLightbox()" ng-disabled="editForm.$invalid || editForm.$pristine "><i18n>directory.save</i18n></button>
+				<button type="button" class="cancel right-magnet cell" ng-click="display.editLightbox = ''"><i18n>cancel</i18n></button>
+			</div>
+		</form>
+	</lightbox>
+
+
 	<article class="rigid-grid cell twelve">
 
 		<div class="cell four height-four reduce-block-six avatar">
@@ -71,7 +118,6 @@
 						<i18n>directory.login.update.button</i18n>
 					</a>
 				</em>
-
 			</div>
 
 			<div class="row" ng-if="displayPassword(account,me)">
@@ -94,44 +140,63 @@
 			</div>
 
 			<div class="row">
-				<label translate content="userBook.profile.email" class="four cell"></label>
-				<div class="seven cell">
-					<input class="twelve inline-editing" type="email" name="mail" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.email" />
-						<span class="twelve input-errors" ng-if="userForm.mail.$invalid && userForm.mail.$dirty">
-							<span ng-repeat="(key, value) in userForm.mail.$error">
-								<label ng-if="value">[[lang.translate(key)]]</label>
-							</span>
-						</span>
+				<label class="four cell"><i18n>userBook.profile.email</i18n></label>
+				<div class="one cell">
+					<svg ng-init="seeOrHide = (account.visible.email === 'public' ? 'see' : 'hide')"
+						 ng-class="[account.visible.email, 'icon-'+seeOrHide]"
+						 data-ng-click="changeInfosVisibility('email', account.visible.email)" width="18" height="18">
+						<title>[[translate(account.visible.email)]]</title>
+						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHide]]"></use>
+					</svg>
 				</div>
-				<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
+				<em class="seven cell">
+					[[account.email]]
+					<a ng-click="openEditLightbox('email')">
+						<i18n>directory.login.update.button</i18n>
+					</a>
+				</em>
 			</div>
 
 			<div class="row" ng-if="!hidePersonalData">
-				<label translate content="userBook.profile.telephone" class="four cell"></label>
-				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.homePhone" />
-					<span class="twelve input-errors" ng-if="userForm.phone.$invalid && userForm.phone.$dirty">
-						<span ng-repeat="(key, value) in userForm.phone.$error">
-							<label ng-if="value">[[lang.translate(key)]]</label>
-						</span>
-					</span>
+				<label class="four cell"><i18n>userBook.profile.telephone</i18n></label>
+				<div class="one cell">
+					<svg ng-init="seeOrHide = (account.visible.phone === 'public' ? 'see' : 'hide')"
+						 ng-class="[account.visible.phone, 'icon-'+seeOrHide]"
+						 data-ng-click="changeInfosVisibility('phone', account.visible.phone)" width="18" height="18">
+						<title>[[translate(account.visible.phone)]]</title>
+						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHide]]"></use>
+					</svg>
 				</div>
-				<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
-				<div class="clear"></div>
+				<div class="seven cell">
+					<label>[[account.homePhone]]</label>
+					<a class="left-spacing-twice" ng-if="account.homePhone" ng-click="openEditLightbox('homePhone')">
+						<i18n>directory.login.update.button</i18n>
+					</a>
+					<a ng-class="{'margin-left': !account.homePhone}" ng-if="!account.homePhone" ng-click="openEditLightbox('homePhone')">
+						<i18n>directory.add</i18n>
+					</a>
+				</div>
 			</div>
 
 			<div class="row" ng-if="!hidePersonalData">
-				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
-				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.mobile" />
-					<span class="twelve input-errors" ng-if="userForm.mobilePhone.$invalid && userForm.mobilePhone.$dirty">
-						<span ng-repeat="(key, value) in userForm.mobilePhone.$error">
-							<label ng-if="value">[[lang.translate(key)]]</label>
-						</span>
-					</span>
+				<label class="four cell"><i18n>userBook.profile.mobilePhone</i18n></label>
+				<div class="one cell">
+					<svg ng-init="seeOrHide = (account.visible.mobile === 'public' ? 'see' : 'hide')"
+						 ng-class="[account.visible.mobile, 'icon-'+seeOrHide]"
+						 data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)" width="18" height="18">
+						<title>[[translate(account.visible.mobile)]]</title>
+						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHide]]"></use>
+					</svg>
 				</div>
-				<i class="[[account.visible.mobile]] right-magnet" title="[[translate(account.visible.mobile)]]" data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)"></i>
-				<div class="clear"></div>
+				<div class="seven cell">
+					<label>[[account.mobile]]</label>
+					<a class="left-spacing-twice" ng-if="account.mobile" ng-click="openEditLightbox('mobile')">
+						<i18n>directory.login.update.button</i18n>
+					</a>
+					<a ng-class="{'margin-left': !account.mobile}" ng-if="!account.mobile" ng-click="openEditLightbox('mobile')">
+						<i18n>directory.add</i18n>
+					</a>
+				</div>
 			</div>
 
 			<!--div class="row">
@@ -141,12 +206,16 @@
 			</div-->
 
 			<div class="row">
-				<div class="four cell">
-					<i18n>userBook.profile.birthdate</i18n>
+				<div class="four cell"><i18n>userBook.profile.birthdate</i18n></div>
+				<div class="one cell">
+					<svg ng-init="seeOrHide = (account.visible.birthDate === 'public' ? 'see' : 'hide')"
+						 ng-class="[account.visible.birthDate, 'icon-'+seeOrHide]"
+						 data-ng-click="changeInfosVisibility('birthDate', account.visible.birthDate)" width="18" height="18">
+						<title>[[translate(account.visible.mobile)]]</title>
+						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHide]]"></use>
+					</svg>
 				</div>
 				<em class="seven cell">[[birthDate(account.birthDate)]]</em>
-				<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
-				<div class="clear"></div>
 			</div>
 
 			<div class="row">
