@@ -19,7 +19,7 @@ public class ElasticClient {
     private final HttpClient httpClient;
     private final Optional<String> authorization;
     private Logger log = LoggerFactory.getLogger(ElasticClient.class);
-    private Handler<Throwable> onError = (e) -> {
+    private Handler<Throwable> onErrorHandler = (e) -> {
         log.error("Elastic Query failed: ",e);
     };
 
@@ -33,7 +33,14 @@ public class ElasticClient {
     }
 
     public void setOnError(final Handler<Throwable> onError) {
-        this.onError = onError;
+        this.onErrorHandler = onError;
+    }
+
+    private <T> Handler<Throwable> getOnErrorHandler(final Promise<T> promise){
+        return (e)->{
+            promise.fail(e);
+            this.onErrorHandler.handle(e);
+        };
     }
 
     protected HttpClientRequest authorize(final HttpClientRequest req){
@@ -58,7 +65,7 @@ public class ElasticClient {
                 });
             }
         })).putHeader("content-type", "application/json")
-                .exceptionHandler(onError).end(payload);
+                .exceptionHandler(getOnErrorHandler(future)).end(payload);
         return future.future();
     }
 
@@ -73,7 +80,7 @@ public class ElasticClient {
                         });
                     }
                 })).putHeader("content-type", "application/json")
-                .exceptionHandler(onError).end();
+                .exceptionHandler(getOnErrorHandler(future)).end();
         return future.future();
     }
 
@@ -89,7 +96,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -105,7 +112,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(new JsonObject().put("doc",payload).toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(new JsonObject().put("doc",payload).toString());
         return future.future();
     }
 
@@ -121,7 +128,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end();
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end();
         return future.future();
     }
 
@@ -137,7 +144,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -159,7 +166,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 });
             }
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -180,7 +187,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -203,7 +210,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -219,7 +226,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
         return future.future();
     }
 
@@ -236,7 +243,7 @@ public class ElasticClient {
             });
         })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(onError);
+                .setChunked(true).exceptionHandler(getOnErrorHandler(future));
         return new ElasticBulkBuilder(req, future.future());
     }
 
@@ -253,7 +260,7 @@ public class ElasticClient {
             });
         })).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(onError);
+                .setChunked(true).exceptionHandler(getOnErrorHandler(future));
         return new ElasticBulkBuilder(req, future.future());
     }
 
