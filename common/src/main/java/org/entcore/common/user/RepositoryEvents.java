@@ -19,6 +19,8 @@
 
 package org.entcore.common.user;
 
+import java.util.List;
+
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,9 +38,26 @@ public interface RepositoryEvents {
 	default void importResources(String importId, String userId, String userLogin, String userName, String importPath,
 		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler) {}
 
-	void deleteGroups(JsonArray groups);
 
-	void deleteUsers(JsonArray users);
+	default void deleteGroups(JsonArray groups) {
+		deleteGroups(groups, null);
+	}
+
+	/**
+	 * @param groups to be deleted
+	 * @param handler to handle a post-delete effect on deleted users data
+	 */
+	default void deleteGroups(JsonArray groups, Handler<List<JsonObject>> handler) {}
+
+	default void deleteUsers(JsonArray users) {
+		deleteUsers(users, null);
+	}
+
+	/**
+	 * @param users to be deleted
+	 * @param handler to handle a post-delete effect on deleted users data
+	 */
+	default void deleteUsers(JsonArray users, Handler<List<JsonObject>> handler) {}
 
 	default void usersClassesUpdated(JsonArray updates) {}
 
