@@ -352,6 +352,7 @@
     "directory.login": "Identifiant",
     "directory.login.update.title": "Modification de l'identifiant",
     "directory.displayName.update.title": "Modification du nom affiché",
+    "directory.email.update.title": "Modification de l'email",
     "directory.telephone.update.title": "Modification du téléphone",
     "directory.mobilePhone.update.title": "Modification du téléphone portable",
     "directory.login.update.button": "Modifier",
