@@ -271,6 +271,34 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			}.bind(this));
 	}
 
+	let isEditLightboxSaving = false;
+	$scope.boxEdit = {value:''};
+
+	$scope.openEditLightbox = (displayField:string) => {
+		isEditLightboxSaving = false;
+		$scope.display.editLightbox = displayField;
+		$scope.boxEdit.value = $scope.account[displayField];
+	}
+
+	$scope.saveEditLightbox = function() {
+		if( isEditLightboxSaving || !$scope.display.editLightbox ) return;
+		isEditLightboxSaving = true;
+		$scope.account[$scope.display.editLightbox] = $scope.boxEdit.value;
+		$scope.boxEdit.value = '';
+		directory.account.saveInfos()
+			.done(function(e){
+				$scope.display.editLightbox = '';
+				isEditLightboxSaving = false;
+				$scope.$apply();
+			})
+			.e400(function(e){
+				isEditLightboxSaving = true;
+				let errorMsg: string = JSON.parse(e.responseText).error;
+				if( errorMsg )
+					notify.error(errorMsg);
+			}.bind(this));
+	}
+
 	$scope.saveInfos = function(){
 		directory.account.saveInfos();
 	};
