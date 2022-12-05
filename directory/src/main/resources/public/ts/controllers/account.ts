@@ -360,6 +360,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
         }
 		http().get('api/edit-user-info-visibility', { info: info, state: $scope.account.visible[info] });
 	};
+	$scope.seeOrHideInfo = (info:string) => $scope.account.visible[info] === 'public' ? 'see' : 'hide';
 
 	$scope.resetAvatar = function(){
 		directory.account.picture = '';
