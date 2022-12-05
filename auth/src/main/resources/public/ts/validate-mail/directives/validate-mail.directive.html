@@ -1,7 +1,7 @@
 <div ng-if="canRenderUi" ng-switch="ctrl.step">
 
     <div ng-if="ctrl.step==='code' && ctrl.force">
-        <button type="button" class="btn btn-link" id="btnBack" ng-click="ctrl.step='email'">
+        <button type="button" class="validate-mail-back" id="btnBack" ng-click="ctrl.step='email'">
             <svg class="icon-svg" width="20" height="20">
                 <use href="/auth/public/icons/validate-mail-icons.svg#arrowLeft"></use>
             </svg>
@@ -16,7 +16,9 @@
             </div>
 
             <div class="mb-3 text-center fs-4">
-                <i18n>validate-mail.step1.title</i18n>
+                <h2 class="validate-mail-title">
+                    <i18n>validate-mail.step1.title</i18n>
+                </h2>
             </div>
         </div>
     </div>
