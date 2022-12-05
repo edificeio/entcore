@@ -1,15 +1,16 @@
 package org.entcore.common.explorer.impl;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.*;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IExplorerFolderTree;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerFolderTree implements IExplorerFolderTree {
@@ -64,7 +65,7 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         final String id = getFolderId(source);
         final UserInfos user = getCreatorForModel(source);
         //folder
-        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getFolderResourceType());
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getFolderResourceType(), getFolderResourceType());
         message.withName(getName(source));
         message.withTrashed(isTrashed(source));
         message.withParentEntId(getParentId(source));
