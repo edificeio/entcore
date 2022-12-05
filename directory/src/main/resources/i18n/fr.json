@@ -863,7 +863,7 @@
     "group.school.Student": "Élèves de l'{0}.",
     "group.school.Teacher": "Enseignants de l'{0}.",
     "group.school.Guest": "Invités de l'{0}.",
-    "password.warning.federated": "Le mot de passe que vous allez changer correspond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT.",
+    "password.warning.federated": "Si vous souhaitez modifier votre mot de passe EDUCONNECT ou Académique, vous devez vous rendre sur le portail correspondant. Le mot de passe ci-dessous est celui de l’ENT.",
     "admin.notify.blocked.profile": "Les utilisateurs appartenant au profil sélectionné ont été bloqués",
     "admin.notify.unblocked.profile": "Les utilisateurs appartenant au profil sélectionné ont été débloqués",
     "directory.block.users": "Blocage de comptes par profil",
