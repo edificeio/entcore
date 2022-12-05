@@ -520,5 +520,18 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 				}
 			}
 		});
+
+		this.templateProcessor.setLambda("host", new Mustache.Lambda() {
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException{
+				String contents = frag.execute();
+				if(contents.matches("^(http://|https://).*")){
+					out.write(contents);
+				} else {
+					String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
+					out.write(host + contents);
+				}
+			}
+		});
 	}
 }
