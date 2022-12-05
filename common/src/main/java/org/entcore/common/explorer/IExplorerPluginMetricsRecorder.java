@@ -7,7 +7,7 @@ public interface IExplorerPluginMetricsRecorder {
     void onSendMessageSuccess(int numberOfSuccessfulMessages);
     void onSendMessageFailure(int numberOfFailedMessages);
     class NoopExplorerPluginMetricsRecorder implements IExplorerPluginMetricsRecorder {
-
+        public static final NoopExplorerPluginMetricsRecorder instance = new NoopExplorerPluginMetricsRecorder();
         @Override
         public void onSendMessageSuccess(int numberOfSuccessfulMessages) {
 

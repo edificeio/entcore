@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExplorerMessage {
+
+
     public enum ExplorerContentType{
         Text, Html, Pdf
     }
@@ -71,8 +73,9 @@ public class ExplorerMessage {
         return builder;
     }
 
-    public static ExplorerMessage delete(final String id, final UserInfos user, final boolean forSearch) {
-        final ExplorerMessage builder = new ExplorerMessage(id, ExplorerAction.Delete, forSearch);
+    public static ExplorerMessage delete(final IdAndVersion id, final UserInfos user, final boolean forSearch) {
+        final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Delete, forSearch);
+        builder.message.put("version", id.getVersion());
         builder.message.put("deletedAt", new Date().getTime());
         builder.message.put("deleterId", user.getUserId());
         builder.message.put("deleterName", user.getUsername());
@@ -121,9 +124,14 @@ public class ExplorerMessage {
         return this;
     }
 
-    public ExplorerMessage withType(final String application, final String resourceType) {
+    public ExplorerMessage withType(final String application, final String resourceType, final String entityType) {
         message.put("application", application);
         message.put("resourceType", resourceType);
+        message.put("entityType", entityType);
+        return this;
+    }
+    public ExplorerMessage withVersion(Long version) {
+        message.put("version", version);
         return this;
     }
 
@@ -188,6 +196,11 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withSubResources(final JsonArray subResources) {
+        message.put("subresources", subResources);
+        return this;
+    }
+
     public ExplorerMessage withSubResource(final String id, final boolean deleted) {
         final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
@@ -198,12 +211,13 @@ public class ExplorerMessage {
         return this;
     }
 
-    public ExplorerMessage withSubResourceHtml(final String id, final String content) {
+    public ExplorerMessage withSubResourceHtml(final String id, final String content, final long version) {
         final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
         final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
         subResource.put("contentHtml", content);
         subResource.put("deleted", false);
+        subResource.put("version", version);
         subResources.add(subResource);
         message.put("subresources", subResources);
         return this;
@@ -264,6 +278,9 @@ public class ExplorerMessage {
     public String getResourceType() {
         return message.getString("resourceType");
     }
+    public String getEntityType() {
+        return message.getString("entityType");
+    }
     public JsonObject getOverride() {
         return message.getJsonObject("override");
     }
@@ -284,5 +301,17 @@ public class ExplorerMessage {
     }
     public void setIdQueue(String idQueue) {
         this.idQueue = idQueue;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("ExplorerMessage{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", action='").append(action).append('\'');
+        sb.append(", message=").append(message);
+        sb.append(", priority=").append(priority);
+        sb.append(", idQueue='").append(idQueue).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
