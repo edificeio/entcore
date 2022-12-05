@@ -504,24 +504,7 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
 		super.setLambdaTemplateRequest(request);
 
-		this.templateProcessor.setLambda("theme", new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String key = frag.execute();
-				String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
-
-				// #46383, translations from the theme takes precedence over those from the domain
-				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
-				if (!translatedContents.equals(key)) {
-					Mustache.compiler().compile(translatedContents).execute(frag, out);
-				} else {
-					JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
-					Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(frag, out);
-				}
-			}
-		});
-
-		this.templateProcessor.setLambda("host", new Mustache.Lambda() {
+		final Mustache.Lambda hostLambda = new Mustache.Lambda() {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException{
 				String contents = frag.execute();
@@ -532,6 +515,29 @@ public class DefaultMailValidationService extends Renders implements MailValidat
 					out.write(host + contents);
 				}
 			}
+		};
+
+		this.templateProcessor.setLambda("theme", new Mustache.Lambda() {
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException {
+				String key = frag.execute();
+				String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
+				// {{theme}} directives may have inner {{host}}
+				Object innerCtx = new Object() {
+					Mustache.Lambda host = hostLambda;
+				};
+
+				// #46383, translations from the theme takes precedence over those from the domain
+				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
+				if (!translatedContents.equals(key)) {
+					Mustache.compiler().compile(translatedContents).execute(innerCtx, out);
+				} else {
+					JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
+					Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(innerCtx, out);
+				}
+			}
 		});
+
+		this.templateProcessor.setLambda("host", hostLambda);
 	}
 }
