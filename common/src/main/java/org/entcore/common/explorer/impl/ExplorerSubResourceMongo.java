@@ -5,6 +5,7 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -80,4 +81,23 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource{
     }
     //abstract
     protected abstract String getCollectionName();
+
+    @Override
+    public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
+        final QueryBuilder query = QueryBuilder.start("_id").is(message.getEntityId())
+                .and(QueryBuilder.start("version").lessThanEquals(message.getVersion()).get());
+        final JsonObject update = new JsonObject()
+                .put("$set",new JsonObject()
+                        .put("ingest_job_state", message.getState().name())
+                        .put("version", message.getVersion())
+                );
+        mongoClient.updateCollection(getCollectionName(),
+                MongoQueryBuilder.build(query), update, asyncResult -> {
+                    if(asyncResult.succeeded()) {
+                        log.debug("Ingestion ack succeeded : " + message);
+                    } else {
+                        log.error("Ingestion ack failed : " +  message);
+                    }
+                });
+    }
 }

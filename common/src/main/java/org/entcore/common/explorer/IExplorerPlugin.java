@@ -18,6 +18,10 @@ public interface IExplorerPlugin {
         final String id = String.format("explorer.application.%s.%s", application, resourceType);
         return id;
     }
+    static String addressForIngestStateUpdate(String application, String entityTType) {
+        final String id = String.format("explorer.application.%s.%s.ingest.state", application, entityTType);
+        return id;
+    }
 
     void start();
 
@@ -55,9 +59,9 @@ public interface IExplorerPlugin {
 
     Future<Void> notifyUpsert(List<ExplorerMessage> messages);
 
-    Future<Void> notifyDeleteById(UserInfos user, String id);
+    Future<Void> notifyDeleteById(UserInfos user, IdAndVersion id);
 
-    Future<Void> notifyDeleteById(UserInfos user, List<String> ids);
+    Future<Void> notifyDeleteById(UserInfos user, List<IdAndVersion> ids);
 
     Future<Void> notifyDelete(UserInfos user, JsonObject source);
 
@@ -73,6 +77,31 @@ public interface IExplorerPlugin {
 
     IExplorerPluginCommunication getCommunication();
 
+    default void setIngestJobState(JsonObject source, IngestJobState state) {
+        source.put("ingest_job_state", state.name());
+    }
+    default void setIngestJobState(List<JsonObject> sources, IngestJobState state) {
+        for (JsonObject source : sources) {
+            setIngestJobState(source, state);
+        }
+    }
+
+    default void setVersion(final JsonObject source, final long version) {
+        source.put("version", version);
+    }
+
+    default void setVersion(final List<JsonObject> sources, final long version) {
+        for (JsonObject source : sources) {
+            setVersion(source, version);
+        }
+    }
+
+    default void setIngestJobStateAndVersion(JsonObject source, IngestJobState state, long version) {
+        setIngestJobState(source, state);
+        setVersion(source, version);
+    }
+
+    void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message);
     enum ExplorerRemoteAction {
         QueryReindex,
         QueryCreate,

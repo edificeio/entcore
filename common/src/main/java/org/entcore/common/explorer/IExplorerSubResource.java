@@ -1,17 +1,19 @@
 package org.entcore.common.explorer;
 
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public interface IExplorerSubResource {
+
+    void start();
+
+    void stop();
 
     Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source);
 
@@ -36,4 +38,14 @@ public interface IExplorerSubResource {
     Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to);
 
     Future<Void> onDeleteParent(final Collection<String> parentIds);
+
+    default void setIngestJobStateAndVersion(final JsonObject source, final IngestJobState state, final long version) {
+        source.put("version", version);
+        setIngestJobState(source, state);
+    }
+    default void setIngestJobState(final JsonObject source, final IngestJobState state) {
+        source.put("state", state.name());
+    }
+
+    void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message);
 }

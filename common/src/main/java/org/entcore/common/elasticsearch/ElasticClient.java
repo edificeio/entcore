@@ -116,6 +116,23 @@ public class ElasticClient {
         return future.future();
     }
 
+    public Future<Void> deleteDocument(final String index, final String id, final ElasticOptions options) {
+        final Promise<Void> future = Promise.promise();
+        final String queryParams = options.getQueryParams();
+        authorize(httpClient.delete("/" + index + "/_doc/" + id + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200) {
+                    future.complete();
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        })).putHeader("content-type", "application/json")
+                .exceptionHandler(getOnErrorHandler(future))
+                .end(new JsonObject().toString());
+        return future.future();
+    }
+
     public Future<JsonObject> getDocument(final String index, final String id, final ElasticOptions options) {
         final Promise<JsonObject> future = Promise.promise();
         final String queryParams = options.getQueryParams();
@@ -132,10 +149,10 @@ public class ElasticClient {
         return future.future();
     }
 
-    public Future<String> updateByQuery(final String index, final JsonObject payload, final ElasticOptions options) {
+    public Future<String> scriptedUpsert(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
+        authorize(httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());

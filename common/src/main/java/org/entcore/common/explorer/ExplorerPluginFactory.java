@@ -8,7 +8,6 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.MicrometerExplorerPluginMetricsRecorder;
 import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.function.Function;
@@ -20,7 +19,7 @@ public class ExplorerPluginFactory {
     public static void init(final Vertx vertx, final JsonObject config){
         globalConfig = config;
         vertxInstance = vertx;
-        ExplorerPluginMetricsFactory.init(config);
+        ExplorerPluginMetricsFactory.init(vertxInstance, config);
         if (config.getJsonObject("explorerConfig") != null) {
             explorerConfig = config.getJsonObject("explorerConfig");
         } else {
@@ -64,12 +63,13 @@ public class ExplorerPluginFactory {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
         }
-        final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder();
         if(explorerConfig.getBoolean("postgres", false)){
+            final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder("postgres");
             final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, getPostgresConfig(), false, true);
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient, metricsRecorder).setEnabled(isEnabled());
             return communication;
         }else {
+            final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder("redis");
             final RedisClient redisClient = RedisClient.create(vertxInstance, getRedisConfig());
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient, metricsRecorder).setEnabled(isEnabled());
             return communication;
