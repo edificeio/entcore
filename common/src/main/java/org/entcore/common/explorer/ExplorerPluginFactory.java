@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
+import org.entcore.common.explorer.impl.MicrometerExplorerPluginMetricsRecorder;
 import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
@@ -19,6 +20,7 @@ public class ExplorerPluginFactory {
     public static void init(final Vertx vertx, final JsonObject config){
         globalConfig = config;
         vertxInstance = vertx;
+        ExplorerPluginMetricsFactory.init(config);
         if (config.getJsonObject("explorerConfig") != null) {
             explorerConfig = config.getJsonObject("explorerConfig");
         } else {
@@ -62,13 +64,14 @@ public class ExplorerPluginFactory {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
         }
+        final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder();
         if(explorerConfig.getBoolean("postgres", false)){
             final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, getPostgresConfig(), false, true);
-            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient).setEnabled(isEnabled());
+            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient, metricsRecorder).setEnabled(isEnabled());
             return communication;
         }else {
             final RedisClient redisClient = RedisClient.create(vertxInstance, getRedisConfig());
-            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient).setEnabled(isEnabled());
+            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient, metricsRecorder).setEnabled(isEnabled());
             return communication;
         }
     }
