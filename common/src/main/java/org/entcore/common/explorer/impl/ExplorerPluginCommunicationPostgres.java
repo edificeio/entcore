@@ -9,9 +9,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientPool;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -26,10 +26,13 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
     private final Vertx vertx;
     private final int retryUntil = 30000;
     private boolean isEnabled = true;
+    private final IExplorerPluginMetricsRecorder metricsRecorder;
 
-    public ExplorerPluginCommunicationPostgres(final Vertx vertx, final IPostgresClient pgClient) {
+    public ExplorerPluginCommunicationPostgres(final Vertx vertx, final IPostgresClient pgClient,
+                                               final IExplorerPluginMetricsRecorder metricsRecorder) {
         this.pgPool = pgClient;
         this.vertx = vertx;
+        this.metricsRecorder = metricsRecorder;
     }
 
     public IExplorerPluginCommunication setEnabled(boolean enabled) {
@@ -69,6 +72,7 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
             final String query = String.format("INSERT INTO explorer.resource_queue (id_resource,created_at, resource_action, payload, priority) VALUES %s", placeholder);
             transaction.addPreparedQuery(query, values).onComplete(r -> {
                 if (r.failed()) {
+                    this.metricsRecorder.onSendMessageFailure(messages.size());
                     //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                     final PostgresExplorerFailed fail = new PostgresExplorerFailed(query, values);
                     pendingFailed.add(fail);
@@ -77,6 +81,8 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
                     });
                     log.error("Failed to push resources to queue: ", r.cause());
                     log.error("Query causing error: " + query);
+                } else {
+                    this.metricsRecorder.onSendMessageSuccess(messages.size());
                 }
             });
             //retry failed
@@ -84,6 +90,7 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
                 transaction.addPreparedQuery(failed.query, failed.tuple).onComplete(r -> {
                     if (r.succeeded()) {
                         pendingFailed.remove(failed);
+                        this.metricsRecorder.onSendMessageSuccess(failed.tuple.size());
                     }
                 });
             }
