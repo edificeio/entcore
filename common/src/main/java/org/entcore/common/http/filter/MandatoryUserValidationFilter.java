@@ -129,6 +129,7 @@ public class MandatoryUserValidationFilter implements Filter {
             || (
                 isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url => OK
                    && !request.path().contains("mon-compte") // OK but these restrictions
+                   && !request.path().contains("annuaire")   // OK but these restrictions
             )
         ) {
             return Future.succeededFuture(validations);
