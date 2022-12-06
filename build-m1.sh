@@ -17,6 +17,8 @@ case `uname -s` in
       GROUP_GID=`id -g`
     fi
 esac
+GROUP_GID=1000
+GIT_BRANCH="dev"
 
 # options
 SPRINGBOARD="recette"
@@ -91,19 +93,19 @@ buildNode () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links--legacy-peer-deps  && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links--legacy-peer-deps  && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
@@ -113,10 +115,10 @@ buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
@@ -136,14 +138,14 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker-compose run --platform linux/amd64 --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
 }
 
 watch () {
-  docker-compose --platform linux/amd64 run --rm \
+  docker-compose run --rm \
     -u "$USER_UID:$GROUP_GID" \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
@@ -152,11 +154,11 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker-compose --platform linux/amd64 run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
 }
 
 infra () {
-  docker-compose --platform linux/amd64 run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
 }
 
 publish () {

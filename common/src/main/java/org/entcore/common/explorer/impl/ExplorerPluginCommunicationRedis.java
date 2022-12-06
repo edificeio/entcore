@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.*;
@@ -20,6 +21,7 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
     static Logger log = LoggerFactory.getLogger(ExplorerPluginCommunicationRedis.class);
     static Map<ExplorerMessage.ExplorerPriority, String> STREAMS = new HashMap<>();
     private final List<Promise> pending = new ArrayList<>();
+    private final IExplorerPluginMetricsRecorder metricsRecorder;
 
     private static final List<String> STREAM_NAMES_ORDERED_BY_PRIO_DESC = Arrays.asList(
             "explorer_high",
@@ -39,9 +41,11 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
     private final int retryUntil = 30000;
     private boolean isEnabled = true;
 
-    public ExplorerPluginCommunicationRedis(final Vertx vertx, final RedisClient redisClient) {
+    public ExplorerPluginCommunicationRedis(final Vertx vertx, final RedisClient redisClient,
+                                            final IExplorerPluginMetricsRecorder metricsRecorder) {
         this.redisClient = redisClient;
         this.vertx = vertx;
+        this.metricsRecorder = metricsRecorder;
     }
 
     public IExplorerPluginCommunication setEnabled(boolean enabled) {
@@ -71,9 +75,10 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
         // version field
         for (final String stream : STREAM_NAMES_ORDERED_BY_PRIO_DESC) {
             if(map.containsKey(stream)) {
-                final Future<List<String>> tmp = previous.compose(ee -> redisClient.xAdd(stream, map.get(stream)).onFailure(e -> {
+                final List<JsonObject> messagesToSend = map.get(stream);
+                final Future<List<String>> tmp = previous.compose(ee -> redisClient.xAdd(stream, messagesToSend).onFailure(e -> {
                     // TODO JBE => if xAdd fails the message is lost
-                    // TODO JBE => increment here a metric
+                    this.metricsRecorder.onSendMessageFailure(messagesToSend.size());
                     // TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                     final RedisExplorerFailed fail = new RedisExplorerFailed(stream, map.get(stream));
                     pendingFailed.add(fail);
@@ -81,7 +86,9 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
                         pendingFailed.remove(fail);
                     });
                     log.error("Failed to push resources to stream " + stream, e);
-                }));
+                })).onSuccess(sentMessages -> {
+                    this.metricsRecorder.onSendMessageSuccess(sentMessages.size());
+                });
                 previous = tmp;
                 futures.add(tmp);
             }
