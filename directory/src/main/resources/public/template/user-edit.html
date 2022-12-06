@@ -9,7 +9,7 @@
 		<input class="seven cell inline-editing" type="text" ng-model="account.newDisplayName" />
 
 		<div class="row">
-			<button type="button" class="submit right-magnet cell" ng-click="account.displayName = account.newDisplayName; saveInfos(); display.displayName = false;"><i18n>directory.save</i18n></button>
+			<button type="button" class="submit right-magnet cell" ng-click="account.displayName = account.newDisplayName; saveInfos(); display.displayName = false;" ng-disabled="!account.newDisplayName"><i18n>directory.save</i18n></button>
 			<button type="button" class="cancel right-magnet cell" ng-click="display.displayName = false;"><i18n>cancel</i18n></button>
 		</div>
 	</lightbox>
