@@ -60,14 +60,21 @@
 				</label>
 			</div>
 			<div class="row">
-				<label translate content="userBook.profile.displayName" class="four cell"><span class="no-style ng-scope"></span></label>
-				<input class="eight cell inline-editing" ng-model="selectedUser.displayName" complete-change="saveUserInfoChanges()"
-				 type="text">
+				<label translate content="userBook.profile.displayName" class="four cell"></label>
+
+				<label ng-if="!showDisplayNameInput" class="six cell">[[selectedUser.displayName]]</label>
+				<input type="text" class="six cell inline-editing" name="tempDisplayName"
+					   ng-if="showDisplayNameInput"
+					   ng-model="temp.displayName" />
+
+				<label ng-if="!showDisplayNameInput && !isForbidden()"><a ng-click="openDisplayNameInput()" href="#"><i18n>directory.modify</i18n></a></label>
+				<label ng-if="showDisplayNameInput && !isDisplayNameWellFormatted()"><i18n>classAdmin.save</i18n></label>
+				<label ng-if="showDisplayNameInput && isDisplayNameWellFormatted()"><a ng-click="saveAndCloseDisplayNameInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
-				<label translate content="userBook.profile.email" class="four cell"><span class="no-style"></span></label>
+				<label translate content="userBook.profile.email" class="four cell"></label>
 
-				<label ng-if="!showEmailInput" class="six cell">[[selectedUser.email]]</span></label>
+				<label ng-if="!showEmailInput" class="six cell">[[selectedUser.email]]</label>
 				<input type="email" class="six cell inline-editing" name="tempEmail"
 					   ng-if="showEmailInput"
 					   ng-model="temp.email" />
@@ -77,9 +84,9 @@
 				<label ng-if="showEmailInput && isEmailWellFormatted()"><a ng-click="saveAndCloseEmailInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
-				<label translate content="userBook.profile.telephone" class="four cell"><span class="no-style"></span></label>
+				<label translate content="userBook.profile.telephone" class="four cell"></label>
 
-				<label ng-if="!showPhoneInput" class="six cell">[[selectedUser.homePhone]]</span></label>
+				<label ng-if="!showPhoneInput" class="six cell">[[selectedUser.homePhone]]</label>
 				<input type="tel" class="eight cell inline-editing" name="tempPhone"
 					   ng-if="showPhoneInput"
 					   ng-model="temp.homePhone" />
@@ -89,9 +96,9 @@
 				<label ng-if="showPhoneInput && isPhoneWellFormatted()"><a ng-click="saveAndClosePhoneInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
-				<label translate content="userBook.profile.mobilePhone" class="four cell"><span class="no-style"></span></label>
+				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
 
-				<label ng-if="!showMobileInput" class="six cell">[[selectedUser.mobile]]</span></label>
+				<label ng-if="!showMobileInput" class="six cell">[[selectedUser.mobile]]</label>
 				<input type="tel" class="eight cell inline-editing" name="mobile"
 					   ng-if="showMobileInput"
 					   ng-model="temp.mobile" />
@@ -101,7 +108,7 @@
 				<label ng-if="showMobileInput && isMobileWellFormatted()"><a ng-click="saveAndCloseMobileInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
-				<label translate content="userBook.profile.birthdate" class="four cell"><span class="no-style"></span></label>
+				<label translate content="userBook.profile.birthdate" class="four cell"></label>
 				<em>
 					<div class="eight text-flow">
 						<inputdate class="twelve cell inline-editing no-border" ng-model="selectedUser.birthDate" on-success="saveUserInfoChanges()"

@@ -18,6 +18,9 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     openLoginInput(): void;
     saveAndCloseLoginInput(): void;
     isLoginAliasWellFormatted(): boolean;
+    openDisplayNameInput(): void;
+    saveAndCloseDisplayNameInput(): void;
+    isDisplayNameWellFormatted(): boolean;
     openEmailInput(): void;
     saveAndCloseEmailInput(): void;
     isEmailWellFormatted(): boolean;
@@ -35,7 +38,8 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
-    temp: { email?:string; homePhone?: string; mobile?: string;};
+    temp: { displayName?: string; email?: string; homePhone?: string; mobile?: string; };
+    showDisplayNameInput: boolean;
     showEmailInput: boolean;
     showPhoneInput: boolean;
     showMobileInput: boolean;
@@ -195,6 +199,30 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     }
     $scope.isLoginAliasWellFormatted = function () {
         return (/^[a-z\d\.-]*$/).test($scope.selectedUser.tempLoginAlias);
+    }
+    $scope.openDisplayNameInput = function () {
+        $scope.temp.displayName = $scope.selectedUser.displayName;
+        $scope.showDisplayNameInput = true;
+    }
+    let savingDisplayName = false;
+    $scope.saveAndCloseDisplayNameInput = async function () {
+        if (savingDisplayName) return;
+        try {
+            savingDisplayName = true;
+            if ($scope.selectedUser.displayName !== $scope.temp.displayName && $scope.isDisplayNameWellFormatted()) {
+                $scope.selectedUser.displayName = $scope.temp.displayName;
+                await directoryService.updateUserDisplayName($scope.selectedUser);
+                $scope.showDisplayNameInput = false;
+                $scope.safeApply();
+            }
+        } catch (e) {
+            notify.error('directory.form.displayName');
+        } finally {
+            savingDisplayName = false;
+        }
+    }
+    $scope.isDisplayNameWellFormatted = function () {
+        return angular.element("input[type=\"text\"][name=\"tempDisplayName\"]").hasClass('ng-valid');
     }
     $scope.openEmailInput = function () {
         // An ADML changing his own email address must be redirected to "my account"

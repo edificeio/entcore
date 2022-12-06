@@ -55,6 +55,9 @@ export const directoryService = {
     async updateUserLoginAlias(user: User) {
         return await http.put('/directory/user/' + user.id, { loginAlias: user.tempLoginAlias });
     },
+    async updateUserDisplayName(user: User) {
+        return await http.put('/directory/user/' + user.id, { displayName: user.displayName });
+    },
     async updateUserEmail(user: User) {
         return await http.put('/directory/user/' + user.id, { email: user.email });
     },
