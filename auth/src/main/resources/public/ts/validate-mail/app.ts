@@ -10,4 +10,4 @@ angular.module("app", [OdeModules.getBase(), OdeModules.getI18n(), OdeModules.ge
 .directive("validateMail", App.DirectiveFactory)
 .directive("navbarLegacy", NavbarLegacy.DirectiveFactory)
 ;
-conf().Platform.apps.initialize(APP.PORTAL);
+conf().Platform.apps.initialize(APP.PORTAL, true);
