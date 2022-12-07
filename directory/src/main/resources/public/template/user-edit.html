@@ -199,7 +199,7 @@
 					</svg>
 				</div>
 
-				<span class="flex seven">
+				<span class="flex seven flex-flow">
 					<span class="flex" style="align-items: center;">
 						<span class="email-ellipsis">[[ account.email ]]</span>
 						<svg ng-if="validateMail" class="icon-verified icon-success-fill" width="16" height="16">
@@ -207,7 +207,7 @@
 							<use href="/directory/public/assets/icons/icons.svg#success-fill"></use>
 						</svg>
 					</span>
-					<a class="left-spacing-twice" ng-if="account.email" ng-click="display.email = true;">
+					<a ng-if="account.email" ng-click="display.email = true;">
 						<i18n>directory.login.update.button</i18n>
 					</a>
 					<a ng-class="{'margin-left': !account.email}" ng-if="!account.email" ng-click="display.email = true;">
