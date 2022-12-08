@@ -1293,7 +1293,8 @@ public class WorkspaceController extends BaseController {
 				params.put("resourceName", document.getString("name", ""));
 				String parentId = document.getString("eParent");
 				// Send the notification to the shared network
-				shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.empty(), evRecipients -> {
+				Set<String> action = Collections.singleton(WorkspaceController.SHARED_ACTION);
+				shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.of(action), evRecipients -> {
 					if (evRecipients.succeeded()) {
 						Set<String> recipients = evRecipients.result();
 						JsonObject sharedNotifParams = params.copy();
