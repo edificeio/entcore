@@ -37,7 +37,7 @@
                         <img src="/auth/public/icons/mail.svg" width="20" height="20"></img>
                         <span class="align-middle" translate content="validate-mail.step1.form.mail"></span>
                     </label>
-                    <input type="email" id="input-data" name="inputEmail" required
+                    <input type="email" id="input-data" style="background-color: white;" name="inputEmail" required
                             ng-pattern="ctrl.acceptableEmailPattern"
                             ng-model="ctrl.emailAddress"
                             ng-class="ctrl.inputToBTCss(formEmail.inputEmail)"
@@ -87,7 +87,7 @@
                 <div class="text-center">
                     <form novalidate autocomplete="off" name="formCode" class="col-sm-5 mx-auto" ng-submit="onValidate('code')">
                         <label class="mb-2 row fw-bold" for="input-data"><i18n>validate-mail.step2.form.code</i18n></label>
-                        <input type="text" id="input-data" name="inputCode" required
+                        <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
                                 maxlength="6"
                                 onkeypress="return event.charCode>=48 && event.charCode<=57"
                                 pattern="[0-9]{6}"
