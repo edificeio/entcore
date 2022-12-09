@@ -37,16 +37,13 @@
                         <img src="/auth/public/icons/mail.svg" width="20" height="20"></img>
                         <span class="align-middle" translate content="validate-mail.step1.form.mail"></span>
                     </label>
-                    <input type="email" id="input-data" style="background-color: white;" name="inputEmail" required
+                    <input type="email" id="input-data" style="background-color: white;" name="inputEmail"
                             ng-pattern="ctrl.acceptableEmailPattern"
                             ng-model="ctrl.emailAddress"
                             ng-class="ctrl.inputToBTCss(formEmail.inputEmail)"
                             i18n-placeholder="validate-mail.step1.form.placeholder" />
 
                     <div class="text-danger mt-2 mb-5">
-                        <small class="d-inline-block">
-                            <label for="input-data" ng-if="formEmail.inputEmail.$error.required"><i18n>required</i18n></label>
-                        </small class="d-inline-block">
                         <small>
                             <label for="input-data" ng-if="formEmail.inputEmail.$error.email"><i18n>email</i18n></label>
                         </small>
