@@ -510,7 +510,8 @@ public class User {
 				.put("date", System.currentTimeMillis() - delay)
 				.put("limit", limit);
 		String query =
-				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
 				 GET_DELETE_OPTIONS +
 				"LIMIT {limit} ";
@@ -520,7 +521,8 @@ public class User {
 	public static void getDelete(JsonArray deleteUsers, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject().put("deleteUsers", deleteUsers);
 		String query =
-				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.id IN {deleteUsers} " +
 				GET_DELETE_OPTIONS;
 		transactionHelper.add(query, params);
