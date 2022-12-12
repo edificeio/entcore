@@ -80,6 +80,7 @@
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
 					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
+					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
 					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
 				}, 350, this);"
 		></iframe>
