@@ -414,8 +414,8 @@ public class UserUtils {
 			.compose( remoteUserId -> {
 				// If request attributes are not set yet, and if a bearer token exists,
 				// try retrieving the remote_user by validating the token.
-				if( (oneSessionId==null || oneSessionId.trim().isEmpty()) && remoteUserId==null && request instanceof SecureHttpServerRequest) {
-					final SecureHttpServerRequest secureRequest = (SecureHttpServerRequest) request;
+				if( (oneSessionId==null || oneSessionId.trim().isEmpty()) && remoteUserId==null) {
+					final SecureHttpServerRequest secureRequest = (request instanceof SecureHttpServerRequest) ? (SecureHttpServerRequest) request : new SecureHttpServerRequest(request);
 					OAuthResourceProvider provider = new DefaultOAuthResourceProvider(eb);
 					Promise<String> attrPromise = Promise.promise();
 					if( provider.hasBearerHeader(secureRequest) ) {
