@@ -1084,9 +1084,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 
 		if (userInfos.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-			if ("StructureGroup".equals(subType) && ("Relative".equals(filter) || "Student".equals(filter) || "Guest".equals(filter))) {
+			if ("StructureGroup".equals(subType) && ("Relative".equals(filter) || "Student".equals(filter))) {
 				return true;
-			} else if ("ClassGroup".equals(subType) && ("Relative".equals(filter) || "Guest".equals(filter))) {
+			} else if ("ClassGroup".equals(subType) && ("Relative".equals(filter))) {
 				return true;
 			}
 		}
