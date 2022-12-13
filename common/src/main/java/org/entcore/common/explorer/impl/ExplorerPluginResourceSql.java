@@ -19,6 +19,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Long.parseLong;
+
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final IPostgresClient pgPool;
     protected List<String> defaultColumns = Arrays.asList("version", "ingest_job_state");
@@ -209,7 +211,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
 
     @Override
     public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
-        final String schema = getTableName().split("\\.")[0];
+        final String schema = getTableName();
         final String query = new StringBuilder()
             .append(" UPDATE ").append(schema)
             .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
@@ -217,8 +219,8 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
         final Tuple tuple = Tuple.tuple()
                 .addValue(message.getState().name())
                 .addValue(message.getVersion())
-                .addValue(message.getEntityId());
-        pgPool.queryStream(query.toString(),tuple, 1).onSuccess(result -> {
+                .addValue(parseLong(message.getEntityId()));
+        pgPool.preparedQuery(query.toString(),tuple).onSuccess(result -> {
             log.debug("Successfully updated state of resource " + message);
         }).onFailure(e->{
             log.error("Failed to update state of resource " + message, e);
