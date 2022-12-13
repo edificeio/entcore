@@ -602,7 +602,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				long weeks = Long.valueOf(semaines);
 				BitSet weekBits = new BitSet(maxYearWeek);
 				int currentWeek = new DateTime(importTimestamp).weekOfWeekyear().get() - 1;
-				DateTime refWeek = new DateTime().withYear(year).withDayOfYear(1).withTimeAtStartOfDay();
+				DateTime refWeek = new DateTime().withYear(year).withWeekOfWeekyear(1).withDayOfWeek(1).withTimeAtStartOfDay();
 				int borderWeek = startDateStudents.weekOfWeekyear().get();
 
 				for (int i = 0; i < maxYearWeek; i++)
