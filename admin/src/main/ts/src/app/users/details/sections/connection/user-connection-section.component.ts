@@ -330,6 +330,8 @@ export class UserConnectionSectionComponent
   }
 
   updateHomePhone() {
+    if( this.isForbidden )
+      return;
     this.spinner.perform('portal-content', this.details.updateHomePhone())
       .then(() => {
         this.ns.success(
@@ -354,6 +356,8 @@ export class UserConnectionSectionComponent
   }
 
   updateMobile() {
+    if( this.isForbidden )
+      return;
     this.spinner.perform('portal-content', this.details.updateMobile())
       .then(() => {
         this.ns.success(
