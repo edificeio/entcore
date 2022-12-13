@@ -3,6 +3,7 @@ package org.entcore.common.explorer.impl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
@@ -128,4 +129,22 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
 
     //abstract
     protected abstract String getTableName();
+
+    @Override
+    public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
+        final String schema = getTableName().split("\\.")[0];
+        final String query = new StringBuilder()
+                .append(" UPDATE ").append(schema)
+                .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
+                .toString();
+        final Tuple tuple = Tuple.tuple()
+                .addValue(message.getState().name())
+                .addValue(message.getVersion())
+                .addValue(message.getEntityId());
+        postgresClient.queryStream(query.toString(),tuple, 1).onSuccess(result -> {
+            log.debug("Successfully updated state of resource " + message);
+        }).onFailure(e->{
+            log.error("Failed to update state of resource " + message, e);
+        });
+    }
 }
