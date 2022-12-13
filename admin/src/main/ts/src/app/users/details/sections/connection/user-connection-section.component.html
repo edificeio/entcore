@@ -221,13 +221,14 @@
     <fieldset>
       <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" />
+          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" [disabled]="isForbidden" />
           <button
             type="button"
             (click)="updateHomePhone()"
             [disabled]="
               phoneForm.pristine ||
               phoneForm.invalid ||
+              isForbidden ||
               spinner.isLoading('portal-content')
             "
           >
@@ -239,13 +240,14 @@
 
       <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input type="tel" [(ngModel)]="details.mobile" name="mobile" />
+          <input type="tel" [(ngModel)]="details.mobile" name="mobile" [disabled]="isForbidden" />
           <button
             type="button"
             (click)="updateMobile()"
             [disabled]="
               phoneForm.pristine ||
               phoneForm.invalid ||
+              isForbidden ||
               spinner.isLoading('portal-content')
             "
           >
