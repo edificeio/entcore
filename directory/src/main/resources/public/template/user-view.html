@@ -108,64 +108,70 @@
 
 		<form class="sheet small-text top-spacing-twice" name="userForm" novalidate>
 
-			<div class="row">
-				<div class="four cell">
+			<div class="profil-flex">
+				<div class="four">
 					<i18n>userBook.profile.login</i18n>
 				</div>
-				<em class="seven cell">
+				<span class="seven">
 					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]]
-					<a ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
+					<a class="left-spacing-twice" ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
 						<i18n>directory.login.update.button</i18n>
 					</a>
-				</em>
+				</span>
 			</div>
 
-			<div class="row" ng-if="displayPassword(account,me)">
-				<div class="four cell">
+			<div class="profil-flex" ng-if="displayPassword(account,me)">
+				<div class="four">
 					<i18n>userBook.profile.password</i18n>
 				</div>
-				<em class="seven cell">
+				<span class="seven">
 					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress) || (me.federated && me.hasPw))" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
 					<a ng-if="(me.federated && !account.disabledFederatedAdress && !me.hasPw)" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
-				</em>
+				</span>
 			</div>
 
-			<div class="row" ng-if="displayOTP(account,me)">
-				<div class="four cell">
+			<div class="profil-flex" ng-if="displayOTP(account,me)">
+				<div class="four">
 					<i18n>directory.profile.otp</i18n>
 				</div>
-				<em class="seven cell">
+				<span class="seven">
 					<a ng-click="openOTPDialog()"><i18n>directory.generate.otp</i18n></a>
-				</em>
+				</span>
 			</div>
 
-			<div class="row">
-				<label class="four cell"><i18n>userBook.profile.email</i18n></label>
-				<div class="one cell">
+			<div class="profil-flex">
+				<div class="four">
+					<i18n>userBook.profile.email</i18n>
+				</div>
+				<div class="one">
 					<svg ng-class="[account.visible.email, 'icon-'+seeOrHideInfo('email')]"
 						 data-ng-click="changeInfosVisibility('email', account.visible.email)" width="18" height="18">
 						<title>[[translate(account.visible.email)]]</title>
 						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHideInfo('email')]]"></use>
 					</svg>
 				</div>
-				<em class="seven cell">
-					[[account.email]]
+				<span class="flex seven flex-flow">
+					<span class="flex" style="align-items: center;">
+						<span ng-if="account.email" class="email-ellipsis">[[account.email]]</span>
+					</span>
 					<a ng-click="openEditLightbox('email')">
 						<i18n>directory.login.update.button</i18n>
 					</a>
-				</em>
+				</span>
 			</div>
 
-			<div class="row" ng-if="!hidePersonalData">
-				<label class="four cell"><i18n>userBook.profile.telephone</i18n></label>
-				<div class="one cell">
+			<div class="profil-flex" ng-if="!hidePersonalData">
+				<div class="four">
+					<i18n>userBook.profile.telephone</i18n>
+				</div>
+				<div class="one">
 					<svg ng-class="[account.visible.phone, 'icon-'+seeOrHideInfo('phone')]"
 						 data-ng-click="changeInfosVisibility('phone', account.visible.phone)" width="18" height="18">
 						<title>[[translate(account.visible.phone)]]</title>
 						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHideInfo('phone')]]"></use>
 					</svg>
 				</div>
-				<div class="seven cell">
+				<div class="seven">
 					<label>[[account.homePhone]]</label>
 					<a class="left-spacing-twice" ng-if="account.homePhone" ng-click="openEditLightbox('homePhone')">
 						<i18n>directory.login.update.button</i18n>
@@ -176,16 +182,18 @@
 				</div>
 			</div>
 
-			<div class="row" ng-if="!hidePersonalData">
-				<label class="four cell"><i18n>userBook.profile.mobilePhone</i18n></label>
-				<div class="one cell">
+			<div class="profil-flex" ng-if="!hidePersonalData">
+				<div class="four">
+					<i18n>userBook.profile.mobilePhone</i18n>
+				</div>
+				<div class="one">
 					<svg ng-class="[account.visible.mobile, 'icon-'+seeOrHideInfo('mobile')]"
 						 data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)" width="18" height="18">
 						<title>[[translate(account.visible.mobile)]]</title>
 						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHideInfo('mobile')]]"></use>
 					</svg>
 				</div>
-				<div class="seven cell">
+				<div class="seven">
 					<label>[[account.mobile]]</label>
 					<a class="left-spacing-twice" ng-if="account.mobile" ng-click="openEditLightbox('mobile')">
 						<i18n>directory.login.update.button</i18n>
@@ -196,31 +204,34 @@
 				</div>
 			</div>
 
-			<!--div class="row">
-				<div class="five cell"><label translate content="userBook.profile.address"></label></div>
-				<em class="six cell">[[account.address]]</em>
+			<!--div class="profil-flex">
+				<div class="five">
+					<label translate content="userBook.profile.address"></label>
+				</div>
+				<span class="six">[[account.address]]</span>
 				<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
 			</div-->
 
-			<div class="row">
-				<div class="four cell"><i18n>userBook.profile.birthdate</i18n></div>
-				<div class="one cell">
+			<div class="profil-flex">
+				<div class="four">
+					<i18n>userBook.profile.birthdate</i18n>
+				</div>
+				<div class="one">
 					<svg ng-class="[account.visible.birthdate, 'icon-'+seeOrHideInfo('birthdate')]"
 						 data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" width="18" height="18">
 						<title>[[translate(account.visible.mobile)]]</title>
 						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHideInfo('birthdate')]]"></use>
 					</svg>
 				</div>
-				<em class="seven cell">[[birthDate(account.birthDate)]]</em>
+				<span class="seven">[[birthDate(account.birthDate)]]</span>
 			</div>
 
-			<div class="row">
-				<div class="four cell">
+			<div class="profil-flex">
+				<div class="four">
 					<i18n>userBook.profile.school</i18n>
 				</div>
-				<em class="seven cell">[[account.schoolName]]</em>
+				<span class="seven">[[account.schoolName]]</span>
 			</div>
-
 		</form>
 	</article>
 </div>
