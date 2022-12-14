@@ -198,7 +198,7 @@
 
 				<span class="flex seven flex-flow">
 					<span class="flex" style="align-items: center;">
-						<span class="email-ellipsis">[[ account.email ]]</span>
+						<span ng-if="account.email" class="email-ellipsis">[[ account.email ]]</span>
 						<svg ng-if="validateMail" class="icon-verified icon-success-fill" width="16" height="16">
 							<title>Compte vérifié</title>
 							<use href="/directory/public/assets/icons/icons.svg#success-fill"></use>

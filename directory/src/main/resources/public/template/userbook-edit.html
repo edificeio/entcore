@@ -120,7 +120,7 @@
 				</svg>
 				<svg 
 					class="[[hobby.visibility.toLowerCase()]] right-magnet icon-hide"
-					ng-if="hobby.visibility.toLowerCase() === 'prive'"
+					ng-if="hobby.visibility.toLowerCase() === 'prive' || hobby.visibility.toLowerCase() === ''"
 					data-ng-click="changeVisibility(hobby)" width="18" height="18">
 					<title>[[translate(hobby.visibility.toLowerCase())]]</title>
 					<use href="/directory/public/assets/icons/icons.svg#hide"></use>
