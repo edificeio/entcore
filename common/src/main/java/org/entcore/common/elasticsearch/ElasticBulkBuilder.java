@@ -147,9 +147,29 @@ public class ElasticBulkBuilder {
     }
 
     public void script(final String source, final JsonObject params, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
+        script(source, params, id, index, routing, Optional.empty());
+    }
+
+    public void script(final String source, final JsonObject params, final Optional<String> id, final Optional<String> index,
+                       final Optional<String> routing, final Optional<JsonObject> upsert) {
         final JsonObject script = new JsonObject();
         script.put("lang", "painless").put("params", params).put("source", source);
-        final JsonObject root = new JsonObject().put("script", script).put("scripted_upsert", true);
+        final JsonObject root = new JsonObject()
+                .put("script", script)
+                .put("scripted_upsert", true);
+        upsert.ifPresent(upsertDoc -> root.put("upsert", upsertDoc));
+        script(root,id, index, routing);
+    }
+
+    public void storedScript(final String scriptId, final JsonObject params, final Optional<String> id, final Optional<String> index,
+                       final Optional<String> routing, final Optional<JsonObject> upsert) {
+        final JsonObject script = new JsonObject()
+                .put("params", params)
+                .put("id", scriptId);
+        final JsonObject root = new JsonObject()
+                .put("script", script)
+                .put("scripted_upsert", true)
+                .put("upsert", upsert.orElseGet(() -> new JsonObject()));
         script(root,id, index, routing);
     }
 

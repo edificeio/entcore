@@ -108,7 +108,11 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     protected void onCreateAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values, final boolean copy){
+        final long now = currentTimeMillis();
         final List<JsonObject> jsons = values.stream().filter(e -> e instanceof JsonObject).map(e -> (JsonObject) e).collect(Collectors.toList());
+        for (JsonObject json : jsons) {
+            this.setVersion(json, now);
+        }
         doCreate(user, jsons, copy).onComplete(idsRes -> {
             if (idsRes.succeeded()) {
                 final List<String> ids = idsRes.result();
@@ -151,7 +155,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 final List<String> nok = new ArrayList<>();
                 for (int i = 0; i < deleteStatus.size() && i < ids.size(); i++) {
                     if (deleteStatus.get(i)) {
-                        final ExplorerMessage mess = ExplorerMessage.delete(new IdAndVersion(ids.get(i), now), user,isForSearch());
+                        final ExplorerMessage mess = ExplorerMessage.delete(new IdAndVersion(ids.get(i), now), user,isForSearch())
+                                .withType(getApplication(), getResourceType(), getResourceType());
                         messages.add(mess);
                         ok.add(ids.get(i));
                     } else {
@@ -180,6 +185,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     protected void onShareAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values, final JsonObject shares){
+        final long now = currentTimeMillis();
         final List<String> ids = values.stream().filter(e -> e instanceof String).map(e -> (String) e).collect(Collectors.toList());
         final Optional<ShareService> shareServiceOpt = getShareService();
         if(shareServiceOpt.isPresent()){
@@ -209,6 +215,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                     for(final String id : ids) {
                         final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
                         mess.withShared(generatedShared.get(id).getJsonArray("shared"));
+                        mess.withVersion(now);
+                        mess.withType(getApplication(), getResourceType(), getResourceType());
                         messages.add(mess);
                     }
                     communication.pushMessage(messages).onComplete(resPush -> {
@@ -232,6 +240,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps, final boolean includeFolders){
+        final long now = currentTimeMillis();
         if(apps.isPresent() && !apps.get().contains(getApplication())){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
             message.reply(new JsonObject());
@@ -244,6 +253,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 final String id = getIdForModel(e);
                 final UserInfos user = getCreatorForModel(e);
                 final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
+                mess.withVersion(now);
                 return mess;
             }).compose(messages -> {
                 return communication.pushMessage(messages);
@@ -316,14 +326,16 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     @Override
     public Future<Void> notifyShare(String id, UserInfos user, JsonArray shared) {
         final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+        message.withVersion(currentTimeMillis());
         return communication.pushMessage(message.withShared(shared));
     }
 
     @Override
     public Future<Void> notifyShare(Set<String> ids, UserInfos user, JsonArray shared) {
+        final long now = currentTimeMillis();
         final List<ExplorerMessage> messages = ids.stream().map(id->{
             final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
-            return message.withShared(shared);
+            return message.withShared(shared).withVersion(now);
         }).collect(Collectors.toList());
         return communication.pushMessage(messages);
     }

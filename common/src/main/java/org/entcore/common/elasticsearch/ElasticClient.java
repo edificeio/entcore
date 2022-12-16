@@ -247,6 +247,22 @@ public class ElasticClient {
         return future.future();
     }
 
+    public Future<Void> storeScript(final String scriptId, final Buffer script) {
+        final Promise<Void> future = Promise.promise();
+        authorize(httpClient.put("/_scripts/" + scriptId).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() >= 200 && res.statusCode() < 300) {
+                    future.complete();
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }))
+        .putHeader("content-type", "application/json")
+        .exceptionHandler(getOnErrorHandler(future)).end(script.toString());
+        return future.future();
+    }
+
     public ElasticBulkBuilder bulk(final String index, final ElasticOptions options) {
         final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
