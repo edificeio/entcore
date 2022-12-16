@@ -9,6 +9,28 @@
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "mode": "{{ envMode|default('prod') }}",
         "ssl": {{ enableSsl|default(true) }},
+        {% if briefmeEnabled is defined and briefmeEnabled  %}
+          "widget-external-cache": [
+           {
+            "id": "briefme",
+            "widget-name": "briefme-widget",
+            "url": "https://www.brief.me/api/gar/latest_issues/?format=json",
+            "ttl": 43200
+           },
+           {
+            "id": "briefeco",
+            "widget-name": "briefme-widget",
+            "url": "https://www.brief.eco/api/gar/latest_issues/?format=json",
+            "ttl": 43200
+           },
+           {
+            "id": "briefscience",
+            "widget-name": "briefme-widget",
+            "url": "https://www.brief.science/api/gar/latest_issues/?format=json",
+            "ttl": 43200
+           }
+          ],
+        {% endif %}
         {% if bprEnabled is defined %}
         "library-enabled": true,
         "library-api-url": "{{ bprUrl }}",
