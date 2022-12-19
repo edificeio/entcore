@@ -4,7 +4,6 @@ import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.*;
 import org.entcore.common.utils.StringUtils;
 
@@ -17,9 +16,19 @@ import java.util.stream.Collectors;
 public class RedisClient {
     public static final String ID_STREAM = "$id_stream";
     public static final String NAME_STREAM = "$name_stream";
-    protected final io.vertx.redis.client.Redis client;
+    protected final RedisAPI client;
     protected final RedisOptions redisOptions;
     protected Logger log = LoggerFactory.getLogger(RedisClient.class);
+
+    public RedisClient(final io.vertx.redis.client.Redis redis, final RedisOptions redisOptions) {
+        this.client = RedisAPI.api(redis);
+        this.redisOptions = redisOptions;
+    }
+
+    public RedisClient(final RedisAPI redis, final RedisOptions redisOptions) {
+        this.client = redis;
+        this.redisOptions = redisOptions;
+    }
 
     public static RedisClient create(final Vertx vertx, final JsonObject config) throws Exception{
         if (config.getJsonObject("redisConfig") != null) {
@@ -35,11 +44,6 @@ public class RedisClient {
                 throw new Exception("Missing redisConfig config");
             }
         }
-    }
-
-    public RedisClient(final io.vertx.redis.client.Redis redis, final RedisOptions redisOptions) {
-        this.client = redis;
-        this.redisOptions = redisOptions;
     }
 
     public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
@@ -70,10 +74,11 @@ public class RedisClient {
         if(redisConfig.getInteger("maxPoolWaiting") !=null){
             redisOptions.setMaxPoolWaiting(redisConfig.getInteger("maxPoolWaiting"));
         }
-        client = io.vertx.redis.client.Redis.createClient(vertx, redisOptions);
+        final io.vertx.redis.client.Redis oldClient = io.vertx.redis.client.Redis.createClient(vertx, redisOptions);
+        client = RedisAPI.api(oldClient);
     }
 
-    public io.vertx.redis.client.Redis getClient() {
+    public RedisAPI getClient() {
         return client;
     }
 
@@ -117,26 +122,27 @@ public class RedisClient {
         if (streams.isEmpty()) {
             return Future.succeededFuture(new ArrayList<>());
         }
-        final Request req = Request.cmd(Command.XREADGROUP).arg("GROUP").arg(group).arg(consumer);
+        final List<String> args = new ArrayList<>();
+        args.addAll(Arrays.asList("GROUP",group,consumer));
         if (count.isPresent()) {
-            req.arg("COUNT").arg(count.get());
+            args.addAll(Arrays.asList("COUNT",count.get().toString()));
         }
         if (blockMs.isPresent()) {
-            req.arg("BLOCK").arg(blockMs.get());
+            args.addAll(Arrays.asList("BLOCK", blockMs.get().toString()));
         }
         if (!ack) {
-            req.arg("NOACK");
+            args.add("NOACK");
         }
-        req.arg("STREAMS");
+        args.add("STREAMS");
         for (final String stream : streams) {
-            req.arg(stream);
+            args.add(stream);
         }
         //by default: only messages not received by other
         for (int i = 0; i < streams.size(); i++) {
-            req.arg(ids.orElse(">"));
+            args.add(ids.orElse(">"));
         }
         final Promise<List<JsonObject>> promise = Promise.promise();
-        send(req, res -> {
+        this.client.xreadgroup(args, res -> {
             if (res.succeeded()) {
                 final List<JsonObject> jsons = new ArrayList<>();
                 if (res.result() != null) {
@@ -167,13 +173,14 @@ public class RedisClient {
     }
 
     public Future<List<JsonObject>> xPending(final String group, final String consumer, final String stream, final Optional<Integer> count) {
-        final Request req = Request.cmd(Command.XPENDING).arg(stream).arg(group);
+        final List<String> args = new ArrayList<>();
+        args.addAll(Arrays.asList(stream,group));
         if (count.isPresent()) {
-            req.arg("-").arg("+").arg(count.get());
-            req.arg(consumer);
+            args.addAll(Arrays.asList("-","+",count.get().toString()));
+            args.add(consumer);
         }
         final Promise<List<JsonObject>> promise = Promise.promise();
-        send(req, res -> {
+        this.client.xpending(args, res -> {
             if (res.succeeded()) {
                 if (res.result() != null) {
                     promise.complete(toJsonList(res.result()));
@@ -188,9 +195,10 @@ public class RedisClient {
     }
 
     public Future<JsonObject> xRange(final String stream, final String id) {
-        final Request req = Request.cmd(Command.XRANGE).arg(stream).arg(id).arg(id);
+        final List<String> args = new ArrayList<>();
+        args.addAll(Arrays.asList(stream,id,id));
         final Promise<JsonObject> promise = Promise.promise();
-        send(req, res -> {
+        this.client.xrange(args, res -> {
             if (res.succeeded()) {
                 if (res.result() != null) {
                     final Optional<JsonObject> json = toJson(res.result());
@@ -218,8 +226,8 @@ public class RedisClient {
             final Promise<Void> promise = Promise.promise();
             futures.add(promise.future());
             //TODO listen until now?
-            final Request req = Request.cmd(Command.XGROUP).arg("CREATE").arg(stream).arg(group).arg("$").arg("MKSTREAM");
-            send(req, res -> {
+            final List<String> req = Arrays.asList("CREATE",stream,group,"$","MKSTREAM");
+            this.client.xgroup(req, res -> {
                 if (res.succeeded()) {
                     promise.complete();
                 } else {
@@ -248,15 +256,16 @@ public class RedisClient {
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
             //auto generate id
-            final Request req = Request.cmd(Command.XADD).arg(stream).arg("*");
+            final List<String> args = new ArrayList<>();
+            args.addAll(Arrays.asList(stream,"*"));
             for (final String key : json.getMap().keySet()) {
                 final Object value = json.getValue(key);
                 if(value != null){
-                    req.arg(key);
-                    req.arg(value.toString());
+                    args.add(key);
+                    args.add(value.toString());
                 }
             }
-            send(req, res -> {
+            this.client.xadd(args, res -> {
                 if (res.succeeded()) {
                     promise.complete(res.result().toString());
                 } else {
@@ -278,11 +287,12 @@ public class RedisClient {
             return Future.succeededFuture();
         }
         final Promise<Integer> promise = Promise.promise();
-        final Request req = Request.cmd(Command.XDEL).arg(stream);
+        final List<String> args = new ArrayList<>();
+        args.add(stream);
         for (final String id : ids) {
-            req.arg(id);
+            args.add(id);
         }
-        send(req, res -> {
+        this.client.xdel(args, res -> {
             if (res.succeeded()) {
                 promise.complete(res.result().toInteger());
             } else {
@@ -302,11 +312,13 @@ public class RedisClient {
             return Future.succeededFuture();
         }
         final Promise<Integer> promise = Promise.promise();
-        final Request req = Request.cmd(Command.XACK).arg(stream).arg(group);
+        final List<String> args = new ArrayList<>();
+        args.add(stream);
+        args.add(group);
         for (final String id : ids) {
-            req.arg(id);
+            args.add(id);
         }
-        send(req, res -> {
+        this.client.xack(args, res -> {
             if (res.succeeded()) {
                 promise.complete(res.result().toInteger());
             } else {
@@ -318,8 +330,8 @@ public class RedisClient {
 
     public Future<JsonObject> xInfo(final String stream) {
         final Promise<JsonObject> promise = Promise.promise();
-        final Request req = Request.cmd(Command.XINFO).arg("STREAM").arg(stream);
-        send(req, res -> {
+        final List<String> args = Arrays.asList("STREAM",stream);
+        this.client.xinfo(args, res -> {
             if (res.succeeded()) {
                 if (res.result() != null) {
                     final Optional<JsonObject> json = toJson(res.result());
@@ -385,14 +397,7 @@ public class RedisClient {
     }
 
     public RedisTransaction transaction() {
-        return new RedisTransaction(this);
+        return new RedisTransaction(this.client, this.redisOptions);
     }
 
-    public RedisBatch batch() {
-        return new RedisBatch(this);
-    }
-
-    protected Redis send(final Request command, final Handler<AsyncResult<Response>> onSend) {
-        return client.send(command, onSend);
-    }
 }
