@@ -52,6 +52,7 @@ export class GroupAutolinkComponent extends OdeComponent {
     public showFunctionsPicker: boolean;
     // hack for AOT build (used for this.checked on radio onclick)
     public checked: boolean;
+    public structureTreeItems: Array<StructureListItem>;
 
     constructor(
         private notifyService: NotifyService,
@@ -112,6 +113,7 @@ export class GroupAutolinkComponent extends OdeComponent {
                 }
             });
         }
+        this.structureTreeItems = this.getSubStructuresTreeItems();
     }
 
     public onAutolinkSubmit() {
@@ -178,7 +180,7 @@ export class GroupAutolinkComponent extends OdeComponent {
         this.showSubStructuresLightbox = true;
     }
 
-    public getSubStructuresTreeItems = (): Array<StructureListItem> => {
+    private getSubStructuresTreeItems = (): Array<StructureListItem> => {
         const myMap = (child: StructureModel) => {
             return {
                 name: child.name,
