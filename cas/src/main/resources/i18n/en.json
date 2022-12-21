@@ -46,5 +46,7 @@
   "AtNormandieRegisteredService.name": "AtoutNormandie",
   "AtNormandieRegisteredService.description": "AtoutNormandie",
   "SpipRegisteredService.name": "SPIP",
-  "SpipRegisteredService.description": "SPIP"
+  "SpipRegisteredService.description": "SPIP",
+  "ElmsRegisteredService.name": "eLMS",
+  "ElmsRegisteredService.description": "eLMS"
 }
