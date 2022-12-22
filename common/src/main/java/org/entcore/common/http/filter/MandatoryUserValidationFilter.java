@@ -34,7 +34,7 @@ public class MandatoryUserValidationFilter implements Filter {
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
     private final static String[] whiteListAlways = {
-        "/directory/user/mailstate"
+        "/directory/user/mailstate", "/auth/oauth2/token"
     };
     private final static String[][] whiteListByStep = {
         {"/auth/revalidate-terms"},
