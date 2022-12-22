@@ -39,8 +39,8 @@ public class ExplorerPluginMetricsFactory {
             if (metricsOptionsRaw == null) {
                 explorerPluginMetricsRecorder = new IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder();
             } else {
-                final MetricsOptions metricsOptions = metricsOptionsRaw.mapTo(MetricsOptions.class);
-                if (metricsOptions.isEnabled() && metricsOptions instanceof MicrometerMetricsOptions) {
+                final MetricsOptions metricsOptions = new MetricsOptions(metricsOptionsRaw);
+                if (metricsOptions.isEnabled()) {
                     explorerPluginMetricsRecorder = new MicrometerExplorerPluginMetricsRecorder();
                 } else {
                     explorerPluginMetricsRecorder = new IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder();
