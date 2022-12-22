@@ -75,6 +75,7 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         }
         count += shared.users ? Object.keys(shared.users).length : 0;
         count += shared.groups ? Object.keys(shared.groups).length : 0;
+        count += shared.bookmarks ? Object.keys(shared.bookmarks).length : 0;
         if (excludedOwner && shared.users && shared.users[excludedOwner]) {
             count--;
         }
