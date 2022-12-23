@@ -21,7 +21,7 @@ package org.entcore.timeline.controllers;
 
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import io.vertx.core.AsyncResult;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -40,12 +40,14 @@ import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.shareddata.LocalMap;
+import org.apache.commons.lang3.function.FailableDoubleUnaryOperator;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
@@ -62,8 +64,6 @@ import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -76,9 +76,11 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static java.util.Collections.emptySet;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -95,6 +97,7 @@ public class TimelineController extends BaseController {
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
 	private TimelineHelper timelineHelper;
+	private MuteHelper muteHelper;
 	private JsonArray eventTypes; // cache to improve perfs
 	private boolean refreshTypesCache;
 	private NotificationHelper notificationHelper;
@@ -117,6 +120,7 @@ public class TimelineController extends BaseController {
 			store = new SplitTimelineEventStore(store, maxRecipientLength);
 		}
 		timelineHelper = new TimelineHelper(vertx, eb, config);
+		muteHelper = new MuteHelper(vertx);
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
@@ -850,11 +854,15 @@ public class TimelineController extends BaseController {
 		case "add":
 			final String sender = json.getString("sender");
 			if (sender == null || sender.startsWith("no-reply") || json.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
-				store.add(json, new Handler<JsonObject>() {
-					public void handle(JsonObject result) {
-						notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(json.getJsonObject("request")), json);
-						handler.handle(result);
-					}
+				this.removeMutersFromRecipientList(json)
+				.onComplete(notificationResult -> {
+					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
+					store.add(notification, new Handler<JsonObject>() {
+						public void handle(JsonObject result) {
+							notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+							handler.handle(result);
+						}
+					});
 				});
 				if (refreshTypesCache && eventTypes != null && !eventTypes.contains(json.getString("type"))) {
 					eventTypes = null;
@@ -889,6 +897,38 @@ public class TimelineController extends BaseController {
 			message.reply(new JsonObject().put("status", "error")
 					.put("message", "Invalid action."));
 		}
+	}
+
+	/**
+	 * <p>
+	 * Retrieve users who muted this resource from the list by calling mute service and remove them from the notification.
+	 * </p>
+	 * <p>
+	 *     <strong>NB : </strong> The parameter is modified.
+	 * </p>
+	 * @param originalNotification Original notification received from the notifier service whose recipients should be
+	 *                             stripped from muters
+	 * @return The same notification but whose recipients have been cleaned from users who didn't want to receive it.
+	 */
+	private Future<JsonObject> removeMutersFromRecipientList(final JsonObject originalNotification) {
+			return muteHelper.fetResourceMutesByEntId(originalNotification.getString("resource"))
+		.otherwise(emptySet())
+		.map(muters -> {
+			final JsonArray recipientsIds = originalNotification.getJsonArray("recipientsIds");
+			final List<String> recipientsIdsWithoutMuters = recipientsIds.stream()
+					.filter(recipient -> !muters.contains(recipient))
+					.map(e -> (String)e)
+					.collect(Collectors.toList());
+
+			final JsonArray recipients = originalNotification.getJsonArray("recipients");
+			final List<JsonObject> recipientsWithoutMuters = recipients.stream()
+					.map(recipient -> (JsonObject)recipient)
+					.filter(recipient -> !muters.contains(recipient.getString("userId")))
+					.collect(Collectors.toList());
+			originalNotification.put("recipientsIds", new JsonArray(recipientsIdsWithoutMuters));
+			originalNotification.put("recipients", new JsonArray(recipientsWithoutMuters));
+			return originalNotification;
+		});
 	}
 
 	private void getExternalNotifications(final Handler<Either<String, JsonObject>> handler) {
