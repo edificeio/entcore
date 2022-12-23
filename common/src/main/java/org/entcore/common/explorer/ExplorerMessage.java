@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 public class ExplorerMessage {
 
-
     public enum ExplorerContentType{
         Text, Html, Pdf
     }
@@ -65,12 +64,17 @@ public class ExplorerMessage {
         this.priority = action.getPriority(search);
     }
 
-    public static ExplorerMessage upsert(final String id, final UserInfos user, final boolean forSearch) {
-        final ExplorerMessage builder = new ExplorerMessage(id, ExplorerAction.Upsert, forSearch);
-        // dont set creator and createdat here, set it from resource json
+    public static ExplorerMessage upsert(final IdAndVersion id, final UserInfos user, final boolean forSearch,
+                                         final String application, final String resourceType, final String entityType) {
+        final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Upsert, forSearch);
+        builder.message.put("createdAt", new Date().getTime());
+        builder.message.put("creatorId", user.getUserId());
+        builder.message.put("creatorName", user.getUsername());
         builder.message.put("updatedAt", new Date().getTime());
         builder.message.put("updaterId", user.getUserId());
         builder.message.put("updaterName", user.getUsername());
+        builder.withVersion(id.getVersion());
+        builder.withType(application, resourceType, entityType);
         return builder;
     }
 
@@ -323,6 +327,9 @@ public class ExplorerMessage {
     }
     public String getName() {
         return message.getString("name");
+    }
+    public long getVersion() {
+        return message.getLong("version");
     }
     public String getCreatorName() {
         return message.getString("creatorName");
