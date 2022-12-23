@@ -32,4 +32,17 @@ public class ExplorerPluginClientDefault extends ExplorerPluginClient {
             return e.body();
         });
     }
+
+    @Override
+    protected <T> Future<T> send(final MultiMap headers, final Object payload, final Class<T> responseType, final Duration timeout) {
+        final String address = IExplorerPlugin.addressFor(application, resourceType);
+        final DeliveryOptions options = new DeliveryOptions()
+                .setHeaders(headers)
+                .setSendTimeout(timeout.toMillis());
+        final Promise<Message<T>> promise = Promise.promise();
+        vertx.eventBus().request(address, JsonObject.mapFrom(payload), options, promise);
+        return promise.future().map(e->{
+            return e.body();
+        });
+    }
 }
