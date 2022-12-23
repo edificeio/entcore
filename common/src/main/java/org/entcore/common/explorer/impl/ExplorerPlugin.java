@@ -21,6 +21,9 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
+import org.entcore.common.explorer.to.MuteRequest;
+import org.entcore.common.explorer.to.MuteResponse;
+import org.entcore.common.mute.MuteService;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -118,6 +121,28 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 break;
             }
         }
+    }
+
+    private void onMuteRequest(UserInfos user, Message<JsonObject> message) {
+        final MuteRequest muteRequest = message.body().mapTo(MuteRequest.class);
+        final MuteService muteService = getMuteService();
+        muteService.setMuteStatus(muteRequest, user).onComplete(e -> {
+            if(e.succeeded()) {
+                message.reply(mapFrom(new MuteResponse(true)));
+                for (IdAndVersion resourceId : muteRequest.getResourceIds()) {
+                    final ExplorerMessage muteChangeNotification = ExplorerMessage.mute(
+                            resourceId,
+                            getApplication(), getResourceType(),
+                            muteRequest.isMute(), user
+                    );
+                    this.notifyMute(muteChangeNotification);
+                }
+            } else {
+                log.error("An error occurred while setting the muste status of the following resources " +
+                        muteRequest.getResourceIds() + " for the user " + user.getUserId(), e.cause());
+                message.reply(mapFrom(new MuteResponse(false, e.cause())));
+            }
+        });
     }
 
     protected void onCreateAction(final Message<JsonObject> message, final UserInfos user, final JsonArray values, final boolean copy){
@@ -439,6 +464,12 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
+    public Future<Void> notifyMute(final ExplorerMessage message) {
+        return communication.pushMessage(Collections.singletonList(message));
+    }
+
+
+    @Override
     public Future<Void> notifyDeleteById(final UserInfos user, final IdAndVersion id) {
         final ExplorerMessage message = ExplorerMessage.delete(id, user, isForSearch())
         .withVersion(currentTimeMillis())
@@ -576,6 +607,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected abstract String getResourceType();
 
     protected abstract Optional<ShareService> getShareService();
+    protected abstract MuteService getMuteService();
 
     protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
 
