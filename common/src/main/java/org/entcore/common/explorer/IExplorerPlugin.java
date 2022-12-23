@@ -67,6 +67,8 @@ public interface IExplorerPlugin {
 
     Future<Void> notifyDelete(UserInfos user, List<JsonObject> sources);
 
+    Future<Void> notifyMute(ExplorerMessage mutedResource);
+
     Future<String> create(UserInfos user, JsonObject source, boolean isCopy);
 
     Future<List<String>> create(UserInfos user, List<JsonObject> sources, boolean isCopy);
@@ -123,7 +125,8 @@ public interface IExplorerPlugin {
         DeletePushFailed("explorer.remote.error.delete_push"),
         ShareFailed("explorer.remote.error.share"),
         ShareFailedMissing("explorer.remote.error.share.missing"),
-        ShareFailedPush("explorer.remote.error.share_push");
+        ShareFailedPush("explorer.remote.error.share_push"),
+        MuteFailed("explorer.remote.error.mute");
         private final String error;
 
         ExplorerRemoteError(final String e) {
