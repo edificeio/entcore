@@ -34,12 +34,11 @@ public class MandatoryUserValidationFilter implements Filter {
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
     private final static String[] whiteListAlways = {
-        "/directory/user/mailstate", "/auth/oauth2/token"
+        "/directory/user/mailstate", "/auth/"
     };
     private final static String[][] whiteListByStep = {
-        {"/auth/revalidate-terms"},
-        {"/auth/validate-mail", "/internal/userinfo", "/oauth2/userinfo", 
-         "/userbook/", "/theme"}
+        {},
+        {"/internal/userinfo", "/userbook/", "/theme"}
     };
 
     private final static String REDIRECT_TO_KEY = "MandatoryUserValidationFilterRedirectsTo";
