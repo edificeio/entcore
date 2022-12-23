@@ -77,9 +77,7 @@ public class ExplorerPluginCommunicationRedis implements IExplorerPluginCommunic
             if(map.containsKey(stream)) {
                 final List<JsonObject> messagesToSend = map.get(stream);
                 final Future<List<String>> tmp = previous.compose(ee -> redisClient.xAdd(stream, messagesToSend).onFailure(e -> {
-                    // TODO JBE => if xAdd fails the message is lost
                     this.metricsRecorder.onSendMessageFailure(messagesToSend.size());
-                    // TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                     final RedisExplorerFailed fail = new RedisExplorerFailed(stream, map.get(stream));
                     pendingFailed.add(fail);
                     vertx.setTimer(retryUntil, rr -> {

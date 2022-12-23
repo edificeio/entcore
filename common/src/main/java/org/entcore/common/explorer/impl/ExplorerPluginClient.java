@@ -6,7 +6,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.explorer.to.MuteRequest;
+import org.entcore.common.explorer.to.MuteResponse;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
@@ -108,6 +112,18 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     }
 
     @Override
+    public Future<MuteResponse> setMuteStatusByIds(final UserInfos user,
+                                           final Set<IdAndVersion> resourceIds,
+                                           final boolean muteStatus) {
+        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMute.name());
+        headers.add("userId", user.getUserId());
+        headers.add("userName", user.getUsername());
+        final MuteRequest muteRequest = new MuteRequest(muteStatus, resourceIds);
+        return send(headers, muteRequest, MuteResponse.class, Duration.ofMinutes(5));
+    }
+
+    @Override
     public Future<JsonObject> getMetrics(final UserInfos user){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMetrics.name());
@@ -118,6 +134,7 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     }
 
     abstract protected <T> Future<T> send(final MultiMap headers, final JsonObject payload, final Duration timeout);
+    abstract protected <T> Future<T> send(final MultiMap headers, final Object payload, Class<T> responseType, final Duration timeout);
 
 
 }

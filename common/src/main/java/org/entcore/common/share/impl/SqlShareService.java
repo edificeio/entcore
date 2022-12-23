@@ -24,6 +24,7 @@ import java.util.*;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
+import org.entcore.common.explorer.to.MuteRequest;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -37,6 +38,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 public class SqlShareService extends GenericShareService {
 
@@ -347,5 +349,4 @@ public class SqlShareService extends GenericShareService {
 		}
 
 	}
-
 }

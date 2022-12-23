@@ -9,6 +9,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.IExplorerPlugin;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.GenericShareService;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static java.lang.System.currentTimeMillis;
 
 public class ExplorerShareService extends GenericShareService implements ShareService {
     private final ShareService shareService;
@@ -79,12 +82,13 @@ public class ExplorerShareService extends GenericShareService implements ShareSe
 
     @Override
     public Future<JsonObject> share(UserInfos user, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
+        final long version = currentTimeMillis();
         return this.shareService.share(user.getUserId(), resourceId, share, e->{
             if(e.isRight()){
                 this.shareService.shareInfosWithoutVisible(user.getUserId(), resourceId, res -> {
                     if(res.isRight()){
                         final JsonArray shared = res.right().getValue();
-                        this.plugin.notifyShare(resourceId, user, shared).onComplete(not->{
+                        this.plugin.notifyShare(new IdAndVersion(resourceId, version), user, shared).onComplete(not->{
                             if(not.failed()){
                                 log.error("Failed to notify shared: ", not);
                             }

@@ -43,11 +43,11 @@ public interface IExplorerPlugin {
 
     Future<Map<String, JsonArray>> getShareInfo(Set<String> id);
 
-    Future<Void> notifyShare(String id, UserInfos user, JsonArray shared);
+    Future<Void> notifyShare(IdAndVersion id, UserInfos user, JsonArray shared);
 
-    Future<Void> notifyShare(Set<String> id, UserInfos user, JsonArray shared);
+    Future<Void> notifyShare(Set<IdAndVersion> id, UserInfos user, JsonArray shared);
 
-    Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source);
+    Future<Void> notifyUpsert(IdAndVersion id, UserInfos user, JsonObject source);
 
     Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById);
 

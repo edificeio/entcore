@@ -4,14 +4,13 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.explorer.ExplorerStream;
-import org.entcore.common.explorer.IExplorerFolderTree;
-import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.*;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.System.currentTimeMillis;
 
 public abstract class ExplorerFolderTree implements IExplorerFolderTree {
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -65,9 +64,9 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         final String id = getFolderId(source);
         final UserInfos user = getCreatorForModel(source);
         //folder
-        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch())
-                .withType(getApplication(), getFolderResourceType(), getFolderResourceType())
-                .withVersion(source.getLong("version", System.currentTimeMillis()));
+        // TODO JBER check if we cannot get version from somewhere else like the source
+        final ExplorerMessage message = ExplorerMessage.upsert(new IdAndVersion(id, currentTimeMillis()), user, isForSearch(),
+                getApplication(), getFolderResourceType(), getFolderResourceType()).withVersion(source.getLong("version", System.currentTimeMillis()));
         message.withName(getName(source));
         message.withTrashed(isTrashed(source));
         message.withParentEntId(getParentId(source));
