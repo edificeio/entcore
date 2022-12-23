@@ -22,6 +22,8 @@ import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.share.ShareModel;
+import org.entcore.common.explorer.to.MuteRequest;
+import org.entcore.common.explorer.to.MuteResponse;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
@@ -30,6 +32,9 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static io.vertx.core.json.JsonObject.mapFrom;
+import static java.lang.System.currentTimeMillis;
 
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
@@ -72,29 +77,23 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final String userId = message.headers().get("userId");
         final String userName = message.headers().get("userName");
         final ExplorerRemoteAction action = ExplorerRemoteAction.valueOf(actionStr);
+        final UserInfos user = new UserInfos();
+        user.setUserId(userId);
+        user.setUsername(userName);
         switch (action) {
             case QueryShare: {
-                final UserInfos user = new UserInfos();
-                user.setUserId(userId);
-                user.setUsername(userName);
                 final JsonObject shares = message.body().getJsonObject("shares", new JsonObject());
                 final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
                 onShareAction(message, user, values, shares);
                 break;
             }
             case QueryCreate: {
-                final UserInfos user = new UserInfos();
-                user.setUserId(userId);
-                user.setUsername(userName);
                 final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
                 final boolean copy = message.body().getBoolean("copy", false);
                 onCreateAction(message, user, values, copy);
                 break;
             }
             case QueryDelete: {
-                final UserInfos user = new UserInfos();
-                user.setUserId(userId);
-                user.setUsername(userName);
                 final JsonArray values = message.body().getJsonArray("resources", new JsonArray());
                 onDeleteAction(message, user, values);
                 break;
@@ -133,7 +132,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 toMessage(safeSources, source -> {
                     final int index = safeSources.indexOf(source);
                     final String id = safeIds.get(index);
-                    final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
+                    final ExplorerMessage mess = ExplorerMessage.upsert(
+                            new IdAndVersion(id, now), user, isForSearch(),
+                            getApplication(), getResourceType(), getResourceType());
                     return mess;
                 }).compose(messages -> {
                     return communication.pushMessage(messages);
@@ -221,7 +222,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 if (all.succeeded()) {
                     final List<ExplorerMessage> messages = new ArrayList<>();
                     for(final String id : ids) {
-                        final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
+                        final ExplorerMessage mess = ExplorerMessage.upsert(
+                                new IdAndVersion(id, now), user, isForSearch(),
+                                getApplication(), getResourceType(), getResourceType());
                         final JsonArray shared = generatedShared.get(id).getJsonArray("shared");
                         mess.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
                         mess.withVersion(now);
@@ -268,7 +271,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                     log.error("Could not found creator for "+getApplication()+ " with id : "+id);
                     return new UserInfos();
                 });
-                final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
+                final ExplorerMessage mess = ExplorerMessage.upsert(
+                        new IdAndVersion(id, now), user, isForSearch(),
+                        getApplication(), getResourceType(), getResourceType());
                 mess.withVersion(now);
                 return mess;
             }).compose(messages -> {
@@ -340,22 +345,19 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public Future<Void> notifyShare(final String id, final UserInfos user, final JsonArray shared) {
-        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
-        message.withType(getApplication(), getResourceType(), getResourceType());
-        message.withVersion(currentTimeMillis());
+    public Future<Void> notifyShare(IdAndVersion id, UserInfos user, JsonArray shared) {
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch(),
+                getApplication(), getResourceType(), getResourceType());
         message.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
         return communication.pushMessage(message);
     }
 
     @Override
-    public Future<Void> notifyShare(final Set<String> ids, final UserInfos user, final JsonArray shared) {
-        final long now = currentTimeMillis();
+    public Future<Void> notifyShare(final Set<IdAndVersion> ids, final UserInfos user, final JsonArray shared) {
         final List<ExplorerMessage> messages = ids.stream().map(id->{
-            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
-            message.withType(getApplication(), getResourceType(), getResourceType());
-            message.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
-            return message.withVersion(now);
+            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch(),
+                    getApplication(), getResourceType(), getResourceType());
+            return message.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
         }).collect(Collectors.toList());
         return communication.pushMessage(messages);
     }
@@ -364,7 +366,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     public Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById) {
         final List<Future> futures = sourceById.entrySet().stream().map(e->{
             final String id = e.getKey();
-            final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+            final ExplorerMessage message = ExplorerMessage.upsert(
+                    new IdAndVersion(id, e.getValue().getLong("version")), user, isForSearch(),
+                    getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
             return toMessage(message, e.getValue());
         }).collect(Collectors.toList());
@@ -375,8 +379,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source) {
-        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+    public Future<Void> notifyUpsert(IdAndVersion id, UserInfos user, JsonObject source) {
+        final ExplorerMessage message = ExplorerMessage.upsert(
+                id, user, isForSearch(),
+                getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
@@ -385,7 +391,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public Future<Void> notifyUpsert(final UserInfos user, final JsonObject source) {
-        final ExplorerMessage message = ExplorerMessage.upsert(getIdForModel(source), user, isForSearch());
+        final ExplorerMessage message = ExplorerMessage.upsert(
+                new IdAndVersion(getIdForModel(source), source.getLong("version")), user, isForSearch(),
+                getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
@@ -396,7 +404,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     public Future<Void> notifyUpsert(final UserInfos user, final List<JsonObject> sources) {
         setIngestJobState(sources, IngestJobState.TO_BE_SENT);
         return toMessage(sources, e -> {
-            final ExplorerMessage message = ExplorerMessage.upsert(getIdForModel(e), user, isForSearch());
+            final ExplorerMessage message = ExplorerMessage.upsert(
+                    new IdAndVersion(getIdForModel(e), e.getLong("version")), user, isForSearch(),
+                    getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
             return message;
         }).compose(messages -> {
@@ -417,6 +427,12 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         }
         return communication.pushMessage(messages);
     }
+
+    @Override
+    public Future<Void> notifyMute(final ExplorerMessage message) {
+        return communication.pushMessage(Collections.singletonList(message));
+    }
+
 
     @Override
     public Future<Void> notifyDeleteById(final UserInfos user, final IdAndVersion id) {

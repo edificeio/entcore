@@ -32,6 +32,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.to.MuteRequest;
 import org.entcore.common.user.UserInfos;
 
 public interface ShareService {
