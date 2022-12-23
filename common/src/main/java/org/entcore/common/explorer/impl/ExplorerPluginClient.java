@@ -110,6 +110,18 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     }
 
     @Override
+    public Future<MuteResponse> setMuteStatusByIds(final UserInfos user,
+                                           final Set<IdAndVersion> resourceIds,
+                                           final boolean muteStatus) {
+        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMute.name());
+        headers.add("userId", user.getUserId());
+        headers.add("userName", user.getUsername());
+        final MuteRequest muteRequest = new MuteRequest(muteStatus, resourceIds);
+        return send(headers, muteRequest, MuteResponse.class, Duration.ofMinutes(5));
+    }
+
+    @Override
     public Future<JsonObject> getMetrics(final UserInfos user){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMetrics.name());
