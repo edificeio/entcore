@@ -9,6 +9,8 @@ import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
+import org.entcore.common.mute.MuteService;
+import org.entcore.common.mute.impl.MuteServiceSql;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.sql.SqlResult;
@@ -29,12 +31,14 @@ import java.util.stream.Collectors;
 
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final IPostgresClient pgPool;
+    private final MuteServiceSql muteService;
     protected List<String> defaultColumns = Arrays.asList("version", "ingest_job_state");
 
     protected ExplorerPluginResourceSql(final IExplorerPluginCommunication communication,
                                         final IPostgresClient pool) {
         super(communication);
         this.pgPool = pool;
+        this.muteService = new MuteServiceSql(getTableName(), pool);
     }
 
     @Override
@@ -262,5 +266,10 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             }
             return transaction.commit();
         }).mapEmpty();
+    }
+
+    @Override
+    protected MuteService getMuteService() {
+        return muteService;
     }
 }
