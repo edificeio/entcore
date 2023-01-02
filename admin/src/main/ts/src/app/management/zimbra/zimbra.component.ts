@@ -6,7 +6,7 @@ import {Data} from '@angular/router';
 import {OdeComponent} from 'ngx-ode-core';
 import {GroupModel} from '../../core/store/models/group.model';
 import {NotifyService} from '../../core/services/notify.service';
-import {ReturnedMail} from './ReturnedMail';
+import {ReturnedMail, ReturnedMailStatut} from './ReturnedMail';
 import {switchMap} from 'rxjs/operators';
 import {BundlesService} from 'ngx-ode-sijil';
 
@@ -187,21 +187,39 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
             mail.date = new Date().toString();
         });
         this.changeDetector.detectChanges();
-        this.subscriptions.add(this.zimbraService.removeReturnedMails(ids).subscribe(statutMails => {
-                this.getSelectedReturnedMail().forEach(mail => {
-                    statutMails.forEach(statut => {
-                        if (statut.id === mail.id) {
-                            mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + statut.statut);
-                            mail.statut = statut.statut;
-                            mail.date = statut.date;
+        this.subscriptions.add(this.zimbraService.removeReturnedMails(ids).subscribe(
+            (mailsResponse: ReturnedMailStatut[]) => {
+                let successCount, failCount = 0;
+                this.getSelectedReturnedMail().forEach((mail: ReturnedMail) => {
+                    mailsResponse.forEach((mailResponse: ReturnedMailStatut) => {
+                        if (mailResponse.id === mail.id) {
+                            mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + mailResponse.statut);
+                            mail.statut = mailResponse.statut;
+                            mail.date = mailResponse.date;
+                        }
+                        if (mailResponse.statut === 'ERROR') {
+                            failCount++;
+                        }
+                        if (mailResponse.statut === 'REMOVED') {
+                            successCount++;
                         }
                     });
                     this.checkboxesMail[mail.id] = false;
                 });
                 this.changeDetector.detectChanges();
-                this.notifyService.success(
-                    'management.zimbra.return.remove.success.content',
-                    'management.zimbra.return.remove.success.title');
+                if (successCount === 0) {
+                    this.notifyService.error(
+                        'management.zimbra.return.remove.error.content',
+                        'management.zimbra.return.remove.error.title');
+                } else if (failCount > 0) {
+                    this.notifyService.error(
+                        { key: 'management.zimbra.return.remove.someFail.content', parameters: { failCount, successCount } },
+                        'management.zimbra.return.remove.someFail.title');
+                } else {
+                    this.notifyService.success(
+                        'management.zimbra.return.remove.success.content',
+                        'management.zimbra.return.remove.success.title');
+                }
             },
             (err) => {
                 this.notifyService.notify(
