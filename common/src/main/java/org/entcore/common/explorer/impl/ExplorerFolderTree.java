@@ -65,7 +65,9 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         final String id = getFolderId(source);
         final UserInfos user = getCreatorForModel(source);
         //folder
-        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch()).withType(getApplication(), getFolderResourceType(), getFolderResourceType());
+        final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch())
+                .withType(getApplication(), getFolderResourceType(), getFolderResourceType())
+                .withVersion(source.getLong("version", System.currentTimeMillis()));
         message.withName(getName(source));
         message.withTrashed(isTrashed(source));
         message.withParentEntId(getParentId(source));
