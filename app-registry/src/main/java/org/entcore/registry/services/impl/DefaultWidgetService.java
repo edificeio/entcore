@@ -54,7 +54,6 @@ public class DefaultWidgetService implements WidgetService {
 			.add("notes");
 	/** Should be kept in sync in ode-ts-client too (@see ts/widgets/Frameworks.ts) */
 	private final JsonArray secondLevelWidgets = new JsonArray()
-			.add("agenda-widget")
 			.add("carnet-de-bord")
 			.add("my-apps")
 			.add("rss-widget")
