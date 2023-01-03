@@ -37,6 +37,8 @@ import java.util.List;
 
 import org.entcore.common.notification.NotificationUtils;
 
+import static java.lang.System.currentTimeMillis;
+
 
 public class NotificationHelper {
     private static final Logger log = LoggerFactory.getLogger(NotificationHelper.class);
@@ -53,41 +55,72 @@ public class NotificationHelper {
     }
 
     public void sendImmediateNotifications(final HttpServerRequest request, final JsonObject json){
-        //Get notification properties (mixin : admin console configuration which overrides default properties)
         final String notificationName = json.getString("notificationName");
         final JsonObject notification = json.getJsonObject("notification");
-        final Boolean disableMailNotification = json.getBoolean("disableMailNotification", false);
-        configService.getNotificationProperties(notificationName,  new Handler<Either<String, JsonObject>>() {
-            public void handle(final Either<String, JsonObject> properties) {
-                if(properties.isLeft() || properties.right().getValue() == null){
-                    log.error("[NotificationHelper] Issue while retrieving notification (" + notificationName + ") properties.");
-                    return;
-                }
-                final JsonObject notificationProperties = properties.right().getValue();
-                //Get users preferences (overrides notification properties)
-                NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"), "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens ", new Handler<JsonArray>() {
-                    public void handle(final JsonArray userList) {
-                        if(userList == null){
-                            log.error("[NotificationHelper] Issue while retrieving users preferences.");
-                            return;
-                        }
-                        if (disableMailNotification == null || !disableMailNotification.booleanValue()) {
-                            mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
-                        }
-
-                        if(pushNotifServices != null && pushNotifServices.size() > 0
-                                && json.containsKey("pushNotif")
-                                && notificationProperties.getBoolean("push-notif")
-                                && !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction"))
-                                && !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction"))) {
-                            pushNotifServices.forEach( pushNotifService -> {
-                                pushNotifService.sendImmediateNotifs(notificationName, json, userList, notificationProperties);
-                            });
-                        }
+        if(isImmediateNotification(json)) {
+            //Get notification properties (mixin : admin console configuration which overrides default properties)
+            final Boolean disableMailNotification = json.getBoolean("disableMailNotification", false);
+            configService.getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
+                public void handle(final Either<String, JsonObject> properties) {
+                    if (properties.isLeft() || properties.right().getValue() == null) {
+                        log.error("[NotificationHelper] Issue while retrieving notification (" + notificationName + ") properties.");
+                        return;
                     }
-                });
+                    final JsonObject notificationProperties = properties.right().getValue();
+                    //Get users preferences (overrides notification properties)
+                    NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"), "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens ", new Handler<JsonArray>() {
+                        public void handle(final JsonArray userList) {
+                            if (userList == null) {
+                                log.error("[NotificationHelper] Issue while retrieving users preferences.");
+                                return;
+                            }
+                            if (disableMailNotification == null || !disableMailNotification.booleanValue()) {
+                                mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
+                            }
+
+                            if (pushNotifServices != null && pushNotifServices.size() > 0
+                                    && json.containsKey("pushNotif")
+                                    && notificationProperties.getBoolean("push-notif")
+                                    && !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction"))
+                                    && !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction"))) {
+                                pushNotifServices.forEach(pushNotifService -> {
+                                    pushNotifService.sendImmediateNotifs(notificationName, json, userList, notificationProperties);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            log.debug("[NotificationHelper] Not sending future notification " + notificationName);
+        }
+    }
+
+    /**
+     * Determine if a notification can be sent immediately. The following checks are performed :
+     * <ul>
+     *     <li>if not date field is present, the notification is immediate</li>
+     *     <li>if a date field is present and the date is today or before today, the notification is immediate</li>
+     *     <li>if a date field is present and the date is after today (excluded), the notification is postponed</li>
+     *     <li>in any other case, the notification is immediate</li>
+     * </ul>
+     * @param notification Notification's data
+     * @return {@code true} if the notification can be sent immediately, {@code false} otherwise
+     */
+    private boolean isImmediateNotification(final JsonObject notification) {
+        final boolean isImmediate;
+        final JsonObject dateWrapper = notification.getJsonObject("date");
+        if(dateWrapper == null) {
+            isImmediate = true;
+        } else {
+            final Long ts = dateWrapper.getLong("$date");
+            if(ts == null) {
+                isImmediate = true;
+            } else {
+                isImmediate = ts <= currentTimeMillis();
             }
-        });
+        }
+        return isImmediate;
     }
 
 
