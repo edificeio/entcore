@@ -1504,6 +1504,7 @@ public class AuthController extends BaseController {
 				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
+				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");;
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
 								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
@@ -1545,11 +1546,10 @@ public class AuthController extends BaseController {
 									public void handle(String resetedUserId) {
 										if (resetedUserId != null) {
 											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											UserUtils.deleteCacheSession(eb, resetedUserId, sessionIdStr, r -> redirectionService.redirect(request, callback));
-											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, r -> {});
+											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, r -> redirectionService.redirect(request, callback));
+											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
 										} else {
-											trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
-													+ login);
+											trace.info("Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
 											error(request, resetCode);
 										}
 									}

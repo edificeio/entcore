@@ -161,7 +161,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			if (ar.succeeded()) {
 				for (Object sessionId : ar.result()) {
 					if (sessionId instanceof String) {
-						if(currentSessionId != null && ((String)sessionId).equals(currentSessionId) == false)
+						if(currentSessionId == null || ((String)sessionId).equals(currentSessionId) == false)
 							dropSession(null, (String) sessionId, null);
 					}
 				}
@@ -638,7 +638,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void doRemoveAttribute(Message<JsonObject> message) {
 		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "[getSessionByUserId] Invalid userId : " + message.body().encode());
+			sendError(message, "[doRemoveAttribute] Invalid userId : " + message.body().encode());
 			return;
 		}
 
