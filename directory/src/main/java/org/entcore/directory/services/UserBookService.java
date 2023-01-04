@@ -46,7 +46,7 @@ public interface UserBookService {
 
 	void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler);
 
-	void getCurrentUserInfos(UserInfos user, Handler<Either<String, JsonObject>> result);
+	void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result);
 
 	void getPersonInfos(String personId, Handler<Either<String, JsonObject>> result);
 
