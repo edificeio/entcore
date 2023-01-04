@@ -26,7 +26,7 @@ export let ExternalNotifs = {
 }
 
 ExternalNotifs.UserInfos.prototype.getinfo = function(callback){
-    http.get('/userbook/api/person').then(function(res){
+    http.get('/userbook/api/person?force=true').then(function(res){
         this.updateData(res.data.result['0'])
     }.bind(this))
 }

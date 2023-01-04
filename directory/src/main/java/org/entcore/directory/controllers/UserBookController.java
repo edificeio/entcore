@@ -211,8 +211,9 @@ public class UserBookController extends BaseController {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
 				final String userId = request.params().get("id");
+				final boolean forceReload = "true".equals(request.params().get("force"));
 				if (userId == null) {
-					userBookService.getCurrentUserInfos(user, defaultResponseHandler(request));
+					userBookService.getCurrentUserInfos(user, forceReload, defaultResponseHandler(request));
 				}else{
 					userBookService.getPersonInfos(userId, defaultResponseHandler(request));
 				}
