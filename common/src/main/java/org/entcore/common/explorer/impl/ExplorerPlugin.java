@@ -249,6 +249,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s includeFolders=%s",getApplication(), getResourceType(), from, to, includeFolders));
         final JsonObject metrics = new JsonObject();
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
+            // TODO JBE missing saving state and version here
+            for (JsonObject entry : bulk) {
+                setVersion(entry, now);
+            }
             return toMessage(bulk, e -> {
                 final String id = getIdForModel(e);
                 final UserInfos user = getCreatorForModel(e);
@@ -439,7 +443,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
 
-    protected Future<List<ExplorerMessage>> toMessage(final List<JsonObject> sources, final Function<JsonObject, ExplorerMessage> builder) {
+    protected final Future<List<ExplorerMessage>> toMessage(final List<JsonObject> sources, final Function<JsonObject, ExplorerMessage> builder) {
         final List<Future> futures = sources.stream().map(e -> toMessage(builder.apply(e), e)).collect(Collectors.toList());
         return CompositeFuture.all(futures).map(e -> new ArrayList<ExplorerMessage>(e.list()));
     }
@@ -535,7 +539,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     protected abstract Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids);
 
-    protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
+    protected final Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getResourceType());
         message.withVersion(source.getLong("version"));
         return doToMessage(message, source);
