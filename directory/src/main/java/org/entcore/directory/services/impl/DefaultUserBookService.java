@@ -391,9 +391,9 @@ public class DefaultUserBookService implements UserBookService {
 			return (new Either.Left<>(res.left().getValue()));
 		}
 	}
-	public void getCurrentUserInfos(UserInfos user, Handler<Either<String, JsonObject>> result) {
+	public void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result) {
 		Object person = user.getAttribute(PERSON_ATTRIBUTE);
-		if (person != null) {
+		if (person != null && !forceReload) {
 			result.handle(new Either.Right<>(new JsonObject(person.toString())));
 			return;
 		}
