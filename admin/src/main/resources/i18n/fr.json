@@ -305,6 +305,7 @@
   "management.calendar.slot.name": "Libellé créneau :",
   "management.calendar.slot.startHour": "Heure de début :",
   "management.calendar.slot.endHour": "Heure de fin :",
+  "management.calendar.timetable.name": "Saisir nom de la grille",
   "management.calendar.modify": "Modifier",
   "management.calendar.delete": "Supprimer",
   "management.calendar.cancel": "Annuler",
