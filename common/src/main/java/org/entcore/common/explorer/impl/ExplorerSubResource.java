@@ -135,13 +135,15 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
 
     @Override
     public Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to) {
+        final long now = currentTimeMillis();
         final Integer reindexBatchSize = this.parent.reindexBatchSize;
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             return toMessage(bulk, e -> {
                 final String id = getParentId(e);
                 final UserInfos user = getCreatorForModel(e);
                 final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch())
-                        .withType(getApplication(), parent.getResourceType(), getResourceType());
+                        .withType(getApplication(), parent.getResourceType(), getResourceType())
+                        .withVersion(now);
                 return mess;
             })
             .compose(messages -> {
