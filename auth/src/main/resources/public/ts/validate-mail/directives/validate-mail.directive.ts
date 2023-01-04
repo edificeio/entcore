@@ -218,6 +218,7 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 		scope.onCodeRenew = async () => {
 			angular.element(document.getElementById('btnRenew')).prop("disabled", "disabled");
 			await ctrl.renewCode();
+			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
 			scope.$apply();
 		}
 
