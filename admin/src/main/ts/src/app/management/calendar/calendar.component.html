@@ -73,7 +73,7 @@
                            [(ngModel)]="selectedGrid.name" name="gridName">
                     <input *ngIf="!isGridSelected()" type="text" class="form-control calendar-grid-name-input"
                            id="gridNameInput"
-                           i18n-placeholder="management.calendar.timetable.name" [(ngModel)]="selectedGrid.name" name="gridName">
+                           [placeholder]="'management.calendar.timetable.name' | translate" [(ngModel)]="selectedGrid.name" name="gridName">
                     <div class="is-pulled-right has-left-margin-40">
                         <button type="button" (click)="hideEditGridForm()">
                             <s5l>management.calendar.cancel</s5l>
