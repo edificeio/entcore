@@ -85,6 +85,17 @@
 		</form>
 	</lightbox>
 
+	<lightbox ng-if="display.email" show="display.email" on-close="onCloseEmailLightbox()">
+		<iframe src="/auth/validate-mail?headless=true"
+			style="height:400px;width:100%;border:none;overflow:hidden;"
+			onload="setTimeout(frame=>{
+					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
+					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
+					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
+				}, 350, this);"
+		></iframe>
+	</lightbox>
+
 
 	<article class="rigid-grid cell twelve">
 
@@ -153,11 +164,19 @@
 				<span class="flex seven flex-flow">
 					<span class="flex" style="align-items: center;">
 						<span ng-if="account.email" class="email-ellipsis">[[account.email]]</span>
+						<svg ng-if="validateMail" class="icon-verified icon-success-fill" width="16" height="16">
+							<title>Compte vérifié</title>
+							<use href="/directory/public/assets/icons/icons.svg#success-fill"></use>
+						</svg>
 					</span>
-					<a ng-click="openEditLightbox('email')">
+					<a ng-if="account.email" ng-click="display.email = true;">
 						<i18n>directory.login.update.button</i18n>
 					</a>
+					<a ng-class="{'margin-left': !account.email}" ng-if="!account.email" ng-click="display.email = true;">
+						<i18n>directory.add</i18n>
+					</a>
 				</span>
+				<div class="clear"></div>
 			</div>
 
 			<div class="profil-flex" ng-if="!hidePersonalData">
