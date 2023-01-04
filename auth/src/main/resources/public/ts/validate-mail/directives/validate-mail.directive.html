@@ -62,7 +62,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary fs-5 align-middle"
-                                ng-disabled="!formEmail.$valid || ctrl.status==='wait'">
+                                ng-disabled="!formEmail.$valid || ctrl.status==='wait' || !ctrl.emailAddress">
                             <span>
                                 <i18n>validate-mail.step1.btn</i18n>
                             </span>
