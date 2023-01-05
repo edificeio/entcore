@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.http.Renders.unauthorized;
 
 public class UserUtils {
 
@@ -536,6 +537,23 @@ public class UserUtils {
 				handler.handle(sessionToUserInfos(session));
 			}
 		});
+	}
+
+	public static Future<UserInfos> getAuthenticatedUserInfos(EventBus eb, HttpServerRequest request) {
+		final Promise<UserInfos> promise = Promise.promise();
+		getSession(eb, request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject session) {
+				final UserInfos userInfo = sessionToUserInfos(session);
+				if(userInfo == null) {
+					unauthorized(request);
+					promise.fail("user.not.found");
+				} else {
+					promise.complete(userInfo);
+				}
+			}
+		});
+		return promise.future();
 	}
 
 	public static void getUserInfos(EventBus eb, String userId,
