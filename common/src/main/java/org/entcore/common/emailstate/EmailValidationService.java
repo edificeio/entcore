@@ -17,31 +17,22 @@
  *
  */
 
-package org.entcore.directory.services;
+package org.entcore.common.emailstate;
+
+import org.entcore.common.user.UserInfos;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-public interface MailValidationService {
-
-	/** 
-	 * Check if the user has to fulfill some mandatory actions, such as :
-	 * - re/validate terms of use,
-	 * - validating his email address,
-	 * - change his passsword.
-	 * 
-	 * @param userId user ID
-	 * @return { forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean }
-	 */
-	Future<JsonObject> getMandatoryUserValidation(String userId);
+public interface EmailValidationService {
 
 	/**
 	 * Check if a user has a verified email address
 	 * @param userId user ID
 	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
 	 */
-	Future<JsonObject> hasValidMail(String userId);
+	Future<JsonObject> hasValidEmail(String userId);
 
 	/**
 	 * Start a new mail validation workflow.
@@ -49,7 +40,7 @@ public interface MailValidationService {
 	 * @param email the mail address to be checked
 	 * @return the new emailState
 	 */
-	Future<JsonObject> setPendingMail(String userId, String email, final long validDurationS, final int triesLimit);
+	Future<JsonObject> setPendingEmail(String userId, String email, final long validDurationS, final int triesLimit);
 
 	/**
 	 * Verify a pending email address of a user, by checking a code.
@@ -62,14 +53,14 @@ public interface MailValidationService {
 	 *  ttl?: number of seconds remaining before expiration of the code
 	 * }
 	 */
-	Future<JsonObject> tryValidateMail(String userId, String code);
+	Future<JsonObject> tryValidateEmail(String userId, String code);
 
 	/**
 	 * Get current mail validation state.
 	 * @param userId user ID
 	 * @return {email:string, emailState:object|null}
 	 */
-	Future<JsonObject> getMailState(String userId);
+	Future<JsonObject> getEmailState(String userId);
 
 	/**
 	 * Send the validation email.

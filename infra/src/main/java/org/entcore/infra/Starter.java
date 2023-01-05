@@ -91,6 +91,10 @@ public class Starter extends BaseServer {
 					addController(new MailController(vertx, emailConfig));
 				}
 			}
+			JsonObject emailStateConfig = config.getJsonObject("emailValidationConfig");
+			if (emailStateConfig != null) {
+				serverMap.put("emailValidationConfig", emailStateConfig.encode());
+			}
 			final JsonObject webviewConfig = config.getJsonObject("webviewConfig");
 			if (webviewConfig != null) {
 				serverMap.put("webviewConfig", webviewConfig.encode());

@@ -34,7 +34,6 @@ import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
-import org.entcore.directory.emailstate.UserValidationHandler;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
@@ -159,12 +158,6 @@ public class Directory extends BaseServer {
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
-
-		// See client class {@link EmailState}
-		vertx.eventBus().localConsumer(EmailState.BUS_ADDRESS, new UserValidationHandler(
-			config.getJsonObject("mail-state", new JsonObject()),
-			new DefaultMailValidationService(vertx, config)
-		));
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
