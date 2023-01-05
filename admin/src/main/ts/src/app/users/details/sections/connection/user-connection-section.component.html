@@ -217,17 +217,18 @@
     </fieldset>
   </form>
 
-  <form #phoneForm="ngForm">
+  <form #homePhoneForm="ngForm">
     <fieldset>
       <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" [disabled]="isForbidden" />
+          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" [disabled]="isForbidden" (ngModelChange)="isHomePhoneSaved = false" />
           <button
             type="button"
             (click)="updateHomePhone()"
             [disabled]="
-              phoneForm.pristine ||
-              phoneForm.invalid ||
+              isHomePhoneSaved ||
+              homePhoneForm.pristine ||
+              homePhoneForm.invalid ||
               isForbidden ||
               spinner.isLoading('portal-content')
             "
@@ -237,16 +238,21 @@
           </button>
         </div>
       </ode-form-field>
+    </fieldset>
+  </form>
 
+  <form #mobileForm="ngForm">
+    <fieldset>
       <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input type="tel" [(ngModel)]="details.mobile" name="mobile" [disabled]="isForbidden" />
+          <input type="tel" [(ngModel)]="details.mobile" name="mobile" [disabled]="isForbidden" (ngModelChange)="isMobileSaved = false"/>
           <button
             type="button"
             (click)="updateMobile()"
             [disabled]="
-              phoneForm.pristine ||
-              phoneForm.invalid ||
+              isMobileSaved ||
+              mobileForm.pristine ||
+              mobileForm.invalid ||
               isForbidden ||
               spinner.isLoading('portal-content')
             "

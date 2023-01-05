@@ -51,6 +51,8 @@ export class UserConnectionSectionComponent
   isAdmc: boolean = false;
   isAdml: boolean = false;
   myID: string = "";
+  isHomePhoneSaved: boolean = false;
+  isMobileSaved: boolean = false;
 
   @Input() structure: StructureModel;
   
@@ -333,52 +335,54 @@ export class UserConnectionSectionComponent
     if( this.isForbidden )
       return;
     this.spinner.perform('portal-content', this.details.updateHomePhone())
-      .then(() => {
-        this.ns.success(
-          {
-            key: 'notify.user.updatePhone.content',
-            parameters: {
-              user: this.details.firstName + ' ' + this.details.lastName
-            }
-          }, 'notify.user.updatePhone.title');
+    .then(() => {
+      this.ns.success(
+        {
+          key: 'notify.user.updatePhone.content',
+          parameters: {
+            user: this.details.firstName + ' ' + this.details.lastName
+          }
+        }, 'notify.user.updatePhone.title');
 
-        this.userInfoService.setState(this.details);
-      })
-      .catch(err => {
-        this.ns.error(
-          {
-            key: 'notify.user.updatePhone.error.content',
-            parameters: {
-              user: this.user.firstName + ' ' + this.user.lastName
-            }
-          }, 'notify.user.updatePhone.error.title', err);
-      });
+      this.userInfoService.setState(this.details);
+      this.isHomePhoneSaved = true;
+    })
+    .catch(err => {
+      this.ns.error(
+        {
+          key: 'notify.user.updatePhone.error.content',
+          parameters: {
+            user: this.user.firstName + ' ' + this.user.lastName
+          }
+        }, 'notify.user.updatePhone.error.title', err);
+    });
   }
 
   updateMobile() {
     if( this.isForbidden )
       return;
     this.spinner.perform('portal-content', this.details.updateMobile())
-      .then(() => {
-        this.ns.success(
-          {
-            key: 'notify.user.updatePhone.content',
-            parameters: {
-              user: this.details.firstName + ' ' + this.details.lastName
-            }
-          }, 'notify.user.updatePhone.title');
+    .then(() => {
+      this.ns.success(
+        {
+          key: 'notify.user.updatePhone.content',
+          parameters: {
+            user: this.details.firstName + ' ' + this.details.lastName
+          }
+        }, 'notify.user.updatePhone.title');
 
-        this.userInfoService.setState(this.details);
-      })
-      .catch(err => {
-        this.ns.error(
-          {
-            key: 'notify.user.updatePhone.error.content',
-            parameters: {
-              user: this.user.firstName + ' ' + this.user.lastName
-            }
-          }, 'notify.user.updatePhone.error.title', err);
-      });
+      this.userInfoService.setState(this.details);
+      this.isMobileSaved = true;
+    })
+    .catch(err => {
+      this.ns.error(
+        {
+          key: 'notify.user.updatePhone.error.content',
+          parameters: {
+            user: this.user.firstName + ' ' + this.user.lastName
+          }
+        }, 'notify.user.updatePhone.error.title', err);
+    });
   }
 
   updateLoginAlias() {
