@@ -172,6 +172,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
 
     openLightbox(): void {
         this.lightboxSubStructures = Object.assign([], this.message.subStructures);
+        this.items = this.getItems();
         this.showLightbox = true;
     }
 
@@ -198,14 +199,15 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             this.lightboxSubStructures = this.lightboxSubStructures.slice(0, index).concat(this.lightboxSubStructures.slice(index + 1, this.lightboxSubStructures.length));
             this.uncheckAllChildren(child.children);
         }
+        this.items = this.getItems();
     }
 
     selectAll(): void {
-        this.checkAllChildren(this.itemList);
+        this.checkAllChildren(this.items);
     }
 
     unselectAll(): void {
-        this.uncheckAllChildren(this.itemList);
+        this.uncheckAllChildren(this.items);
     }
 
     private checkAllChildren(children: StructureListItem[]) {
@@ -229,22 +231,21 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         });
     }
 
-    private getItems(): StructureListItem[] {
-        const that = this;
+    private getItems = (): Array<StructureListItem> => {
         const myMap = (child: StructureModel) => {
             return {
                 name: child.name,
                 id: child.id,
                 children: child.children && child.children.length > 0 ? child.children.map(myMap) : [],
-                check: !!that.lightboxSubStructures && !!that.lightboxSubStructures.find(subId => subId === child.id)
+                check: !!this.lightboxSubStructures && !!this.lightboxSubStructures.find(subId => subId === child.id)
             };
         };
+        
         if (this.structure && this.structure.children) {
-            this.itemList = this.structure.children.map(myMap);
-            return this.itemList;
-        } else {
-            return [];
-        }
+            return this.structure.children.map(myMap);
+        } 
+        
+        return [];
     }
 
     //
