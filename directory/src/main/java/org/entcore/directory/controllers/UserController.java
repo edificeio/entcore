@@ -916,7 +916,7 @@ public class UserController extends BaseController {
 					EmailState.setPending(eb, infos.getUserId(), payload.getString("email"))
 					.compose( pendingEmailState -> {
 						// Send the validation email to the user
-						return EmailState.sendMail(eb, request, infos, pendingEmailState);
+						return EmailState.sendEmail(eb, request, infos, pendingEmailState);
 					})
 					.onSuccess( emailId -> {
 						ok(request);

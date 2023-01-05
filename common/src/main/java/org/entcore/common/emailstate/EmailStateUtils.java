@@ -4,7 +4,7 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * Accessors for the "emailState" of a Neo4j User.
- * @see {@link org.entcore.directory.services.MailValidationService MailValidationService}
+ * @see {@link org.entcore.EmailValidationService.services.MailValidationService MailValidationService}
  */
 public class EmailStateUtils {
     static public final int OUTDATED = -1;

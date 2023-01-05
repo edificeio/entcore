@@ -469,44 +469,51 @@ public class AuthController extends BaseController {
 
 	@Get("/context")
 	public void context(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			final JsonObject context = new JsonObject();
-			context.put("callBack", config.getJsonObject("authenticationServer").getString("loginCallback"));
-			context.put("cgu", config.getBoolean("cgu", true));
-			context.put("passwordRegex", passwordPattern.toString());
-			context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
-			// Human-readable password format :
-			final I18n i18n = I18n.getInstance();
-			final JsonObject pwdFormatByLang = new JsonObject();
-			i18n.getLanguages(Renders.getHost(request))
-			.stream()
-			.map(String.class::cast)
-			.forEach( (String lang) -> {
-				if( lang != null ) {
-					try {
-						pwdFormatByLang.put(lang, i18n.translate("password.errors", Renders.getHost(request), lang));
-					} catch( Exception e ) {
-						pwdFormatByLang.put(lang, "");
-					}
+		final JsonObject context = new JsonObject();
+		context.put("callBack", config.getJsonObject("authenticationServer").getString("loginCallback"));
+		context.put("cgu", config.getBoolean("cgu", true));
+		context.put("passwordRegex", passwordPattern.toString());
+		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
+		// Human-readable password format :
+		final I18n i18n = I18n.getInstance();
+		final JsonObject pwdFormatByLang = new JsonObject();
+		i18n.getLanguages(Renders.getHost(request))
+		.stream()
+		.map(String.class::cast)
+		.forEach( (String lang) -> {
+			if( lang != null ) {
+				try {
+					pwdFormatByLang.put(lang, i18n.translate("password.errors", Renders.getHost(request), lang));
+				} catch( Exception e ) {
+					pwdFormatByLang.put(lang, "");
 				}
-			});
-			context.put("passwordRegexI18n", pwdFormatByLang);
-			// Mandatory user validations :
-			if( user != null ) {
-				EmailState.getMandatoryUserValidation(eb, user.getUserId())
+			}
+		});
+		context.put("passwordRegexI18n", pwdFormatByLang);
+		renderJson(request, context);
+	}
+
+	@Get("/user/requirements")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void userRequirements(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, session -> {
+			final JsonObject requirements = new JsonObject();
+			if( session != null ) {
+				EmailState.getMandatoryUserValidation(eb, session)
 				.onSuccess( validations -> {
 					if( validations != null ) {
-						context.getJsonObject("mandatory").mergeIn(validations);
+						requirements.mergeIn(validations);
 					}
 				})
 				.onComplete( ar -> {
 					if( ar.failed() ) {
-						log.debug("Unexpected failure during context creation");
+						notFound(request);
+					} else {
+						renderJson(request, requirements);
 					}
-					renderJson(request, context);
 				});
 			} else {
-				renderJson(request, context);
+				notFound(request, "user.not.found");
 			}
 		});
 	}

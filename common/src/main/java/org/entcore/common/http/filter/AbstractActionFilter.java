@@ -44,7 +44,7 @@ import static org.entcore.common.utils.StringUtils.isEmpty;
 public abstract class AbstractActionFilter implements Filter {
 
 	private static final List<String> allowedNotChangePwPaths =
-			Arrays.asList("/userbook/preference/language","/theme", "/auth/oauth2/userinfo", "/userbook/preference/apps");
+			Arrays.asList("/userbook/preference/language","/theme", "/auth/oauth2/userinfo", "/userbook/preference/apps", "/auth/user/requirements");
 	protected static final List<String> authorizationTypes = Arrays.asList("Basic", "Bearer");
 	protected final Set<Binding> bindings;
 	protected final ResourcesProvider provider;

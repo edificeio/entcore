@@ -40,6 +40,7 @@ import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.elasticsearch.ElasticSearch;
+import org.entcore.common.emailstate.EmailStateFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.*;
 import org.entcore.common.http.response.SecurityHookRender;
@@ -111,6 +112,9 @@ public abstract class BaseServer extends Server {
 		if (config.getBoolean("csrf-token", false)) {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
 		}
+
+		EmailStateFactory emailStateFactory = EmailStateFactory.getFactory();
+		emailStateFactory.init(vertx, config);
 
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-filter", false);

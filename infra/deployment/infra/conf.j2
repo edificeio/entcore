@@ -92,6 +92,11 @@
 		    "event-whitelist": {{ eventWhitelist|default([]) }},
             "user-blacklist": {{ usersBlacklist|default([]) }}
         },
+        "emailValidationConfig": {
+      	    "ttlInSeconds": {{ emailValidationTtl|default('600') }},
+      	    "retryNumber": {{ emailValidationRetry|default('5') }},
+      	    "waitInSeconds": {{ emailValidationWait|default('10') }}
+        },
         "node-pdf-generator" : {
             "pdf-connector-id": "exportpdf",
             "auth": "{{ nodePdfToken }}",
