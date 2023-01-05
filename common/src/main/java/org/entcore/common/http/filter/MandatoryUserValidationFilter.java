@@ -55,7 +55,8 @@ public class MandatoryUserValidationFilter implements Filter {
             return;
         }
 
-        UserUtils.getUserInfos(this.eventBus, request, userInfos -> {
+        UserUtils.getSession(this.eventBus, request, session -> {
+            final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
             if (userInfos == null) {
                 // Mandatory validations for disconnected users :
                 // - none !
@@ -71,7 +72,7 @@ public class MandatoryUserValidationFilter implements Filter {
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
                 request.pause();
-                EmailState.getMandatoryUserValidation(this.eventBus, userInfos.getUserId())
+                EmailState.getMandatoryUserValidation(this.eventBus, session)
                 .compose( validations -> {
                     return checkTermsOfUse(sreq, userInfos, validations);
                 })

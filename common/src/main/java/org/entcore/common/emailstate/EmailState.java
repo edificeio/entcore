@@ -1,10 +1,9 @@
 package org.entcore.common.emailstate;
 
+import org.entcore.common.emailstate.EmailStateFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -13,43 +12,27 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import org.entcore.common.user.UserInfos;
 
 public class EmailState {
-    static public String BUS_ADDRESS = "mail.state";
 	static public String FIELD_MUST_CHANGE_PWD     = "forceChangePassword";
 	static public String FIELD_MUST_VALIDATE_TERMS = "needRevalidateTerms";
 	static public String FIELD_MUST_VALIDATE_EMAIL = "needRevalidateEmail";
 
 	/** 
 	 * Send an email with actual validation code.
-	 * @param infos User infos
+	 * @param session
 	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
 	*/
-	static public Future<JsonObject> getMandatoryUserValidation(EventBus eb, String userId) {
-        Promise<JsonObject> promise = Promise.promise();
-		JsonObject action = new JsonObject()
-            .put("action", "get-user-validation")
-            .put("userId", userId);
-		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
-            completePromise(reply, promise);
-        }));
-        return promise.future();
+	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session) {
+		return EmailStateFactory.getInstance().getMandatoryUserValidation(session);
 	}
 
 	/**
-	 * Start a new mail validation workflow.
+	 * Start a new email validation workflow.
 	 * @param userId user ID
 	 * @param email the mail address to be checked
 	 * @return the new emailState
 	 */
-    static public Future<JsonObject> setPending(EventBus eb, String userId, String email) {
-        Promise<JsonObject> promise = Promise.promise();
-		JsonObject action = new JsonObject()
-            .put("action", "set-pending")
-            .put("userId", userId)
-            .put("email", email);
-		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
-            completePromise(reply, promise);
-        }));
-        return promise.future();
+    static public Future<JsonObject> setPending(final EventBus unused, String userId, String email) {
+		return EmailStateFactory.getInstance().setPendingEmail(userId, email);
     }
 
 	/**
@@ -57,15 +40,8 @@ public class EmailState {
 	 * @param userId user ID
 	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
 	 */
-    static public Future<JsonObject> isValid(EventBus eb, String userId) {
-        Promise<JsonObject> promise = Promise.promise();
-		JsonObject action = new JsonObject()
-            .put("action", "is-valid")
-            .put("userId", userId);
-		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
-            completePromise(reply, promise);
-        }));
-        return promise.future();
+    static public Future<JsonObject> isValid(final EventBus unused, String userId) {
+		return EmailStateFactory.getInstance().hasValidEmail(userId);
     }
 
 	/**
@@ -78,42 +54,18 @@ public class EmailState {
 	 *  ttl: number of seconds remaining before expiration of the code
 	 * }
 	 */
-    static public Future<JsonObject> tryValidate(EventBus eb, String userId, String code) {
-        Promise<JsonObject> promise = Promise.promise();
-		JsonObject action = new JsonObject()
-            .put("action", "try-validate")
-            .put("userId", userId)
-            .put("code", code);
-		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
-            completePromise(reply, promise);
-        }));
-        return promise.future();
+    static public Future<JsonObject> tryValidate(final EventBus unused, String userId, String code) {
+		return EmailStateFactory.getInstance().tryValidateEmail(userId, code);
     }
 
 	/**
-	 * Get current mail validation details.
+	 * Get current email validation details.
 	 * @param userId user ID
 	 * @return {email:string, emailState:object|null, waitInSeconds:number}
 	 */
-    static public Future<JsonObject> getDetails(EventBus eb, String userId) {
-        Promise<JsonObject> promise = Promise.promise();
-		JsonObject action = new JsonObject()
-            .put("action", "get-details")
-            .put("userId", userId);
-		eb.request(BUS_ADDRESS, action, handlerToAsyncHandler( reply -> {
-            completePromise(reply, promise);
-        }));
-        return promise.future();
+    static public Future<JsonObject> getDetails(final EventBus unused, String userId) {
+		return EmailStateFactory.getInstance().getEmailState(userId);
     }
-
-	private static void completePromise(Message<JsonObject> res, Promise<JsonObject> promise) {
-		if ("ok".equals(res.body().getString("status"))) {
-			JsonObject r = res.body().getJsonObject("result", new JsonObject());
-			promise.complete( r );
-		} else {
-			promise.fail( res.body().getString("message", "") );
-		}
-	}
 
 	/** 
 	 * Send an email with actual validation code.
@@ -122,31 +74,11 @@ public class EmailState {
 	 * @param pendingEmailState with code to send
 	 * @return email ID
 	*/
-	static public Future<Long> sendMail(EventBus eb, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
-        Promise<Long> promise = Promise.promise();
-		if( infos==null || pendingEmailState==null ) {
-			promise.complete(null);
-		} else {
-			JsonObject action = new JsonObject()
-				.put("action", "send-mail")
-				.put("userId", infos.getUserId())
-				.put("firstName", infos.getFirstName())
-				.put("lastName", infos.getLastName())
-				.put("userName", infos.getUsername())
-				.put("email", EmailStateUtils.getPending(pendingEmailState))
-				.put("emailState", pendingEmailState);
-			eb.request( BUS_ADDRESS,
-						action, 
-						new DeliveryOptions().setHeaders(request.headers()), 
-						handlerToAsyncHandler( reply -> {
-				if ("ok".equals(reply.body().getString("status"))) {
-					Long r = reply.body().getLong("result");
-					promise.complete( r );
-				} else {
-					promise.fail( reply.body().getString("message", "") );
-				}
-			}));
-		}
-        return promise.future();
+	static public Future<Long> sendEmail(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
+        return EmailStateFactory.getInstance().sendValidationEmail(
+			request, 
+			infos, 
+			pendingEmailState
+		);
 	}
 }
