@@ -51,6 +51,8 @@ export class UserConnectionSectionComponent
   isAdmc: boolean = false;
   isAdml: boolean = false;
   myID: string = "";
+  isUpdateLoginSaved: boolean = false;
+  isUpdateMailSaved: boolean = false;
   isHomePhoneSaved: boolean = false;
   isMobileSaved: boolean = false;
 
@@ -319,6 +321,7 @@ export class UserConnectionSectionComponent
           }, 'notify.user.email.title');
 
         this.userInfoService.setState(this.details);
+        this.isUpdateMailSaved = true;
       })
       .catch(err => {
         this.ns.error(
@@ -454,6 +457,7 @@ export class UserConnectionSectionComponent
             "notify.user.updateLogin.title"
           );
           this.mailForm.reset(this.details);
+          this.isUpdateLoginSaved = true;
         })
         .catch(err => {
           if (

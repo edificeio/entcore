@@ -3,7 +3,7 @@
     <div class="message-body">&nbsp;<s5l>notify.user.email.info</s5l></div>
   </div>
   
-  <form #mailForm="ngForm">
+  <form #loginForm="ngForm">
     <fieldset>
       <ode-form-field label="login">
         <span *ngIf="isAdmc == false">{{ details.login }}</span>
@@ -14,13 +14,15 @@
             name="login"
             [pattern]="loginAliasPattern"
             #loginInput="ngModel"
+            (ngModelChange)="isUpdateLoginSaved = false"
           />
           <button
             type="button"
             (click)="showChangeLoginConfirmation = true"
             [disabled]="
-              mailForm.pristine ||
-              mailForm.invalid ||
+              isUpdateLoginSaved ||
+              loginForm.pristine ||
+              loginForm.invalid ||
               spinner.isLoading('portal-content')
             "
           >
@@ -44,7 +46,11 @@
           </ode-lightbox-confirm>
         </div>
       </ode-form-field>
+    </fieldset>
+  </form>
 
+  <form #mailForm="ngForm">
+    <fieldset>
       <ode-form-field label="email">
         <div>
           <input 
@@ -54,13 +60,15 @@
             [disabled]="isForbidden || isMyAdmlAccount"
             #emailInput="ngModel" 
             [pattern]="emailPattern" 
+            (ngModelChange)="isUpdateMailSaved = false"
           />
           <ode-form-errors [control]="emailInput"></ode-form-errors>
           <button
             type="button"
             (click)="updateMail()"
             [disabled]="
-              (mailForm.pristine ||
+              (isUpdateMailSaved ||
+              mailForm.pristine ||
               mailForm.invalid ||
               spinner.isLoading('portal-content') ||
               isForbidden) 
