@@ -1553,7 +1553,13 @@ public class AuthController extends BaseController {
 									public void handle(String resetedUserId) {
 										if (resetedUserId != null) {
 											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, r -> redirectionService.redirect(request, callback));
+											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, deleted -> {
+												if (Boolean.TRUE.equals(deleted)) {
+													CookieHelper.set("oneSessionId", "", 0l, request);
+													CookieHelper.set("authenticated", "", 0l, request);
+												}
+												redirectionService.redirect(request, callback);							
+											});
 											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
 										} else {
 											trace.info("Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
