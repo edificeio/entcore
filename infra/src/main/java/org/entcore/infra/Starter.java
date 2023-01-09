@@ -134,6 +134,10 @@ public class Starter extends BaseServer {
 				serverMap.put("event-store", eventStoreConfig.encode());
 			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
+			final JsonObject metricsOptions = config.getJsonObject("metricsOptions");
+			if(metricsOptions != null) {
+				serverMap.put("metricsOptions", metricsOptions.encode());
+			}
 			//initModulesHelpers(node);
 
 			/* sharedConf sub-object */
