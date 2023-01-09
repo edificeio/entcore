@@ -1,5 +1,6 @@
 package org.entcore.common.email.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -167,7 +168,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
             separator = ", ";
         }
         query.append(") VALUES (").append(values).append(") RETURNING id");
-        transaction.preparedQuery(query.toString()).execute(tuple, r -> {
+        final Handler<AsyncResult<RowSet<Row>>> h = r -> {
             if (r.succeeded()) {
                 future.complete();
             } else {
