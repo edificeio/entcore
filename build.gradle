@@ -207,6 +207,8 @@ project(':common') {
     compile "io.vertx:vertx-pg-client:$vertxVersion"
     compile "com.ongres.scram:client:$scramClientVersion"
     compile "io.reactiverse:reactive-pg-client:$reactivePgVersion"
+    compile "io.vertx:vertx-micrometer-metrics:$micrometerMetricsVersion"
+    compile "io.micrometer:micrometer-registry-prometheus:$micrometerPrometheusVersion"
   }
 }
 
