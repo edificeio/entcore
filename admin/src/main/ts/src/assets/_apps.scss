@@ -455,7 +455,17 @@ i.dashboard {
 i.library,
 i.library-large {
   @include fonticon;
-  &::before {content: "\e94c";}
+  &::before {content: "\e94c"; color: $yellow;}
+}
+
+i.forms-large,
+i.type.forms,
+i.forms,
+i.formulaire-large,
+i.type.formulaire,
+i.formulaire {
+  @include fonticon;
+  &::before {content: "\e95b"; color: $purple;}
 }
 
 i.visioconf,
