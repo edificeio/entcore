@@ -25,6 +25,19 @@ i.absences::before {
   color: $red;
 }
 
+i.presences-large,
+i.type.presences,
+i.presences {
+  @include fonticon;
+}
+
+i.presences-large::before,
+i.type.presences::before,
+i.presences::before {
+  content: "\e95d";
+  color: $yellow;
+}
+
 //  CONNECTORS
 i.esidoc-large,
 i.type.esidoc,
