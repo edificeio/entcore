@@ -81,8 +81,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-					.setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)) // unit seconds
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+					.setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)); // unit seconds
 				final PoolOptions poolOptions = new PoolOptions()
 						.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
 				if (!SslMode.DISABLE.equals(sslMode)) {
