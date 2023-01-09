@@ -129,8 +129,7 @@ public class NewDeviceWarningTask implements Handler<Long>
 					.setDatabase(eventStorePGConfig.getString("database"))
 					.setUser(eventStorePGConfig.getString("user"))
 					.setPassword(eventStorePGConfig.getString("password"))
-                    .setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)) // unit seconds
-					.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+                    .setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)); // unit seconds
                 final PoolOptions poolOptions = new PoolOptions()
                         .setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
                 if (!SslMode.DISABLE.equals(sslMode)) {
@@ -149,9 +148,9 @@ public class NewDeviceWarningTask implements Handler<Long>
 					.setHost(eventStoreSlavePGConfig.getString("host"))
 					.setDatabase(eventStoreSlavePGConfig.getString("database"))
 					.setUser(eventStoreSlavePGConfig.getString("user"))
-					.setPassword(eventStoreSlavePGConfig.getString("password"));
+					.setPassword(eventStoreSlavePGConfig.getString("password"))
+                    .setIdleTimeout(eventStoreSlavePGConfig.getInteger("idle-timeout", 300)); // unit seconds
                 final PoolOptions poolOptions = new PoolOptions()
-                        .setIdleTimeout(eventStoreSlavePGConfig.getInteger("idle-timeout", 300)) // unit seconds
 					.setMaxSize(eventStoreSlavePGConfig.getInteger("pool-size", 5));
                 if (!SslMode.DISABLE.equals(sslMode)) {
                     options
