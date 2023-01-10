@@ -938,8 +938,11 @@ public class UserController extends BaseController {
 			UserUtils.getUserInfos(eb, request, infos -> {
 				if (infos != null) {
 					// Try a validation code
-					EmailState.tryValidate(eb, infos.getUserId(), payload.getString("key"))
+					final String userId = infos.getUserId();
+					EmailState.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( emailState -> {
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 						renderJson( request, emailState );
 					})
 					.onFailure( e -> {
