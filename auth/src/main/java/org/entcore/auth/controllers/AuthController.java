@@ -499,7 +499,7 @@ public class AuthController extends BaseController {
 		UserUtils.getSession(eb, request, session -> {
 			final JsonObject requirements = new JsonObject();
 			if( session != null ) {
-				EmailState.getMandatoryUserValidation(eb, session)
+				EmailState.getMandatoryUserValidation(eb, session, true)
 				.onSuccess( validations -> {
 					if( validations != null ) {
 						requirements.mergeIn(validations);

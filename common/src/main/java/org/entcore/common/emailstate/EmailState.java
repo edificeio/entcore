@@ -17,12 +17,30 @@ public class EmailState {
 	static public String FIELD_MUST_VALIDATE_EMAIL = "needRevalidateEmail";
 
 	/** 
-	 * Send an email with actual validation code.
+	 * Check if the user has to fulfill some mandatory actions, such as :
+	 * - re/validate terms of use,
+	 * - validating his email address,
+	 * - change his passsword.
+	 * 
 	 * @param session
 	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
 	*/
 	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session) {
-		return EmailStateFactory.getInstance().getMandatoryUserValidation(session);
+		return getMandatoryUserValidation(unused, session, false);
+	}
+
+	/** 
+	 * Check if the user has to fulfill some mandatory actions, such as :
+	 * - re/validate terms of use,
+	 * - validating his email address,
+	 * - change his passsword.
+	 * 
+	 * @param session
+	 * @param force When truthy, read fresh data from the DB instead of the session. WARNING: performance loss.
+	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
+	*/
+	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session, final boolean forced) {
+		return EmailStateFactory.getInstance().getMandatoryUserValidation(session, forced);
 	}
 
 	/**
