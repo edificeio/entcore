@@ -30,6 +30,7 @@ import java.util.Map;
  */
 public class MandatoryUserValidationFilter implements Filter {
     private final EventBus eventBus;
+    private final boolean emailValidationActive;
     
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
@@ -43,8 +44,9 @@ public class MandatoryUserValidationFilter implements Filter {
 
     private final static String REDIRECT_TO_KEY = "MandatoryUserValidationFilterRedirectsTo";
 
-    public MandatoryUserValidationFilter(EventBus eventBus) {
+    public MandatoryUserValidationFilter(EventBus eventBus, boolean emailValidationActive) {
         this.eventBus = eventBus;
+        this.emailValidationActive = emailValidationActive;
     }
 
     @Override
@@ -130,7 +132,7 @@ public class MandatoryUserValidationFilter implements Filter {
                 isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url => OK
                    && !request.path().contains("mon-compte") // OK but these restrictions
                    && !request.path().contains("annuaire")   // OK but these restrictions
-            )
+            ) || (!this.emailValidationActive)
         ) {
             return Future.succeededFuture(validations);
         }
