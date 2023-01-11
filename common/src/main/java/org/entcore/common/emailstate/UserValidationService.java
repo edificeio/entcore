@@ -36,11 +36,12 @@ public interface UserValidationService {
 	 * @param session
 	 * @return { forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean }
 	 */
-	Future<JsonObject> getMandatoryUserValidation(final JsonObject session);
+	Future<JsonObject> getMandatoryUserValidation(final JsonObject session, final boolean forced);
 
 	/**
 	 * Check if a user has a verified email address
 	 * @param userId user ID
+	 * @param force When truthy, read fresh data from the DB instead of the session. WARNING: performance loss.
 	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
 	 */
 	Future<JsonObject> hasValidEmail(String userId);
