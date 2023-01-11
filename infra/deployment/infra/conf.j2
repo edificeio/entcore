@@ -93,6 +93,7 @@
             "user-blacklist": {{ usersBlacklist|default([]) }}
         },
         "emailValidationConfig": {
+            "active": {{ emailValidationActive | default('true') }},
       	    "ttlInSeconds": {{ emailValidationTtl|default('600') }},
       	    "retryNumber": {{ emailValidationRetry|default('5') }},
       	    "waitInSeconds": {{ emailValidationWait|default('10') }}
