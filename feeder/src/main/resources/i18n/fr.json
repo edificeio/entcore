@@ -55,7 +55,6 @@
   "bad.columns.number" : "Mauvais nombre de colonnes à la ligne {0}.",
   "missing.student.soft" : "Ligne {0} : le parent {2} {3} référence un élève non retrouvé.",
   "email.hi": "Bonjour,",
-  "email.signature" : "Cordialement,",
   "remote.user.update.login.mail": "Mise à jour de votre identifiant sur l'ENT",
   "report.Teacher.ignored" : "Enseignants ignorés",
   "report.Personnel.ignored" : "Personnels ignorés",
