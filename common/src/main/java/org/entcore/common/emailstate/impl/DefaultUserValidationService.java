@@ -51,14 +51,15 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	/** 
 	 * @return {
-	 * 	forceChangePassword: true|false
+	 * 	forceChangePassword: true|false,
+     *  needRevalidateTerms: true|false
 	 * }
 	 */
-	private Future<JsonObject> retrieveNeedChangePassword(String userId) {
+	private Future<JsonObject> retrieveUncachedData(String userId) {
 		final Promise<JsonObject> promise = Promise.promise();
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"RETURN COALESCE(u.changePw, FALSE) as forceChangePassword ";
+				"RETURN COALESCE(u.changePw, FALSE) as forceChangePassword, COALESCE(u.needRevalidateTerms, FALSE) as needRevalidateTerms ";
 		JsonObject params = new JsonObject().put("id", userId);
 		neo.execute(query, params, m -> {
 			Either<String, JsonObject> r = validUniqueResult(m);
@@ -87,42 +88,45 @@ public class DefaultUserValidationService implements UserValidationService {
             //---
             promise.complete( required );
         } else {
+            // Default data
             Future<JsonObject> checkedValidations = Future.succeededFuture(required);
 
-            // force change password ?
-            //---
             if( session != null ) {
-                // 2023-01-11 Temporary dirty fix : 
-                // forceChangePassword is retrieved from the session (see above), but may be cached and outdated.
+                // Fresh data
+                // #WB-1023 + #WB-1541 : Temporary dirty fix
+                // forceChangePassword and needRevalidateTerms are retrieved from the session (see above), but may be cached and outdated.
                 // Until session cache management is improved, when forced, read the value from the DB directly.
                 checkedValidations = forced 
-                    ? retrieveNeedChangePassword(userInfos.getUserId())
+                    ? retrieveUncachedData(userInfos.getUserId())
                     : Future.succeededFuture(session);
             }
 
-            checkedValidations.onComplete( checkPw -> {
-                if( checkPw.succeeded() ) {
-                    JsonObject pw = checkPw.result();
-                    required.put(FIELD_MUST_CHANGE_PWD, getOrElse(pw.getBoolean("forceChangePassword"), false));
-                }
-
-                // Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
-                //---
-                boolean needRevalidateTerms = false;
-                //check whether user has validate terms in current session
-                final Object needRevalidateTermsFromSession = userInfos.getAttribute(NEED_REVALIDATE_TERMS);
-                if (needRevalidateTermsFromSession != null) {
-                    needRevalidateTerms = Boolean.valueOf(needRevalidateTermsFromSession.toString());
-                } else {
-                    //check whether he has validated previously
-                    final Map<String, Object> otherProperties = userInfos.getOtherProperties();
-                    if (otherProperties != null && otherProperties.get(NEED_REVALIDATE_TERMS) != null) {
-                        needRevalidateTerms = (Boolean) otherProperties.get(NEED_REVALIDATE_TERMS);
+            checkedValidations.onComplete( dataReading -> {
+                if( dataReading.succeeded() ) {
+                    JsonObject data = dataReading.result();
+                    required.put(FIELD_MUST_CHANGE_PWD, getOrElse(data.getBoolean("forceChangePassword"), false));
+                    required.put(FIELD_MUST_VALIDATE_TERMS, getOrElse(data.getBoolean("needRevalidateTerms"), false));
+                } 
+                
+                if( dataReading.failed() || !forced ) {
+                    // Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
+                    //---
+                    boolean needRevalidateTerms = false;
+                    //check whether user has validate terms in current session
+                    final Object needRevalidateTermsFromSession = userInfos.getAttribute(NEED_REVALIDATE_TERMS);
+                    if (needRevalidateTermsFromSession != null) {
+                        needRevalidateTerms = Boolean.valueOf(needRevalidateTermsFromSession.toString());
                     } else {
-                        needRevalidateTerms = true;
+                        //check whether he has validated previously
+                        final Map<String, Object> otherProperties = userInfos.getOtherProperties();
+                        if (otherProperties != null && otherProperties.get(NEED_REVALIDATE_TERMS) != null) {
+                            needRevalidateTerms = (Boolean) otherProperties.get(NEED_REVALIDATE_TERMS);
+                        } else {
+                            needRevalidateTerms = true;
+                        }
                     }
+                    required.put(FIELD_MUST_VALIDATE_TERMS, needRevalidateTerms);
                 }
-                required.put(FIELD_MUST_VALIDATE_TERMS, needRevalidateTerms);
                 
                 // As of 2022-11-23, only ADMLs are required to validate their email address (if not done already).
                 //---
