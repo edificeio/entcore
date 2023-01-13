@@ -92,8 +92,9 @@ export class UserDetailsComponent
       this.usersStore.$onchange.subscribe(field => {
         if (field === "user") {
           if (
-            this.user !== this.usersStore.user ||
-            this.structure !== this.usersStore.structure
+            this.usersStore.user.userDetails.login // ensure userDetails are loaded before updating childen view
+            && (this.user !== this.usersStore.user ||
+            this.structure !== this.usersStore.structure)
           ) {
             this.structure = this.usersStore.structure;
             this.user = this.usersStore.user;
