@@ -402,7 +402,7 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 			.put("timeline.mail.text.color", "color: #fff;")
 			.put("timeline.mail.header.bg", "background-color: #209DCC;")
 			.put("timeline.mail.header.bgcolor", "#209DCC")
-			.put("timeline.mail.main.text.color", "color: #fff;")
+			.put("timeline.mail.main.text.color", "color: #000;")
 			.put("timeline.mail.footer.color", "color: #999;")
 		);
 		return themeKVs;
