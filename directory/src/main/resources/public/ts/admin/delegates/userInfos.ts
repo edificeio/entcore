@@ -302,7 +302,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         return angular.element("input[type=\"tel\"][name=\"mobile\"]").hasClass('ng-valid');
     }
     $scope.isForbidden = function() {
-        if( Me.session.functions.ADMIN_LOCAL 
+        if( !Me.session.functions.SUPER_ADMIN 
             && $scope.selectedUser && $scope.selectedUser.lockedEmail
             && $scope.selectedUser.id != Me.session.userId ) {
             return true;
