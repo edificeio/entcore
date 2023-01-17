@@ -137,14 +137,35 @@
               (onClose)="detailLightboxDisplayed = false">
     <p>
         <b>
-            <s5l>management.zimbra.return.tab.object</s5l>
+            <s5l>management.zimbra.return.detail.sender</s5l>
+        </b>
+        <br>
+        {{returnedMail.user_name}} ({{returnedMail.user_id}})
+    </p>
+    <p>
+        <b>
+            <s5l>management.zimbra.return.detail.object</s5l>
         </b>
         <br>
         {{returnedMail.object}}
     </p>
     <p>
         <b>
-            <s5l>management.zimbra.return.tab.comment</s5l>
+            <s5l>management.zimbra.return.detail.sentOn</s5l>
+        </b>
+        <br>
+        {{returnedMail.date | date: 'dd/MM/yyyy HH:mm:ss'}}
+    </p>
+    <p>
+        <b>
+            <s5l>management.zimbra.return.detail.totalMessages</s5l>
+        </b>
+        <br>
+        {{returnedMail.number_message}}
+    </p>
+    <p>
+        <b>
+            <s5l>management.zimbra.return.detail.comment</s5l>
         </b>
         <br>
         {{returnedMail.comment}}
