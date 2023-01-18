@@ -53,4 +53,5 @@ public interface RepositoryEvents {
 
 	default void tenantsStructuresUpdated(JsonArray addedTenantsStructures, JsonArray deletedTenantsStructures) {}
 
+	default void timetableImported(String uai) {}
 }

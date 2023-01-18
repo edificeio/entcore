@@ -26,6 +26,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.storage.Storage;
+import org.entcore.feeder.Feeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.users.PersEducNat;
@@ -215,6 +216,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, Map<String, EducNatPerson>> teachersTeachesBySubject = new HashMap<String, Map<String, EducNatPerson>>();
 
 	protected PersEducNat persEducNat;
+	private EventBus eb;
 	protected TransactionHelper txXDT;
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private final AtomicInteger countMongoQueries = new AtomicInteger(0);
@@ -231,6 +233,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 										boolean authorizeUserCreation, boolean isManualImport, boolean authorizeUpdateGroups, boolean authoriseUpdateTimetable,
 										Long forceTimestamp)
 	{
+		this.eb = vertx.eventBus();
 		this.storage = storage;
 		UAI = uai;
 		this.basePath = path;
@@ -807,6 +810,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 					@Override
 					public void handle(AsyncResult<Report> report)
 					{
+						eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+								.put("action", "timetable-import")
+								.put("UAI", UAI));
 						ttReport.end();
 						ttReport.persist(new Handler<String>()
 						{

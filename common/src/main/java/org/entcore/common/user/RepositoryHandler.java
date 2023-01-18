@@ -158,6 +158,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				final JsonArray deletedTenantsStructures = message.body().getJsonArray("deleted", new JsonArray());
 				repositoryEvents.tenantsStructuresUpdated(addedTenantsStructures, deletedTenantsStructures);
 				break;
+			case "timetable-import":
+				final String uai = message.body().getString("UAI");
+				repositoryEvents.timetableImported(uai);
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));
