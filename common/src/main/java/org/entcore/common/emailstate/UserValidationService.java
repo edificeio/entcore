@@ -27,6 +27,19 @@ import io.vertx.core.json.JsonObject;
 
 public interface UserValidationService {
 
+	/**
+	 * Get the current user MFA status.
+	 * @return truthy when the user should perform a MFA to access protected zones.
+	 */
+	Future<Boolean> getMFA();
+
+	/**
+	 * Set the current user MFA status.
+	 * @param status the new status
+	 * @return an async future.
+	 */
+	Future<Boolean> setMFA(final boolean status);
+
 	/** 
 	 * Check if the user has to fulfill some mandatory actions, such as :
 	 * - re/validate terms of use,
@@ -34,9 +47,64 @@ public interface UserValidationService {
 	 * - change his passsword.
 	 * 
 	 * @param session
-	 * @return { forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean }
+	 * @param forced When truthy, read fresh data from the DB instead of the session. WARNING: performance loss.
+	 * @return { 
+	 * 	forceChangePassword: boolean, 
+	 *  needRevalidateTerms: boolean, 
+	 *  needRevalidateEmail: boolean,
+	 *  needMFA: boolean
+	 * }
 	 */
 	Future<JsonObject> getMandatoryUserValidation(final JsonObject session, final boolean forced);
+
+	//////////////// Mobile-related methods ////////////////
+
+	/**
+	 * Check if a user has a verified mobile phone
+	 * @param userId user ID
+	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
+	 */
+	Future<JsonObject> hasValidMobile(String userId);
+
+	/**
+	 * Start a new mail validation workflow.
+	 * @param userId user ID
+	 * @param mobile the mobile phone number to be checked
+	 * @return the new mobileState
+	 */
+	Future<JsonObject> setPendingMobile(String userId, String mobile);
+
+	/**
+	 * Verify the pending mobile phone number of a user, by checking a code.
+	 * @param userId user ID
+	 * @param code validation code to check
+	 * @return a mobileState like { 
+	 * 	state: "unchecked"|"pending"|"outdated"|"valid", 
+	 *  valid: latest known valid mobile phone number,
+	 * 	tries?: number of remaining retries,
+	 *  ttl?: number of seconds remaining before expiration of the code
+	 * }
+	 */
+	Future<JsonObject> tryValidateMobile(String userId, String code);
+
+	/**
+	 * Get current mobile validation state.
+	 * @param userId user ID
+	 * @return {mobile:string, mobileState:object|null}
+	 */
+	Future<JsonObject> getMobileState(String userId);
+
+	/**
+	 * Send the SMS.
+	 * @param request required to translate things...
+	 * @param infos
+	 * @param mobileState
+	 * @return the SMS ID
+	 */
+	Future<Long> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState);
+
+	
+	//////////////// Email-related methods ////////////////
 
 	/**
 	 * Check if a user has a verified email address

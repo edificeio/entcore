@@ -72,6 +72,15 @@ public class DefaultUserValidationService implements UserValidationService {
 		return promise.future();
     }
 
+    @Override
+	public Future<Boolean> getMFA() {
+        return Future.failedFuture("not implemented yet");
+    }
+
+    @Override
+	public Future<Boolean> setMFA(final boolean status) {
+        return Future.failedFuture("not implemented yet");
+    }
 
     @Override
     public Future<JsonObject> getMandatoryUserValidation(final JsonObject session, final boolean forced) {
@@ -147,6 +156,35 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 		return promise.future();
     }
+
+    //////////////// Mobile-related methods ////////////////
+
+	@Override
+	public Future<JsonObject> hasValidMobile(String userId) {
+        return Future.failedFuture("not implemented yet");
+    }
+
+	@Override
+	public Future<JsonObject> setPendingMobile(String userId, String mobile) {
+        return Future.failedFuture("not implemented yet");
+    }
+
+	@Override
+	public Future<JsonObject> tryValidateMobile(String userId, String code) {
+        return Future.failedFuture("not implemented yet");
+    }
+
+	@Override
+	public Future<JsonObject> getMobileState(String userId) {
+        return Future.failedFuture("not implemented yet");
+    }
+
+	@Override
+	public Future<Long> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState) {
+        return Future.failedFuture("not implemented yet");
+    }    
+
+    //////////////// Email-related methods ////////////////
 
 	@Override
     public Future<JsonObject> hasValidEmail(String userId) {
