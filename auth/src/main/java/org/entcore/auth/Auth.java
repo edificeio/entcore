@@ -34,6 +34,7 @@ import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.security.SamlValidator;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
@@ -68,6 +69,8 @@ public class Auth extends BaseServer {
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
+
+		final MfaService mfaService = new DefaultMfaService(vertx, config.getJsonObject("mfaConfig", new JsonObject()));
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
