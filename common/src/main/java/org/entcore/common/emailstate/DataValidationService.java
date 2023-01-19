@@ -25,49 +25,49 @@ import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-public interface EmailValidationService {
+public interface DataValidationService {
 
 	/**
-	 * Check if a user has a verified email address
+	 * Retrieve the data valid state.
 	 * @param userId user ID
-	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
+	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid data }
 	 */
-	Future<JsonObject> hasValidEmail(String userId);
+	Future<JsonObject> hasValid(String userId);
 
 	/**
-	 * Start a new mail validation workflow.
+	 * Start a data validation workflow.
 	 * @param userId user ID
-	 * @param email the mail address to be checked
-	 * @return the new emailState
+	 * @param data the value to be checked
+	 * @return the new state
 	 */
-	Future<JsonObject> setPendingEmail(String userId, String email, final long validDurationS, final int triesLimit);
+	Future<JsonObject> startUpdate(String userId, String data, final long validDurationS, final int triesLimit);
 
 	/**
-	 * Verify a pending email address of a user, by checking a code.
+	 * Try to validate a data in pending state, by checking a code.
 	 * @param userId user ID
 	 * @param code validation code to check
-	 * @return an emailState like { 
+	 * @return a dataState like { 
 	 * 	state: "unchecked"|"pending"|"outdated"|"valid", 
-	 *  valid: latest known valid email address,
+	 *  valid: latest known valid email address or mobile phone number,
 	 * 	tries?: number of remaining retries,
 	 *  ttl?: number of seconds remaining before expiration of the code
 	 * }
 	 */
-	Future<JsonObject> tryValidateEmail(String userId, String code);
+	Future<JsonObject> tryValidate(String userId, String code);
 
 	/**
-	 * Get current mail validation state.
+	 * Retrieve the current validation state.
 	 * @param userId user ID
-	 * @return {email:string, emailState:object|null}
+	 * @return {value:string, state:object|null}
 	 */
-	Future<JsonObject> getEmailState(String userId);
+	Future<JsonObject> getCurrentState(String userId);
 
 	/**
 	 * Send the validation email.
-	 * @param request required for EmailSender to translate things...
-	 * @param email address where to send
+	 * @param request required to translate things...
+	 * @param target address where to send
 	 * @param templateParams for the "email/emailValidationCode.html" template
 	 * @return the email ID
 	 */
-	Future<Long> sendValidationEmail(HttpServerRequest request, String email, JsonObject templateParams);
+	Future<Long> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams);
 }
