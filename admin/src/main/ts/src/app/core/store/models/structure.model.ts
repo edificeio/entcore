@@ -33,6 +33,7 @@ export class StructureModel extends Model<StructureModel> {
     hasApp?: boolean;
     manualName?: boolean;
     feederName?: string;
+    ignoreMFA?: boolean;
 
     constructor() {
         super({});
