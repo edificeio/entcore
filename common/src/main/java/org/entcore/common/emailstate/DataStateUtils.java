@@ -3,10 +3,9 @@ package org.entcore.common.emailstate;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Accessors for the "emailState" of a Neo4j User.
- * @see {@link org.entcore.EmailValidationService.services.MailValidationService MailValidationService}
+ * Accessors for the "emailState" or "mobileState" fields of a Neo4j User.
  */
-public class EmailStateUtils {
+public class DataStateUtils {
     static public final int OUTDATED = -1;
     static public final int UNCHECKED = 0;
     static public final int PENDING = 1;
@@ -19,14 +18,12 @@ public class EmailStateUtils {
     static private final String TTL_FIELD="ttl";
     static private final String TRIES_FIELD="tries";
 
-    /** Email field state */
     static public int getState(final JsonObject json) {
         return json==null ? UNCHECKED : json.getInteger(STATE_FIELD, UNCHECKED);
     }
     static public void setState(final JsonObject json, final int state) {
         json.put(STATE_FIELD, state);
     }
-    /** Last known valid email address, or empty string */
     static public String getValid(final JsonObject json) {
         return json==null ? "" : json.getString(VALID_FIELD, "");
     }
@@ -37,7 +34,6 @@ public class EmailStateUtils {
             json.put(VALID_FIELD, validMail);
         }
     }
-    /** Email address to check */
     static public String getPending(final JsonObject json) {
         return json==null ? null : json.getString(PENDING_FIELD);
     }
@@ -101,15 +97,15 @@ public class EmailStateUtils {
      * - key (removed),
      * - state (formatted as string),
      * - ttl (optional field, converted to seconds remaining before state becomes outdated)
-     * @param emailState not usable anymore with EmailStateUtils after this call.
+     * @param dataState a "state" object not usable anymore with EmailStateUtils after this call.
      */
-    static public void formatAsResponse(final JsonObject emailState) {
-        if( emailState != null ) {
-            emailState.remove(KEY_FIELD);
-            emailState.put(STATE_FIELD, stateToString(getState(emailState)));
-            Long ttl = getTtl(emailState);
+    static public void formatAsResponse(final JsonObject dataState) {
+        if( dataState != null ) {
+            dataState.remove(KEY_FIELD);
+            dataState.put(STATE_FIELD, stateToString(getState(dataState)));
+            Long ttl = getTtl(dataState);
             if( ttl!=null ) {
-                emailState.put(TTL_FIELD, ttlToRemainingSeconds(ttl.longValue()) );
+                dataState.put(TTL_FIELD, ttlToRemainingSeconds(ttl.longValue()) );
             }
         }
     }
