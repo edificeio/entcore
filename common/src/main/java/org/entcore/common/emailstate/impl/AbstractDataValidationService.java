@@ -22,16 +22,14 @@ package org.entcore.common.emailstate.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
-import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.CookieHelper;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import static org.entcore.common.user.SessionAttributes.*;
-import static org.entcore.common.emailstate.EmailStateUtils.*;
+import static org.entcore.common.emailstate.DataStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -47,9 +45,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.email.EmailFactory;
-import org.entcore.common.emailstate.EmailStateUtils;
+import org.entcore.common.emailstate.DataStateUtils;
+import org.entcore.common.emailstate.DataValidationService;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.emailstate.EmailValidationService;
 
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
@@ -64,34 +62,36 @@ import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-public class DefaultEmailValidationService extends Renders implements EmailValidationService {
+public abstract class AbstractDataValidationService extends Renders implements DataValidationService {
 	private final Neo4j neo = Neo4j.getInstance();
-	private EmailSender emailSender = null;
-	Map<String, JsonObject> requestThemeKV = null;
+	private final String field;
+	private final String stateField;
+	protected Map<String, JsonObject> requestThemeKV = null;
 
-	public DefaultEmailValidationService(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+	protected AbstractDataValidationService(final String field, io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
 		super(vertx, config);
-		emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
+		this.field = field;
+		this.stateField = field+"State";
 	}
 
 	/** 
 	 * @return {
-	 * 	email: String|null, emailState: JsonObject|null,
+	 * 	field: String|null, stateField: JsonObject|null,
 	 *  firstName:string, lastName:string, displayName:string
 	 * }
 	 */
-	private Future<JsonObject> retrieveFullEmailState(String userId) {
+	protected Future<JsonObject> retrieveFullState(String userId) {
 		final Promise<JsonObject> promise = Promise.promise();
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"RETURN COALESCE(u.email, null) as email, COALESCE(u.emailState, null) as emailState, " + 
+				"RETURN COALESCE(u."+field+", null) as "+field+", COALESCE(u."+stateField+", null) as "+stateField+", " + 
 					   "u.firstName as firstName, u.lastName as lastName, u.displayName as displayName ";
 		JsonObject params = new JsonObject().put("id", userId);
 		neo.execute(query, params, m -> {
 			Either<String, JsonObject> r = validUniqueResult(m);
 			if (r.isRight()) {
 				final JsonObject result = r.right().getValue();
-				result.put("emailState", fromRaw(result.getString("emailState")));
+				result.put(stateField, fromRaw(result.getString(stateField)));
 				promise.complete( result );
 			} else {
 				promise.fail(r.left().getValue());
@@ -101,26 +101,27 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 	}
 
 	/**
-	 * @return emailState
+	 * @return updated state
 	 */
-	private Future<JsonObject> updateMailState(String userId, final JsonObject emailState) {
+	protected Future<JsonObject> updateState(String userId, final JsonObject state) {
 		final Promise<JsonObject> promise = Promise.promise();
 		StringBuilder query = new StringBuilder(
 			"MATCH (u:`User` { id : {id}}) " +
-			"SET u.emailState = {state} "
+			"SET u."+stateField+" = {state} "
 		);
 		JsonObject params = new JsonObject()
 			.put("id", userId)
-			.put("state", toRaw(emailState));
-		if( EmailStateUtils.getState(emailState) == EmailStateUtils.VALID 
-				&& !StringUtils.isEmpty(EmailStateUtils.getValid(emailState)) ) {
-			query.append(", u.email = {email}, u.emailSearchField = LOWER({email}) ");
-			params.put("email", EmailStateUtils.getValid(emailState));
+			.put("state", toRaw(state));
+		if( DataStateUtils.getState(state) == DataStateUtils.VALID 
+				&& !StringUtils.isEmpty(DataStateUtils.getValid(state)) ) {
+			// We are going to update a user's session data => TODO propagate it
+			query.append(", u."+field+" = {value} ");
+			params.put("value", DataStateUtils.getValid(state));
 		}
 		neo.execute(query.toString(), params, m -> {
 			Either<String, JsonObject> r = validEmpty(m);
 			if (r.isRight()) {
-				promise.complete(emailState);
+				promise.complete(state);
 			} else {
 				promise.fail(r.left().getValue());
 			}
@@ -129,35 +130,33 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 	}
 
     /**
-     * Since Neo4j does not allow JSON objects to be node properties,
-     * User.emailState is stored as a JSON string
+     * Since Neo4j does not allow JSON objects to be node properties, stateField is stored as a JSON string
 	 * => serialize it
-     * @param emailState as JSON object
-     * @return emailState as JSON string
+     * @param state as JSON object
+     * @return state as JSON string
      */
-    private String toRaw(final JsonObject emailState) {
-        if( emailState==null ) return null;
-        return emailState.encode();
+    protected String toRaw(final JsonObject state) {
+        if( state==null ) return null;
+        return state.encode();
     }
 
     /**
-     * Since Neo4j does not allow JSON objects to be node properties,
-     * User.emailState is stored as a JSON string
+     * Since Neo4j does not allow JSON objects to be node properties, stateField is stored as a JSON string
 	 * => deserialize it
-     * @param emailState as JSON string
-     * @return emailState as JSON object
+     * @param state as JSON string
+     * @return state as JSON object
      */
-    private JsonObject fromRaw(final String emailState) {
-        if( emailState==null ) return null;
-        return new JsonObject(emailState);
+    protected JsonObject fromRaw(final String state) {
+        if( state==null ) return null;
+        return new JsonObject(state);
     }
 
 	/** Generate a pseudo-random code of 6 digits length. */
-	private String generateRandomCode() {
+	protected String generateRandomCode() {
 		return String.format("%06d", Math.round(Math.random()*999999D));
 	}
 
-	private JsonObject formatAsResponse(final int state, final String valid, final Integer tries, final Long ttl) {
+	protected JsonObject formatAsResponse(final int state, final String valid, final Integer tries, final Long ttl) {
 		final JsonObject o = new JsonObject()
 		.put("state", stateToString(state))
 		.put("valid", (valid!=null) ? valid : "");
@@ -169,109 +168,109 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 	}
 
 	@Override
-	public Future<JsonObject> setPendingEmail(String userId, String email, final long validDurationS, final int triesLimit) {
-		return retrieveFullEmailState(userId)
+	public Future<JsonObject> startUpdate(String userId, String value, final long validDurationS, final int triesLimit) {
+		return retrieveFullState(userId)
 		.compose( j -> {
-			// Reset the mailState to a pending state
-			final JsonObject originalState = j.getJsonObject("emailState", new JsonObject());
+			// Reset the stateField to a pending state
+			final JsonObject originalState = j.getJsonObject("state", new JsonObject());
 			setState(originalState, PENDING);
 			// Valid mail must stay unchanged if not null, otherwise initialize to an empty string.
 			if( getValid(originalState) == null ) {
 				setValid(originalState, "");
 			}
-			setPending(originalState, email);
+			setPending(originalState, value);
 			setKey(originalState, generateRandomCode());
 			setTtl(originalState, System.currentTimeMillis() + validDurationS * 1000l);
 			setTries(originalState, triesLimit);
 
-			return updateMailState(userId, originalState);
+			return updateState(userId, originalState);
 		});
 	}
 
 	@Override
-	public Future<JsonObject> hasValidEmail(String userId) {
-		return retrieveFullEmailState(userId)
+	public Future<JsonObject> hasValid(String userId) {
+		return retrieveFullState(userId)
 		.map( j -> {
 			Integer state = null;
-			String email = j.getString("email");
-			JsonObject emailState = j.getJsonObject("emailState");
+			String value = j.getString(field);
+			JsonObject valueState = j.getJsonObject(stateField);
 
-			if (StringUtils.isEmpty(email) || emailState == null) {
+			if (StringUtils.isEmpty(value) || valueState == null) {
 				state = UNCHECKED;
-			} else if( !email.equalsIgnoreCase( getValid(emailState) )) {
-				// Case where the email was first validated and then changed.
-				state = getState(emailState);
+			} else if( !value.equalsIgnoreCase( getValid(valueState) )) {
+				// Case where the field was first validated and then changed.
+				state = getState(valueState);
 				if( state == VALID ) {
 					state = UNCHECKED;
 				}
 			} else {
-				// If email===valid, then state must be valid
-				state = VALID; // /!\ do not replace by   state = getState(emailState); /!\
+				// If mobile===valid, then state must be valid
+				state = VALID; // /!\ do not replace by   state = getState(valueState); /!\
 			}
-			return formatAsResponse(state, getValid(emailState), null, null);
+			return formatAsResponse(state, getValid(valueState), null, null);
 		});
 	}
 
 	@Override
-	public Future<JsonObject> tryValidateEmail(String userId, String code) {
-		return retrieveFullEmailState(userId)
+	public Future<JsonObject> tryValidate(String userId, String code) {
+		return retrieveFullState(userId)
 		.compose( j -> {
-			JsonObject emailState = j.getJsonObject("emailState");
+			JsonObject state = j.getJsonObject(stateField);
 
 			// Check business rules
 			do {
-				if( emailState == null ) {
+				if( state == null ) {
 					// Unexpected data, should never happen
-					emailState = new JsonObject();
-					j.put("emailState", emailState);
-					setState(emailState, OUTDATED);
+					state = new JsonObject();
+					j.put(stateField, state);
+					setState(state, OUTDATED);
 					break;
 				}
 				// if TTL or max tries reached don't check code
-				if (getState(emailState) == OUTDATED) {
+				if (getState(state) == OUTDATED) {
 					break;
 				}
 				// Check code
-				String key = StringUtils.trimToNull( getKey(emailState) );
+				String key = StringUtils.trimToNull( getKey(state) );
 				if( key == null || !key.equals(StringUtils.trimToNull(code)) ) {
 					// Invalid
-					Integer tries = getTries(emailState);
+					Integer tries = getTries(state);
 					if(tries==null) {
 						tries = 0;
 					} else {
 						tries = Math.max(0, tries.intValue() - 1 );
 					}
 					if( tries <= 0 ) {
-						setState(emailState, OUTDATED);
+						setState(state, OUTDATED);
 					}
-					setTries(emailState, tries);
+					setTries(state, tries);
 					break;
 				}
 				// Check time to live
-				Long ttl = getTtl(emailState);
+				Long ttl = getTtl(state);
 				if( ttl==null || ttl.compareTo(System.currentTimeMillis()) < 0 ) {
 					// TTL reached
-					setState(emailState, OUTDATED);
+					setState(state, OUTDATED);
 					break;
 				}
 				// Check pending mail address
-				String pending = StringUtils.trimToNull( getPending(emailState) );
+				String pending = StringUtils.trimToNull( getPending(state) );
 				if( pending == null) {
 					// This should never happen, but treat it like TTL was reached
-					setState(emailState, OUTDATED);
+					setState(state, OUTDATED);
 					break;
 				}
 				// ---Validation succeeded---
-				setState(emailState, VALID);
-				setValid(emailState, pending);
-				setPending(emailState, null);
-				setKey(emailState, null);
-				setTtl(emailState, null);
-				setTries(emailState, null);
+				setState(state, VALID);
+				setValid(state, pending);
+				setPending(state, null);
+				setKey(state, null);
+				setTtl(state, null);
+				setTries(state, null);
 			} while(false);
 
 			// ---Validation results---
-			return updateMailState(userId, emailState)
+			return updateState(userId, state)
 			.map( newState -> {
 				return formatAsResponse(getState(newState), getValid(newState), getTries(newState), getTtl(newState));
 			});
@@ -279,80 +278,17 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 	}
 
 	@Override
-	public Future<JsonObject> getEmailState(String userId) {
-		return retrieveFullEmailState(userId);
+	public Future<JsonObject> getCurrentState(String userId) {
+		return retrieveFullState(userId);
 	}
 
 	@Override
-    public Future<Long> sendValidationEmail( final HttpServerRequest request, String email, JsonObject templateParams ) {
-    	Promise<Long> promise = Promise.promise();
-		if( emailSender == null ) {
-			promise.complete(null);
-		} else if( StringUtils.isEmpty((email)) ) {
-			promise.fail("Invalid email address.");
-		} else if( templateParams==null || StringUtils.isEmpty(templateParams.getString("code")) ) {
-			promise.fail("Invalid parameters.");
-		} else {
-			String code = templateParams.getString("code");
-			processEmailTemplate(request, templateParams, "email/emailValidationCode.html", false, processedTemplate -> {
-				// Generate email subject
-				final JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject() );
-				final String title = timelineI18n.getString("timeline.immediate.mail.subject.header", "") 
-					+ I18n.getInstance().translate("email.validation.subject", getHost(request), I18n.acceptLanguage(request), code);
-				
-				emailSender.sendEmail(request, email, null, null,
-					title,
-					processedTemplate,
-					null,
-					false,
-					ar -> {
-						if (ar.succeeded()) {
-							Message<JsonObject> reply = ar.result();
-							if ("ok".equals(reply.body().getString("status"))) {
-								Object r = reply.body().getValue("result");
-								promise.complete( 0l );
-							} else {
-								promise.fail( reply.body().getString("message", "") );
-							}
-						} else {
-							promise.fail(ar.cause().getMessage());
-						}
-					}
-				);
-			});
-		}
-    	return promise.future();
-    }
+    abstract public Future<Long> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams );
 
-	private void processEmailTemplate(
-			final HttpServerRequest request, 
-			JsonObject parameters, 
-			String template, 
-			boolean reader, 
-			final Handler<String> handler
-			) {
-		// From now until the end of the template processing, code execution cannot be async.
-		// So initialize requestedThemeKV here and now.
-		loadThemeKVs(request)
-		.onSuccess( themeKV -> {
-			this.requestThemeKV = themeKV;
-			if(reader){
-				final StringReader templateReader = new StringReader(template);
-				processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
-					public void handle(Writer writer) {
-						handler.handle(writer.toString());
-					}
-				});
-	
-			} else {
-				processTemplate(request, template, parameters, handler);
-			}
-		});
-	}
-
+	////////////////////////////////////////////
 	//FIXME The whole methods below are intended to retrieve overloaded i18n from Timeline because it contains variables for email templating...
 
-	private Future<String> getThemePath(HttpServerRequest request) {
+	protected Future<String> getThemePath(HttpServerRequest request) {
         Promise<String> promise = Promise.promise();
 		vertx.eventBus().request( 
 			"portal",
@@ -365,7 +301,7 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 		return promise.future();
 	}
 
-	private Future<Map<String, JsonObject>> loadThemeKVs(final HttpServerRequest request) {
+	protected Future<Map<String, JsonObject>> loadThemeKVs(final HttpServerRequest request) {
         Promise<Map<String, JsonObject>> promise = Promise.promise();
 		getThemePath(request).onComplete( result -> {
 			if( result.succeeded() ) {
@@ -391,7 +327,7 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 		return promise.future();
 	}
 
-	private Map<String, JsonObject> getThemeDefaults() {
+	protected Map<String, JsonObject> getThemeDefaults() {
 		Map<String, JsonObject> themeKVs = new HashMap<String, JsonObject>();
 		themeKVs.put("fr", new JsonObject()
 			.put("timeline.mail.body.bgcolor", "#f9f9f9")
@@ -408,7 +344,7 @@ public class DefaultEmailValidationService extends Renders implements EmailValid
 		return themeKVs;
 	}
 
-	private Future<Map<String, JsonObject>> readI18nTimeline(List<String> filePaths) {
+	protected Future<Map<String, JsonObject>> readI18nTimeline(List<String> filePaths) {
 		Promise<Map<String, JsonObject>> promise = Promise.promise();
 		final Map<String, JsonObject> themeKV = new HashMap<String, JsonObject>();
 		final AtomicInteger count = new AtomicInteger(filePaths.size());

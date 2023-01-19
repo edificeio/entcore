@@ -19,7 +19,6 @@
 
 package org.entcore.common.emailstate;
 
-import org.entcore.common.emailstate.impl.DefaultEmailValidationService;
 import org.entcore.common.emailstate.impl.DefaultUserValidationService;
 
 import io.vertx.core.Vertx;
@@ -64,7 +63,7 @@ public class EmailStateFactory {
 
 	public UserValidationService getService() {
 		if (handler == null ) {
-			handler = new DefaultUserValidationService( config, new DefaultEmailValidationService(vertx, moduleConfig) );
+			handler = new DefaultUserValidationService(vertx, moduleConfig, config);
 		}
 		return handler;
 	}

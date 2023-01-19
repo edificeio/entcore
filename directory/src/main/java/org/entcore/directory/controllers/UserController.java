@@ -42,7 +42,7 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.EmailStateUtils;
+import org.entcore.common.emailstate.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -894,7 +894,7 @@ public class UserController extends BaseController {
 			if (infos != null) {
 				EmailState.getDetails(eb, infos.getUserId())
 				.onSuccess( details -> {
-					EmailStateUtils.formatAsResponse( details.getJsonObject("emailState") );
+					DataStateUtils.formatAsResponse( details.getJsonObject("emailState") );
 					renderJson( request, details );
 				})
 				.onFailure( e -> {
