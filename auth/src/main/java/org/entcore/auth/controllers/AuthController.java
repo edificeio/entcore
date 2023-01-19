@@ -59,13 +59,13 @@ import jp.eisbahn.oauth2.server.async.Handler;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
-import org.entcore.common.emailstate.EmailState;
 
 import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -501,7 +501,7 @@ public class AuthController extends BaseController {
 		UserUtils.getSession(eb, request, session -> {
 			final JsonObject requirements = new JsonObject();
 			if( session != null ) {
-				EmailState.getMandatoryUserValidation(eb, session, true)
+				EmailValidation.getMandatoryUserValidation(eb, session, true)
 				.onSuccess( validations -> {
 					if( validations != null ) {
 						requirements.mergeIn(validations);

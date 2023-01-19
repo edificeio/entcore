@@ -41,8 +41,8 @@ import javax.xml.bind.Marshaller;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.DataStateUtils;
+import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -892,7 +892,7 @@ public class UserController extends BaseController {
 	public void getMailState(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, infos -> {
 			if (infos != null) {
-				EmailState.getDetails(eb, infos.getUserId())
+				EmailValidation.getDetails(eb, infos.getUserId())
 				.onSuccess( details -> {
 					DataStateUtils.formatAsResponse( details.getJsonObject("emailState") );
 					renderJson( request, details );
@@ -913,10 +913,10 @@ public class UserController extends BaseController {
 			UserUtils.getUserInfos(eb, request, infos -> {
 				if (infos != null) {
 					// Initialize a new mail validation flow
-					EmailState.setPending(eb, infos.getUserId(), payload.getString("email"))
+					EmailValidation.setPending(eb, infos.getUserId(), payload.getString("email"))
 					.compose( pendingEmailState -> {
 						// Send the validation email to the user
-						return EmailState.sendEmail(eb, request, infos, pendingEmailState);
+						return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
 					})
 					.onSuccess( emailId -> {
 						ok(request);
@@ -939,7 +939,7 @@ public class UserController extends BaseController {
 				if (infos != null) {
 					// Try a validation code
 					final String userId = infos.getUserId();
-					EmailState.tryValidate(eb, userId, payload.getString("key"))
+					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( emailState -> {
 						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
 						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
