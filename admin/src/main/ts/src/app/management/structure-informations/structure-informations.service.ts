@@ -12,13 +12,13 @@ export class StructureInformationsService
 {
   constructor(private httpClient: HttpClient, private spinner: SpinnerService) {}
 
-  update(structureId: string, newName: string, newUAI: string, newHasApp: boolean, ignoreMFA: boolean): Observable<any>
+  update(structureId: string, newName: string, newUAI: string, newHasApp: boolean, newIgnoreMFA: boolean): Observable<any>
   {
     let params = {
       name: newName,
-      UAI: newUAI,
+      UAI: newUAI ? newUAI : "",
       hasApp: newHasApp == true ? true : false,
-      ignoreMFA : ignoreMFA
+      ignoreMFA : newIgnoreMFA
     };
     return this.httpClient.put(`/directory/structure/${structureId}`, params);
   }
