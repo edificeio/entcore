@@ -10,9 +10,9 @@ import io.vertx.core.json.JsonObject;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.*;
-import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_CHANGE_PWD;
-import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_EMAIL;
-import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_TERMS;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_CHANGE_PWD;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
 import java.io.StringReader;

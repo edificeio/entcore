@@ -15,8 +15,8 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
-import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_EMAIL;
-import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_TERMS;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 
 import java.net.URI;
 import java.net.URLEncoder;
