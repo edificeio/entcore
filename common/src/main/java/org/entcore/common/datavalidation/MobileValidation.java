@@ -11,7 +11,7 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
-public class EmailValidation {
+public class MobileValidation {
 	/** 
 	 * Check if the user has to fulfill some mandatory actions, such as :
 	 * - re/validate terms of use,

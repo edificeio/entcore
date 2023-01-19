@@ -26,6 +26,9 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 public interface UserValidationService {
+	static public String FIELD_MUST_CHANGE_PWD     = "forceChangePassword";
+	static public String FIELD_MUST_VALIDATE_TERMS = "needRevalidateTerms";
+	static public String FIELD_MUST_VALIDATE_EMAIL = "needRevalidateEmail";
 
 	/**
 	 * Get the current user MFA status.
