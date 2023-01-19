@@ -45,7 +45,6 @@
           type="text"
           [(ngModel)]="structUAI"
           name="UAI"
-          required
           pattern="[0-9]{7}[A-Z]"
           #UAIInput="ngModel"
         />
@@ -60,6 +59,15 @@
         />
       </ode-form-field>
       <ode-form-errors [control]="hasAppInput"></ode-form-errors>
+      <ode-form-field label="management.structure.informations.enableMFA">
+        <input
+          type="checkbox"
+          [(ngModel)]="structEnableMFA"
+          name="ignoreMFA"
+          #enableMFAInput="ngModel"
+        />
+      </ode-form-field>
+      <ode-form-errors [control]="enableMFAInput"></ode-form-errors>
     </div>
 
     <!-- For ADMLs -->

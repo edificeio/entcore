@@ -11,6 +11,9 @@
     },
     "hasApp": {
       "type": "boolean"
+    },
+    "ignoreMFA": {
+      "type": "boolean"
     }
   },
   "required": [
