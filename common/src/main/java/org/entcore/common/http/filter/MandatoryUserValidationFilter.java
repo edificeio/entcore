@@ -9,14 +9,14 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-import org.entcore.common.emailstate.EmailState;
+import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
-import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_TERMS;
-import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_TERMS;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -74,7 +74,7 @@ public class MandatoryUserValidationFilter implements Filter {
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
                 request.pause();
-                EmailState.getMandatoryUserValidation(this.eventBus, session)
+                EmailValidation.getMandatoryUserValidation(this.eventBus, session)
                 .compose( validations -> {
                     return checkTermsOfUse(sreq, userInfos, validations);
                 })

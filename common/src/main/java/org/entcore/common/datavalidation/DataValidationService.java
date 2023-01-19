@@ -17,7 +17,7 @@
  *
  */
 
-package org.entcore.common.emailstate;
+package org.entcore.common.datavalidation;
 
 import org.entcore.common.user.UserInfos;
 
