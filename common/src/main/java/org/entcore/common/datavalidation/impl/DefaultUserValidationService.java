@@ -1,4 +1,4 @@
-package org.entcore.common.emailstate.impl;
+package org.entcore.common.datavalidation.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -9,10 +9,10 @@ import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.emailstate.EmailState.FIELD_MUST_CHANGE_PWD;
-import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_TERMS;
-import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_EMAIL;
 import static org.entcore.common.user.SessionAttributes.*;
+import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_CHANGE_PWD;
+import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.EmailValidation.FIELD_MUST_VALIDATE_TERMS;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
 import java.io.StringReader;
@@ -20,15 +20,15 @@ import java.io.Writer;
 
 import java.util.Map;
 
+import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.UserValidationService;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.email.EmailFactory;
-import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.DataStateUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.emailstate.UserValidationService;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -37,7 +37,7 @@ import fr.wseduc.webutils.email.EmailSender;
 
 
 /**
- * @see {@link EmailState} utility class for easier use
+ * @see {@link EmailValidation} utility class for easier use
  * Embraces and extends EmailValidationService
  */
 public class DefaultUserValidationService implements UserValidationService {

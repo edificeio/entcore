@@ -39,8 +39,8 @@ import org.entcore.common.cache.CacheService;
 import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
+import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.elasticsearch.ElasticSearch;
-import org.entcore.common.emailstate.EmailStateFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
@@ -114,7 +114,7 @@ public abstract class BaseServer extends Server {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
 		}
 
-		EmailStateFactory emailStateFactory = EmailStateFactory.getFactory();
+		UserValidationFactory emailStateFactory = UserValidationFactory.getFactory();
 		emailStateFactory.init(vertx, config);
 
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");

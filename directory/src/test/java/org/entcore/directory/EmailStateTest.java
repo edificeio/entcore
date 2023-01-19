@@ -6,8 +6,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.DataStateUtils;
+import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.directory.emailstate.UserValidationHandler;
 import org.entcore.directory.services.impl.DefaultMailValidationService;
 import org.junit.BeforeClass;
@@ -32,7 +32,7 @@ public class EmailStateTest {
         test.database().initNeo4j(context, neo4jContainer);
 
         // Instanciate an email validation service
-		test.vertx().eventBus().localConsumer(EmailState.BUS_ADDRESS, new UserValidationHandler(
+		test.vertx().eventBus().localConsumer(EmailValidation.BUS_ADDRESS, new UserValidationHandler(
 			new JsonObject(),
 			new DefaultMailValidationService(null)
 		));
@@ -52,7 +52,7 @@ public class EmailStateTest {
         final Async async = context.async();
         final EventBus eb = test.vertx().eventBus();
 
-        EmailState.getDetails(eb, userId)
+        EmailValidation.getDetails(eb, userId)
         // 1) check email is not verified
         .compose( details -> {
             final JsonObject emailState = details.getJsonObject("emailState");
@@ -63,7 +63,7 @@ public class EmailStateTest {
             context.assertEquals(DataStateUtils.getState(emailState), DataStateUtils.UNCHECKED);
 
             // 2) try verifying it
-            return EmailState.setPending(eb, userId, VALID_MAIL);
+            return EmailValidation.setPending(eb, userId, VALID_MAIL);
         })
         // 3) check pending data
         .map( emailState -> {
@@ -75,7 +75,7 @@ public class EmailStateTest {
         })
         // 4) try a wrong code once
         .compose( validCode -> {
-            return EmailState.tryValidate(eb, userId, "DEADBEEF")
+            return EmailValidation.tryValidate(eb, userId, "DEADBEEF")
             .map( result -> {
                 final String s = result.getString("state");
                 context.assertNotEquals(s, "unchecked");
@@ -89,12 +89,12 @@ public class EmailStateTest {
         .compose( validCode -> {
             context.assertNotNull(validCode);
             context.assertEquals(validCode.length(), 6);
-            return EmailState.tryValidate(eb, userId, validCode);
+            return EmailValidation.tryValidate(eb, userId, validCode);
         })
         .compose( result -> {
             final String s = result.getString("state");
             context.assertEquals(s, "valid");
-            return EmailState.getDetails(eb, userId);
+            return EmailValidation.getDetails(eb, userId);
         })
         // 6) check email is verified
         .compose( details -> {
@@ -102,7 +102,7 @@ public class EmailStateTest {
             context.assertEquals(details.getString("email"), VALID_MAIL);
             context.assertEquals(DataStateUtils.getValid(emailState), VALID_MAIL);
             context.assertEquals(DataStateUtils.getState(emailState), DataStateUtils.VALID);
-            return EmailState.isValid(eb, userId);
+            return EmailValidation.isValid(eb, userId);
         })
         // 7) confirm email is now valid
         .map( valid -> {

@@ -17,7 +17,7 @@
  *
  */
 
-package org.entcore.common.emailstate.impl;
+package org.entcore.common.datavalidation.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -29,7 +29,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import static org.entcore.common.user.SessionAttributes.*;
-import static org.entcore.common.emailstate.DataStateUtils.*;
+import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -44,9 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.entcore.common.datavalidation.DataValidationService;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.email.EmailFactory;
-import org.entcore.common.emailstate.DataStateUtils;
-import org.entcore.common.emailstate.DataValidationService;
 import org.entcore.common.utils.StringUtils;
 
 import com.samskivert.mustache.Mustache;

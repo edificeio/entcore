@@ -17,28 +17,29 @@
 
  */
 
-package org.entcore.common.emailstate;
+package org.entcore.common.datavalidation.utils;
 
-import org.entcore.common.emailstate.impl.DefaultUserValidationService;
+import org.entcore.common.datavalidation.UserValidationService;
+import org.entcore.common.datavalidation.impl.DefaultUserValidationService;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
-public class EmailStateFactory {
+public class UserValidationFactory {
 	private Vertx vertx;
 	private JsonObject config;
 	private JsonObject moduleConfig;
 	private UserValidationService handler;
 
-	public EmailStateFactory() {
+	public UserValidationFactory() {
 	}
 
 	private static class EmailStateFactoryHolder {
-		private static final EmailStateFactory instance = new EmailStateFactory();
+		private static final UserValidationFactory instance = new UserValidationFactory();
 	}
 
-	public static EmailStateFactory getFactory() {
+	public static UserValidationFactory getFactory() {
 		return EmailStateFactoryHolder.instance;
 	}
 

@@ -1,4 +1,4 @@
-package org.entcore.common.emailstate;
+package org.entcore.common.datavalidation.utils;
 
 import io.vertx.core.json.JsonObject;
 

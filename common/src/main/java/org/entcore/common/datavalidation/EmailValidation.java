@@ -1,6 +1,5 @@
-package org.entcore.common.emailstate;
+package org.entcore.common.datavalidation;
 
-import org.entcore.common.emailstate.EmailStateFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -9,9 +8,10 @@ import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
+import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
-public class EmailState {
+public class EmailValidation {
 	static public String FIELD_MUST_CHANGE_PWD     = "forceChangePassword";
 	static public String FIELD_MUST_VALIDATE_TERMS = "needRevalidateTerms";
 	static public String FIELD_MUST_VALIDATE_EMAIL = "needRevalidateEmail";
@@ -40,7 +40,7 @@ public class EmailState {
 	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
 	*/
 	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session, final boolean forced) {
-		return EmailStateFactory.getInstance().getMandatoryUserValidation(session, forced);
+		return UserValidationFactory.getInstance().getMandatoryUserValidation(session, forced);
 	}
 
 	/**
@@ -50,7 +50,7 @@ public class EmailState {
 	 * @return the new emailState
 	 */
     static public Future<JsonObject> setPending(final EventBus unused, String userId, String email) {
-		return EmailStateFactory.getInstance().setPendingEmail(userId, email);
+		return UserValidationFactory.getInstance().setPendingEmail(userId, email);
     }
 
 	/**
@@ -59,7 +59,7 @@ public class EmailState {
 	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
 	 */
     static public Future<JsonObject> isValid(final EventBus unused, String userId) {
-		return EmailStateFactory.getInstance().hasValidEmail(userId);
+		return UserValidationFactory.getInstance().hasValidEmail(userId);
     }
 
 	/**
@@ -73,7 +73,7 @@ public class EmailState {
 	 * }
 	 */
     static public Future<JsonObject> tryValidate(final EventBus unused, String userId, String code) {
-		return EmailStateFactory.getInstance().tryValidateEmail(userId, code);
+		return UserValidationFactory.getInstance().tryValidateEmail(userId, code);
     }
 
 	/**
@@ -82,7 +82,7 @@ public class EmailState {
 	 * @return {email:string, emailState:object|null, waitInSeconds:number}
 	 */
     static public Future<JsonObject> getDetails(final EventBus unused, String userId) {
-		return EmailStateFactory.getInstance().getEmailState(userId);
+		return UserValidationFactory.getInstance().getEmailState(userId);
     }
 
 	/** 
@@ -93,7 +93,7 @@ public class EmailState {
 	 * @return email ID
 	*/
 	static public Future<Long> sendEmail(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
-        return EmailStateFactory.getInstance().sendValidationEmail(
+        return UserValidationFactory.getInstance().sendValidationEmail(
 			request, 
 			infos, 
 			pendingEmailState
