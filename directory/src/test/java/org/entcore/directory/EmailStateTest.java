@@ -7,7 +7,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.EmailStateUtils;
+import org.entcore.common.emailstate.DataStateUtils;
 import org.entcore.directory.emailstate.UserValidationHandler;
 import org.entcore.directory.services.impl.DefaultMailValidationService;
 import org.junit.BeforeClass;
@@ -60,7 +60,7 @@ public class EmailStateTest {
             context.assertNotNull(details.getInteger("waitInSeconds"));
             // Before first validation check, emailState does not exist in neo4j and is null here.
             context.assertNull(emailState);
-            context.assertEquals(EmailStateUtils.getState(emailState), EmailStateUtils.UNCHECKED);
+            context.assertEquals(DataStateUtils.getState(emailState), DataStateUtils.UNCHECKED);
 
             // 2) try verifying it
             return EmailState.setPending(eb, userId, VALID_MAIL);
@@ -68,10 +68,10 @@ public class EmailStateTest {
         // 3) check pending data
         .map( emailState -> {
             context.assertNotNull(emailState);
-            context.assertEquals(EmailStateUtils.getState(emailState), EmailStateUtils.PENDING);
-            context.assertNotNull(EmailStateUtils.getValid(emailState));
-            context.assertEquals(EmailStateUtils.getPending(emailState), VALID_MAIL);
-            return EmailStateUtils.getKey(emailState);
+            context.assertEquals(DataStateUtils.getState(emailState), DataStateUtils.PENDING);
+            context.assertNotNull(DataStateUtils.getValid(emailState));
+            context.assertEquals(DataStateUtils.getPending(emailState), VALID_MAIL);
+            return DataStateUtils.getKey(emailState);
         })
         // 4) try a wrong code once
         .compose( validCode -> {
@@ -100,8 +100,8 @@ public class EmailStateTest {
         .compose( details -> {
             final JsonObject emailState = details.getJsonObject("emailState");
             context.assertEquals(details.getString("email"), VALID_MAIL);
-            context.assertEquals(EmailStateUtils.getValid(emailState), VALID_MAIL);
-            context.assertEquals(EmailStateUtils.getState(emailState), EmailStateUtils.VALID);
+            context.assertEquals(DataStateUtils.getValid(emailState), VALID_MAIL);
+            context.assertEquals(DataStateUtils.getState(emailState), DataStateUtils.VALID);
             return EmailState.isValid(eb, userId);
         })
         // 7) confirm email is now valid

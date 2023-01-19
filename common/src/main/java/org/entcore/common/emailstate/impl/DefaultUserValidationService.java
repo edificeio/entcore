@@ -15,38 +15,142 @@ import static org.entcore.common.emailstate.EmailState.FIELD_MUST_VALIDATE_EMAIL
 import static org.entcore.common.user.SessionAttributes.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
+import java.io.StringReader;
+import java.io.Writer;
+
 import java.util.Map;
 
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.emailstate.EmailState;
-import org.entcore.common.emailstate.EmailStateUtils;
+import org.entcore.common.emailstate.DataStateUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.emailstate.EmailValidationService;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.emailstate.UserValidationService;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.email.EmailSender;
+
 
 /**
  * @see {@link EmailState} utility class for easier use
  * Embraces and extends EmailValidationService
  */
 public class DefaultUserValidationService implements UserValidationService {
+
+    /** Inner service for the "mobile" field validation. */
+    //---------------------------------------------------------------
+    private class MobileField extends AbstractDataValidationService {
+    //---------------------------------------------------------------
+        MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+            super("mobile", vertx, config);
+        }
+
+        @Override
+        public Future<Long> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+            return Future.failedFuture("not implemented yet");
+        }
+    }
+
+    /** Inner service for the "email" field validation. */
+    //---------------------------------------------------------------
+    private class EmailField extends AbstractDataValidationService {
+    //---------------------------------------------------------------
+        private EmailSender emailSender = null;
+
+        EmailField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+            super("email", vertx, config);
+            emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
+        }
+
+        @Override
+        public Future<Long> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+            Promise<Long> promise = Promise.promise();
+            if( emailSender == null ) {
+                promise.complete(null);
+            } else if( StringUtils.isEmpty((email)) ) {
+                promise.fail("Invalid email address.");
+            } else if( templateParams==null || StringUtils.isEmpty(templateParams.getString("code")) ) {
+                promise.fail("Invalid parameters.");
+            } else {
+                String code = templateParams.getString("code");
+                processEmailTemplate(request, templateParams, "email/emailValidationCode.html", false, processedTemplate -> {
+                    // Generate email subject
+                    final JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject() );
+                    final String title = timelineI18n.getString("timeline.immediate.mail.subject.header", "") 
+                        + I18n.getInstance().translate("email.validation.subject", getHost(request), I18n.acceptLanguage(request), code);
+                    
+                    emailSender.sendEmail(request, email, null, null,
+                        title,
+                        processedTemplate,
+                        null,
+                        false,
+                        ar -> {
+                            if (ar.succeeded()) {
+                                Message<JsonObject> reply = ar.result();
+                                if ("ok".equals(reply.body().getString("status"))) {
+                                    Object r = reply.body().getValue("result");
+                                    promise.complete( 0l );
+                                } else {
+                                    promise.fail( reply.body().getString("message", "") );
+                                }
+                            } else {
+                                promise.fail(ar.cause().getMessage());
+                            }
+                        }
+                    );
+                });
+            }
+            return promise.future();
+        }
+
+        private void processEmailTemplate(
+			final HttpServerRequest request, 
+			JsonObject parameters, 
+			String template, 
+			boolean reader, 
+			final Handler<String> handler
+			) {
+            // From now until the end of the template processing, code execution cannot be async.
+            // So initialize requestedThemeKV here and now.
+            loadThemeKVs(request)
+            .onSuccess( themeKV -> {
+                this.requestThemeKV = themeKV;
+                if(reader){
+                    final StringReader templateReader = new StringReader(template);
+                    processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
+                        public void handle(Writer writer) {
+                            handler.handle(writer.toString());
+                        }
+                    });
+        
+                } else {
+                    processTemplate(request, template, parameters, handler);
+                }
+            });
+        }
+    }
+
+    //---------------------------------------------------------------
 	private final Neo4j neo = Neo4j.getInstance();
-    private EmailValidationService validationSvc = null;
+    private EmailField emailSvc = null;
+    private MobileField mobileSvc = null;
     private int ttlInSeconds     = 600;  // Validation codes are valid 10 minutes by default
     private int retryNumber      = 5;    // Validation code can be typed in 5 times by default
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
 
-    public DefaultUserValidationService(final JsonObject params, final EmailValidationService svc) {
+    public DefaultUserValidationService(final io.vertx.core.Vertx vertx, final io.vertx.core.json.JsonObject config, final JsonObject params) {
         if( params != null ) {
             ttlInSeconds    = params.getInteger("ttlInSeconds", 600);
             retryNumber     = params.getInteger("retryNumber",  5);
             waitInSeconds   = params.getInteger("waitInSeconds", 10);
         }
-        validationSvc = svc;
+        emailSvc = new EmailField(vertx, config);
+        mobileSvc= new MobileField(vertx, config);
     }
 
 	/** 
@@ -188,23 +292,25 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	@Override
     public Future<JsonObject> hasValidEmail(String userId) {
-        return validationSvc.hasValidEmail(userId);
+        return emailSvc.hasValid(userId);
     }
 
     @Override
 	public Future<JsonObject> setPendingEmail(String userId, String email) {
-        return validationSvc.setPendingEmail(userId, email, ttlInSeconds, retryNumber);
+        return emailSvc.startUpdate(userId, email, ttlInSeconds, retryNumber);
     }
 
     @Override
 	public Future<JsonObject> tryValidateEmail(String userId, String code) {
-        return validationSvc.tryValidateEmail(userId, code);
+        return emailSvc.tryValidate(userId, code);
     }
 
     @Override
 	public Future<JsonObject> getEmailState(String userId) {
-        return validationSvc.getEmailState(userId)
+        return emailSvc.getCurrentState(userId)
         .map( t -> {
+            t.put( "email", t.getString("value") );
+            t.put( "emailState", t.getString("state") );
             // Add missing data
             t.put("waitInSeconds", waitInSeconds);
             return t;
@@ -213,7 +319,7 @@ public class DefaultUserValidationService implements UserValidationService {
 
     @Override
 	public Future<Long> sendValidationEmail(HttpServerRequest request, UserInfos infos, JsonObject emailState) {
-        final Long expires = getOrElse(EmailStateUtils.getTtl(emailState), waitInSeconds*1000l);
+        final Long expires = getOrElse(DataStateUtils.getTtl(emailState), waitInSeconds*1000l);
 
         JsonObject templateParams = new JsonObject()
         .put("scheme", Renders.getScheme(request))
@@ -222,9 +328,9 @@ public class DefaultUserValidationService implements UserValidationService {
         .put("firstName", infos.getFirstName())
         .put("lastName", infos.getLastName())
         .put("userName", infos.getUsername())
-        .put("duration", Math.round(EmailStateUtils.ttlToRemainingSeconds(expires) / 60f))
-        .put("code", EmailStateUtils.getKey(emailState));
+        .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
+        .put("code", DataStateUtils.getKey(emailState));
 
-        return validationSvc.sendValidationEmail( request, EmailStateUtils.getPending(emailState), templateParams );
+        return emailSvc.sendValidationMessage( request, DataStateUtils.getPending(emailState), templateParams );
     }
 }
