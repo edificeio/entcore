@@ -58,6 +58,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public structName: string;
   public structUAI: string;
   public structHasApp: boolean;
+  public structEnableMFA: boolean;
   public isADMC: boolean = false;
   public showSettingsLightbox = false;
 
@@ -88,6 +89,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         this.structName = this.structure.name;
         this.structUAI = this.structure.UAI;
         this.structHasApp = this.structure.hasApp;
+        this.structEnableMFA = !this.structure.ignoreMFA;
         this.infoService.getMetrics(this.structure.id).subscribe(
           {
             next: (data) =>
@@ -123,7 +125,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
 
   updateStructure(): void
   {
-    this.infoService.update(this.structure.id, this.structName, this.structUAI, this.structHasApp).subscribe(
+    this.infoService.update(this.structure.id, this.structName, this.structUAI, this.structHasApp, !this.structEnableMFA).subscribe(
       {
         next: (data) =>
         {
@@ -131,6 +133,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
           this.structure.name = this.structName;
           this.structure.UAI = this.structUAI;
           this.structure.hasApp = this.structHasApp;
+          this.structure.ignoreMFA = !this.structEnableMFA;
           this.notify.success("management.structure.informations.update.notify.success.content", "management.structure.informations.update.notify.success.title");
           this.changeDetector.markForCheck();
         },

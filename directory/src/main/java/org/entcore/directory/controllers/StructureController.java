@@ -101,6 +101,7 @@ public class StructureController extends BaseController {
 					if (user == null || !UserUtils.isSuperAdmin(user)) {
 						body.remove("UAI");
 						body.remove("hasApp");
+						body.remove("ignoreMFA");
 					} else if (body.containsKey("UAI") && isEmpty(body.getString("UAI"))) {
 						body.putNull("UAI");
 					}
