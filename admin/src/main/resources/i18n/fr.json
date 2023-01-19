@@ -75,6 +75,7 @@
   "management.structure.informations.name.reset": "Rétablir le nom par défaut",
   "management.structure.informations.name.help": "Cette information s'affiche dans l'annuaire et lors du partage",
   "management.structure.informations.id": "Identifiant",
+  "management.structure.informations.enableMFA": "Authentification forte",
   "management.structure.informations.UAI": "UAI / RNE",
   "management.structure.informations.hasApp": "Accès à l'application mobile",
   "management.structure.informations.hasApp.true": "Oui",

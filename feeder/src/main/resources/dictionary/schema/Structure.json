@@ -114,6 +114,9 @@
 		"groups" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
+		},
+		"ignoreMFA" : {
+			"type" : "boolean"
 		}
 	},
 	"generate" : {
@@ -122,5 +125,5 @@
 		"modified" : { "generator" : "nowDate", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
-	"modifiable" : ["name", "UAI", "hasApp"]
+	"modifiable" : ["name", "UAI", "hasApp", "ignoreMFA"]
 }
