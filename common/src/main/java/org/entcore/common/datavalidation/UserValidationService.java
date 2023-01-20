@@ -34,14 +34,14 @@ public interface UserValidationService {
 	 * Get the current user MFA status.
 	 * @return truthy when the user should perform a MFA to access protected zones.
 	 */
-	Future<Boolean> getMFA();
+	Future<Boolean> getMFA(final JsonObject session);
 
 	/**
 	 * Set the current user MFA status.
 	 * @param status the new status
 	 * @return an async future.
 	 */
-	Future<Boolean> setMFA(final boolean status);
+	Future<Boolean> setMFA(final JsonObject session, final boolean status);
 
 	/** 
 	 * Check if the user has to fulfill some mandatory actions, such as :
