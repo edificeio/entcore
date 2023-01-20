@@ -42,6 +42,7 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.MobileValidation;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -885,6 +886,74 @@ public class UserController extends BaseController {
 		String userId = request.params().get("userId");
 		JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
 		userService.getAttachmentSchool(userId, structuresToExclude, notEmptyResponseHandler(request));
+	}
+
+	@Get("/user/mobilestate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getMobileState(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, infos -> {
+			if (infos != null) {
+				MobileValidation.getDetails(eb, infos.getUserId())
+				.onSuccess( details -> {
+					DataStateUtils.formatAsResponse( details.getJsonObject("mobileState") );
+					renderJson( request, details );
+				})
+				.onFailure( e -> {
+					badRequest( request, e.getMessage() );
+				});
+			} else {
+				notFound(request, "user.not.found");
+			}
+		});
+	}
+
+	@Put("/user/mobilestate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void putMobileState(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "putMobileState", payload -> {
+			UserUtils.getUserInfos(eb, request, infos -> {
+				if (infos != null) {
+					// Initialize a new mobile phone number validation flow
+					MobileValidation.setPending(eb, infos.getUserId(), payload.getString("mobile"))
+					.compose( pendingMobileState -> {
+						// Send the validation email to the user
+						return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
+					})
+					.onSuccess( emailId -> {
+						ok(request);
+					})
+					.onFailure( e -> {
+						renderError( request, new JsonObject().put("error", e.getMessage()) );
+					});
+				} else {
+					notFound(request, "user.not.found");
+				}
+			});
+		});
+	}
+
+	@Post("/user/mobilestate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void postMobileState(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "postMobileState", payload -> {
+			UserUtils.getUserInfos(eb, request, infos -> {
+				if (infos != null) {
+					// Try a validation code
+					final String userId = infos.getUserId();
+					MobileValidation.tryValidate(eb, userId, payload.getString("key"))
+					.onSuccess( mobileState -> {
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
+						renderJson( request, mobileState );
+					})
+					.onFailure( e -> {
+						renderError( request, new JsonObject().put("error", e.getMessage()) );
+					});
+				} else {
+					notFound(request, "user.not.found");
+				}
+			});
+		});
 	}
 
 	@Get("/user/mailstate")
