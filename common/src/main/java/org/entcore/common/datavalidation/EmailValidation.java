@@ -12,33 +12,6 @@ import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
 public class EmailValidation {
-	/** 
-	 * Check if the user has to fulfill some mandatory actions, such as :
-	 * - re/validate terms of use,
-	 * - validating his email address,
-	 * - change his passsword.
-	 * 
-	 * @param session
-	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
-	*/
-	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session) {
-		return getMandatoryUserValidation(unused, session, false);
-	}
-
-	/** 
-	 * Check if the user has to fulfill some mandatory actions, such as :
-	 * - re/validate terms of use,
-	 * - validating his email address,
-	 * - change his passsword.
-	 * 
-	 * @param session
-	 * @param force When truthy, read fresh data from the DB instead of the session. WARNING: performance loss.
-	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
-	*/
-	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session, final boolean forced) {
-		return UserValidationFactory.getInstance().getMandatoryUserValidation(session, forced);
-	}
-
 	/**
 	 * Start a new email validation workflow.
 	 * @param userId user ID
