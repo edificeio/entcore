@@ -12,54 +12,27 @@ import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
 public class MobileValidation {
-	/** 
-	 * Check if the user has to fulfill some mandatory actions, such as :
-	 * - re/validate terms of use,
-	 * - validating his email address,
-	 * - change his passsword.
-	 * 
-	 * @param session
-	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
-	*/
-	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session) {
-		return getMandatoryUserValidation(unused, session, false);
-	}
-
-	/** 
-	 * Check if the user has to fulfill some mandatory actions, such as :
-	 * - re/validate terms of use,
-	 * - validating his email address,
-	 * - change his passsword.
-	 * 
-	 * @param session
-	 * @param force When truthy, read fresh data from the DB instead of the session. WARNING: performance loss.
-	 * @return {forceChangePassword: boolean, needRevalidateTerms: boolean, needRevalidateEmail: boolean}
-	*/
-	static public Future<JsonObject> getMandatoryUserValidation(final EventBus unused, final JsonObject session, final boolean forced) {
-		return UserValidationFactory.getInstance().getMandatoryUserValidation(session, forced);
-	}
-
 	/**
-	 * Start a new email validation workflow.
+	 * Start a new mobile phone number validation workflow.
 	 * @param userId user ID
-	 * @param email the mail address to be checked
-	 * @return the new emailState
+	 * @param mobile the mobile phone number to be checked
+	 * @return the new mobileState
 	 */
-    static public Future<JsonObject> setPending(final EventBus unused, String userId, String email) {
-		return UserValidationFactory.getInstance().setPendingEmail(userId, email);
+    static public Future<JsonObject> setPending(final EventBus unused, String userId, String mobile) {
+		return UserValidationFactory.getInstance().setPendingMobile(userId, mobile);
     }
 
 	/**
-	 * Check if a user has a verified email address
+	 * Check if a user has a verified mobile phone number
 	 * @param userId user ID
-	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid email address }
+	 * @return { state: "unchecked"|"pending"|"outdated"|"valid", valid: latest known valid mobile phone number }
 	 */
     static public Future<JsonObject> isValid(final EventBus unused, String userId) {
-		return UserValidationFactory.getInstance().hasValidEmail(userId);
+		return UserValidationFactory.getInstance().hasValidMobile(userId);
     }
 
 	/**
-	 * Verify a pending email address of a user, by checking a code.
+	 * Verify a pending mobile phone number, by checking a code.
 	 * @param userId user ID
 	 * @param code validation code to check
 	 * @return { 
@@ -69,27 +42,27 @@ public class MobileValidation {
 	 * }
 	 */
     static public Future<JsonObject> tryValidate(final EventBus unused, String userId, String code) {
-		return UserValidationFactory.getInstance().tryValidateEmail(userId, code);
+		return UserValidationFactory.getInstance().tryValidateMobile(userId, code);
     }
 
 	/**
-	 * Get current email validation details.
+	 * Get current validation details.
 	 * @param userId user ID
-	 * @return {email:string, emailState:object|null, waitInSeconds:number}
+	 * @return {mobile:string, mobileState:object|null, waitInSeconds:number}
 	 */
     static public Future<JsonObject> getDetails(final EventBus unused, String userId) {
-		return UserValidationFactory.getInstance().getEmailState(userId);
+		return UserValidationFactory.getInstance().getMobileState(userId);
     }
 
 	/** 
-	 * Send an email with actual validation code.
+	 * Send an SMS with actual validation code.
 	 * @param infos User infos
-	 * @param email address where to send
+	 * @param mobile phone number where to send
 	 * @param pendingEmailState with code to send
-	 * @return email ID
+	 * @return mobile ID
 	*/
-	static public Future<Long> sendEmail(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
-        return UserValidationFactory.getInstance().sendValidationEmail(
+	static public Future<Long> sendSMS(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
+        return UserValidationFactory.getInstance().sendValidationSMS(
 			request, 
 			infos, 
 			pendingEmailState
