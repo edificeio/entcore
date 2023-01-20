@@ -172,7 +172,7 @@ public abstract class AbstractDataValidationService extends Renders implements D
 		return retrieveFullState(userId)
 		.compose( j -> {
 			// Reset the stateField to a pending state
-			final JsonObject originalState = j.getJsonObject("state", new JsonObject());
+			final JsonObject originalState = j.getJsonObject(stateField, new JsonObject());
 			setState(originalState, PENDING);
 			// Valid mail must stay unchanged if not null, otherwise initialize to an empty string.
 			if( getValid(originalState) == null ) {
