@@ -177,12 +177,12 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     @Override
-	public Future<Boolean> getMFA() {
+	public Future<Boolean> getMFA(final JsonObject session) {
         return Future.failedFuture("not implemented yet");
     }
 
     @Override
-	public Future<Boolean> setMFA(final boolean status) {
+	public Future<Boolean> setMFA(final JsonObject session, final boolean status) {
         return Future.failedFuture("not implemented yet");
     }
 
@@ -265,22 +265,29 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	@Override
 	public Future<JsonObject> hasValidMobile(String userId) {
-        return Future.failedFuture("not implemented yet");
+        return mobileSvc.hasValid(userId);
     }
 
 	@Override
 	public Future<JsonObject> setPendingMobile(String userId, String mobile) {
-        return Future.failedFuture("not implemented yet");
+        return mobileSvc.startUpdate(userId, mobile, ttlInSeconds, retryNumber);
     }
 
 	@Override
 	public Future<JsonObject> tryValidateMobile(String userId, String code) {
-        return Future.failedFuture("not implemented yet");
+        return mobileSvc.tryValidate(userId, code);
     }
 
 	@Override
 	public Future<JsonObject> getMobileState(String userId) {
-        return Future.failedFuture("not implemented yet");
+        return mobileSvc.getCurrentState(userId)
+        .map( t -> {
+            t.put( "mobile", t.getString("value") );
+            t.put( "mobileState", t.getString("state") );
+            // Add missing data
+            t.put("waitInSeconds", waitInSeconds);
+            return t;
+        });
     }
 
 	@Override

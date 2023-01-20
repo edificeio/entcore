@@ -9,7 +9,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -74,7 +74,7 @@ public class MandatoryUserValidationFilter implements Filter {
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
                 request.pause();
-                EmailValidation.getMandatoryUserValidation(this.eventBus, session)
+                UserValidation.getMandatoryUserValidation(this.eventBus, session)
                 .compose( validations -> {
                     return checkTermsOfUse(sreq, userInfos, validations);
                 })
