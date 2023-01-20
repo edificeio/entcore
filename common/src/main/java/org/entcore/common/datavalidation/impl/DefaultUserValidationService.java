@@ -282,8 +282,6 @@ public class DefaultUserValidationService implements UserValidationService {
 	public Future<JsonObject> getMobileState(String userId) {
         return mobileSvc.getCurrentState(userId)
         .map( t -> {
-            t.put( "mobile", t.getString("value") );
-            t.put( "mobileState", t.getString("state") );
             // Add missing data
             t.put("waitInSeconds", waitInSeconds);
             return t;
@@ -316,8 +314,6 @@ public class DefaultUserValidationService implements UserValidationService {
 	public Future<JsonObject> getEmailState(String userId) {
         return emailSvc.getCurrentState(userId)
         .map( t -> {
-            t.put( "email", t.getString("value") );
-            t.put( "emailState", t.getString("state") );
             // Add missing data
             t.put("waitInSeconds", waitInSeconds);
             return t;
