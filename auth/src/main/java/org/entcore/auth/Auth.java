@@ -47,6 +47,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.utils.Mfa;
 import org.entcore.common.sms.Sms;
 import org.opensaml.xml.ConfigurationException;
 import io.vertx.core.AsyncResult;
