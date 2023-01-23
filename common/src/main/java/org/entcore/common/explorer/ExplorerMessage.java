@@ -124,6 +124,11 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withThumbnail(final String thumbnail){
+        message.put("thumbnail", thumbnail);
+        return this;
+    }
+
     public ExplorerMessage withType(final String application, final String resourceType, final String entityType) {
         message.put("application", application);
         message.put("resourceType", resourceType);
