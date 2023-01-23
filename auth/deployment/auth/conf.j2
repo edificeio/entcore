@@ -19,9 +19,6 @@
         "password-event-sync-default-value": {{ passwordEventSyncDefaultValue }}, 
         {% endif %}
         "maxRetry": {{ maxRetry|default(20) }},
-        "mfaConfig": {
-            "types": {{ mfaTypes | default([]) }}
-        },
 		"private-etabs-prefix-educonnect": {{ authPrivateStructEduconnect | default('false') }},
         "safeRedirect":{
             "delayInMinutes": {{ safeRedirectDelay|default(30) }},

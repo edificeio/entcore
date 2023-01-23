@@ -95,6 +95,10 @@ public class Starter extends BaseServer {
 			if (emailStateConfig != null) {
 				serverMap.put("emailValidationConfig", emailStateConfig.encode());
 			}
+			JsonObject mfaConfig = config.getJsonObject("mfaConfig");
+			if (mfaConfig != null) {
+				serverMap.put("mfaConfig", mfaConfig.encode());
+			}
 			final JsonObject webviewConfig = config.getJsonObject("webviewConfig");
 			if (webviewConfig != null) {
 				serverMap.put("webviewConfig", webviewConfig.encode());
