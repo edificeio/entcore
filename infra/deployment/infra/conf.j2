@@ -92,6 +92,9 @@
 		    "event-whitelist": {{ eventWhitelist|default([]) }},
             "user-blacklist": {{ usersBlacklist|default([]) }}
         },
+        "mfaConfig": {
+            "types": {{ mfaTypes | default([]) }}
+        },
         "emailValidationConfig": {
             "active": {{ emailValidationActive | default('true') }},
       	    "ttlInSeconds": {{ emailValidationTtl|default('600') }},

@@ -1,17 +1,21 @@
 package org.entcore.common.datavalidation.impl;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.*;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_CHANGE_PWD;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_EMAIL;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_MOBILE;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
@@ -28,6 +32,7 @@ import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.webutils.Either;
@@ -41,6 +46,7 @@ import fr.wseduc.webutils.email.EmailSender;
  * Embraces and extends EmailValidationService
  */
 public class DefaultUserValidationService implements UserValidationService {
+	private static final Logger log = LoggerFactory.getLogger(DefaultUserValidationService.class);
 
     /** Inner service for the "mobile" field validation. */
     //---------------------------------------------------------------
@@ -142,6 +148,7 @@ public class DefaultUserValidationService implements UserValidationService {
     private int ttlInSeconds     = 600;  // Validation codes are valid 10 minutes by default
     private int retryNumber      = 5;    // Validation code can be typed in 5 times by default
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
+    private Boolean withSms, withEmail;
 
     public DefaultUserValidationService(final io.vertx.core.Vertx vertx, final io.vertx.core.json.JsonObject config, final JsonObject params) {
         if( params != null ) {
@@ -190,12 +197,12 @@ public class DefaultUserValidationService implements UserValidationService {
     public Future<JsonObject> getMandatoryUserValidation(final JsonObject session, final boolean forced) {
         Promise<JsonObject> promise = Promise.promise();
 
-        final UserInfos userInfos = UserUtils.sessionToUserInfos( session );
         final JsonObject required = new JsonObject()
-            .put(FIELD_MUST_CHANGE_PWD, getOrElse(session.getBoolean("forceChangePassword"), false))
-            .put(FIELD_MUST_VALIDATE_EMAIL, false)
-            .put(FIELD_MUST_VALIDATE_TERMS, false);
+        .put(FIELD_MUST_CHANGE_PWD, getOrElse(session.getBoolean("forceChangePassword"), false))
+        .put(FIELD_MUST_VALIDATE_EMAIL, false)
+        .put(FIELD_MUST_VALIDATE_TERMS, false);
 
+        final UserInfos userInfos = UserUtils.sessionToUserInfos( session );
         if (userInfos == null) {
             // Disconnected user => nothing to validate
             //---
@@ -216,12 +223,14 @@ public class DefaultUserValidationService implements UserValidationService {
 
             checkedValidations.onComplete( dataReading -> {
                 if( dataReading.succeeded() ) {
+log.warn(">>>>> dataReading.succeeded()");
                     JsonObject data = dataReading.result();
                     required.put(FIELD_MUST_CHANGE_PWD, getOrElse(data.getBoolean("forceChangePassword"), false));
                     required.put(FIELD_MUST_VALIDATE_TERMS, getOrElse(data.getBoolean("needRevalidateTerms"), false));
-                } 
+                }
                 
                 if( dataReading.failed() || !forced ) {
+log.warn(">>>>> dataReading.failed() || !forced");
                     // Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
                     //---
                     boolean needRevalidateTerms = false;
@@ -240,28 +249,51 @@ public class DefaultUserValidationService implements UserValidationService {
                     }
                     required.put(FIELD_MUST_VALIDATE_TERMS, needRevalidateTerms);
                 }
-                
-                // As of 2022-11-23, only ADMLs are required to validate their email address (if not done already).
-                //---
-                if( ! userInfos.isADML() ) {
-                    promise.complete( required );
-                } else {
-                    hasValidEmail(userInfos.getUserId())
-                    .onSuccess( emailState -> {
-                        if( ! "valid".equals(emailState.getString("state")) ) {
-                            required.put(FIELD_MUST_VALIDATE_EMAIL, true);
-                        }
-                        promise.complete( required );
-                    })
-                    .onFailure( e -> {promise.complete(required);} );
-                }
-            });
 
+                CompositeFuture
+                .all(
+                    isEmailValidationRequired(userInfos, required),
+                    isMobileValidationRequired(userInfos, required)
+                )
+                .onComplete( ar -> {
+log.warn(">>>>>>>>>>>"+required.encodePrettily());
+                    promise.complete(required);
+                });
+            });
         }
 		return promise.future();
     }
 
     //////////////// Mobile-related methods ////////////////
+
+    /**
+     * Check if a user needs validating his mobile phone number.
+     * 
+     * As of 2023-01-23, a user is required to validate his mobile phone number, if and only if :
+     * - user is ADMx,
+     * - MFA is set to "sms",
+     * - mobile phone number is not already validated.
+     * 
+     * @return the required map parameter, updated
+     */
+    private Future<JsonObject> isMobileValidationRequired(final UserInfos userInfos, final JsonObject required) {
+log.warn(">>>>>isMobileValidationRequired isADML="+userInfos.isADML() +", isADMC="+userInfos.isADMC() +", Mfa.withSms()="+Mfa.withEmail() );
+        if( (userInfos.isADML() || userInfos.isADMC()) && Mfa.withSms() ){
+            final Promise<JsonObject> promise = Promise.promise();
+            hasValidMobile(userInfos.getUserId())
+            .onSuccess( mobileState -> {
+                if( ! "valid".equals(mobileState.getString("state")) ) {
+                    required.put(FIELD_MUST_VALIDATE_MOBILE, true);
+                }
+                promise.complete(required);
+            })
+            .onFailure( e -> {promise.complete(required);} );
+            return promise.future();
+        } else {
+            required.put(FIELD_MUST_VALIDATE_MOBILE, false);
+            return Future.succeededFuture(required);
+        }
+    }
 
 	@Override
 	public Future<JsonObject> hasValidMobile(String userId) {
@@ -294,6 +326,35 @@ public class DefaultUserValidationService implements UserValidationService {
     }    
 
     //////////////// Email-related methods ////////////////
+
+    /**
+     * Check if a user needs validating his email address.
+     * 
+     * As of 2023-01-23, a user is required to validate his email address, if and only if :
+     * - user is ADMx,
+     * - MFA is set to "email",
+     * - email address is not already validated.
+     * 
+     * @return the required map parameter, updated
+     */
+    private Future<JsonObject> isEmailValidationRequired(final UserInfos userInfos, final JsonObject required) {
+log.warn(">>>>>isEmailValidationRequired isADML="+userInfos.isADML() +", isADMC="+userInfos.isADMC() +", Mfa.withEmail()="+Mfa.withEmail() );
+        if( (userInfos.isADML() || userInfos.isADMC()) && Mfa.withEmail() ){
+            final Promise<JsonObject> promise = Promise.promise();
+            hasValidEmail(userInfos.getUserId())
+            .onSuccess( emailState -> {
+                if( ! "valid".equals(emailState.getString("state")) ) {
+                    required.put(FIELD_MUST_VALIDATE_EMAIL, true);
+                }
+                promise.complete(required);
+            })
+            .onFailure( e -> {promise.complete(required);} );
+            return promise.future();
+        } else {
+            required.put(FIELD_MUST_VALIDATE_EMAIL, false);
+            return Future.succeededFuture(required);
+        }
+    }
 
 	@Override
     public Future<JsonObject> hasValidEmail(String userId) {
