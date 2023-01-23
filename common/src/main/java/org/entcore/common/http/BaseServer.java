@@ -58,6 +58,7 @@ import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.Zip;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -94,6 +95,8 @@ public abstract class BaseServer extends Server {
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
 		eventStoreFactory.setVertx(vertx);
+
+		Mfa.Factory.getFactory().init(vertx, config);
 
 		initFilters();
 

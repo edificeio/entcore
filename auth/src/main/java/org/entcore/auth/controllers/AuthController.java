@@ -58,6 +58,7 @@ import io.vertx.core.shareddata.LocalMap;
 import jp.eisbahn.oauth2.server.async.Handler;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
+import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.UserValidation;
@@ -126,6 +127,7 @@ public class AuthController extends BaseController {
 	private HttpClient sessionLimitConfClient;
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
+	private MfaService mfaSvc;
 
 	private boolean emailValidationActive;
 
@@ -1707,6 +1709,10 @@ public class AuthController extends BaseController {
 
 	public void setCheckFederatedLogin(boolean checkFederatedLogin) {
 		this.checkFederatedLogin = checkFederatedLogin;
+	}
+
+	public void setMfaService( final MfaService mfaSvc ) {
+		this.mfaSvc = mfaSvc;
 	}
 
 }
