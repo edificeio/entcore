@@ -13,22 +13,14 @@ import io.vertx.core.logging.LoggerFactory;
 public class DefaultMfaService implements MfaService {
     static Logger logger = LoggerFactory.getLogger(DefaultMfaService.class);
 
-    public DefaultMfaService(Vertx vertx, JsonObject config) {
-        final JsonArray types = config.getJsonArray("types", new JsonArray());
+    public DefaultMfaService(Vertx vertx) {
     }
 
     public Future<JsonObject> tryCode(final String key) {
         return Future.failedFuture("not implemented yet");
     }
 
-	/**
-	 * 
-	 * @return
-	 */
 	public Future<JsonArray> getProtectedURLs() {
         return Future.failedFuture("not implemented yet");
     }
-
-
-
 }
