@@ -270,6 +270,7 @@ public class UserInfos {
 		}
 	}
 	private Boolean hasApp;
+	private Boolean ignoreMFA;
 	private String userId;
 	private String externalId;
 	private String firstName;
@@ -305,6 +306,14 @@ public class UserInfos {
 
 	public void setHasApp(Boolean hasApp){
 		this.hasApp = hasApp;
+	}
+
+	public Boolean getIgnoreMFA(){
+		return this.ignoreMFA;
+	}
+
+	public void setIgnoreMFA(Boolean ignoreMFA){
+		this.ignoreMFA = ignoreMFA;
 	}
 
 	public Map<String, Function> getFunctions() {
