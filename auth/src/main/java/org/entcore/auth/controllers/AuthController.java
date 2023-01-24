@@ -495,6 +495,12 @@ public class AuthController extends BaseController {
 			}
 		});
 		context.put("passwordRegexI18n", pwdFormatByLang);
+
+		final JsonArray mfaConfig = new JsonArray();
+		if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
+		if( Mfa.withEmail() ) mfaConfig.add(Mfa.TYPE_EMAIL);
+		context.put("mfaConfig", mfaConfig);
+
 		renderJson(request, context);
 	}
 
