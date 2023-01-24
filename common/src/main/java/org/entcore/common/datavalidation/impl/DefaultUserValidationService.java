@@ -223,14 +223,12 @@ public class DefaultUserValidationService implements UserValidationService {
 
             checkedValidations.onComplete( dataReading -> {
                 if( dataReading.succeeded() ) {
-log.warn(">>>>> dataReading.succeeded()");
                     JsonObject data = dataReading.result();
                     required.put(FIELD_MUST_CHANGE_PWD, getOrElse(data.getBoolean("forceChangePassword"), false));
                     required.put(FIELD_MUST_VALIDATE_TERMS, getOrElse(data.getBoolean("needRevalidateTerms"), false));
                 }
                 
                 if( dataReading.failed() || !forced ) {
-log.warn(">>>>> dataReading.failed() || !forced");
                     // Connected users with a truthy "needRevalidateTerms" attributes are required to validate the Terms of use.
                     //---
                     boolean needRevalidateTerms = false;
@@ -256,7 +254,6 @@ log.warn(">>>>> dataReading.failed() || !forced");
                     isMobileValidationRequired(userInfos, required)
                 )
                 .onComplete( ar -> {
-log.warn(">>>>>>>>>>>"+required.encodePrettily());
                     promise.complete(required);
                 });
             });
@@ -272,13 +269,13 @@ log.warn(">>>>>>>>>>>"+required.encodePrettily());
      * As of 2023-01-23, a user is required to validate his mobile phone number, if and only if :
      * - user is ADMx,
      * - MFA is set to "sms",
+     * - user's structures do not ignore MFA,
      * - mobile phone number is not already validated.
      * 
      * @return the required map parameter, updated
      */
     private Future<JsonObject> isMobileValidationRequired(final UserInfos userInfos, final JsonObject required) {
-log.warn(">>>>>isMobileValidationRequired isADML="+userInfos.isADML() +", isADMC="+userInfos.isADMC() +", Mfa.withSms()="+Mfa.withEmail() );
-        if( (userInfos.isADML() || userInfos.isADMC()) && Mfa.withSms() ){
+        if( (userInfos.isADML() || userInfos.isADMC()) && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) && Mfa.withSms() ){
             final Promise<JsonObject> promise = Promise.promise();
             hasValidMobile(userInfos.getUserId())
             .onSuccess( mobileState -> {
@@ -333,13 +330,13 @@ log.warn(">>>>>isMobileValidationRequired isADML="+userInfos.isADML() +", isADMC
      * As of 2023-01-23, a user is required to validate his email address, if and only if :
      * - user is ADMx,
      * - MFA is set to "email",
+     * - user's structures do not ignore MFA,
      * - email address is not already validated.
      * 
      * @return the required map parameter, updated
      */
     private Future<JsonObject> isEmailValidationRequired(final UserInfos userInfos, final JsonObject required) {
-log.warn(">>>>>isEmailValidationRequired isADML="+userInfos.isADML() +", isADMC="+userInfos.isADMC() +", Mfa.withEmail()="+Mfa.withEmail() );
-        if( (userInfos.isADML() || userInfos.isADMC()) && Mfa.withEmail() ){
+        if( (userInfos.isADML() || userInfos.isADMC()) && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) && Mfa.withEmail() ){
             final Promise<JsonObject> promise = Promise.promise();
             hasValidEmail(userInfos.getUserId())
             .onSuccess( emailState -> {
