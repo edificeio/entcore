@@ -63,6 +63,10 @@ public class Mfa {
 			}
 			return service;
 		}
+	
+		public JsonObject getConfig() {
+			return config;
+		}
 	}
 
 	private boolean withSms = false;
