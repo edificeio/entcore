@@ -31,6 +31,7 @@ public class Mfa {
 	public static class Factory {
 		private Vertx vertx;
 		private JsonObject config;
+		private JsonArray mfaProtectedUrls;
 		private Mfa service;
 	
 		private Factory() {}
@@ -51,6 +52,8 @@ public class Mfa {
 				String s = (String) server.get("mfaConfig");
 				this.config = (s != null) ? new JsonObject(s) : null;
 			}
+			// TODO extraire la liste réelle des URLs sensibles
+			mfaProtectedUrls = new JsonArray("[\"/auth/url1\", \"/auth/url1\"]");
 		}
 	
 		public static Mfa getInstance() {
@@ -93,5 +96,10 @@ public class Mfa {
 	/** Check if MFA can be completed through an email. */
 	public static boolean withEmail() {
 		return Factory.getInstance().withEmail;
+	}
+
+	/** Get an array of MFA-protected URLs. */
+	public static JsonArray getMfaProtectedUrls() {
+		return Factory.getFactory().mfaProtectedUrls;
 	}
 }
