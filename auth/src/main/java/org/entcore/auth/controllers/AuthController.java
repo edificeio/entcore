@@ -519,7 +519,10 @@ public class AuthController extends BaseController {
 							requirements.put("needRevalidateEmail", false);
 						}
 					}
-					requirements.put("mfaProtectedUrls", Mfa.getMfaProtectedUrls());
+					final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
+					if( userInfos!=null && (userInfos.isADML() || userInfos.isADMC()) ) {
+						requirements.put("mfaProtectedUrls", Mfa.getMfaProtectedUrls());
+					}
 				})
 				.onComplete( ar -> {
 					if( ar.failed() ) {
