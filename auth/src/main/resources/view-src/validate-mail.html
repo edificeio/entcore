@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
 	<head>
-		<title>[[app.lang.translate('validate-mail.title')]]</title>
+		<title>[[app.lang.translate(app.type === 'email' ? 'validate-mail.title' : 'validate-sms.title')]]</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
@@ -22,15 +22,15 @@
 	<body class="validate-mail">
 		<div ng-if="app.fullscreen">
 			<!-- navbar Theme 2D -->
-			<ode-navbar class="no-1d" title="[[app.lang.translate('validate-mail.title')]]"></ode-navbar>
+			<ode-navbar class="no-1d" title="[[app.lang.translate(app.type === 'email' ? 'validate-mail.title' : 'validate-sms.title')]]"></ode-navbar>
 
 			<!-- navbar Theme 1D -->
-			<navbar-legacy class="no-2d" title="[[app.lang.translate('validate-mail.title')]]"></navbar-legacy>
+			<navbar-legacy class="no-2d" title="[[app.lang.translate(app.type === 'email' ? 'validate-mail.title' : 'validate-sms.title')]]"></navbar-legacy>
 		</div>
 
 		<!-- Main -->
 		<main role="main" class="main container">
-			<validate-mail step="app.step" force="app.force" redirect="app.redirect" fullscreen="app.fullscreen">
+			<validate-mail step="app.step" force="app.force" redirect="app.redirect" fullscreen="app.fullscreen" type="app.type">
 			</validate-mail>
 		</main>
 	</body>
