@@ -1,2 +1,2 @@
 
-type ValidationStep = "email"|"code";
+type ValidationStep = "input"|"code";
