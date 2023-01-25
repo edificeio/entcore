@@ -8,8 +8,9 @@ export class AppController implements IController {
 	lang: IIdiom;
 	fullscreen = true;
 	force = false;
-	step:ValidationStep = "email";
+	step:ValidationStep = "input";
 	redirect?:string;
+	type:string = "email";
 
 	constructor(
 		private $scope:IScope
@@ -35,6 +36,9 @@ export class AppController implements IController {
 		}
 		if( params.get("redirect") ) {
 			this.redirect = params.get("redirect");
+		}
+		if( params.get("type") == "email" || params.get("type") == "sms") {
+			this.type = params.get("type");
 		}
 	}
 
