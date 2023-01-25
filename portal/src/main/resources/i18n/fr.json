@@ -720,6 +720,8 @@
   "explorer.see.more": "Voir plus",
   "explorer.trash.title": "Mise en corbeille",
   "explorer.delete.title": "Supprimer",
+  "explorer.restore.title": "Restaurer",
+  "explorer.restore.subtitle" : "Les élements séléctionnés seront restaurés depuis la corbeille, êtes-vous sûr ?",
   "explorer.trash.subtitle" : "Attention, les élements séléctionnés seront déplacés dans la corbeille, êtes-vous sûr ?",
   "explorer.delete.subtitle": "Attention, les élements séléctionnés seront supprimés définitivement, êtes-vous sûr de vouloir les supprimer?",
   "explorer.cancel": "Annuler",
@@ -734,5 +736,8 @@
   "explorer.actions.publish": "Publier dans la bibliothèque",
   "explorer.actions.print": "Imprimer",
   "explorer.actions.create": "Créer",
-  "explorer.actions.edit": "Propriétés"
+  "explorer.actions.edit": "Propriétés",
+  "explorer.actions.trash": "Mettre en corbeille",
+  "explorer.actions.restore": "Restaurer",
+  "explorer.tree.trash": "Corbeille"
 }
