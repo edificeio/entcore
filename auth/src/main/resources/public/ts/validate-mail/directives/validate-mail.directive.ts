@@ -1,7 +1,7 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { L10n, conf, http, session, notify, notif } from "ode-ngjs-front";
-import { IEmailValidationInfos, IPromisified } from "ode-ts-client";
+import { IEmailValidationInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
 
@@ -11,20 +11,21 @@ export class ValidateMailController implements IController {
 	public lang = conf().Platform.idiom;
 
 	// Scoped data
-	public step:ValidationStep = "email"; // by default
+	public step:ValidationStep = "input"; // by default
 	public force?:Boolean;
 	public redirect?:string;
 	public fullscreen?:Boolean;
+	public type?:string = "email";
 
 	// Input data
 	public emailAddress?:String;
+	public mobilePhone?:String;
 	public inputCode?:String;
-	public acceptableEmailPattern:string = "*";
+	public acceptableEmailPattern:string = ".*";
 	public status:OTPStatus = "";
 	public koStatusCause = "";
-
 	// Server data
-	private infos?:IEmailValidationInfos;
+	private infos?:IEmailValidationInfos | IMobileValidationInfos;
 
 	get isAdml() {
 		return this.me.functions && this.me.functions.ADMIN_LOCAL && this.me.functions.ADMIN_LOCAL.scope;
@@ -34,32 +35,57 @@ export class ValidateMailController implements IController {
 		return this.me.functions && this.me.functions.SUPER_ADMIN && this.me.functions.SUPER_ADMIN.scope;
 	}
 
+	get isTypeEmail	() {
+		return this.type === "email";
+	}
+
 	public async initialize() {
 		this.infos = await Promise.all([
 			notif().onSessionReady().promise,
 			conf().Platform.idiom.addBundlePromise("/auth/i18n")
 		])
-		.then( unused => session().getEmailValidationInfos() )
+		.then( unused => (this.isTypeEmail ? session().getEmailValidationInfos() : session().getMobileValidationInfos()) as Promise<IEmailValidationInfos | IMobileValidationInfos>)
 		.catch( e => {
-			setTimeout( () => notify.error('validate-mail.error.network', 4000), 500 );
-			return null;
+			if(this.isTypeEmail) {
+				setTimeout( () => notify.error('validate-mail.error.network', 4000), 500 );
+				return null;
+			} else if (this.type === "sms") {
+				setTimeout( () => notify.error('validate-sms.error.network', 4000), 500 );
+				return null;
+			}
 		});
 
 		if( this.infos ) {
-			if( this.step == "email" ) {
-				if( !this.infos.emailState 
-						|| this.infos.emailState.state !== "valid"
-						|| this.infos.emailState.valid != this.infos.email ) {
-					// Auto-fill the email address field
-					this.emailAddress = this.infos.email || "";
+			if( this.step == "input" ) {
+				if(this.isTypeEmail) {
+					const emailInfo = this.infos as IEmailValidationInfos;
+					if( !emailInfo.emailState 
+							|| emailInfo.emailState.state !== "valid"
+							|| emailInfo.emailState.valid != emailInfo.email ) {
+						// Auto-fill the email address field
+						this.emailAddress = emailInfo.email || "";
+					}
+					if( emailInfo.emailState && emailInfo.emailState.valid && emailInfo.emailState.valid.length>0 ) {
+						// Reject the current valid email address (cannot be validated twice)
+						this.acceptableEmailPattern = "^(?!"+emailInfo.emailState.valid+"$).*";
+					}
+				} else {
+					const mobileInfo = this.infos as IMobileValidationInfos;
+					if( !mobileInfo.mobileState 
+							|| mobileInfo.mobileState.state !== "valid"
+							|| mobileInfo.mobileState.valid != mobileInfo.mobile ) {
+						// Auto-fill the phone number field
+						this.mobilePhone = mobileInfo.mobile || "";
+					}
 				}
-				if( this.infos.emailState && this.infos.emailState.valid && this.infos.emailState.valid.length>0 ) {
-					// Reject the current valid email address (cannot be validated twice)
-					this.acceptableEmailPattern = "^(?!"+this.infos.emailState.valid+"$).*";
-				}
-			} else {
+			} else if (this.isTypeEmail) {
+				const emailInfo = this.infos as IEmailValidationInfos;
 				// Before displaying the step 2 immediately, the emailAddress must be initialized.
-				this.emailAddress = this.infos.emailState.pending;
+				this.emailAddress = emailInfo.emailState.pending;
+			} else {
+				const mobileInfo = this.infos as IMobileValidationInfos;
+				// Before displaying the step 2 immediately, the phone number must be initialized.
+				this.mobilePhone = mobileInfo.mobileState.pending;
 			}
 		}
 	}
@@ -93,25 +119,51 @@ export class ValidateMailController implements IController {
 		;
 	}
 
+	public validateSms() {
+		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
+		const time = new Date().getTime();
+
+		return session().checkMobile(this.mobilePhone)
+		.then( () => {
+			this.step = "code";
+			this.inputCode && delete this.inputCode;
+		})
+		.catch( e => {
+			notify.error('validate-sms.error.network');
+		})
+		.then( () => {
+			const waitMs = (this.infos ? this.infos.waitInSeconds:10) * 1000;
+			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
+			const debounceTime:IPromisified<void> = notif().promisify();
+			setTimeout( () => debounceTime.resolve(), duration);
+			return debounceTime.promise;
+		})
+		;
+	}
+
 	public validateCode():Promise<OTPStatus> {
 		// Wait at least 0,5s while validating
 		const time = new Date().getTime();
 
-		return session().tryEmailValidation(this.inputCode)
+		return (this.isTypeEmail ? session().tryEmailValidation(this.inputCode) : session().tryMobileValidation(this.inputCode))
 		.then( validation => {
 			if( validation.state === "valid" ) {
 				this.status = "ok";
 			} else {
 				this.status = "ko";
-				if( validation.state === "outdated" ) {
+				if( validation.state === "outdated" && this.isTypeEmail ) {
 					this.koStatusCause = 'validate-mail.error.ttl';
-				} else {
+				} else if (validation.state === "outdated" && this.type === "sms") {
+					this.koStatusCause = 'validate-sms.error.ttl';
+				} else if (this.isTypeEmail){
 					this.koStatusCause = 'validate-mail.error.code';
+				} else {
+					this.koStatusCause = 'validate-sms.error.code';
 				}
 			}
 		})
 		.catch( e => {
-			notify.error('validate-mail.error.network');
+			notify.error(this.isTypeEmail ? 'validate-mail.error.network' : 'validate-sms.error.network');
 		})
 		.then( () => {
 			const waitMs = 500;
@@ -124,10 +176,10 @@ export class ValidateMailController implements IController {
 	}
 
 	public renewCode():Promise<void> {
-		return session().checkEmail(this.emailAddress)
-		.then( () => session().getEmailValidationInfos() )
+		return (this.isTypeEmail ? session().checkEmail(this.emailAddress) : session().checkMobile(this.mobilePhone))
+		.then( () => (this.isTypeEmail ? session().getEmailValidationInfos() : session().getMobileValidationInfos()) as Promise<IEmailValidationInfos | IMobileValidationInfos>)
 		.then( infos => {
-			notify.success('validate-mail.step2.renewed');
+			notify.success(this.isTypeEmail ? 'validate-mail.step2.renewed' : 'validate-sms.step2.renewed');
 			this.infos = infos;
 			this.inputCode = "";
 			this.status = "";
@@ -139,6 +191,7 @@ export class ValidateMailController implements IController {
 interface ValidateMailScope extends IScope {
 	step?: ValidationStep;
 	canRenderUi: boolean;
+	type: string;
 	onValidate: (step:ValidationStep) => Promise<void>;
 	onCodeChange: (form:angular.IFormController) => Promise<void>;
 	onCodeRenew: () => Promise<void>;
@@ -152,7 +205,8 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 		step: "=?",
 		force: "=?",
 		redirect: "=?",
-		fullscreen: "=?"
+		fullscreen: "=?",
+		type: "=?"
     };
 	bindToController = true;
 	controller = [ValidateMailController];
@@ -174,7 +228,13 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 
 		scope.onValidate = async (step:ValidationStep): Promise<void> => {
 			ctrl.status = "wait";
-			if( step=="email" ) await ctrl.validateMail();
+			if( step === "input" ) {
+				if(ctrl.type === "email") {
+					await ctrl.validateMail();
+				} else if (ctrl.type === "sms") {
+					await ctrl.validateSms();
+				}
+			}
 			ctrl.status = "";
 			scope.$apply();
 			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
