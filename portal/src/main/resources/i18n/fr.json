@@ -736,6 +736,8 @@
   "explorer.cancel": "Annuler",
   "explorer.trash" : "Supprimer",
   "explorer.delete": "Supprimer",
+  "explorer.rename": "Renommer",
+  "explorer.create": "Créer",
   "explorer.move.title": "Déplacer",
   "explorer.move.subtitle": "Sélectionner le dossier vers lequel déplacer les éléments",
   "explorer.folder.new": "Nouveau dossier",
@@ -748,5 +750,8 @@
   "explorer.actions.edit": "Propriétés",
   "explorer.actions.trash": "Mettre en corbeille",
   "explorer.actions.restore": "Restaurer",
-  "explorer.tree.trash": "Corbeille"
+  "explorer.tree.trash": "Corbeille",
+  "explorer.create.folder": "Créer un dossier",
+  "explorer.create.folder.name": "Nom du dossier",
+  "explorer.rename.folder": "Renommer un dossier"
 }
