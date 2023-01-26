@@ -238,9 +238,19 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withSkipCheckVersion(final boolean skipCheckVersion) {
+        message.put("skipCheckVersion", skipCheckVersion);
+        return this;
+    }
+
     public boolean getMigrationFlag(){
         return this.getOverrideSafe().getBoolean("migration", false);
     }
+
+    public boolean getSkipCheckVersion(){
+        return this.message.getBoolean("skipCheckVersion", false);
+    }
+
     public Optional<String> getParentEntId(){
         return Optional.ofNullable(this.getOverrideSafe().getString("parentEntId"));
     }
