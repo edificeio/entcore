@@ -179,5 +179,19 @@
     "validate-sms.error.phone": "Numéro de téléphone mobile invalide",
     "validate-sms.error.same": "Le numéro de téléphone mobile saisi est déjà celui actuellement renseigné et vérifié.",
     "validate-sms.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
-    "validate-sms.error.code": "Le code de vérification est incorrect, ré-essayez."
+    "validate-sms.error.code": "Le code de vérification est incorrect, ré-essayez.",
+
+    "validate-mfa.title": "Vérification de la double authentification",
+    "validate-mfa.step1.title": "Double authentification",
+    "validate-mfa.step2.hint.paragraph1": "Un code à 6 chiffres vous a été envoyé par SMS au numéro :",
+    "validate-mfa.step2.hint.paragraph2": "Le SMS contenant le code peut mettre quelques minutes à arriver. ",
+    "validate-mfa.step2.form.code": "Indiquez votre code reçu par SMS",
+    "validate-mfa.step2.hint.paragraph4": "Vous n’avez rien reçu, ou le code ne fonctionne pas ?",
+    "validate-mfa.step2.btn": "Renvoyer un code",
+    "validate-mfa.success.paragraph1": "Vérification du numéro de téléphone mobile réussie !",
+    "validate-mfa.success.paragraph2": "Vous allez être redirigé.",
+    "validate-mfa.error.network": "Un problème technique empêche actuellement la vérification du numéro de téléphone mobile, merci de réessayer dans quelques instants ou de contacter votre administrateur.",
+    "validate-mfa.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
+    "validate-mfa.error.code": "Le code de vérification est incorrect, ré-essayez.",
+    "validate-mfa.step2.renewed": "Un nouveau code vous a été envoyé sur le numéro de téléphone mobile que vous avez renseigné."
 }

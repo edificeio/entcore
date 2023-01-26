@@ -1698,6 +1698,12 @@ public class AuthController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/validate-mfa")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void validateMfa(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
 		this.userAuthAccount = userAuthAccount;
 	}
