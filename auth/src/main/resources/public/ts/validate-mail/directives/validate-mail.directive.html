@@ -151,21 +151,11 @@
                             <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.form.code</i18n>
                             <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.form.code</i18n>
                         </label>
-                        <input type="text" id="input-data" style="background-color: white;" name="inputCodeEmail" required
+                        <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
                                 maxlength="6"
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '');"
                                 pattern="[0-9]{6}"
-                                ng-if="ctrl.type === 'email'"
-                                ng-model="ctrl.inputCodeEmail" 
-                                ng-model-options="{ debounce: 500 }"
-                                ng-change="onCodeChange(formCode)" class="form-control" />
-
-                        <input type="text" id="input-data" style="background-color: white;" name="inputCodeSms" required
-                                maxlength="6"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                                pattern="[0-9]{6}"
-                                ng-if="ctrl.type === 'sms'"
-                                ng-model="ctrl.inputCodeSms" 
+                                ng-model="ctrl.inputCode" 
                                 ng-model-options="{ debounce: 500 }"
                                 ng-change="onCodeChange(formCode)" class="form-control" />
                     </form>
