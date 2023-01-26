@@ -5,6 +5,7 @@ module.exports = {
     entry: {
         application: './auth/src/main/resources/public/ts/app.ts',
         'validate-mail/application': './auth/src/main/resources/public/ts/validate-mail/app.ts',
+        'validate-mfa/application': './auth/src/main/resources/public/ts/validate-mfa/app.ts',
         behaviours: './auth/src/main/resources/public/ts/behaviours.ts'
     },
     output: {
