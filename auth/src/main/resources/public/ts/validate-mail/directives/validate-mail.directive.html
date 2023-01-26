@@ -63,8 +63,7 @@
                             ng-class="ctrl.inputToBTCss(formValidate.inputEmail)"
                             i18n-placeholder="validate-mail.step1.form.placeholder" />
 
-                    <input type="text" id="input-data" style="background-color: white;" name="inputPhone"
-                            oninput="this.value = this.value.replace(/[^0-9+]/g, '');"
+                    <input type="tel" id="input-data" style="background-color: white;" name="inputPhone"
                             ng-if="ctrl.type === 'sms'"
                             pattern="^(\+33|0)(6|7)[0-9]{8}$"
                             ng-model="ctrl.mobilePhone"
@@ -76,7 +75,7 @@
                             <label for="input-data" ng-if="formValidate.inputEmail.$error.email && ctrl.type === 'email'">
                                 <i18n>validate-mail.error.mail</i18n>
                             </label>
-                            <label for="input-data" ng-if="formValidate.inputPhone.$invalid && ctrl.infos.mobileState.valid !== ctrl.mobilePhone && ctrl.type === 'sms'">
+                            <label for="input-data" ng-if="formValidate.inputPhone.$invalid && ctrl.type === 'sms'">
                                 <i18n>validate-sms.error.phone</i18n>
                             </label>
                         </small>
@@ -84,7 +83,7 @@
                             <label for="input-data" ng-if="formValidate.inputEmail.$error.pattern && ctrl.type === 'email'">
                                 <i18n>validate-mail.error.same</i18n>
                             </label>
-                            <label for="input-data" ng-if="ctrl.infos.mobileState.valid === ctrl.mobilePhone && ctrl.type === 'sms'">
+                            <label for="input-data" ng-if="ctrl.infos.mobileState.valid === ctrl.mobilePhone && ctrl.mobilePhone && ctrl.type === 'sms'">
                                 <i18n>validate-sms.error.same</i18n>
                             </label>
                         </small>

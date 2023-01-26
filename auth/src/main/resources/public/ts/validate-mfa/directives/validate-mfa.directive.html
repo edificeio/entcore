@@ -1,0 +1,92 @@
+<div ng-if="canRenderUi">
+
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-sm-12">
+            <div ng-if="ctrl.status!=='ko'" class="mb-3 text-center">
+                <img src="/auth/public/img/validate-mfa-ok.svg" height="150"></img>
+            </div>
+
+            <div ng-if="ctrl.status==='ko'" class="mb-3 text-center">
+                <img src="/auth/public/img/validate-mfa-nok.svg" height="150"></img>
+            </div>
+
+            <div class="mb-3 text-center fs-4">
+                <h2 class="validate-mail-title">
+                    <i18n>validate-mfa.step1.title</i18n>
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-3">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-sm-12">
+                <div class="mb-5 text-center">
+                    <div>
+                        <i18n>validate-mfa.step2.hint.paragraph1</i18n>
+                        <span> [[ctrl.infos.mobile]].</span>
+                    </div>
+                    <div>
+                        <i18n>validate-mfa.step2.hint.paragraph2</i18n>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <form novalidate autocomplete="off" name="formCodeMfa" class="col-sm-5 mx-auto" ng-submit="onValidate()">
+                        <label class="mb-2 row fw-bold" for="input-data">
+                            <i18n>validate-mfa.step2.form.code</i18n>
+                        </label>
+                        <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
+                                maxlength="6"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                pattern="[0-9]{6}"
+                                ng-model="ctrl.inputCode" 
+                                ng-model-options="{ debounce: 500 }"
+                                ng-change="onCodeChange(formCodeMfa)" class="form-control" />
+                    </form>
+                    <footer class="mt-4 mb-5">
+                        <div ng-show="ctrl.status==='wait'" class="text-primary">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                        <div ng-if="ctrl.status==='ok'" class="text-success">
+                            <svg class="icon-svg" width="20" height="20">
+                                <use href="/auth/public/icons/validate-icons.svg#successOutline"></use>
+                            </svg>
+                            <div>
+                                <i18n>validate-mfa.success.paragraph1</i18n>
+                            </div>
+                            <div ng-if="ctrl.redirect">
+                                <i18n>validate-mfa.success.paragraph2</i18n>
+                            </div>
+                        </div>
+                        <div ng-if="ctrl.status==='ko'" class="text-danger">
+                            <svg class="icon-svg" width="20" height="20">
+                                <use href="/auth/public/icons/validate-icons.svg#error"></use>
+                            </svg>
+                            <div><span translate content="[[ctrl.koStatusCause]]"></span></div>
+                        </div>
+                    </footer>
+                </div>
+
+                <div class="text-center" ng-if="ctrl.status!=='ok'">
+                    <div class="mb-4">
+                        <span class="fs-6">
+                            <i18n>validate-mfa.step2.hint.paragraph4</i18n>
+                        </span>
+                    </div>
+
+                    <div>
+                        <button type="button" id="btnRenew" class="btn btn-tertiary fw-bold" ng-click="onCodeRenew()">
+                            <svg class="icon-svg" width="20" height="20">
+                                <use href="/auth/public/icons/validate-icons.svg#redo"></use>
+                            </svg>
+                            <i18n class="align-text-top">validate-mfa.step2.btn</i18n>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+</div>
