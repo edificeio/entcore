@@ -170,13 +170,13 @@
     "validate-sms.step2.hint.paragraph4": "Vous n’avez rien reçu, ou le code ne fonctionne pas ?",
     "validate-sms.step2.form.code": "Indiquez le code reçu par SMS",
     "validate-sms.step2.btn": "Renvoyer un code",
-    "validate-sms.step2.renewed": "Un nouveau code vous a été envoyé sur le numéro de téléphone mobile que vous avez renseignée.",
+    "validate-sms.step2.renewed": "Un nouveau code vous a été envoyé sur le numéro de téléphone mobile que vous avez renseigné.",
     "validate-sms.success.paragraph1": "Vérification du numéro de téléphone mobile réussie !",
     "validate-sms.success.paragraph2": "Vous allez être redirigé.",
     "validate-sms.success.paragraph2.fullscreen": "Vous pouvez fermer cette fenêtre.",
     "validate-sms.error.network": "Un problème technique empêche actuellement la vérification du numéro de téléphone mobile, merci de réessayer dans quelques instants ou de contacter votre administrateur.",
     "validate-sms.error.phone": "Numéro de téléphone mobile invalide",
-    "validate-sms.error.same": "Le numéro de téléphone mobile saisie est déjà celui actuellement renseignée et vérifiée.",
+    "validate-sms.error.same": "Le numéro de téléphone mobile saisi est déjà celui actuellement renseigné et vérifié.",
     "validate-sms.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
     "validate-sms.error.code": "Le code de vérification est incorrect, ré-essayez."
 }
