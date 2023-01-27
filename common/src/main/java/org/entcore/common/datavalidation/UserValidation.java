@@ -14,17 +14,17 @@ public class UserValidation {
 	 * Get the current user MFA status.
 	 * @return truthy when the user should perform a MFA to access protected zones.
 	 */
-	static public Future<Boolean> getMFA(final EventBus unused, final JsonObject session) {
+	static public Boolean getMFA(final EventBus unused, final JsonObject session) {
 		return UserValidationFactory.getInstance().getMFA(session);
 	}
 
 	/**
 	 * Set the current user MFA status.
 	 * @param status the new status
-	 * @return an async future.
+	 * @return a truthy async future when successful ?
 	 */
-	static public Future<Boolean> setMFA(final EventBus unused, final JsonObject session, final boolean status) {
-		return UserValidationFactory.getInstance().setMFA(session, status);
+	static public Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status) {
+		return UserValidationFactory.getInstance().setMFA(eb, session, status);
 	}
 
 	/**

@@ -31,4 +31,6 @@ public final class SessionAttributes {
 
 	public static final String NEED_REVALIDATE_TERMS = "needRevalidateTerms";
 
+	public static final String IS_MFA = "isMFA";
+
 }
