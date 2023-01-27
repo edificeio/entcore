@@ -22,6 +22,7 @@ package org.entcore.common.datavalidation;
 import org.entcore.common.user.UserInfos;
 
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -33,22 +34,30 @@ public interface UserValidationService {
 	static public String FIELD_NEED_MFA				= "needMfa";
 
 	/**
-	 * Get the current user MFA status.
-	 * @return truthy when the user should perform a MFA to access protected zones.
+	 * Get the current user MFA status (completed or not).
+	 * @return truthy when the user has already done an MFA, falsy otherwise.
 	 */
-	Future<Boolean> getMFA(final JsonObject session);
+	Boolean getMFA(final JsonObject session);
 
 	/**
 	 * Set the current user MFA status.
-	 * @param status the new status
+	 * @param status the new status, truthy when done, falsy otherwise.
 	 * @return an async future.
 	 */
-	Future<Boolean> setMFA(final JsonObject session, final boolean status);
+	Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status);
+
+	/**
+	 * Check if the current user should perform a MFA to access protected zones, by applying to business rules.
+	 * @return true if the current user should perform a MFA
+	 */
+	Future<Boolean> needMFA(final JsonObject session);
 
 	/** 
 	 * Check if the user has to fulfill some mandatory actions, such as :
 	 * - re/validate terms of use,
-	 * - validating his email address,
+	 * - validate his email address,
+	 * - validate his mobile phone number,
+	 * - perform a MFA to access protected zones,
 	 * - change his passsword.
 	 * 
 	 * @param session
@@ -57,7 +66,8 @@ public interface UserValidationService {
 	 * 	forceChangePassword: boolean, 
 	 *  needRevalidateTerms: boolean, 
 	 *  needRevalidateEmail: boolean,
-	 *  needRevalidateMobile: boolean
+	 *  needRevalidateMobile: boolean,
+	 *  needMFA: boolean
 	 * }
 	 */
 	Future<JsonObject> getMandatoryUserValidation(final JsonObject session, final boolean forced);
