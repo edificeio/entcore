@@ -4,6 +4,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -17,6 +18,7 @@ import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_EMAIL;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_MOBILE;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
+import static org.entcore.common.datavalidation.UserValidationService.FIELD_NEED_MFA;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
 import java.io.StringReader;
@@ -184,13 +186,51 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     @Override
-	public Future<Boolean> getMFA(final JsonObject session) {
-        return Future.failedFuture("not implemented yet");
+	public Boolean getMFA(final JsonObject session) {
+        return Boolean.valueOf( session.getJsonObject("cache").getString(IS_MFA, "false") );
     }
 
     @Override
-	public Future<Boolean> setMFA(final JsonObject session, final boolean status) {
-        return Future.failedFuture("not implemented yet");
+	public Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status) {
+        Promise<Boolean> promise = Promise.promise();
+        if( session.getString("sessionId") == null ) {
+            promise.fail("Session ID is null");
+        } else {
+            UserUtils.addSessionAttributeOnId( 
+                    eb, session.getString("sessionId"), IS_MFA, Boolean.toString(status), result -> {
+                promise.complete(result);
+            });
+        }
+        return promise.future();
+    }
+
+    @Override
+	public Future<Boolean> needMFA(final JsonObject session) {
+        final UserInfos infos = UserUtils.sessionToUserInfos(session);
+        if( infos == null ) {
+            // Non-connected users do not have to perform MFA
+            return Future.succeededFuture(Boolean.FALSE);
+        }
+        return needMFA(session, infos);
+    }
+
+	private Future<Boolean> needMFA(final JsonObject session, final UserInfos infos) {
+        // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
+        // - no MFA has already been performed during this session,
+        // - MFA is activated at platform-level,
+        // - user is ADMx,
+        // - all structures, the user is attached to, are not ignoring MFA
+        if( Boolean.TRUE.equals(getMFA(session))
+         || !(Mfa.withEmail() || Mfa.withSms())
+         || infos == null
+         || !(infos.isADMC() || infos.isADML())
+         || infos.getIgnoreMFA()
+            ) {
+            return Future.succeededFuture(Boolean.FALSE);
+        }
+
+        // otherwise MFA is needed
+        return Future.succeededFuture(Boolean.TRUE);
     }
 
     @Override
@@ -199,8 +239,10 @@ public class DefaultUserValidationService implements UserValidationService {
 
         final JsonObject required = new JsonObject()
         .put(FIELD_MUST_CHANGE_PWD, getOrElse(session.getBoolean("forceChangePassword"), false))
+        .put(FIELD_MUST_VALIDATE_TERMS, false)
         .put(FIELD_MUST_VALIDATE_EMAIL, false)
-        .put(FIELD_MUST_VALIDATE_TERMS, false);
+        .put(FIELD_MUST_VALIDATE_MOBILE, false)
+        .put(FIELD_NEED_MFA, false);
 
         final UserInfos userInfos = UserUtils.sessionToUserInfos( session );
         if (userInfos == null) {
@@ -251,7 +293,8 @@ public class DefaultUserValidationService implements UserValidationService {
                 CompositeFuture
                 .all(
                     isEmailValidationRequired(userInfos, required),
-                    isMobileValidationRequired(userInfos, required)
+                    isMobileValidationRequired(userInfos, required),
+                    isMfaNeeded(session, userInfos, required)
                 )
                 .onComplete( ar -> {
                     promise.complete(required);
@@ -259,6 +302,18 @@ public class DefaultUserValidationService implements UserValidationService {
             });
         }
 		return promise.future();
+    }
+
+    /**
+     * 
+     * @return
+     */
+    private Future<Boolean> isMfaNeeded(final JsonObject session, final UserInfos userInfos, final JsonObject required) {
+        return needMFA(session, userInfos)
+            .map( needed -> {
+                required.put( FIELD_NEED_MFA, needed );
+                return needed;
+            });
     }
 
     //////////////// Mobile-related methods ////////////////
