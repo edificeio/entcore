@@ -33,18 +33,27 @@ public interface UserValidationService {
 	static public String FIELD_MUST_VALIDATE_MOBILE	= "needRevalidateMobile";
 	static public String FIELD_NEED_MFA				= "needMfa";
 
+	/** Validation codes are valid these many seconds, by default. */
+    public int getDefaultTtlInSeconds();
+
+	/** Validation code can be tested these many times, by default. */
+    public int getDefaultRetryNumber();
+
+	/** Receipt of a code should be awaited these many seconds, by default. */
+    public int getDefaultWaitInSeconds();
+
 	/**
 	 * Get the current user MFA status (completed or not).
 	 * @return truthy when the user has already done an MFA, falsy otherwise.
 	 */
-	Boolean getMFA(final JsonObject session);
+	Boolean getIsMFA(final JsonObject session);
 
 	/**
 	 * Set the current user MFA status.
 	 * @param status the new status, truthy when done, falsy otherwise.
 	 * @return an async future.
 	 */
-	Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status);
+	Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status);
 
 	/**
 	 * Check if the current user should perform a MFA to access protected zones, by applying to business rules.

@@ -19,29 +19,32 @@
 
 package org.entcore.auth.services;
 
+import org.entcore.common.user.UserInfos;
+
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 public interface MfaService {
+	/**
+	 * Retrieve current MfaState.
+	 * May send a new code, depending on the current state is outdated or not.
+	 * @return mfaState {
+		"state": "outdated | pending | valid", 
+		"tries": number of remaining retries before code becomes outdated,
+		"ttl": number of seconds remaining before expiration of the code
+		}
+	 */
+	public Future<JsonObject> getOrStartMfa(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos, final boolean forced);
 
 	/**
-	 * Try validating a mobile phone number
+	 * Try to validate an MFA with a code
 	 * @param key
-	 * @return mfaState { 
-	  	"state": "outdated | pending | valid", 
-		// Depending on the state :
-		"valid"?: "+33 6 12 34 56",
+	 * @return mfaState {
+		"state": "outdated | pending | valid", 
 		"tries"?: number of remaining retries before code becomes outdated,
 		"ttl"?: number of seconds remaining before expiration of the code
 		}
 	 */
-	public Future<JsonObject> tryCode(final String key);
-
-	/**
-	 * 
-	 * @return
-	 */
-	public Future<JsonArray> getProtectedURLs();
-
+	public Future<JsonObject> tryCode(final HttpServerRequest request, final UserInfos userInfos, final String key);
 }
