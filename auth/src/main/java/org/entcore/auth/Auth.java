@@ -45,7 +45,6 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.utils.Mfa;
 import org.opensaml.xml.ConfigurationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -71,7 +70,7 @@ public class Auth extends BaseServer {
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
 
-		final MfaService mfaService = new DefaultMfaService(vertx);
+		final MfaService mfaService = new DefaultMfaService(vertx, config);
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
