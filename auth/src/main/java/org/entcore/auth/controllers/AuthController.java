@@ -1415,10 +1415,10 @@ public class AuthController extends BaseController {
 									}
 								}
 							});
-							UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
+							UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<JsonArray>() {
 								@Override
-								public void handle(Boolean event) {
-									if (!event) {
+								public void handle(JsonArray event) {
+									if (event == null) {
 										log.error("Error delete cache session with userId : " + userId);
 									}
 								}
@@ -1455,10 +1455,10 @@ public class AuthController extends BaseController {
 										}
 									}
 								});
-								UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
+								UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<JsonArray>() {
 									@Override
-									public void handle(Boolean event) {
-										if (!event) {
+									public void handle(JsonArray event) {
+										if (event == null) {
 											log.error("Error delete cache session with userId : " + userId);
 										}
 									}
@@ -1545,10 +1545,7 @@ public class AuthController extends BaseController {
 
 								// Keep current session and app token alive
 								Optional<String> sessionId = UserUtils.getSessionId(request);
-								Optional<String> appToken = Optional.empty();
-
-								if(request instanceof SecureHttpServerRequest)
-									appToken = AppOAuthResourceProvider.getTokenId((SecureHttpServerRequest)request);
+								Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
 
 								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
 								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
@@ -1559,9 +1556,18 @@ public class AuthController extends BaseController {
 										if (resetedUserId != null) {
 											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
 											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, deleted -> {
-												if (Boolean.TRUE.equals(deleted)) {
-													CookieHelper.set("oneSessionId", "", 0l, request);
-													CookieHelper.set("authenticated", "", 0l, request);
+												if (deleted != null)
+												{
+													boolean droppedCurrent = sessionIdStr == null;
+													for(Object droppedSessionId : deleted)
+														if(droppedSessionId instanceof String && ((String) droppedSessionId).equals(sessionIdStr))
+															droppedSessionId = true;
+
+													if(droppedCurrent == true)
+													{
+														CookieHelper.set("oneSessionId", "", 0l, request);
+														CookieHelper.set("authenticated", "", 0l, request);
+													}
 												}
 												redirectionService.redirect(request, callback);							
 											});

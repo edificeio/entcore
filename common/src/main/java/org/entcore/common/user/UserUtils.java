@@ -661,7 +661,7 @@ public class UserUtils {
 		});
 	}
 
-	public static void deleteCacheSession(EventBus eb, String userId, String currentSessionId, final Handler<Boolean> handler) {
+	public static void deleteCacheSession(EventBus eb, String userId, String currentSessionId, final Handler<JsonArray> droppedSessionsHandler) {
 		JsonObject json = new JsonObject()
 				.put("action", "dropCacheSession")
 				.put("currentSessionId", currentSessionId)
@@ -670,8 +670,11 @@ public class UserUtils {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				if (handler != null) {
-					handler.handle("ok".equals(res.body().getString("status")));
+				if (droppedSessionsHandler != null) {
+					if("ok".equals(res.body().getString("status")))
+						droppedSessionsHandler.handle(res.body().getJsonArray("dropped"));
+					else
+						droppedSessionsHandler.handle(null);
 				}
 			}
 		}));
