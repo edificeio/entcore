@@ -1,12 +1,9 @@
 package org.entcore.common.datavalidation;
 
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;

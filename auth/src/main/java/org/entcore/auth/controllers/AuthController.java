@@ -60,7 +60,6 @@ import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
-import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.IgnoreCsrf;
@@ -1645,6 +1644,81 @@ public class AuthController extends BaseController {
 					}
 				});
 			}
+		});
+	}
+
+	@Get("/user/mfa/code")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getUserMfaCode(final HttpServerRequest request) {
+		// Get current code status (outdated|pending|valid)
+		// May send a new code by sms or email, depending on the conf and whether the previous code is outdated or not.
+		UserUtils.getSession(eb, request, session -> {
+			if (session == null) {
+				renderError(request, new JsonObject().put("error", "session.not.found"));
+				return;
+			}
+			final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
+			if (userInfos == null) {
+				unauthorized(request);
+				return;
+			}
+
+			mfaSvc.getOrStartMfa(request, session, userInfos, false)
+			.onSuccess( mfaState -> {
+				/*{
+					"type": "sms | email",
+					"waitInSeconds": "estimated number of seconds before code reaches the mobile phone or mailbox",
+					"state"?: {
+						"state": "outdated | pending | valid", 
+						"tries": number of remaining retries before code becomes outdated,
+						"ttl": number of seconds remaining before expiration of the code
+					}
+				}*/
+				mfaState.remove("valid");
+				renderJson(request, new JsonObject()
+					.put("type", Mfa.withSms() ? Mfa.TYPE_SMS : Mfa.TYPE_EMAIL)
+					.put("waitInSeconds", UserValidation.getDefaultWaitInSeconds())
+					.put("state", mfaState)
+				);
+			})
+			.onFailure( e -> {
+				renderError( request, new JsonObject().put("error", e.getMessage()) );
+			});
+		});
+	}
+
+	@Post("/user/mfa/code")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void postUserMfaCode(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, session -> {
+			if (session == null) {
+				renderError(request, new JsonObject().put("error", "session.not.found"));
+				return;
+			}
+			final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
+			if (userInfos == null) {
+				unauthorized(request);
+				return;
+			}
+
+			// Try validating a MFA workflow with a code
+			RequestUtils.bodyToJson(request, pathPrefix + "postUserMfaCode", payload -> {
+				final String key = payload.getString("key");
+
+				mfaSvc.tryCode(request, userInfos, key)
+				.onSuccess( mfaState -> {
+					/*{
+						"state": "outdated | pending | valid", 
+						"tries": number of remaining retries before code becomes outdated,
+						"ttl": number of seconds remaining before expiration of the code
+					}*/
+					mfaState.remove("valid");
+					renderJson(request, mfaState);
+				})
+				.onFailure( exception -> {
+					renderError(request, new JsonObject().put("error", exception.getMessage()));
+				});
+			});
 		});
 	}
 

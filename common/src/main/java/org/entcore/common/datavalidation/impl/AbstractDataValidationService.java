@@ -21,23 +21,17 @@ package org.entcore.common.datavalidation.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
 
-import static org.entcore.common.user.SessionAttributes.*;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.datavalidation.DataValidationService;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
-import org.entcore.common.email.EmailFactory;
 import org.entcore.common.utils.StringUtils;
 
 import com.samskivert.mustache.Mustache;
@@ -57,15 +50,14 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 public abstract class AbstractDataValidationService extends Renders implements DataValidationService {
-	private final Neo4j neo = Neo4j.getInstance();
-	private final String field;
-	private final String stateField;
+	protected final Neo4j neo = Neo4j.getInstance();
+	protected final String field;
+	protected final String stateField;
 	protected Map<String, JsonObject> requestThemeKV = null;
 
 	protected AbstractDataValidationService(final String field, io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
@@ -226,7 +218,7 @@ public abstract class AbstractDataValidationService extends Renders implements D
 					setState(state, OUTDATED);
 					break;
 				}
-				// if TTL or max tries reached don't check code
+				// if TTL or max tries reached, then don't check code
 				if (getState(state) == OUTDATED) {
 					break;
 				}

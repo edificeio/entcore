@@ -19,8 +19,6 @@
 
 package org.entcore.common.datavalidation;
 
-import org.entcore.common.user.UserInfos;
-
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;

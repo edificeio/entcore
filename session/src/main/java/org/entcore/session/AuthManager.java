@@ -677,7 +677,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.birthDate as birthDate, n.changePw as forceChangePassword, COALESCE(n.needRevalidateTerms, FALSE) as needRevalidateTerms,HAS(n.deleteDate) as deletePending, " +
 				"n.displayName as username, HEAD(n.profiles) as type, " +
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
-				"COLLECT(distinct [s.id, s.name, s.UAI, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
+				"COLLECT(distinct [s.id, s.name, s.UAI, s.hasApp, s.ignoreMFA]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
 				"REDUCE(acc=[], pRed IN COLLECT(COALESCE(s.optionEnabled, [])) | pRed+acc ) as optionEnabled";
 		final String query2 =
@@ -832,6 +832,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					final List<String> structureNames = new ArrayList<>();
 					final Set<String> uai = new HashSet<>();
 					boolean hasApp = false;
+					boolean ignoreMFA = false;
 					for (Object o : getOrElse(j.getJsonArray("structures"), new fr.wseduc.webutils.collections.JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						final JsonArray s = (JsonArray) o;
@@ -840,8 +841,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							structureNames.add(StringUtils.trimToBlank(s.getString(1)));
 							if (!StringUtils.isEmpty(s.getString(2)))
 								uai.add(s.getString(2));
-							if(getOrElse(s.getBoolean(3), false) && !hasApp)
+							if(!hasApp && getOrElse(s.getBoolean(3), false))
 								hasApp = true;
+							if(!ignoreMFA && getOrElse(s.getBoolean(4), false))
+								ignoreMFA = true;
 						}
 					}
 					j.remove("structures");
@@ -849,6 +852,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					j.put("structureNames", new fr.wseduc.webutils.collections.JsonArray(structureNames));
 					j.put("uai", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(uai)));
 					j.put("hasApp", hasApp);
+					j.put("ignoreMFA", ignoreMFA);
 					j.put("classes", new fr.wseduc.webutils.collections.JsonArray(classesIds));
 					j.put("realClassesNames", new fr.wseduc.webutils.collections.JsonArray(classesNames));
 					j.put("functions", functions);

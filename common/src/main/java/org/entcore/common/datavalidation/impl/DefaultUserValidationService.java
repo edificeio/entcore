@@ -12,13 +12,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.*;
-import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_CHANGE_PWD;
-import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_EMAIL;
-import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_MOBILE;
-import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
-import static org.entcore.common.datavalidation.UserValidationService.FIELD_NEED_MFA;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
 import java.io.StringReader;
@@ -30,7 +24,6 @@ import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.email.EmailFactory;
-import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -150,7 +143,6 @@ public class DefaultUserValidationService implements UserValidationService {
     private int ttlInSeconds     = 600;  // Validation codes are valid 10 minutes by default
     private int retryNumber      = 5;    // Validation code can be typed in 5 times by default
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
-    private Boolean withSms, withEmail;
 
     public DefaultUserValidationService(final io.vertx.core.Vertx vertx, final io.vertx.core.json.JsonObject config, final JsonObject params) {
         if( params != null ) {
@@ -186,18 +178,17 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     @Override
-	public Boolean getMFA(final JsonObject session) {
+	public Boolean getIsMFA(final JsonObject session) {
         return Boolean.valueOf( session.getJsonObject("cache").getString(IS_MFA, "false") );
     }
 
     @Override
-	public Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status) {
+	public Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status) {
         Promise<Boolean> promise = Promise.promise();
-        if( session.getString("sessionId") == null ) {
+        if( StringUtils.isEmpty(sessionId) ) {
             promise.fail("Session ID is null");
         } else {
-            UserUtils.addSessionAttributeOnId( 
-                    eb, session.getString("sessionId"), IS_MFA, Boolean.toString(status), result -> {
+            UserUtils.addSessionAttributeOnId( eb, sessionId, IS_MFA, Boolean.toString(status), result -> {
                 promise.complete(result);
             });
         }
@@ -217,20 +208,34 @@ public class DefaultUserValidationService implements UserValidationService {
 	private Future<Boolean> needMFA(final JsonObject session, final UserInfos infos) {
         // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
         // - no MFA has already been performed during this session,
-        // - MFA is activated at platform-level,
         // - user is ADMx,
+        // - MFA is activated at platform-level,
         // - all structures, the user is attached to, are not ignoring MFA
-        if( Boolean.TRUE.equals(getMFA(session))
-         || !(Mfa.withEmail() || Mfa.withSms())
+        if( Boolean.TRUE.equals(getIsMFA(session))
          || infos == null
          || !(infos.isADMC() || infos.isADML())
-         || infos.getIgnoreMFA()
+         || Mfa.isNotActivatedForUser(infos)
             ) {
             return Future.succeededFuture(Boolean.FALSE);
         }
 
         // otherwise MFA is needed
         return Future.succeededFuture(Boolean.TRUE);
+    }
+
+    @Override
+    public int getDefaultTtlInSeconds() {
+        return ttlInSeconds;
+    }
+
+    @Override
+    public int getDefaultRetryNumber() {
+        return retryNumber;
+    }
+
+    @Override
+    public int getDefaultWaitInSeconds() {
+        return waitInSeconds;
     }
 
     @Override

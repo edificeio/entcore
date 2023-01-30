@@ -21,7 +21,6 @@ package org.entcore.directory;
 
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.mongodb.MongoDbConf;

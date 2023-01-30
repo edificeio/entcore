@@ -1,21 +1,34 @@
 package org.entcore.common.datavalidation;
 
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 
 public class UserValidation {
 
+	/** Validation codes are valid these many seconds, by default. */
+    static public int getDefaultTtlInSeconds() {
+		return UserValidationFactory.getInstance().getDefaultTtlInSeconds();
+	}
+
+	/** Validation code can be tested these many times, by default. */
+    static public int getDefaultRetryNumber() {
+		return UserValidationFactory.getInstance().getDefaultRetryNumber();
+	}
+
+	/** Receipt of a code should be awaited these many seconds, by default. */
+    static public int getDefaultWaitInSeconds() {
+		return UserValidationFactory.getInstance().getDefaultWaitInSeconds();
+	}
+
 	/**
 	 * Get the current user MFA status.
-	 * @return truthy when the user should perform a MFA to access protected zones.
+	 * @return truthy when the user is authentified with 2 factors.
 	 */
-	static public Boolean getMFA(final EventBus unused, final JsonObject session) {
-		return UserValidationFactory.getInstance().getMFA(session);
+	static public Boolean getIsMFA(final EventBus unused, final JsonObject session) {
+		return UserValidationFactory.getInstance().getIsMFA(session);
 	}
 
 	/**
@@ -23,8 +36,8 @@ public class UserValidation {
 	 * @param status the new status
 	 * @return a truthy async future when successful ?
 	 */
-	static public Future<Boolean> setMFA(final EventBus eb, final JsonObject session, final boolean status) {
-		return UserValidationFactory.getInstance().setMFA(eb, session, status);
+	static public Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status) {
+		return UserValidationFactory.getInstance().setIsMFA(eb, sessionId, status);
 	}
 
 	/**
