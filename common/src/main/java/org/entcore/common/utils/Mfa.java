@@ -19,6 +19,8 @@
 
 package org.entcore.common.utils;
 
+import org.entcore.common.user.UserInfos;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
@@ -102,4 +104,9 @@ public class Mfa {
 	public static JsonArray getMfaProtectedUrls() {
 		return Factory.getFactory().mfaProtectedUrls;
 	}
+
+    public static boolean isNotActivatedForUser(final UserInfos userInfos) {
+        return (!(Factory.getInstance().withSms || Factory.getInstance().withEmail) || userInfos.getIgnoreMFA() );
+    }
+
 }
