@@ -159,13 +159,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String currentSessionId = message.body().getString("currentSessionId");
 		sessionStore.listSessionsIds(userId, ar -> {
 			if (ar.succeeded()) {
+				JsonArray removedSessions = new JsonArray();
 				for (Object sessionId : ar.result()) {
 					if (sessionId instanceof String) {
 						if(currentSessionId == null || ((String)sessionId).equals(currentSessionId) == false)
+						{
+							removedSessions.add((String) sessionId);
 							dropSession(null, (String) sessionId, null);
+						}
 					}
 				}
-				sendOK(message);
+				sendOK(message, new JsonObject().put("dropped", removedSessions));
 			} else {
 				logger.error("[doDropCacheSession] error when list sessions ids with userId : " + userId, ar.cause());
 				sendError(message, "[doDropCacheSession] Invalid userId : " + userId);
@@ -282,19 +286,19 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							{
 								JsonArray resArray = result.body().getJsonArray("results");
 
-								if(OAuthCacheService != null)
+								for(int i = resArray.size(); i-- > 0;)
 								{
-									for(int i = resArray.size(); i-- > 0;)
+									String tokenId = resArray.getJsonObject(i).getString("token");
+									if(tokenId.equals(currentTokenId))
 									{
-										String tokenId = resArray.getJsonObject(i).getString("token");
-										if(tokenId.equals(currentTokenId))
-										{
-											// Keep this token and its auth alive
-											authIdFilter.put("token", new JsonObject().put("$ne", currentTokenId));
-											userFilter.put("_id", new JsonObject().put("$ne", resArray.getJsonObject(i).getString("authId")));
-											continue;
-										}
+										// Keep this token and its auth alive
+										authIdFilter.put("token", new JsonObject().put("$ne", currentTokenId));
+										userFilter.put("_id", new JsonObject().put("$ne", resArray.getJsonObject(i).getString("authId")));
+										continue;
+									}
 
+									if(OAuthCacheService != null)
+									{
 										String tokenKey = "AppOAuthResourceProvider:token:" + tokenId;
 										OAuthCacheService.remove(tokenKey, new Handler<AsyncResult<Void>>()
 										{

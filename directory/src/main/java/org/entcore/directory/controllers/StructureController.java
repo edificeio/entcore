@@ -694,10 +694,10 @@ public class StructureController extends BaseController {
 												}
 											}
 										});
-										UserUtils.deleteCacheSession(eb, (String) userId, null, new Handler<Boolean>() {
+										UserUtils.deleteCacheSession(eb, (String) userId, null, new Handler<JsonArray>() {
 											@Override
-											public void handle(Boolean event) {
-												if (!event) {
+											public void handle(JsonArray event) {
+												if (event == null) {
 													log.error("Error delete cache session with userId : " + userId);
 												}
 											}
