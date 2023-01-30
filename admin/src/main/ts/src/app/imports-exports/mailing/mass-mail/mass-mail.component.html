@@ -23,6 +23,7 @@
               [display]="filter.display || translate"
               [max]="filter.datepicker ? 1 : filter.comboModel.length"
               [orderBy]="filter.order"
+              [filter]="filter.filterProp"
               (outputModelChange)="resetDate(filter)">
             </ode-multi-combo>
 
