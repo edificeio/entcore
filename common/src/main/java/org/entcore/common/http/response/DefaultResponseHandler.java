@@ -21,13 +21,16 @@ package org.entcore.common.http.response;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import fr.wseduc.webutils.request.CookieHelper;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 
+import static org.entcore.common.user.UserUtils.getSessionIdOrTokenId;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class DefaultResponseHandler {
@@ -68,6 +71,152 @@ public class DefaultResponseHandler {
 				} else {
 					JsonObject error = new JsonObject().put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Recreate a session for the targeted user {@code targetUser} if it is the same as {@code caller}.
+	 * <ul>
+	 *     <li>a new session is created</li>
+	 *     <li>the session cookie is rewritten in {@code request.response}</li>
+	 *     <li>oauth token is set to the new session id</li>
+	 * </ul>
+	 *
+	 * <strong>NB: </strong> If {@code caller} is the {@code targetUser}, this function will write a response before {@code handler}
+	 * is executed
+	 * @param targetUser User id of the user whose session attributes changed
+	 * @param request {@code caller}'s http request
+	 * @param eventBus Event bus to communicate with the session handler
+	 * @param onDone Downstream action to perform, whether the session has been recreated or not
+	 */
+	public static void recreateSession(final String targetUser,
+									   final HttpServerRequest request,
+									   final EventBus eventBus,
+									   final Runnable onDone) {
+		recreateSessionHandler(targetUser, request, eventBus, event -> {
+			if(onDone != null) {
+				onDone.run();
+			}
+		}).handle(new Either.Right(new JsonObject()));
+	}
+
+	/**
+	 * Recreate a session for the targeted user {@code targetUser} if it is the same as {@code caller}.
+	 * <ul>
+	 *     <li>a new session is created</li>
+	 *     <li>the session cookie is rewritten in {@code request.response}</li>
+	 *     <li>oauth token is set to the new session id</li>
+	 * </ul>
+	 *
+	 * <strong>NB: </strong> If {@code caller} is the {@code targetUser}, this function will write a response before {@code handler}
+	 * is executed
+	 * @param caller User who is actually authenticated
+	 * @param targetUser User id of the user whose session attributes changed
+	 * @param request {@code caller}'s http request
+	 * @param eventBus Event bus to communicate with the session handler
+	 * @param onDone Downstream action to perform, whether the session has been recreated or not
+	 */
+	public static Future<Void> recreateSession(final UserInfos caller,
+											   final String targetUser,
+											   final HttpServerRequest request,
+											   final EventBus eventBus) {
+		final Promise<Void> promise = Promise.promise();
+		recreateSessionHandler(caller, targetUser, request, eventBus, event -> {
+			promise.complete();
+		}).handle(new Either.Right(new JsonObject()));
+		return promise.future();
+	}
+
+	/**
+	 * Recreate a session for the targeted user {@code targetUser} if it is the same as {@code caller}.
+	 * <ul>
+	 *     <li>a new session is created</li>
+	 *     <li>the session cookie is rewritten in {@code request.response}</li>
+	 *     <li>oauth token is set to the new session id</li>
+	 * </ul>
+	 *
+	 * <strong>NB: </strong> If {@code caller} is the {@code targetUser}, this function will write a response before {@code handler}
+	 * is executed
+	 * @param targetUser User id of the user whose session attributes changed
+	 * @param request {@code caller}'s http request
+	 * @param eventBus Event bus to communicate with the session handler
+	 * @param handler Downstream actions to execute after the session has been recreated
+	 * @return A handler which will receive an upstream event who is going to determine whether the recreation of the
+	 * 			session should be attempted (successfull event) or not (failed event)
+	 */
+	public static Handler<Either<String, JsonObject>> recreateSessionHandler(final String targetUser,
+																			 final HttpServerRequest request,
+																			 final EventBus eventBus,
+																			 final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isRight()) {
+					UserUtils.getAuthenticatedUserInfos(eventBus, request).onComplete(userResult -> {
+						if(userResult.succeeded()) {
+							recreateSessionHandler(userResult.result(), targetUser, request, eventBus, handler).handle(event);
+						} else {
+							if(handler != null){
+								handler.handle(event);
+							}
+						}
+					});
+				} else if(handler != null) {
+					handler.handle(event);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Recreate a session for the targeted user {@code targetUserId} if it is the same as {@code caller}.
+	 * <ul>
+	 *     <li>a new session is created</li>
+	 *     <li>the session cookie is rewritten in {@code request.response}</li>
+	 *     <li>oauth token is set to the new session id</li>
+	 * </ul>
+	 *
+	 * <strong>NB: </strong> If {@code caller} is the {@code targetUserId}, this function will write a response before {@code handler}
+	 * is executed
+	 * @param caller User who is actually authenticated
+	 * @param targetUserId User id of the user whose session attributes changed
+	 * @param request {@code caller}'s http request
+	 * @param eventBus Event bus to communicate with the session handler
+	 * @param handler Downstream actions to execute after the session has been recreated
+	 * @return A handler which will receive an upstream event who is going to determine whether the recreation of the
+	 * 			session should be attempted (successfull event) or not (failed event)
+	 */
+	public static Handler<Either<String, JsonObject>> recreateSessionHandler(final UserInfos caller,
+																			 final String targetUserId,
+																			 final HttpServerRequest request,
+																			 final EventBus eventBus,
+																			 final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				final String sessionIdentifier = getSessionIdOrTokenId(request).orElse(null);
+				if (event.isRight()) {
+					if (caller.getUserId().equals(targetUserId)) {
+						UserUtils.reCreateSession(eventBus, targetUserId, request).onComplete(recreationResult -> {
+							if (recreationResult.succeeded()) {
+								final String sessionId = recreationResult.result();
+								// If no session id is returned it means that the session could not be retrieved
+								if (sessionId != null) {
+									final long timeout = Long.MIN_VALUE;
+									CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
+								}
+							}
+							if (handler != null) {
+								handler.handle(event);
+							}
+						});
+					} else if (handler != null) {
+						handler.handle(event);
+					}
+				} else if (handler != null) {
+					handler.handle(event);
 				}
 			}
 		};

@@ -19,23 +19,21 @@
 
 package org.entcore.session;
 
-import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import org.entcore.common.mongodb.MongoDbResult;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.neo4j.Neo4j;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.cache.CacheService;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.redis.Redis;
+import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.StringUtils;
 import org.vertx.java.busmods.BusModBase;
-import org.entcore.common.cache.CacheService;
-import io.vertx.core.AsyncResult;
-import org.entcore.common.redis.Redis;
 
 import java.util.*;
 
@@ -53,6 +51,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	protected SessionStore sessionStore;
 	protected CacheService OAuthCacheService;
 	protected Boolean cluster;
+	protected boolean xsrfOnAuth;
 
 	public void start() {
 		super.start();
@@ -68,6 +67,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 
 		sessionStore = new MapSessionStore(vertx, cluster, config);
+
+		this.xsrfOnAuth = config.getBoolean("xsrfOnAuth", true);
 
 		try
 		{
@@ -109,6 +110,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			break;
 		case "create":
 			doCreate(message);
+			break;
+		case "recreate":
+			doReCreate(message);
 			break;
 		case "drop":
 			doDrop(message);
@@ -411,7 +415,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
 						final String uId = userId;
 						final boolean secureLocation = getOrElse(res.getBoolean("secureLocation"), false);
-						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"), secureLocation,
+						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"), secureLocation, null,
 								sId -> {
 									if (sId != null) {
 										sessionStore.getSession(sId, ar2 -> {
@@ -450,21 +454,69 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void doCreate(final Message<JsonObject> message) {
-		final String userId = message.body().getString("userId");
-		final String sessionIndex = message.body().getString("SessionIndex");
-		final String nameID = message.body().getString("NameID");
-		final boolean secureLocation = getOrElse(message.body().getBoolean("secureLocation"), false);
+	/**
+	 * Recreate a session for the current user and then remove the current session from the store.
+	 * @param message Recreate session request received from the bus
+	 */
+	private void doReCreate(final Message<JsonObject> message) {
+		final SessionRecreationRequest request = message.body().mapTo(SessionRecreationRequest.class);
+		final String userId = request.getUserId();
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "[doCreate] Invalid userId : " + message.body().encode());
+			sendError(message, "[doReCreate] Invalid userId : " + message.body());
+			return;
+		}
+		sessionStore.getSession(request.getSessionId(), result -> {
+			final String nameId;
+			final String sessionIndex;
+			final boolean secureLocation;
+			final JsonObject cache;
+			if(result.succeeded()) {
+				final JsonObject oldSession = result.result();
+				final JsonObject sessionMetadata = oldSession.getJsonObject("sessionMetadata");
+				sessionIndex = sessionMetadata.getString("SessionIndex");
+				nameId = sessionMetadata.getString("NameID");
+				secureLocation = Boolean.TRUE.equals(sessionMetadata.getBoolean("secureLocation"));
+				cache = oldSession.getJsonObject("cache");
+			} else {
+				sessionIndex = null;
+				nameId = null;
+				secureLocation = false;
+				cache = null;
+			}
+			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache, sessionId -> {
+				message.reply(sessionId);
+				// TODO update metrics
+				if(sessionId != null && !request.isRefreshOnly()) {
+					sessionStore.dropSession(request.getSessionId(), dropSessionResult -> {
+						if(dropSessionResult.succeeded()) {
+							logger.debug("Successfully deleted " + userId+ "'s old session");
+						} else {
+							logger.info("Error while deleting " + userId+ "'s old session", dropSessionResult.cause());
+						}
+					});
+				}
+			});
+		});
+	}
+	private void doCreate(final Message<JsonObject> message) {
+		final JsonObject body = message.body();
+		final String userId = body.getString("userId");
+		final String sessionIndex = body.getString("SessionIndex");
+		final String nameID = body.getString("NameID");
+		final String desiredSessionId = body.getString("sessionId");
+		final boolean secureLocation = body.getBoolean("secureLocation", false);
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "[doCreate] Invalid userId : " + body.encode());
 			return;
 		}
 
-		createSession(userId, null, sessionIndex, nameID, secureLocation, sessionId -> {
+		createSession(userId, desiredSessionId, sessionIndex, nameID, secureLocation, null, sessionId -> {
 			if (sessionId != null) {
 				sendOK(message, new JsonObject()
 						.put("status", "ok")
-						.put("sessionId", sessionId));
+						.put("sessionId", sessionId)
+						.put("xsrf", xsrfOnAuth ? UUID.randomUUID().toString() : null)
+				);
 			} else {
 				sendError(message, "Invalid userId : " + userId);
 			}
@@ -472,7 +524,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
-			final boolean secureLocation, final Handler<String> handler) {
+			final boolean secureLocation, final JsonObject previousCache, final Handler<String> handler) {
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
@@ -485,6 +537,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					}
 					if (secureLocation) {
 						json.put("secureLocation", secureLocation);
+					}
+					if(previousCache != null) {
+						json.put("cache", previousCache);
 					}
 					infos.put("sessionMetadata", json);
 					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {

@@ -1,22 +1,19 @@
 package org.entcore.common.http;
 
-import java.util.UUID;
-
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.AbstractBasicFilter;
-import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.request.filter.AbstractQueryParamTokenFilter;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+
+import java.util.UUID;
 
 public class UserAuthWithQueryParamFilter extends UserAuthFilter {
     private final Server server;

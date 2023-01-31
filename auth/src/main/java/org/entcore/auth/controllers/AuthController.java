@@ -19,65 +19,45 @@
 
 package org.entcore.auth.controllers;
 
-import java.util.UUID;
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.serverError;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.unauthorizedClient;
-import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.Optional;
-
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
-import fr.wseduc.webutils.*;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.http.response.DefaultResponseHandler;
 import fr.wseduc.webutils.logging.Tracer;
 import fr.wseduc.webutils.logging.TracerFactory;
+import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
-
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import jp.eisbahn.oauth2.server.async.Handler;
-import org.entcore.auth.adapter.ResponseAdapterFactory;
-import org.entcore.auth.adapter.UserInfoAdapter;
-import org.entcore.auth.services.MfaService;
-import org.entcore.auth.services.SafeRedirectionService;
-import org.entcore.common.datavalidation.UserValidation;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.http.filter.AppOAuthResourceProvider;
-import org.entcore.common.utils.MapFactory;
-import org.entcore.common.utils.Mfa;
-import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
-
-import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.endpoint.ProtectedResource;
 import jp.eisbahn.oauth2.server.endpoint.Token;
 import jp.eisbahn.oauth2.server.endpoint.Token.Response;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
-import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcherProvider;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.impl.DefaultAccessTokenFetcherProvider;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher;
@@ -88,29 +68,42 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import org.entcore.auth.adapter.ResponseAdapterFactory;
+import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.pojo.SendPasswordDestination;
+import org.entcore.auth.services.MfaService;
+import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
-
-import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
-
-import org.entcore.common.user.UserUtils;
+import org.entcore.common.datavalidation.UserValidation;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.http.filter.AppOAuthResourceProvider;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.user.UserInfos;
-
-import fr.wseduc.security.SecuredAction;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.MapFactory;
+import org.entcore.common.utils.Mfa;
+import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.StringValidation;
 import org.vertx.java.core.http.RouteMatcher;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import static fr.wseduc.webutils.Utils.*;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.*;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class AuthController extends BaseController {
 
@@ -379,13 +372,24 @@ public class AuthController extends BaseController {
 					}
 
 					private void oauthTokenHandle(Response response) {
-						if (response.getCode() == 200 && ("password".equals(req.getParameter("grant_type")) ||
-								"refresh_token".equals(req.getParameter("grant_type")) ||
-								"saml2".equals(req.getParameter("grant_type")) ||
-								"custom_token".equals(req.getParameter("grant_type")))) {
+						final String grantType = req.getParameter("grant_type");
+						final UserData userData = response.getUserData();
+						if (response.getCode() == 200 && ("password".equals(grantType) ||
+								"refresh_token".equals(grantType) ||
+								"saml2".equals(grantType) ||
+								"custom_token".equals(grantType))) {
 							final ClientCredential clientCredential = clientCredentialFetcher.fetch(req);
-							if ("password".equals(req.getParameter("grant_type"))) {
-								String login = req.getParameter("username");
+							final Promise<String> futureUserId = Promise.promise();
+							if ("password".equals(grantType)) {
+								final String login = req.getParameter("username");
+								final DataHandler data = oauthDataFactory.create(req);
+								data.getUserId(login, req.getParameter("password"), getUserIdResult -> {
+									try {
+										futureUserId.complete(getUserIdResult.get());
+									} catch (AccessDenied e) {
+										futureUserId.fail(e);
+									}
+								});
 								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, clientCredential.getClientId(), request);
 								userAuthAccount.storeDomainByLogin(login, getHost(request), getScheme(request), new io.vertx.core.Handler<Boolean>() {
 									@Override
@@ -395,24 +399,34 @@ public class AuthController extends BaseController {
 										}
 									}
 								});
-							} else if ("refresh_token".equals(req.getParameter("grant_type"))) {
+							} else if ("refresh_token".equals(grantType)) {
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getAuthInfoByRefreshToken(req.getParameter("refresh_token"), authInfo -> {
-									if (authInfo != null) {
-										String id = authInfo.getUserId();
+									if (authInfo == null) {
+										futureUserId.fail("auth.info.not.found");
+									} else {
+										final String id = authInfo.getUserId();
+										futureUserId.complete(id);
 										storeLoginEventAndDomain(request, clientCredential, id);
 									}
 								});
-							} else if ("saml2".equals(req.getParameter("grant_type")) || "custom_token".equals(req.getParameter("grant_type"))) {
-								final UserData userData = response.getUserData();
+							} else if ("saml2".equals(grantType) || "custom_token".equals(grantType)) {
 								storeLoginEventAndDomain(request, clientCredential, userData.getId());
+								futureUserId.complete(userData.getId());
 								if (isNotEmpty(userData.getActivationCode())) {
 									activateUser(userData.getActivationCode(), userData.getLogin(),
 											userData.getEmail(), userData.getMobile(), userData.getSource(), request);
 								}
 							}
+							futureUserId.future().onSuccess(userId -> {
+								createSessionForMobile(userId, response, request);
+							}).onFailure(th -> {
+								log.warn("Could not create a session for the user", th);
+								renderJson(request, new JsonObject(response.getBody()), response.getCode());
+							});
+						} else {
+							renderJson(request, new JsonObject(response.getBody()), response.getCode());
 						}
-						renderJson(request, new JsonObject(response.getBody()), response.getCode());
 					}
 
 					private void storeLoginEventAndDomain(final HttpServerRequest request, final ClientCredential clientCredential,
@@ -750,6 +764,21 @@ public class AuthController extends BaseController {
 		redirectionService.redirect(request, "/auth/reset/" + password + "?login=" + login);
 	}
 
+	/**
+	 * Creates a session for requests that seem to be coming from the mobile app (i.e. OAuth2 authorization).
+	 * The created request will have the access token as a  session id #WB-1578.
+	 * @param userId User id of the logged user
+	 * @param response OAuth uthentication response
+	 * @param request User's authentication request
+	 */
+	private void createSessionForMobile(final String userId, final Response response, final HttpServerRequest request) {
+		final String token = (String) Json.decodeValue(response.getBody(), Map.class).get("access_token");
+		UserUtils.createSessionWithId(eb, userId, token, "true".equals(request.formAttributes().get("secureLocation")))
+		.onComplete(asyncResult -> {
+			renderJson(request, new JsonObject(response.getBody()), response.getCode());
+		});
+	}
+
 	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
 		UserUtils.createSession(eb, userId, "true".equals(request.formAttributes().get("secureLocation")),
 				sessionId -> {
@@ -889,7 +918,7 @@ public class AuthController extends BaseController {
 			forbidden(request);
 			return;
 		}
-		UserUtils.getSessionByUserId(eb, ((SecureHttpServerRequest) request).getAttribute("remote_user"),
+		UserUtils.getSession(eb, ((SecureHttpServerRequest) request),
 				new io.vertx.core.Handler<JsonObject>() {
 
 					@Override
