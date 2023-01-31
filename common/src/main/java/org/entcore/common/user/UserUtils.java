@@ -20,7 +20,6 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Renders;
@@ -32,21 +31,22 @@ import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.session.SessionRecreationRequest;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 
 public class UserUtils {
 
@@ -401,6 +401,7 @@ public class UserUtils {
 
 	public static void getSession(EventBus eb, final HttpServerRequest request, boolean paused,
 								  final Handler<JsonObject> handler) {
+		// TODO change
 		if (request instanceof SecureHttpServerRequest &&
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
@@ -437,22 +438,26 @@ public class UserUtils {
 				}
 			})
 			.onSuccess( remoteUserId -> {
-				if ((oneSessionId == null || oneSessionId.trim().isEmpty()) &&
-						(remoteUserId == null || remoteUserId.trim().isEmpty())) {
+				final String sessionId;
+				// The session id can come whether from the cookie oneSessionId for web users
+				// or from the access token in the Authorization header of the request #WB-1578
+				if(oneSessionId != null && !oneSessionId.trim().isEmpty()) {
+					sessionId = oneSessionId;
+				} else if(request instanceof SecureHttpServerRequest){
+					sessionId = getTokenId((SecureHttpServerRequest) request).orElse(null);
+				} else {
+					sessionId = null;
+				}
+				if (sessionId == null) {
+					log.debug("A request came for user " + remoteUserId + " with no way to get its session");
 					handler.handle(null);
 				} else {
 					if (!paused) {
 						request.pause();
 					}
-					JsonObject findSession = new JsonObject();
-					if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
-						findSession.put("action", "find")
-								.put("sessionId", oneSessionId);
-					} else { // remote user (oauth)
-						findSession.put("action", "findByUserId")
-								.put("userId", remoteUserId)
-								.put("allowDisconnectedUser", true);
-					}
+					final JsonObject findSession = new JsonObject()
+						.put("action", "find")
+						.put("sessionId", sessionId);
 					findSession(eb, request, findSession, paused, handler);
 				}
 			});
@@ -567,17 +572,43 @@ public class UserUtils {
 		});
 	}
 
+	public static Future<String> reCreateSession(final EventBus eb,
+																 final String userId,
+																 final HttpServerRequest request) {
+		final Promise<String> details = Promise.promise();
+		final boolean isOAuthRequest = request instanceof SecureHttpServerRequest && getTokenId((SecureHttpServerRequest) request).isPresent();
+		final SessionRecreationRequest recreationRequest = new SessionRecreationRequest(userId, getSessionIdOrTokenId(request).orElse(null), isOAuthRequest);
+		eb.send(SESSION_ADDRESS, JsonObject.mapFrom(recreationRequest), new Handler<AsyncResult<Message<String>>>() {
+			@Override
+			public void handle(AsyncResult<Message<String>> res) {
+				if (res.succeeded()) {
+					details.complete(res.result().body());
+				} else {
+					details.fail(res.result().body());
+				}
+			}
+		});
+		return details.future();
+	}
+	public static Future<String> createSessionWithId(final EventBus eb, final String userId,
+										   final String desiredSessionId,
+										   final boolean secureLocation) {
+		final Promise<String> promise = Promise.promise();
+		createSession(eb, userId, desiredSessionId, null, null, secureLocation, sessionId -> promise.complete(sessionId));
+		return promise.future();
+	}
 	public static void createSession(EventBus eb, String userId, boolean secureLocation, Handler<String> handler) {
-		createSession(eb, userId, null, null, secureLocation, handler);
+		createSession(eb, userId, null, null, null, secureLocation, handler);
 	}
 
 	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId, Handler<String> handler) {
-		createSession(eb, userId, sessionIndex, nameId, false, handler);
+		createSession(eb, userId, null, sessionIndex, nameId, false, handler);
 	}
 
-	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId,
+	public static void createSession(EventBus eb, String userId, final String desiredSessionId,
+									 String sessionIndex, String nameId,
 			boolean secureLocation, final Handler<String> handler) {
-		JsonObject json = new JsonObject()
+		final JsonObject json = new JsonObject()
 				.put("action", "create")
 				.put("userId", userId);
 		if (sessionIndex != null && nameId != null && !sessionIndex.trim().isEmpty() && !nameId.trim().isEmpty()) {
@@ -585,6 +616,9 @@ public class UserUtils {
 		}
 		if (secureLocation) {
 			json.put("secureLocation", secureLocation);
+		}
+		if(desiredSessionId != null && !desiredSessionId.isEmpty()) {
+			json.put("sessionId", desiredSessionId);
 		}
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
@@ -922,5 +956,34 @@ public class UserUtils {
 		});
 		return promise.future();
 	}
+	public static Optional<String> getSessionIdOrTokenId(final HttpServerRequest request) {
+		final Optional<String> maybeSessionId;
+		final Cookie sessionId = request.getCookie("oneSessionId");
+		if(sessionId == null) {
+			if (request instanceof SecureHttpServerRequest) {
+				maybeSessionId = getTokenId((SecureHttpServerRequest) request);
+			} else {
+				maybeSessionId = Optional.empty();
+			}
+		} else {
+			maybeSessionId = Optional.ofNullable(sessionId.getValue());
+		}
+		return maybeSessionId;
+	}
+
+	public static enum ErrorCodes {
+		SESSION_NOT_CREATED("session.creation.error");
+
+		private final String code;
+
+		ErrorCodes(final String code) {
+			this.code = code;
+		}
+
+		public String getCode() {
+			return code;
+		}
+	}
+
 }
 
