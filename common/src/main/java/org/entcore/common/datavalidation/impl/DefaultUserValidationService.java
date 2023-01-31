@@ -37,8 +37,7 @@ import fr.wseduc.webutils.email.EmailSender;
 
 
 /**
- * @see {@link EmailValidation} utility class for easier use
- * Embraces and extends EmailValidationService
+ * @see {@link EmailValidation} {@link MobileValidation} utility classes for easier use.
  */
 public class DefaultUserValidationService implements UserValidationService {
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserValidationService.class);
