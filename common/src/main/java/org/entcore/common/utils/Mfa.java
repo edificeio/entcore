@@ -106,7 +106,10 @@ public class Mfa {
 	}
 
     public static boolean isNotActivatedForUser(final UserInfos userInfos) {
-        return (!(Factory.getInstance().withSms || Factory.getInstance().withEmail) || userInfos.getIgnoreMFA() );
+        return (
+			!(Factory.getInstance().withSms || Factory.getInstance().withEmail) 
+			|| Boolean.TRUE.equals(userInfos.getIgnoreMFA()) 
+		);
     }
 
 }
