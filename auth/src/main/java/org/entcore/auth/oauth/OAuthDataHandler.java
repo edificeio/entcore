@@ -227,18 +227,18 @@ public class OAuthDataHandler extends DataHandler {
 		JsonObject r = result.getJsonObject(0);
 
 		if (r != null) {
-			if (getOrElse(r.getBoolean("blockedProfile"), false)) {
+			if (r.getBoolean("blockedProfile", false)) {
 				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_PROFILETYPE)));
 				return;
 			}
-			if (getOrElse(r.getBoolean("blockedUser"), false)) {
+			if (r.getBoolean("blockedUser", false)) {
 				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
 				return;
 			}
 			String dbPassword = r.getString("otp");
-			if (isNotEmpty(dbPassword) && getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY >
+			if (isNotEmpty(dbPassword) && r.getLong("otpiat", 0L) + OTP_DELAY >
 					System.currentTimeMillis() && BCrypt.checkpw(password, dbPassword)) {
 				// remove otp and increment max auth count before denying
 				removeOTP(username);
