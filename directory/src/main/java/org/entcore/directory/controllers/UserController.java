@@ -19,27 +19,24 @@
 
 package org.entcore.directory.controllers;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.*;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.MobileValidation;
@@ -64,23 +61,20 @@ import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.http.RouteMatcher;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
-import fr.wseduc.security.ActionType;
-import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 public class UserController extends BaseController {
 	static final String MOTTO_RESOURCE_NAME = "motto";
@@ -131,8 +125,7 @@ public class UserController extends BaseController {
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
-						String userId = request.params().get("userId");
-
+						final  String userId = request.params().get("userId");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 						   !user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
@@ -140,10 +133,22 @@ public class UserController extends BaseController {
 							body.remove("lastName");
 							body.remove("firstName");
 						}
-						userService.update(userId, body, notEmptyResponseHandler(request));
-
-
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+						final Promise<Either<String, JsonObject>> onUpdateDone = Promise.promise();
+						final Promise<Void> onRemoveSessionAttributeDone = Promise.promise();
+						userService.update(userId, body, e -> onUpdateDone.complete(e));
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
+						CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future()).onComplete(compositeResult -> {
+							final Future<Either<String, JsonObject>> futureUpdateDone = onUpdateDone.future();
+							if(futureUpdateDone.succeeded()) {
+								final Either<String, JsonObject> updateDoneResult = futureUpdateDone.result();
+								recreateSession(user, userId, request, eb).onComplete(e -> {
+									notEmptyResponseHandler(request).handle(updateDoneResult);
+								});
+							} else {
+								final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
+								Renders.renderJson(request, error, 400);
+							}
+						});
 					}
 				});
 			}
@@ -160,13 +165,14 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(final JsonObject body)
 			{
-				String userId = request.params().get("userId");
-				String login = body.getString("login");
+				final String userId = request.params().get("userId");
+				final String login = body.getString("login");
 
-				if(login == null)
+				if(login == null) {
 					badRequest(request);
-				else
-					userService.updateLogin(userId, login, notEmptyResponseHandler(request));
+				} else {
+					userService.updateLogin(userId, login, recreateSessionHandler(userId, request, eb, notEmptyResponseHandler(request)));
+				}
 			}
 		});
 	}
@@ -194,17 +200,21 @@ public class UserController extends BaseController {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
-							UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-								@Override
-								public void handle(UserInfos user) {
-									if (user != null && userId != null && userId.equals(user.getUserId())) {
-										notifyTimeline(request, user, body);
+							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+								CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
+								UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+									@Override
+									public void handle(UserInfos user) {
+										if (user != null) {
+											if (userId != null && userId.equals(user.getUserId())) {
+												notifyTimeline(request, user, body);
+											}
+											recreateSession(user, userId, request, eb)
+													.onComplete(e -> renderJson(request, event.right().getValue()));
+										}
 									}
-								}
+								});
 							});
-							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
-							CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
-							renderJson(request, event.right().getValue());
 							if(body.containsKey("motto")){
 								eventHelper.onCreateResource(request, MOTTO_RESOURCE_NAME);
 							}
@@ -313,7 +323,7 @@ public class UserController extends BaseController {
 					@Override
 					public void handle(Either<String, JsonObject> u) {
 						if (u.isRight()) {
-							renderJson(request, j);
+							recreateSession(userId, request, eb, () -> renderJson(request, j));
 						} else {
 							leftToResponse(request, u.left());
 						}
@@ -511,7 +521,7 @@ public class UserController extends BaseController {
 									.put("groupId", groupId);
 							eb.send("wse.communication", j);
 						}
-						renderJson(request, r.right().getValue());
+						recreateSession(userId, request, eb, () -> renderJson(request, r.right().getValue()));
 					} else {
 						badRequest(request, r.left().getValue());
 					}
@@ -529,7 +539,11 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "addHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				userService.addHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId") ,defaultResponseHandler(request));
+				userService.addHeadTeacherManual(userId,
+					event.getString("structureExternalId"),
+					event.getString("classExternalId") ,
+					recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request))
+				);
 			}
 		});
 	}
@@ -542,7 +556,9 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"), defaultResponseHandler(request));
+			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"),
+				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request))
+			);
 			}
 		});
 	}
@@ -556,7 +572,8 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "addDirection", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				userService.addDirectionManual(userId, event.getString("structureExternalId"), defaultResponseHandler(request));
+				userService.addDirectionManual(userId, event.getString("structureExternalId"),
+				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -569,7 +586,8 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "removeDirection", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.removeDirectionManual(userId, event.getString("structureExternalId"), defaultResponseHandler(request));
+			userService.removeDirectionManual(userId, event.getString("structureExternalId"),
+				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -580,7 +598,7 @@ public class UserController extends BaseController {
 	public void removeFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String function = request.params().get("function");
-		userService.removeFunction(userId, function, defaultResponseHandler(request));
+		userService.removeFunction(userId, function, e -> recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
 	}
 
 	@Get("/user/:userId/functions")
@@ -613,7 +631,7 @@ public class UserController extends BaseController {
 					eb.send("wse.communication", j);
 					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
-					renderJson(request, res.right().getValue());
+					recreateSession(userId, request, eb, () -> renderJson(request, res.right().getValue()));
 				} else {
 					renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
 				}
@@ -626,7 +644,7 @@ public class UserController extends BaseController {
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
-		userService.removeGroup(userId, groupId, defaultResponseHandler(request));
+		userService.removeGroup(userId, groupId, recreateSessionHandler(userId, request, eb, event -> defaultResponseHandler(request)));
 	}
 
 	@Get("/user/group/:groupId")
@@ -919,9 +937,8 @@ public class UserController extends BaseController {
 						// Send the validation email to the user
 						return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
 					})
-					.onSuccess( emailId -> {
-						ok(request);
-					})
+					.compose( emailId -> recreateSession(infos, infos.getUserId(), request, eb))
+					.onSuccess(e -> ok(request))
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
 					});
@@ -942,9 +959,12 @@ public class UserController extends BaseController {
 					final String userId = infos.getUserId();
 					MobileValidation.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( mobileState -> {
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+							recreateSession(infos, infos.getUserId(), request, eb).onComplete(complete ->
+								renderJson( request, mobileState )
+							);
+						});
 						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
-						renderJson( request, mobileState );
 					})
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
@@ -987,9 +1007,8 @@ public class UserController extends BaseController {
 						// Send the validation email to the user
 						return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
 					})
-					.onSuccess( emailId -> {
-						ok(request);
-					})
+					.compose( emailId -> recreateSession(infos, infos.getUserId(), request, eb))
+					.onSuccess(e -> ok(request))
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
 					});
@@ -1010,9 +1029,10 @@ public class UserController extends BaseController {
 					final String userId = infos.getUserId();
 					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( emailState -> {
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
-						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
-						renderJson( request, emailState );
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+							recreateSession(infos, infos.getUserId(), request, eb)
+								.onComplete(result -> renderJson( request, emailState ));
+						});
 					})
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );

@@ -26,15 +26,14 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.logging.Tracer;
 import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.CookieHelper;
-
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 
 import java.util.UUID;
 
