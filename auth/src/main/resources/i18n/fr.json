@@ -180,6 +180,7 @@
     "validate-sms.error.same": "Le numéro de téléphone mobile saisi est déjà celui actuellement renseigné et vérifié.",
     "validate-sms.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
     "validate-sms.error.code": "Le code de vérification est incorrect, ré-essayez.",
+    "validate-sms.message.body": "Votre code de vérification de numéro de téléphone est",
 
     "validate-mfa.title": "Vérification de la double authentification",
     "validate-mfa.step1.title": "Double authentification",
@@ -194,5 +195,6 @@
     "validate-mfa.error.ttl": "Le code de vérification a expiré, cliquez sur le bouton pour en recevoir un nouveau.",
     "validate-mfa.error.code": "Le code de vérification est incorrect, ré-essayez.",
     "validate-mfa.step2.renewed": "Un nouveau code vous a été envoyé sur le numéro de téléphone mobile que vous avez renseigné.",
+    "validate-mfa.sms.message.body": "Votre code de double authentification est",
     "validate-mfa.error.not.active": "La double authentification n'est pas activée."
 }

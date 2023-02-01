@@ -3,12 +3,15 @@ package org.entcore.auth.services.impl;
 import org.entcore.auth.services.MfaService;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.sms.Sms;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -18,6 +21,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 
 
@@ -28,8 +32,17 @@ public class DefaultMfaService implements MfaService {
     //---------------------------------------------------------------
     private class MfaField extends AbstractDataValidationService {
     //---------------------------------------------------------------
+        private Sms sms;
+        public String target;
+
         MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
-            super("mfa", vertx, config);
+            super(
+                Mfa.withSms() ? "mobile" : "email", // used for reading only
+                "mfaState", 
+                vertx, 
+                config
+            );
+            sms = Sms.getFactory().newInstance(null);
         }
 
         public Future<JsonObject> getCurrentMfaState(final String userId, final boolean needMFA) {
@@ -38,6 +51,7 @@ public class DefaultMfaService implements MfaService {
                 : Future.succeededFuture(new JsonObject())
             )
             .compose( j -> {
+                target = j.getString(Mfa.withSms() ? "mobile" : "email");
                 JsonObject state = j.getJsonObject(stateField);
     
                 // Check business rules
@@ -47,7 +61,7 @@ public class DefaultMfaService implements MfaService {
                         setState(state, needMFA ? OUTDATED : VALID);
                         break;
                     }
-                    // if TTL or max tries reached, then don't check code
+                    // if TTL or max tries reached => outdated code
                     if (getState(state) == OUTDATED) {
                         break;
                     }
@@ -64,7 +78,7 @@ public class DefaultMfaService implements MfaService {
                         setState(state, OUTDATED);
                         break;
                     }
-                    // Current code is still pending.
+                    // Otherwise, current code is still pending.
                 } while(false);
                 return Future.succeededFuture(state);
             });
@@ -75,14 +89,14 @@ public class DefaultMfaService implements MfaService {
         }
 
         @Override
-        public Future<JsonObject> startUpdate(String userId, String value, final long validDurationS, final int triesLimit) {
+        public Future<JsonObject> startUpdate(String userId, String unused, final long validDurationS, final int triesLimit) {
             // A new code is needed.
             final JsonObject state = new JsonObject();
             setState(state, PENDING);
             setKey(state, generateRandomCode());
             setTtl(state, System.currentTimeMillis() + validDurationS * 1000l);
             setTries(state, triesLimit);
-            return updateState(userId, state); // TODO sendValidationMessage
+            return updateState(userId, state);
         }
 
         @Override
@@ -140,7 +154,20 @@ public class DefaultMfaService implements MfaService {
         }
 
         @Override
-        public Future<Long> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+        public Future<Long> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams ) {
+            if( StringUtils.isEmpty(target) ) {
+                logger.info("[2FA] Cannot send a code through sms or email, since target is empty !");
+                return Future.failedFuture("Empty target");
+            }
+
+            if( Mfa.withEmail() ) {
+                return Future.failedFuture("not implemented yet");
+            }
+            
+            if( Mfa.withSms() ) {
+                return sms.send(request, target, "phone/mfaCode.txt", templateParams).map( j -> 0L );
+            }
+            
             return Future.failedFuture("not implemented yet");
         }
     }
@@ -161,13 +188,11 @@ public class DefaultMfaService implements MfaService {
             return Future.failedFuture("validate-mfa.error.not.active");
         }
 
-        final boolean needMFA = Boolean.FALSE.equals( UserValidation.getIsMFA(null, session) );
+        final boolean needMFA = forced || Boolean.FALSE.equals( UserValidation.getIsMFA(null, session) );
 
-        return (forced 
-            ? Future.succeededFuture((JsonObject) null) // To generate a new code
-            : mfaField.getCurrentMfaState(userInfos.getUserId(), needMFA)
-        )
+        return mfaField.getCurrentMfaState(userInfos.getUserId(), needMFA)
         .compose( state -> {
+            final String target = mfaField.target;
             if( state == null || getState(state) == OUTDATED ) {
                 // A new code has to be generated.
                 return mfaField.startUpdate( 
@@ -175,7 +200,31 @@ public class DefaultMfaService implements MfaService {
                     null, 
                     UserValidation.getDefaultTtlInSeconds(), 
                     UserValidation.getDefaultRetryNumber()
-                );
+                )
+                .map( st -> {
+                    if( getState(st) == PENDING ) {
+                        // Send an sms or an email with the pending code.
+                        final Long expires = getOrElse(getTtl(st), UserValidation.getDefaultWaitInSeconds()*1000l);
+
+                        JsonObject templateParams = new JsonObject()
+                        .put("scheme", Renders.getScheme(request))
+                        .put("host", Renders.getHost(request))
+                        .put("userId", userInfos.getUserId())
+                        .put("firstName", userInfos.getFirstName())
+                        .put("lastName", userInfos.getLastName())
+                        .put("userName", userInfos.getUsername())
+                        .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
+                        .put("code", DataStateUtils.getKey(st));
+
+                        mfaField.sendValidationMessage(request, target, templateParams)
+                        .onComplete( ar -> {
+                            if( ar.failed() ) {
+                                logger.error( ar.cause() );
+                            }
+                        });
+                    }
+                    return st;
+                });
             } else {
                 return Future.succeededFuture(state);
             }
