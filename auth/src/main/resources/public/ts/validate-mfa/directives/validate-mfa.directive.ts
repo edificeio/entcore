@@ -1,7 +1,7 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { L10n, conf, http, session, notify, notif } from "ode-ngjs-front";
-import { IMobileValidationInfos, IPromisified } from "ode-ts-client";
+import { IMfaInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
 
@@ -15,51 +15,33 @@ export class ValidateMfaController implements IController {
 	public redirect?:string;
 
 	// Input data
-	public mobilePhone?:String;
 	public inputCode?:String;
 	public status:OTPStatus = "";
 	public koStatusCause = "";
 	// Server data
-	private infos?: IMobileValidationInfos;
+	private infos?: IMfaInfos;
 
 	public async initialize() {
 		this.infos = await Promise.all([
 			notif().onSessionReady().promise,
 			conf().Platform.idiom.addBundlePromise("/auth/i18n")
 		])
-		.then( unused => (session().getMobileValidationInfos()) as Promise<IMobileValidationInfos>)
+		.then( unused => session().getMfaInfos() )
 		.catch( e => {
 			setTimeout( () => notify.error('validate-mfa.error.network', 4000), 500 );
 			return null;
 		});
 	}
 
-	public validateSmsMfa() {
-		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
-		const time = new Date().getTime();
-
-		return session().checkMobile(this.mobilePhone)
-		.then( () => {
-			this.inputCode && delete this.inputCode;
-		})
-		.catch( e => {
-			notify.error('validate-mfa.error.network');
-		})
-		.then( () => {
-			const waitMs = (this.infos ? this.infos.waitInSeconds:10) * 1000;
-			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
-			const debounceTime:IPromisified<void> = notif().promisify();
-			setTimeout( () => debounceTime.resolve(), duration);
-			return debounceTime.promise;
-		})
-		;
+	public get mobile() {
+		return session()?.description.mobile;
 	}
 
 	public validateCode():Promise<OTPStatus> {
 		// Wait at least 0,5s while validating
 		const time = new Date().getTime();
 
-		return (session().tryMobileValidation(this.inputCode))
+		return (session().tryMfaCode(this.inputCode))
 		.then( validation => {
 			if( validation.state === "valid" ) {
 				this.status = "ok";
@@ -86,8 +68,7 @@ export class ValidateMfaController implements IController {
 	}
 
 	public renewCode():Promise<void> {
-		return (session().checkMobile(this.mobilePhone))
-		.then( () => (session().getMobileValidationInfos()) as Promise<IMobileValidationInfos>)
+		return session().getMfaInfos()
 		.then( infos => {
 			notify.success('validate-mfa.step2.renewed');
 			this.infos = infos;
@@ -100,8 +81,6 @@ export class ValidateMfaController implements IController {
 
 interface ValidateMfaScope extends IScope {
 	canRenderUi: boolean;
-	type: string;
-	onValidate: () => Promise<void>;
 	onCodeChange: (form:angular.IFormController) => Promise<void>;
 	onCodeRenew: () => Promise<void>;
 }
@@ -132,14 +111,6 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 
 		scope.canRenderUi = false;
 
-		scope.onValidate = async (): Promise<void> => {
-			ctrl.status = "wait";
-			await ctrl.validateSmsMfa();
-			ctrl.status = "";
-			scope.$apply();
-			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
-		}
-
 		scope.onCodeChange = async (form) => {
 			try {
 				if( form.$invalid ) {
@@ -152,7 +123,6 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 					if( newStatus==="ok" ) {
 						// Lock UI and redirect after a few seconds
 						this.setAttr('btnRenew', "disabled", true);
-						this.setAttr('btnBack',  "disabled", true);
 						if( ctrl.redirect ) {
 							setTimeout( () => {
 								try {
