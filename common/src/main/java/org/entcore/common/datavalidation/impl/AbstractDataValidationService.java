@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.datavalidation.DataValidationService;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
 import com.samskivert.mustache.Mustache;
@@ -60,10 +61,10 @@ public abstract class AbstractDataValidationService extends Renders implements D
 	protected final String stateField;
 	protected Map<String, JsonObject> requestThemeKV = null;
 
-	protected AbstractDataValidationService(final String field, io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+	protected AbstractDataValidationService(final String field, final String stateField, io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
 		super(vertx, config);
 		this.field = field;
-		this.stateField = field+"State";
+		this.stateField = stateField;
 	}
 
 	/** 
@@ -275,7 +276,7 @@ public abstract class AbstractDataValidationService extends Renders implements D
 	}
 
 	@Override
-    abstract public Future<Long> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams );
+    abstract public Future<Long> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams );
 
 	////////////////////////////////////////////
 	//FIXME The whole methods below are intended to retrieve overloaded i18n from Timeline because it contains variables for email templating...
