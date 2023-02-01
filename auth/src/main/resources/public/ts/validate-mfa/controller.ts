@@ -8,7 +8,6 @@ export class AppController implements IController {
 	lang: IIdiom;
 	force = false;
 	redirect?:string;
-	type:string = "sms";
 
 	constructor(
 		private $scope:IScope
@@ -28,9 +27,6 @@ export class AppController implements IController {
 		}
 		if( params.get("redirect") ) {
 			this.redirect = params.get("redirect");
-		}
-		if( params.get("type") == "sms") {
-			this.type = params.get("type");
 		}
 	}
 };
