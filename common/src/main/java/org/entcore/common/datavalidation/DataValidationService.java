@@ -61,11 +61,11 @@ public interface DataValidationService {
 	Future<JsonObject> getCurrentState(String userId);
 
 	/**
-	 * Send the validation email.
+	 * Send the validation message (email or sms).
 	 * @param request required to translate things...
 	 * @param target address where to send
 	 * @param templateParams for the "email/emailValidationCode.html" template
-	 * @return the email ID
+	 * @return the message ID
 	 */
 	Future<Long> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams);
 }
