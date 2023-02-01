@@ -47,11 +47,11 @@ public class DefaultUserValidationService implements UserValidationService {
     private class MobileField extends AbstractDataValidationService {
     //---------------------------------------------------------------
         MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
-            super("mobile", vertx, config);
+            super("mobile", "mobileState", vertx, config);
         }
 
         @Override
-        public Future<Long> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+        public Future<Long> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams ) {
             return Future.failedFuture("not implemented yet");
         }
     }
@@ -63,7 +63,7 @@ public class DefaultUserValidationService implements UserValidationService {
         private EmailSender emailSender = null;
 
         EmailField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
-            super("email", vertx, config);
+            super("email", "emailState", vertx, config);
             emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
