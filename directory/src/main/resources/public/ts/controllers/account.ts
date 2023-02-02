@@ -110,6 +110,27 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		});
 	};
 
+	const checkSmsValidation = function(){
+		http().get('/directory/user/mobilestate').done(function(infos){
+			if(infos.mobileState && infos.mobileState.valid === infos.mobile){
+				$scope.validateSms = true;
+			}
+			else {
+				$scope.validateSms = false;
+			}
+			$scope.$apply();
+		});
+	};
+
+	const isAdmx = () => {
+		if(model.me.functions && ((model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope) || (model.me.functions.SUPER_ADMIN))) {
+			$scope.isAdmx = true;
+		}
+		else {
+			$scope.isAdmx = false;
+		}
+	}
+
 	let conf = { overriding: [] };
 	const loadThemeConf = async function(){
 		await skin.listSkins();
@@ -180,6 +201,8 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 		loadThemeConf();
 		checkEmailValidation();
+		checkSmsValidation();
+		isAdmx();
 	}
 
 	$scope.display = {};
@@ -479,6 +502,10 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
+	})
+
+	http().get('/auth/user/requirements').done(function(data){
+		$scope.needMfa = data.needMfa;
 	})
 
 }]);
