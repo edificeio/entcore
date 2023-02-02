@@ -55,14 +55,14 @@ public class MobileValidation {
 	 * Send an SMS with actual validation code.
 	 * @param infos User infos
 	 * @param mobile phone number where to send
-	 * @param pendingEmailState with code to send
+	 * @param pendingMobileState with code to send
 	 * @return mobile ID
 	*/
-	static public Future<Long> sendSMS(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
+	static public Future<Long> sendSMS(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingMobileState) {
         return UserValidationFactory.getInstance().sendValidationSMS(
 			request, 
 			infos, 
-			pendingEmailState
+			pendingMobileState
 		);
 	}
 }

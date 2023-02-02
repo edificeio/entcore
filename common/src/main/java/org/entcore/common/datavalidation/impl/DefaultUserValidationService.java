@@ -25,6 +25,7 @@ import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sms.Sms;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
@@ -40,7 +41,7 @@ import fr.wseduc.webutils.email.EmailSender;
  * @see {@link EmailValidation} {@link MobileValidation} utility classes for easier use.
  */
 public class DefaultUserValidationService implements UserValidationService {
-	private static final Logger log = LoggerFactory.getLogger(DefaultUserValidationService.class);
+	private static final Logger logger = LoggerFactory.getLogger(DefaultUserValidationService.class);
 
     /** Inner service for the "mobile" field validation. */
     //---------------------------------------------------------------
@@ -52,7 +53,8 @@ public class DefaultUserValidationService implements UserValidationService {
 
         @Override
         public Future<Long> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams ) {
-            return Future.failedFuture("not implemented yet");
+            Sms sms = Sms.getFactory().newInstance( this );
+            return sms.send(request, mobile, "phone/mobileVerification.txt", templateParams).map( j -> 0L );
         }
     }
 
@@ -378,7 +380,19 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	@Override
 	public Future<Long> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState) {
-        return Future.failedFuture("not implemented yet");
+        final Long expires = getOrElse(DataStateUtils.getTtl(mobileState), waitInSeconds*1000l);
+
+        JsonObject templateParams = new JsonObject()
+        .put("scheme", Renders.getScheme(request))
+        .put("host", Renders.getHost(request))
+        .put("userId", infos.getUserId())
+        .put("firstName", infos.getFirstName())
+        .put("lastName", infos.getLastName())
+        .put("userName", infos.getUsername())
+        .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
+        .put("code", DataStateUtils.getKey(mobileState));
+
+        return mobileSvc.sendValidationMessage( request, DataStateUtils.getPending(mobileState), templateParams );
     }    
 
     //////////////// Email-related methods ////////////////

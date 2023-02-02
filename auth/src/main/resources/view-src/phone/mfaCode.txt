@@ -1,2 +1,2 @@
 {{#i18n}}phone.hi{{/i18n}}
-{{#i18n}}validate-mfa.sms.message.body{{/i18n}} {{code}}
+{{#i18n}}phone.mfa.message.body{{/i18n}} {{code}}

@@ -27,6 +27,7 @@ import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.remote.RemoteClient;
+import org.entcore.common.sms.Sms;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
@@ -75,6 +76,7 @@ public class Directory extends BaseServer {
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender emailSender = emailFactory.getSender();
+		Sms.getFactory().init(vertx, config);
 		final JsonObject userBookData = config.getJsonObject("user-book-data");
 		UserService userService = new DefaultUserService(emailSender, eb, userBookData);
 		UserBookService userBookService = new DefaultUserBookService(eb, storageAvatar, wsHelper, userBookData);
