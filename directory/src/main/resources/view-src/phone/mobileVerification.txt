@@ -1,0 +1,2 @@
+{{#i18n}}phone.hi{{/i18n}}
+{{#i18n}}phone.validation.message.body{{/i18n}} {{code}}
