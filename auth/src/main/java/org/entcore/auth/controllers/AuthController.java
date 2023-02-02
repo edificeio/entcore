@@ -126,6 +126,8 @@ public class AuthController extends BaseController {
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 
+	private boolean emailValidationActive;
+
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
 	}
@@ -503,6 +505,9 @@ public class AuthController extends BaseController {
 				.onSuccess( validations -> {
 					if( validations != null ) {
 						requirements.mergeIn(validations);
+						if (!this.emailValidationActive) {
+							requirements.put("needRevalidateEmail", false);
+						}
 					}
 				})
 				.onComplete( ar -> {
@@ -1683,6 +1688,10 @@ public class AuthController extends BaseController {
 
 	public void setAuthorizedHostsLogin(JsonArray authorizedHostsLogin) {
 		this.authorizedHostsLogin = authorizedHostsLogin;
+	}
+
+	public void setEmailValidationActive(boolean emailValidationActive) {
+		this.emailValidationActive = emailValidationActive;
 	}
 
 	public void setOauthDataFactory(DataHandlerFactory oauthDataFactory) {

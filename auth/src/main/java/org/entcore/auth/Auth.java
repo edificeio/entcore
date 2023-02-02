@@ -52,6 +52,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -78,11 +79,18 @@ public class Auth extends BaseServer {
 				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
 				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore);
 
+		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		final Optional<Object> emailValidation = Optional.ofNullable(server.get("emailValidationConfig"));
+		final Optional<JsonObject> emailValidationJson = emailValidation.map(e-> new JsonObject((String)e));
+		final Optional<Boolean> emailValidationActiveOptional = emailValidationJson.map( e -> e.getBoolean("active", true));
+		final boolean emailValidationActive = emailValidationActiveOptional.isPresent() ? emailValidationActiveOptional.get() : true;
+
 		AuthController authController = new AuthController();
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
 		authController.setOauthDataFactory(oauthDataFactory);
 		authController.setCheckFederatedLogin(checkFederatedLogin);
+		authController.setEmailValidationActive(emailValidationActive);
 		addController(authController);
 
 		final ConfigurationController configurationController = new ConfigurationController();
