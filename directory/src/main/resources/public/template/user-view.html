@@ -85,8 +85,8 @@
 		</form>
 	</lightbox>
 
-	<lightbox ng-if="display.email" show="display.email" on-close="onCloseEmailLightbox()">
-		<iframe src="/auth/validate-mail?headless=true"
+	<lightbox ng-if="display.validateMail" show="display.validateMail" on-close="onCloseEmailLightbox()">
+		<iframe src="/auth/validate-mail?headless=true&type=email"
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
 					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
@@ -96,9 +96,40 @@
 		></iframe>
 	</lightbox>
 
+	<lightbox ng-if="display.validateMfa" show="display.validateMfa" on-close="onCloseEmailLightbox()">
+		<iframe src="/auth/validate-mfa?headless=true"
+			style="height:400px;width:100%;border:none;overflow:hidden;"
+			onload="setTimeout(frame=>{
+					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
+					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
+					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
+				}, 350, this);"
+		></iframe>
+	</lightbox>
+
+	<lightbox ng-if="display.validateSms" show="display.validateSms" on-close="onCloseEmailLightbox()">
+		<iframe src="/auth/validate-mail?headless=true&type=sms"
+			style="height:400px;width:100%;border:none;overflow:hidden;"
+			onload="setTimeout(frame=>{
+					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
+					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
+					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
+				}, 350, this);"
+		></iframe>
+	</lightbox>
 
 	<article class="rigid-grid cell twelve">
-
+		<a ng-class="{'unlock-disabled': !needMfa, 'unlock': needMfa}" class="unlock-flex"
+			ng-click="display.validateMfa = true;"
+			ng-disabled="!needMfa"
+			ng-if="isAdmx"
+		>
+			<svg class="icon-lock" width="20" height="20">
+				<title>Déverrouiller</title>
+				<use href="/directory/public/assets/icons/icons.svg#lock"></use>
+			</svg>
+			<i18n>userBook.unlock</i18n>
+		</a>
 		<div class="cell four height-four reduce-block-six avatar">
 			<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
 				<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.svg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
@@ -118,14 +149,16 @@
 		</div>
 
 		<form class="sheet small-text top-spacing-twice" name="userForm" novalidate>
-
 			<div class="profil-flex">
 				<div class="four">
 					<i18n>userBook.profile.login</i18n>
 				</div>
 				<span class="seven">
 					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]]
-					<a class="left-spacing-twice" ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
+					<a class="left-spacing-twice" workflow="directory.allowLoginUpdate"
+						ng-click="display.login = true; account.newLoginAlias = account.loginAlias;"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.login.update.button</i18n>
 					</a>
 				</span>
@@ -136,7 +169,7 @@
 					<i18n>userBook.profile.password</i18n>
 				</div>
 				<span class="seven">
-					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress) || (me.federated && me.hasPw))" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress) || (me.federated && me.hasPw))" ng-disabled="needMfa && isAdmx" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
 					<a ng-if="(me.federated && !account.disabledFederatedAdress && !me.hasPw)" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
 				</span>
 			</div>
@@ -146,7 +179,7 @@
 					<i18n>directory.profile.otp</i18n>
 				</div>
 				<span class="seven">
-					<a ng-click="openOTPDialog()"><i18n>directory.generate.otp</i18n></a>
+					<a ng-disabled="needMfa && isAdmx" ng-click="openOTPDialog()"><i18n>directory.generate.otp</i18n></a>
 				</span>
 			</div>
 
@@ -169,10 +202,17 @@
 							<use href="/directory/public/assets/icons/icons.svg#success-fill"></use>
 						</svg>
 					</span>
-					<a ng-if="account.email" ng-click="display.email = true;">
+					<a	ng-if="account.email"
+						ng-click="display.validateMail = true;"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.login.update.button</i18n>
 					</a>
-					<a ng-class="{'margin-left': !account.email}" ng-if="!account.email" ng-click="display.email = true;">
+					<a ng-class="{'margin-left': !account.email}"
+						ng-if="!account.email"
+						ng-click="display.validateMail = true;"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.add</i18n>
 					</a>
 				</span>
@@ -192,10 +232,18 @@
 				</div>
 				<div class="seven">
 					<label>[[account.homePhone]]</label>
-					<a class="left-spacing-twice" ng-if="account.homePhone" ng-click="openEditLightbox('homePhone')">
+					<a class="left-spacing-twice"
+						ng-if="account.homePhone"
+						ng-click="openEditLightbox('homePhone')"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.login.update.button</i18n>
 					</a>
-					<a ng-class="{'margin-left': !account.homePhone}" ng-if="!account.homePhone" ng-click="openEditLightbox('homePhone')">
+					<a ng-class="{'margin-left': !account.homePhone}"
+						ng-if="!account.homePhone"
+						ng-click="openEditLightbox('homePhone')"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.add</i18n>
 					</a>
 				</div>
@@ -212,24 +260,29 @@
 						<use href="/directory/public/assets/icons/icons.svg#[[seeOrHideInfo('mobile')]]"></use>
 					</svg>
 				</div>
-				<div class="seven">
-					<label>[[account.mobile]]</label>
-					<a class="left-spacing-twice" ng-if="account.mobile" ng-click="openEditLightbox('mobile')">
+				<div class="flex seven flex-flow">
+					<span class="flex" style="align-items: center;">
+						<span ng-if="account.mobile" class="email-ellipsis">[[account.mobile]]</span>
+						<svg ng-if="validateSms" class="icon-verified icon-success-fill" width="16" height="16">
+							<title>Numéro de téléphone vérifié</title>
+							<use href="/directory/public/assets/icons/icons.svg#success-fill"></use>
+						</svg>
+					</span>
+					<a	ng-if="account.mobile"
+						ng-click="display.validateSms = true;"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.login.update.button</i18n>
 					</a>
-					<a ng-class="{'margin-left': !account.mobile}" ng-if="!account.mobile" ng-click="openEditLightbox('mobile')">
+					<a ng-class="{'margin-left': !account.mobile}"
+						ng-if="!account.mobile"
+						ng-click="display.validateSms = true;"
+						ng-disabled="needMfa && isAdmx"
+					>
 						<i18n>directory.add</i18n>
 					</a>
 				</div>
 			</div>
-
-			<!--div class="profil-flex">
-				<div class="five">
-					<label translate content="userBook.profile.address"></label>
-				</div>
-				<span class="six">[[account.address]]</span>
-				<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
-			</div-->
 
 			<div class="profil-flex">
 				<div class="four">
