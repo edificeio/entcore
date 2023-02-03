@@ -3,6 +3,7 @@ package org.entcore.auth.services.impl;
 import org.entcore.auth.services.MfaService;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
+import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.sms.Sms;
 import org.entcore.common.user.UserInfos;
@@ -180,6 +181,7 @@ public class DefaultMfaService implements MfaService {
     public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) {
         mfaField= new MfaField(vertx, config);
         eb = Server.getEventBus(vertx);
+        DataValidationMetricsFactory.init(vertx, config);
     }
 
     public Future<JsonObject> getOrStartMfa(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos, final boolean forced) {
@@ -220,6 +222,9 @@ public class DefaultMfaService implements MfaService {
                         .onComplete( ar -> {
                             if( ar.failed() ) {
                                 logger.error( ar.cause() );
+                            } else {
+                                // Code was sent => this is a metric to follow
+                                DataValidationMetricsFactory.getRecorder().onMfaCodeGenerated();
                             }
                         });
                     }
@@ -244,6 +249,8 @@ public class DefaultMfaService implements MfaService {
         .map( result -> {
             if( result !=null && "valid".equalsIgnoreCase(result.getString("state")) ) {
                 UserValidation.setIsMFA(eb, UserUtils.getSessionId(request).get(), true);
+                // Code was consumed => this is a metric to follow
+                DataValidationMetricsFactory.getRecorder().onMfaCodeConsumed();
             }
             return result;
         });
