@@ -153,10 +153,6 @@ public abstract class BaseServer extends Server {
 	protected void initFilters() {
 		//prepare cache if needed
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		final Optional<Object> emailValidation = Optional.ofNullable(server.get("emailValidationConfig"));
-		final Optional<JsonObject> emailValidationJson = emailValidation.map(e-> new JsonObject((String)e));
-		final Optional<Boolean> emailValidationActiveOptional = emailValidationJson.map( e -> e.getBoolean("active", true));
-		final boolean emailValidationActive = emailValidationActiveOptional.isPresent() ? emailValidationActiveOptional.get() : true;
 		final Optional<Object> oauthCache = Optional.ofNullable(server.get("oauthCache"));
 		final Optional<JsonObject> oauthConfigJson = oauthCache.map(e-> new JsonObject((String)e));
 		final Optional<Integer> oauthTtl = oauthConfigJson.map( e -> e.getInteger("ttlSeconds"));
@@ -180,7 +176,7 @@ public abstract class BaseServer extends Server {
 		);
 		addFilter(userAuth);
 
-		addFilter(new MandatoryUserValidationFilter(getEventBus(vertx), emailValidationActive));
+		addFilter(new MandatoryUserValidationFilter(getEventBus(vertx)));
 
 		addFilter(new TraceFilter(getEventBus(vertx), securedUriBinding));
 	}
