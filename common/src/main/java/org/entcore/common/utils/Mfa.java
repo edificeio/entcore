@@ -55,7 +55,7 @@ public class Mfa {
 				this.config = (s != null) ? new JsonObject(s) : null;
 			}
 			// TODO extraire la liste réelle des URLs sensibles
-			mfaProtectedUrls = new JsonArray("[\"/auth/url1\", \"/auth/url1\"]");
+			mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());
 		}
 	
 		public static Mfa getInstance() {
