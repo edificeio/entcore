@@ -22,9 +22,7 @@ import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_NEED_MFA;
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 
-import java.net.URI;
 import java.net.URLEncoder;
-import java.util.Map;
 
 /**
  * This filter checks if the user needs to be redirected to must perform some mandatory validation before processing.
