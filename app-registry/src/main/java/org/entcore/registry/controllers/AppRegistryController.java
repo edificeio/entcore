@@ -25,6 +25,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -78,6 +79,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void staticAdmin(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -85,12 +87,14 @@ public class AppRegistryController extends BaseController {
 	@Get("/app-preview")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void appPreview(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/applications")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listApplications(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listApplications(structureId, arrayResponseHandler(request));
@@ -99,6 +103,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/application/:name")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void listApplicationActions(HttpServerRequest request) {
 		String name = request.params().get("name");
 		if (name != null && !name.trim().isEmpty()) {
@@ -110,6 +115,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("/applications/actions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listApplicationsWithActions(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String actionType = request.params().get("actionType");
@@ -118,6 +124,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("/applications/roles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listApplicationsWithRoles(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listApplicationsWithRoles(structureId, arrayResponseHandler(request));
@@ -125,6 +132,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("structure/:structureId/application/:appId/groups/roles")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@MfaProtected()
 	public void listApplicationRolesWithGroups(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String appId = request.params().get("appId");
@@ -146,6 +154,7 @@ public class AppRegistryController extends BaseController {
 
 	@Post("/role")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void createRole(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -167,6 +176,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/role/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(RoleFilter.class)
+	@MfaProtected()
 	public void updateRole(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -190,6 +200,7 @@ public class AppRegistryController extends BaseController {
 	@Delete("/role/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(RoleFilter.class)
+	@MfaProtected()
 	public void deleteRole(final HttpServerRequest request) {
 		String roleId = request.params().get("id");
 		if (roleId != null && !roleId.trim().isEmpty()) {
@@ -202,6 +213,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/role/:roleId/distributions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void setRoleDistributions(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -220,6 +232,7 @@ public class AppRegistryController extends BaseController {
 	@Post("/authorize/group")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(LinkRoleGroupFilter.class)
+	@MfaProtected()
 	public void linkGroup(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -248,6 +261,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/authorize/group/:groupId/role/:roleId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(RoleGroupFilter.class)
+	@MfaProtected()
 	public void addGroupLink(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		final String roleId = request.params().get("roleId");
@@ -257,6 +271,7 @@ public class AppRegistryController extends BaseController {
 	@Delete("/authorize/group/:groupId/role/:roleId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(RoleGroupFilter.class)
+	@MfaProtected()
 	public void removeGroupLink(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		final String roleId = request.params().get("roleId");
@@ -265,6 +280,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("/roles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listRoles(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listRoles(structureId, arrayResponseHandler(request));
@@ -272,6 +288,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("/roles/actions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listRolesWithActions(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listRolesWithActions(structureId, arrayResponseHandler(request));
@@ -279,6 +296,7 @@ public class AppRegistryController extends BaseController {
 
 	@Get("/groups/roles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listGroupsWithRoles(structureId, true, new Handler<Either<String, JsonArray>>() {
@@ -298,6 +316,7 @@ public class AppRegistryController extends BaseController {
 	@Post("/application")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void createApplication(final HttpServerRequest request){
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
@@ -360,6 +379,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/application/conf/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void application(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
@@ -372,6 +392,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/application/conf/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void applicationConf(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "updateApplication", new Handler<JsonObject>() {
 			@Override
@@ -414,6 +435,7 @@ public class AppRegistryController extends BaseController {
 	@Delete("/application/conf/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void deleteApplication(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
@@ -426,6 +448,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/cas-types")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void listCasTypes(final HttpServerRequest request) {
 		Server.getEventBus(vertx).send("cas.configuration", new JsonObject().put("action", "list-services"),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
@@ -485,6 +508,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/application/:applicationId/levels-of-education")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void setLevelsOfEducation(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -503,6 +527,7 @@ public class AppRegistryController extends BaseController {
     @Put("/structures/:structureId/roles")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
+	@MfaProtected()
     public void authorizeProfiles(final HttpServerRequest request) {
         bodyToJson(request, new Handler<JsonObject>() {
             @Override
@@ -524,6 +549,7 @@ public class AppRegistryController extends BaseController {
     @Delete("/structures/:structureId/roles")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
+	@MfaProtected()
     public void unauthorizeProfiles(final HttpServerRequest request) {
         bodyToJson(request, new Handler<JsonObject>() {
             @Override
@@ -544,6 +570,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/applications/:structureId/default-bookmarks")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void getDefaultBookmarks(final HttpServerRequest request){
 		final String structureId = request.params().get("structureId");
 		appRegistryService.getDefaultBookmarks(structureId, defaultResponseHandler(request));
@@ -552,6 +579,7 @@ public class AppRegistryController extends BaseController {
 	@Put("/applications/:structureId/default-bookmarks")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void setDefaultBookmarks(final HttpServerRequest request){
 		final String structureId = request.params().get("structureId");
 		bodyToJson(request, body -> {

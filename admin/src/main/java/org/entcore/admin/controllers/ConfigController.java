@@ -2,6 +2,7 @@ package org.entcore.admin.controllers;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
@@ -14,6 +15,7 @@ public class ConfigController extends BaseController {
     @Get("api/config/zimbra")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdminFilter.class)
+    @MfaProtected()
     public void readConfigZimbra(HttpServerRequest request) {
         JsonObject services = config.getJsonObject("services", new JsonObject());
         final JsonObject displayZimbra = new JsonObject()
@@ -24,6 +26,7 @@ public class ConfigController extends BaseController {
     @Get("api/config/timetable/import")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdminFilter.class)
+    @MfaProtected()
     public void readConfigEdt(HttpServerRequest request) {
         JsonObject services = config.getJsonObject("services", new JsonObject());
         final JsonObject displayEdt = new JsonObject()
@@ -34,6 +37,7 @@ public class ConfigController extends BaseController {
     @Get("api/config/subjects")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdminFilter.class)
+    @MfaProtected()
     public void readConfigSubjects(HttpServerRequest request) {
         JsonObject services = config.getJsonObject("services", new JsonObject());
         final JsonObject displaySubjects = new JsonObject()
@@ -44,6 +48,7 @@ public class ConfigController extends BaseController {
     @Get("api/config/slotprofiles")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdminFilter.class)
+    @MfaProtected()
     public void readConfigCalendar(HttpServerRequest request) {
         JsonObject services = config.getJsonObject("services", new JsonObject());
         final JsonObject displayCalendar = new JsonObject()
