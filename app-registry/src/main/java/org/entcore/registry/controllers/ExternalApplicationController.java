@@ -49,6 +49,7 @@ import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
@@ -61,6 +62,7 @@ public class ExternalApplicationController extends BaseController {
 	}
 	@Get("/external-applications")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listExternalApplications(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		externalAppService.listExternalApps(structureId, arrayResponseHandler(request));
@@ -68,6 +70,7 @@ public class ExternalApplicationController extends BaseController {
 
 	@Get("/application/external/:id/groups/roles")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@MfaProtected()
 	public void listExternalApplicationRolesWithGroups(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String connectorId = request.params().get("id");
@@ -90,6 +93,7 @@ public class ExternalApplicationController extends BaseController {
 	@Delete("/application/external/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void deleteExternalApplication(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
@@ -101,6 +105,7 @@ public class ExternalApplicationController extends BaseController {
 
 	@Post("/application/external")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void createExternalApp(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
@@ -156,6 +161,7 @@ public class ExternalApplicationController extends BaseController {
 	@Put("/application/external/:id/lock")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void lockExternalApp(final HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		externalAppService.toggleLock(structureId, defaultResponseHandler(request));
@@ -164,6 +170,7 @@ public class ExternalApplicationController extends BaseController {
 	@Put("/structure/:structureId/application/external/:applicationId/authorize")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void authorizeProfiles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String applicationId = request.params().get("applicationId");
@@ -184,6 +191,7 @@ public class ExternalApplicationController extends BaseController {
 	@Delete("/structure/:structureId/application/external/:id/authorize")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)
+	@MfaProtected()
 	public void unauthorizeProfiles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String applicationId = request.params().get("id");

@@ -31,6 +31,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.webutils.http.BaseController;
 
 public class AdminController extends BaseController {
@@ -43,6 +44,7 @@ public class AdminController extends BaseController {
 	@Get("")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void serveHome(HttpServerRequest request) {
 		renderView(request, new JsonObject(), "admin.html", null);
 		eventHelper.onAccess(request);
@@ -51,6 +53,7 @@ public class AdminController extends BaseController {
 	@Get(value = "(?!api).*", regex = true)
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void serveHomeAlias(HttpServerRequest request) {
 		serveHome(request);
 	}
