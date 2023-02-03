@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
@@ -44,6 +45,7 @@ public class PlatformInfoController extends BaseController {
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void moduleSms(HttpServerRequest request) {
 		renderJson(request, new JsonObject().put("activated", this.smsActivated), 200);
 	}
@@ -59,6 +61,7 @@ public class PlatformInfoController extends BaseController {
 	@Get("api/platform/config")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void readConfig(HttpServerRequest request) {
 		LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 
