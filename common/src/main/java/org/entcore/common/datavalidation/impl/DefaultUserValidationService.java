@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.UserValidationService;
+import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -365,7 +366,12 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	@Override
 	public Future<JsonObject> tryValidateMobile(String userId, String code) {
-        return mobileSvc.tryValidate(userId, code);
+        return mobileSvc.tryValidate(userId, code)
+        .map( result -> {
+            // Code was consumed => this is a metric to follow
+            DataValidationMetricsFactory.getRecorder().onMobileCodeConsumed();
+            return result;
+        });
     }
 
 	@Override
@@ -392,7 +398,12 @@ public class DefaultUserValidationService implements UserValidationService {
         .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
         .put("code", DataStateUtils.getKey(mobileState));
 
-        return mobileSvc.sendValidationMessage( request, DataStateUtils.getPending(mobileState), templateParams );
+        return mobileSvc.sendValidationMessage( request, DataStateUtils.getPending(mobileState), templateParams )
+        .map( id -> {
+            // Code was sent => this is a metric to follow
+            DataValidationMetricsFactory.getRecorder().onMobileCodeGenerated();
+            return id;
+        });
     }    
 
     //////////////// Email-related methods ////////////////
@@ -438,7 +449,12 @@ public class DefaultUserValidationService implements UserValidationService {
 
     @Override
 	public Future<JsonObject> tryValidateEmail(String userId, String code) {
-        return emailSvc.tryValidate(userId, code);
+        return emailSvc.tryValidate(userId, code)
+        .map( result -> {
+            // Code was consumed => this is a metric to follow
+            DataValidationMetricsFactory.getRecorder().onEmailCodeConsumed();
+            return result;
+        });
     }
 
     @Override
@@ -465,6 +481,11 @@ public class DefaultUserValidationService implements UserValidationService {
         .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
         .put("code", DataStateUtils.getKey(emailState));
 
-        return emailSvc.sendValidationMessage( request, DataStateUtils.getPending(emailState), templateParams );
+        return emailSvc.sendValidationMessage( request, DataStateUtils.getPending(emailState), templateParams )
+        .map( id -> {
+            // Code was sent => this is a metric to follow
+            DataValidationMetricsFactory.getRecorder().onEmailCodeGenerated();
+            return id;
+        });
     }
 }

@@ -21,6 +21,7 @@ package org.entcore.common.datavalidation.utils;
 
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.impl.DefaultUserValidationService;
+import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -35,12 +36,12 @@ public class UserValidationFactory {
 	public UserValidationFactory() {
 	}
 
-	private static class EmailStateFactoryHolder {
+	private static class UserValidationFactoryHolder {
 		private static final UserValidationFactory instance = new UserValidationFactory();
 	}
 
 	public static UserValidationFactory getFactory() {
-		return EmailStateFactoryHolder.instance;
+		return UserValidationFactoryHolder.instance;
 	}
 
 	public void init(Vertx vertx, JsonObject config) {
@@ -56,6 +57,7 @@ public class UserValidationFactory {
 				this.config = new JsonObject();
 			}
 		}
+		DataValidationMetricsFactory.init(vertx, config);
 	}
 
 	public static UserValidationService getInstance() {
