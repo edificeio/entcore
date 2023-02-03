@@ -52,6 +52,7 @@ import org.vertx.java.core.http.RouteMatcher;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
@@ -71,6 +72,7 @@ public class WidgetController extends BaseController
 	@Get("/widget-preview")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void widgetPreview(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -78,12 +80,14 @@ public class WidgetController extends BaseController
 	@Get("/widgets")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AnyAdmin.class)
+	@MfaProtected()
 	public void listWidgets(final HttpServerRequest request){
 		service.listWidgets(defaultResponseHandler(request));
 	}
 
 	@Get("/widget/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getWidgetInfos(final HttpServerRequest request) {
 		String widgetId = request.params().get("id");
 		String structureId = request.params().get("structureId");
@@ -103,6 +107,7 @@ public class WidgetController extends BaseController
 	@Delete("/widget/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void deleteWidget(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		service.deleteWidget(widgetId, defaultResponseHandler(request, 201));
@@ -111,6 +116,7 @@ public class WidgetController extends BaseController
 	@Put("/widget/:id/lock")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void toggleLock(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		service.toggleLock(widgetId, defaultResponseHandler(request));
@@ -119,6 +125,7 @@ public class WidgetController extends BaseController
 	@Post("/widget/:id/link/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(WidgetLinkFilter.class)
+	@MfaProtected()
 	public void linkWidget(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		final List<String> groupIds = new ArrayList<String>();
@@ -129,6 +136,7 @@ public class WidgetController extends BaseController
 	@Delete("/widget/:id/link/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(WidgetLinkFilter.class)
+	@MfaProtected()
 	public void unlinkWidget(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		final List<String> groupIds = new ArrayList<String>();
@@ -140,6 +148,7 @@ public class WidgetController extends BaseController
 	@Put("/widget/:id/mandatory/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(WidgetLinkFilter.class)
+	@MfaProtected()
 	public void setWidgetMandatory(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		final List<String> groupIds = new ArrayList<String>();
@@ -150,6 +159,7 @@ public class WidgetController extends BaseController
 	@Delete("/widget/:id/mandatory/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(WidgetLinkFilter.class)
+	@MfaProtected()
 	public void removeWidgetMandatory(final HttpServerRequest request){
 		final String widgetId = request.params().get("id");
 		final List<String> groupIds = new ArrayList<String>();
@@ -159,6 +169,7 @@ public class WidgetController extends BaseController
 
 	@Put("/widget/:id/authorize/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void authorizeProfiles(final HttpServerRequest request) {
 		final String widgetId = request.params().get("id");
 		final String structureId = request.params().get("structureId");
@@ -169,6 +180,7 @@ public class WidgetController extends BaseController
 
 	@Delete("/widget/:id/authorize/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void unauthorizeProfiles(final HttpServerRequest request) {
 		final String widgetId = request.params().get("id");
 		final String structureId = request.params().get("structureId");
@@ -179,6 +191,7 @@ public class WidgetController extends BaseController
 
 	@Put("/widget/:id/mandatory/:structureId/mass")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void setMandatoryProfiles(final HttpServerRequest request) {
 		final String widgetId = request.params().get("id");
 		final String structureId = request.params().get("structureId");
@@ -189,6 +202,7 @@ public class WidgetController extends BaseController
 
 	@Delete("/widget/:id/mandatory/:structureId/mass")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeMandatoryProfiles(final HttpServerRequest request) {
 		final String widgetId = request.params().get("id");
 		final String structureId = request.params().get("structureId");
