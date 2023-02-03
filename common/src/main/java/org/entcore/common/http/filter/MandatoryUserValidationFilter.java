@@ -206,7 +206,7 @@ public class MandatoryUserValidationFilter implements Filter {
             return Future.succeededFuture(validations);
         }
         // KO
-        String url = "/auth/validate-mail?force=true&type=mfa"; // Where to redirect (must be white-listed !)
+        String url = "/auth/validate-mfa?force=true"; // Where to redirect (must be white-listed !)
         try {
             url = url +"&redirect="+ URLEncoder.encode(request.absoluteURI(), "UTF-8");
         } catch( Exception e ) {
