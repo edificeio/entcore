@@ -31,6 +31,8 @@ public class UserValidationFactory {
 	private Vertx vertx;
 	private JsonObject config;
 	private JsonObject moduleConfig;
+	/** When truthy, deactivates the email address or mobile phone validation right after login (on web and mobile app). */
+	public boolean deactivateValidationAfterLogin = false;
 	private UserValidationService handler;
 
 	public UserValidationFactory() {
@@ -44,20 +46,18 @@ public class UserValidationFactory {
 		return UserValidationFactoryHolder.instance;
 	}
 
-	public void init(Vertx vertx, JsonObject config) {
+	public void init(Vertx vertx, JsonObject moduleConfig) {
 		this.vertx = vertx;
-		this.moduleConfig = config;
-		this.config = config.getJsonObject("emailValidationConfig");
-		if (this.config == null ) {
+		this.moduleConfig = moduleConfig;
+		DataValidationMetricsFactory.init(vertx, moduleConfig);
+		config = moduleConfig.getJsonObject("emailValidationConfig");
+		if (config == null ) {
 			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 			String s = (String) server.get("emailValidationConfig");
-			if (s != null) {
-				this.config = new JsonObject(s);
-			} else {
-				this.config = new JsonObject();
-			}
+			config = (s != null) ? new JsonObject(s) : new JsonObject();
 		}
-		DataValidationMetricsFactory.init(vertx, config);
+		final Boolean emailValidationActive = config.getBoolean("active", true);
+		deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
 	}
 
 	public static UserValidationService getInstance() {

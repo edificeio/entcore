@@ -129,8 +129,6 @@ public class AuthController extends BaseController {
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 	private MfaService mfaSvc;
 
-	private boolean emailValidationActive;
-
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
 	}
@@ -514,9 +512,6 @@ public class AuthController extends BaseController {
 				.onSuccess( validations -> {
 					if( validations != null ) {
 						requirements.mergeIn(validations);
-						if (!this.emailValidationActive) {
-							requirements.put("needRevalidateEmail", false);
-						}
 					}
 					final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
 					if( userInfos!=null && (userInfos.isADML() || userInfos.isADMC()) ) {
@@ -1788,10 +1783,6 @@ public class AuthController extends BaseController {
 
 	public void setAuthorizedHostsLogin(JsonArray authorizedHostsLogin) {
 		this.authorizedHostsLogin = authorizedHostsLogin;
-	}
-
-	public void setEmailValidationActive(boolean emailValidationActive) {
-		this.emailValidationActive = emailValidationActive;
 	}
 
 	public void setOauthDataFactory(DataHandlerFactory oauthDataFactory) {

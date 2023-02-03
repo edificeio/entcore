@@ -32,7 +32,6 @@ import java.net.URLEncoder;
  */
 public class MandatoryUserValidationFilter implements Filter {
     private final EventBus eventBus;
-    private final boolean emailValidationActive;
     
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
@@ -58,9 +57,8 @@ public class MandatoryUserValidationFilter implements Filter {
 
     private final static String REDIRECT_TO_KEY = "MandatoryUserValidationFilterRedirectsTo";
 
-    public MandatoryUserValidationFilter(EventBus eventBus, boolean emailValidationActive) {
+    public MandatoryUserValidationFilter(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.emailValidationActive = emailValidationActive;
     }
 
     @Override
@@ -165,7 +163,6 @@ public class MandatoryUserValidationFilter implements Filter {
     private Future<JsonObject> checkEmailAddress(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false)) // No need to revalidate => OK
             || isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url requested => OK
-            || !this.emailValidationActive
         ) {
             return Future.succeededFuture(validations);
         }
@@ -182,7 +179,6 @@ public class MandatoryUserValidationFilter implements Filter {
     private Future<JsonObject> checkMobilePhone(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_MOBILE, false)) // No need to revalidate => OK
             || isInWhiteList(request.path(), request.method().name(), MOBILE_PHONE_IDX)  // white-listed url requested => OK
-            || !this.emailValidationActive  // This parameter also applies to mobile phone
         ) {
             return Future.succeededFuture(validations);
         }
