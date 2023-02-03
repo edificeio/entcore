@@ -21,9 +21,11 @@ import java.io.Writer;
 import java.util.Map;
 
 import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sms.Sms;
@@ -332,12 +334,17 @@ public class DefaultUserValidationService implements UserValidationService {
      * - user is ADMx,
      * - MFA is set to "sms",
      * - user's structures do not ignore MFA,
+     * - data validation is not deactivated at startup,
      * - mobile phone number is not already validated.
      * 
      * @return the required map parameter, updated
      */
     private Future<JsonObject> isMobileValidationRequired(final UserInfos userInfos, final JsonObject required) {
-        if( (userInfos.isADML() || userInfos.isADMC()) && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) && Mfa.withSms() ){
+        if( (userInfos.isADML() || userInfos.isADMC())
+         && !Boolean.TRUE.equals(userInfos.getIgnoreMFA())
+         && Mfa.withSms()
+         && !UserValidationFactory.getFactory().deactivateValidationAfterLogin
+         ){
             final Promise<JsonObject> promise = Promise.promise();
             hasValidMobile(userInfos.getUserId())
             .onSuccess( mobileState -> {
@@ -415,12 +422,17 @@ public class DefaultUserValidationService implements UserValidationService {
      * - user is ADMx,
      * - MFA is set to "email",
      * - user's structures do not ignore MFA,
+     * - data validation is not deactivated at startup,
      * - email address is not already validated.
      * 
      * @return the required map parameter, updated
      */
     private Future<JsonObject> isEmailValidationRequired(final UserInfos userInfos, final JsonObject required) {
-        if( (userInfos.isADML() || userInfos.isADMC()) && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) && Mfa.withEmail() ){
+        if( (userInfos.isADML() || userInfos.isADMC()) 
+         && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) 
+         && Mfa.withEmail()
+         && !UserValidationFactory.getFactory().deactivateValidationAfterLogin
+         ){
             final Promise<JsonObject> promise = Promise.promise();
             hasValidEmail(userInfos.getUserId())
             .onSuccess( emailState -> {
