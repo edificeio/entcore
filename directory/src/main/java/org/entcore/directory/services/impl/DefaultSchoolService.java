@@ -542,8 +542,12 @@ public class DefaultSchoolService implements SchoolService {
 		StringBuilder query = new StringBuilder();
 		query.append("MATCH (s:Structure) WHERE s.id IN {structures} WITH s ");
 		query.append("MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s)" );
+		query.append("WITH s, COLLECT(DISTINCT u) AS uu ");
+		query.append("UNWIND uu AS u ");
 		query.append("WITH s, HEAD(u.profiles) AS p, HAS(u.activationCode) AS unactive ");
 		query.append("RETURN s.id AS id, ");
+		query.append("SUM(CASE WHEN NOT(unactive) THEN 1 ELSE 0 END) AS activated, ");
+		query.append("SUM(CASE WHEN unactive THEN 1 ELSE 0 END) AS notactivated, ");
 		query.append("SUM(CASE WHEN p = \"Teacher\" AND NOT(unactive) THEN 1 ELSE 0 END) AS teacherActivated, ");
 		query.append("SUM(CASE WHEN p = \"Teacher\" AND unactive THEN 1 ELSE 0 END) AS teacherUnactivated, ");
 		query.append("SUM(CASE WHEN p = \"Student\" AND NOT(unactive) THEN 1 ELSE 0 END) AS studentActivated, ");
