@@ -5,6 +5,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -39,6 +40,7 @@ public class BlockProfileTraceController extends MongoDbControllerHelper {
     @ApiDoc("Get Profile blocking traces.")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdminFilter.class)
+    @MfaProtected()
     public void getTraces(HttpServerRequest request) {
         final String structureId = request.params().get("structureId");
         if (structureId == null) {
