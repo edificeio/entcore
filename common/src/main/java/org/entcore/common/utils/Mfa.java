@@ -52,7 +52,7 @@ public class Mfa {
 			if( this.config == null ) {
 				LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 				String s = (String) server.get("mfaConfig");
-				this.config = (s != null) ? new JsonObject(s) : null;
+				this.config = (s != null) ? new JsonObject(s) : new JsonObject();
 			}
 			// TODO extraire la liste réelle des URLs sensibles
 			mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());
