@@ -93,7 +93,8 @@
             "user-blacklist": {{ usersBlacklist|default([]) }}
         },
         "mfaConfig": {
-            "types": {{ mfaTypes | default([]) }}
+            "types": {{ mfaTypes | default([]) }},
+            "protectedUrls": {{ mfaProtectedUrls | default([]) }}
         },
         "emailValidationConfig": {
             "active": {{ emailValidationActive | default('true') }},
