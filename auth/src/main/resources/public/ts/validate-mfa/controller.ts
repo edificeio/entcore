@@ -6,6 +6,7 @@ export class AppController implements IController {
 	me: IUserInfo;
 	currentLanguage: string;
 	lang: IIdiom;
+	fullscreen = true;
 	force = false;
 	redirect?:string;
 
@@ -22,6 +23,9 @@ export class AppController implements IController {
 		this.lang = platformConf.idiom;
 
 		const params = (new URL(document.location.href)).searchParams;
+		if( params.get('headless') ) {
+			this.fullscreen = false;
+		}
 		if( params.get("force") == "true" ) {
 			this.force = true;
 		}
