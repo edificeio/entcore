@@ -13,6 +13,7 @@ export class ValidateMfaController implements IController {
 	// Scoped data
 	public force?:Boolean;
 	public redirect?:string;
+	public fullscreen?:Boolean;
 
 	// Input data
 	public inputCode?:String;
@@ -91,7 +92,8 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 	template = require("./validate-mfa.directive.html");
     scope = {
 		force: "=?",
-		redirect: "=?"
+		redirect: "=?",
+		fullscreen: "=?"
     };
 	bindToController = true;
 	controller = [ValidateMfaController];
