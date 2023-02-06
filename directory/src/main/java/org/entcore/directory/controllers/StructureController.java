@@ -106,7 +106,7 @@ public class StructureController extends BaseController {
 						body.putNull("UAI");
 					}
 					String structureId = request.params().get("structureId");
-					structureService.update(structureId, body, defaultResponseHandler(request));
+					structureService.updateAndLog(user, structureId, body, defaultResponseHandler(request));
 				});
 			}
 		});

@@ -229,6 +229,17 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
+	public void updateAndLog(UserInfos user, String structureId, JsonObject body, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-update-structure")
+				.put("structureId", structureId)
+				.put("data", body)
+				.put("userId", user.getUserId())
+				.put("userLogin", user.getLogin());
+		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+	}
+
+	@Override
 	public void update(String structureId, JsonObject body, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-update-structure")

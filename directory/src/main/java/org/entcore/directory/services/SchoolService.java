@@ -54,6 +54,8 @@ public interface SchoolService {
 
 	void list(JsonArray fields, Handler<Either<String, JsonArray>> results);
 
+	void updateAndLog(UserInfos user, String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
+
 	void update(String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
 
 	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);

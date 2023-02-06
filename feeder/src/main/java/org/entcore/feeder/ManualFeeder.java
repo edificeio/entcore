@@ -39,6 +39,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -1460,6 +1461,22 @@ public class ManualFeeder extends BusModBase {
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
+					if( logger.isInfoEnabled() ) {
+						try {
+							final Boolean ignoreMFA = s.getBoolean("ignoreMFA");
+							final JsonObject body = message.body();
+							if(ignoreMFA != null && body != null) {
+								logger.info(
+									"ignoreMFA set to "+ignoreMFA.toString()+
+									" at "+ new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date())+
+									" by user \""+body.getString("userLogin", "")+"\" (id="+body.getString("userId", "")+") "+
+									" on structure \""+ s.getString("name") +"\" (id="+structureId+")"
+								);
+							}
+						} catch(Exception e){
+							logger.error("Unexpected error while logging ignoreMFA update: "+ e.getMessage());
+						}
+					}
 					message.reply(m.body());
 				}
 			});
