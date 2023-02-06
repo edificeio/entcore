@@ -511,8 +511,8 @@ public class User {
 				.put("limit", limit);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				 GET_DELETE_OPTIONS +
 				"LIMIT {limit} ";
 		transactionHelper.add(query, params);
@@ -522,8 +522,8 @@ public class User {
 		JsonObject params = new JsonObject().put("deleteUsers", deleteUsers);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.id IN {deleteUsers} " +
+				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				GET_DELETE_OPTIONS;
 		transactionHelper.add(query, params);
 	}
