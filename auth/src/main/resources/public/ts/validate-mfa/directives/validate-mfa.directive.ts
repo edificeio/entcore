@@ -1,9 +1,10 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { L10n, conf, http, session, notify, notif } from "ode-ngjs-front";
-import { IMfaInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
+import { IMfaInfos, IMobileValidationInfos, IPromisified, IHttpResponse } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
+type IHttpResponseErrorWithPayload = IHttpResponse & {data?:{error?:any}};
 
 /* Controller for the directive */
 export class ValidateMfaController implements IController {
@@ -23,15 +24,37 @@ export class ValidateMfaController implements IController {
 	private infos?: IMfaInfos;
 
 	public async initialize() {
-		this.infos = await Promise.all([
-			notif().onSessionReady().promise,
-			conf().Platform.idiom.addBundlePromise("/auth/i18n")
-		])
-		.then( unused => session().getMfaInfos() )
-		.catch( e => {
+		try {
+			await Promise.all([
+				notif().onSessionReady().promise,
+				conf().Platform.idiom.addBundlePromise("/auth/i18n")
+			]);
+			this.infos = await this.getMfaInfos();
+		} catch( e ) {
 			setTimeout( () => notify.error('validate-mfa.error.network', 4000), 500 );
+		};
+	}
+
+	private async getMfaInfos(): Promise<IMfaInfos> {
+		try {
+			const i = await session().getMfaInfos();
+			// We want more details about any error
+			const response = http().latestResponse as IHttpResponseErrorWithPayload;
+			if( response.status>=400 && typeof response.data?.error === "string" ) {
+				let msg = response.data.error;
+				if( msg.indexOf('apicall.error')>=0 ) {
+					msg = 'apicall.error';
+				} else if( msg.indexOf('invalid.receivers')>=0 ) {
+					msg = 'invalid.receivers';
+				}
+				throw ('validate-mfa.error.'+msg);
+			}
+			return i;
+		} catch( e ) {
+			const msg = (typeof e !== "string") ? 'validate-mfa.error.network' : e;
+			setTimeout( () => notify.error(msg, 4000), 500 );
 			return null;
-		});
+		}
 	}
 
 	public get mobile() {
@@ -69,9 +92,11 @@ export class ValidateMfaController implements IController {
 	}
 
 	public renewCode():Promise<void> {
-		return session().getMfaInfos()
+		return this.getMfaInfos()
 		.then( infos => {
-			notify.success('validate-mfa.step2.renewed');
+			if( infos !== null ) {
+				notify.success('validate-mfa.step2.renewed');
+			}
 			this.infos = infos;
 			this.inputCode = "";
 			this.status = "";
