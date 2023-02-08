@@ -193,7 +193,7 @@ public class DefaultMfaService implements MfaService {
     public Future<JsonObject> getOrStartMfa(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos, final boolean forced) {
         if( Mfa.isNotActivatedForUser(userInfos) ) {
             // Mfa deactivated => error
-            return Future.failedFuture("validate-mfa.error.not.active");
+            return Future.failedFuture("not.active");
         }
 
         final boolean needMFA = forced || Boolean.FALSE.equals( UserValidation.getIsMFA(null, session) );
