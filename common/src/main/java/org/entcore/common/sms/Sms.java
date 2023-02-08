@@ -117,7 +117,7 @@ public class Sms {
 
 	public Future<JsonObject> send(HttpServerRequest request, final String phone, String template, JsonObject params){
 		if (StringUtils.isEmpty(phone)) {
-			return Future.failedFuture("invalid.phone");
+			return Future.failedFuture("empty.target");
 		}
 
 		final String formattedPhone = StringValidation.formatPhone(phone);
