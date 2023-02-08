@@ -100,6 +100,12 @@ public class DefaultMfaService implements MfaService {
             return updateState(userId, state);
         }
 
+        public Future<JsonObject> outdateCode(final String userId, final JsonObject state) {
+            setState(state, OUTDATED);
+            setTtl(state, System.currentTimeMillis());
+            return updateState(userId, state);
+        }
+
         @Override
         public Future<JsonObject> tryValidate(String userId, String code) {
             return getCurrentMfaState(userId, true)
@@ -158,18 +164,18 @@ public class DefaultMfaService implements MfaService {
         public Future<Long> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams ) {
             if( StringUtils.isEmpty(target) ) {
                 logger.info("[2FA] Cannot send a code through sms or email, since target is empty !");
-                return Future.failedFuture("Empty target");
+                return Future.failedFuture("empty.target");
             }
 
-            if( Mfa.withEmail() ) {
-                return Future.failedFuture("not implemented yet");
-            }
-            
             if( Mfa.withSms() ) {
                 return sms.send(request, target, "phone/mfaCode.txt", templateParams).map( j -> 0L );
             }
             
-            return Future.failedFuture("not implemented yet");
+            // if( Mfa.withEmail() ) {
+            //     return Future.failedFuture("not implemented yet");
+            // }
+
+            return Future.failedFuture("not.implemented.yet");
         }
     }
 
@@ -179,7 +185,7 @@ public class DefaultMfaService implements MfaService {
 
 
     public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) {
-        mfaField= new MfaField(vertx, config);
+        mfaField = new MfaField(vertx, config);
         eb = Server.getEventBus(vertx);
         DataValidationMetricsFactory.init(vertx, config);
     }
@@ -195,44 +201,42 @@ public class DefaultMfaService implements MfaService {
         return mfaField.getCurrentMfaState(userInfos.getUserId(), needMFA)
         .compose( state -> {
             final String target = mfaField.target;
-            if( state == null || getState(state) == OUTDATED ) {
-                // A new code has to be generated.
-                return mfaField.startUpdate( 
-                    userInfos.getUserId(), 
-                    null, 
-                    UserValidation.getDefaultTtlInSeconds(), 
-                    UserValidation.getDefaultRetryNumber()
-                )
-                .map( st -> {
-                    if( getState(st) == PENDING ) {
-                        // Send an sms or an email with the pending code.
-                        final Long expires = getOrElse(getTtl(st), UserValidation.getDefaultWaitInSeconds()*1000l);
+            return (state != null && getState(state) != OUTDATED)
+            ? Future.succeededFuture(state)     // Reuse existing code (=> do not send a new code by sms or email)
+            : mfaField.startUpdate(             // Or a new code has to be generated...
+                userInfos.getUserId(), 
+                null, 
+                UserValidation.getDefaultTtlInSeconds(), 
+                UserValidation.getDefaultRetryNumber()
+            ).compose( st -> {
+                if( getState(st) != PENDING ) {
+                    return Future.succeededFuture(st);
+                } else { // ...and sent by sms or email.
+                    final Long expires = getOrElse(getTtl(st), UserValidation.getDefaultWaitInSeconds()*1000l);
 
-                        JsonObject templateParams = new JsonObject()
-                        .put("scheme", Renders.getScheme(request))
-                        .put("host", Renders.getHost(request))
-                        .put("userId", userInfos.getUserId())
-                        .put("firstName", userInfos.getFirstName())
-                        .put("lastName", userInfos.getLastName())
-                        .put("userName", userInfos.getUsername())
-                        .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
-                        .put("code", DataStateUtils.getKey(st));
+                    JsonObject templateParams = new JsonObject()
+                    .put("scheme", Renders.getScheme(request))
+                    .put("host", Renders.getHost(request))
+                    .put("userId", userInfos.getUserId())
+                    .put("firstName", userInfos.getFirstName())
+                    .put("lastName", userInfos.getLastName())
+                    .put("userName", userInfos.getUsername())
+                    .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
+                    .put("code", DataStateUtils.getKey(st));
 
-                        mfaField.sendValidationMessage(request, target, templateParams)
-                        .onComplete( ar -> {
-                            if( ar.failed() ) {
-                                logger.error( ar.cause() );
-                            } else {
-                                // Code was sent => this is a metric to follow
-                                DataValidationMetricsFactory.getRecorder().onMfaCodeGenerated();
-                            }
-                        });
-                    }
-                    return st;
-                });
-            } else {
-                return Future.succeededFuture(state);
-            }
+                    return mfaField.sendValidationMessage(request, target, templateParams)
+                    .onFailure( t -> {
+                        // Code was not sent => consider it is outdated
+                        logger.error(t);
+                        mfaField.outdateCode(userInfos.getUserId(), st);
+                    })
+                    .map( msgId -> {
+                        // Code was sent => this is a metric to follow
+                        DataValidationMetricsFactory.getRecorder().onMfaCodeGenerated();
+                        return st;
+                    });
+                }
+            });
         })
         .map( state -> {
             return mfaField.formatAsResponse(getState(state), getTries(state), getTtl(state));
