@@ -27,6 +27,7 @@ import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sms.Sms;
 import org.entcore.common.user.UserInfos;
@@ -142,6 +143,8 @@ public class DefaultUserValidationService implements UserValidationService {
 
     //---------------------------------------------------------------
 	private final Neo4j neo = Neo4j.getInstance();
+    private EventStore eventStore;
+    private String eventType;
     private EmailField emailSvc = null;
     private MobileField mobileSvc = null;
     private int ttlInSeconds     = 600;  // Validation codes are valid 10 minutes by default
@@ -157,6 +160,12 @@ public class DefaultUserValidationService implements UserValidationService {
         emailSvc = new EmailField(vertx, config);
         mobileSvc= new MobileField(vertx, config);
     }
+
+	public DefaultUserValidationService setEventStore(EventStore eventStore, String eventType) {
+		this.eventStore = eventStore;
+        this.eventType = eventType;
+        return this;
+	}
 
 	/** 
 	 * @return {
@@ -409,6 +418,10 @@ public class DefaultUserValidationService implements UserValidationService {
         .map( id -> {
             // Code was sent => this is a metric to follow
             DataValidationMetricsFactory.getRecorder().onMobileCodeGenerated();
+            // Code was sent => trace this event
+            if( eventStore != null && eventType != null ) {
+                eventStore.createAndStoreEvent(eventType, request, new JsonObject().put("override-module", "MFA"));
+            }
             return id;
         });
     }    
