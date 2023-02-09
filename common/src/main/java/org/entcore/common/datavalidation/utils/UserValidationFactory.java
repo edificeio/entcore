@@ -22,6 +22,7 @@ package org.entcore.common.datavalidation.utils;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.impl.DefaultUserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
+import org.entcore.common.events.EventStore;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -31,6 +32,8 @@ public class UserValidationFactory {
 	private Vertx vertx;
 	private JsonObject config;
 	private JsonObject moduleConfig;
+    private EventStore eventStore;
+    private String eventType;
 	/** When truthy, deactivates the email address or mobile phone validation right after login (on web and mobile app). */
 	public boolean deactivateValidationAfterLogin = false;
 	private UserValidationService handler;
@@ -46,7 +49,7 @@ public class UserValidationFactory {
 		return UserValidationFactoryHolder.instance;
 	}
 
-	public void init(Vertx vertx, JsonObject moduleConfig) {
+	public UserValidationFactory init(Vertx vertx, JsonObject moduleConfig) {
 		this.vertx = vertx;
 		this.moduleConfig = moduleConfig;
 		DataValidationMetricsFactory.init(vertx, moduleConfig);
@@ -58,6 +61,13 @@ public class UserValidationFactory {
 		}
 		final Boolean emailValidationActive = config.getBoolean("active", true);
 		deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
+		return this;
+	}
+
+	public UserValidationFactory setEventStore(EventStore eventStore, String eventType) {
+		this.eventStore = eventStore;
+        this.eventType = eventType;
+        return this;
 	}
 
 	public static UserValidationService getInstance() {
@@ -66,7 +76,7 @@ public class UserValidationFactory {
 
 	public UserValidationService getService() {
 		if (handler == null ) {
-			handler = new DefaultUserValidationService(vertx, moduleConfig, config);
+			handler = new DefaultUserValidationService(vertx, moduleConfig, config).setEventStore(eventStore, eventType);
 		}
 		return handler;
 	}

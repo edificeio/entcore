@@ -1,10 +1,12 @@
 package org.entcore.auth.services.impl;
 
+import org.entcore.auth.controllers.AuthController.AuthEvent;
 import org.entcore.auth.services.MfaService;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.sms.Sms;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -34,6 +36,7 @@ public class DefaultMfaService implements MfaService {
     private class MfaField extends AbstractDataValidationService {
     //---------------------------------------------------------------
         private Sms sms;
+        public EventStore eventStore;
         public String target;
 
         MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
@@ -168,7 +171,10 @@ public class DefaultMfaService implements MfaService {
             }
 
             if( Mfa.withSms() ) {
-                return sms.send(request, target, "phone/mfaCode.txt", templateParams).map( j -> 0L );
+                return sms.send(request, target, "phone/mfaCode.txt", templateParams).map( j -> {
+                    eventStore.createAndStoreEvent(AuthEvent.SMS.name(), request, new JsonObject().put("override-module", "MFA"));
+                    return 0L; // TODO a real SMS id could be returned here, if needed
+                });
             }
             
             // if( Mfa.withEmail() ) {
@@ -182,7 +188,6 @@ public class DefaultMfaService implements MfaService {
     //---------------------------------------------------------------
     private MfaField mfaField = null;
     private EventBus eb = null;
-
 
     public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) {
         mfaField = new MfaField(vertx, config);
@@ -259,4 +264,9 @@ public class DefaultMfaService implements MfaService {
             return result;
         });
     }
+
+	public DefaultMfaService setEventStore(EventStore eventStore) {
+		this.mfaField.eventStore = eventStore;
+        return this;
+	}
 }
