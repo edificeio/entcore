@@ -27,6 +27,7 @@ import org.entcore.auth.controllers.AuthController;
 import org.entcore.auth.controllers.ConfigurationController;
 import org.entcore.auth.controllers.OpenIdConnectController;
 import org.entcore.auth.controllers.SamlController;
+import org.entcore.auth.controllers.AuthController.AuthEvent;
 import org.entcore.auth.controllers.CanopeCasClient;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.security.AuthResourcesProvider;
@@ -40,6 +41,7 @@ import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.auth.users.NewDeviceWarningTask;
 import org.entcore.auth.users.AuthRepositoryEvents;
+import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -71,7 +73,8 @@ public class Auth extends BaseServer {
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
 
 		Sms.getFactory().init(vertx, config);
-		final MfaService mfaService = new DefaultMfaService(vertx, config);
+		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
+		final MfaService mfaService = new DefaultMfaService(vertx, config).setEventStore(eventStore);
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)

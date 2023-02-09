@@ -117,8 +117,8 @@ public abstract class BaseServer extends Server {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
 		}
 
-		UserValidationFactory emailStateFactory = UserValidationFactory.getFactory();
-		emailStateFactory.init(vertx, config);
+		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
+		userValidationFactory.init(vertx, config);
 
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-filter", false);
