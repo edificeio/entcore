@@ -65,7 +65,7 @@
 
                     <input type="tel" id="input-data" style="background-color: white;" name="inputPhone"
                             ng-if="ctrl.type === 'sms'"
-                            pattern="^(\+33|0)(6|7)[0-9]{8}$"
+                            pattern="^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$"
                             ng-model="ctrl.mobilePhone"
                             ng-class="ctrl.inputToBTCss(formValidate.inputPhone)"
                             i18n-placeholder="validate-sms.step1.form.placeholder" />
