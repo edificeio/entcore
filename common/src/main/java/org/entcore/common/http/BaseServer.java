@@ -127,6 +127,8 @@ public abstract class BaseServer extends Server {
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
 		}
 
+		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
+
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
@@ -175,8 +177,6 @@ public abstract class BaseServer extends Server {
 			this
 		);
 		addFilter(userAuth);
-
-		addFilter(new MandatoryUserValidationFilter(getEventBus(vertx)));
 
 		addFilter(new TraceFilter(getEventBus(vertx), securedUriBinding));
 	}

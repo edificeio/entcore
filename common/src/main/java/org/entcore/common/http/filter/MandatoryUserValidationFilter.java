@@ -1,5 +1,6 @@
 package org.entcore.common.http.filter;
 
+import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -23,6 +24,8 @@ import static org.entcore.common.datavalidation.UserValidationService.FIELD_NEED
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 
 import java.net.URLEncoder;
+import java.util.Set;
+import java.util.regex.Matcher;
 
 /**
  * This filter checks if the user needs to be redirected to must perform some mandatory validation before processing.
@@ -32,6 +35,7 @@ import java.net.URLEncoder;
  */
 public class MandatoryUserValidationFilter implements Filter {
     private final EventBus eventBus;
+    private Set<Binding> bindings;
     
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
@@ -57,9 +61,34 @@ public class MandatoryUserValidationFilter implements Filter {
 
     private final static String REDIRECT_TO_KEY = "MandatoryUserValidationFilterRedirectsTo";
 
-    public MandatoryUserValidationFilter(EventBus eventBus) {
+    public MandatoryUserValidationFilter(Set<Binding> mfaProtectedBindings, EventBus eventBus) {
         this.eventBus = eventBus;
+        this.bindings = mfaProtectedBindings;
     }
+
+	private Binding requestBinding(HttpServerRequest request) {
+		//check first if a route exact match
+		for (Binding binding: bindings) {
+			if (!request.method().name().equals(binding.getMethod().name())) {
+				continue;
+			}
+			final String uri = binding.getUriPattern().toString();
+			if (uri.equals(request.path())) {
+				return binding;
+			}
+		}
+		//then check if route regex match
+		for (Binding binding: bindings) {
+			if (!request.method().name().equals(binding.getMethod().name())) {
+				continue;
+			}
+			Matcher m = binding.getUriPattern().matcher(request.path());
+			if (m.matches()) {
+				return binding;
+			}
+		}
+		return null;
+	}
 
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
@@ -149,6 +178,10 @@ public class MandatoryUserValidationFilter implements Filter {
         return false;
     }
 
+    private boolean isMfaProtected(final HttpServerRequest request) {
+        return( isInArray(request.path(), Mfa.getMfaProtectedUrls()) || requestBinding(request) != null );
+    }
+
     private Future<JsonObject> checkTermsOfUse(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_TERMS, false)) // No need to revalidate => OK
             || request.headers().contains("Authorization") // Clients with Authorization header have terms of use validated beforehand => OK
@@ -195,7 +228,7 @@ public class MandatoryUserValidationFilter implements Filter {
     private Future<JsonObject> checkMfa(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_NEED_MFA, false)) // No need to perform a MFA => OK
                 || isInWhiteList(request.path(), request.method().name(), MFA_IDX) // white-listed url requested => OK
-                || !isInArray(request.path(), Mfa.getMfaProtectedUrls()) // Url not concerned by 2FA => OK
+                || !isMfaProtected(request) // Url not concerned by 2FA => OK
         ) {
             return Future.succeededFuture(validations);
         }
