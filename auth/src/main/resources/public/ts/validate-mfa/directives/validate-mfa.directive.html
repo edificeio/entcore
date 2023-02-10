@@ -2,12 +2,16 @@
 
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
-            <div ng-if="ctrl.status!=='ko'" class="mb-3 text-center">
+            <div ng-if="ctrl.status!=='ko' && ctrl.status!=='ok'" class="mb-3 text-center">
                 <img src="/auth/public/img/validate-mfa-ok.svg" height="150"></img>
             </div>
 
             <div ng-if="ctrl.status==='ko'" class="mb-3 text-center">
                 <img src="/auth/public/img/validate-mfa-nok.svg" height="150"></img>
+            </div>
+
+            <div ng-if="ctrl.status==='ok'" class="mb-3 text-center">
+                <img src="/auth/public/img/validate-mfa-done.svg" height="150"></img>
             </div>
 
             <div class="mb-3 text-center fs-4">
