@@ -278,6 +278,11 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         return angular.element("input[type=\"tel\"][name=\"tempPhone\"]").hasClass('ng-valid');
     }
     $scope.openMobileInput = function () {
+         // An ADML changing his own phone numer must be redirected to "my account"
+         if( Me.session.functions.ADMIN_LOCAL && $scope.selectedUser.id == Me.session.userId ) {
+            window.location.href = "/userbook/mon-compte#/edit-me";
+            return;
+        }
         $scope.temp.mobile = $scope.selectedUser.mobile;
         $scope.showMobileInput = true;
     }
