@@ -24,6 +24,7 @@ import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -156,6 +157,7 @@ public class ArchiveController extends BaseController {
 	@Post("/export/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void exportForUser(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, body -> {
 			JsonObject apps = getOrElse(getOrElse(this.config.getJsonObject("publicConf"), new JsonObject())
@@ -300,6 +302,7 @@ public class ArchiveController extends BaseController {
 	@Delete("/export/clear/user/:userId")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void clearUserExport(final HttpServerRequest request)
 	{
 		exportService.clearUserExport(request.params().get("userId"));
