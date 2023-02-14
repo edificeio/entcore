@@ -129,6 +129,11 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withDescription(final String description){
+        message.put("description", description);
+        return this;
+    }
+
     public ExplorerMessage withType(final String application, final String resourceType, final String entityType) {
         message.put("application", application);
         message.put("resourceType", resourceType);
