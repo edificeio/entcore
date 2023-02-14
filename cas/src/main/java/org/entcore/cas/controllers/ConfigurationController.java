@@ -25,6 +25,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
@@ -61,6 +62,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/reload")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void reloadPatterns(HttpServerRequest request) {
 		loadPatterns();
 		Renders.renderJson(request, new JsonObject().put("result", "done"), 200);
@@ -82,6 +84,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/mappings/reload")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void reloadMapping(HttpServerRequest request) {
 		log.info("Reloading cas mapping");
 		mappingService.reset();
@@ -91,6 +94,7 @@ public class ConfigurationController extends BaseController {
 	@Post("/configuration/mappings")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void createMapping(HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, r->{
 			mappingService.create(r).setHandler(res->{
@@ -107,6 +111,7 @@ public class ConfigurationController extends BaseController {
 	@Delete("/configuration/mappings/:mappingId")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void deleteMapping(HttpServerRequest request) {
 		mappingService.delete(request.params().get("mappingId")).setHandler(res->{
 			if(res.succeeded()){
@@ -134,6 +139,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/mappings/:mappingId/usage/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void getMappingUsageForStruct(HttpServerRequest request) {
 		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.of(request.params().get("structureId"))).setHandler(res->{
 			if(res.succeeded()){
@@ -218,6 +224,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/simulate")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void simulate(HttpServerRequest request) {
 		final String service = request.params().get("service");
 		final String user = request.params().get("user");
