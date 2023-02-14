@@ -44,7 +44,7 @@ public interface IExplorerSubResource {
         setIngestJobState(source, state);
     }
     default void setIngestJobState(final JsonObject source, final IngestJobState state) {
-        source.put("state", state.name());
+        source.put("ingest_job_state", state.name());
     }
 
     void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message);

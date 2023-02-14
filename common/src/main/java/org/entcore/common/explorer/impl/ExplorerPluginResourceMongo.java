@@ -164,7 +164,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         });
     }
     public void setIngestJobStateAndVersion(final MongoUpdateBuilder modifier, IngestJobState state, long version) {
-        modifier.set("state", state.name());
+        modifier.set("ingest_job_state", state.name());
         modifier.set("version", version);
     }
 }
