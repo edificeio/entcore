@@ -25,6 +25,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -55,12 +56,14 @@ public class CommunicationController extends BaseController {
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void adminConsole(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Post("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void addLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -70,6 +73,7 @@ public class CommunicationController extends BaseController {
 
 	@Delete("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -79,6 +83,7 @@ public class CommunicationController extends BaseController {
 
 	@Post("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void addLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -88,6 +93,7 @@ public class CommunicationController extends BaseController {
 
 	@Delete("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -97,6 +103,7 @@ public class CommunicationController extends BaseController {
 
 	@Get("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void communiqueWith(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -117,6 +124,7 @@ public class CommunicationController extends BaseController {
 
 	@Post("/relative/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void addLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -126,6 +134,7 @@ public class CommunicationController extends BaseController {
 
 	@Delete("/relative/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -380,6 +389,7 @@ public class CommunicationController extends BaseController {
 	@Get("/rules")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void getDefaultCommunicationRules(final HttpServerRequest request) {
 		JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
 		Renders.renderJson(request, initDefaultRules, 200);
@@ -520,6 +530,7 @@ public class CommunicationController extends BaseController {
 
     @Post("/group/:groupId/users")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
     public void safelyAddLinksWithUsers(HttpServerRequest request) {
         String groupId = getGroupId(request);
         if (groupId == null) return;
@@ -535,6 +546,7 @@ public class CommunicationController extends BaseController {
 
     @Delete("/group/:groupId/users")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
     public void safelyRemoveLinksWithUsers(HttpServerRequest request) {
         String groupId = getGroupId(request);
         if (groupId == null) return;
@@ -555,6 +567,7 @@ public class CommunicationController extends BaseController {
     @Get("/v2/group/:startGroupId/communique/:endGroupId/check")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void addLinkCheckOnly(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -578,6 +591,7 @@ public class CommunicationController extends BaseController {
 	@Post("/v2/group/:startGroupId/communique/:endGroupId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void processAddLinkAndChangeDirection(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -599,6 +613,7 @@ public class CommunicationController extends BaseController {
     
 	@Delete("/group/:startGroupId/relations/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeRelations(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
