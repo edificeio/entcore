@@ -63,7 +63,7 @@ buildNode () {
             npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION
             ;;
           *)
-            npm install && npm update ode-ts-client ode-ngjs-front && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
+            npm install --legacy-peer-deps && npm update ode-ts-client ode-ngjs-front --legacy-peer-deps && npm update entcore--legacy-peer-deps  && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
@@ -72,7 +72,7 @@ buildNode () {
             npm install --no-bin-links && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION
             ;;
           *)
-            npm install && npm update ode-ts-client ode-ngjs-front && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
+            npm install --legacy-peer-deps && npm update ode-ts-client ode-ngjs-front --legacy-peer-deps && npm rm --no-save entcore --legacy-peer-deps && npm install --no-save entcore@$BRANCH_NAME --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD
         esac
     fi
   fi
@@ -88,7 +88,7 @@ buildAdminNode() {
         npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
         ;;
       *)
-        npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-prod
+        npm install --legacy-peer-deps && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui --legacy-peer-deps && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME --legacy-peer-deps && npm run build-prod --legacy-peer-deps
     esac
     cd $DEFAULT_PATH
   fi
