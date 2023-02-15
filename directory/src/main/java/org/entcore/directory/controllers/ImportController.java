@@ -24,6 +24,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
@@ -65,6 +66,7 @@ public class ImportController extends BaseController {
 	@Get("/wizard")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
@@ -72,6 +74,7 @@ public class ImportController extends BaseController {
 	@Post("/wizard/column/mapping")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void columnsMapping(final HttpServerRequest request) {
 		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
@@ -88,6 +91,7 @@ public class ImportController extends BaseController {
 	@Post("/wizard/classes/mapping")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void classesMapping(final HttpServerRequest request) {
 		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
@@ -104,6 +108,7 @@ public class ImportController extends BaseController {
 	@Post("/wizard/validate")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void validateImport(final HttpServerRequest request) {
 		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
@@ -127,6 +132,7 @@ public class ImportController extends BaseController {
 	@Put("/wizard/validate/:id")
 	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void validateWithId(final HttpServerRequest request) {
 		String importId = request.params().get("id");
 		UserUtils.getUserInfos(eb, request, user -> {
@@ -262,6 +268,7 @@ public class ImportController extends BaseController {
 	@Get("/wizard/import/:id")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void findImportDraft(final HttpServerRequest request) {
 		importService.findById(request.params().get("id"), defaultResponseHandler(request));
 	}
@@ -269,6 +276,7 @@ public class ImportController extends BaseController {
 	@Post("/wizard/import")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void doImport(final HttpServerRequest request) {
 		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
@@ -327,6 +335,7 @@ public class ImportController extends BaseController {
 	@Put("/wizard/import/:id")
 	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void launchImport(final HttpServerRequest request) {
 		String importId = request.params().get("id");
 		importService.doImport(importId, reportResponseHandler(vertx,
@@ -336,6 +345,7 @@ public class ImportController extends BaseController {
 	@Post("/wizard/update/:id/:profile")
 	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void createLine(final HttpServerRequest request) {
 		final String importId = request.params().get("id");
 		final String profile = request.params().get("profile");
@@ -350,6 +360,7 @@ public class ImportController extends BaseController {
 	@Put("/wizard/update/:id/:profile")
 	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void updateLine(final HttpServerRequest request) {
 		final String importId = request.params().get("id");
 		final String profile = request.params().get("profile");
@@ -364,6 +375,7 @@ public class ImportController extends BaseController {
 	@Delete("/wizard/update/:id/:profile/:line")
 	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void deleteLine(final HttpServerRequest request) {
 		final String importId = request.params().get("id");
 		final String profile = request.params().get("profile");

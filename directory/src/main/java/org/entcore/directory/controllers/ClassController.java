@@ -24,6 +24,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -94,6 +95,7 @@ public class ClassController extends BaseController {
 	@Delete("/class/:classId")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeClass(final HttpServerRequest request) {
 		// Fix WB-665 : suppressed functionality for now.
 		forbidden(request);
@@ -339,6 +341,7 @@ public class ClassController extends BaseController {
 	@Put("/class/:classId/link/:userId")
 	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void linkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String classId = request.params().get("classId");
@@ -362,6 +365,7 @@ public class ClassController extends BaseController {
 	@Put("/class/:classId/link")
 	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void linkUsers(final HttpServerRequest request) {
 		bodyToJson(request, json ->{
 			final JsonArray userIds = json.getJsonArray("ids");
@@ -384,6 +388,7 @@ public class ClassController extends BaseController {
 	@Put("/class/:classId/unlink")
 	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void unlinkUsers(final HttpServerRequest request) {
 		bodyToJson(request, json ->{
 			final String classId = request.getParam("classId");
@@ -399,6 +404,7 @@ public class ClassController extends BaseController {
 	@Put("/class/:classId/change")
 	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void changeUserClasses(final HttpServerRequest request) {
 		bodyToJson(request, json ->{
 			final String classId = request.params().get("classId");
@@ -418,6 +424,7 @@ public class ClassController extends BaseController {
 	@Delete("/class/:classId/unlink/:userId")
 	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void unlinkUser(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
 		final String userId = request.params().get("userId");
@@ -426,6 +433,7 @@ public class ClassController extends BaseController {
 
 	@Get("/class/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

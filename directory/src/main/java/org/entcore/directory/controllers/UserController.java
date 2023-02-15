@@ -72,6 +72,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
@@ -153,6 +154,7 @@ public class UserController extends BaseController {
 	@Put("/user/login/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void updateUserLogin(final HttpServerRequest request)
 	{
 		bodyToJson(request, new Handler<JsonObject>()
@@ -357,6 +359,7 @@ public class UserController extends BaseController {
 
 	@Get("/list/isolated")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listIsolated(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final List<String> expectedProfile = request.params().getAll("profile");
@@ -382,6 +385,7 @@ public class UserController extends BaseController {
 
 	@Delete("/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void delete(final HttpServerRequest request) {
 		List<String> users = request.params().getAll("userId");
 		userService.delete(users, defaultResponseHandler(request));
@@ -407,6 +411,7 @@ public class UserController extends BaseController {
 	@Put("/restore/user")
 	@ResourceFilter(AnyAdminOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void restore(final HttpServerRequest request) {
 		List<String> users = request.params().getAll("userId");
 		userService.restore(users, defaultResponseHandler(request));
@@ -414,6 +419,7 @@ public class UserController extends BaseController {
 
 	@Get("/export/users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void export(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -496,6 +502,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AddFunctionFilter.class)
 	@IgnoreCsrf
+	@MfaProtected()
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addFunction", new Handler<JsonObject>() {
@@ -524,6 +531,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
 	@IgnoreCsrf
+	@MfaProtected()
 	public void addHeadTeacherManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addHeadTeacher", new Handler<JsonObject>() {
@@ -537,6 +545,7 @@ public class UserController extends BaseController {
 	@Put("/:structure/user/:userId/headteacher")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
+	@MfaProtected()
 	public void updateHeadTeacherManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
@@ -551,6 +560,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
 	@IgnoreCsrf
+	@MfaProtected()
 	public void addDirectionManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addDirection", new Handler<JsonObject>() {
@@ -564,6 +574,7 @@ public class UserController extends BaseController {
 	@Put("/:structure/user/:userId/direction")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
+	@MfaProtected()
 	public void removeDirectionManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "removeDirection", new Handler<JsonObject>() {
@@ -577,6 +588,7 @@ public class UserController extends BaseController {
 
 	@Delete("/user/function/:userId/:function")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String function = request.params().get("function");
@@ -585,6 +597,7 @@ public class UserController extends BaseController {
 
 	@Get("/user/:userId/functions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listFunctions(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		userService.listFunctions(userId, arrayResponseHandler(request));
@@ -600,6 +613,7 @@ public class UserController extends BaseController {
 
 	@Post("/user/group/:userId/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void addGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
@@ -623,6 +637,7 @@ public class UserController extends BaseController {
 
 	@Delete("/user/group/:userId/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
@@ -631,6 +646,7 @@ public class UserController extends BaseController {
 
 	@Get("/user/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listGroup(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		userService.list(groupId, true, null, arrayResponseHandler(request));
@@ -645,6 +661,7 @@ public class UserController extends BaseController {
 
 	@Get("/user/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -715,6 +732,7 @@ public class UserController extends BaseController {
 	@Delete("/duplicate/ignore/:userId/:userId2")
 	@ResourceFilter(AdmlOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void ignoreDuplicate(final HttpServerRequest request) {
 		final String userId1 = request.params().get("userId");
 		final String userId2 = request.params().get("userId2");
@@ -724,6 +742,7 @@ public class UserController extends BaseController {
 	@Put("/duplicate/merge/:userId1/:userId2")
 	@ResourceFilter(AdmlOfTwoUsers.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void mergeDuplicate(final HttpServerRequest request) {
 		final String userId1 = request.params().get("userId1");
 		final String userId2 = request.params().get("userId2");
@@ -733,6 +752,7 @@ public class UserController extends BaseController {
 	@Get("/duplicates")
 	@ResourceFilter(AdmlOfStructures.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listDuplicates(final HttpServerRequest request) {
 		final List<String> structures = request.params().getAll("structure");
 		final boolean inherit = "true".equals(request.params().get("inherit"));
@@ -743,6 +763,7 @@ public class UserController extends BaseController {
 	@Get("/user/structures/list")
 	@ResourceFilter(AdmlOfStructuresByUAI.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listUserInStructuresByUAI(final HttpServerRequest request) {
 		final String format = request.params().get("format");
 		final List<String> structures = request.params().getAll("uai");
@@ -796,6 +817,7 @@ public class UserController extends BaseController {
 	@Post("/duplicate/generate/mergeKey/:userId")
 	@ResourceFilter(AdmlOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void generateMergeKeyByAdml(final HttpServerRequest request) {
 		userService.generateMergeKey(request.params().get("userId"), notEmptyResponseHandler(request));
 	}
@@ -838,6 +860,7 @@ public class UserController extends BaseController {
 	@Post("/duplicate/user/unmergeByLogins")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void unmergeFromLogins(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, body -> {
 			if( body != null && body.containsKey("originalUserId") && body.containsKey("mergedLogins") ) {
@@ -858,6 +881,7 @@ public class UserController extends BaseController {
 	@Get("/user/level/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void listByLevel(HttpServerRequest request) {
 		final boolean stream = "application/x-ndjson".equals(request.headers().get("Accept"));
 		final Handler<Either<String, JsonArray>> h;

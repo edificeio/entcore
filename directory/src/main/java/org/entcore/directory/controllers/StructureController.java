@@ -24,6 +24,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
@@ -93,6 +94,7 @@ public class StructureController extends BaseController {
 
 	@Put("/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "updateStructure", new Handler<JsonObject>() {
 			@Override
@@ -114,6 +116,7 @@ public class StructureController extends BaseController {
 
 	@Put("/structure/:structureId/link/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void linkUser(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final String userId = request.params().get("userId");
@@ -145,6 +148,7 @@ public class StructureController extends BaseController {
 
 	@Delete("/structure/:structureId/unlink/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
@@ -153,6 +157,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -203,6 +208,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/children")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listChildren(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		structureService.listChildren(structureId, arrayResponseHandler(request));
@@ -262,6 +268,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/levels")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getLevels(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -307,6 +314,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/massMail/users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getMassmailUsers(final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -340,6 +348,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/massMail/allUsers")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getMassMailUsersList(final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -354,6 +363,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/massMail/:userId/:type")
 	@ResourceFilter(AnyAdminOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void performMassmailUser(final HttpServerRequest request){
 		final String userId = request.params().get("userId");
 		final String type = request.params().get("type");
@@ -423,6 +433,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/massMail/process/:type")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void performMassmail(final HttpServerRequest request){
 		final String structureId = request.params().get("structureId");
 		final String type = request.params().get("type");
@@ -584,6 +595,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:structureId/metrics")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void metrics(final HttpServerRequest request){
 		structureService.getMetrics(request.params().get("structureId"), defaultResponseHandler(request));
 	}
@@ -591,6 +603,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:id/sources")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listSources(final HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		this.structureService.listSources(structureId, arrayResponseHandler(request));
@@ -599,6 +612,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:id/aaffunctions")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listAafFunctions(final HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		this.structureService.listAafFunctions(structureId, arrayResponseHandler(request));
@@ -607,6 +621,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:id/quicksearch/users")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminStructureFilter.class)
+	@MfaProtected()
 	public void quickSearchUsers(HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		String input = request.params().get("input");
@@ -622,6 +637,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:id/users")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminStructureFilter.class)
+	@MfaProtected()
 	public void userList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		UserUtils.getUserInfos(eb, request, user -> {
@@ -637,6 +653,7 @@ public class StructureController extends BaseController {
 	@Get("/structure/:id/removedUsers")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminStructureFilter.class)
+	@MfaProtected()
 	public void removedUserList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		UserUtils.getUserInfos(eb, request, user -> {
@@ -652,6 +669,7 @@ public class StructureController extends BaseController {
 	@Put("structure/:id/profile/block")
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminStructureFilter.class)
+	@MfaProtected()
 	public void blockUsers(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -721,6 +739,7 @@ public class StructureController extends BaseController {
 	@Put("/structure/:structureId/resetName")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void resetStructureName(HttpServerRequest request)
 	{
 		structureService.resetName(request.params().get("structureId"), defaultResponseHandler(request));
@@ -761,6 +780,7 @@ public class StructureController extends BaseController {
 	@Put("/structure/check/uai")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void checkUAIs(final HttpServerRequest request) {
 		bodyToJson(request, body -> {
 			JsonArray uais = body.getJsonArray("list");
@@ -777,6 +797,7 @@ public class StructureController extends BaseController {
 	@Put("/structure/:structureId/duplicate")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void duplicate(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		bodyToJson(request, body -> {

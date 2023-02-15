@@ -23,6 +23,7 @@ import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
@@ -82,6 +83,7 @@ public class DirectoryController extends BaseController {
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void adminConsole(HttpServerRequest request) {
 		renderView(request, new JsonObject());
 	}
@@ -120,6 +122,7 @@ public class DirectoryController extends BaseController {
 	@Post("/import")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructuresByExternalId.class)
+	@MfaProtected()
 	@IgnoreCsrf
 	public void launchImport(final HttpServerRequest request) {
 		final JsonObject json = new JsonObject()
@@ -366,6 +369,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/api/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	@IgnoreCsrf
 	public void createUser(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
@@ -448,6 +452,7 @@ public class DirectoryController extends BaseController {
 
 	@Get("/api/export")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void export(final HttpServerRequest request) {
 		String neoRequest = "";
 		Map<String, Object> params = new HashMap<>();
