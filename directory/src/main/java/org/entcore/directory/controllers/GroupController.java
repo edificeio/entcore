@@ -24,6 +24,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -54,6 +55,7 @@ public class GroupController extends BaseController {
 
 	@Get("/group/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -107,6 +109,7 @@ public class GroupController extends BaseController {
 	 */
 	@Get("/group/admin/funcAndDisciplines")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getFuncGroups(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -126,6 +129,7 @@ public class GroupController extends BaseController {
 
 	@Post("/group")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void create(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createManualGroup", new Handler<JsonObject>() {
 			@Override
@@ -154,6 +158,7 @@ public class GroupController extends BaseController {
 
 	@Put("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void update(final HttpServerRequest request)
 	{
 		final String groupId = request.params().get("groupId");
@@ -185,6 +190,7 @@ public class GroupController extends BaseController {
 
 	@Delete("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void delete(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
@@ -197,6 +203,7 @@ public class GroupController extends BaseController {
 	@Put("/group/:groupId/users/add")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void addUsers(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
@@ -231,6 +238,7 @@ public class GroupController extends BaseController {
 	@Put("/group/:groupId/users/delete")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void removeUsers(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
