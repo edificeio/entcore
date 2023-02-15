@@ -37,6 +37,7 @@ import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -79,6 +80,7 @@ public class EmbedController extends BaseController {
 	@Get("/embed/admin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void adminView(final HttpServerRequest request){
 		renderView(request, new JsonObject(), "embed-admin.html", null);
 	}
@@ -86,6 +88,7 @@ public class EmbedController extends BaseController {
 	@Post("/embed/refresh/default")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void refreshDefaultEmbed(final HttpServerRequest request){
 		boolean success = this.refreshDefault();
 		if(success)
@@ -110,6 +113,7 @@ public class EmbedController extends BaseController {
 	@Post("/embed/custom")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void createEmbed(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			public void handle(final UserInfos user) {
@@ -129,6 +133,7 @@ public class EmbedController extends BaseController {
 	@Put("/embed/custom/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void updateEmbed(final HttpServerRequest request){
 		final String id = request.params().get("id");
 		if(id == null || id.trim().isEmpty()) {
@@ -145,6 +150,7 @@ public class EmbedController extends BaseController {
 	@Delete("/embed/custom/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void deleteEmbed(final HttpServerRequest request){
 		final String id = request.params().get("id");
 		if(id == null || id.trim().isEmpty()) {
