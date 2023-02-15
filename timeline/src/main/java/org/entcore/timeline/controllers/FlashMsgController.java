@@ -45,6 +45,7 @@ import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
@@ -111,6 +112,7 @@ public class FlashMsgController extends BaseController {
 	@Get("/flashmsg/admin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void viewAdmin(final HttpServerRequest request){
 		renderView(request, new JsonObject(), "admin-flashmsg.html", null);
 	}
@@ -118,6 +120,7 @@ public class FlashMsgController extends BaseController {
 	@Get("/flashmsg/preview")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void preview(final HttpServerRequest request){
 		renderView(request, new JsonObject(), "admin-preview.html", null);
 	}
@@ -125,6 +128,7 @@ public class FlashMsgController extends BaseController {
 	@Post("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void create(final HttpServerRequest request) {
 		createFlashMsg(request, null);
 	}
@@ -132,6 +136,7 @@ public class FlashMsgController extends BaseController {
 	@Post("/flashmsg/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void createADML(final HttpServerRequest request) {
 		createFlashMsg(request, request.params().get("structureId"));
 	}
@@ -164,6 +169,7 @@ public class FlashMsgController extends BaseController {
 	@Delete("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void delete(final HttpServerRequest request) {
 		service.delete(request.params().get("id"), null, defaultResponseHandler(request));
 	}
@@ -171,6 +177,7 @@ public class FlashMsgController extends BaseController {
 	@Delete("/flashmsg/structure/:structureId/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void deleteADML(final HttpServerRequest request) {
 		service.delete(request.params().get("id"), request.params().get("structureId"), defaultResponseHandler(request));
 	}
@@ -178,6 +185,7 @@ public class FlashMsgController extends BaseController {
 	@Delete("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void deleteMultiple(final HttpServerRequest request) {
 		service.deleteMultiple(request.params().getAll("id"), null, defaultResponseHandler(request));
 	}
@@ -185,6 +193,7 @@ public class FlashMsgController extends BaseController {
 	@Delete("/flashmsg/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void deleteMultipleADML(final HttpServerRequest request) {
 		service.deleteMultiple(request.params().getAll("id"), request.params().get("structureId"), defaultResponseHandler(request));
 	}
@@ -192,6 +201,7 @@ public class FlashMsgController extends BaseController {
 	@Put("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void update(final HttpServerRequest request) {
 		updateFlashMsg(request, null);
 	}
@@ -199,6 +209,7 @@ public class FlashMsgController extends BaseController {
 	@Put("/flashmsg/structure/:structureId/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void updateADML(final HttpServerRequest request) {
 		updateFlashMsg(request, request.params().get("structureId"));
 	}
@@ -223,6 +234,7 @@ public class FlashMsgController extends BaseController {
 	@Get("/flashmsg/listadmin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		service.list(getHost(request), arrayResponseHandler(request));
 	}
@@ -230,6 +242,7 @@ public class FlashMsgController extends BaseController {
 	@Get("/flashmsg/listadmin/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void listAdminByStructureId(final HttpServerRequest request) {
 		service.listByStructureId(request.params().get("structureId"), arrayResponseHandler(request));
 	}
@@ -237,6 +250,7 @@ public class FlashMsgController extends BaseController {
 	@Get("/flashmsg/:messageId/substructures")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void getSubstructuresByMessageId(final HttpServerRequest request) {
 		service.getSubstructuresByMessageId(request.params().get("messageId"), arrayResponseHandler(request));
 	}
@@ -244,6 +258,7 @@ public class FlashMsgController extends BaseController {
 	@Post("/flashmsg/:messageId/substructures")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void setSubstructuresByMessageId(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject body) {
@@ -255,6 +270,7 @@ public class FlashMsgController extends BaseController {
 	@Post("/flashmsg/structure/:structureId/:messageId/substructures")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void setSubstructuresByMessageIdADML(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject body) {
@@ -266,6 +282,7 @@ public class FlashMsgController extends BaseController {
 	@Post("/flashmsg/notify")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void notify(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
