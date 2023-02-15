@@ -26,6 +26,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -103,6 +104,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void timetable(HttpServerRequest request) {
 		renderView(request);
 	}
@@ -110,6 +112,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable/courses/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void listCourses(HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		long lastDate;
@@ -172,6 +175,7 @@ public class TimetableController extends BaseController {
 	@Put("/timetable/init/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructureWithoutEDTInit.class)
+	@MfaProtected()
 	public void initStructure(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "initTimetable", new Handler<JsonObject>() {
 			@Override
@@ -184,6 +188,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable/classes/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void classesMapping(final HttpServerRequest request) {
 		timetableService.classesMapping(request.params().get("structureId"), defaultResponseHandler(request));
 	}
@@ -191,6 +196,7 @@ public class TimetableController extends BaseController {
 	@Put("/timetable/classes/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void updateClassesMapping(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -203,6 +209,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable/groups/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void groupsMapping(final HttpServerRequest request) {
 		timetableService.groupsMapping(request.params().get("structureId"), defaultResponseHandler(request));
 	}
@@ -210,6 +217,7 @@ public class TimetableController extends BaseController {
 	@Put("/timetable/groups/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructure.class)
+	@MfaProtected()
 	public void updateGroupsMapping(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -222,6 +230,7 @@ public class TimetableController extends BaseController {
 	@Delete("/timetable/import/progress")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void clearImportInProgress(final HttpServerRequest request)
 	{
 		this.importInProgress.clear();
@@ -231,6 +240,7 @@ public class TimetableController extends BaseController {
 	@Post("/timetable/import/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void importTimetable(final HttpServerRequest request) {
 		String structAttr = request.params().get("structAttr");
 		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
@@ -242,6 +252,7 @@ public class TimetableController extends BaseController {
 	@Post("/timetable/import/:timetableType/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void importSpecificTimetable(final HttpServerRequest request)
 	{
 		String structAttr = request.params().get("structAttr");
@@ -254,6 +265,7 @@ public class TimetableController extends BaseController {
 	@Post("/timetable/import/groups/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void importTimetableGroupsOnly(final HttpServerRequest request) {
 		String structAttr = request.params().get("structAttr");
 		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
@@ -338,6 +350,7 @@ public class TimetableController extends BaseController {
 	@Post("/timetable/feeder/pronote/:structureId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void launchPronoteImport(final HttpServerRequest request)
 	{
 		String structAttr = request.params().get("structAttr");
@@ -350,6 +363,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable/import/:structureId/reports")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void listReports(final HttpServerRequest request) {
 		timetableService.listReports(request.params().get("structureId"), arrayResponseHandler(request));
 	}
@@ -357,6 +371,7 @@ public class TimetableController extends BaseController {
 	@Get("/timetable/import/:structureId/report/:reportId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getReport(final HttpServerRequest request) {
 		timetableService.getReport(request.params().get("structureId"), request.params().get("reportId"), defaultResponseHandler(request));
 	}

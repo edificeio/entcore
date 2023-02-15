@@ -24,6 +24,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.http.filter.AdminFilter;
@@ -46,6 +47,7 @@ public class ProfileController extends BaseController {
 	@Get("/profiles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void listProfiles(final HttpServerRequest request) {
 		profileService.listProfiles(arrayResponseHandler(request));
 	}
@@ -53,6 +55,7 @@ public class ProfileController extends BaseController {
 	@Put("/profiles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void blockProfiles(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override

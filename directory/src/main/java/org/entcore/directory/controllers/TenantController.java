@@ -21,6 +21,7 @@ package org.entcore.directory.controllers;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.http.filter.IgnoreCsrf;
@@ -55,6 +56,7 @@ public class TenantController extends BaseController {
 	@Get("/tenant/:id")
 	@SecuredAction("tenant.get")
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void get(HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if ("all".equals(id)) {
