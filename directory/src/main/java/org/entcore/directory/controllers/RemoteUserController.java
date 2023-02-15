@@ -24,6 +24,7 @@ package org.entcore.directory.controllers;
 
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
@@ -42,6 +43,7 @@ public class RemoteUserController extends BaseController {
 	@Put("/remote/user/old-platforms-sync")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void oldPlatformsSync(HttpServerRequest request) {
 		remoteUserService.oldPlatformsSync(request.params().get("level"), request.params().get("notLevel"),
 				request.params().get("profile"), request.params().get("structureId"), defaultResponseHandler(request));
@@ -50,6 +52,7 @@ public class RemoteUserController extends BaseController {
 	@Put("/remote/user/search-old-platform")
 	@ResourceFilter(SuperAdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void searchOldPlatform(HttpServerRequest request) {
 		final JsonObject action = new JsonObject().put("action", "search-users-old-platform");
 		eb.request("entcore.feeder", action, handlerToAsyncHandler(message -> {
