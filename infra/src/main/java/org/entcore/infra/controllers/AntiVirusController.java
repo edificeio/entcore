@@ -21,6 +21,7 @@ package org.entcore.infra.controllers;
 
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -41,6 +42,7 @@ public class AntiVirusController extends BaseController {
 	@Post("/antivirus/check")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void checkScanReport(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -55,6 +57,7 @@ public class AntiVirusController extends BaseController {
 	@Post("/antivirus/scan")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void scan(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
