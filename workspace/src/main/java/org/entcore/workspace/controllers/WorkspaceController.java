@@ -42,6 +42,7 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
