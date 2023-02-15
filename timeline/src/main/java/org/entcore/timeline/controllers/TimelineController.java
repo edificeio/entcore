@@ -31,6 +31,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -397,6 +398,7 @@ public class TimelineController extends BaseController {
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void adminPage(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -404,6 +406,7 @@ public class TimelineController extends BaseController {
 	@Get("/admin-history")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
+	@MfaProtected()
 	public void adminHistory(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -417,6 +420,7 @@ public class TimelineController extends BaseController {
 	@Put("/config")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void updateConfig(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject data) {
@@ -459,6 +463,7 @@ public class TimelineController extends BaseController {
 	@Get("/performDailyMailing")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void performDailyMailing(final HttpServerRequest request) {
 		if(request.params().contains("forday")){
 			try{
@@ -476,6 +481,7 @@ public class TimelineController extends BaseController {
 	@Get("/performWeeklyMailing")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void performWeeklyMailing(final HttpServerRequest request) {
 		if(request.params().contains("forday")){
 			try{
@@ -597,6 +603,7 @@ public class TimelineController extends BaseController {
 	@Get("/reported")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdmlOfStructures.class)
+	@MfaProtected()
 	public void listReportedNotifications(final HttpServerRequest request) {
 		final String structure = request.params().get("structure");
 		final boolean pending = Boolean.parseBoolean(request.params().get("pending"));
@@ -665,6 +672,7 @@ public class TimelineController extends BaseController {
 	@Put("/:id/action/keep")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdmlOfStructures.class)
+	@MfaProtected()
 	public void adminKeepAction(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		final String structureId = request.params().get("structure");
@@ -695,6 +703,7 @@ public class TimelineController extends BaseController {
 	@Put("/:id/action/delete")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdmlOfStructures.class)
+	@MfaProtected()
 	public void adminDeleteAction(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		final String structureId = request.params().get("structure");
