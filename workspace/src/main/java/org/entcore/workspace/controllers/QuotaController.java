@@ -28,6 +28,7 @@ import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
@@ -50,6 +51,7 @@ public class QuotaController extends BaseController {
 
 	@Get("/quota/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getQuotaStructure(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		quotaService.quotaAndUsageStructure(structureId, notEmptyResponseHandler(request));
@@ -57,12 +59,14 @@ public class QuotaController extends BaseController {
 
 	@Get("/quota/global")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getQuotaGlobal(final HttpServerRequest request) {
 		quotaService.quotaAndUsageGlobal(notEmptyResponseHandler(request));
 	}
 
 	@Put("/quota")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void update(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateQuota", new Handler<JsonObject>() {
 			@Override
@@ -74,6 +78,7 @@ public class QuotaController extends BaseController {
 
 	@Put("/quota/default/:profile")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void updateDefault(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateDefaultQuota", new Handler<JsonObject>() {
 			@Override
@@ -87,6 +92,7 @@ public class QuotaController extends BaseController {
 
 	@Get("/quota/default")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void getDefault(final HttpServerRequest request) {
 		quotaService.getDefaultMaxQuota(arrayResponseHandler(request));
 	}
