@@ -137,8 +137,9 @@ public class PostgresEmailBuilder {
         }
 
         public JsonObject toJsonObject(){
-            final JsonObject json = JsonObject.mapFrom(new HashMap<>(mail));
-            json.remove("date");
+            Map copy = new HashMap<>(mail);
+            copy.remove("date");
+            final JsonObject json = JsonObject.mapFrom(copy);
             json.put("id", json.getValue("id").toString());
             return json;
         }
@@ -177,8 +178,9 @@ public class PostgresEmailBuilder {
         }
 
         public JsonObject toJsonObject(){
-            final JsonObject json = JsonObject.mapFrom(new HashMap<>(attachment));
-            json.remove("date");
+            Map copy = new HashMap<>(attachment);
+            copy.remove("date");
+            final JsonObject json = JsonObject.mapFrom(copy);
             json.put("id", json.getValue("id").toString());
             json.put("mail_id", json.getValue("mail_id").toString());
             return json;
