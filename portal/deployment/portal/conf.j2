@@ -179,7 +179,8 @@
             "scrapbook",
             "collaborativewall",
             "formulaire",
-            "exercizer" {{ resourcesApplicationExt|default('') }}
+            "exercizer",
+			"magneto" {{ resourcesApplicationExt|default('') }}
         ]
         {% if matomoODEEnabled is defined and matomoODEEnabled %},
         "tracker":{
