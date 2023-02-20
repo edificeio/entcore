@@ -10,7 +10,7 @@ export class AppController implements IController {
 	force = false;
 	step:ValidationStep = "input";
 	redirect?:string;
-	type:string = "email";
+	type:ValidationType = "email";
 
 	constructor(
 		private $scope:IScope
@@ -37,8 +37,9 @@ export class AppController implements IController {
 		if( params.get("redirect") ) {
 			this.redirect = params.get("redirect");
 		}
-		if( params.get("type") == "email" || params.get("type") == "sms") {
-			this.type = params.get("type");
+		const paramType = params.get("type");
+		if( paramType == "email" || paramType == "sms") {
+			this.type = paramType;
 		}
 	}
 

@@ -15,7 +15,7 @@ export class ValidateMailController implements IController {
 	public force?:Boolean;
 	public redirect?:string;
 	public fullscreen?:Boolean;
-	public type?:string = "email";
+	public type?:ValidationType = "email";
 
 	// Input data
 	public emailAddress?:String;
@@ -191,7 +191,7 @@ export class ValidateMailController implements IController {
 interface ValidateMailScope extends IScope {
 	step?: ValidationStep;
 	canRenderUi: boolean;
-	type: string;
+	type: ValidationType;
 	onValidate: (step:ValidationStep) => Promise<void>;
 	onCodeChange: (form:angular.IFormController) => Promise<void>;
 	onCodeRenew: () => Promise<void>;
@@ -293,14 +293,15 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 
 /**
  * The validate-mail directive.
- * Set step="email" to display the first screen (=email input).
+ * Set type="email" or type="sms" to allow input of email address or mobile number.
+ * Set step="input" to display the first screen (=email or mobile input).
  * Set step="code"  to display the second screen (=code input).
  * Set force="true" when the user MUST validate his email address.
  * Set redirect="URL" when the user must be redirected after validation.
  * Set fullscreen="true" when no need of header (example when embedded in an iframe)
  *
  * Usage:
- *   &lt;validate-mail step?="email|code" force?="true" redirect?="URL"></validate-mail&gt;
+ *   &lt;validate-mail step?="input|code" force?="true" redirect?="URL"></validate-mail&gt;
  */
 export function DirectiveFactory() {
 	return new Directive();
