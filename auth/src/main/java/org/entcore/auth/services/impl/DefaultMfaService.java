@@ -1,18 +1,5 @@
 package org.entcore.auth.services.impl;
 
-import org.entcore.auth.controllers.AuthController.AuthEvent;
-import org.entcore.auth.services.MfaService;
-import org.entcore.common.datavalidation.UserValidation;
-import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
-import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
-import org.entcore.common.datavalidation.utils.DataStateUtils;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.sms.Sms;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.Mfa;
-import org.entcore.common.utils.StringUtils;
-
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
@@ -22,9 +9,21 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.auth.services.MfaService;
+import org.entcore.common.datavalidation.UserValidation;
+import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
+import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.sms.SmsSender;
+import org.entcore.common.sms.SmsSenderFactory;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Mfa;
+import org.entcore.common.utils.StringUtils;
 
-import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
 
 
@@ -35,7 +34,7 @@ public class DefaultMfaService implements MfaService {
     //---------------------------------------------------------------
     private class MfaField extends AbstractDataValidationService {
     //---------------------------------------------------------------
-        private Sms sms;
+        private SmsSender sms;
         public EventStore eventStore;
         public String target;
 
@@ -46,7 +45,6 @@ public class DefaultMfaService implements MfaService {
                 vertx, 
                 config
             );
-            sms = Sms.getFactory().newInstance(null);
         }
 
         public Future<JsonObject> getCurrentMfaState(final String userId, final boolean needMFA) {
@@ -164,17 +162,14 @@ public class DefaultMfaService implements MfaService {
         }
 
         @Override
-        public Future<Long> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams ) {
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams ) {
             if( StringUtils.isEmpty(target) ) {
                 logger.info("[2FA] Cannot send a code through sms or email, since target is empty !");
                 return Future.failedFuture("empty.target");
             }
 
             if( Mfa.withSms() ) {
-                return sms.send(request, target, "phone/mfaCode.txt", templateParams).map( j -> {
-                    eventStore.createAndStoreEvent(AuthEvent.SMS.name(), request, new JsonObject().put("override-module", "MFA"));
-                    return 0L; // TODO a real SMS id could be returned here, if needed
-                });
+                return sms.sendUnique(request, target, "phone/mfaCode.txt", templateParams, "MFA");
             }
             
             // if( Mfa.withEmail() ) {
@@ -267,6 +262,7 @@ public class DefaultMfaService implements MfaService {
 
 	public DefaultMfaService setEventStore(EventStore eventStore) {
 		this.mfaField.eventStore = eventStore;
+        this.mfaField.sms = SmsSenderFactory.getInstance().newInstance(eventStore );
         return this;
 	}
 }
