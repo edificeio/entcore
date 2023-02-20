@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
@@ -58,7 +57,7 @@ public class EmailValidation {
 	 * @param pendingEmailState with code to send
 	 * @return email ID
 	*/
-	static public Future<Long> sendEmail(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
+	static public Future<String> sendEmail(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingEmailState) {
         return UserValidationFactory.getInstance().sendValidationEmail(
 			request, 
 			infos, 

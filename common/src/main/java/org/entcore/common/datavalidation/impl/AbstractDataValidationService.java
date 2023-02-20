@@ -19,16 +19,23 @@
 
 package org.entcore.common.datavalidation.impl;
 
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.datavalidation.DataValidationService;
+import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.neo4j.Neo4j;
-
-import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
-import static org.entcore.common.neo4j.Neo4jResult.*;
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,22 +45,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.entcore.common.datavalidation.DataValidationService;
-import org.entcore.common.datavalidation.utils.DataStateUtils;
-import org.entcore.common.utils.Mfa;
-import org.entcore.common.utils.StringUtils;
-
-import com.samskivert.mustache.Mustache;
-import com.samskivert.mustache.Template;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.file.FileProps;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
+import static org.entcore.common.neo4j.Neo4jResult.validEmpty;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 
 public abstract class AbstractDataValidationService extends Renders implements DataValidationService {
 	protected final Neo4j neo = Neo4j.getInstance();
@@ -274,9 +270,6 @@ public abstract class AbstractDataValidationService extends Renders implements D
 	public Future<JsonObject> getCurrentState(String userId) {
 		return retrieveFullState(userId);
 	}
-
-	@Override
-    abstract public Future<Long> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams );
 
 	////////////////////////////////////////////
 	//FIXME The whole methods below are intended to retrieve overloaded i18n from Timeline because it contains variables for email templating...
