@@ -1,326 +1,363 @@
-
 <style id="humane-js">
-    .humane,
-    .humane-original {
-      position: fixed;
-      -moz-transition: all 0.2s ease-out;
-      -webkit-transition: all 0.2s ease-out;
-      -ms-transition: all 0.2s ease-out;
-      -o-transition: all 0.2s ease-out;
-      transition: all 0.2s ease-out;
-      z-index: 100000;
-      filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
-    }
-    .humane,
-    .humane-original {
-      font-family: Ubuntu, Verdana, sans-serif;
-      line-height: 40px;
-      font-size: 25px;
-      top: 25%;
-      left: 25%;
-      opacity: 0;
-      width: 50%;
-      min-height: 40px;
-      padding: 10px;
-      text-align: center;
-      background-color: #000;
-      color: #fff;
-      -webkit-border-radius: 15px;
-      border-radius: 15px;
-    }
-    .humane p,
-    .humane-original p,
-    .humane ul,
-    .humane-original ul {
-      margin: 0;
-      padding: 0;
-    }
-    .humane ul,
-    .humane-original ul {
-      list-style: none;
-    }
-    .humane.humane-original-info,
-    .humane-original.humane-original-info {
-      background-color: #4bafd5;
-    }
-    .humane.humane-original-success,
-    .humane-original.humane-original-success {
-      background-color: #7DBF85;
-    }
-    .humane.humane-original-error,
-    .humane-original.humane-original-error {
-      background-color: #e13a3a;
-    }
-    .humane.humane-animate,
-    .humane-original.humane-original-animate {
-      opacity: 0.8;
-    }
-    .humane.humane-animate:hover,
-    .humane-original.humane-original-animate:hover {
-      opacity: 0.6;
-    }
-    .humane.humane-js-animate,
-    .humane-original.humane-original-js-animate {
-      opacity: 0.8;
-    }
-    .humane.humane-js-animate:hover,
-    .humane-original.humane-original-js-animate:hover {
-      opacity: 0.6;
-      filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=60);
-    }
+  .humane,
+  .humane-original {
+    position: fixed;
+    -moz-transition: all 0.2s ease-out;
+    -webkit-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
+    z-index: 100000;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  }
+  .humane,
+  .humane-original {
+    font-family: Ubuntu, Verdana, sans-serif;
+    line-height: 40px;
+    font-size: 25px;
+    top: 25%;
+    left: 25%;
+    opacity: 0;
+    width: 50%;
+    min-height: 40px;
+    padding: 10px;
+    text-align: center;
+    background-color: #000;
+    color: #fff;
+    -webkit-border-radius: 15px;
+    border-radius: 15px;
+  }
+  .humane p,
+  .humane-original p,
+  .humane ul,
+  .humane-original ul {
+    margin: 0;
+    padding: 0;
+  }
+  .humane ul,
+  .humane-original ul {
+    list-style: none;
+  }
+  .humane.humane-original-info,
+  .humane-original.humane-original-info {
+    background-color: #4bafd5;
+  }
+  .humane.humane-original-success,
+  .humane-original.humane-original-success {
+    background-color: #7dbf85;
+  }
+  .humane.humane-original-error,
+  .humane-original.humane-original-error {
+    background-color: #e13a3a;
+  }
+  .humane.humane-animate,
+  .humane-original.humane-original-animate {
+    opacity: 0.8;
+  }
+  .humane.humane-animate:hover,
+  .humane-original.humane-original-animate:hover {
+    opacity: 0.6;
+  }
+  .humane.humane-js-animate,
+  .humane-original.humane-original-js-animate {
+    opacity: 0.8;
+  }
+  .humane.humane-js-animate:hover,
+  .humane-original.humane-original-js-animate:hover {
+    opacity: 0.6;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=60);
+  }
 </style>
 <section ng-controller="ApplicationController">
-	<div class="d-flex justify-content-between align-items-center row">
-		<h1 class="applications-title d-mobile-none col-lg-6">
-			<i18n>portal.header.navigation.myapps</i18n>
-		</h1>
+  <div class="d-flex justify-content-between align-items-center row mb-24">
+    <h1 class="applications-title d-mobile-none col-lg-6">
+      <i18n>portal.header.navigation.myapps</i18n>
+    </h1>
 
-		<!-- Search bar -->
-		<section class="applications-search col-lg-4">
-			<label class="sr-only" for="app-search"><i18n>apps.search</i18n></label>
-			<div class="input-searchbar">
-				<i class="ic-search form-control-feedback"></i>
-				<input id="app-search" role="search" type="search" ng-model="display.searchText" class="form-control form-control-lg ng-pristine ng-untouched ng-valid ng-empty" i18n-placeholder="apps.search" autofocus="">
-			</div>
-		</section>
-	</div>
+    <!-- Search bar -->
+    <section class="applications-search col-lg-4">
+      <label class="visually-hidden" for="app-search"
+        ><i18n>apps.search</i18n></label
+      >
+      <div class="input-group">
+        <input
+          id="app-search"
+          role="search"
+          class="form-control form-control-lg no-validation-icon"
+          type="search"
+          ng-model="display.searchText"
+          i18n-placeholder="apps.search"
+          autofocus=""
+        />
+      </div>
+    </section>
+  </div>
 
-	<!-- Bookmarks section -->
-	<section class="applications-favorite">
-				
-		<!-- "Empty screen" -->
-		<div class="text-center m-2" ng-if="!display.searchText && !bookmarks.length">
-			<p class="lead m-1">
-				<i18n>apps.bookmarks.empty</i18n>
-			</p>
-			<button 
-				class="btn btn-outline-primary btn-md"
-				ng-class="{'active': display.modeBookmarkEdition}"
-				ng-click="toggleBookmarkEdition()"
-			>
-				[[lang.translate(display.modeBookmarkEditionButtonLabel)]]
-			</button>
-		</div>
-		
-		<!-- bookmarks list -->
-		<section class="applications-list" id="bookmarked-apps">
-			<article
-				ng-repeat="application in filteredBookmarks = (bookmarks | filter:searchDisplayName)"
-				id="[[application.name]]"
-				class="position-relative"
-			>
-				<!-- links for applications (not connector) -->
-				<a
-					ng-if="!application.isExternal"
-					ng-href="[[application.address]]"  
-					target="[[application.target]]"
-					class="applications-item"
-					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
-				>
-					<img
-						ng-if="isIconUrl(application)" 
-						class="application"
-						skin-src="[[application.icon]]"
-						alt="[[application.name]]"
-						width="80"
-						height="80"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
-					/>
-					<i 
-						ng-if="!isIconUrl(application)" 
-						class="application" 
-						ng-class="getIconClass(application)"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					>
-					</i>
-					<span class="text-truncate text-truncate--2">[[translatedDisplayName(application)]]</span>
-				</a>
-				
-				<!-- links for connectors -->
-				<a
-					ng-if="application.isExternal"
-					connector-lightbox-trigger="application"
-					href="#"  
-					class="applications-item"
-					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
-				>
-					<img
-						ng-if="isIconUrl(application)" 
-						class="application"
-						skin-src="[[application.icon]]"
-						alt="[[application.name]]"
-						width="80"
-						height="80"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
-					/>
-					<i 
-						ng-if="!isIconUrl(application)"
-						class="application" ng-class="getIconClass(application)"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					>
-					</i>
-					<span class="text-truncate text-truncate--2">[[translatedDisplayName(application)]]</span>
-				</a>
-				
-				<button 
-					class="applications-item remove"
-					title="Retirer des favoris"
-					ng-if="display.modeBookmarkEdition"
-					ng-click="removeBookmark(application, $index, $event)"
-				>
-					<i class="fas fa-minus"></i>
-				</button>
-			</article>
-			
-			<div class="text-center" ng-if="display.searchText && !filteredBookmarks.length">
-				<p class="text-center m-3 font-italic">
-					<i18n>apps.search.bookmark.empty</i18n>
-				</p>
-			</div>
-		</section>
-		<div class="d-flex justify-content-end">
-			<button 
-				class="btn btn-outline-primary btn-md"
-				ng-class="{'active': display.modeBookmarkEdition}"
-				ng-click="toggleBookmarkEdition()"
-				ng-if="!display.searchText && bookmarks.length"
-			>
-				[[lang.translate(display.modeBookmarkEditionButtonLabel)]]
-			</button>
-		</div>
-	</section>
+  <!-- Bookmarks section -->
+  <section class="applications-favorite">
+    <!-- "Empty screen" -->
+    <div
+      class="text-center m-2"
+      ng-if="!display.searchText && !bookmarks.length"
+    >
+      <p class="lead m-1">
+        <i18n>apps.bookmarks.empty</i18n>
+      </p>
+      <button
+        class="btn btn-outline-primary btn-md"
+        ng-class="{'active': display.modeBookmarkEdition}"
+        ng-click="toggleBookmarkEdition()"
+      >
+        [[lang.translate(display.modeBookmarkEditionButtonLabel)]]
+      </button>
+    </div>
 
-	<!-- Applications section (may contain connectors if number of connectors is below 6 or the plaftorm configured number) -->
-	<section class="applications-list mt-2" id="apps">
-		<article
-			ng-repeat="application in filteredApplications = (applications | filter:searchDisplayName)"
-			id="[[application.name]]"
-			class="position-relative"
-		>
-			<!-- links for applications (not connector) -->
-			<a
-				ng-if="!application.isExternal"
-				ng-href="[[application.address]]"
-				target="[[application.target]]"
-				class="applications-item"
-				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
-			>
-				<img
-					ng-if="isIconUrl(application)" 
-					class="application"
-					skin-src="[[application.icon]]"
-					alt="[[application.name]]"
-					width="80"
-					height="80"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
-				/>
-				<i 
-					ng-if="!isIconUrl(application)" 
-					class="application" ng-class="getIconClass(application)"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
-				>
-				</i>
-				<span class="text-truncate text-truncate--2">[[translatedDisplayName(application)]]</span>
-			</a>
-			
-			<!-- links for connectors -->
-			<a
-				ng-if="application.isExternal"
-				connector-lightbox-trigger="application"
-				href="#"
-				class="applications-item"
-				ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
-			>
-				<img
-					ng-if="isIconUrl(application)" 
-					class="application"
-					skin-src="[[application.icon]]"
-					alt="[[application.name]]"
-					width="80"
-					height="80"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
-				/>
-				<i 
-					ng-if="!isIconUrl(application)" 
-					class="application" ng-class="getIconClass(application)"
-					ng-class="{'opacity-50': display.modeBookmarkEdition}"
-				>
-				</i>
-				<span class="text-truncate text-truncate--2">[[translatedDisplayName(application)]]</span>
-			</a>
-			
-			<button 
-				class="applications-item add"
-				title="Ajouter aux favoris"
-				ng-if="display.modeBookmarkEdition"
-				ng-click="addBookmark(application, $index, $event)"
-			>
-				<i class="fas fa-plus"></i>
-			</button>
-		</article>
-		
-		<div class="text-center" ng-if="display.searchText && !filteredApplications.length">
-			<p class="text-center m-3 font-italic">
-				<i18n>apps.search.app.empty</i18n>
-			</p>
-		</div>
-	</section>
+    <!-- bookmarks list -->
+    <section class="applications-list" id="bookmarked-apps">
+      <article
+        ng-repeat="application in filteredBookmarks = (bookmarks | filter:searchDisplayName)"
+        id="[[application.name]]"
+        class="position-relative"
+      >
+        <!-- links for applications (not connector) -->
+        <a
+          ng-if="!application.isExternal"
+          ng-href="[[application.address]]"
+          target="[[application.target]]"
+          class="applications-item"
+          ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+        >
+          <img
+            ng-if="isIconUrl(application)"
+            class="application"
+            skin-src="[[application.icon]]"
+            alt="[[application.name]]"
+            width="80"
+            height="80"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+            img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+          />
+          <i
+            ng-if="!isIconUrl(application)"
+            class="application"
+            ng-class="getIconClass(application)"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+          >
+          </i>
+          <span class="text-truncate text-truncate--2"
+            >[[translatedDisplayName(application)]]</span
+          >
+        </a>
 
-	<!-- Connectors section -->
-	<section class="applications-connector" ng-if="display.showConnectorSection && connectors && connectors.length > 0">
-		<h2><span><i18n>apps.connectors</i18n></span></h2>
-		<section class="applications-list" id="connectors">
-			<article
-				ng-repeat="connector in filteredConnectors = (connectors | filter:searchDisplayName)"
-				id="[[connector.name]]" 
-				class="position-relative"
-			>
-				<a 
-					href="#"
-					connector-lightbox-trigger="connector"
-					class="applications-item connector"
-					ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
-				>
-					<img 
-						ng-if="isIconUrl(connector)" 
-						class="application"
-						skin-src="[[connector.icon]]"
-						alt="[[connector.name]]"
-						width="80"
-						height="80"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-						img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
-					/>
-					<i 
-						ng-if="!isIconUrl(connector)" 
-						class="application"
-						ng-class="getIconClass(connector)"
-						ng-class="{'opacity-50': display.modeBookmarkEdition}"
-					>
-					</i>
-					<span class="text-truncate text-truncate--2">[[translatedDisplayName(connector)]]</span>
-				</a>
-				<button 
-					class="applications-item add"
-					title="Ajouter aux favoris"
-					ng-if="display.modeBookmarkEdition"
-					ng-click="addBookmark(connector, $index, $event)"
-				>
-					<i class="fas fa-plus"></i>
-				</button>
-			</article>
+        <!-- links for connectors -->
+        <a
+          ng-if="application.isExternal"
+          connector-lightbox-trigger="application"
+          href="#"
+          class="applications-item"
+          ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+        >
+          <img
+            ng-if="isIconUrl(application)"
+            class="application"
+            skin-src="[[application.icon]]"
+            alt="[[application.name]]"
+            width="80"
+            height="80"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+            img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+          />
+          <i
+            ng-if="!isIconUrl(application)"
+            class="application"
+            ng-class="getIconClass(application)"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+          >
+          </i>
+          <span class="text-truncate text-truncate--2"
+            >[[translatedDisplayName(application)]]</span
+          >
+        </a>
 
-			<div class="text-center" ng-if="display.searchText && !filteredConnectors.length">
-				<p class="text-center m-3 font-italic">
-					<i18n>apps.search.connector.empty</i18n>
-				</p>
-			</div>
-		</section>
-	</section>
+        <button
+          class="applications-item remove"
+          title="Retirer des favoris"
+          ng-if="display.modeBookmarkEdition"
+          ng-click="removeBookmark(application, $index, $event)"
+        >
+          <i class="fas fa-minus"></i>
+        </button>
+      </article>
 
-	<connector-lightbox></connector-lightbox>
+      <div
+        class="text-center"
+        ng-if="display.searchText && !filteredBookmarks.length"
+      >
+        <p class="text-center m-3 font-italic">
+          <i18n>apps.search.bookmark.empty</i18n>
+        </p>
+      </div>
+    </section>
+    <div class="d-flex justify-content-end">
+      <button
+        class="btn btn-outline-primary btn-md"
+        ng-class="{'active': display.modeBookmarkEdition}"
+        ng-click="toggleBookmarkEdition()"
+        ng-if="!display.searchText && bookmarks.length"
+      >
+        [[lang.translate(display.modeBookmarkEditionButtonLabel)]]
+      </button>
+    </div>
+  </section>
+
+  <!-- Applications section (may contain connectors if number of connectors is below 6 or the plaftorm configured number) -->
+  <section class="applications-list mt-2" id="apps">
+    <article
+      ng-repeat="application in filteredApplications = (applications | filter:searchDisplayName)"
+      id="[[application.name]]"
+      class="position-relative"
+    >
+      <!-- links for applications (not connector) -->
+      <a
+        ng-if="!application.isExternal"
+        ng-href="[[application.address]]"
+        target="[[application.target]]"
+        class="applications-item"
+        ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+      >
+        <img
+          ng-if="isIconUrl(application)"
+          class="application"
+          skin-src="[[application.icon]]"
+          alt="[[application.name]]"
+          width="80"
+          height="80"
+          ng-class="{'opacity-50': display.modeBookmarkEdition}"
+          img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+        />
+        <i
+          ng-if="!isIconUrl(application)"
+          class="application"
+          ng-class="getIconClass(application)"
+          ng-class="{'opacity-50': display.modeBookmarkEdition}"
+        >
+        </i>
+        <span class="text-truncate text-truncate--2"
+          >[[translatedDisplayName(application)]]</span
+        >
+      </a>
+
+      <!-- links for connectors -->
+      <a
+        ng-if="application.isExternal"
+        connector-lightbox-trigger="application"
+        href="#"
+        class="applications-item"
+        ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+      >
+        <img
+          ng-if="isIconUrl(application)"
+          class="application"
+          skin-src="[[application.icon]]"
+          alt="[[application.name]]"
+          width="80"
+          height="80"
+          ng-class="{'opacity-50': display.modeBookmarkEdition}"
+          img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+        />
+        <i
+          ng-if="!isIconUrl(application)"
+          class="application"
+          ng-class="getIconClass(application)"
+          ng-class="{'opacity-50': display.modeBookmarkEdition}"
+        >
+        </i>
+        <span class="text-truncate text-truncate--2"
+          >[[translatedDisplayName(application)]]</span
+        >
+      </a>
+
+      <button
+        class="applications-item add"
+        title="Ajouter aux favoris"
+        ng-if="display.modeBookmarkEdition"
+        ng-click="addBookmark(application, $index, $event)"
+      >
+        <i class="fas fa-plus"></i>
+      </button>
+    </article>
+
+    <div
+      class="text-center"
+      ng-if="display.searchText && !filteredApplications.length"
+    >
+      <p class="text-center m-3 font-italic">
+        <i18n>apps.search.app.empty</i18n>
+      </p>
+    </div>
+  </section>
+
+  <!-- Connectors section -->
+  <section
+    class="applications-connector"
+    ng-if="display.showConnectorSection && connectors && connectors.length > 0"
+  >
+    <h2>
+      <span><i18n>apps.connectors</i18n></span>
+    </h2>
+    <section class="applications-list" id="connectors">
+      <article
+        ng-repeat="connector in filteredConnectors = (connectors | filter:searchDisplayName)"
+        id="[[connector.name]]"
+        class="position-relative"
+      >
+        <a
+          href="#"
+          connector-lightbox-trigger="connector"
+          class="applications-item connector"
+          ng-class="{'no-hover': display.modeBookmarkEdition, 'pe-none': display.modeBookmarkEdition}"
+        >
+          <img
+            ng-if="isIconUrl(connector)"
+            class="application"
+            skin-src="[[connector.icon]]"
+            alt="[[connector.name]]"
+            width="80"
+            height="80"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+            img-on-error="[[themeAssetsPath]]/images/image-placeholder.png"
+          />
+          <i
+            ng-if="!isIconUrl(connector)"
+            class="application"
+            ng-class="getIconClass(connector)"
+            ng-class="{'opacity-50': display.modeBookmarkEdition}"
+          >
+          </i>
+          <span class="text-truncate text-truncate--2"
+            >[[translatedDisplayName(connector)]]</span
+          >
+        </a>
+        <button
+          class="applications-item add"
+          title="Ajouter aux favoris"
+          ng-if="display.modeBookmarkEdition"
+          ng-click="addBookmark(connector, $index, $event)"
+        >
+          <i class="fas fa-plus"></i>
+        </button>
+      </article>
+
+      <div
+        class="text-center"
+        ng-if="display.searchText && !filteredConnectors.length"
+      >
+        <p class="text-center m-3 font-italic">
+          <i18n>apps.search.connector.empty</i18n>
+        </p>
+      </div>
+    </section>
+  </section>
+
+  <connector-lightbox></connector-lightbox>
 </section>
