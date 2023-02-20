@@ -364,6 +364,11 @@ export class UserConnectionSectionComponent
   updateMobile() {
     if( this.isForbidden )
       return;
+    if (this.isMyAdmlAccount) {
+      const redirectUrl = encodeURI(document.location.href);
+      window.location.href = `/auth/validate-mail?type=sms&force=true&redirect=${redirectUrl}`;
+      return;
+    }
     this.spinner.perform('portal-content', this.details.updateMobile())
     .then(() => {
       this.ns.success(
