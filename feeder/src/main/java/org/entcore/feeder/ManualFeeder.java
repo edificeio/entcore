@@ -501,8 +501,8 @@ public class ManualFeeder extends BusModBase {
 				matchUser +
 				matchStructure +
 				"MATCH u-[r:HAS_FUNCTION]->() " +
+				"WHERE s.id IN r.scope AND (NOT(HAS(r.source)) OR r.source <> 'MANUAL') " +
 				"OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ss:Structure) " +
-						"WHERE s.id IN r.scope AND (NOT(HAS(r.source)) OR r.source <> 'MANUAL') " +
 						"WITH s, r, count(CASE WHEN ss.id IN r.scope THEN 1 ELSE NULL END) as parentADML " +
 						"WHERE parentADML = 0 " +
 						"SET r.scope = FILTER(sId IN r.scope WHERE sId <> s.id) " +
