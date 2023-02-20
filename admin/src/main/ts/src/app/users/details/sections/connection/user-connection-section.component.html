@@ -253,20 +253,27 @@
     <fieldset>
       <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input type="tel" [(ngModel)]="details.mobile" name="mobile" [disabled]="isForbidden" (ngModelChange)="isMobileSaved = false"/>
+          <input type="tel" 
+            [(ngModel)]="details.mobile" 
+            name="mobile" 
+            [disabled]="isForbidden || isMyAdmlAccount" 
+            (ngModelChange)="isMobileSaved = false"/>
           <button
             type="button"
             (click)="updateMobile()"
             [disabled]="
-              isMobileSaved ||
+              (isMobileSaved ||
               mobileForm.pristine ||
               mobileForm.invalid ||
               isForbidden ||
-              spinner.isLoading('portal-content')
+              spinner.isLoading('portal-content'))
+              && !isMyAdmlAccount
             "
           >
-            <s5l>save</s5l>
-            <i class="fa fa-floppy-o"></i>
+            <s5l *ngIf="!isMyAdmlAccount">save</s5l>
+            <s5l *ngIf="isMyAdmlAccount">edit</s5l>
+            <i *ngIf="!isMyAdmlAccount" class="fa fa-floppy-o"></i>
+            <i *ngIf="isMyAdmlAccount" class="fa fa-pencil"></i>
           </button>
         </div>
       </ode-form-field>
