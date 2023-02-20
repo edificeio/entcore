@@ -19,12 +19,11 @@
 
 package org.entcore.common.datavalidation;
 
-import org.entcore.common.user.UserInfos;
-
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 public interface UserValidationService {
 	static public String FIELD_MUST_CHANGE_PWD     	= "forceChangePassword";
@@ -125,7 +124,7 @@ public interface UserValidationService {
 	 * @param mobileState
 	 * @return the SMS ID
 	 */
-	Future<Long> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState);
+	Future<String> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState);
 
 	
 	//////////////// Email-related methods ////////////////
@@ -173,5 +172,5 @@ public interface UserValidationService {
 	 * @param emailState
 	 * @return the email ID
 	 */
-	Future<Long> sendValidationEmail(HttpServerRequest request, UserInfos infos, JsonObject emailState);
+	Future<String> sendValidationEmail(HttpServerRequest request, UserInfos infos, JsonObject emailState);
 }
