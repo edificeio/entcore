@@ -1243,7 +1243,7 @@ public class AuthController extends BaseController {
 														return;
 													}
 													if (smsProvider != null && !smsProvider.isEmpty()) {
-														final String obfuscatedMobile = StringValidation
+														final String obfuscatedMobile = fr.wseduc.webutils.StringValidation
 																.obfuscateMobile(mobile);
 														renderJson(request,
 																new JsonObject().put("mobile", obfuscatedMobile));
@@ -1298,7 +1298,7 @@ public class AuthController extends BaseController {
 						}
 
 						final String obfuscatedMail = StringValidation.obfuscateMail(mail);
-						final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
+						final String obfuscatedMobile = fr.wseduc.webutils.StringValidation.obfuscateMobile(mobile);
 
 						if (smsProvider != null && !smsProvider.isEmpty())
 							renderJson(request,
@@ -1541,7 +1541,8 @@ public class AuthController extends BaseController {
 	}
 
 	@Post("/reset")
-	public void resetPasswordSubmit(final HttpServerRequest request) {
+	public void
+	resetPasswordSubmit(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
 		request.endHandler(new io.vertx.core.Handler<Void>() {
 
@@ -1553,7 +1554,7 @@ public class AuthController extends BaseController {
 				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
-				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");;
+				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
 								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))

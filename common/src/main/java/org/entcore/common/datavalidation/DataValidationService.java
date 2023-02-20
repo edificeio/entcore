@@ -67,5 +67,5 @@ public interface DataValidationService {
 	 * @param templateParams for the "email/emailValidationCode.html" template
 	 * @return the message ID
 	 */
-	Future<Long> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams);
+	Future<String> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams);
 }

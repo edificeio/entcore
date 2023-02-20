@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
 
@@ -58,7 +57,7 @@ public class MobileValidation {
 	 * @param pendingMobileState with code to send
 	 * @return mobile ID
 	*/
-	static public Future<Long> sendSMS(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingMobileState) {
+	static public Future<String> sendSMS(final EventBus unused, final HttpServerRequest request, UserInfos infos, JsonObject pendingMobileState) {
         return UserValidationFactory.getInstance().sendValidationSMS(
 			request, 
 			infos, 

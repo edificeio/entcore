@@ -19,23 +19,13 @@
 
 package org.entcore.auth.users;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import fr.wseduc.webutils.Either;
-
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.NTLM;
-
-import org.entcore.auth.pojo.SendPasswordDestination;
-import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.email.EmailFactory;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.neo4j.Neo4j;
-import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -45,20 +35,24 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.auth.pojo.SendPasswordDestination;
+import org.entcore.common.email.EmailFactory;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.joda.time.DateTime;
 
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.security.BCrypt;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.user.SessionAttributes.*;
+import static fr.wseduc.webutils.Utils.*;
+import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
@@ -562,7 +556,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			return;
 		}
 
-		final String formattedPhone = StringValidation.formatPhone(phone);
+		final String formattedPhone = fr.wseduc.webutils.StringValidation.formatPhone(phone);
 
 		render.processTemplate(request, template, params, new Handler<String>() {
 			@Override

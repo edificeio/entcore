@@ -1,27 +1,20 @@
 package org.entcore.common.datavalidation.impl;
 
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static org.entcore.common.user.SessionAttributes.*;
-import static org.entcore.common.neo4j.Neo4jResult.*;
-
-import java.io.StringReader;
-import java.io.Writer;
-
-import java.util.Map;
-
 import org.entcore.common.datavalidation.EmailValidation;
-import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
@@ -29,16 +22,21 @@ import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.sms.Sms;
+import org.entcore.common.sms.SmsSender;
+import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.email.EmailSender;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.Map;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
+import static org.entcore.common.user.SessionAttributes.IS_MFA;
+import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 
 
 /**
@@ -56,9 +54,9 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<Long> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams ) {
-            Sms sms = Sms.getFactory().newInstance( this );
-            return sms.send(request, mobile, "phone/mobileVerification.txt", templateParams).map( j -> 0L );
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams ) {
+            final SmsSender sms = SmsSenderFactory.getInstance().newInstance( this, eventStore );
+            return sms.sendUnique(request, mobile, "phone/mobileVerification.txt", templateParams);
         }
     }
 
@@ -74,8 +72,8 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<Long> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
-            Promise<Long> promise = Promise.promise();
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+            Promise<String> promise = Promise.promise();
             if( emailSender == null ) {
                 promise.complete(null);
             } else if( StringUtils.isEmpty((email)) ) {
@@ -100,7 +98,7 @@ public class DefaultUserValidationService implements UserValidationService {
                                 Message<JsonObject> reply = ar.result();
                                 if ("ok".equals(reply.body().getString("status"))) {
                                     Object r = reply.body().getValue("result");
-                                    promise.complete( 0l );
+                                    promise.complete( "" );
                                 } else {
                                     promise.fail( reply.body().getString("message", "") );
                                 }
@@ -401,7 +399,7 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
 	@Override
-	public Future<Long> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState) {
+	public Future<String> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState) {
         final Long expires = getOrElse(DataStateUtils.getTtl(mobileState), waitInSeconds*1000l);
 
         JsonObject templateParams = new JsonObject()
@@ -493,7 +491,7 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     @Override
-	public Future<Long> sendValidationEmail(HttpServerRequest request, UserInfos infos, JsonObject emailState) {
+	public Future<String> sendValidationEmail(HttpServerRequest request, UserInfos infos, JsonObject emailState) {
         final Long expires = getOrElse(DataStateUtils.getTtl(emailState), waitInSeconds*1000l);
 
         JsonObject templateParams = new JsonObject()
