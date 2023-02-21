@@ -76,13 +76,28 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         }
         return school;
     }
+    /**
+    * Reset all modifications and flags that were started by the users.
+    *
+    **/
+    const resetModifications = () => {
+        $scope.temp.displayName = "";
+        $scope.showDisplayNameInput = false;
+        $scope.selectedUser.tempLoginAlias = "";
+        $scope.showLoginInput = false;
+        $scope.temp.email = "";
+        $scope.showEmailInput = false;
+        $scope.temp.homePhone = "";
+        $scope.showPhoneInput = false;
+        $scope.temp.mobile = "";
+        $scope.showMobileInput = false;
+    }
     const setSelectedUser = async (user: User) => {
         $scope.mottoShouldPublish = false;
-        $scope.showLoginInput = false;
-        $scope.showEmailInput = false;
         await user.open({ withChildren: true });
         $scope.selectedUser = user;
         $scope.selectedUser.picture = user.picture || user.avatarUri;
+        resetModifications();
         $scope.safeApply();
     }
     const selectFirstUser = async (user: User) => {
