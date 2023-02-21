@@ -761,6 +761,7 @@
   "explorer.actions.edit": "Propriétés",
   "explorer.actions.trash": "Mettre en corbeille",
   "explorer.actions.restore": "Restaurer",
+  "explorer.actions.share": "Partager",
   "explorer.tree.trash": "Corbeille",
   "explorer.create.folder": "Créer un dossier",
   "explorer.create.folder.name": "Nom du dossier",
