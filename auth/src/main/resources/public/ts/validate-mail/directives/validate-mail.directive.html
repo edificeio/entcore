@@ -64,11 +64,10 @@
                             i18n-placeholder="validate-mail.step1.form.placeholder" />
 
                     <input type="tel" id="input-data" style="background-color: white;" name="inputPhone"
+                            data-intl-phone-input
                             ng-if="ctrl.type === 'sms'"
-                            pattern="^((00|\+)?(?:[0-9] ?-?\.?){6,15})?$"
                             ng-model="ctrl.mobilePhone"
-                            ng-class="ctrl.inputToBTCss(formValidate.inputPhone)"
-                            i18n-placeholder="validate-sms.step1.form.placeholder" />
+                            ng-class="ctrl.inputToBTCss(formValidate.inputPhone)" />
 
                     <div class="text-danger mt-2 mb-5">
                         <small>
