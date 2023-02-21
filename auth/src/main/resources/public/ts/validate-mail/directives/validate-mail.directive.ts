@@ -1,6 +1,6 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
-import { L10n, conf, http, session, notify, notif } from "ode-ngjs-front";
+import { conf, session, notify, notif } from "ode-ngjs-front";
 import { IEmailValidationInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
@@ -24,6 +24,10 @@ export class ValidateMailController implements IController {
 	public acceptableEmailPattern:string = ".*";
 	public status:OTPStatus = "";
 	public koStatusCause = "";
+
+	// If defined, this member will help formatting the input phone number with a +XX indicator
+	public intlFormat?: () => String;
+
 	// Server data
 	private infos?:IEmailValidationInfos | IMobileValidationInfos;
 
@@ -37,6 +41,10 @@ export class ValidateMailController implements IController {
 
 	get isTypeEmail	() {
 		return this.type === "email";
+	}
+
+	get finalPhoneNumber():String {
+		return (typeof this.intlFormat == "function") ? this.intlFormat() : this.mobilePhone;
 	}
 
 	public async initialize() {
@@ -123,7 +131,7 @@ export class ValidateMailController implements IController {
 		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
 		const time = new Date().getTime();
 
-		return session().checkMobile(this.mobilePhone)
+		return session().checkMobile(this.finalPhoneNumber)
 		.then( () => {
 			this.step = "code";
 			this.inputCode && delete this.inputCode;
@@ -176,7 +184,7 @@ export class ValidateMailController implements IController {
 	}
 
 	public renewCode():Promise<void> {
-		return (this.isTypeEmail ? session().checkEmail(this.emailAddress) : session().checkMobile(this.mobilePhone))
+		return (this.isTypeEmail ? session().checkEmail(this.emailAddress) : session().checkMobile(this.finalPhoneNumber))
 		.then( () => (this.isTypeEmail ? session().getEmailValidationInfos() : session().getMobileValidationInfos()) as Promise<IEmailValidationInfos | IMobileValidationInfos>)
 		.then( infos => {
 			notify.success(this.isTypeEmail ? 'validate-mail.step2.renewed' : 'validate-sms.step2.renewed');
