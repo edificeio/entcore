@@ -220,9 +220,9 @@ public class DefaultUserValidationService implements UserValidationService {
 
 	private Future<Boolean> needMFA(final JsonObject session, final UserInfos infos) {
         // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
-        // - no MFA has already been performed during this session,
-        // - user is ADMx,
-        // - MFA is activated at platform-level,
+        // - no MFA has already been performed during this session, and
+        // - user is ADMx, and
+        // - MFA is activated at platform-level, and
         // - all structures, the user is attached to, are not ignoring MFA
         if( Boolean.TRUE.equals(getIsMFA(session))
          || infos == null
