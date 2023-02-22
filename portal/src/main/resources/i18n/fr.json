@@ -782,5 +782,8 @@
   "explorer.tree.trash": "Corbeille",
   "explorer.create.folder": "Créer un dossier",
   "explorer.create.folder.name": "Nom du dossier",
-  "explorer.rename.folder": "Renommer un dossier"
+  "explorer.rename.folder": "Renommer un dossier",
+  "explorer.libray.img.alt": "Découvrir la bibliothèque",
+  "explorer.libray.title": "Découvrez plein d’activités à réutiliser dans la bibliothèque !",
+  "explorer.libray.btn": "Découvrir"
 }
