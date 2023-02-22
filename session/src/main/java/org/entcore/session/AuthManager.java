@@ -887,21 +887,29 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					final List<String> structureNames = new ArrayList<>();
 					final Set<String> uai = new HashSet<>();
 					boolean hasApp = false;
-					boolean ignoreMFA = false;
+					boolean attachedToOneStructure = false;
+					boolean allAttachedStructuresIgnoreMFA = true;
 					for (Object o : getOrElse(j.getJsonArray("structures"), new fr.wseduc.webutils.collections.JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						final JsonArray s = (JsonArray) o;
 						if (s.getString(0) != null) {
 							structureIds.add(s.getString(0));
 							structureNames.add(StringUtils.trimToBlank(s.getString(1)));
-							if (!StringUtils.isEmpty(s.getString(2)))
+							if (!StringUtils.isEmpty(s.getString(2))) {
 								uai.add(s.getString(2));
-							if(!hasApp && getOrElse(s.getBoolean(3), false))
+							}
+							if(!hasApp && getOrElse(s.getBoolean(3), false)) {
 								hasApp = true;
-							if(!ignoreMFA && getOrElse(s.getBoolean(4), false))
-								ignoreMFA = true;
+							}
+							if(allAttachedStructuresIgnoreMFA && Boolean.FALSE.equals(getOrElse(s.getBoolean(4), false))) {
+								// This structure does not ignore MFA, so...
+								allAttachedStructuresIgnoreMFA = false;
+							}
+							attachedToOneStructure = true;
 						}
 					}
+					// ignoreMFA is true iif 
+					boolean ignoreMFA = attachedToOneStructure && allAttachedStructuresIgnoreMFA;
 					j.remove("structures");
 					j.put("structures", new fr.wseduc.webutils.collections.JsonArray(structureIds));
 					j.put("structureNames", new fr.wseduc.webutils.collections.JsonArray(structureNames));
