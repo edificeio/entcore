@@ -297,6 +297,7 @@ public class StructureController extends BaseController {
 
 	@Put("/structure/:structureId/distributions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void setDistributions(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
