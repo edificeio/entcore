@@ -1,0 +1,18 @@
+{
+    "emailConfig": {
+        "email": "ne-pas-repondre@entcore.org", 
+        "host": "https://entcore.org", 
+        "type": "GoMail",
+        "user": "test",
+        "password": "test",
+        "uri": "http://localhost:3080",
+        "platform": "test"
+    }
+    ,
+    "emailValidationConfig": {
+        "active": true,
+        "ttlInSeconds": 10,
+        "retryNumber": 2,
+        "waitInSeconds": 1
+    }
+}
