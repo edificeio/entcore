@@ -202,6 +202,8 @@ public class Auth extends BaseServer {
 		addController(canopeController);
 
 		setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
+
+		addController(new RedirectController());
 	}
 
 }
