@@ -90,6 +90,7 @@ public class DirectoryController extends BaseController {
 
 	@Get("/class-admin")
 	@SecuredAction("classadmin.address")
+	@MfaProtected()
 	public void classAdmin(HttpServerRequest request) {
 		renderView(request);
 		eventStore.createAndStoreEvent(UserBookController.DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "ClassParam"));
