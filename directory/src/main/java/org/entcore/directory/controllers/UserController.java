@@ -120,6 +120,7 @@ public class UserController extends BaseController {
 
 	@Put("/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
