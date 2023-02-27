@@ -8,6 +8,7 @@ import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { BundlesService } from 'ngx-ode-sijil';
+import { Context } from 'src/app/core/store/mappings/context';
 
 class UserMetric {
   active: number = 0;
@@ -59,6 +60,10 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public structUAI: string;
   public structHasApp: boolean;
   public structEnableMFA: boolean;
+  public withMfa: boolean = false;
+  public labelEnableMFA: string;
+  public initialStructEnableMFA: boolean; // Used to detect and warn changes on MFA management
+  public showMfaWarningLightbox = false;
   public isADMC: boolean = false;
   public showSettingsLightbox = false;
 
@@ -76,6 +81,11 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   async admcSpecific() {
     const session: Session = await SessionModel.getSession();
     this.isADMC = session.isADMC();
+    const context: Context = await SessionModel.getContext();
+    if( context && context.mfaConfig && context.mfaConfig.length>0 ) {
+      this.withMfa = true;
+      this.labelEnableMFA = this.bundles.translate("management.structure.informations.enableMFA", {type: 'SMS'});
+    }
     this.changeDetector.markForCheck();
   }
 
@@ -89,7 +99,7 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         this.structName = this.structure.name;
         this.structUAI = this.structure.UAI;
         this.structHasApp = this.structure.hasApp;
-        this.structEnableMFA = !this.structure.ignoreMFA;
+        this.structEnableMFA = this.initialStructEnableMFA = !this.structure.ignoreMFA;
         this.infoService.getMetrics(this.structure.id).subscribe(
           {
             next: (data) =>
@@ -121,6 +131,20 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
       }
     }));
     this.admcSpecific();
+  }
+
+  checkThenUpdate(): void {
+    if( this.structEnableMFA !== this.initialStructEnableMFA ) {
+      this.showMfaWarningLightbox = true;
+    } else {
+      this.updateStructure();
+    }
+  }
+
+  confirmMfa(): void {
+    this.initialStructEnableMFA = this.structEnableMFA;
+    this.showMfaWarningLightbox = false;
+    this.checkThenUpdate();
   }
 
   updateStructure(): void

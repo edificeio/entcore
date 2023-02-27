@@ -75,7 +75,7 @@
   "management.structure.informations.name.reset": "Rétablir le nom par défaut",
   "management.structure.informations.name.help": "Cette information s'affiche dans l'annuaire et lors du partage",
   "management.structure.informations.id": "Identifiant",
-  "management.structure.informations.enableMFA": "Authentification forte",
+  "management.structure.informations.enableMFA": "Authentification forte ({{type}})",
   "management.structure.informations.UAI": "UAI / RNE",
   "management.structure.informations.hasApp": "Accès à l'application mobile",
   "management.structure.informations.hasApp.true": "Oui",
@@ -127,6 +127,9 @@
   "management.structure.informations.sourceType.automatic.help": "Une source d'alimentation automatique signifie que les données sont transmises par votre académie. La vérification des comptes utilisateurs (ajout / mise à jour) doit donc se faire en priorité dans les logiciels académiques (SCONET / SIECLE / STSweb, ...).",
   "management.structure.informations.sourceType.manual": "Manuelle",
   "management.structure.informations.sourceType.manual.help": "Une source d'alimentation manuelle signifie que l'établissement doit alimenter lui-même ses comptes utilisateurs. Pour cela, vous pouvez créer les comptes un à un ou réaliser un import de comptes à l'aide d'un fichier CSV dans la section \"Import/export\" de la console d'administration.",
+  "management.structure.informations.mfa.warn.title": "Modification de l’authentification forte",
+  "management.structure.informations.mfa.warn.activation": "Vous êtes sur le point d’activer une option de sécurité importante. Elle impose aux utilisateurs administrateurs une connexion à 2 facteurs, êtes-vous sûr de vouloir continuer ?",
+  "management.structure.informations.mfa.warn.deactivation": "Vous êtes sur le point de désactiver une option de sécurité importante. Elle impose aux utilisateurs administrateurs une connexion à 2 facteurs, êtes-vous sûr de vouloir continuer ?",
 
   "management.structure.parent.attachment": "Rattachement structure parente",
   "management.structure.parent.title": "Ajouter des structures parentes",
