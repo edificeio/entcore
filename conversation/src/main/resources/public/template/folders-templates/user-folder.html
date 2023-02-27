@@ -88,21 +88,25 @@
 					<i class="[[mail.matchSystemIcon()]]" tooltip="[[mail.matchSystemIcon()]]"></i>
 					<i ng-if="mail.matchSystemIcon() === mail.getInSystemIcon() && mail.isUserAuthor()" class="[[mail.getOutSystemIcon()]]" tooltip="[[mail.getOutSystemIcon()]]"></i>
 
-					<span class="strong"
-						ng-init="recs = allReceivers(mail)">
-
-						<span
-							ng-if="mail.getSystemFolder() !== 'INBOX'"
-							ng-repeat="receiver in receivers = (recs | limitTo:5 | filter: filterUsers(mail))">
-							<span>[[mail.map(receiver).displayName]]</span><span ng-if="$index < (receivers.length - 1) && receivers.length > 1">, </span>
+					<span class="strong" ng-init="recs = allRecipients(mail)">
+						<span class="strong" ng-if="mail.getSystemFolder() !== 'INBOX'">
+							<span ng-if="recs.get('to').length"  style="font-weight:bold"><i18n>to</i18n> :</span>
+							<span ng-repeat="toRecipient in toRecipients = (recs.get('to') | limitTo:10 | filter: filterUsers(mail))">
+								<span>[[mail.map(toRecipient).displayName]]</span><span ng-if="$index < (toRecipients.length - 1) && toRecipients.length > 1">, </span>
+							</span>
+							<span ng-if="recs.get('cc').length" style="font-weight:bold"><i18n>cc</i18n> :</span>
+							<span ng-repeat="ccRecipient in ccRecipients = (recs.get('cc') | limitTo:10 | filter: filterUsers(mail))">
+								<span>[[mail.map(ccRecipient).displayName]]</span><span ng-if="$index < (ccRecipients.length - 1) && ccRecipients.length > 1">, </span>
+							</span>
+							<span class="strong" ng-if="recs.get('cci').length" style="font-weight:bold"><i18n>cci</i18n> :</span>
+							<span class="strong" ng-repeat="cciRecipient in cciRecipients = (recs.get('cci') | limitTo:10 | filter: filterUsers(mail))">
+								<span>[[mail.map(cciRecipient).displayName]]</span><span ng-if="$index < (cciRecipients.length - 1) && cciRecipients.length > 1">, </span>
+							</span>
 						</span>
-
-						<span class="strong"
-							ng-if="mail.getSystemFolder() === 'INBOX'">
+						<span class="strong" ng-if="mail.getSystemFolder() === 'INBOX'">
 							[[mail.sender().displayName]][[mail.fromName]]
 						</span>
-
-						<br ng-if="recs.length > 0">
+						<br ng-if="recs.get('to').length > 0 || recs.get('cc').length > 0 || recs.get('cci').length > 0">
 						<span class="small-text">[[mail.getSubject()]]</span>
 					</span>
 				</div>
@@ -118,4 +122,5 @@
 		</article>
 	</div>
 
+</div>
 <container template="toaster"></container>

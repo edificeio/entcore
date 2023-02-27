@@ -559,15 +559,34 @@ export let conversationController = ng.controller('ConversationController', [
                 Conversation.instance.currentFolder.mails.selection.selected.find(e => e.unread)
         }
 
-        $scope.allReceivers = function (mail) {
-            var receivers = mail.to.slice(0);
-            mail.toName && mail.toName.forEach(function (deletedReceiver) {
-                receivers.push({
+        // Retrieve all recipients of a mail
+        $scope.allRecipients = function (mail) {
+            var recipients = new Map<string, any[]>();
+            // Adding direct recipients to recipients map
+            recipients.set('to', mail.to.slice(0));
+            mail.toName && mail.toName.forEach(function (deletedRecipient) {
+                recipients.get('to').push({
                     deleted: true,
-                    displayName: deletedReceiver
+                    displayName: deletedRecipient
                 });
             });
-            return receivers;
+            // Adding cc recipients to recipients map
+            recipients.set('cc', mail.cc.slice(0));
+            mail.ccName && mail.ccName.forEach(function (deletedRecipient) {
+                recipients.get('cc').push({
+                    deleted: true,
+                    displayName: deletedRecipient
+                });
+            });
+            // Adding cci recipients to recipients map
+            recipients.set('cci', mail.cci.slice(0));
+            mail.cciName && mail.cciName.forEach(function (deletedRecipient) {
+                recipients.get('cci').push({
+                    deleted: true,
+                    displayName: deletedRecipient
+                });
+            });
+            return recipients;
         }
 
         $scope.filterUsers = function (mail) {
