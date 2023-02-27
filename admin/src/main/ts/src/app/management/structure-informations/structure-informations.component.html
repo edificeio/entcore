@@ -2,7 +2,7 @@
   <h2>
     <s5l>management.structure.informations.general</s5l>
   </h2>
-  <form #updateForm="ngForm" (ngSubmit)="updateStructure()">
+  <form #updateForm="ngForm" (ngSubmit)="checkThenUpdate()">
     <ode-form-field label="management.structure.informations.name">
       <input
         type="text"
@@ -59,15 +59,18 @@
         />
       </ode-form-field>
       <ode-form-errors [control]="hasAppInput"></ode-form-errors>
-      <ode-form-field label="management.structure.informations.enableMFA">
-        <input
-          type="checkbox"
-          [(ngModel)]="structEnableMFA"
-          name="ignoreMFA"
-          #enableMFAInput="ngModel"
-        />
-      </ode-form-field>
-      <ode-form-errors [control]="enableMFAInput"></ode-form-errors>
+      
+      <div *ngIf="withMfa">
+        <ode-form-field label="{{labelEnableMFA}}">
+          <input
+            type="checkbox"
+            [(ngModel)]="structEnableMFA"
+            name="ignoreMFA"
+            #enableMFAInput="ngModel"
+          />
+        </ode-form-field>
+        <ode-form-errors [control]="enableMFAInput"></ode-form-errors>
+      </div>
     </div>
 
     <!-- For ADMLs -->
@@ -300,5 +303,18 @@
         {{ struc }}
       </li>
     </ul>
+  </ode-lightbox-confirm>
+  <ode-lightbox-confirm
+    [show]="showMfaWarningLightbox"
+    lightboxTitle="management.structure.informations.mfa.warn.title"
+    (onCancel)="showMfaWarningLightbox = false;"
+    (onConfirm)="confirmMfa()"
+  >
+    <p *ngIf="structEnableMFA">
+      <s5l>management.structure.informations.mfa.warn.activation</s5l>
+    </p>
+    <p *ngIf="!structEnableMFA">
+      <s5l>management.structure.informations.mfa.warn.deactivation</s5l>
+    </p>
   </ode-lightbox-confirm>
 </div>
