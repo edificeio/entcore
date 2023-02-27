@@ -21,12 +21,20 @@ class Directive implements IDirective<IScope,JQLite,IAttributes,IController[]> {
         if(!validationCtrl) return;
 
 		// Check if intlTelInput.min.js is available, then apply to phone input
+		// Available options are documented here : https://github.com/jackocnr/intl-tel-input#initialisation-options
 		if(elem && elem[0] && window && window.intlTelInput) {
 			const intlPhoneInput = window.intlTelInput(elem[0], {
-			  preferredCountries: ["fr", "de", "es", "it", "mx"],
+			  customContainer: "w-100",
+			  onlyCountries: ["fr"],
 			  utilsScript:"https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
 			});
-			validationCtrl.intlFormat = () => intlPhoneInput.getNumber();
+			if( intlPhoneInput ) {
+				validationCtrl.intlFormat = () => intlPhoneInput.getNumber();
+
+				scope.$on("$destroy", () => {
+					intlPhoneInput.destroy();
+				});
+			}
 		}
 	}
 }
