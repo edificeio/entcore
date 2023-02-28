@@ -1676,7 +1676,7 @@ public class AuthController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void getUserMfaCode(final HttpServerRequest request) {
 		// Get current code status (outdated|pending|valid)
-		// May send a new code by sms or email, depending on the conf and whether the previous code is outdated or not.
+		// May send a new code by sms or email, depending on the conf.
 		UserUtils.getSession(eb, request, session -> {
 			if (session == null) {
 				renderError(request, new JsonObject().put("error", "session.not.found"));
@@ -1688,7 +1688,7 @@ public class AuthController extends BaseController {
 				return;
 			}
 
-			mfaSvc.getOrStartMfa(request, session, userInfos, false)
+			mfaSvc.startMfaWorkflow(request, session, userInfos)
 			.onSuccess( mfaState -> {
 				/*{
 					"type": "sms | email",

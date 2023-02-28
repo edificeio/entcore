@@ -36,7 +36,6 @@ public class DefaultMfaService implements MfaService {
     //---------------------------------------------------------------
         private SmsSender sms;
         public EventStore eventStore;
-        public String target;
 
         MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
             super(
@@ -47,20 +46,27 @@ public class DefaultMfaService implements MfaService {
             );
         }
 
-        public Future<JsonObject> getCurrentMfaState(final String userId, final boolean needMFA) {
-            return (needMFA
-                ? retrieveFullState(userId)
-                : Future.succeededFuture(new JsonObject())
-            )
+        /** 
+         * @return MFA field metadata : state, names, target email or phone number
+         * { state: JsonObject|null, firstName:string, lastName:string, displayName:string, target:string }
+         */
+        public Future<JsonObject> getCurrentMfaState(final String userId) {
+            return retrieveFullState(userId)
             .compose( j -> {
-                target = j.getString(Mfa.withSms() ? "mobile" : "email");
                 JsonObject state = j.getJsonObject(stateField);
     
                 // Check business rules
                 do {
                     if( state == null ) {
                         state = new JsonObject();
-                        setState(state, needMFA ? OUTDATED : VALID);
+                        setState(state, OUTDATED);
+                        j.put(stateField, state);
+                        break;
+                    }
+                    // A MFA is never validated in the database ! Only in memory.
+                    if( getState(state) == VALID ) {
+                        // should never happen
+                        setState(state, OUTDATED);
                         break;
                     }
                     // if TTL or max tries reached => outdated code
@@ -82,7 +88,9 @@ public class DefaultMfaService implements MfaService {
                     }
                     // Otherwise, current code is still pending.
                 } while(false);
-                return Future.succeededFuture(state);
+                j.put("state", j.remove(stateField) );
+                j.put("target", j.remove(Mfa.withSms() ? "mobile" : "email") );
+                return Future.succeededFuture(j);
             });
         }
 
@@ -109,7 +117,10 @@ public class DefaultMfaService implements MfaService {
 
         @Override
         public Future<JsonObject> tryValidate(String userId, String code) {
-            return getCurrentMfaState(userId, true)
+            return getCurrentMfaState(userId)
+            .map( j -> {
+                return j.getJsonObject("state");
+            })
             .compose( state -> {
                 // Check business rules
                 do {
@@ -190,29 +201,26 @@ public class DefaultMfaService implements MfaService {
         DataValidationMetricsFactory.init(vertx, config);
     }
 
-    public Future<JsonObject> getOrStartMfa(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos, final boolean forced) {
+    public Future<JsonObject> startMfaWorkflow(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos) {
         if( Mfa.isNotActivatedForUser(userInfos) ) {
             // Mfa deactivated => error
             return Future.failedFuture("not.active");
         }
 
-        final boolean needMFA = forced || Boolean.FALSE.equals( UserValidation.getIsMFA(null, session) );
-
-        return mfaField.getCurrentMfaState(userInfos.getUserId(), needMFA)
-        .compose( state -> {
-            final String target = mfaField.target;
-            return (state != null && getState(state) != OUTDATED)
-            ? Future.succeededFuture(state)     // Reuse existing code (=> do not send a new code by sms or email)
-            : mfaField.startUpdate(             // Or a new code has to be generated...
+        // Retrieve metadata, since target email address or phone number is needed
+        return mfaField.getCurrentMfaState(userInfos.getUserId())
+        .compose( j -> {
+            // Generate a new code
+            return mfaField.startUpdate(
                 userInfos.getUserId(), 
                 null, 
                 UserValidation.getDefaultTtlInSeconds(), 
                 UserValidation.getDefaultRetryNumber()
-            ).compose( st -> {
-                if( getState(st) != PENDING ) {
-                    return Future.succeededFuture(st);
-                } else { // ...and sent by sms or email.
-                    final Long expires = getOrElse(getTtl(st), UserValidation.getDefaultWaitInSeconds()*1000l);
+            ).compose( mfaState -> {
+                if( getState(mfaState) != PENDING ) {
+                    return Future.succeededFuture(mfaState);
+                } else {
+                    final Long expires = getOrElse(getTtl(mfaState), UserValidation.getDefaultWaitInSeconds()*1000l);
 
                     JsonObject templateParams = new JsonObject()
                     .put("scheme", Renders.getScheme(request))
@@ -222,18 +230,18 @@ public class DefaultMfaService implements MfaService {
                     .put("lastName", userInfos.getLastName())
                     .put("userName", userInfos.getUsername())
                     .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
-                    .put("code", DataStateUtils.getKey(st));
+                    .put("code", DataStateUtils.getKey(mfaState));
 
-                    return mfaField.sendValidationMessage(request, target, templateParams)
+                    return mfaField.sendValidationMessage(request, j.getString("target"), templateParams)
                     .onFailure( t -> {
                         // Code was not sent => consider it is outdated
                         logger.error(t);
-                        mfaField.outdateCode(userInfos.getUserId(), st);
+                        mfaField.outdateCode(userInfos.getUserId(), mfaState);
                     })
                     .map( msgId -> {
                         // Code was sent => this is a metric to follow
                         DataValidationMetricsFactory.getRecorder().onMfaCodeGenerated();
-                        return st;
+                        return mfaState;
                     });
                 }
             });
