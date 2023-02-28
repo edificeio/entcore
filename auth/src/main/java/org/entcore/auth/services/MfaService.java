@@ -27,15 +27,14 @@ import io.vertx.core.json.JsonObject;
 
 public interface MfaService {
 	/**
-	 * Retrieve current MfaState.
-	 * May send a new code, depending on the current state is outdated or not.
+	 * Start a new MFA workflow => send a code by email or SMS.
 	 * @return mfaState {
 		"state": "outdated | pending | valid", 
 		"tries": number of remaining retries before code becomes outdated,
 		"ttl": number of seconds remaining before expiration of the code
 		}
 	 */
-	public Future<JsonObject> getOrStartMfa(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos, final boolean forced);
+	public Future<JsonObject> startMfaWorkflow(final HttpServerRequest request, final JsonObject session, final UserInfos userInfos);
 
 	/**
 	 * Try to validate an MFA with a code
