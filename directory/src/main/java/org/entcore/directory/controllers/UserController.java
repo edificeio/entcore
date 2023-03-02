@@ -41,6 +41,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.MobileValidation;
+import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -984,12 +985,17 @@ public class UserController extends BaseController {
 					final String userId = infos.getUserId();
 					MobileValidation.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( mobileState -> {
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-							recreateSession(infos, infos.getUserId(), request, eb).onComplete(complete ->
-								renderJson( request, mobileState )
-							);
+						// Verifying a mobile phone number is considered an MFA.
+						UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true)
+						.onComplete(ar -> {
+							// Mobile is validated and updated => session has evolved and must be recreated.
+							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+								recreateSession(infos, userId, request, eb).onComplete(complete ->
+									renderJson( request, mobileState )
+								);
+							});
+							CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 						});
-						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 					})
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
@@ -1054,8 +1060,9 @@ public class UserController extends BaseController {
 					final String userId = infos.getUserId();
 					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
 					.onSuccess( emailState -> {
+						
 						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-							recreateSession(infos, infos.getUserId(), request, eb)
+							recreateSession(infos, userId, request, eb)
 								.onComplete(result -> renderJson( request, emailState ));
 						});
 					})
