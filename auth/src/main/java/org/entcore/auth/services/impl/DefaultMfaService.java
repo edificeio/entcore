@@ -260,7 +260,7 @@ public class DefaultMfaService implements MfaService {
         .tryValidate( userInfos.getUserId(), key )
         .map( result -> {
             if( result !=null && "valid".equalsIgnoreCase(result.getString("state")) ) {
-                UserValidation.setIsMFA(eb, UserUtils.getSessionId(request).get(), true);
+                UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true);
                 // Code was consumed => this is a metric to follow
                 DataValidationMetricsFactory.getRecorder().onMfaCodeConsumed();
             }
