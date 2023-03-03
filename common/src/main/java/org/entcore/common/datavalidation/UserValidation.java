@@ -36,8 +36,8 @@ public class UserValidation {
 	 * @param status the new status
 	 * @return a truthy async future when successful ?
 	 */
-	static public Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status) {
-		return UserValidationFactory.getInstance().setIsMFA(eb, sessionId, status);
+	static public Future<Boolean> setIsMFA(final EventBus unused, final String sessionId, final boolean status) {
+		return UserValidationFactory.getInstance().setIsMFA(sessionId, status);
 	}
 
 	/**

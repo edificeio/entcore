@@ -983,19 +983,15 @@ public class UserController extends BaseController {
 				if (infos != null) {
 					// Try a validation code
 					final String userId = infos.getUserId();
-					MobileValidation.tryValidate(eb, userId, payload.getString("key"))
+					MobileValidation.tryValidate(eb, UserUtils.getSessionIdOrTokenId(request).get(), userId, payload.getString("key"))
 					.onSuccess( mobileState -> {
-						// Verifying a mobile phone number is considered an MFA.
-						UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true)
-						.onComplete(ar -> {
-							// Mobile is validated and updated => session has evolved and must be recreated.
-							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-								recreateSession(infos, userId, request, eb).onComplete(complete ->
-									renderJson( request, mobileState )
-								);
-							});
-							CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
+						// Mobile is validated and updated => session has evolved and must be recreated.
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+							recreateSession(infos, userId, request, eb).onComplete(complete ->
+								renderJson( request, mobileState )
+							);
 						});
+						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 					})
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
