@@ -12,17 +12,31 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.*;
+import static java.lang.System.currentTimeMillis;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IExplorerFolderTree;
+import org.entcore.common.explorer.IExplorerPlugin;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerSubResource;
+import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.lang.System.currentTimeMillis;
 
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
@@ -556,8 +570,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             onExplorerQuery(message);
         });
         final String idUpdate = IExplorerPlugin.addressForIngestStateUpdate(getApplication(), getResourceType());
-        this.listenerIngestJobUpdate = communication.listen(idUpdate, rawMessage -> {
-            onJobStateUpdatedMessageReceived(rawMessage.body().mapTo(IngestJobStateUpdateMessage.class));
+        this.listenerIngestJobUpdate = communication.listenForAcks(idUpdate, messages -> {
+            onJobStateUpdatedMessageReceived(messages)
+                .onSuccess(e -> log.debug("Update successul of " + messages.size() + " messages"))
+                .onFailure(th -> log.error("Update error of " + messages, th));
         });
         for (ExplorerSubResource explorerSubResource : getSubResourcesPlugin()) {
             explorerSubResource.start();
