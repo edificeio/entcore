@@ -1,12 +1,13 @@
 package org.entcore.common.explorer.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
+import static java.lang.Long.parseLong;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
@@ -14,8 +15,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
@@ -131,20 +132,18 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
     protected abstract String getTableName();
 
     @Override
-    public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
+    public Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages) {
         final String schema = getTableName().split("\\.")[0];
         final String query = new StringBuilder()
                 .append(" UPDATE ").append(schema)
                 .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
                 .toString();
-        final Tuple tuple = Tuple.tuple()
-                .addValue(message.getState().name())
-                .addValue(message.getVersion())
-                .addValue(message.getEntityId());
-        postgresClient.queryStream(query.toString(),tuple, 1).onSuccess(result -> {
-            log.debug("Successfully updated state of resource " + message);
-        }).onFailure(e->{
-            log.error("Failed to update state of resource " + message, e);
-        });
+        final Tuple tuple = Tuple.tuple();
+        for(IngestJobStateUpdateMessage message : messages) {
+            tuple.addValue(message.getState().name())
+                    .addValue(message.getVersion())
+                    .addValue(parseLong(message.getEntityId()));
+        }
+        return postgresClient.preparedQuery(query.toString(),tuple).mapEmpty();
     }
 }
