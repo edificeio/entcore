@@ -538,10 +538,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					if (secureLocation) {
 						json.put("secureLocation", secureLocation);
 					}
-					if(previousCache != null) {
-						json.put("cache", previousCache);
-					}
 					infos.put("sessionMetadata", json);
+					if(previousCache != null) {
+						infos.put("cache", previousCache);
+					}
 					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {
 						if (ar.failed()) {
 							logger.error("Error putting session in store", ar.cause());
