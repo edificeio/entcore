@@ -29,6 +29,7 @@ public class MobileValidation {
 
 	/**
 	 * Verify a pending mobile phone number, by checking a code.
+	 * @param sessionId session ID. If not null, and validation is successful, session will be granted the MFA flag.
 	 * @param userId user ID
 	 * @param code validation code to check
 	 * @return { 
@@ -37,8 +38,8 @@ public class MobileValidation {
 	 *  ttl: number of seconds remaining before expiration of the code
 	 * }
 	 */
-    static public Future<JsonObject> tryValidate(final EventBus unused, String userId, String code) {
-		return UserValidationFactory.getInstance().tryValidateMobile(userId, code);
+    static public Future<JsonObject> tryValidate(final EventBus unused, String sessionId, String userId, String code) {
+		return UserValidationFactory.getInstance().tryValidateMobile(sessionId, userId, code);
     }
 
 	/**

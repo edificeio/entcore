@@ -2,6 +2,7 @@ package org.entcore.common.datavalidation.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
@@ -140,6 +141,7 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     //---------------------------------------------------------------
+    private EventBus eb = null;
 	private final Neo4j neo = Neo4j.getInstance();
     private EventStore eventStore;
     private String eventType;
@@ -150,6 +152,7 @@ public class DefaultUserValidationService implements UserValidationService {
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
 
     public DefaultUserValidationService(final io.vertx.core.Vertx vertx, final io.vertx.core.json.JsonObject config, final JsonObject params) {
+        eb = Server.getEventBus(vertx);
         if( params != null ) {
             ttlInSeconds    = params.getInteger("ttlInSeconds", 600);
             retryNumber     = params.getInteger("retryNumber",  5);
@@ -194,7 +197,7 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
     @Override
-	public Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status) {
+	public Future<Boolean> setIsMFA(final String sessionId, final boolean status) {
         Promise<Boolean> promise = Promise.promise();
         if( StringUtils.isEmpty(sessionId) ) {
             promise.fail("Session ID is null");
@@ -379,12 +382,18 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
 	@Override
-	public Future<JsonObject> tryValidateMobile(String userId, String code) {
+	public Future<JsonObject> tryValidateMobile(String sessionId, String userId, String code) {
         return mobileSvc.tryValidate(userId, code)
-        .map( result -> {
-            // Code was consumed => this is a metric to follow
-            DataValidationMetricsFactory.getRecorder().onMobileCodeConsumed();
-            return result;
+        .compose( result -> {
+            if( result!=null && "valid".equalsIgnoreCase(result.getString("state")) ) {
+                return (sessionId!=null
+                    ? setIsMFA(sessionId, true).map(isMfaSet -> result)
+                    : Future.succeededFuture(result)
+                )
+                // Code was consumed => this is a metric to follow
+                .onComplete( ar -> DataValidationMetricsFactory.getRecorder().onMobileCodeConsumed() );
+            }
+            return Future.succeededFuture(result);
         });
     }
 

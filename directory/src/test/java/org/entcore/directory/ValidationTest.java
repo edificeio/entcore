@@ -151,7 +151,7 @@ public class ValidationTest {
         })
         // 4) try a wrong code once
         .compose( validCode -> {
-            return MobileValidation.tryValidate(eb, userId, "DEADBEEF")
+            return MobileValidation.tryValidate(eb, null, userId, "DEADBEEF")
             .map( result -> {
                 final String s = result.getString("state");
                 context.assertNotEquals(s, "unchecked");
@@ -165,7 +165,7 @@ public class ValidationTest {
         .compose( validCode -> {
             context.assertNotNull(validCode);
             context.assertEquals(validCode.length(), 6);
-            return MobileValidation.tryValidate(eb, userId, validCode);
+            return MobileValidation.tryValidate(eb, null, userId, validCode);
         })
         .compose( result -> {
             final String s = result.getString("state");
