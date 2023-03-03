@@ -47,5 +47,10 @@ public interface IExplorerSubResource {
         source.put("ingest_job_state", state.name());
     }
 
-    void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message);
+    /**
+     * Methods call by Ingest Job to notify a plugin that a batch of messages have a status update.
+     * @param messages Messages whose status has changed
+     * @return A future which will succeed if all messages are ack-ed, false otherwise
+     */
+    Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages);
 }
