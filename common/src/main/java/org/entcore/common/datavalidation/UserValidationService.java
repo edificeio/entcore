@@ -52,7 +52,7 @@ public interface UserValidationService {
 	 * @param status the new status, truthy when done, falsy otherwise.
 	 * @return an async future.
 	 */
-	Future<Boolean> setIsMFA(final EventBus eb, final String sessionId, final boolean status);
+	Future<Boolean> setIsMFA(final String sessionId, final boolean status);
 
 	/**
 	 * Check if the current user should perform a MFA to access protected zones, by applying to business rules.
@@ -99,6 +99,7 @@ public interface UserValidationService {
 
 	/**
 	 * Verify the pending mobile phone number of a user, by checking a code.
+	 * @param sessionId session ID. If not null, and validation is successful, session will be granted the MFA flag.
 	 * @param userId user ID
 	 * @param code validation code to check
 	 * @return a mobileState like { 
@@ -108,7 +109,7 @@ public interface UserValidationService {
 	 *  ttl?: number of seconds remaining before expiration of the code
 	 * }
 	 */
-	Future<JsonObject> tryValidateMobile(String userId, String code);
+	Future<JsonObject> tryValidateMobile(String sessionId, String userId, String code);
 
 	/**
 	 * Get current mobile validation state.

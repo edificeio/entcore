@@ -258,13 +258,14 @@ public class DefaultMfaService implements MfaService {
         }
         return mfaField
         .tryValidate( userInfos.getUserId(), key )
-        .map( result -> {
+        .compose( result -> {
             if( result !=null && "valid".equalsIgnoreCase(result.getString("state")) ) {
-                UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true);
+                return UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true)
+                .map( set -> result )
                 // Code was consumed => this is a metric to follow
-                DataValidationMetricsFactory.getRecorder().onMfaCodeConsumed();
+                .onComplete( ar -> DataValidationMetricsFactory.getRecorder().onMfaCodeConsumed() );
             }
-            return result;
+            return Future.succeededFuture(result);
         });
     }
 
