@@ -39,6 +39,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
+import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -417,7 +418,7 @@ public class UserUtils {
 			.compose( remoteUserId -> {
 				// If request attributes are not set yet, and if a bearer token exists,
 				// try retrieving the remote_user by validating the token.
-				if( (oneSessionId==null || oneSessionId.trim().isEmpty()) && remoteUserId==null) {
+				if( StringUtils.isEmpty(oneSessionId) && remoteUserId==null) {
 					final SecureHttpServerRequest secureRequest = (request instanceof SecureHttpServerRequest) ? (SecureHttpServerRequest) request : new SecureHttpServerRequest(request);
 					OAuthResourceProvider provider = new DefaultOAuthResourceProvider(eb);
 					Promise<String> attrPromise = Promise.promise();
@@ -957,18 +958,16 @@ public class UserUtils {
 		return promise.future();
 	}
 	public static Optional<String> getSessionIdOrTokenId(final HttpServerRequest request) {
-		final Optional<String> maybeSessionId;
-		final Cookie sessionId = request.getCookie("oneSessionId");
-		if(sessionId == null) {
+		final String oneSessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+		if(StringUtils.isEmpty(oneSessionId)) {
 			if (request instanceof SecureHttpServerRequest) {
-				maybeSessionId = getTokenId((SecureHttpServerRequest) request);
+				return getTokenId((SecureHttpServerRequest) request);
 			} else {
-				maybeSessionId = Optional.empty();
+				return Optional.empty();
 			}
 		} else {
-			maybeSessionId = Optional.ofNullable(sessionId.getValue());
+			return Optional.of(oneSessionId);
 		}
-		return maybeSessionId;
 	}
 
 	public static enum ErrorCodes {
