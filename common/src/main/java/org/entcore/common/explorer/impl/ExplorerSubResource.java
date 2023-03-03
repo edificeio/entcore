@@ -5,14 +5,22 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.*;
+import static java.lang.System.currentTimeMillis;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerStream;
+import org.entcore.common.explorer.IExplorerPlugin;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerSubResource;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.user.UserInfos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.lang.System.currentTimeMillis;
 
 // TODO JBER so far we have considered that every delete version can be set to now but that is not necessarily true
 // We should get it from outside of these functions
@@ -176,8 +184,10 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
 
     public void start() {
         final String idUpdate = IExplorerPlugin.addressForIngestStateUpdate(getApplication(), getEntityType());
-        this.listenerIngestJobUpdate = parent.communication.listen(idUpdate, rawMessage -> {
-            onJobStateUpdatedMessageReceived(rawMessage.body().mapTo(IngestJobStateUpdateMessage.class));
+        this.listenerIngestJobUpdate = parent.communication.listenForAcks(idUpdate, messages -> {
+            onJobStateUpdatedMessageReceived(messages)
+                .onSuccess(e -> log.debug("Update successul of " + messages.size() + " messages"))
+                .onFailure(th -> log.error("Update error of " + messages, th));
         });
     }
 

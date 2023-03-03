@@ -2,7 +2,10 @@ package org.entcore.common.explorer.impl;
 
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
@@ -14,7 +17,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class ExplorerSubResourceMongo extends ExplorerSubResource{
     protected final MongoClient mongoClient;
@@ -83,21 +88,28 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource{
     protected abstract String getCollectionName();
 
     @Override
-    public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
-        final QueryBuilder query = QueryBuilder.start("_id").is(message.getEntityId())
-                .and(QueryBuilder.start("version").lessThanEquals(message.getVersion()).get());
-        final JsonObject update = new JsonObject()
-                .put("$set",new JsonObject()
-                        .put("ingest_job_state", message.getState().name())
-                        .put("version", message.getVersion())
-                );
-        mongoClient.updateCollection(getCollectionName(),
-                MongoQueryBuilder.build(query), update, asyncResult -> {
-                    if(asyncResult.succeeded()) {
-                        log.debug("Ingestion ack succeeded : " + message);
-                    } else {
-                        log.error("Ingestion ack failed : " +  message);
-                    }
-                });
+    public Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages) {
+        final List<BulkOperation> operations = messages.stream().map(message -> {
+            final JsonObject filter = new JsonObject()
+                    .put("_id", message.getEntityId())
+                    .put("version", new JsonObject().put("$lte", message.getVersion()));
+            final JsonObject update = new JsonObject()
+                    .put("$set", new JsonObject()
+                            .put("ingest_job_state", message.getState().name())
+                            .put("version", message.getVersion())
+                    );
+            return BulkOperation.createUpdate(filter, update);
+        }).collect(Collectors.toList());
+        final Promise<Void> promise = Promise.promise();
+        mongoClient.bulkWrite(getCollectionName(), operations, asyncResult -> {
+            if(asyncResult.succeeded()) {
+                log.debug("Update successul of " + messages.size() + " messages") ;
+                promise.complete();
+            } else {
+                log.error("Update error of " + messages +" : \n" + asyncResult.cause());
+                promise.fail(asyncResult.cause());
+            }
+        });
+        return promise.future();
     }
 }

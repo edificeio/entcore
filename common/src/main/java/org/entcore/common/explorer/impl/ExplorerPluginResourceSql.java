@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import static java.lang.Long.parseLong;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
@@ -16,10 +17,15 @@ import org.entcore.common.user.UserInfos;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.lang.Long.parseLong;
 
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final IPostgresClient pgPool;
@@ -210,20 +216,18 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     @Override
-    public void onJobStateUpdatedMessageReceived(final IngestJobStateUpdateMessage message) {
+    public Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages) {
         final String schema = getTableName();
         final String query = new StringBuilder()
             .append(" UPDATE ").append(schema)
             .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
             .toString();
-        final Tuple tuple = Tuple.tuple()
-                .addValue(message.getState().name())
+        final Tuple tuple = Tuple.tuple();
+        for(IngestJobStateUpdateMessage message : messages) {
+            tuple.addValue(message.getState().name())
                 .addValue(message.getVersion())
                 .addValue(parseLong(message.getEntityId()));
-        pgPool.preparedQuery(query.toString(),tuple).onSuccess(result -> {
-            log.debug("Successfully updated state of resource " + message);
-        }).onFailure(e->{
-            log.error("Failed to update state of resource " + message, e);
-        });
+        }
+        return pgPool.preparedQuery(query.toString(),tuple).mapEmpty();
     }
 }
