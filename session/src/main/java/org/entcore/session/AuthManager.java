@@ -23,7 +23,10 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,6 +39,7 @@ import org.entcore.common.utils.StringUtils;
 import org.vertx.java.busmods.BusModBase;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
@@ -539,31 +543,67 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						json.put("secureLocation", secureLocation);
 					}
 					infos.put("sessionMetadata", json);
-					if(previousCache != null) {
-						infos.put("cache", previousCache);
-					}
 					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {
 						if (ar.failed()) {
 							logger.error("Error putting session in store", ar.cause());
 						}
-
-						if (!sessionStore.inactivityEnabled()) {
-							final JsonObject now = MongoDb.now();
-							if (sId == null) {
-								json.put("created", now).put("lastUsed", now);
-								mongo.save(SESSIONS_COLLECTION, json);
-							} else {
-								mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
-										new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
+						addOldCacheValuesToNewSession(previousCache, userId, sessionId).onComplete(e -> {
+							if (!sessionStore.inactivityEnabled()) {
+								final JsonObject now = MongoDb.now();
+								if (sId == null) {
+									json.put("created", now).put("lastUsed", now);
+									mongo.save(SESSIONS_COLLECTION, json);
+								} else {
+									mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
+											new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
+								}
 							}
-						}
-						handler.handle(sessionId);
+							handler.handle(sessionId);
+						});
 					});
 				} else {
 					handler.handle(null);
 				}
 			}
 		});
+	}
+
+	/**
+	 * Puts the cache attributes of a previous session into the cache attribute of a new session.
+	 * This action is required because now (06/03/2023) different implementations of SessionStore
+	 * have different behaviours while handling session's cache (RedisSession removes it when storing it
+	 * a session via putSession).
+	 * @param previousCache Previous values that were stored in "cache" field of the previous session
+	 * @param userId Id of the user whose session is being recreated
+	 * @param sessionId Id of the new session
+	 * @return A future that completes when the new session's cache has been populated with the old values
+	 * 			(but some attributes may have failed to be stored in the new session).
+	 */
+	private Future<Void> addOldCacheValuesToNewSession(final JsonObject previousCache, final String userId, final String sessionId) {
+		final Future<Void> populateCache;
+		if(previousCache == null || previousCache.isEmpty()) {
+			populateCache = Future.succeededFuture();
+		} else {
+			logger.debug("Copying previous cached values for user " + userId);
+			final Promise<Void> allUpdates = Promise.promise();
+			CompositeFuture.join(previousCache.stream().map(previousCacheEntry -> {
+				final Promise<Void> addCacheAttribute = Promise.promise();
+				final String cacheKey = previousCacheEntry.getKey();
+				sessionStore.addCacheAttribute(sessionId, cacheKey, previousCacheEntry.getValue(), res -> {
+					if(res.succeeded()) {
+						logger.debug(cacheKey + " stored in new session cache for user " + userId);
+					} else {
+						logger.warn(cacheKey + " could not be stored in new session cache for user " + userId, res.cause());
+					}
+					addCacheAttribute.complete();
+				});
+				return addCacheAttribute.future();
+			})
+			.collect(Collectors.toList()))
+			.onComplete(e -> allUpdates.complete());
+			populateCache = allUpdates.future();
+		}
+		return populateCache;
 	}
 
 	private void doDrop(final Message<JsonObject> message) {
