@@ -963,7 +963,6 @@ public class UserController extends BaseController {
 						// Send the validation email to the user
 						return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
 					})
-					.compose( emailId -> recreateSession(infos, infos.getUserId(), request, eb))
 					.onSuccess(e -> ok(request))
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
@@ -1034,7 +1033,6 @@ public class UserController extends BaseController {
 						// Send the validation email to the user
 						return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
 					})
-					.compose( emailId -> recreateSession(infos, infos.getUserId(), request, eb))
 					.onSuccess(e -> ok(request))
 					.onFailure( e -> {
 						renderError( request, new JsonObject().put("error", e.getMessage()) );
