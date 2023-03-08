@@ -42,7 +42,7 @@ public class MandatoryUserValidationFilter implements Filter {
     private final static int    MOBILE_PHONE_IDX  = 2;
     private final static int    MFA_IDX  = 3;
     private final static String[] whiteListAlways = {
-        "/directory/user/mailstate", "/directory/user/mobilestate", "/auth/"
+        "/auth/"
     };
     // White-lists are incremental : each step also applies to following steps
     private final static String[][] whiteListByStep = {
@@ -194,8 +194,12 @@ public class MandatoryUserValidationFilter implements Filter {
     }
 
     private Future<JsonObject> checkEmailAddress(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
+        // The following URLs are whitelisted ONLY for email validation.
+        // => checkMfa() will block them later, if MFA is not done.
+        final String[] whiteListHereOnly = {"/directory/user/mailstate"};
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false)) // No need to revalidate => OK
             || isInWhiteList(request.path(), request.method().name(), EMAIL_ADDRESS_IDX)  // white-listed url requested => OK
+            || isInList(request.path(), whiteListHereOnly) // white-listed url requested => OK
         ) {
             return Future.succeededFuture(validations);
         }
@@ -210,8 +214,12 @@ public class MandatoryUserValidationFilter implements Filter {
     }
 
     private Future<JsonObject> checkMobilePhone(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
+        // The following URLs are whitelisted ONLY for email validation.
+        // => checkMfa() will block them later, if MFA is not done.
+        final String[] whiteListHereOnly = {"/directory/user/mobilestate"};
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_MOBILE, false)) // No need to revalidate => OK
             || isInWhiteList(request.path(), request.method().name(), MOBILE_PHONE_IDX)  // white-listed url requested => OK
+            || isInList(request.path(), whiteListHereOnly) // white-listed url requested => OK
         ) {
             return Future.succeededFuture(validations);
         }
@@ -229,6 +237,15 @@ public class MandatoryUserValidationFilter implements Filter {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_NEED_MFA, false)) // No need to perform a MFA => OK
                 || isInWhiteList(request.path(), request.method().name(), MFA_IDX) // white-listed url requested => OK
                 || !isMfaProtected(request) // Url not concerned by 2FA => OK
+        ) {
+            return Future.succeededFuture(validations);
+        }
+        // There is another exception here, while changing mobile number or email adddress.
+        // if the user MUST validate is email or mobile, but has not done MFA, this shall not block him.
+        final String[] whiteListEmail = {"/directory/user/mailstate"};
+        final String[] whiteListMobile = {"/directory/user/mobilestate"};
+        if( (isInList(request.path(), whiteListEmail) && Boolean.TRUE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_EMAIL, false)))
+         || (isInList(request.path(), whiteListMobile) && Boolean.TRUE.equals(validations.getBoolean(FIELD_MUST_VALIDATE_MOBILE, false)))
         ) {
             return Future.succeededFuture(validations);
         }
