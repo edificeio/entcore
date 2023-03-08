@@ -953,6 +953,7 @@ public class UserController extends BaseController {
 
 	@Put("/user/mobilestate")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@MfaProtected()
 	public void putMobileState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "putMobileState", payload -> {
 			UserUtils.getUserInfos(eb, request, infos -> {
@@ -976,6 +977,7 @@ public class UserController extends BaseController {
 
 	@Post("/user/mobilestate")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@MfaProtected()
 	public void postMobileState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "postMobileState", payload -> {
 			UserUtils.getUserInfos(eb, request, infos -> {
@@ -1023,6 +1025,7 @@ public class UserController extends BaseController {
 
 	@Put("/user/mailstate")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@MfaProtected()
 	public void putMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "putMailState", payload -> {
 			UserUtils.getUserInfos(eb, request, infos -> {
@@ -1046,6 +1049,7 @@ public class UserController extends BaseController {
 
 	@Post("/user/mailstate")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@MfaProtected()
 	public void postMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "postMailState", payload -> {
 			UserUtils.getUserInfos(eb, request, infos -> {
