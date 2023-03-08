@@ -793,5 +793,16 @@
   "explorer.emptyScreen.blog.txt2d.consultation": "Il n’y a pas encore de blog. Patience ! Des sujets passionnants s’apprêtent à déferler sur cette page.",
   "explorer.emptyScreen.trash.title": "C'est vide par ici !",
   "explorer.emptyScreen.trash.alt": "Illustration de la corbeille",
-  "explorer.emptyScreen.folder.empty.alt": "Illustration d'un dossier vide"
+  "explorer.emptyScreen.folder.empty.alt": "Illustration d'un dossier vide",
+  "explorer.modal.onboarding.trash.title": "Du nouveau dans la corbeille !",
+  "explorer.modal.onboarding.trash.screen1.title": "Votre corbeille évolue pour vous permettre de mieux gérer votre espace.",
+  "explorer.modal.onboarding.trash.screen1.subtitle": "Les contenus placés dans la corbeille ne génèrent plus de notifications et n’apparaitront plus dans votre fil d’actualités ",
+  "explorer.modal.onboarding.trash.screen1.alt": "Illustration de la fin des notifications des ressources dans la corbeille ",
+  "explorer.modal.onboarding.trash.screen2.title": "Vous pouvez maintenant supprimer les contenus que l’on vous a partagé qui ne vous intéressent plus !",
+  "explorer.modal.onboarding.trash.screen2.subtitle": "Les contenus que l’on vous a partagés et que vous avez placés dans votre corbeille disparaitront de votre espace en fin d’année scolaire",
+  "explorer.modal.onboarding.trash.screen2.alt": "Illustration de la suppression des ressources qui vous sont partagées dans la corbeille",
+  "explorer.modal.onboarding.trash.later": "Plus tard",
+  "explorer.modal.onboarding.trash.prev": "Précédent",
+  "explorer.modal.onboarding.trash.next": "Suivant",
+  "explorer.modal.onboarding.trash.close": "Fermer"
 }
