@@ -20,6 +20,14 @@
 		</style>
 	</head>
 	<body class="validate-mail">
+		<div ng-if="app.fullscreen">
+			<!-- navbar Theme 2D -->
+			<ode-navbar class="no-1d" title="[[app.lang.translate('validate-mfa.title')]]"></ode-navbar>
+
+			<!-- navbar Theme 1D -->
+			<navbar-legacy class="no-2d" title="[[app.lang.translate('validate-mfa.title')]]"></navbar-legacy>
+		</div>
+
 		<!-- Main -->
 		<main role="main" class="main container">
 			<validate-mfa force="app.force" redirect="app.redirect" fullscreen="app.fullscreen">
