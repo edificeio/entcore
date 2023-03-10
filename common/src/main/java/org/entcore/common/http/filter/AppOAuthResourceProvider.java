@@ -20,14 +20,17 @@
 package org.entcore.common.http.filter;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_OAUTH;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -39,9 +42,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_OAUTH;
 
 public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	private static Logger log = LoggerFactory.getLogger(AppOAuthResourceProvider.class);
@@ -211,7 +211,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 		return token;
 	}
 
-	private static Optional<String> getTokenHeader(SecureHttpServerRequest request) {
+	public static Optional<String> getTokenHeader(final HttpServerRequest request) {
 		//get from header
 		final String header = request.getHeader("Authorization");
 		if (header != null && Pattern.matches("^\\s*(OAuth|Bearer)(.*)$", header)) {
