@@ -51,6 +51,11 @@ public class ExplorerMessage {
     private final ExplorerPriority priority;
     private String idQueue;
 
+    public static String CONTENT_KEY = "content";
+    public static String CONTENT_HTML_KEY = "contentHtml";
+    public static String CONTENT_PDF_KEY = "contentPdf";
+    public static String SUBRESOURCES_KEY = "subresources";
+
     public ExplorerMessage(final String id, final String action, final ExplorerPriority priority) {
         this.id = id;
         this.action = action;
@@ -161,14 +166,14 @@ public class ExplorerMessage {
         }
         switch(type){
             case Pdf:
-                message.put("contentPdf", text);
+                message.put(CONTENT_PDF_KEY, text);
                 break;
             case Html:
-                message.put("contentHtml", text);
+                message.put(CONTENT_HTML_KEY, text);
                 break;
             case Text:
             default:
-                message.put("content", text);
+                message.put(CONTENT_KEY, text);
                 break;
         }
         return this;
@@ -185,51 +190,51 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withSubResourceContent(final String id, final String content, final ExplorerContentType type) {
-        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final JsonArray subResources = message.getJsonArray(SUBRESOURCES_KEY, new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
         final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
         switch(type){
             case Pdf:
-                subResource.put("contentPdf", content);
+                subResource.put(CONTENT_PDF_KEY, content);
                 break;
             case Html:
-                subResource.put("contentHtml", content);
+                subResource.put(CONTENT_HTML_KEY, content);
                 break;
             case Text:
             default:
-                subResource.put("content", content);
+                subResource.put(CONTENT_KEY, content);
                 break;
         }
         subResource.put("deleted", false);
         subResources.add(subResource);
-        message.put("subresources", subResources);
+        message.put(SUBRESOURCES_KEY, subResources);
         return this;
     }
 
     public ExplorerMessage withSubResources(final JsonArray subResources) {
-        message.put("subresources", subResources);
+        message.put(SUBRESOURCES_KEY, subResources);
         return this;
     }
 
     public ExplorerMessage withSubResource(final String id, final boolean deleted) {
-        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final JsonArray subResources = message.getJsonArray(SUBRESOURCES_KEY, new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
         final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
         subResource.put("deleted", deleted);
         subResources.add(subResource);
-        message.put("subresources", subResources);
+        message.put(SUBRESOURCES_KEY, subResources);
         return this;
     }
 
     public ExplorerMessage withSubResourceHtml(final String id, final String content, final long version) {
-        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final JsonArray subResources = message.getJsonArray(SUBRESOURCES_KEY, new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
         final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
-        subResource.put("contentHtml", content);
+        subResource.put(CONTENT_HTML_KEY, content);
         subResource.put("deleted", false);
         subResource.put("version", version);
         subResources.add(subResource);
-        message.put("subresources", subResources);
+        message.put(SUBRESOURCES_KEY, subResources);
         return this;
     }
 
@@ -317,7 +322,7 @@ public class ExplorerMessage {
         return getId()+":"+getApplication()+":"+getResourceType();
     }
     public JsonArray getSubresources() {
-        return this.message.getJsonArray("subresources", new JsonArray());
+        return this.message.getJsonArray(SUBRESOURCES_KEY, new JsonArray());
     }
     public void setIdQueue(String idQueue) {
         this.idQueue = idQueue;
