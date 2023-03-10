@@ -22,16 +22,21 @@ package org.entcore.common.http.response;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenHeader;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-
 import static org.entcore.common.user.UserUtils.getSessionIdOrTokenId;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
+import org.entcore.common.utils.StringUtils;
 
 public class DefaultResponseHandler {
 
@@ -202,8 +207,11 @@ public class DefaultResponseHandler {
 						UserUtils.reCreateSession(eventBus, targetUserId, request).onComplete(recreationResult -> {
 							if (recreationResult.succeeded()) {
 								final String sessionId = recreationResult.result();
-								// If no session id is returned it means that the session could not be retrieved
-								if (sessionId != null) {
+								// If no session id is returned it means that the session could not be retrieved or has
+								// not changed
+								// Moreover, we only put a cookie if we are not oauth-authenticated (should be redundent
+								// with the fact that sessionId is null).
+								if (!StringUtils.isEmpty(sessionId) && !getTokenHeader(request).isPresent()) {
 									final long timeout = Long.MIN_VALUE;
 									CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 								}

@@ -22,6 +22,7 @@ package org.entcore.session;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -38,10 +39,12 @@ import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.StringUtils;
 import org.vertx.java.busmods.BusModBase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -488,7 +491,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				cache = null;
 			}
 			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache, sessionId -> {
-				message.reply(sessionId);
+				// Do not send back the sessionId if we just refreshed the session because the session id didn't change
+				// It will prevent downstream processes from trying to rewrite the cookie
+				message.reply(request.isRefreshOnly() ? null : sessionId);
 				// TODO update metrics
 				if(sessionId != null && !request.isRefreshOnly()) {
 					sessionStore.dropSession(request.getSessionId(), dropSessionResult -> {
