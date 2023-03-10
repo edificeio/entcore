@@ -138,6 +138,17 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 
 		scope.canRenderUi = false;
 
+        const safeApply = (fn?) => {
+            const phase = scope.$root.$$phase;
+            if (phase == '$apply' || phase == '$digest') {
+                if (fn && (typeof (fn) === 'function')) {
+                    fn();
+                }
+            } else {
+                scope.$apply(fn);
+            }
+        };
+
 		scope.onCodeChange = async (form) => {
 			try {
 				if( form.$invalid ) {
@@ -145,7 +156,7 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 				} else if( form.$valid ) {
 					form && this.setAttr(form.inputCode, "readonly", true);
 					ctrl.status = "wait";
-					scope.$apply(); // Display the spinner
+					safeApply(); // Display the spinner
 					const newStatus = await ctrl.validateCode();
 					if( newStatus==="ok" ) {
 						// Lock UI and redirect after a few seconds
@@ -168,7 +179,7 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			} catch {
 			} finally {
 				this.setAttr('btnRenew', "disabled", false);
-				scope.$apply();
+				safeApply();
 			}
 		}
 
@@ -176,13 +187,13 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			angular.element(document.getElementById('btnRenew')).prop("disabled", "disabled");
 			await ctrl.renewCode();
 			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
-			scope.$apply();
+			safeApply();
 		}
 
 		ctrl.initialize()
 		.then( () => {
 			scope.canRenderUi = true;
-			scope.$apply();
+			safeApply();
 			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
 		});
     }
