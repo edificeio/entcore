@@ -195,6 +195,7 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			scope.canRenderUi = true;
 			safeApply();
 			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
+			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
 		});
     }
 }
