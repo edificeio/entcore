@@ -125,10 +125,11 @@
 			ng-if="isAdmx"
 		>
 			<svg class="icon-lock" width="20" height="20">
-				<title>Déverrouiller</title>
+				<title>[[needMfa ? 'userBook.unlock' : 'userBook.unlocked' | i18n]]</title>
 				<use href="/directory/public/assets/icons/icons.svg#lock"></use>
 			</svg>
-			<i18n>userBook.unlock</i18n>
+			<i18n ng-if="needMfa">userBook.unlock</i18n>
+			<i18n ng-if="!needMfa">userBook.unlocked</i18n>
 		</a>
 		<div class="cell four height-four reduce-block-six avatar">
 			<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
