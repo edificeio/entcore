@@ -18,20 +18,20 @@
 
 package org.entcore.session;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 public class MapSessionStore extends AbstractSessionStore {
 
@@ -78,10 +78,9 @@ public class MapSessionStore extends AbstractSessionStore {
         }
         if (session != null) {
             final String userId = session.getString("userId");
-            final boolean secureLocation = (session.getJsonObject("sessionMetadata") != null ? 
-                    session.getJsonObject("sessionMetadata").getBoolean("secureLocation", false) : false);
+            final SessionMetadata sessionMetadata = SessionMetadata.fromJsonObject(session.getJsonObject("sessionMetadata"));
             if (inactivityEnabled() && userId != null) {
-                inactivity.updateLastActivity(sessionId, userId, secureLocation, ar -> {
+                inactivity.updateLastActivity(sessionId, userId, sessionMetadata, ar -> {
                     if (ar.failed()) {
                         logger.error("Error when update last activity with session " + sessionId, ar.cause());
                     }
@@ -166,9 +165,9 @@ public class MapSessionStore extends AbstractSessionStore {
     }
 
     @Override
-    public void putSession(String userId, String sessionId, JsonObject infos, boolean secureLocation,
+    public void putSession(String userId, String sessionId, JsonObject infos, final SessionMetadata metadata,
             Handler<AsyncResult<Void>> handler) {
-        long timerId = setTimer(userId, sessionId, secureLocation);
+        long timerId = setTimer(userId, sessionId, metadata);
 
         try {
             sessions.put(sessionId, infos.encode());

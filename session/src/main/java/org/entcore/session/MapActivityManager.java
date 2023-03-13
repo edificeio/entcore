@@ -1,19 +1,18 @@
 package org.entcore.session;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import static fr.wseduc.webutils.Utils.getOrElse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.impl.VertxInternal;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapActivityManager implements ActivityManager {
 
@@ -35,7 +34,7 @@ public class MapActivityManager implements ActivityManager {
     }
 
     @Override
-    public void updateLastActivity(String sessionId, String userId, boolean secureLocation, Handler<AsyncResult<Void>> handler) {
+    public void updateLastActivity(String sessionId, String userId, final SessionMetadata sessionMetadata, Handler<AsyncResult<Void>> handler) {
         final long now = System.currentTimeMillis();
         final Long lastActivity = activity.get(sessionId);
         if (lastActivity == null || (lastActivity + LAST_ACTIVITY_DELAY) < now) {
@@ -45,7 +44,7 @@ public class MapActivityManager implements ActivityManager {
     }
 
     @Override
-    public void getLastActivity(String sessionId, boolean secureLocation, Handler<AsyncResult<Long>> handler) {
+    public void getLastActivity(String sessionId, final SessionMetadata sessionMetadata, Handler<AsyncResult<Long>> handler) {
         handler.handle(Future.succeededFuture(activity.get(sessionId)));
     }
 

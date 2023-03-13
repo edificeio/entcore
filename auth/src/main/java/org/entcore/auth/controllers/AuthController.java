@@ -29,6 +29,9 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.http.response.DefaultResponseHandler;
@@ -72,15 +75,22 @@ import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.serverError;
+import static org.entcore.auth.oauth.OAuthAuthorizationResponse.unauthorizedClient;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.users.UserAuthAccount;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.filter.IgnoreCsrf;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.MapFactory;
@@ -98,12 +108,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-
-import static fr.wseduc.webutils.Utils.*;
-import static org.entcore.auth.oauth.OAuthAuthorizationResponse.*;
-import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class AuthController extends BaseController {
 
@@ -425,6 +431,7 @@ public class AuthController extends BaseController {
 								renderJson(request, new JsonObject(response.getBody()), response.getCode());
 							});
 						} else {
+							log.info("OAuth log in failed for user : " + response.getBody() + " - " + response.getBody());
 							renderJson(request, new JsonObject(response.getBody()), response.getCode());
 						}
 					}
@@ -773,7 +780,9 @@ public class AuthController extends BaseController {
 	 */
 	private void createSessionForMobile(final String userId, final Response response, final HttpServerRequest request) {
 		final String token = (String) Json.decodeValue(response.getBody(), Map.class).get("access_token");
-		UserUtils.createSessionWithId(eb, userId, token, "true".equals(request.formAttributes().get("secureLocation")))
+		final boolean isSecureLocation = "true".equals(request.formAttributes().get("secureLocation"));
+		final Long ttl = getAccessTokenTtl(response).orElse(null);
+		UserUtils.createSessionWithIdAndTtl(eb, userId, token, isSecureLocation, ttl)
 		.onComplete(asyncResult -> {
 			renderJson(request, new JsonObject(response.getBody()), response.getCode());
 		});
@@ -1827,4 +1836,18 @@ public class AuthController extends BaseController {
 		this.mfaSvc = mfaSvc;
 	}
 
+	/**
+	 * @param response Response returned by the validation of a OAuth2 token.
+	 * @return The number of seconds in which the access token will expire.
+	 */
+	public static Optional<Long> getAccessTokenTtl(final jp.eisbahn.oauth2.server.endpoint.Token.Response response) {
+		final Optional<Long> maybeTtl;
+		if(response == null || isEmpty(response.getBody())) {
+			maybeTtl = Optional.empty();
+		} else {
+			maybeTtl = Optional.ofNullable(new JsonObject(response.getBody()).getLong("expires_in"))
+					.map(ttlInSeconds -> TimeUnit.SECONDS.toMillis(ttlInSeconds));
+		}
+		return maybeTtl;
+	}
 }

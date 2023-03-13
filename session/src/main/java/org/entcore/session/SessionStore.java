@@ -33,7 +33,7 @@ public interface SessionStore {
 
     void getSessionByUserId(String userId, Handler<AsyncResult<JsonObject>> handler);
 
-    void putSession(String userId, String sessionId, JsonObject infos, boolean secureLocation, Handler<AsyncResult<Void>> handler);
+    void putSession(String userId, String sessionId, JsonObject infos,final SessionMetadata metadata, Handler<AsyncResult<Void>> handler);
 
     void dropSession(String sessionId, Handler<AsyncResult<JsonObject>> handler);
 

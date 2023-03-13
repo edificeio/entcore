@@ -22,32 +22,43 @@ package org.entcore.common.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.Renders;
+import static fr.wseduc.webutils.http.Renders.unauthorized;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static fr.wseduc.webutils.Utils.*;
-import static fr.wseduc.webutils.http.Renders.unauthorized;
-import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 
 public class UserUtils {
 
@@ -585,30 +596,41 @@ public class UserUtils {
 				if (res.succeeded()) {
 					details.complete(res.result().body());
 				} else {
-					details.fail(res.result().body());
+					details.fail(res.cause());
 				}
 			}
 		});
 		return details.future();
 	}
-	public static Future<String> createSessionWithId(final EventBus eb, final String userId,
-										   final String desiredSessionId,
-										   final boolean secureLocation) {
+
+	/**
+	 * Create a session with a specific id and a specific ttl.
+	 * @param eb Event bus to send events to auth manager
+	 * @param userId Id of the user for whom the session should be created
+	 * @param desiredSessionId Desired session id (will most likely be the value of the access token)
+	 * @param secureLocation true if the user signed in from a secured location
+	 * @param ttl Time ot live (in milliseconds) for the session
+	 * @return Id of the session that was actually created
+	 */
+	public static Future<String> createSessionWithIdAndTtl(final EventBus eb, final String userId,
+														   final String desiredSessionId,
+														   final boolean secureLocation,
+														   final Long ttl) {
 		final Promise<String> promise = Promise.promise();
-		createSession(eb, userId, desiredSessionId, null, null, secureLocation, sessionId -> promise.complete(sessionId));
+		createSession(eb, userId, desiredSessionId, null, null, secureLocation, ttl, sessionId -> promise.complete(sessionId));
 		return promise.future();
 	}
 	public static void createSession(EventBus eb, String userId, boolean secureLocation, Handler<String> handler) {
-		createSession(eb, userId, null, null, null, secureLocation, handler);
+		createSession(eb, userId, null, null, null, secureLocation, null, handler);
 	}
 
 	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId, Handler<String> handler) {
-		createSession(eb, userId, null, sessionIndex, nameId, false, handler);
+		createSession(eb, userId, null, sessionIndex, nameId, false, null, handler);
 	}
 
 	public static void createSession(EventBus eb, String userId, final String desiredSessionId,
 									 String sessionIndex, String nameId,
-			boolean secureLocation, final Handler<String> handler) {
+			boolean secureLocation, final Long ttl, final Handler<String> handler) {
 		final JsonObject json = new JsonObject()
 				.put("action", "create")
 				.put("userId", userId);
@@ -621,8 +643,10 @@ public class UserUtils {
 		if(desiredSessionId != null && !desiredSessionId.isEmpty()) {
 			json.put("sessionId", desiredSessionId);
 		}
+		if(ttl != null && ttl > 0) {
+			json.put("ttl", ttl);
+		}
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
-
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {

@@ -61,32 +61,31 @@ public abstract class AbstractSessionStore implements SessionStore {
 		}
     }
 
-    protected long setTimer(final String userId, final String sessionId, final boolean secureLocation) {
+    protected long setTimer(final String userId, final String sessionId, final SessionMetadata metadata) {
         if (inactivityEnabled()) {
-            inactivity.updateLastActivity(sessionId, userId, secureLocation, ar -> {
+            inactivity.updateLastActivity(sessionId, userId, metadata, ar -> {
                 if (ar.failed()) {
                     logger.error("Error when set initial activity with session " + sessionId, ar.cause());
                 }
             });
         }
-        return setTimer(userId, sessionId, sessionTimeout, secureLocation);
+        return setTimer(userId, sessionId, sessionTimeout, metadata);
     }
 
-    protected long setTimer(final String userId, final String sessionId, final long sessionTimeout,
-            final boolean secureLocation) {
+    protected long setTimer(final String userId, final String sessionId,
+                            final long sessionTimeout, final SessionMetadata metadata) {
         return vertx.setTimer(sessionTimeout, timerId -> {
             if (inactivityEnabled()) {
-                inactivity.getLastActivity(sessionId, secureLocation, ar -> {
+                inactivity.getLastActivity(sessionId, metadata, ar -> {
                     if (ar.succeeded()) {
                         final Long lastActivity = ar.result();
                         if (lastActivity != null) {
-                            final long timeoutTimestamp = lastActivity
-                                    + (secureLocation ? prolongedSessionTimeout : sessionTimeout);
+                            final long sessionEndOfLifeTs = getSessionEndOfLifeTimestamp(metadata, sessionTimeout, lastActivity);
                             final long now = System.currentTimeMillis();
-                            if (timeoutTimestamp > now) {
-                                final long tId = setTimer(userId, sessionId, (timeoutTimestamp - now), secureLocation);
+                            if (sessionEndOfLifeTs > now) { // Session is still active
+                                final long tId = setTimer(userId, sessionId, (sessionEndOfLifeTs - now), metadata);
                                 updateTimerId(userId, sessionId, tId);
-                            } else {
+                            } else { // The session has expired => we drop it
                                 dropSession(sessionId, null);
                             }
                         } else {
@@ -102,6 +101,26 @@ public abstract class AbstractSessionStore implements SessionStore {
                 removeCacheSession(userId, sessionId);
             }
         });
+    }
+
+    /**
+     * @param metadata Metadata of the session
+     * @param sessionTimeout Original time to live of the session
+     * @param lastActivity Last time the session was active
+     * @return The timestamp of the moment when the session will end
+     */
+    private long getSessionEndOfLifeTimestamp(final SessionMetadata metadata,
+                                              final long sessionTimeout,
+                                              final long lastActivity) {
+        final long timeout;
+        if(metadata.getTtl() != null) {
+            timeout = metadata.getTtl();
+        } else if(metadata.isSecureLocation()) {
+            timeout = prolongedSessionTimeout;
+        } else {
+            timeout = sessionTimeout;
+        }
+        return lastActivity + timeout;
     }
 
     @Override

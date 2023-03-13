@@ -422,7 +422,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
 						final String uId = userId;
 						final boolean secureLocation = getOrElse(res.getBoolean("secureLocation"), false);
-						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"), secureLocation, null,
+						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"), secureLocation, null, null,
 								sId -> {
 									if (sId != null) {
 										sessionStore.getSession(sId, ar2 -> {
@@ -476,12 +476,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			final String nameId;
 			final String sessionIndex;
 			final boolean secureLocation;
+			final Long ttl;
 			final JsonObject cache;
 			if(result.succeeded()) {
 				final JsonObject oldSession = result.result();
 				final JsonObject sessionMetadata = oldSession.getJsonObject("sessionMetadata");
 				sessionIndex = sessionMetadata.getString("SessionIndex");
 				nameId = sessionMetadata.getString("NameID");
+				ttl = sessionMetadata.getLong("ttl");
 				secureLocation = Boolean.TRUE.equals(sessionMetadata.getBoolean("secureLocation"));
 				cache = oldSession.getJsonObject("cache");
 			} else {
@@ -489,8 +491,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				nameId = null;
 				secureLocation = false;
 				cache = null;
+				ttl = null;
 			}
-			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache, sessionId -> {
+			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache, ttl, sessionId -> {
 				// Do not send back the sessionId if we just refreshed the session because the session id didn't change
 				// It will prevent downstream processes from trying to rewrite the cookie
 				message.reply(request.isRefreshOnly() ? null : sessionId);
@@ -514,12 +517,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		final String nameID = body.getString("NameID");
 		final String desiredSessionId = body.getString("sessionId");
 		final boolean secureLocation = body.getBoolean("secureLocation", false);
+		final Long ttl = body.getLong("ttl");
 		if (userId == null || userId.trim().isEmpty()) {
 			sendError(message, "[doCreate] Invalid userId : " + body.encode());
 			return;
 		}
 
-		createSession(userId, desiredSessionId, sessionIndex, nameID, secureLocation, null, sessionId -> {
+		createSession(userId, desiredSessionId, sessionIndex, nameID, secureLocation, null, ttl, sessionId -> {
 			if (sessionId != null) {
 				sendOK(message, new JsonObject()
 						.put("status", "ok")
@@ -533,7 +537,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
-			final boolean secureLocation, final JsonObject previousCache, final Handler<String> handler) {
+			final boolean secureLocation, final JsonObject previousCache, final Long ttl, final Handler<String> handler) {
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
@@ -547,8 +551,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					if (secureLocation) {
 						json.put("secureLocation", secureLocation);
 					}
+					if(ttl != null && ttl > 0) {
+						json.put("ttl", ttl);
+					}
 					infos.put("sessionMetadata", json);
-					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {
+					final SessionMetadata metadata = new SessionMetadata(secureLocation, ttl);
+					sessionStore.putSession(userId, sessionId, infos, metadata, ar -> {
 						if (ar.failed()) {
 							logger.error("Error putting session in store", ar.cause());
 						}

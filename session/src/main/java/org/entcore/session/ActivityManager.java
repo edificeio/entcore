@@ -7,9 +7,9 @@ public interface ActivityManager {
 
     long LAST_ACTIVITY_DELAY = 3 * 60000l;
 
-    void updateLastActivity(String sessionId, String userId, boolean secureLocation, Handler<AsyncResult<Void>> handler);
+    void updateLastActivity(String sessionId, String userId, final SessionMetadata sessionMetadata, Handler<AsyncResult<Void>> handler);
 
-    void getLastActivity(String sessionId, boolean secureLocation, Handler<AsyncResult<Long>> handler);
+    void getLastActivity(String sessionId, final SessionMetadata sessionMetadata, Handler<AsyncResult<Long>> handler);
 
     void removeLastActivity(String sessionId, Handler<AsyncResult<Void>> handler);
 
