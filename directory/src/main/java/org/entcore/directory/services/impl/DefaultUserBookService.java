@@ -469,7 +469,6 @@ public class DefaultUserBookService implements UserBookService {
 	@Override
 	public void setHobbyVisibility(final UserInfos user, final String category, final String visibilityValue, final Handler<Either<String, JsonObject>> handler) {
 		final String visibility = PUBLIC.equals(visibilityValue) ? PUBLIC : PRIVE;
-		final String reverseVisibility = PUBLIC.equals(visibilityValue) ? PRIVE : PUBLIC;
 		final Map<String, Object> params = new HashMap<>();
 		params.put("id", user.getUserId());
 		params.put("visibility", visibility);

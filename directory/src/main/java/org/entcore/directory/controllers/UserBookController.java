@@ -82,6 +82,8 @@ public class UserBookController extends BaseController {
 	protected enum DirectoryEvent { ACCESS }
 	protected static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
+	private static final List<String> ALLOWED_HOBBIES =
+			Arrays.asList("cinema", "sport", "animals", "places", "books", "music");
 
 
 	public void setUserBookService(UserBookService userBookService) {
@@ -380,9 +382,17 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void setVisibility(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
-			final String category = request.params().get("category");
-			final String visibility = request.params().get("value");
-			userBookService.setHobbyVisibility(user, category, visibility, defaultResponseHandler(request));
+			if (user != null) {
+				final String category = request.params().get("category");
+				if (!ALLOWED_HOBBIES.contains(category)) {
+					badRequest(request);
+					return;
+				}
+				final String visibility = request.params().get("value");
+				userBookService.setHobbyVisibility(user, category, visibility, defaultResponseHandler(request));
+			} else {
+				unauthorized(request);
+			}
 		});
 	}
 
