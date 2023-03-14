@@ -344,6 +344,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     @Override
     public Future<Void> notifyShare(String id, UserInfos user, JsonArray shared) {
         final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+        message.withType(getApplication(), getResourceType(), getResourceType());
         message.withVersion(currentTimeMillis());
         return communication.pushMessage(message.withShared(shared));
     }
@@ -353,6 +354,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final long now = currentTimeMillis();
         final List<ExplorerMessage> messages = ids.stream().map(id->{
             final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+            message.withType(getApplication(), getResourceType(), getResourceType());
             return message.withShared(shared).withVersion(now);
         }).collect(Collectors.toList());
         return communication.pushMessage(messages);
@@ -363,6 +365,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final List<Future> futures = sourceById.entrySet().stream().map(e->{
             final String id = e.getKey();
             final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+            message.withType(getApplication(), getResourceType(), getResourceType());
             return toMessage(message, e.getValue());
         }).collect(Collectors.toList());
         return CompositeFuture.all(futures).compose(all->{
@@ -374,6 +377,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     @Override
     public Future<Void> notifyUpsert(String id, UserInfos user, JsonObject source) {
         final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
+        message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
         });
@@ -382,6 +386,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     @Override
     public Future<Void> notifyUpsert(final UserInfos user, final JsonObject source) {
         final ExplorerMessage message = ExplorerMessage.upsert(getIdForModel(source), user, isForSearch());
+        message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
         });
@@ -392,6 +397,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         setIngestJobState(sources, IngestJobState.TO_BE_SENT);
         return toMessage(sources, e -> {
             final ExplorerMessage message = ExplorerMessage.upsert(getIdForModel(e), user, isForSearch());
+            message.withType(getApplication(), getResourceType(), getResourceType());
             return message;
         }).compose(messages -> {
             return communication.pushMessage(messages);
