@@ -376,6 +376,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                     new IdAndVersion(id, e.getValue().getLong("version")), user, isForSearch(),
                     getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
+            message.withType(getApplication(), getResourceType(), getResourceType());
             return toMessage(message, e.getValue());
         }).collect(Collectors.toList());
         return CompositeFuture.all(futures).compose(all->{
@@ -390,6 +391,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 id, user, isForSearch(),
                 getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
+        message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
         });
@@ -400,6 +402,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final ExplorerMessage message = ExplorerMessage.upsert(
                 new IdAndVersion(getIdForModel(source), source.getLong("version")), user, isForSearch(),
                 getApplication(), getResourceType(), getResourceType());
+        message.withType(getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
@@ -413,6 +416,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             final ExplorerMessage message = ExplorerMessage.upsert(
                     new IdAndVersion(getIdForModel(e), e.getLong("version")), user, isForSearch(),
                     getApplication(), getResourceType(), getResourceType());
+            message.withType(getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
             return message;
         }).compose(messages -> {
