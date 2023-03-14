@@ -50,7 +50,7 @@ public class DefaultMfaService implements MfaService {
          * @return MFA field metadata : state, names, target email or phone number
          * { state: JsonObject|null, firstName:string, lastName:string, displayName:string, target:string }
          */
-        public Future<JsonObject> getCurrentMfaState(final String userId) {
+        protected Future<JsonObject> getCurrentMfaState(final String userId) {
             return retrieveFullState(userId)
             .compose( j -> {
                 JsonObject state = j.getJsonObject(stateField);
@@ -94,8 +94,29 @@ public class DefaultMfaService implements MfaService {
             });
         }
 
-        public JsonObject formatAsResponse(final int state, final Integer tries, final Long ttl) {
+        protected JsonObject formatAsResponse(final int state, final Integer tries, final Long ttl) {
             return formatAsResponse(state, null, tries, ttl);
+        }
+
+        protected Future<JsonObject> generateOrRefreshCode(
+            final JsonObject state, String userId, final long validDurationS, final int triesLimit
+            ) {
+            if(state != null && getState(state) != OUTDATED) {
+                // Refresh this pending code
+                setState(state, PENDING);
+                //setKey(state, generateRandomCode());  // keep same code
+                setTtl(state, System.currentTimeMillis() + validDurationS * 1000l);
+                setTries(state, triesLimit);
+                return updateState(userId, state);
+            } else {
+                // Generate a new code
+                return mfaField.startUpdate(
+                    userId, 
+                    null, 
+                    UserValidation.getDefaultTtlInSeconds(), 
+                    UserValidation.getDefaultRetryNumber()
+                );
+            }
         }
 
         @Override
@@ -109,7 +130,7 @@ public class DefaultMfaService implements MfaService {
             return updateState(userId, state);
         }
 
-        public Future<JsonObject> outdateCode(final String userId, final JsonObject state) {
+        protected Future<JsonObject> outdateCode(final String userId, final JsonObject state) {
             setState(state, OUTDATED);
             setTtl(state, System.currentTimeMillis());
             return updateState(userId, state);
@@ -207,20 +228,22 @@ public class DefaultMfaService implements MfaService {
             return Future.failedFuture("not.active");
         }
 
-        // Retrieve metadata, since target email address or phone number is needed
+        // At first, retrieve current state
         return mfaField.getCurrentMfaState(userInfos.getUserId())
-        .compose( j -> {
-            // Generate a new code
-            return mfaField.startUpdate(
+        .compose( fullState -> {
+            // Then generate a new code, or refresh it if pending.
+            return mfaField.generateOrRefreshCode(
+                fullState.getJsonObject("state"),
                 userInfos.getUserId(), 
-                null, 
                 UserValidation.getDefaultTtlInSeconds(), 
                 UserValidation.getDefaultRetryNumber()
             ).compose( mfaState -> {
                 if( getState(mfaState) != PENDING ) {
+                    // If code is not pending, something went wrong => do nothing more.
                     return Future.succeededFuture(mfaState);
                 } else {
-                    final Long expires = getOrElse(getTtl(mfaState), UserValidation.getDefaultWaitInSeconds()*1000l);
+                    // If code is pending, send it by email or sms.
+                    final Long expires = getOrElse(getTtl(mfaState), System.currentTimeMillis() + UserValidation.getDefaultWaitInSeconds()*1000l);
 
                     JsonObject templateParams = new JsonObject()
                     .put("scheme", Renders.getScheme(request))
@@ -232,7 +255,7 @@ public class DefaultMfaService implements MfaService {
                     .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
                     .put("code", DataStateUtils.getKey(mfaState));
 
-                    return mfaField.sendValidationMessage(request, j.getString("target"), templateParams)
+                    return mfaField.sendValidationMessage(request, fullState.getString("target"), templateParams)
                     .onFailure( t -> {
                         // Code was not sent => consider it is outdated
                         logger.error(t);
