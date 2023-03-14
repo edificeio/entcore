@@ -15,12 +15,12 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin, moment, _ } from 'entcore';
+import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, $, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
 
 declare let window: any;
 
-export const accountController = ng.controller('MyAccount', ['$scope', 'route', 'tracker', '$location', '$anchorScroll', ($scope, route, tracker, $location, $anchorScroll) => {
+export const accountController = ng.controller('MyAccount', ['$scope', '$timeout', 'route', 'tracker', '$location', '$anchorScroll', ($scope, $timeout, route, tracker, $location, $anchorScroll) => {
 	route({
 		editUserInfos: async function(params){
 			template.open('account/main', 'account/default-view');

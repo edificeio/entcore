@@ -68,34 +68,31 @@
 	</lightbox>
 
 	<lightbox ng-if="display.validateMail" show="display.validateMail" on-close="onCloseEmailLightbox()">
-		<iframe src="/auth/validate-mail?headless=true&type=email"
+		<iframe adaptive-height src="/auth/validate-mail?headless=true&type=email"
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
 					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
 					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
-					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
 				}, 350, this);"
 		></iframe>
 	</lightbox>
 
 	<lightbox ng-if="display.validateMfa" show="display.validateMfa" on-close="onCloseEmailLightbox()">
-		<iframe src="/auth/validate-mfa?headless=true"
+		<iframe adaptive-height src="/auth/validate-mfa?headless=true"
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
 					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
 					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
-					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
 				}, 350, this);"
 		></iframe>
 	</lightbox>
 
 	<lightbox ng-if="display.validateSms" show="display.validateSms" on-close="onCloseEmailLightbox()">
-		<iframe src="/auth/validate-mail?headless=true&type=sms"
+		<iframe adaptive-height src="/auth/validate-mail?headless=true&type=sms"
 			style="height:400px;width:100%;border:none;overflow:hidden;"
 			onload="setTimeout(frame=>{
 					$(frame.contentWindow.document.body).css({'backgroundImage':'none', 'backgroundColor':'transparent'}).children('main').css({'boxShadow':'none', 'margin-top':'0', 'padding':'0 10px'});
 					$(frame.contentWindow.document.body).parent('html').css({'backgroundImage':'none', 'backgroundColor':'transparent'});
-					frame.style.height=Math.min(frame.contentWindow.document.body.parentElement.scrollHeight+110||1000,800)+'px';
 				}, 350, this);"
 		></iframe>
 	</lightbox>
