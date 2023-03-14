@@ -479,19 +479,20 @@ public class DefaultUserService implements UserService {
 		
 		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
-				"u.lastName as lastName, u.displayName as displayName ";
+				"u.lastName as lastName, u.displayName as displayName " +
+				"ORDER BY type DESC, displayName ASC ";
 
-		// Apply search parameters and sort order
-		if( sortOn==null || sortOn.length()<2 ) {
-			// Default sort order, historical behaviour.
-			query += "ORDER BY type DESC, displayName ASC ";
-		} else {
-			final String order = sortOn.startsWith("-") ? "DESC" : "ASC";
-			if( sortOn.charAt(0)=='+'|| sortOn.charAt(0)=='-' ) {
-				sortOn = sortOn.substring(1);
-			}
-			query += "ORDER BY "+ sortOn +" "+ order;
-		}
+		// // Apply search parameters and sort order
+		// if( sortOn==null || sortOn.length()<2 ) {
+		// 	// Default sort order, historical behaviour.
+		// 	query += "ORDER BY type DESC, displayName ASC ";
+		// } else {
+		// 	final String order = sortOn.startsWith("-") ? "DESC" : "ASC";
+		// 	if( sortOn.charAt(0)=='+'|| sortOn.charAt(0)=='-' ) {
+		// 		sortOn = sortOn.substring(1);
+		// 	}
+		// 	query += "ORDER BY "+ sortOn +" "+ order;
+		// }
 		if( fromIndex != null && fromIndex.intValue() > 0 ) {
 			query += " SKIP {skip}";
 			params.put( "skip", fromIndex );
