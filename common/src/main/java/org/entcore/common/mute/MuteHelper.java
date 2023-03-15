@@ -8,9 +8,14 @@ import io.vertx.core.json.JsonArray;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.entcore.common.mute.MuteService.FETCH_RESOURCE_MUTES_BY_ENTID_ADRESS;
-
 public class MuteHelper {
+
+    /**
+     * Bus address of the function that retrieves the ids of the users who
+     * muted a resource.
+     */
+    public final static String FETCH_RESOURCE_MUTES_BY_ENTID_ADRESS = "mute.fetch.by.entid";
+
     public final Vertx vertx;
 
     public MuteHelper(final Vertx vertx) {
