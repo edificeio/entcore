@@ -112,7 +112,7 @@ public interface IExplorerPlugin {
         QueryCreate,
         QueryDelete,
         QueryShare,
-        QueryMetrics,
+        QueryMetrics
     }
 
     enum ExplorerRemoteError {
