@@ -541,6 +541,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     //abstract
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
 
+    protected abstract Date getCreatedAtForModel(final JsonObject json);
+
     protected abstract String getIdForModel(final JsonObject json);
 
     protected abstract JsonObject setIdForModel(final JsonObject json, final String id);
@@ -562,6 +564,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected final Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getResourceType());
         message.withVersion(source.getLong("version"));
+        message.withCreator(getCreatorForModel(source));
+        message.withCreatedAt(getCreatedAtForModel(source));
         return doToMessage(message, source);
     }
 

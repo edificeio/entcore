@@ -1,6 +1,7 @@
 package org.entcore.common.explorer.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import io.vertx.core.CompositeFuture;
@@ -59,6 +60,16 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         user.setUserId(id);
         user.setUsername(name);
         return user;
+    }
+
+    @Override
+    protected Date getCreatedAtForModel(final JsonObject json) {
+        final Object value = json.getValue(getCreatedAtColumn());
+        if(value != null && value instanceof JsonObject){
+            return MongoDb.parseIsoDate((JsonObject) value);
+        }
+        // return a default value => application should override it if createdAt field is specific
+        return new Date();
     }
 
     @Override
