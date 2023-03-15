@@ -358,6 +358,13 @@
   "explorer.modal.move.title": "Déplacer",
   "explorer.modal.move.btn.cancel.label": "Annuler",
   "explorer.modal.move.btn.move.label": "Déplacer",
+  "explorer.modal.share.usersWithAccess": "Utilisateurs ayant accès",
+  "explorer.modal.share.sharebookmark.placeholder": "Saisir le nom du favori",
+  "explorer.modal.share.sharebookmark.save": "Enregistrer favori",
+  "explorer.modal.share.search": "Rechercher des utilisateurs",
+  "explorer.modal.share.search.placeholder": "nom d’utilisateurs, groupes, favoris",
+  "explorer.modal.share.avatar.me.alt": "Mon avatar",
+  "explorer.modal.share.avatar.shared.alt": "Avatar de l'élément partagé",
 
   "explorer.resource.editModal.header.edit": "Propriétés",
   "explorer.resource.editModal.header.create": "Création",
