@@ -1,6 +1,7 @@
 package org.entcore.common.explorer.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class ExplorerSubResourceMongo extends ExplorerSubResource{
+public abstract class ExplorerSubResourceMongo extends ExplorerSubResource {
     protected final MongoClient mongoClient;
 
     protected ExplorerSubResourceMongo(final ExplorerPlugin parent, final MongoClient mongoClient) {
@@ -32,6 +33,16 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource{
     @Override
     protected String getChildId(final JsonObject source) {
         return source.getValue(getIdColumn()).toString();
+    }
+
+    @Override
+    protected Date getCreatedAtForModel(final JsonObject json) {
+        final Object value = json.getValue(getCreatedAtColumn());
+        if(value != null && value instanceof JsonObject){
+            return MongoDb.parseIsoDate((JsonObject) value);
+        }
+        // return a default value => application should override it if createdAt field is specific
+        return new Date();
     }
 
     @Override

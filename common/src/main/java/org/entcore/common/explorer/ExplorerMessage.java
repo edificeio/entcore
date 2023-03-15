@@ -69,9 +69,7 @@ public class ExplorerMessage {
 
     public static ExplorerMessage upsert(final String id, final UserInfos user, final boolean forSearch) {
         final ExplorerMessage builder = new ExplorerMessage(id, ExplorerAction.Upsert, forSearch);
-        builder.message.put("createdAt", new Date().getTime());
-        builder.message.put("creatorId", user.getUserId());
-        builder.message.put("creatorName", user.getUsername());
+        // dont set creator and createdat here, set it from resource json
         builder.message.put("updatedAt", new Date().getTime());
         builder.message.put("updaterId", user.getUserId());
         builder.message.put("updaterName", user.getUsername());
@@ -85,6 +83,27 @@ public class ExplorerMessage {
         builder.message.put("deleterId", user.getUserId());
         builder.message.put("deleterName", user.getUsername());
         return builder;
+    }
+
+    public ExplorerMessage withCreator(final UserInfos user){
+        withCreatorId(user.getUserId());
+        withCreatorName(user.getUsername());
+        return this;
+    }
+
+    public ExplorerMessage withCreatedAt(final Date date){
+        message.put("createdAt", date.getTime());
+        return this;
+    }
+
+    public ExplorerMessage withCreatorId(final String id){
+        message.put("creatorId", id);
+        return this;
+    }
+
+    public ExplorerMessage withCreatorName(final String name){
+        message.put("creatorName", name);
+        return this;
     }
 
     public ExplorerMessage withParentId(final Optional<Long> parentId) {

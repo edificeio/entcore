@@ -72,6 +72,8 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         message.withTrashed(isTrashed(source));
         message.withParentEntId(getParentId(source));
         message.withMigrationFlag(true);
+        message.withCreator(user);
+        message.withCreatedAt(getCreatedAtForModel(source));
         //resources
         final Set<String> resourceIds = getResourceIds(source);
         message.withChildrenEntId(resourceIds);
@@ -91,6 +93,8 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
     protected abstract Set<String> getResourceIds(final JsonObject source);
 
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
+
+    protected abstract Date getCreatedAtForModel(final JsonObject json);
 
     protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
 }

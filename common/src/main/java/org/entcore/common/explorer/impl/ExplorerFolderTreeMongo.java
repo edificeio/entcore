@@ -1,6 +1,7 @@
 package org.entcore.common.explorer.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -54,6 +55,16 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
     protected Set<String> getResourceIds(final JsonObject source) {
         final JsonArray ressourceIds = source.getJsonArray("ressourceIds", new JsonArray());
         return ressourceIds.stream().map(e-> e.toString()).collect(Collectors.toSet());
+    }
+
+    @Override
+    protected Date getCreatedAtForModel(final JsonObject json) {
+        final Object value = json.getValue(getCreatedAtColumn());
+        if(value != null && value instanceof JsonObject){
+            return MongoDb.parseIsoDate((JsonObject) value);
+        }
+        // return a default value => application should override it if createdAt field is specific
+        return new Date();
     }
 
     @Override

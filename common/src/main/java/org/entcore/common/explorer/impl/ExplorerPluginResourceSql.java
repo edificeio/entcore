@@ -57,6 +57,18 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     @Override
+    protected Date getCreatedAtForModel(final JsonObject json) {
+        final Object value = json.getValue(getCreatedAtColumn());
+        if(value != null && value instanceof String){
+            final LocalDateTime localDate = LocalDateTime.parse((String) value);
+            final Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+            return date;
+        }
+        // return a default value => application should override it if createdAt field is specific
+        return new Date();
+    }
+
+    @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
@@ -217,17 +229,23 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
 
     @Override
     public Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages) {
-        final String schema = getTableName();
-        final String query = new StringBuilder()
-            .append(" UPDATE ").append(schema)
-            .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
-            .toString();
-        final Tuple tuple = Tuple.tuple();
-        for(IngestJobStateUpdateMessage message : messages) {
-            tuple.addValue(message.getState().name())
-                .addValue(message.getVersion())
-                .addValue(parseLong(message.getEntityId()));
+        if(messages.isEmpty()){
+            return Future.succeededFuture();
         }
-        return pgPool.preparedQuery(query.toString(),tuple).mapEmpty();
+        final String schema = getTableName();
+        return pgPool.transaction().compose(transaction -> {
+            for(IngestJobStateUpdateMessage message : messages) {
+                final String query = new StringBuilder()
+                        .append(" UPDATE ").append(schema)
+                        .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
+                        .toString();
+                final Tuple tuple = Tuple.tuple();
+                tuple.addValue(message.getState().name())
+                        .addValue(message.getVersion())
+                        .addValue(parseLong(message.getEntityId()));
+                transaction.addPreparedQuery(query, tuple);
+            }
+            return transaction.commit();
+        }).mapEmpty();
     }
 }

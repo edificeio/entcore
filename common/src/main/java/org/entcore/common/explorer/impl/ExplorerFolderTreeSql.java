@@ -65,6 +65,18 @@ public abstract class ExplorerFolderTreeSql extends ExplorerFolderTree{
     }
 
     @Override
+    protected Date getCreatedAtForModel(final JsonObject json) {
+        final Object value = json.getValue(getCreatedAtColumn());
+        if(value != null && value instanceof String){
+            final LocalDateTime localDate = LocalDateTime.parse((String) value);
+            final Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+            return date;
+        }
+        // return a default value => application should override it if createdAt field is specific
+        return new Date();
+    }
+
+    @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
