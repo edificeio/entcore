@@ -22,8 +22,6 @@ import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.share.ShareModel;
-import org.entcore.common.explorer.to.MuteRequest;
-import org.entcore.common.explorer.to.MuteResponse;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
@@ -435,12 +433,6 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         }
         return communication.pushMessage(messages);
     }
-
-    @Override
-    public Future<Void> notifyMute(final ExplorerMessage message) {
-        return communication.pushMessage(Collections.singletonList(message));
-    }
-
 
     @Override
     public Future<Void> notifyDeleteById(final UserInfos user, final IdAndVersion id) {
