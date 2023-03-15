@@ -421,10 +421,11 @@ public class AuthController extends BaseController {
 							futureUserId.future().onSuccess(userId -> {
 								createSessionForMobile(userId, response, request);
 							}).onFailure(th -> {
-								log.warn("Could not create a session for the user", th);
+								log.warn("[OAuthToken] Could not create a session for the user", th);
 								renderJson(request, new JsonObject(response.getBody()), response.getCode());
 							});
 						} else {
+							log.info("[OAuthToken] Log in failed for user : [" + response.getCode() + "] " + response.getBody());
 							renderJson(request, new JsonObject(response.getBody()), response.getCode());
 						}
 					}

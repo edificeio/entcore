@@ -532,8 +532,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
-			final boolean secureLocation, final JsonObject previousCache, final Handler<String> handler) {
+	private void createSession(final String userId, final String sId, final String sessionIndex,
+							   final String nameId, final boolean secureLocation, final JsonObject previousCache,
+							   final Handler<String> handler) {
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
@@ -553,16 +554,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							logger.error("Error putting session in store", ar.cause());
 						}
 						addOldCacheValuesToNewSession(previousCache, userId, sessionId).onComplete(e -> {
-							if (!sessionStore.inactivityEnabled()) {
-								final JsonObject now = MongoDb.now();
-								if (sId == null) {
-									json.put("created", now).put("lastUsed", now);
-									mongo.save(SESSIONS_COLLECTION, json);
-								} else {
-									mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
-											new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
-								}
-							}
+							upsertSessionInMongo(sId, json, sessionId);
 							handler.handle(sessionId);
 						});
 					});
@@ -571,6 +563,38 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		});
+	}
+
+	/**
+	 * Insert the session in Mongo if it did not exist, otherwise update the corresponding entry.
+	 * @param requestedSessionId SessionId that was specified by the caller
+	 * @param json Session data
+	 * @param createdSessionId Actual Id of the session (can be the session id requested by the caller or a newly generated
+	 *                         one )
+	 */
+	private void upsertSessionInMongo(final String requestedSessionId, final JsonObject json, final String createdSessionId) {
+		if (!sessionStore.inactivityEnabled()) {
+			final JsonObject now = MongoDb.now();
+			if (requestedSessionId == null) {
+				json.put("created", now).put("lastUsed", now);
+				mongo.save(SESSIONS_COLLECTION, json);
+			} else {
+				mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", createdSessionId),
+					new JsonObject().put("$set", new JsonObject().put("lastUsed", now)), cb -> {
+						final JsonObject body = cb.body();
+						if(MongoDb.isOk(body)) {
+							if(body.getInteger("number", 0) == 0) {
+								logger.debug("[CreateSession] Inserting new session with a predefined id");
+								mongo.save(SESSIONS_COLLECTION, json);
+							} else {
+								logger.debug("[CreateSession] Session updated");
+							}
+						} else {
+							logger.debug("[CreateSession] Could not update session " + requestedSessionId);
+						}
+					});
+			}
+		}
 	}
 
 	/**
