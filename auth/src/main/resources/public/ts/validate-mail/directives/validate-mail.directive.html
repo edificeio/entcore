@@ -1,11 +1,11 @@
 <div ng-if="canRenderUi" ng-switch="ctrl.step">
 
     <div ng-if="ctrl.step==='code'">
-        <button type="button" class="validate-mail-back btn" id="btnBack" ng-click="ctrl.step='input'">
+        <button type="button" class="btn btn-ghost-tertiary d-flex align-items-center" id="btnBack" ng-click="ctrl.step='input'">
             <svg class="icon-svg" width="20" height="20">
                 <use href="/auth/public/icons/validate-icons.svg#arrowLeft"></use>
             </svg>
-            <span>
+            <span class="ms-4">
                 <i18n>validate-mail.step2.back</i18n>
             </span>
         </button>
@@ -13,13 +13,13 @@
 
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
-            <div class="mb-3 text-center">
-                <img ng-if="ctrl.type === 'email'" src="/auth/public/img/validate-mail.svg" height="150"></img>
-                <img ng-if="ctrl.type === 'sms'" src="/auth/public/img/validate-sms.svg" height="150"></img>
+            <div class="mb-12">
+                <img class="mx-auto" ng-if="ctrl.type === 'email'" src="/auth/public/img/validate-mail.svg" height="150"></img>
+                <img class="mx-auto" ng-if="ctrl.type === 'sms'" src="/auth/public/img/validate-sms.svg" height="150"></img>
             </div>
 
-            <div class="mb-3 text-center fs-4">
-                <h2 class="validate-mail-title">
+            <div class="text-center">
+                <h2 class="fw-bold">
                     <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.title</i18n>
                     <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.title</i18n>
                 </h2>
@@ -27,10 +27,10 @@
         </div>
     </div>
 
-    <div class="my-3" ng-switch-when="input">
+    <div class="my-12" ng-switch-when="input">
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
-                <div class="mb-5 text-center">
+                <div class="mb-32 text-center">
                     <div ng-if="ctrl.force">
                         <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.hint.force</i18n>
                         <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.hint.force</i18n>
@@ -45,16 +45,16 @@
                     </div>
                 </div>
 
-                <form novalidate autocomplete="off" name="formValidate" class="mx-auto col-sm-5" ng-submit="onValidate('input')">
-                    <label class="mb-2 fw-bold" for="input-data">
+                <form novalidate autocomplete="off" name="formValidate" class="mx-auto col-sm-8 form-control-lg" ng-submit="onValidate('input')">
+                    <label class="mb-8 fw-bold d-flex align-items-center" for="input-data">
                         <svg class="icon-svg" ng-if="ctrl.type === 'email'" width="20" height="20">
                             <use href="/auth/public/icons/validate-icons.svg#mail"></use>
                         </svg>
                         <svg class="icon-svg" ng-if="ctrl.type === 'sms'" width="20" height="20">
                             <use href="/auth/public/icons/validate-icons.svg#phone"></use>
                         </svg>
-                        <span ng-if="ctrl.type === 'email'" class="align-middle" translate content="validate-mail.step1.form.mail"></span>
-                        <span ng-if="ctrl.type === 'sms'" class="align-middle" translate content="validate-sms.step1.form.phone"></span>
+                        <span ng-if="ctrl.type === 'email'" class="align-middle ms-4" translate content="validate-mail.step1.form.mail"></span>
+                        <span ng-if="ctrl.type === 'sms'" class="align-middle ms-4" translate content="validate-sms.step1.form.phone"></span>
                     </label>
                     <input type="email" id="input-data" style="background-color: white;" name="inputEmail"
                             ng-if="ctrl.type === 'email'"
@@ -69,7 +69,7 @@
                             ng-model="ctrl.mobilePhone"
                             ng-class="ctrl.inputToBTCss(formValidate.inputPhone)" />
 
-                    <div class="text-danger mt-2 mb-5">
+                    <div class="text-danger mt-8 mb-16">
                         <small>
                             <label for="input-data" ng-if="formValidate.inputEmail.$error.email && ctrl.type === 'email'">
                                 <i18n>validate-mail.error.mail</i18n>
@@ -89,16 +89,16 @@
                     </div>
 
                     <div class="text-center">
-                        <div ng-show="ctrl.status==='wait'" class="text-primary mb-3">
+                        <div ng-show="ctrl.status==='wait'" class="text-primary mb-12">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">Loading...</span>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary fs-5 align-middle"
+                        <button type="submit" class="btn btn-primary mx-auto d-flex align-items-center"
                                 ng-if="ctrl.type === 'email'"
                                 ng-disabled="!formValidate.$valid || ctrl.status==='wait' || !ctrl.emailAddress">
-                            <span>
+                            <span class="me-4">
                                 <i18n>validate-mail.step1.btn</i18n>
                             </span>
                             <svg class="icon-svg" width="20" height="20">
@@ -106,10 +106,10 @@
                             </svg>
                         </button>
 
-                        <button type="submit" class="btn btn-primary fs-5 align-middle"
+                        <button type="submit" class="btn btn-primary mx-auto d-flex align-items-center"
                                 ng-if="ctrl.type === 'sms'"
                                 ng-disabled="!formValidate.$valid || ctrl.status==='wait' || !ctrl.mobilePhone">
-                            <span>
+                            <span class="me-4">
                                 <i18n>validate-sms.step1.btn</i18n>
                             </span>
                             <svg class="icon-svg" width="20" height="20">
@@ -122,10 +122,10 @@
         </div>
     </div>
 
-    <div class="my-3" ng-switch-when="code">
+    <div class="my-12" ng-switch-when="code">
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
-                <div class="mb-5 text-center">
+                <div class="mb-32 text-center">
                     <div ng-if="ctrl.type === 'email'">
                         <i18n>validate-mail.step2.hint.paragraph1</i18n>
                         <span> [[ctrl.emailAddress]].</span>
@@ -144,8 +144,8 @@
                 </div>
 
                 <div class="text-center">
-                    <form novalidate autocomplete="off" name="formCode" class="col-sm-5 mx-auto" ng-submit="">
-                        <label class="mb-2 row fw-bold" for="input-data">
+                    <form novalidate autocomplete="off" name="formCode" class="col-sm-8 mx-auto form-control-lg" ng-submit="onValidate('code')">
+                        <label class="mb-8 row fw-bold" for="input-data">
                             <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.form.code</i18n>
                             <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.form.code</i18n>
                         </label>
@@ -157,14 +157,14 @@
                                 ng-model-options="{ debounce: 500 }"
                                 ng-change="onCodeChange(formCode)" class="form-control" />
                     </form>
-                    <footer class="mt-4 mb-5">
+                    <footer class="mt-16 mb-16">
                         <div ng-show="ctrl.status==='wait'" class="text-primary">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">Loading...</span>
                             </div>
                         </div>
                         <div ng-if="ctrl.status==='ok'" class="text-success">
-                            <svg class="icon-svg" width="20" height="20">
+                            <svg class="icon-svg mx-auto" width="20" height="20">
                                 <use href="/auth/public/icons/validate-icons.svg#successOutline"></use>
                             </svg>
                             <div>
@@ -181,7 +181,7 @@
                             </div>
                         </div>
                         <div ng-if="ctrl.status==='ko'" class="text-danger">
-                            <svg class="icon-svg" width="20" height="20">
+                            <svg class="icon-svg mx-auto" width="20" height="20">
                                 <use href="/auth/public/icons/validate-icons.svg#error"></use>
                             </svg>
                             <div><span translate content="[[ctrl.koStatusCause]]"></span></div>
@@ -190,20 +190,22 @@
                 </div>
 
                 <div class="text-center" ng-if="ctrl.status!=='ok'">
-                    <div class="mb-4">
-                        <span class="fs-6">
+                    <div class="mb-16">
+                        <span>
                             <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.hint.paragraph4</i18n>
                             <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.hint.paragraph4</i18n>
                         </span>
                     </div>
 
                     <div>
-                        <button disabled type="button" id="btnRenew" class="btn btn-tertiary fw-bold" ng-click="onCodeRenew()">
-                            <svg class="icon-svg" width="20" height="20">
+                        <button type="button" id="btnRenew" class="btn btn-ghost-tertiary mx-auto fw-bold d-flex align-items-center" ng-click="onCodeRenew()">
+                            <svg class="icon-svg me-4" width="20" height="20">
                                 <use href="/auth/public/icons/validate-icons.svg#redo"></use>
                             </svg>
-                            <i18n class="align-text-top" ng-if="ctrl.type === 'email'">validate-mail.step2.btn</i18n>
-                            <i18n class="align-text-top" ng-if="ctrl.type === 'sms'">validate-sms.step2.btn</i18n>
+                            <span class="align-items-center d-flex">
+                                <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.btn</i18n>
+                                <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.btn</i18n>
+                            </span>
                         </button>
                     </div>
                 </div>
