@@ -9,8 +9,6 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IdAndVersion;
-import org.entcore.common.explorer.to.MuteRequest;
-import org.entcore.common.explorer.to.MuteResponse;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
@@ -109,18 +107,6 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
             final ShareResponse sres = new ShareResponse(nbShared, notifyTimelineMap);
             return sres;
         });
-    }
-
-    @Override
-    public Future<MuteResponse> setMuteStatusByIds(final UserInfos user,
-                                           final Set<IdAndVersion> resourceIds,
-                                           final boolean muteStatus) {
-        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-        headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMute.name());
-        headers.add("userId", user.getUserId());
-        headers.add("userName", user.getUsername());
-        final MuteRequest muteRequest = new MuteRequest(muteStatus, resourceIds);
-        return send(headers, muteRequest, MuteResponse.class, Duration.ofMinutes(5));
     }
 
     @Override
