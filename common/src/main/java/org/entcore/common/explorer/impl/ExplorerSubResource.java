@@ -171,9 +171,13 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
 
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
 
+    protected abstract Date getCreatedAtForModel(final JsonObject json);
+
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getEntityType());
         message.withVersion(source.getLong("version"));
+        message.withCreator(getCreatorForModel(source));
+        message.withCreatedAt(getCreatedAtForModel(source));
         return doToMessage(message, source);
     }
 
