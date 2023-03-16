@@ -20,10 +20,13 @@
 package org.entcore.common.share;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.security.ActionType;
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,7 +35,6 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 public interface ShareService {
-
 	void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler);
 
