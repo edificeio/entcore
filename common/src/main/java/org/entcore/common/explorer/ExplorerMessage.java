@@ -261,6 +261,12 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withShared(final JsonArray shared, final List<String> rights) {
+        message.put("shared", shared);
+        message.put("rights", new JsonArray(rights));
+        return this;
+    }
+
     public ExplorerMessage withForceId(final String id) {
         this.id = id;
         return this;
@@ -303,11 +309,17 @@ public class ExplorerMessage {
     public Optional<JsonArray> getOptionalShared() {
         return Optional.ofNullable(message.getJsonArray("shared"));
     }
+    public Optional<JsonArray> getOptionalRights() {
+        return Optional.ofNullable(message.getJsonArray("rights"));
+    }
     public JsonArray getShared() {
         return message.getJsonArray("shared", new JsonArray());
     }
+    public JsonArray getRights() {
+        return message.getJsonArray("rights", new JsonArray());
+    }
     public String getCreatorId() {
-        return message.getString("creatorId");
+        return message.getString("creatorId", "");
     }
     public String getName() {
         return message.getString("name");

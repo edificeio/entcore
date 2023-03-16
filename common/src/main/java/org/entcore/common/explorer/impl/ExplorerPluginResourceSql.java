@@ -130,9 +130,11 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     @Override
     protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final Map<String, Object> map = new HashMap<>();
-        map.put(getCreatorIdColumn(), user.getUserId());
-        map.put(getCreatorNameColumn(), user.getUsername());
-        setIngestJobState(sources, IngestJobState.TO_BE_SENT);
+        for(final JsonObject source : sources){
+            setCreatorForModel(user, source);
+            setCreatedAtForModel(user, source);
+            source.put("ingest_job_state", IngestJobState.TO_BE_SENT);
+        }
         final List<String> columnNames = new ArrayList<>(getColumns());
         columnNames.addAll(defaultColumns);
         final String inPlaceholder = PostgresClient.insertPlaceholders(sources, 1, columnNames);
@@ -180,6 +182,14 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     //overridable
+    protected void setCreatorForModel(final UserInfos user, final JsonObject json){
+        json.put(getCreatorIdColumn(), user.getUserId());
+        json.put(getCreatorNameColumn(), user.getUsername());
+    }
+    protected void setCreatedAtForModel(final UserInfos user, final JsonObject json){
+        json.put(getCreatedAtColumn(), new Date().getTime());
+    }
+
     protected int getBatchSize() { return 50; }
 
     protected String getCreatedAtColumn() {
