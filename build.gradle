@@ -204,7 +204,6 @@ project(':common') {
     compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
     compile "io.vertx:vertx-redis-client:$vertxVersion"
-    compile "com.ongres.scram:client:$scramClientVersion"
     compile "io.vertx:vertx-pg-client:$vertxVersion"
     compile "com.ongres.scram:client:$scramVersion"
     compile "org.mongodb:mongodb-driver-async:$mongoVersion"

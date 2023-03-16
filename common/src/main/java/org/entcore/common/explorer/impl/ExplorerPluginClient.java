@@ -6,13 +6,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginClient;
-import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerPluginClient implements IExplorerPluginClient {
@@ -107,18 +110,6 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
             final ShareResponse sres = new ShareResponse(nbShared, notifyTimelineMap);
             return sres;
         });
-    }
-
-    @Override
-    public Future<MuteResponse> setMuteStatusByIds(final UserInfos user,
-                                           final Set<IdAndVersion> resourceIds,
-                                           final boolean muteStatus) {
-        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-        headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryMute.name());
-        headers.add("userId", user.getUserId());
-        headers.add("userName", user.getUsername());
-        final MuteRequest muteRequest = new MuteRequest(muteStatus, resourceIds);
-        return send(headers, muteRequest, MuteResponse.class, Duration.ofMinutes(5));
     }
 
     @Override

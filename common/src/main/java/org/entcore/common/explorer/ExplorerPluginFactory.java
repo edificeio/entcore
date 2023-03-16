@@ -1,17 +1,10 @@
 package org.entcore.common.explorer;
 
-import fr.wseduc.webutils.data.FileResolver;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
-import org.entcore.common.mongodb.MongoClientFactory;
-import org.entcore.common.postgres.PostgresClient;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
-import org.entcore.common.explorer.impl.MicrometerExplorerPluginMetricsRecorder;
 import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;

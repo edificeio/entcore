@@ -19,26 +19,26 @@
 
 package org.entcore.common.share.impl;
 
-import java.util.*;
-
-import com.mongodb.QueryBuilder;
-import fr.wseduc.mongodb.MongoQueryBuilder;
-import io.vertx.core.Future;
-import org.entcore.common.explorer.to.MuteRequest;
-import org.entcore.common.share.ShareInfosQuery;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
-import org.entcore.common.sql.SqlStatementsBuilder;
-
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
+import org.entcore.common.share.ShareInfosQuery;
+import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
+import org.entcore.common.sql.SqlStatementsBuilder;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class SqlShareService extends GenericShareService {
 

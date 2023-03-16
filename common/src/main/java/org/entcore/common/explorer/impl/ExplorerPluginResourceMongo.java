@@ -17,9 +17,6 @@ import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
-import org.entcore.common.mute.MuteService;
-import org.entcore.common.mute.impl.MuteServiceMongo;
-import org.entcore.common.mute.impl.MuteServiceSql;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -38,12 +35,10 @@ import java.util.stream.Collectors;
 public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final MongoClient mongoClient;
-    private final MuteServiceMongo muteService;
 
     protected ExplorerPluginResourceMongo(final IExplorerPluginCommunication communication, final MongoClient mongoClient) {
         super(communication);
         this.mongoClient = mongoClient;
-        this.muteService = new MuteServiceMongo(getCollectionName(), MongoDb.getInstance());
     }
 
     @Override
@@ -207,9 +202,5 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
     public void setIngestJobStateAndVersion(final MongoUpdateBuilder modifier, IngestJobState state, long version) {
         modifier.set("ingest_job_state", state.name());
         modifier.set("version", version);
-    }
-    @Override
-    protected MuteService getMuteService() {
-        return muteService;
     }
 }
