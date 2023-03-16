@@ -160,15 +160,28 @@ public abstract class AbstractDataValidationService extends Renders implements D
 	public Future<JsonObject> startUpdate(String userId, String value, final long validDurationS, final int triesLimit) {
 		return retrieveFullState(userId)
 		.compose( j -> {
-			// Reset the stateField to a pending state
 			final JsonObject originalState = j.getJsonObject(stateField, new JsonObject());
+			String key = generateRandomCode();
+
+			// Check if data validation was already started
+			if( getState(originalState) == PENDING ) {
+				final Long ttl = getTtl(originalState);
+				if( ttl!=null && ttlToRemainingSeconds(ttl.longValue()) > 0 ) {	// Is it still pending ?
+					String oldCode = getKey(originalState);							// Yes => keep the same code
+					if( !StringUtils.isEmpty(oldCode) ) {
+						key = oldCode;
+					}
+				}
+			}
+
+			// Reset the stateField to a pending state
 			setState(originalState, PENDING);
-			// Valid mail must stay unchanged if not null, otherwise initialize to an empty string.
+			// Valid data must stay unchanged if not null, otherwise initialize to an empty string.
 			if( getValid(originalState) == null ) {
 				setValid(originalState, "");
 			}
 			setPending(originalState, value);
-			setKey(originalState, generateRandomCode());
+			setKey(originalState, key);
 			setTtl(originalState, System.currentTimeMillis() + validDurationS * 1000l);
 			setTries(originalState, triesLimit);
 
