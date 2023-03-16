@@ -22,11 +22,11 @@ package org.entcore.common.processor;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.cache.Cache;
-import org.entcore.common.controller.RightsController;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.http.filter.Trace;
+import org.entcore.common.share.ShareRoles;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -168,7 +168,7 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 				return;
 			}
 			String sharingType = annotation.value().substring(annotation.value().lastIndexOf('.') + 1);
-			if (!RightsController.allowedSharingRights.contains(sharingType)) {
+			if (!ShareRoles.isRoleName(sharingType)) {
 				throw new RuntimeException("Invalid sharing type : " + annotation.value());
 			}
 		}

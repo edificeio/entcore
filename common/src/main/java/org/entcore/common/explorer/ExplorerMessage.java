@@ -2,12 +2,10 @@ package org.entcore.common.explorer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.share.ShareModel;
 import org.entcore.common.user.UserInfos;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExplorerMessage {
@@ -257,8 +255,9 @@ public class ExplorerMessage {
         return this;
     }
 
-    public ExplorerMessage withShared(final JsonArray shared) {
-        message.put("shared", shared);
+    public ExplorerMessage withShared(final ShareModel shareModel) {
+        message.put("shared", shareModel.getSharedJson());
+        message.put("rights", new JsonArray(shareModel.getSerializedRights()));
         return this;
     }
 

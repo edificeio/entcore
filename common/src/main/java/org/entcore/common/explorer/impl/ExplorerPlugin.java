@@ -21,20 +21,13 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
+import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -49,6 +42,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected Integer reindexBatchSize = 100;
     protected Optional<IExplorerFolderTree> folderTree = Optional.empty();
     protected final List<IExplorerSubResource> subResources = new ArrayList<>();
+
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
     }
@@ -228,7 +222,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                     final List<ExplorerMessage> messages = new ArrayList<>();
                     for(final String id : ids) {
                         final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
-                        mess.withShared(generatedShared.get(id).getJsonArray("shared"));
+                        final JsonArray shared = generatedShared.get(id).getJsonArray("shared");
+                        mess.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
                         mess.withVersion(now);
                         mess.withType(getApplication(), getResourceType(), getResourceType());
                         messages.add(mess);
@@ -342,20 +337,22 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public Future<Void> notifyShare(String id, UserInfos user, JsonArray shared) {
+    public Future<Void> notifyShare(final String id, final UserInfos user, final JsonArray shared) {
         final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
         message.withType(getApplication(), getResourceType(), getResourceType());
         message.withVersion(currentTimeMillis());
-        return communication.pushMessage(message.withShared(shared));
+        message.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
+        return communication.pushMessage(message);
     }
 
     @Override
-    public Future<Void> notifyShare(Set<String> ids, UserInfos user, JsonArray shared) {
+    public Future<Void> notifyShare(final Set<String> ids, final UserInfos user, final JsonArray shared) {
         final long now = currentTimeMillis();
         final List<ExplorerMessage> messages = ids.stream().map(id->{
             final ExplorerMessage message = ExplorerMessage.upsert(id, user, isForSearch());
             message.withType(getApplication(), getResourceType(), getResourceType());
-            return message.withShared(shared).withVersion(now);
+            message.withShared(new ShareModel(shared, getSecuredActions(), Optional.empty()));
+            return message.withVersion(now);
         }).collect(Collectors.toList());
         return communication.pushMessage(messages);
     }
@@ -539,6 +536,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     //abstract
+    protected abstract Map<String, SecuredAction> getSecuredActions();
+
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
 
     protected abstract Date getCreatedAtForModel(final JsonObject json);
