@@ -107,6 +107,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             json.put(getIdColumn(), id);
             json.put("ingest_job_state", IngestJobState.TO_BE_SENT);
             setCreatorForModel(user, json);
+            setCreatedAtForModel(user, json);
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
             mongoClient.insert(getCollectionName(), json, promise);
@@ -142,6 +143,9 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
     protected void setCreatorForModel(final UserInfos user, final JsonObject json){
         json.put(getCreatorIdColumn(), user.getUserId());
         json.put(getCreatorNameColumn(), user.getUsername());
+    }
+    protected void setCreatedAtForModel(final UserInfos user, final JsonObject json){
+        json.put(getCreatedAtColumn(), new Date().getTime());
     }
 
     protected String getCreatedAtColumn() { return "createdAt"; }
