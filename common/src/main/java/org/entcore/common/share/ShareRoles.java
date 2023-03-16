@@ -26,15 +26,23 @@ public enum ShareRoles {
     }
 
     public String getSerializedForUser(final String userId){
-        return VISIBLE_BY_USER + ":" + userId + ":" + this.key;
+        return getSerializedForUserAndRole(userId, this.key);
     }
 
     public String getSerializedForGroup(final String groupId){
-        return VISIBLE_BY_GROUP + ":" + groupId + ":" + this.key;
+        return getSerializedForGroupAndRole(groupId, this.key);
     }
 
     public static String getSerializedForCreator(final String userId){
         return VISIBLE_BY_CREATOR + ":" + userId;
+    }
+
+    public static String getSerializedForUserAndRole(final String userId, final String role){
+        return VISIBLE_BY_USER + ":" + userId + ":" + role;
+    }
+
+    public static String getSerializedForGroupAndRole(final String groupId, final String role){
+        return VISIBLE_BY_GROUP + ":" + groupId + ":" + role;
     }
 
 
@@ -43,7 +51,7 @@ public enum ShareRoles {
      * @return true if securedaction is a resourc eright
      */
     public static boolean isRoleBasedAction(final SecuredAction action) {
-        if (action == null || action.getDisplayName() == null || !ActionType.RESOURCE.name().equals(action.getType())) {
+        if (action == null || action.getDisplayName() == null || !ActionType.RESOURCE.name().equalsIgnoreCase(action.getType())) {
             return false;
         }
         final String role = action.getDisplayName().substring(action.getDisplayName().lastIndexOf('.') + 1);
