@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginClientDefault;
-import org.entcore.common.explorer.to.MuteResponse;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -35,16 +34,6 @@ public interface IExplorerPluginClient {
     Future<ShareResponse> shareByIds(UserInfos user, Set<String> ids, JsonObject shares);
 
     Future<JsonObject> getMetrics(UserInfos user);
-
-    /**
-     *
-     * @param userInfos User that performed the mute action
-     * @param resourceIds entIds of the resources whose mute status should change
-     * @param muteStatus <code>true</code> if the user wants to mute the notifications on the resources,
-     *                   <code>false</code> if the user want to keep on receiving notifications for the resources
-     * @return
-     */
-    Future<MuteResponse> setMuteStatusByIds(final UserInfos userInfos, final Set<IdAndVersion> resourceIds, final boolean muteStatus);
 
     class DeleteResponse {
         public final List<String> deleted = new ArrayList<>();

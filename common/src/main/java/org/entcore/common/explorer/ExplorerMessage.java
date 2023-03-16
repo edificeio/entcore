@@ -16,8 +16,7 @@ public class ExplorerMessage {
     public enum ExplorerAction{
         Upsert(ExplorerPriority.High),
         Delete(ExplorerPriority.High),
-        Audience(ExplorerPriority.Low),
-        Mute(ExplorerPriority.Low);
+        Audience(ExplorerPriority.Low);
         private final ExplorerPriority priority;
         ExplorerAction(final ExplorerPriority i){
             this.priority = i;
@@ -68,9 +67,7 @@ public class ExplorerMessage {
     public static ExplorerMessage upsert(final IdAndVersion id, final UserInfos user, final boolean forSearch,
                                          final String application, final String resourceType, final String entityType) {
         final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Upsert, forSearch);
-        builder.message.put("createdAt", new Date().getTime());
-        builder.message.put("creatorId", user.getUserId());
-        builder.message.put("creatorName", user.getUsername());
+        // dont set creator and createdat here, set it from resource json
         builder.message.put("updatedAt", new Date().getTime());
         builder.message.put("updaterId", user.getUserId());
         builder.message.put("updaterName", user.getUsername());
@@ -169,6 +166,11 @@ public class ExplorerMessage {
     }
     public ExplorerMessage withVersion(Long version) {
         message.put("version", version);
+        return this;
+    }
+
+    public ExplorerMessage withMute(String userId, boolean mute) {
+        message.put("mute", new JsonObject().put(userId, mute));
         return this;
     }
 
@@ -364,6 +366,13 @@ public class ExplorerMessage {
     }
     public void setIdQueue(String idQueue) {
         this.idQueue = idQueue;
+    }
+    public JsonObject getMute() {
+        final JsonObject mute = this.message.getJsonObject("mute");
+        if(mute == null) {
+            return new JsonObject();
+        }
+        return mute;
     }
 
     @Override
