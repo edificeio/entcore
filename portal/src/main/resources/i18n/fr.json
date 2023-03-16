@@ -812,5 +812,8 @@
   "explorer.modal.onboarding.trash.later": "Plus tard",
   "explorer.modal.onboarding.trash.prev": "Précédent",
   "explorer.modal.onboarding.trash.next": "Suivant",
-  "explorer.modal.onboarding.trash.close": "Fermer"
+  "explorer.modal.onboarding.trash.close": "Fermer",
+  "read": "Consulter",
+  "contrib": "Contribuer",
+  "manager": "Gérer"
 }
