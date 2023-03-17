@@ -19,13 +19,21 @@
 
 package org.entcore.common.http.request;
 
-import java.util.Map;
-
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.*;
+import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpConnection;
+import io.vertx.core.http.HttpFrame;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.HttpVersion;
+import io.vertx.core.http.ServerWebSocket;
+import io.vertx.core.http.StreamPriority;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
@@ -33,6 +41,7 @@ import io.vertx.core.net.SocketAddress;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
+import java.util.Map;
 
 public class JsonHttpServerRequest implements HttpServerRequest {
 
@@ -135,7 +144,8 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public String getHeader(String headerName) {
-		return null;
+		final MultiMap headers = headers();
+		return headers == null ? null : headers.get(headerName);
 	}
 
 	@Override

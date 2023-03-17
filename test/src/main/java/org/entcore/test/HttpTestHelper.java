@@ -168,6 +168,12 @@ public class HttpTestHelper {
             req.setSession(new JsonObject(mapper.writeValueAsString(user)));
             return req;
         }
+
+        public HttpServerRequest withOAuthToken() {
+            final SecureHttpServerRequest req = new SecureHttpServerRequest(this);
+            req.headers().add("Authorization", "Bearer " + UUID.randomUUID().toString());
+            return req;
+        }
     }
 
     public static class TestHttpServerResponse extends JsonHttpResponse {

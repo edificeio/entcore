@@ -48,5 +48,4 @@ public interface SessionStore {
     void getSessionsNumber(Handler<AsyncResult<Long>> handler);
 
     boolean inactivityEnabled();
-
 }

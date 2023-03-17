@@ -32,6 +32,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.redis.Redis;
@@ -490,13 +491,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				secureLocation = false;
 				cache = null;
 			}
-			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache, sessionId -> {
-				// Do not send back the sessionId if we just refreshed the session because the session id didn't change
-				// It will prevent downstream processes from trying to rewrite the cookie
-				message.reply(request.isRefreshOnly() ? null : sessionId);
+			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache)
+			.onSuccess(session -> {
+				message.reply(session);
+				final String sessionId = request.getSessionId();
 				// TODO update metrics
 				if(sessionId != null && !request.isRefreshOnly()) {
-					sessionStore.dropSession(request.getSessionId(), dropSessionResult -> {
+					sessionStore.dropSession(sessionId, dropSessionResult -> {
 						if(dropSessionResult.succeeded()) {
 							logger.debug("Successfully deleted " + userId+ "'s old session");
 						} else {
@@ -504,7 +505,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						}
 					});
 				}
-			});
+			})
+			.onFailure(th -> sendError(message, "[doReCreate] Error while recreating the session", th));
 		});
 	}
 	private void doCreate(final Message<JsonObject> message) {
@@ -532,11 +534,62 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
+	/**
+	 * Creates a session for a user.
+	 * @param userId Id of the user for whom we want to create a session
+	 * @param sId Desired session id
+	 * @param sessionIndex used in identity federation
+	 * @param nameId used in identity federation
+	 * @param secureLocation {@code true} if the session is from a secure location
+	 * @param previousCache Cache of the previous session
+	 * @return The created session objct
+	 */
+	private Future<JsonObject> createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
+											 final boolean secureLocation, final JsonObject previousCache) {
+		return createSessionAndReturnIdAndData(userId, sId, sessionIndex, nameId, secureLocation, previousCache)
+			.map(result -> result.getRight());
+	}
+
+
+	/**
+	 * Creates a session for a user.
+	 * @param userId Id of the user for whom we want to create a session
+	 * @param sId Desired session id
+	 * @param sessionIndex used in identity federation
+	 * @param nameId used in identity federation
+	 * @param secureLocation {@code true} if the session is from a secure location
+	 * @param previousCache Cache of the previous session
+	 * @param handler Action to be called with the session id of the newly created session ({@code null} will be passed if we could not create the session)
+	 * @return The created session object
+	 */
 	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
-			final boolean secureLocation, final JsonObject previousCache, final Handler<String> handler) {
+							   final boolean secureLocation, final JsonObject previousCache, final Handler<String> handler) {
+		createSessionAndReturnIdAndData(userId, sId, sessionIndex, nameId, secureLocation, previousCache)
+			.onComplete(result -> {
+				if(result.succeeded()) {
+					handler.handle(result.result().getLeft());
+				} else {
+					handler.handle(null);
+				}
+			});
+	}
+
+
+	/**
+	 * Creates a session for a user.
+	 * @param userId Id of the user for whom we want to create a session
+	 * @param sId Desired session id
+	 * @param sessionIndex used in identity federation
+	 * @param nameId used in identity federation
+	 * @param secureLocation {@code true} if the session is from a secure location
+	 * @param previousCache Cache of the previous session
+	 * @return The id of the created session object along with its data
+	 */
+	private Future<Pair<String, JsonObject>> createSessionAndReturnIdAndData(final String userId, final String sId, final String sessionIndex, final String nameId,
+												  final boolean secureLocation, final JsonObject previousCache) {
+		final Promise<Pair<String, JsonObject>> sessionPromise = Promise.promise();
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
-
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
@@ -548,6 +601,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						json.put("secureLocation", secureLocation);
 					}
 					infos.put("sessionMetadata", json);
+					// Because some implementations of sessionStore.putSession can modify the session, we need to
+					// duplicate it to return it to the caller
+					final JsonObject sessionToReturn = infos.copy();
 					sessionStore.putSession(userId, sessionId, infos, secureLocation, ar -> {
 						if (ar.failed()) {
 							logger.error("Error putting session in store", ar.cause());
@@ -563,21 +619,27 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 											new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
 								}
 							}
-							handler.handle(sessionId);
+							sessionPromise.complete(Pair.of(sessionId, sessionToReturn));
 						});
 					});
 				} else {
-					handler.handle(null);
+					sessionPromise.fail("session.infos.not.generated");
 				}
 			}
 		});
+		return sessionPromise.future();
 	}
 
 	/**
+	 * <p>
 	 * Puts the cache attributes of a previous session into the cache attribute of a new session.
 	 * This action is required because now (06/03/2023) different implementations of SessionStore
 	 * have different behaviours while handling session's cache (RedisSession removes it when storing it
 	 * a session via putSession).
+	 *</p>
+	 * <p>
+	 *     <u>NB :</u> This works well when Redis is not clustered ior when there is only one value in previousCache
+	 * </p>
 	 * @param previousCache Previous values that were stored in "cache" field of the previous session
 	 * @param userId Id of the user whose session is being recreated
 	 * @param sessionId Id of the new session

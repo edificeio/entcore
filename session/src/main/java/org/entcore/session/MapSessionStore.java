@@ -18,20 +18,20 @@
 
 package org.entcore.session;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 public class MapSessionStore extends AbstractSessionStore {
 

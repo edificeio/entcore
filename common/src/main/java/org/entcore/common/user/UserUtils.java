@@ -22,32 +22,43 @@ package org.entcore.common.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.Renders;
+import static fr.wseduc.webutils.http.Renders.unauthorized;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static fr.wseduc.webutils.Utils.*;
-import static fr.wseduc.webutils.http.Renders.unauthorized;
-import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 
 public class UserUtils {
 
@@ -55,7 +66,7 @@ public class UserUtils {
 	private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
-	private static final String SESSION_ADDRESS = "wse.session";
+	public static final String SESSION_ADDRESS = "wse.session";
 	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
@@ -402,7 +413,6 @@ public class UserUtils {
 
 	public static void getSession(EventBus eb, final HttpServerRequest request, boolean paused,
 								  final Handler<JsonObject> handler) {
-		// TODO change
 		if (request instanceof SecureHttpServerRequest &&
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
@@ -442,12 +452,16 @@ public class UserUtils {
 				final String sessionId;
 				// The session id can come whether from the cookie oneSessionId for web users
 				// or from the access token in the Authorization header of the request #WB-1578
+				final boolean oAuthIdentified;
 				if(oneSessionId != null && !oneSessionId.trim().isEmpty()) {
 					sessionId = oneSessionId;
+					oAuthIdentified = false;
 				} else if(request instanceof SecureHttpServerRequest){
 					sessionId = getTokenId((SecureHttpServerRequest) request).orElse(null);
+					oAuthIdentified = true;
 				} else {
 					sessionId = null;
+					oAuthIdentified = false;
 				}
 				if (sessionId == null) {
 					log.debug("A request came for user " + remoteUserId + " with no way to get its session");
@@ -456,13 +470,65 @@ public class UserUtils {
 					if (!paused) {
 						request.pause();
 					}
-					final JsonObject findSession = new JsonObject()
-						.put("action", "find")
-						.put("sessionId", sessionId);
-					findSession(eb, request, findSession, paused, handler);
+					findOrRecreateSession(remoteUserId, sessionId, oAuthIdentified, eb, request , paused)
+					.onComplete(e -> {
+						if(e.succeeded()) {
+							handler.handle(e.result());
+						} else {
+							handler.handle(null);
+						}
+					});
 				}
 			});
 		}
+	}
+
+	/**
+	 * Try to fetch a session based on the supplied {@code sessionId}.
+	 * If the session doesn't exist and the user is oauth authenticated then we try to
+	 * recreate a session and then fetch again the newly created session.
+	 * But if the session doesn't exist and the user IS NOT oauth authenticated, we just
+	 * send back {@code null}.
+	 * @param userId Id of the authenticated user
+	 * @param sessionId SessionId of the user
+	 * @param oAuthIdentified {@code true} if the user is authenticated via oauth
+	 * @param eb Event bus to use to communicate with AuthManager
+	 * @param request Http request of the user that needs a session
+	 * @param paused {@code true} if the request has been paused
+	 * @return The session that has been found (or created) or {@code null} if no session
+	 * could be found (or recreated)
+	 */
+	private static Future<JsonObject> findOrRecreateSession(final String userId,
+											  final String sessionId,
+											  final boolean oAuthIdentified,
+											  final EventBus eb,
+											  final HttpServerRequest request,
+											  final boolean paused) {
+		final Promise<JsonObject> sessionPromise = Promise.promise();
+		final JsonObject findSession = new JsonObject()
+				.put("action", "find")
+				.put("sessionId", sessionId);
+		findSession(eb, request, findSession, paused, findSessionResult -> {
+			if(findSessionResult == null) {
+				if(oAuthIdentified) {
+					log.debug("[GetSession] Could not find a session for our user who has a valid token -> we will recreate one");
+					reCreateSession(eb, userId, request).onSuccess(recreationResult -> {
+						log.debug("[GetSession] A session has been recreated for oauth authenticated user " + userId);
+						sessionPromise.complete(recreationResult);
+					}).onFailure(err -> {
+						log.warn("[GetSession] Could not recreate " + userId + "'s session : ", err);
+						sessionPromise.fail(err);
+					});
+				} else {
+					log.debug("[GetSession] Could not find a session for our user " + userId);
+					sessionPromise.fail("session.not.found");
+				}
+			} else {
+				log.debug("[GetSession] A session has been found for user " + userId);
+				sessionPromise.complete(findSessionResult);
+			}
+		});
+		return sessionPromise.future();
 	}
 
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession,
@@ -573,19 +639,31 @@ public class UserUtils {
 		});
 	}
 
-	public static Future<String> reCreateSession(final EventBus eb,
-																 final String userId,
-																 final HttpServerRequest request) {
-		final Promise<String> details = Promise.promise();
+	/**
+	 * Re-create a session for a user
+	 * @param eb Event bus to communicate with auth-manager
+	 * @param userId Id of the user who needs a new session
+	 * @param request Http request that generated the need of a new session
+	 * @return The re-created session
+	 */
+	public static Future<JsonObject> reCreateSession(final EventBus eb,
+													 final String userId,
+													 final HttpServerRequest request) {
+		final Promise<JsonObject> details = Promise.promise();
 		final boolean isOAuthRequest = request instanceof SecureHttpServerRequest && getTokenId((SecureHttpServerRequest) request).isPresent();
 		final SessionRecreationRequest recreationRequest = new SessionRecreationRequest(userId, getSessionIdOrTokenId(request).orElse(null), isOAuthRequest);
-		eb.send(SESSION_ADDRESS, JsonObject.mapFrom(recreationRequest), new Handler<AsyncResult<Message<String>>>() {
+		eb.request(SESSION_ADDRESS, JsonObject.mapFrom(recreationRequest), new Handler<AsyncResult<Message<JsonObject>>>() {
 			@Override
-			public void handle(AsyncResult<Message<String>> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (res.succeeded()) {
-					details.complete(res.result().body());
+					final JsonObject body = res.result().body();
+					if(body == null) {
+						details.fail("session.not.found");
+					} else {
+						details.complete(body);
+					}
 				} else {
-					details.fail(res.result().body());
+					details.fail(String.valueOf(res.result().body()));
 				}
 			}
 		});

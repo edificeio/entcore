@@ -206,11 +206,12 @@ public class DefaultResponseHandler {
 					if (caller.getUserId().equals(targetUserId)) {
 						UserUtils.reCreateSession(eventBus, targetUserId, request).onComplete(recreationResult -> {
 							if (recreationResult.succeeded()) {
-								final String sessionId = recreationResult.result();
+								final JsonObject session = recreationResult.result();
 								// If no session id is returned it means that the session could not be retrieved or has
 								// not changed
 								// Moreover, we only put a cookie if we are not oauth-authenticated (should be redundent
 								// with the fact that sessionId is null).
+								final String sessionId = session == null ? null : session.getString("_id");
 								if (!StringUtils.isEmpty(sessionId) && !getTokenHeader(request).isPresent()) {
 									final long timeout = Long.MIN_VALUE;
 									CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
