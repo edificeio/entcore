@@ -41,4 +41,5 @@ public class SessionRecreationRequest {
     public boolean isRefreshOnly() {
         return refreshOnly;
     }
+
 }
