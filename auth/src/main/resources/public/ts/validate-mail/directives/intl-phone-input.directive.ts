@@ -31,8 +31,22 @@ class Directive implements IDirective<IScope,JQLite,IAttributes,IController[]> {
 			if( intlPhoneInput ) {
 				validationCtrl.intlFormat = () => intlPhoneInput.getNumber();
 
+				elem.on( 'open:countrydropdown', (e)=>{
+					if( $("body").hasClass('iti-mobile') ) {
+						const topOffset = elem[0].getBoundingClientRect().bottom;
+						$("body > .iti.iti--container").css({
+							top: topOffset +"px",
+							bottom: 0
+						});
+					}
+				});
+				elem.on( 'close:countrydropdown', (e)=>{ 
+					
+				});
+
 				scope.$on("$destroy", () => {
 					intlPhoneInput.destroy();
+					elem.off("open:countrydropdown close:countrydropdown");
 				});
 			}
 		}
