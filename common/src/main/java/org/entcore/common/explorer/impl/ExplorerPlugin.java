@@ -264,7 +264,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             }
             return toMessage(bulk, e -> {
                 final String id = getIdForModel(e);
-                final UserInfos user = getCreatorForModel(e);
+                final UserInfos user = getCreatorForModel(e).orElseGet(() -> {
+                    log.error("Could not found creator for "+getApplication()+ " with id : "+id);
+                    return new UserInfos();
+                });
                 final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch());
                 mess.withVersion(now);
                 return mess;
@@ -538,7 +541,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     //abstract
     protected abstract Map<String, SecuredAction> getSecuredActions();
 
-    protected abstract UserInfos getCreatorForModel(final JsonObject json);
+    protected abstract Optional<UserInfos> getCreatorForModel(final JsonObject json);
 
     protected abstract Date getCreatedAtForModel(final JsonObject json);
 
@@ -563,7 +566,11 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected final Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getResourceType());
         message.withVersion(source.getLong("version"));
-        message.withCreator(getCreatorForModel(source));
+        // optional in case of update
+        final Optional<UserInfos> creator = getCreatorForModel(source);
+        if(creator.isPresent()){
+            message.withCreator(creator.get());
+        }
         message.withCreatedAt(getCreatedAtForModel(source));
         return doToMessage(message, source);
     }

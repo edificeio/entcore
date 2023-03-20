@@ -48,12 +48,16 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     @Override
-    protected UserInfos getCreatorForModel(final JsonObject json) { final String id = json.getString(getCreatorIdColumn());
+    protected Optional<UserInfos> getCreatorForModel(final JsonObject json) {
+        if(!json.containsKey(getCreatorIdColumn())){
+            return Optional.empty();
+        }
+        final String id = json.getString(getCreatorIdColumn());
         final String name = json.getString(getCreatorNameColumn());
         final UserInfos user = new UserInfos();
         user.setUserId(id);
         user.setUsername(name);
-        return user;
+        return Optional.ofNullable(user);
     }
 
     @Override
