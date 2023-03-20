@@ -53,13 +53,16 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
     }
 
     @Override
-    protected UserInfos getCreatorForModel(final JsonObject json) {
+    protected Optional<UserInfos> getCreatorForModel(final JsonObject json) {
+        if(!json.containsKey(getCreatorIdColumn())){
+            return Optional.empty();
+        }
         final String id = json.getString(getCreatorIdColumn());
         final String name = json.getString(getCreatorNameColumn());
         final UserInfos user = new UserInfos();
         user.setUserId(id);
         user.setUsername(name);
-        return user;
+        return Optional.ofNullable(user);
     }
 
     @Override
@@ -145,7 +148,10 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         json.put(getCreatorNameColumn(), user.getUsername());
     }
     protected void setCreatedAtForModel(final UserInfos user, final JsonObject json){
-        json.put(getCreatedAtColumn(), new Date().getTime());
+        if(json.containsKey(getCreatedAtColumn()) && json.getValue(getCreatedAtColumn()) != null){
+            return;
+        }
+        json.put(getCreatedAtColumn(), MongoDb.nowISO());
     }
 
     protected String getCreatedAtColumn() { return "createdAt"; }
