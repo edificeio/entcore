@@ -148,7 +148,10 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             return toMessage(bulk, e -> {
                 final String id = getParentId(e);
-                final UserInfos user = getCreatorForModel(e);
+                final UserInfos user = getCreatorForModel(e).orElseGet(() -> {
+                    log.error("Could not found creator for subresource "+getApplication()+ " with id : "+id);
+                    return new UserInfos();
+                });
                 final ExplorerMessage mess = ExplorerMessage.upsert(id, user, isForSearch())
                         .withType(getApplication(), parent.getResourceType(), getResourceType())
                         .withVersion(now);
@@ -169,14 +172,18 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
 
     protected abstract String getParentId(final JsonObject source);
 
-    protected abstract UserInfos getCreatorForModel(final JsonObject json);
+    protected abstract Optional<UserInfos> getCreatorForModel(final JsonObject json);
 
     protected abstract Date getCreatedAtForModel(final JsonObject json);
 
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getEntityType());
         message.withVersion(source.getLong("version"));
-        message.withCreator(getCreatorForModel(source));
+        // optional in case of update
+        final Optional<UserInfos> creator = getCreatorForModel(source);
+        if(creator.isPresent()){
+            message.withCreator(creator.get());
+        }
         message.withCreatedAt(getCreatedAtForModel(source));
         return doToMessage(message, source);
     }
