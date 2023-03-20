@@ -211,7 +211,7 @@ public class DefaultResponseHandler {
 								// not changed
 								// Moreover, we only put a cookie if we are not oauth-authenticated (should be redundent
 								// with the fact that sessionId is null).
-								final String sessionId = session == null ? null : session.getString("_id");
+								final String sessionId = session == null ? null : session.getJsonObject("sessionMetadata", new JsonObject()).getString("_id");
 								if (!StringUtils.isEmpty(sessionId) && !getTokenHeader(request).isPresent()) {
 									final long timeout = Long.MIN_VALUE;
 									CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
