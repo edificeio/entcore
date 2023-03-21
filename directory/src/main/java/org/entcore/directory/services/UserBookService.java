@@ -31,10 +31,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.ValidationException;
 
 public interface UserBookService {
 	String PUBLIC = "PUBLIC";
 	String PRIVE = "PRIVE";
+	List<String> ALLOWED_HOBBIES =
+			Arrays.asList("cinema", "sport", "animals", "places", "books", "music");
 	List<String> UPDATE_USERBOOK_FIELDS = Arrays.asList("health", "mood", "picture", "motto");
 	JsonObject AVATAR_THUMBNAILS = new JsonObject().put("48x48", "").put("100x100", "").put("120x120", "").put("290x290", "").put("381x381", "");
 
@@ -56,11 +59,14 @@ public interface UserBookService {
 
 	void setInfosVisibility(final UserInfos user, final String state, final String info, final Handler<Either<String, JsonObject>> handler);
 
-	static String selectHobbies(JsonObject userBookData,String prefix){
+	static String selectHobbies(JsonObject userBookData,String prefix) {
 		final List<String> selectClauses = new ArrayList<>();
 		final JsonArray listOfHobbies = userBookData.getJsonArray("hobbies", new JsonArray());
 		for(int i = 0 ; i < listOfHobbies.size(); i++){
 			final  String attr = listOfHobbies.getString(i);
+			if (!ALLOWED_HOBBIES.contains(attr)) {
+				throw new ValidationException("Invalid hobby name (selectHobbies).");
+			}
 			selectClauses.add(String.format("%s: COALESCE(%s.hobby_%s,[]) ",attr, prefix,attr));
 		}
 		return String.format("{%s} as hobbies ", StringUtils.join(selectClauses, ","));
