@@ -32,12 +32,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.common.validation.ValidationException;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
@@ -988,7 +990,9 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void getUserInfos(String userId, final Handler<Either<String,JsonObject>> handler) {
-		String query = "MATCH (u:`User` { id : {userId}}) " +
+		String query;
+		try {
+			query = "MATCH (u:`User` { id : {userId}}) " +
 				"OPTIONAL MATCH u-[:USERBOOK]->(ub: UserBook) WITH ub.motto as motto, ub.health as health, ub.mood as mood, u,  "+
 				UserBookService.selectHobbies(userBookData, "ub")+
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(Profile), cpg<-[:IN]-u-[:IN]->spg WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
@@ -998,6 +1002,11 @@ public class DefaultUserService implements UserService {
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
 				"motto, health, mood, hobbies, " +
 				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
+		} catch (ValidationException exception) {
+			logger.error("Select hobbies exception", exception);
+			handler.handle(new Either.Left<>("invalid.hobby"));
+			return;
+		}
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo.execute(query, params, validUniqueResultHandler(res->{

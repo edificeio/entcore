@@ -36,6 +36,7 @@ import java.util.Optional;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
@@ -45,6 +46,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.ValidationException;
 import org.entcore.directory.services.UserBookService;
 
 import fr.wseduc.webutils.Either;
@@ -207,7 +209,7 @@ public class DefaultUserBookService implements UserBookService {
 					final String visibility = hobbyJson.getString("visibility", PRIVE);
 					final String category = hobbyJson.getString("category");
 					final String values = hobbyJson.getString("values","");
-					if(!StringUtils.isEmpty(category)){
+					if(!StringUtils.isEmpty(category) && ALLOWED_HOBBIES.contains(category)){
 						updateClauses.add(String.format("ub.hobby_%s = {%s}", category, category));
 						params.put(category, new JsonArray().add(visibility).add(values));
 					}
@@ -342,7 +344,13 @@ public class DefaultUserBookService implements UserBookService {
 		query.append("user.homePhone as tel, ");
 		query.append("user.mobile as mobile, ");
 		query.append("user.birthDate as birthdate, ");
-		query.append(UserBookService.selectHobbies(userBookData,"ub"));
+		try {
+			query.append(UserBookService.selectHobbies(userBookData,"ub"));
+		} catch (ValidationException exception) {
+			log.error("Select hobbies exception", exception);
+			handler.handle(new Either.Left<>("invalid.hobbies"));
+			return;
+		}
 		//params
 		final Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
@@ -434,6 +442,10 @@ public class DefaultUserBookService implements UserBookService {
 			final JsonObject params = new JsonObject().put("userId", userId);
 			for (int i = 0 ; i < listOfHobbies.size(); i ++) {
 				final String hobby =listOfHobbies.getString(i);
+				if (!ALLOWED_HOBBIES.contains(hobby)) {
+					log.warn("Invalid hobby on initUserBook");
+					continue;
+				}
 				updateClauses.add(String.format("m.hobby_%s = {%s} ", hobby, hobby));
 				params.put(hobby, new JsonArray().add(PRIVE).add(""));
 			}
@@ -468,6 +480,10 @@ public class DefaultUserBookService implements UserBookService {
 
 	@Override
 	public void setHobbyVisibility(final UserInfos user, final String category, final String visibilityValue, final Handler<Either<String, JsonObject>> handler) {
+		if (!ALLOWED_HOBBIES.contains(category)) {
+			handler.handle(new Either.Left<>("invalid.hobby"));
+			return;
+		}
 		final String visibility = PUBLIC.equals(visibilityValue) ? PUBLIC : PRIVE;
 		final Map<String, Object> params = new HashMap<>();
 		params.put("id", user.getUserId());
