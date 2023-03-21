@@ -63,6 +63,12 @@ public class DefaultGroupService implements GroupService {
 
 		String condition;
 		if (expectedTypes != null && expectedTypes.size() > 0) {
+			for (Object groupType: expectedTypes) {
+				if (!GROUP_TYPES.contains(groupType)) {
+					results.handle(new Either.Left<>("invalid.group.type"));
+					return;
+				}
+			}
 			condition = "WHERE (g:" + Joiner.on(" OR g:").join(expectedTypes) + ") ";
 		} else {
 			condition = "WHERE g:Group ";
@@ -141,6 +147,9 @@ public class DefaultGroupService implements GroupService {
 		}
 		if (type == null || type.trim().isEmpty()) {
 			type = "Group";
+		} else if (!GROUP_TYPES.contains(type)) {
+			results.handle(new Either.Left<>("invalid.group.type"));
+			return;
 		}
 		String sub = "";
 		if (subGroups) {

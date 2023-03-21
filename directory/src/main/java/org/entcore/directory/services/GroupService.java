@@ -20,12 +20,20 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public interface GroupService {
+
+	List<String> GROUP_TYPES = Arrays.asList("Group", "Visible", "ProfileGroup", "HTGroup", "DefaultProfileGroup",
+			"FunctionGroup", "ManualGroup", "FuncGroup", "DeleteGroup", "DirectionGroup", "FunctionalGroup",
+			"DisciplineGroup", "CommunityGroup");
 
 	void listAdmin(String structureId, Boolean onlyAutomaticGroups, Boolean recursive, UserInfos userInfos, JsonArray expectedTypes,
 			Handler<Either<String, JsonArray>> results);
