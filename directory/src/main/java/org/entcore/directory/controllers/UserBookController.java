@@ -82,9 +82,6 @@ public class UserBookController extends BaseController {
 	protected enum DirectoryEvent { ACCESS }
 	protected static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
-	private static final List<String> ALLOWED_HOBBIES =
-			Arrays.asList("cinema", "sport", "animals", "places", "books", "music");
-
 
 	public void setUserBookService(UserBookService userBookService) {
 		this.userBookService = userBookService;
@@ -384,7 +381,7 @@ public class UserBookController extends BaseController {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
 				final String category = request.params().get("category");
-				if (!ALLOWED_HOBBIES.contains(category)) {
+				if (!UserBookService.ALLOWED_HOBBIES.contains(category)) {
 					badRequest(request);
 					return;
 				}
