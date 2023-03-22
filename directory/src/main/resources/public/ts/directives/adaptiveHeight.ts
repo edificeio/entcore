@@ -19,9 +19,15 @@ export const adaptiveHeight = ng.directive('adaptiveHeight', [() => {
                 const observer:ResizeObserver = new ResizeObserver( entries => {
                     for (const entry of entries) {
                         if (entry.devicePixelContentBoxSize) {
+                            // Best value
                             element.css({"height": Math.min(entry.devicePixelContentBoxSize[0].blockSize,800)+'px'});
+                            break;
+                        } if (entry.contentBoxSize) {
+                            // Computed value
+                            element.css({"height": Math.min(entry.contentBoxSize[0].blockSize,800)+'px'});
+                            break;
                         } else {
-                            // Default if size is not well known
+                            // Default value, if size is not well known
                             element.css({"height": Math.min(entry.target.scrollHeight+110||1000,800)+'px'});
                         }
                     }
@@ -30,7 +36,8 @@ export const adaptiveHeight = ng.directive('adaptiveHeight', [() => {
                 // Wait for the iframe content to be loaded then observe
                 element.on('load', () => {
                     const html:HTMLHtmlElement = element[0].contentDocument.body.parentElement as HTMLHtmlElement;
-                    observer.observe(html, {box:"device-pixel-content-box"});
+                    observer.observe(html, {box:"device-pixel-content-box"}); // Not well supported by some browsers
+                    observer.observe(html, {box:"content-box"}); // Most-supported implementation
                     scope.$on('$destroy', function () {
                         observer.unobserve(html);
                     });
