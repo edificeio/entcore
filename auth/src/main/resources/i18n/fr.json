@@ -18,6 +18,7 @@
     "auth.mail": "Courriel",
     "auth.phone": "Téléphone mobile",
     "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect.",
+    "auth.error.otpDisabled": "Mode d'authentification non autorisé",
     "auth.error.blockedUser" : "L'administrateur de votre établissement a bloqué votre accès à votre réseau éducatif. Veuillez le contacter.",
     "auth.error.blockedProfileType": "L'accès à votre réseau éducatif est temporairement bloqué pour votre profil d'utilisateur.",
     "auth.error.ban": "Pour des raisons de sécurité, votre compte est bloqué temporairement suite à un trop grand nombre de tentatives de connexion. Veuillez réessayer ultérieurement.",
