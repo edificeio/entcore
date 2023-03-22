@@ -45,7 +45,7 @@
                     </div>
                 </div>
 
-                <form novalidate autocomplete="off" name="formValidate" class="mx-auto col-sm-8 form-control-lg" ng-submit="onValidate('input')">
+                <form novalidate autocomplete="off" name="formValidate" class="mx-auto col-sm-6 form-control-lg" ng-submit="onValidate('input')">
                     <label class="mb-8 fw-bold d-flex align-items-center" for="input-data">
                         <svg class="icon-svg" ng-if="ctrl.type === 'email'" width="20" height="20">
                             <use href="/auth/public/icons/validate-icons.svg#mail"></use>
@@ -144,7 +144,7 @@
                 </div>
 
                 <div class="text-center">
-                    <form novalidate autocomplete="off" name="formCode" class="col-sm-8 mx-auto form-control-lg" ng-submit="onValidate('code')">
+                    <form novalidate autocomplete="off" name="formCode" class="col-sm-6 mx-auto form-control-lg" ng-submit="onValidate('code')">
                         <label class="mb-8 row fw-bold" for="input-data">
                             <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.form.code</i18n>
                             <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.form.code</i18n>
