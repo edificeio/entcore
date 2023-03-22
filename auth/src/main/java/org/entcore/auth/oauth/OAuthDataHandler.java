@@ -62,6 +62,7 @@ public class OAuthDataHandler extends DataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
 	public static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	public static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
+	public static final String AUTH_ERROR_OTP_DISABLED = "auth.error.otpDisabled";
 	private static final String AUTH_ERROR_GLOBAL = "auth.error.global";
 	private static final String AUTH_ERROR_BAN = "auth.error.ban";
 	private static final String LOGIN_BAN_KEY = "logban:";
@@ -82,14 +83,16 @@ public class OAuthDataHandler extends DataHandler {
 	private final int defaultSyncValue;
 	private final JsonArray clientPWSupportSaml2;
 	private final SamlHelper samlHelper;
+	private final boolean otpDisabled;
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
 			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, int defaultSyncValue,
-			JsonArray clientPWSupportSaml2, EventStore eventStore, SamlHelper samlHelper) {
+			JsonArray clientPWSupportSaml2, EventStore eventStore, SamlHelper samlHelper, final boolean otpDisabled) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
+		this.otpDisabled = otpDisabled;
 		this.openIdConnectService = openIdConnectService;
 		this.checkFederatedLogin = checkFederatedLogin;
 		this.redisClient = redisClient;
@@ -234,12 +237,18 @@ public class OAuthDataHandler extends DataHandler {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BLOCKED_USER)));
 				return;
 			}
-
 			String dbPassword = r.getString("otp");
 			if (isNotEmpty(dbPassword) && getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY >
 					System.currentTimeMillis() && BCrypt.checkpw(password, dbPassword)) {
+				// remove otp and increment max auth count before denying
 				removeOTP(username);
 				incrBanAuthentication(username);
+				// if otp disabled deny access
+				if(otpDisabled){
+					handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_OTP_DISABLED)));
+					return;
+				}
+				// if otp is ok return id
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 				return;
 			}

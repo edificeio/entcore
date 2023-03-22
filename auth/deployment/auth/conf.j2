@@ -4,6 +4,7 @@
     "config": {
         "main": "org.entcore.auth.Auth",
         "port": 8009,
+        "otp-disabled": {{ authOtpDisabled|default(false) }},
         {% if ha and authInstance is defined %}
         "instances": {{ authInstance }},
         {% endif %}

@@ -45,11 +45,14 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final String passwordEventMinDate;
 	private final int defaultSyncValue;
 	private final JsonArray clientPWSupportSaml2;
+	private final boolean otpDisabled;
 	private SamlHelper samlHelper;
 
 	public OAuthDataHandlerFactory(
 			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay,
-			String passwordEventMinDate, int defaultSyncValue, JsonArray clientPWSupportSaml2, EventStore eventStore) {
+			String passwordEventMinDate, int defaultSyncValue, JsonArray clientPWSupportSaml2, EventStore eventStore,
+			final boolean otpDisabled) {
+		this.otpDisabled = otpDisabled;
 		this.neo = Neo4j.getInstance();
 		this.mongo = MongoDb.getInstance();
 		this.openIdConnectService = openIdConnectService;
@@ -66,7 +69,8 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	@Override
 	public DataHandler create(Request request) {
 		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
-				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore, samlHelper);
+				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore, samlHelper,
+				otpDisabled);
 	}
 
 	public void setSamlHelper(SamlHelper samlHelper) {

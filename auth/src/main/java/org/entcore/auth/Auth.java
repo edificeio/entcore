@@ -68,7 +68,6 @@ public class Auth extends BaseServer {
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
-
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
 				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
@@ -77,7 +76,8 @@ public class Auth extends BaseServer {
 		final OAuthDataHandlerFactory oauthDataFactory = new OAuthDataHandlerFactory(
 				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
 				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
-				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore);
+				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
+				config.getBoolean("otp-disabled", false));
 
 		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		final Optional<Object> emailValidation = Optional.ofNullable(server.get("emailValidationConfig"));
