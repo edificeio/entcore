@@ -185,12 +185,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withType(getApplication(), getResourceType(), getEntityType());
         message.withVersion(source.getLong("version"));
-        // optional in case of update
-        final Optional<UserInfos> creator = getCreatorForModel(source);
-        if(creator.isPresent()){
-            message.withCreator(creator.get());
-        }
-        message.withCreatedAt(getCreatedAtForModel(source));
+        //dont set creator and createdat (parent resource is responsible of setting it)
         return doToMessage(message, source);
     }
 
