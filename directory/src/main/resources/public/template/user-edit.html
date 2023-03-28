@@ -101,7 +101,7 @@
 		<a ng-class="{'unlock-disabled': !needMfa, 'unlock': needMfa}" class="unlock-flex"
 			ng-click="display.validateMfa = true;"
 			ng-disabled="!needMfa"
-			ng-if="isAdmx"
+			ng-if="!ignoreMfa"
 		>
 			<svg class="icon-lock" width="20" height="20">
 				<title>[[needMfa ? 'userBook.unlock' : 'userBook.unlocked' | i18n]]</title>

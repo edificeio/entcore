@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, $, skin, moment, _ } from 'entcore';
+import { ng, idiom as lang, notify, model, Behaviours, http, httpPromisy, template, Me, $, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
 
 declare let window: any;
@@ -97,6 +97,16 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 		}
 		return false;
 	}
+
+	const checkIgnoreMFA = async function(){
+		const datas = await Promise.all([
+			httpPromisy<{passwordRegex:string, mfaConfig?:Array<string>}>().get('/auth/context'),
+			httpPromisy<{needMfa:boolean}>().get('/auth/user/requirements')
+		])
+		$scope.passwordRegex = datas[0].passwordRegex;
+		$scope.needMfa = datas[1].needMfa;
+		$scope.ignoreMfa = (model.me.ignoreMFA || (datas[0].mfaConfig && datas[0].mfaConfig.length<=0)) && !$scope.needMfa;
+	};
 
 	const checkEmailValidation = function(){
 		http().get('/directory/user/mailstate').done(function(infos){
@@ -203,6 +213,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 		checkEmailValidation();
 		checkSmsValidation();
 		isAdmx();
+		await checkIgnoreMFA();
 	}
 
 	$scope.display = {};
@@ -499,13 +510,5 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 	$scope.onCloseEmailLightbox = function(){
 		window.location.reload();
 	}
-
-	http().get('/auth/context').done(function(data){
-		$scope.passwordRegex = data.passwordRegex;
-	})
-
-	http().get('/auth/user/requirements').done(function(data){
-		$scope.needMfa = data.needMfa;
-	})
 
 }]);
