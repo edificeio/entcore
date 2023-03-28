@@ -941,9 +941,13 @@ public class DuplicateUsers {
 				.put("id", principalUser.getString("id")).put("oldId", oldUser.getString("id"));
 		final String query1 =
 				"MATCH (old:User {id: {oldId}})-[r:USERBOOK]->(ub:UserBook), (u:User {id: {id}}) " +
+				"DELETE r " +
+				"WITH u, ub " +
+				"OPTIONAL MATCH (u)-[:USERBOOK]->(prevUb:UserBook) " +
+				"WITH u, ub, prevUb " +
+				"WHERE prevUb IS NULL " +
 				"SET ub.theme = null " +
-				"CREATE UNIQUE u-[:USERBOOK]->ub " +
-				"DELETE r";
+				"CREATE UNIQUE (u)-[:USERBOOK]->(ub)";
 		tx.add(query1, params);
 		final String query2 =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
