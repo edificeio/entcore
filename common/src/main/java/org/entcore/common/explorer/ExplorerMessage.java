@@ -174,6 +174,11 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withTrashedBy(String userId, boolean trashed) {
+        message.put("trashedBy", new JsonObject().put(userId, trashed));
+        return this;
+    }
+
     public ExplorerMessage withForceApplication(final String application) {
         message.put("application", application);
         return this;
@@ -376,6 +381,13 @@ public class ExplorerMessage {
             return new JsonObject();
         }
         return mute;
+    }
+    public JsonObject getTrashedBy() {
+        final JsonObject trashedBy = this.message.getJsonObject("trashedBy");
+        if (trashedBy == null) {
+            return new JsonObject();
+        }
+        return trashedBy;
     }
 
     @Override
