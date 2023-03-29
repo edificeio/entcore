@@ -552,7 +552,7 @@ public class UserController extends BaseController {
 				userService.addHeadTeacherManual(userId,
 					event.getString("structureExternalId"),
 					event.getString("classExternalId") ,
-					recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request))
+					recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
 				);
 			}
 		});
@@ -568,7 +568,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"),
-				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request))
+				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
 			);
 			}
 		});
@@ -585,7 +585,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addDirectionManual(userId, event.getString("structureExternalId"),
-				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
+				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -600,7 +600,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 			userService.removeDirectionManual(userId, event.getString("structureExternalId"),
-				recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
+				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -612,7 +612,7 @@ public class UserController extends BaseController {
 	public void removeFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String function = request.params().get("function");
-		userService.removeFunction(userId, function, e -> recreateSessionHandler(userId, request, eb, onDone -> defaultResponseHandler(request)));
+		userService.removeFunction(userId, function, recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 	}
 
 	@Get("/user/:userId/functions")
@@ -661,7 +661,7 @@ public class UserController extends BaseController {
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
-		userService.removeGroup(userId, groupId, recreateSessionHandler(userId, request, eb, event -> defaultResponseHandler(request)));
+		userService.removeGroup(userId, groupId, recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 	}
 
 	@Get("/user/group/:groupId")
