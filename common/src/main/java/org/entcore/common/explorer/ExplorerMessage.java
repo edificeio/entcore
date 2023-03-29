@@ -328,6 +328,9 @@ public class ExplorerMessage {
     public String getCreatorId() {
         return message.getString("creatorId", "");
     }
+    public String getUpdaterId() {
+        return message.getString("updaterId", "");
+    }
     public String getName() {
         return message.getString("name");
     }
