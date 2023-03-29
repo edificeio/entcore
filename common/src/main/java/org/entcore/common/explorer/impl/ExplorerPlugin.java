@@ -371,13 +371,14 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public Future<Void> notifyUpsert(UserInfos user, Map<String, JsonObject> sourceById) {
+    public Future<Void> notifyUpsert(final UserInfos user, final Map<String, JsonObject> sourceById, final Optional<Number> folderId) {
         final List<Future> futures = sourceById.entrySet().stream().map(e->{
             final String id = e.getKey();
             final ExplorerMessage message = ExplorerMessage.upsert(
                     new IdAndVersion(id, e.getValue().getLong("version")), user, isForSearch(),
                     getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
+            message.withParentId(folderId.map(folId -> folId.longValue()));
             return toMessage(message, e.getValue());
         }).collect(Collectors.toList());
         return CompositeFuture.all(futures).compose(all->{
@@ -387,35 +388,38 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public Future<Void> notifyUpsert(IdAndVersion id, UserInfos user, JsonObject source) {
+    public Future<Void> notifyUpsert(final IdAndVersion id, UserInfos user, final JsonObject source, final Optional<Number> folderId) {
         final ExplorerMessage message = ExplorerMessage.upsert(
                 id, user, isForSearch(),
                 getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
+        message.withParentId(folderId.map(folId -> folId.longValue()));
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
         });
     }
 
     @Override
-    public Future<Void> notifyUpsert(final UserInfos user, final JsonObject source) {
+    public Future<Void> notifyUpsert(final UserInfos user, final JsonObject source, final Optional<Number> folderId) {
         final ExplorerMessage message = ExplorerMessage.upsert(
                 new IdAndVersion(getIdForModel(source), source.getLong("version")), user, isForSearch(),
                 getApplication(), getResourceType(), getResourceType());
         message.withType(getApplication(), getResourceType(), getResourceType());
+        message.withParentId(folderId.map(folId -> folId.longValue()));
         return toMessage(message, source).compose(messages -> {
             return communication.pushMessage(messages);
         });
     }
 
     @Override
-    public Future<Void> notifyUpsert(final UserInfos user, final List<JsonObject> sources) {
+    public Future<Void> notifyUpsert(final UserInfos user, final List<JsonObject> sources, final Optional<Number> folderId) {
         setIngestJobState(sources, IngestJobState.TO_BE_SENT);
         return toMessage(sources, e -> {
             final ExplorerMessage message = ExplorerMessage.upsert(
                     new IdAndVersion(getIdForModel(e), e.getLong("version")), user, isForSearch(),
                     getApplication(), getResourceType(), getResourceType());
             message.withType(getApplication(), getResourceType(), getResourceType());
+            message.withParentId(folderId.map(folId -> folId.longValue()));
             return message;
         }).compose(messages -> {
             return communication.pushMessage(messages);
@@ -487,21 +491,21 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
 
     @Override
-    public final Future<String> create(final UserInfos user, final JsonObject source, final boolean isCopy){
+    public final Future<String> create(final UserInfos user, final JsonObject source, final boolean isCopy, final Optional<Number> folderId){
         return doCreate(user, Arrays.asList(source), isCopy).compose(ids->{
             setIdForModel(source, ids.get(0));
-            return notifyUpsert(user, source).map(ids);
+            return notifyUpsert(user, source, folderId).map(ids);
         }).map(ids -> ids.get(0));
     }
 
     @Override
-    public final Future<List<String>> create(final UserInfos user, final List<JsonObject> sources, final boolean isCopy){
+    public final Future<List<String>> create(final UserInfos user, final List<JsonObject> sources, final boolean isCopy, final Optional<Number> folderId){
         this.setIngestJobState(sources, IngestJobState.TO_BE_SENT);
         return doCreate(user, sources, isCopy).compose(ids->{
             for(int i = 0 ; i < ids.size(); i++){
                 setIdForModel(sources.get(i), ids.get(i));
             }
-            return notifyUpsert(user, sources).map(ids);
+            return notifyUpsert(user, sources, folderId).map(ids);
         }).map(ids -> ids);
     }
 
