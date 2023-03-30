@@ -193,7 +193,7 @@ public class DefaultUserValidationService implements UserValidationService {
 
     @Override
 	public Boolean getIsMFA(final JsonObject session) {
-        return Boolean.valueOf( session.getJsonObject("cache").getString(IS_MFA, "false") );
+        return session!=null && Boolean.valueOf( session.getJsonObject("cache", new JsonObject()).getString(IS_MFA, "false") );
     }
 
     @Override
