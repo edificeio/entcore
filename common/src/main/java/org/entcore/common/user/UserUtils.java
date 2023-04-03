@@ -644,7 +644,7 @@ public class UserUtils {
 	 * @param eb Event bus to communicate with auth-manager
 	 * @param userId Id of the user who needs a new session
 	 * @param request Http request that generated the need of a new session
-	 * @return The re-created session
+	 * @return The re-created session. Can be null if the user is OAuthSystemUser
 	 */
 	public static Future<JsonObject> reCreateSession(final EventBus eb,
 													 final String userId,
@@ -656,12 +656,7 @@ public class UserUtils {
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (res.succeeded()) {
-					final JsonObject body = res.result().body();
-					if(body == null) {
-						details.fail("session.not.found");
-					} else {
-						details.complete(body);
-					}
+					details.complete( res.result().body() ); // body may be null if no session can be created (for an app)
 				} else {
 					details.fail(String.valueOf(res.result().body()));
 				}
