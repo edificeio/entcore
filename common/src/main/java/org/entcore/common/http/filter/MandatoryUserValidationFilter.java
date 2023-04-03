@@ -98,7 +98,7 @@ public class MandatoryUserValidationFilter implements Filter {
             return;
         }
 
-        UserUtils.getSession(this.eventBus, request, session -> {
+        UserUtils.getSession(this.eventBus, request, true, session -> {
             final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
             if (userInfos == null) {
                 // Mandatory validations for disconnected users :
@@ -114,7 +114,6 @@ public class MandatoryUserValidationFilter implements Filter {
                 final SecureHttpServerRequest sreq = (SecureHttpServerRequest) request;
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
-                request.pause();
                 UserValidation.getMandatoryUserValidation(this.eventBus, session)
                 .compose( validations -> {
                     return checkTermsOfUse(sreq, userInfos, validations);
@@ -129,7 +128,6 @@ public class MandatoryUserValidationFilter implements Filter {
                     return checkMfa(sreq, userInfos, validations);
                 })
                 .onComplete( ar -> {
-                    request.resume();
                     if( ar.succeeded() ) {
                         handler.handle(true);
                     } else {
