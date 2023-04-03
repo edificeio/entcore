@@ -583,7 +583,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	 * @param nameId used in identity federation
 	 * @param secureLocation {@code true} if the session is from a secure location
 	 * @param previousCache Cache of the previous session
-	 * @return The id of the created session object along with its data
+	 * @return The id of the created session object along with its data.<br /><strong><u>NB : </u>NB</strong> Note that
+	 * data may be null if the user could not be found in Neo4J. It is the case for OAuth client_creddentials identification
+	 * for instance.
 	 */
 	private Future<Pair<String, JsonObject>> createSessionAndReturnIdAndData(final String userId, final String sId, final String sessionIndex, final String nameId,
 												  final boolean secureLocation, final JsonObject previousCache) {
@@ -623,7 +625,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						});
 					});
 				} else {
-					sessionPromise.fail("session.infos.not.generated");
+					sessionPromise.complete(Pair.of(sessionId, null));
 				}
 			}
 		});
