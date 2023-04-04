@@ -24,6 +24,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.Renders;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
@@ -463,7 +464,7 @@ public class UserUtils {
 					sessionId = null;
 					oAuthIdentified = false;
 				}
-				if (sessionId == null) {
+				if (sessionId == null && isEmpty(remoteUserId)) {
 					log.debug("A request came for user " + remoteUserId + " with no way to get its session");
 					handler.handle(null);
 				} else {
@@ -512,7 +513,7 @@ public class UserUtils {
 			if(findSessionResult == null) {
 				if(oAuthIdentified) {
 					log.debug("[GetSession] Could not find a session for our user who has a valid token -> we will recreate one");
-					reCreateSession(eb, userId, request).onSuccess(recreationResult -> {
+					reCreateSession(eb, userId, request, paused).onSuccess(recreationResult -> {
 						log.debug("[GetSession] A session has been recreated for oauth authenticated user " + userId);
 						sessionPromise.complete(recreationResult);
 					}).onFailure(err -> {
@@ -644,17 +645,25 @@ public class UserUtils {
 	 * @param eb Event bus to communicate with auth-manager
 	 * @param userId Id of the user who needs a new session
 	 * @param request Http request that generated the need of a new session
+	 * @param paused {@code true} if the session has already been paused => resume is supposed to happen somewhere else
 	 * @return The re-created session. Can be null if the user is OAuthSystemUser
 	 */
 	public static Future<JsonObject> reCreateSession(final EventBus eb,
 													 final String userId,
-													 final HttpServerRequest request) {
+													 final HttpServerRequest request,
+													 final boolean paused) {
 		final Promise<JsonObject> details = Promise.promise();
 		final boolean isOAuthRequest = request instanceof SecureHttpServerRequest && getTokenId((SecureHttpServerRequest) request).isPresent();
 		final SessionRecreationRequest recreationRequest = new SessionRecreationRequest(userId, getSessionIdOrTokenId(request).orElse(null), isOAuthRequest);
+		if(request != null && !paused) {
+			request.pause();
+		}
 		eb.request(SESSION_ADDRESS, JsonObject.mapFrom(recreationRequest), new Handler<AsyncResult<Message<JsonObject>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
+				if(request != null && !paused) {
+					request.resume();
+				}
 				if (res.succeeded()) {
 					details.complete( res.result().body() ); // body may be null if no session can be created (for an app)
 				} else {
