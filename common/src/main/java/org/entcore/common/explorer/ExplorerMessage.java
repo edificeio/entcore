@@ -174,8 +174,8 @@ public class ExplorerMessage {
         return this;
     }
 
-    public ExplorerMessage withTrashedBy(String userId, boolean trashed) {
-        message.put("trashedBy", new JsonObject().put(userId, trashed));
+    public ExplorerMessage withTrashedBy(List<String> trashedBy) {
+        message.put("trashedBy", new JsonArray(trashedBy));
         return this;
     }
 
@@ -382,10 +382,10 @@ public class ExplorerMessage {
         }
         return mute;
     }
-    public JsonObject getTrashedBy() {
-        final JsonObject trashedBy = this.message.getJsonObject("trashedBy");
+    public JsonArray getTrashedBy() {
+        final JsonArray trashedBy = this.message.getJsonArray("trashedBy");
         if (trashedBy == null) {
-            return new JsonObject();
+            return new JsonArray();
         }
         return trashedBy;
     }
