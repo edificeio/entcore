@@ -98,6 +98,7 @@ public class MandatoryUserValidationFilter implements Filter {
             return;
         }
 
+        request.pause();
         UserUtils.getSession(this.eventBus, request, true, session -> {
             final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
             if (userInfos == null) {

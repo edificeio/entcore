@@ -204,7 +204,7 @@ public class DefaultResponseHandler {
 				final String sessionIdentifier = getSessionIdOrTokenId(request).orElse(null);
 				if (event.isRight()) {
 					if (caller.getUserId().equals(targetUserId)) {
-						UserUtils.reCreateSession(eventBus, targetUserId, request).onComplete(recreationResult -> {
+						UserUtils.reCreateSession(eventBus, targetUserId, request, false).onComplete(recreationResult -> {
 							if (recreationResult.succeeded()) {
 								final JsonObject session = recreationResult.result();
 								// If no session id is returned it means that the session could not be retrieved or has
