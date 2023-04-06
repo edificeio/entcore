@@ -357,4 +357,21 @@ public class SqlResult {
 
 	}
 
+	public static <T> List<T> sqlArrayToList(JsonArray array, Class<T> clazz) {
+		final List<T> list = new ArrayList<>();
+		if (array != null) {
+			for (Object o: array) {
+				if (!(o instanceof JsonArray)) continue;
+				final JsonArray item = (JsonArray) o;
+				if (item.size() == 2) {
+					final Object itemValue = item.getValue(1);
+					if (clazz.isInstance(itemValue)) {
+						list.add((T) itemValue);
+					}
+				}
+			}
+		}
+		return list;
+	}
+
 }
