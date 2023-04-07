@@ -147,6 +147,7 @@
             aria-controls="navbarCollapsed"
             aria-expanded="false"
             aria-label="navbar.secondary.navigation"
+            ng-click="dropdownToggle = !dropdownToggle"
           >
             <svg
               width="20"
@@ -174,7 +175,11 @@
     aria-label="navbar.secondary.navigation"
   >
     <div class="container-fluid">
-      <div class="collapse navbar-collapse" id="navbarCollapsed">
+      <div
+        class="collapse navbar-collapse"
+        id="navbarCollapsed"
+        ng-class="{'show' : dropdownToggle}"
+      >
         <a
           class="navbar-brand d-none d-md-block"
           href="/timeline/timeline"
@@ -184,9 +189,6 @@
             src="/assets/themes/[[skin.skin]]/img/illustrations/logo.png"
             alt="Logo de l'ENT"
         /></a>
-        <a href="/welcome" class="nav-link navbar-title d-md-none">
-          <i18n>navbar.applications</i18n>
-        </a>
         <ul class="navbar-nav gap-8">
           <li class="nav-item">
             <a href="/timeline/timeline?token=[[rand]]" class="button"
