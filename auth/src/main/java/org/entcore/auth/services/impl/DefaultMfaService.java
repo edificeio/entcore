@@ -9,6 +9,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+
 import org.entcore.auth.services.MfaService;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.impl.AbstractDataValidationService;
@@ -37,12 +39,13 @@ public class DefaultMfaService implements MfaService {
         private SmsSender sms;
         public EventStore eventStore;
 
-        MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
+        MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super(
                 Mfa.withSms() ? "mobile" : "email", // used for reading only
                 "mfaState", 
                 vertx, 
-                config
+                config,
+                params
             );
         }
 
@@ -217,7 +220,13 @@ public class DefaultMfaService implements MfaService {
     private EventBus eb = null;
 
     public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) {
-        mfaField = new MfaField(vertx, config);
+		io.vertx.core.json.JsonObject params = config.getJsonObject("emailValidationConfig");
+		if (params == null ) {
+			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+			String s = (String) server.get("emailValidationConfig");
+			params = (s != null) ? new JsonObject(s) : new JsonObject();
+		}
+        mfaField = new MfaField(vertx, config, params);
         eb = Server.getEventBus(vertx);
         DataValidationMetricsFactory.init(vertx, config);
     }
