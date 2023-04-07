@@ -50,8 +50,8 @@ public class DefaultUserValidationService implements UserValidationService {
     //---------------------------------------------------------------
     private class MobileField extends AbstractDataValidationService {
     //---------------------------------------------------------------
-        MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
-            super("mobile", "mobileState", vertx, config);
+        MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
+            super("mobile", "mobileState", vertx, config, params);
         }
 
         @Override
@@ -67,8 +67,8 @@ public class DefaultUserValidationService implements UserValidationService {
     //---------------------------------------------------------------
         private EmailSender emailSender = null;
 
-        EmailField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config) {
-            super("email", "emailState", vertx, config);
+        EmailField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
+            super("email", "emailState", vertx, config, params);
             emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
@@ -158,8 +158,8 @@ public class DefaultUserValidationService implements UserValidationService {
             retryNumber     = params.getInteger("retryNumber",  5);
             waitInSeconds   = params.getInteger("waitInSeconds", 10);
         }
-        emailSvc = new EmailField(vertx, config);
-        mobileSvc= new MobileField(vertx, config);
+        emailSvc = new EmailField(vertx, config, params);
+        mobileSvc= new MobileField(vertx, config, params);
     }
 
 	public DefaultUserValidationService setEventStore(EventStore eventStore, String eventType) {
