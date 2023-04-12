@@ -64,7 +64,7 @@ public abstract class AbstractDataValidationService extends Renders implements D
 		super(vertx, config);
 		this.field = field;
 		this.stateField = stateField;
-		this.encryptKey = params!=null ? params.getString("encryptKey", "") : "";
+		this.encryptKey = params.getString("encryptKey");
 	}
 
 	/** 
@@ -131,26 +131,20 @@ public abstract class AbstractDataValidationService extends Renders implements D
     protected String toRaw(final JsonObject state) {
         if( state==null ) return null;
 
-		if( encryptKey != null
-		 		&& (encryptKey.length()==16 || encryptKey.length()==24 || encryptKey.length()==32) ) {
-		    // An AES key has to be 16, 24 or 32 bytes long.
-			// WB-1700 This field should be obfuscated in DB, if encryption key is available.
-			String code = getKey(state);
-			try {
-				// Cipher the key...
-				setKey( state, AES128CBC.encrypt(code, encryptKey) );
-				String retValue = state.encode();
-				// ... but do not alter the original state JsonObject
-				setKey( state, code );
-
-				return retValue;
-			} catch( Exception e ) {
-				// As a fallback, keep the code as-is and let the workflow continue.
-				log.warn( "Unable to encrypt the data validation key in DB", e);
-			}
+		// WB-1700 This field should be obfuscated in DB, if encryption key is available.
+		String code = getKey(state);
+		try {
+			// Cipher the key put in raw format...
+			setKey( state, AES128CBC.encrypt(code, encryptKey) );
+			String retValue = state.encode();
+			// ... but do not alter the original state JsonObject
+			setKey( state, code );
+			return retValue;
+		} catch( Exception e ) {
+			// As a fallback, keep the code as-is and let the workflow continue.
+			log.warn( "Unable to encrypt the data validation key in DB", e);
+			return state.encode();
 		}
-
-		return state.encode();
     }
 
     /**
@@ -162,19 +156,19 @@ public abstract class AbstractDataValidationService extends Renders implements D
     protected JsonObject fromRaw(final String state) {
         if( state==null ) return null;
 		final JsonObject json = new JsonObject(state);
-		if( !StringUtils.isEmpty(encryptKey) ) {
-			// WB-1700 This field was obfuscated in DB.
-			String code = getKey(json);
-			try {
-				if( !StringUtils.isEmpty(code) ) {
-					setKey( json, AES128CBC.decrypt(code, encryptKey) );
-				}
-			} catch( Exception e ) {
-				// Keep the code as-is, it may be in clear if generated before migration.
-				log.warn( "Unable to decrypt the data validation key "+code, e);
+
+		// WB-1700 This field was obfuscated in DB.
+		String code = getKey(json);
+		try {
+			if( !StringUtils.isEmpty(code) ) {
+				setKey( json, AES128CBC.decrypt(code, encryptKey) );
 			}
+		} catch( Exception e ) {
+			// Keep the code as-is, it may be in clear if generated before migration.
+			log.warn( "Unable to decrypt the data validation key "+code, e);
 		}
-        return json;
+
+		return json;
     }
 
 	/** Generate a pseudo-random code of 6 digits length. */
