@@ -28,6 +28,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
+import java.security.InvalidKeyException;
+
 public class UserValidationFactory {
 	private Vertx vertx;
 	private JsonObject config;
@@ -49,7 +51,7 @@ public class UserValidationFactory {
 		return UserValidationFactoryHolder.instance;
 	}
 
-	public UserValidationFactory init(Vertx vertx, JsonObject moduleConfig) {
+	public UserValidationFactory init(Vertx vertx, JsonObject moduleConfig) throws InvalidKeyException {
 		this.vertx = vertx;
 		this.moduleConfig = moduleConfig;
 		DataValidationMetricsFactory.init(vertx, moduleConfig);
@@ -59,6 +61,15 @@ public class UserValidationFactory {
 			String s = (String) server.get("emailValidationConfig");
 			config = (s != null) ? new JsonObject(s) : new JsonObject();
 		}
+
+		// The encryptKey parameter must be defined correctly.
+		String encryptKey = config.getString("encryptKey", null);
+		if( encryptKey == null
+					|| (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
+			// An AES key has to be 16, 24 or 32 bytes long.
+			throw new InvalidKeyException("The \"encryptKey\" parameter must be 16, 24 or 32 bytes long.");
+		}
+
 		final Boolean emailValidationActive = config.getBoolean("active", true);
 		deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
 		return this;
