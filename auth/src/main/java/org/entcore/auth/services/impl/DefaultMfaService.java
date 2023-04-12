@@ -27,6 +27,7 @@ import org.entcore.common.utils.StringUtils;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
+import java.security.InvalidKeyException;
 
 
 public class DefaultMfaService implements MfaService {
@@ -219,13 +220,22 @@ public class DefaultMfaService implements MfaService {
     private MfaField mfaField = null;
     private EventBus eb = null;
 
-    public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) {
+    public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) throws InvalidKeyException {
 		io.vertx.core.json.JsonObject params = config.getJsonObject("emailValidationConfig");
 		if (params == null ) {
 			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 			String s = (String) server.get("emailValidationConfig");
 			params = (s != null) ? new JsonObject(s) : new JsonObject();
 		}
+            
+        // The encryptKey parameter must be defined correctly.
+        String encryptKey = params.getString("encryptKey", null);
+        if( encryptKey == null
+                    || (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
+            // An AES key has to be 16, 24 or 32 bytes long.
+            throw new InvalidKeyException("The \"encryptKey\" parameter must be 16, 24 or 32 bytes long.");
+        }
+
         mfaField = new MfaField(vertx, config, params);
         eb = Server.getEventBus(vertx);
         DataValidationMetricsFactory.init(vertx, config);
