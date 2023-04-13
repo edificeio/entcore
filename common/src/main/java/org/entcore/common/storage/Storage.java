@@ -19,15 +19,16 @@
 
 package org.entcore.common.storage;
 
-import io.vertx.core.Future;
-import io.vertx.core.streams.ReadStream;
-import org.entcore.common.validation.FileValidator;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
+import org.entcore.common.messaging.to.UploadedFileMessage;
+import org.entcore.common.validation.FileValidator;
 
 public interface Storage {
 
@@ -42,6 +43,9 @@ public interface Storage {
 	void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
 	void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
+
+	void writeBuffer(String path, String id, Buffer buff, String contentType, String filename,
+					 boolean safe, Handler<JsonObject> handler);
 
 	/**
 	 * write file in file system with buffer stream
@@ -109,4 +113,5 @@ public interface Storage {
 
 	void findByFilenameEndingWith(String endsWith, Handler<AsyncResult<JsonArray>> handler);
 
+    Future<byte[]> readFileToMemory(UploadedFileMessage uploadedFileMessage);
 }
