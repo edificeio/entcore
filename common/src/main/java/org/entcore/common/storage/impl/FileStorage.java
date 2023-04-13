@@ -21,19 +21,20 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.*;
-import io.vertx.core.file.*;
-import io.vertx.core.streams.ReadStream;
-import org.entcore.common.storage.AntivirusClient;
-import org.entcore.common.storage.BucketStats;
-import org.entcore.common.storage.FallbackStorage;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.utils.StringUtils;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.FileSystemProps;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -41,6 +42,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
+import org.entcore.common.messaging.IMessagingClient;
+import org.entcore.common.messaging.to.UploadedFileMessage;
+import org.entcore.common.storage.AntivirusClient;
+import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FallbackStorage;
+import org.entcore.common.storage.FileStats;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
@@ -52,8 +62,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
 public class FileStorage implements Storage {
 
 	private static final Logger log = LoggerFactory.getLogger(FileStorage.class);
@@ -62,15 +70,17 @@ public class FileStorage implements Storage {
 	private static final Pattern RANGE = Pattern.compile("^bytes=(\\d+)-(\\d*)$");
 	private final FileSystem fs;
 	private final boolean flat;
+	private final IMessagingClient messagingClient;
 	private AntivirusClient antivirus;
 	private FileValidator validator;
 	private FallbackStorage fallbackStorage;
+	private static final String STORAGE_ID = "file";
 
-	public FileStorage(Vertx vertx, String basePath, boolean flat) {
-		this(vertx, new JsonArray().add(basePath), flat);
+	public FileStorage(Vertx vertx, String basePath, boolean flat, final IMessagingClient messagingClient) {
+		this(vertx, new JsonArray().add(basePath), flat, messagingClient);
 	}
 
-	public FileStorage(Vertx vertx, JsonArray bP, boolean flat) {
+	public FileStorage(Vertx vertx, JsonArray bP, boolean flat, final IMessagingClient messagingClient) {
 		this.flat = flat;
 		this.fs = vertx.fileSystem();
 		this.basePaths = new ArrayList<>();
@@ -80,7 +90,15 @@ public class FileStorage implements Storage {
 			this.basePaths.add(((!basePath.endsWith("/")) ? basePath + "/" : basePath));
 		}
 		this.lastBucketIdx = this.basePaths.size() - 1;
-
+		this.messagingClient = messagingClient;
+		final String verticleIdt = vertx.getOrCreateContext().config().getString("main");
+		if(this.messagingClient.canListen()) {
+			this.messagingClient.startListening(new StorageFileAnalyzer(vertx, this))
+					.onSuccess(e -> log.info(verticleIdt + " started listening to analyze files"))
+					.onFailure(th -> log.error(verticleIdt + " encountered an error while trying to listen for incoming files to analyze", th));
+		} else {
+			log.info(verticleIdt + " won't listen to files to analyze");
+		}
 	}
 
 	@Override
@@ -165,6 +183,7 @@ public class FileStorage implements Storage {
 						handler.handle(res.put("_id", id)
 								.put("status", "ok")
 								.put("metadata", metadata));
+						sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
 						scanFile(path);
 					}
 				});
@@ -190,6 +209,24 @@ public class FileStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	private void sendFileMetadataForSecurityThreatsAnalysis(final String id,
+															final JsonObject metadata) {
+		final UploadedFileMessage uploadedFileMessage = new UploadedFileMessage(
+				id,
+				metadata.getString("name"),
+				metadata.getString("filename"),
+				metadata.getString("content-type"),
+				metadata.getString("content-transfer-encoding"),
+				metadata.getString("charset"),
+				metadata.getLong("size"),
+				System.currentTimeMillis(),
+				STORAGE_ID
+		);
+		messagingClient.pushMessages(uploadedFileMessage)
+			.onSuccess(e -> log.debug("Successfully sent message to analyze file " + uploadedFileMessage.getId()))
+			.onFailure(th -> log.warn("Could not send message to analyze file " + uploadedFileMessage.getId(), th));
 	}
 
 	@Override
@@ -259,7 +296,14 @@ public class FileStorage implements Storage {
 
 	@Override
 	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename,
-			final Handler<JsonObject> handler) {
+							final Handler<JsonObject> handler) {
+		writeBuffer(path, id, buff, contentType, filename, false, handler);
+	}
+
+
+	@Override
+	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename,
+							final boolean safe, final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		mkdirsIfNotExists(id, path, new Handler<AsyncResult<Void>>() {
 			@Override
@@ -271,7 +315,10 @@ public class FileStorage implements Storage {
 							final JsonObject metadata = new JsonObject().put("content-type", contentType)
 									.put("filename", filename).put("size", buff.length());
 							res.put("status", "ok").put("_id", id).put("metadata", metadata);
-							scanFile(path);
+							if(!safe) {
+								sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
+								scanFile(path);
+							}
 						} else {
 							res.put("status", "error").put("message", event.cause().getMessage());
 						}
@@ -311,6 +358,7 @@ public class FileStorage implements Storage {
 							.put("_id", id)
 							.put("metadata", metadata);
 					promise.complete(res);
+					sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
 					scanFile(path);
 				})
 				.onFailure(err -> {
@@ -425,6 +473,27 @@ public class FileStorage implements Storage {
 				handler.handle(new DefaultAsyncResult<>(ar.cause()));
 			}
 		});
+	}
+
+	@Override
+	public Future<byte[]> readFileToMemory(final UploadedFileMessage uploadedFileMessage) {
+		final String id = uploadedFileMessage.getId();
+		final Promise<byte[]> onFileRead = Promise.promise();
+		getReadPath(id, pathResult -> {
+			if (pathResult.succeeded()) {
+				final String path = pathResult.result();
+				fs.readFile(path, result -> {
+					if(result.succeeded()) {
+						onFileRead.complete(result.result().getBytes());
+					} else {
+						onFileRead.fail(result.cause());
+					}
+				});
+			} else {
+				onFileRead.fail(pathResult.cause());
+			}
+		});
+		return onFileRead.future();
 	}
 
 	@Override

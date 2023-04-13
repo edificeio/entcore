@@ -20,11 +20,19 @@
 package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
-import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.storage.impl.*;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.messaging.IMessagingClient;
+import org.entcore.common.messaging.MessagingClientFactoryProvider;
+import org.entcore.common.storage.impl.AbstractApplicationStorage;
+import org.entcore.common.storage.impl.FileStorage;
+import org.entcore.common.storage.impl.GridfsStorage;
+import org.entcore.common.storage.impl.HttpAntivirusClient;
+import org.entcore.common.storage.impl.S3FallbackStorage;
+import org.entcore.common.storage.impl.SwiftStorage;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
 import org.entcore.common.validation.QuotaFileSizeValidation;
@@ -32,11 +40,10 @@ import org.entcore.common.validation.QuotaFileSizeValidation;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
 public class StorageFactory {
 
 	private final Vertx vertx;
+	private final IMessagingClient messagingClient;
 	private JsonObject swift;
 	private JsonObject fs;
 	private String gridfsAddress;
@@ -73,6 +80,20 @@ public class StorageFactory {
 			applicationStorage.setVertx(vertx);
 			vertx.eventBus().localConsumer("storage", applicationStorage);
 		}
+
+		if(config != null) {
+			final IMessagingClient messagingClient;
+			final JsonObject fileAnalyzerConfiguration = config.getJsonObject("fileAnalyzer");
+			if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
+				MessagingClientFactoryProvider.init(vertx);
+				this.messagingClient = MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create();
+			} else {
+				this.messagingClient = IMessagingClient.noop;
+			}
+		} else {
+			this.messagingClient = IMessagingClient.noop;
+		}
+
 	}
 
 	public Storage getStorage() {
@@ -89,9 +110,9 @@ public class StorageFactory {
 			}
 		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
-				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false));
+				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient);
 			} else {
-				storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false));
+				storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false), messagingClient);
 			}
 			JsonObject antivirus = fs.getJsonObject("antivirus");
 			if (antivirus != null) {
@@ -130,4 +151,7 @@ public class StorageFactory {
 		return storage;
 	}
 
+	public IMessagingClient getMessagingClient() {
+		return messagingClient;
+	}
 }
