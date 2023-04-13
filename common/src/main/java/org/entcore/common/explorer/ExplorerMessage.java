@@ -268,13 +268,13 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withShared(final ShareModel shareModel) {
-        message.put("shared", shareModel.getSharedJson());
         message.put("rights", new JsonArray(shareModel.getSerializedRights()));
         return this;
     }
 
+    @Deprecated
     public ExplorerMessage withShared(final JsonArray shared, final List<String> rights) {
-        message.put("shared", shared);
+        // dont need to push shared to explorer
         message.put("rights", new JsonArray(rights));
         return this;
     }
