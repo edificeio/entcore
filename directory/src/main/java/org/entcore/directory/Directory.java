@@ -27,6 +27,8 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.messaging.IMessagingClient;
+import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
@@ -37,11 +39,45 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
-import org.entcore.directory.controllers.*;
+import org.entcore.directory.controllers.CalendarController;
+import org.entcore.directory.controllers.ClassController;
+import org.entcore.directory.controllers.DirectoryController;
+import org.entcore.directory.controllers.GroupController;
+import org.entcore.directory.controllers.ImportController;
+import org.entcore.directory.controllers.ProfileController;
+import org.entcore.directory.controllers.RemoteUserController;
+import org.entcore.directory.controllers.ShareBookmarkController;
+import org.entcore.directory.controllers.SlotProfileController;
+import org.entcore.directory.controllers.StructureController;
+import org.entcore.directory.controllers.SubjectController;
+import org.entcore.directory.controllers.TenantController;
+import org.entcore.directory.controllers.TimetableController;
+import org.entcore.directory.controllers.UserBookController;
+import org.entcore.directory.controllers.UserController;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
-import org.entcore.directory.services.*;
-import org.entcore.directory.services.impl.*;
+import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.GroupService;
+import org.entcore.directory.services.RemoteUserService;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.SubjectService;
+import org.entcore.directory.services.UserBookService;
+import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.impl.DefaultClassService;
+import org.entcore.directory.services.impl.DefaultGroupService;
+import org.entcore.directory.services.impl.DefaultImportService;
+import org.entcore.directory.services.impl.DefaultMassMailService;
+import org.entcore.directory.services.impl.DefaultProfileService;
+import org.entcore.directory.services.impl.DefaultRemoteUserService;
+import org.entcore.directory.services.impl.DefaultSchoolService;
+import org.entcore.directory.services.impl.DefaultShareBookmarkService;
+import org.entcore.directory.services.impl.DefaultSlotProfileService;
+import org.entcore.directory.services.impl.DefaultSubjectService;
+import org.entcore.directory.services.impl.DefaultTenantService;
+import org.entcore.directory.services.impl.DefaultTimetableService;
+import org.entcore.directory.services.impl.DefaultUserBookService;
+import org.entcore.directory.services.impl.DefaultUserService;
+import org.entcore.directory.services.impl.UserbookRepositoryEvents;
 
 public class Directory extends BaseServer {
 
@@ -67,10 +103,11 @@ public class Directory extends BaseServer {
 				i18nMessages(request);
 			}
 		});
-		Storage storageAvatar = new FileStorage(vertx, config.getString("avatar-path"),
-				config.getBoolean("avatar-flat", false));
-		Storage defaulStorage = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName())).getStorage();
+		final StorageFactory storageFactory = new StorageFactory(vertx, config,
+				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()));
+		final Storage storageAvatar = new FileStorage(vertx, config.getString("avatar-path"),
+				config.getBoolean("avatar-flat", false), storageFactory.getMessagingClient());
+		final Storage defaulStorage = storageFactory.getStorage();
 		WorkspaceHelper wsHelper = new WorkspaceHelper(vertx.eventBus(), defaulStorage);
 
 		EmailFactory emailFactory = new EmailFactory(vertx, config);

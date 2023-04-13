@@ -45,7 +45,7 @@ Please check the name of the package you changed
 
 # Reminder
 
-- Security flaws (bros before security holes)
+- Security flaws
 - Performance impacts (think bulk !)
 - Unit tests were replayed
 - Unit tests were added and/or changed

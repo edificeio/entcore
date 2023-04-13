@@ -22,19 +22,20 @@ package org.entcore.common.storage.impl;
 import fr.wseduc.swift.SwiftClient;
 import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.streams.ReadStream;
-import org.apache.commons.lang3.NotImplementedException;
-import org.entcore.common.storage.BucketStats;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
+import org.apache.commons.lang3.NotImplementedException;
+import org.entcore.common.messaging.to.UploadedFileMessage;
+import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FileStats;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
@@ -96,6 +97,12 @@ public class SwiftStorage implements Storage {
 
 	@Override
 	public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
+		StorageObject o = new StorageObject(id, buff, filename, contentType);
+		writeStorageObject(handler, o);
+	}
+
+	@Override
+	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename, final boolean safe, final Handler<JsonObject> handler) {
 		StorageObject o = new StorageObject(id, buff, filename, contentType);
 		writeStorageObject(handler, o);
 	}
@@ -291,8 +298,15 @@ public class SwiftStorage implements Storage {
 	}
 
 	@Override
+	public Future<byte[]> readFileToMemory(final UploadedFileMessage uploadedFileMessage) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public FileValidator getValidator() {
 		return null;
 	}
+
+
 
 }
