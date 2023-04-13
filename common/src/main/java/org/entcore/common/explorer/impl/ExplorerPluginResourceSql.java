@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import static java.lang.Long.parseLong;
+import io.vertx.core.CompositeFuture;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
@@ -248,19 +249,18 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             return Future.succeededFuture();
         }
         final String schema = getTableName();
-        return pgPool.transaction().compose(transaction -> {
-            for(IngestJobStateUpdateMessage message : messages) {
-                final String query = new StringBuilder()
-                        .append(" UPDATE ").append(schema)
-                        .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
-                        .toString();
-                final Tuple tuple = Tuple.tuple();
-                tuple.addValue(message.getState().name())
-                        .addValue(message.getVersion())
-                        .addValue(parseLong(message.getEntityId()));
-                transaction.addPreparedQuery(query, tuple);
-            }
-            return transaction.commit();
-        }).mapEmpty();
+        final List<Future> futures = new ArrayList<Future>();
+        for(IngestJobStateUpdateMessage message : messages) {
+            final String query = new StringBuilder()
+                    .append(" UPDATE ").append(schema)
+                    .append(" SET ingest_job_state = $1, version = $2 WHERE id = $3 AND version <= $2")
+                    .toString();
+            final Tuple tuple = Tuple.tuple();
+            tuple.addValue(message.getState().name())
+                    .addValue(message.getVersion())
+                    .addValue(parseLong(message.getEntityId()));
+            futures.add(pgPool.preparedQuery(query, tuple));
+        }
+        return CompositeFuture.all(futures).mapEmpty();
     }
 }
