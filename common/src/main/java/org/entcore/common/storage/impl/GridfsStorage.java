@@ -23,17 +23,10 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import fr.wseduc.webutils.http.ETag;
-import io.vertx.core.Future;
-import io.vertx.core.file.OpenOptions;
-import io.vertx.core.http.HttpServerFileUpload;
-import io.vertx.core.streams.ReadStream;
-import org.apache.commons.lang3.NotImplementedException;
-import org.entcore.common.storage.BucketStats;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageException;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -41,21 +34,30 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
+import org.apache.commons.lang3.NotImplementedException;
+import org.entcore.common.messaging.to.UploadedFileMessage;
+import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FileStats;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageException;
 import org.entcore.common.validation.FileValidator;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class GridfsStorage implements Storage {
 
@@ -77,6 +79,11 @@ public class GridfsStorage implements Storage {
 	public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
 		// TODO to implement
 		throw new UnsupportedOperationException("not yet implemented");
+	}
+
+	@Override
+	public Future<byte[]> readFileToMemory(final UploadedFileMessage uploadedFileMessage) {
+		throw new NotImplementedException();
 	}
 
 	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
@@ -159,7 +166,13 @@ public class GridfsStorage implements Storage {
 		throw new NotImplementedException("writeBufferStream not implemented");
 	}
 
-	private void writeBuffer(String id, Buffer buff, Long maxSize, String contentType, String filename, final JsonObject m, Handler<JsonObject> handler) {
+
+	@Override
+	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename, final boolean safe, final Handler<JsonObject> handler) {
+		throw new NotImplementedException();
+	}
+	private void writeBuffer(String id, Buffer buff, Long maxSize, String contentType, String filename, final JsonObject m,
+							 Handler<JsonObject> handler) {
 		JsonObject save = new JsonObject();
 		save.put("action", "save");
 		save.put("content-type", contentType);
