@@ -11,6 +11,7 @@
     ,
     "emailValidationConfig": {
         "active": true,
+        "encryptKey": "DEADBEEFDEADBEEF",
         "ttlInSeconds": 10,
         "retryNumber": 2,
         "waitInSeconds": 1
