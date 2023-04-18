@@ -21,6 +21,7 @@ package org.entcore.infra.controllers;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
@@ -36,14 +37,19 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 
 public class MonitoringController extends BaseController {
+	private static final Logger log = LoggerFactory.getLogger(MonitoringController.class);
 
 	private boolean postgresql;
 	private long dbCheckTimeout;
@@ -146,6 +152,19 @@ public class MonitoringController extends BaseController {
 				}
 			}
 		};
+	}
+
+	/**
+	 * This endpoint receives CSP reports objects.
+	 * See https://www.w3.org/TR/CSP2/#violation-reports
+	 */
+	@Post("/monitoring/csp")
+	public void cspReport(final HttpServerRequest request) {
+		bodyToJson(request, pathPrefix + "cspReport", body -> {
+			final JsonObject report = body.getJsonObject("csp-report");
+			log.warn("[cspReport] violating iframe source "+ report.getString("blocked-uri") +" loaded from "+ report.getString("document-uri"));
+			Renders.ok(request);
+		});
 	}
 
 }
