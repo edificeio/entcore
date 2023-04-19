@@ -20,10 +20,13 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
@@ -38,9 +41,12 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.utils.MapFactory;
+import static org.entcore.common.utils.StringUtils.isEmpty;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -61,13 +67,26 @@ public class Archive extends BaseServer {
 		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
-		String privateKeyPath = config.getString("archive-private-key", null);
-		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
+
+		boolean forceEncryption = config.getBoolean("force-encryption", true);
 
 		serverMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
 
-		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
-		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+		final Pair<PrivateKey, PublicKey> keys = createArchiveKeyPairs(vertx, config);
+		final PrivateKey signKey = keys.getLeft();
+		final PublicKey verifyKey = keys.getRight();
+		if(forceEncryption) {
+			log.debug("Encryption is forced");
+			if(signKey == null) {
+				log.error("Encryption was forced but we couldn't parse the private key");
+				throw new IllegalStateException("force.encryption.without.private.key");
+			} else if(verifyKey == null) {
+				log.error("Encryption was forced but we couldn't parse the public key");
+				throw new IllegalStateException("force.encryption.without.public.key");
+			}
+		} else {
+			log.debug("Encryption is not forced");
+		}
 
 		ImportService importService = new DefaultImportService(vertx, config, storage, importPath, null, verifyKey, forceEncryption);
 
@@ -123,6 +142,29 @@ public class Archive extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+	}
+
+	private Pair<PrivateKey, PublicKey> createArchiveKeyPairs(final Vertx vertx, final JsonObject config) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		final Pair<PrivateKey, PublicKey> signingKeyPair;
+		if(config.containsKey("archive-private-key-path")) {
+			final String privateKeyPath = config.getString("archive-private-key-path");
+			log.debug("Loading archive private key from file " + privateKeyPath);
+			signingKeyPair = Pair.of(
+					RSA.loadPrivateKey(vertx, privateKeyPath),
+					RSA.loadPublicKey(vertx, privateKeyPath)
+			);
+		} else if(config.containsKey("archive-private-key")) {
+			log.debug("Loading archive private key from configuration value");
+			final String privateKeyValue = config.getString("archive-private-key");
+			signingKeyPair = Pair.of(
+					RSA.loadPrivateKeyFromValue(privateKeyValue),
+					RSA.loadPublicKeyFromValue(privateKeyValue)
+			);
+		} else {
+			log.debug("No key to load to sign archvie files");
+			signingKeyPair = Pair.of(null, null);
+		}
+		return signingKeyPair;
 	}
 
 }
