@@ -19,6 +19,24 @@
         "port": 8011,
         "old-query": {{ workspaceUseOldQuery|default('false') }},
         "mongo-address": "wse.mongodb.persistor",
+        {% if fileAnalyzerOn %}
+        "fileAnalyzer": {
+          "enabled": true,
+          "messaging": {
+            "type": "redis",
+            "stream": "xss-analyzer",
+            "tags": ["xss-analyzer", "workspace"],
+            "consumer-block-ms": 0,
+            "consumer-name": "xss-analyzer-workspace-{{ ansible_fqdn|default('app') }}",
+            "consumer-group": "xss-analyzer-workspace-group",
+            "metrics": {
+              "enabled": true
+            }
+          },
+          "mime-types": {{ fileAnalyzerMimeTypes|default('[".*image/svg.*"]') }},
+          "max-size": 20000000
+        },
+        {% endif %}
 		{% if scratchUrl is defined %} "enable-scratch": true, {% endif %}
         {% if loolVersion is defined %}"enable-lool": true,{% endif %}
         {% if geogebraVersion is defined %}"enable-geogebra": true,{% endif %}

@@ -26,6 +26,19 @@
         "import-files": "{{ importAAF }}",
         "execute-merge-ine": {{ executeMergeIne | default('true') }},
 		"support-perseducnat-1d-2d": {{ supportPerseducnat1d2d | default('false') }},
+        {% if fileAnalyzerOn %}
+        "fileAnalyzer": {
+          "enabled": true,
+          "messaging": {
+            "type": "redis",
+            "stream": "xss-analyzer",
+            "tags": ["xss-analyzer", "feeder"],
+            "metrics": {
+              "enabled": true
+            }
+          }
+        },
+        {% endif %}
         {% if feederCsvConfig is defined %}
         "csv" : {{feederCsvConfig}},
 		"csv-imports-timeout" : 900000,
