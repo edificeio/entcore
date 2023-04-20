@@ -32,6 +32,7 @@ import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
+import org.entcore.common.storage.impl.StorageFileAnalyzer;
 import org.entcore.common.storage.impl.SwiftStorage;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
@@ -39,6 +40,8 @@ import org.entcore.common.validation.QuotaFileSizeValidation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
 
 public class StorageFactory {
 
@@ -47,6 +50,7 @@ public class StorageFactory {
 	private JsonObject swift;
 	private JsonObject fs;
 	private String gridfsAddress;
+	private final StorageFileAnalyzer.Configuration storageFileAnalyzerConfiguration;
 
 	public StorageFactory(Vertx vertx) {
 		this(vertx, null);
@@ -81,7 +85,10 @@ public class StorageFactory {
 			vertx.eventBus().localConsumer("storage", applicationStorage);
 		}
 
-		if(config != null) {
+		if(config == null) {
+			this.messagingClient = IMessagingClient.noop;
+			this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+		} else {
 			final IMessagingClient messagingClient;
 			final JsonObject fileAnalyzerConfiguration = config.getJsonObject("fileAnalyzer");
 			if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
@@ -90,8 +97,10 @@ public class StorageFactory {
 			} else {
 				this.messagingClient = IMessagingClient.noop;
 			}
-		} else {
-			this.messagingClient = IMessagingClient.noop;
+			this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
+				fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
+				fileAnalyzerConfiguration.getInteger("max-size", -1)
+			);
 		}
 
 	}
@@ -110,9 +119,9 @@ public class StorageFactory {
 			}
 		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
-				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient);
+				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);
 			} else {
-				storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false), messagingClient);
+				storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);
 			}
 			JsonObject antivirus = fs.getJsonObject("antivirus");
 			if (antivirus != null) {

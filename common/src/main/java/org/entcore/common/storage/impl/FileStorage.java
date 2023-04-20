@@ -77,10 +77,16 @@ public class FileStorage implements Storage {
 	private static final String STORAGE_ID = "file";
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat, final IMessagingClient messagingClient) {
-		this(vertx, new JsonArray().add(basePath), flat, messagingClient);
+		this(vertx, new JsonArray().add(basePath), flat, messagingClient, new StorageFileAnalyzer.Configuration());
+	}
+	public FileStorage(Vertx vertx, String basePath, boolean flat, final IMessagingClient messagingClient, final StorageFileAnalyzer.Configuration configuration) {
+		this(vertx, new JsonArray().add(basePath), flat, messagingClient, configuration);
 	}
 
 	public FileStorage(Vertx vertx, JsonArray bP, boolean flat, final IMessagingClient messagingClient) {
+		this(vertx, bP, flat, messagingClient, new StorageFileAnalyzer.Configuration());
+	}
+	public FileStorage(Vertx vertx, JsonArray bP, boolean flat, final IMessagingClient messagingClient, final StorageFileAnalyzer.Configuration configuration) {
 		this.flat = flat;
 		this.fs = vertx.fileSystem();
 		this.basePaths = new ArrayList<>();
@@ -93,7 +99,7 @@ public class FileStorage implements Storage {
 		this.messagingClient = messagingClient;
 		final String verticleIdt = vertx.getOrCreateContext().config().getString("main");
 		if(this.messagingClient.canListen()) {
-			this.messagingClient.startListening(new StorageFileAnalyzer(vertx, this))
+			this.messagingClient.startListening(new StorageFileAnalyzer(vertx, this, configuration))
 					.onSuccess(e -> log.info(verticleIdt + " started listening to analyze files"))
 					.onFailure(th -> log.error(verticleIdt + " encountered an error while trying to listen for incoming files to analyze", th));
 		} else {
