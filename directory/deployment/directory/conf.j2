@@ -44,6 +44,19 @@
             {% if remoteNodes is defined %}
             "remote-nodes": {{remoteNodes}}, 
             {% endif %}
+            {% if fileAnalyzerOn %}
+            "fileAnalyzer": {
+              "enabled": true,
+              "messaging": {
+                "type": "redis",
+                "stream": "xss-analyzer",
+                "tags": ["xss-analyzer", "directory"],
+                "metrics": {
+                  "enabled": true
+                }
+              }
+            },
+            {% endif %}
             "publicConf": {
                 "feeders": ["CSV"],
                 "federatedAddress": {{ federatedAddress|default('{}') }},
