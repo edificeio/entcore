@@ -22,6 +22,19 @@
         {% if archiveReprise is defined %}
         "reprise": {{ archiveReprise }},
         {% endif %}
+        {% if fileAnalyzerOn %}
+        "fileAnalyzer": {
+          "enabled": true,
+          "messaging": {
+            "type": "redis",
+            "stream": "xss-analyzer",
+            "tags": ["xss-analyzer", "archive"],
+            "metrics": {
+              "enabled": true
+            }
+          }
+        },
+        {% endif %}
         "publicConf": {
             "apps" : {
                 {#{% if zimbraVersion is not defined %}"conversation" : "org.entcore.conversation.controllers.ConversationController|createDraft",{% endif %}#}

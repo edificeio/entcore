@@ -39,6 +39,19 @@
         {% endif %}
         {% if overrideTheme %} "override-theme": {}, {% endif %}
         "port": 8012,
+        {% if fileAnalyzerOn %}
+        "fileAnalyzer": {
+          "enabled": true,
+          "messaging": {
+            "type": "redis",
+            "stream": "xss-analyzer",
+            "tags": ["xss-analyzer", "app-registry"],
+            "metrics": {
+              "enabled": true
+            }
+          }
+        },
+        {% endif %}
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {
