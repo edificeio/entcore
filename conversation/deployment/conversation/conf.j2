@@ -22,6 +22,19 @@
         "sql": true,
         "db-schema": "conversation",
         {% if ipPostgres2 is defined %}"sql-address": "sql.persistor2",{% endif %}
+        {% if fileAnalyzerOn %}
+        "fileAnalyzer": {
+          "enabled": true,
+          "messaging": {
+            "type": "redis",
+            "stream": "xss-analyzer",
+            "tags": ["xss-analyzer", "conversation"],
+            "metrics": {
+              "enabled": true
+            }
+          }
+        },
+        {% endif %}
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {
