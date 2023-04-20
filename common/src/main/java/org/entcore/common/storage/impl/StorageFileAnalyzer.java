@@ -8,16 +8,21 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import org.entcore.common.messaging.AppMessageProcessor;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.storage.FileAnalyzer;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageException;
+import org.entcore.common.storage.StorageFileAnalyzingException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Analyze files to remove XSS content.
@@ -26,16 +31,22 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
     public static final Logger logger = LoggerFactory.getLogger(StorageFileAnalyzer.class);
     private final Vertx vertx;
     private final Storage storage;
-    private final List<Pattern> handledMimeTypes;
+    private final Configuration configuration;
 
-    public StorageFileAnalyzer(final Vertx vertx, final Storage storage) {
+    public StorageFileAnalyzer(final Vertx vertx,
+                               final Storage storage) {
+        this(vertx, storage, new Configuration(emptyList(), -1));
+    }
+
+    public StorageFileAnalyzer(final Vertx vertx,
+                               final Storage storage,
+                               final Configuration configuration) {
         this.vertx = vertx;
         this.storage = storage;
-        this.handledMimeTypes = new ArrayList<>();
-        handledMimeTypes.add(Pattern.compile("text/.*"));
-        handledMimeTypes.add(Pattern.compile("application/.*script"));
-        handledMimeTypes.add(Pattern.compile("application/json"));
-        handledMimeTypes.add(Pattern.compile(".*xml"));
+        this.configuration = configuration;
+        if(this.configuration.handledMimeTypes.isEmpty()) {
+            throw new StorageFileAnalyzingException("storage.file.analyzer.no.mime.types");
+        }
     }
 
     @Override
@@ -45,10 +56,19 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
             if (logger.isDebugEnabled()) {
                 logger.debug("Reading file " + uploadedFileMessage.getFilename());
             }
-            report =  this.storage.readFileToMemory(uploadedFileMessage).compose(fileContent -> {
-                logger.debug("File " + uploadedFileMessage.getFilename() + " read");
-                return xssFilter(uploadedFileMessage, fileContent);
-            }).onFailure(th -> logger.error("An error occurred while reading file " + Json.encodePrettily(uploadedFileMessage)));
+            report =  this.storage.readFileToMemory(uploadedFileMessage)
+            .compose(fileContent -> {
+                logger.debug("File " + uploadedFileMessage.getId() + " read");
+                final Future analyze;
+                if(configuration.maxSize > 0 && fileContent.length > configuration.maxSize) {
+                    logger.warn("File " + uploadedFileMessage.getId() + " is too large to be analyzed");
+                    analyze = Future.succeededFuture();
+                } else {
+                    analyze = xssFilter(uploadedFileMessage, fileContent);
+                }
+                return analyze;
+            })
+            .onFailure(th -> logger.error("An error occurred while reading file " + Json.encodePrettily(uploadedFileMessage)));
         } else {
             report = Future.succeededFuture(new FileAnalyzer.Report(true, Collections.singletonList("mimeType.bypass")));
         }
@@ -57,7 +77,7 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
 
     private boolean shouldFilterFile(final UploadedFileMessage uploadedFileMessage) {
         final String contentType = uploadedFileMessage.getContentType();
-        return handledMimeTypes.stream().anyMatch(type -> type.matcher(contentType).matches());
+        return configuration.handledMimeTypes.stream().anyMatch(type -> type.matcher(contentType).matches());
     }
 
     private Future<FileAnalyzer.Report> xssFilter(final UploadedFileMessage uploadedFileMessage, final byte[] fileContent) {
@@ -95,5 +115,24 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
     @Override
     public Class<UploadedFileMessage> getHandledMessageClass() {
         return UploadedFileMessage.class;
+    }
+
+    public static class Configuration {
+        private final List<Pattern> handledMimeTypes;
+        private final long maxSize;
+
+        public Configuration() {
+            this(emptyList(), -1);
+        }
+        public Configuration(final List<String> handledMimeTypes, final long maxSize) {
+            this.maxSize = maxSize;
+            if(handledMimeTypes == null) {
+                this.handledMimeTypes = emptyList();
+            } else {
+                this.handledMimeTypes = handledMimeTypes.stream()
+                        .map(type -> Pattern.compile(type))
+                        .collect(Collectors.toList());
+            }
+        }
     }
 }
