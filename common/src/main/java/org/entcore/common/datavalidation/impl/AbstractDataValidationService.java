@@ -35,6 +35,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.datavalidation.DataValidationService;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
+import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.utils.StringUtils;
 
@@ -52,12 +53,11 @@ import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.validEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 
-public abstract class AbstractDataValidationService extends Renders implements DataValidationService {
+public abstract class AbstractDataValidationService extends TemplatedEmailRenders implements DataValidationService {
 	protected final Neo4j neo = Neo4j.getInstance();
 	protected final String field;
 	protected final String stateField;
 	protected final String encryptKey;
-	protected Map<String, JsonObject> requestThemeKV = null;
 
 	protected AbstractDataValidationService(final String field, final String stateField, io.vertx.core.Vertx vertx
 		, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
@@ -313,136 +313,5 @@ public abstract class AbstractDataValidationService extends Renders implements D
 	@Override
 	public Future<JsonObject> getCurrentState(String userId) {
 		return retrieveFullState(userId);
-	}
-
-	////////////////////////////////////////////
-	//FIXME The whole methods below are intended to retrieve overloaded i18n from Timeline because it contains variables for email templating...
-
-	protected Future<String> getThemePath(HttpServerRequest request) {
-        Promise<String> promise = Promise.promise();
-		vertx.eventBus().request( 
-			"portal",
-			new JsonObject().put("action", "getTheme"),
-			new DeliveryOptions().setHeaders(request.headers()), 
-			handlerToAsyncHandler( reply -> {
-				promise.complete( String.join(File.separator, config.getString("assets-path", "../.."), "assets", "themes", reply.body().getString("theme")) );
-			})
-		);
-		return promise.future();
-	}
-
-	protected Future<Map<String, JsonObject>> loadThemeKVs(final HttpServerRequest request) {
-        Promise<Map<String, JsonObject>> promise = Promise.promise();
-		getThemePath(request).onComplete( result -> {
-			if( result.succeeded() ) {
-				final String i18nDirectory = String.join(File.separator, result.result(), "i18n", "Timeline");
-				vertx.fileSystem().exists(i18nDirectory, ar -> {
-					if (ar.succeeded() && ar.result()) {
-						vertx.fileSystem().readDir(i18nDirectory, asyncResult -> {
-							if (asyncResult.succeeded()) {
-								readI18nTimeline(asyncResult.result())
-								.onSuccess( themeKV -> promise.complete(themeKV) );
-							} else {
-								log.error("Error loading assets at "+i18nDirectory, asyncResult.cause());
-								promise.complete(null);
-							}
-						});
-					} else if (ar.failed()) {
-						log.error("Error loading assets at "+i18nDirectory, ar.cause());
-						promise.complete(null);
-					}
-				});
-			}
-		});
-		return promise.future();
-	}
-
-	protected Map<String, JsonObject> getThemeDefaults() {
-		Map<String, JsonObject> themeKVs = new HashMap<String, JsonObject>();
-		themeKVs.put("fr", new JsonObject()
-			.put("timeline.mail.body.bgcolor", "#f9f9f9")
-			.put("timeline.mail.body.bg", "background-color: #f9f9f9;")
-			.put("timeline.mail.main", "background-color: #fff;")
-			.put("timeline.mail.main.border", "border: 1px solid #e9e9e9;")
-			.put("timeline.mail.maincolor", "#fff")
-			.put("timeline.mail.text.color", "color: #fff;")
-			.put("timeline.mail.header.bg", "background-color: #209DCC;")
-			.put("timeline.mail.header.bgcolor", "#209DCC")
-			.put("timeline.mail.main.text.color", "color: #000;")
-			.put("timeline.mail.footer.color", "color: #999;")
-		);
-		return themeKVs;
-	}
-
-	protected Future<Map<String, JsonObject>> readI18nTimeline(List<String> filePaths) {
-		Promise<Map<String, JsonObject>> promise = Promise.promise();
-		final Map<String, JsonObject> themeKV = new HashMap<String, JsonObject>();
-		final AtomicInteger count = new AtomicInteger(filePaths.size());
-		for(final String path : filePaths) {
-			vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
-				@Override
-				public void handle(AsyncResult<FileProps> ar) {
-					if (ar.succeeded() && ar.result().isRegularFile()) {
-						final String k = new File(path).getName().split("\\.")[0];
-						vertx.fileSystem().readFile(path, ar2 -> {
-							if (ar2.succeeded()) {
-								JsonObject jo = new JsonObject(ar2.result().toString("UTF-8"));
-								themeKV.put(k, jo);
-							}
-							if (count.decrementAndGet() == 0) {
-								promise.complete(themeKV);
-							}
-						});
-					} else {
-						if (count.decrementAndGet() == 0) {
-							promise.complete(themeKV);
-						}
-					}
-				}
-			});
-		}
-		return promise.future();
-	}
-
-	/* Override i18n to use additional theme variables */
-	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
-		super.setLambdaTemplateRequest(request);
-
-		final Mustache.Lambda hostLambda = new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException{
-				String contents = frag.execute();
-				if(contents.matches("^(http://|https://).*")){
-					out.write(contents);
-				} else {
-					String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
-					out.write(host + contents);
-				}
-			}
-		};
-
-		this.templateProcessor.setLambda("theme", new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String key = frag.execute();
-				String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
-				// {{theme}} directives may have inner {{host}}
-				Object innerCtx = new Object() {
-					Mustache.Lambda host = hostLambda;
-				};
-
-				// #46383, translations from the theme takes precedence over those from the domain
-				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
-				if (!translatedContents.equals(key)) {
-					Mustache.compiler().compile(translatedContents).execute(innerCtx, out);
-				} else {
-					JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
-					Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(innerCtx, out);
-				}
-			}
-		});
-
-		this.templateProcessor.setLambda("host", hostLambda);
 	}
 }
