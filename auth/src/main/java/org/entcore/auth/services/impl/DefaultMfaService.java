@@ -230,8 +230,8 @@ public class DefaultMfaService implements MfaService {
             
         // The encryptKey parameter must be defined correctly.
         String encryptKey = params.getString("encryptKey", null);
-        if( encryptKey == null
-                    || (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
+        if( encryptKey != null
+                    && (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
             // An AES key has to be 16, 24 or 32 bytes long.
             throw new InvalidKeyException("The \"encryptKey\" parameter must be 16, 24 or 32 bytes long.");
         }
