@@ -193,11 +193,13 @@ public class Auth extends BaseServer {
 				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
 				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
 				String processInterval = NDWConf.getString("process-interval");
-				NDWTask = new NewDeviceWarningTask(vertx, emailFactory.getSender(), config.getString("email"),
+				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
 													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval);
 				new CronTrigger(vertx, cron).schedule(NDWTask);
 			}
 		}
+
+		addController(new TestController(NDWTask));
 
 		CanopeCasClient canopeController = new CanopeCasClient(authController);
 		addController(canopeController);

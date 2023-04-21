@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.eventbus.Message;
-
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.RowSet;
@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -55,13 +56,16 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 
 import fr.wseduc.webutils.I18n;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
-public class NewDeviceWarningTask implements Handler<Long>
+public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handler<Long>
 {
     private static final String LOGIN_EVENTS_TABLE = "events.login_events";
     private static final String DEVICES_INFO_TABLE = "utils.ua_device";
@@ -111,8 +115,9 @@ public class NewDeviceWarningTask implements Handler<Long>
 
     private static final Logger log = LoggerFactory.getLogger(NewDeviceWarningTask.class);
 
-	public NewDeviceWarningTask(Vertx vertx, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit, String processInterval)
+	public NewDeviceWarningTask(Vertx vertx, JsonObject config, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit, String processInterval)
     {
+        super(vertx, config);
 		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
 		if (eventStoreConf != null)
         {
@@ -276,7 +281,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                         String userDomain = neoUser.getString("lastDomain", I18n.DEFAULT_DOMAIN);
                         String userScheme = neoUser.getString("lastScheme", "http");
 
-                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userScheme + "://" + userDomain);
+                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme);
                     }
                     scoreConnections(users);
                 }
@@ -371,7 +376,7 @@ public class NewDeviceWarningTask implements Handler<Long>
                                     {
                                         boolean sendEmail = user.email != null && c.score >= scoreThreshold;
                                         if(sendEmail == true)
-                                            sendEmail(user, c);
+                                            sendEmail(user, c, null);
                                     }
                                 }
                                 locked.set(false);
@@ -383,32 +388,107 @@ public class NewDeviceWarningTask implements Handler<Long>
         });
     }
 
-    private void sendEmail(LoginEventUser user, Connection c)
+    private void sendEmail(LoginEventUser user, Connection c, Handler<String> handler)
     {
-        JsonObject params = new JsonObject()
+        JsonObject templateParams = new JsonObject()
             .put("displayName", user.displayName)
             .put("device", c.device.toString())
             .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
             .put("ip", c.ip.indexOf("/") > -1 ? c.ip.substring(0, c.ip.indexOf("/")) : c.ip)
-            .put("host", user.host);
-		sender.sendEmail(
-            new JsonHttpServerRequest(new JsonObject().put("headers", new JsonObject().put("Accept-Language", user.language).put("X-ENT-Theme", user.theme))),
-            user.email,
-            this.mailFrom,
-            null,
-            null,
-            "email.new.device.subject",
-            "email/newDeviceWarning.html",
-            params,
-            true,
-            handlerToAsyncHandler(new Handler<Message<JsonObject>>()
-            {
-                public void handle(Message<JsonObject> event)
-                {
-                    if("ok".equals(event.body().getString("status")) == false)
+            .put("host", user.scheme + "://" + user.host);
+
+        HttpServerRequest request = new JsonHttpServerRequest(
+            new JsonObject()
+            .put("headers", new JsonObject()
+                .put("Accept-Language", user.language)
+                .put("X-ENT-Theme", user.theme)
+            )
+            .put("scheme", user.scheme)
+        );
+
+        processEmailTemplate(request, templateParams, "email/newDeviceWarning.html", false, processedTemplate -> {
+            sender.sendEmail(request, user.email, mailFrom, null, null,
+                "email.new.device.subject",
+                processedTemplate,
+                null,
+                true,
+                handlerToAsyncHandler( event -> {
+                    if("ok".equals(event.body().getString("status")) == false) {
                         log.error("Failed to send email to user " + user.id + " : " + event.body().getString("message"));
-                }
-            }));
+                    }
+                    if( handler!=null ) {
+                        handler.handle(processedTemplate);
+                    }
+                })
+            );
+        });
+    }
+
+    /**
+     * This method is intended to test the New Device email template.
+     * It does send an email, and also return the email HTML content through the handler.
+     * @param request ...
+     * @param handler Will revceive the email content or error message for display purposes. May be null.
+     */
+    public void sendFakeEmail(final HttpServerRequest request, final Handler<String> handler) {
+        UserUtils.getUserInfos(vertx.eventBus(), request, user -> {
+            if (user != null) {
+                // Need the email address, theme.... :-(
+                String getUserEmail = "MATCH (u:User{id:{user}}) " +
+                    "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+                    "RETURN u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, " +
+                    "uac.theme AS theme, uac.language AS language";
+                Neo4j.getInstance().execute(getUserEmail, new JsonObject().put("user",user.getUserId()), new Handler<Message<JsonObject>>() {
+                    @Override
+                    public void handle(Message<JsonObject> r) {
+                        if("ok".equals(r.body().getString("status"))) {
+                            LoginEventUser evtUser = new LoginEventUser(
+                                user.getUserId(), 
+                                user.getType(), 
+                                ""
+                            );
+
+                            JsonArray res = r.body().getJsonArray("result");
+                            for(int i = res.size(); i-- > 0;)
+                            {
+                                JsonObject neoUser = res.getJsonObject(i);
+                                String displayName = neoUser.getString("displayName");
+                                String email = neoUser.getString("email");
+                                String theme = neoUser.getString("theme");
+                                String mutableUserLanguage = "fr";
+                                try {
+                                    mutableUserLanguage = getOrElse(new JsonObject(getOrElse(neoUser.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
+                                } catch(Exception e) {}
+                                String userDomain = neoUser.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+                                String userScheme = neoUser.getString("lastScheme", "http");
+                
+                                evtUser.setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme);
+                            }
+
+                            // The fake connection
+                            Connection c = new Connection(user.getLogin(), "2007-12-03T10:15:30", "", "127.0.0.1", new Device(
+                                "This is a test device",
+                                "This is a test brand",
+                                "This is a test model",
+                                "DEVICE_OS_NAME",
+                                "DEVICE_OS_FAMILY",
+                                "DEVICE_OS_PLATFORM",
+                                "DEVICE_OS_VERSION",
+                                "DEVICE_CLIENT_TYPE",
+                                "DEVICE_CLIENT_NAME",
+                                "DEVICE_CLIENT_VERSION"
+                            ));
+
+                            sendEmail(evtUser, c, handler);
+                        } else {
+                            renderError(request, r.body());
+                        }
+                    }
+                });
+            } else {
+                unauthorized(request);
+            }
+        });
     }
 
     public void clearUsersDevices(String[] userIds)
@@ -619,6 +699,7 @@ public class NewDeviceWarningTask implements Handler<Long>
         String email;
         String theme;
         String language;
+        String scheme;
         String host;
 
         Set<Connection> knownConnections = new LinkedHashSet<Connection>();
@@ -631,13 +712,14 @@ public class NewDeviceWarningTask implements Handler<Long>
             this.admin = admin;
         }
 
-        public void setInfos(String displayName, String email, String theme, String language, String host)
+        public void setInfos(String displayName, String email, String theme, String language, String host, String scheme)
         {
             this.displayName = displayName;
             this.email = email;
             this.theme = theme;
             this.language = language;
             this.host = host;
+            this.scheme = scheme;
         }
 
         public void addKnownConnection(Connection c)
