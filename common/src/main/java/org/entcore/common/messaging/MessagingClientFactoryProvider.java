@@ -3,7 +3,7 @@ package org.entcore.common.messaging;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.messaging.impl.MicrometersMessagingClientMetricsRecorder;
-import org.entcore.common.messaging.impl.MonitoredMessaginClientFactory;
+import org.entcore.common.messaging.impl.MonitoredMessagingClientFactory;
 import org.entcore.common.messaging.impl.NoopMessagingClientFactory;
 
 /**
@@ -50,7 +50,6 @@ public class MessagingClientFactoryProvider {
      * <br/>
      * <strong>Required before using other functions</strong>
      * @param vertx Vertx instance of the service in which the verticle who wants to communicate is running
-     * @param config Portion of the configuration that contains messagingConfiguration.
      */
     public static void init(final Vertx vertx) {
         MessagingClientFactoryProvider.vertx = vertx;
@@ -79,7 +78,7 @@ public class MessagingClientFactoryProvider {
             }
             final JsonObject metricsOptions = messagingConfig.getJsonObject("metrics", new JsonObject());
             if(metricsOptions.getBoolean("enabled", false)) {
-                factory = new MonitoredMessaginClientFactory(innerFactory, vertx,
+                factory = new MonitoredMessagingClientFactory(innerFactory, vertx,
                         MicrometersMessagingClientMetricsRecorder.Configuration.fromJson(metricsOptions));
             } else {
                 factory = innerFactory;
