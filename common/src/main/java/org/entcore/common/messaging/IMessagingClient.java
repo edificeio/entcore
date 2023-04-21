@@ -28,7 +28,7 @@ import java.util.List;
  * // To send messages
  *
  * final Message message = new Message(System.currentTimeMillis(), userId);
-messagingClient.pushMessages(fileMetadata)
+messagingClient.pushMessages(message)
 .onSuccess(e -> log.debug("Successfully sent message"))
 .onFailure(th -> log.warn("Could not send message", th));
  *
