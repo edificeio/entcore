@@ -98,7 +98,7 @@
         },
         "emailValidationConfig": {
             "active": {{ emailValidationActive | default('true') }},
-            "encryptKey": "{{ emailValidationEncryptKey | default('') }}",
+            "encryptKey": "{{ emailValidationEncryptKey | default('null') }}",
       	    "ttlInSeconds": {{ emailValidationTtl|default('600') }},
       	    "retryNumber": {{ emailValidationRetry|default('5') }},
       	    "waitInSeconds": {{ emailValidationWait|default('10') }}
