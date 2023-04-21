@@ -488,6 +488,7 @@ public class FileStorage implements Storage {
 		getReadPath(id, pathResult -> {
 			if (pathResult.succeeded()) {
 				final String path = pathResult.result();
+				// NB : Reading the whole file will fail if the file is too heavy (2Go)
 				fs.readFile(path, result -> {
 					if(result.succeeded()) {
 						onFileRead.complete(result.result().getBytes());

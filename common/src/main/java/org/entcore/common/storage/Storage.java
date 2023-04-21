@@ -113,5 +113,16 @@ public interface Storage {
 
 	void findByFilenameEndingWith(String endsWith, Handler<AsyncResult<JsonArray>> handler);
 
+	/**
+	 * <p>
+	 *     Reads the whole content of the file into memory.
+	 * </p>
+	 *<p>
+	 * NB : depending on the underlying implementation and the size of the file, a call to this method
+	 * can fail if the file is too heavy
+	 *</p>
+	 * @param uploadedFileMessage Description of the file to read
+	 * @return The raw content of the file
+	 */
     Future<byte[]> readFileToMemory(UploadedFileMessage uploadedFileMessage);
 }
