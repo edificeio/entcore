@@ -112,32 +112,6 @@ public class DefaultUserValidationService implements UserValidationService {
             }
             return promise.future();
         }
-
-        private void processEmailTemplate(
-			final HttpServerRequest request, 
-			JsonObject parameters, 
-			String template, 
-			boolean reader, 
-			final Handler<String> handler
-			) {
-            // From now until the end of the template processing, code execution cannot be async.
-            // So initialize requestedThemeKV here and now.
-            loadThemeKVs(request)
-            .onSuccess( themeKV -> {
-                this.requestThemeKV = themeKV;
-                if(reader){
-                    final StringReader templateReader = new StringReader(template);
-                    processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
-                        public void handle(Writer writer) {
-                            handler.handle(writer.toString());
-                        }
-                    });
-        
-                } else {
-                    processTemplate(request, template, parameters, handler);
-                }
-            });
-        }
     }
 
     //---------------------------------------------------------------
