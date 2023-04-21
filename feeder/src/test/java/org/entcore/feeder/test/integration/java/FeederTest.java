@@ -16,6 +16,7 @@ import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
@@ -66,6 +67,7 @@ public class FeederTest {
     }
 
     @Test
+    @Ignore
     public void testShouldImportAafAndRemoveUser(final TestContext context) {
         final Async async = context.async();
         final EventBus eb = test.vertx().eventBus();

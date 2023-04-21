@@ -94,15 +94,19 @@ public class StorageFactory {
 			if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
 				MessagingClientFactoryProvider.init(vertx);
 				this.messagingClient = MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create();
+				if(this.messagingClient.canListen()) {
+					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
+							fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
+							fileAnalyzerConfiguration.getInteger("max-size", -1)
+					);
+				} else {
+					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+				}
 			} else {
 				this.messagingClient = IMessagingClient.noop;
+				this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
 			}
-			this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
-				fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
-				fileAnalyzerConfiguration.getInteger("max-size", -1)
-			);
 		}
-
 	}
 
 	public Storage getStorage() {
