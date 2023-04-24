@@ -37,6 +37,7 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -407,11 +408,15 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         );
 
         processEmailTemplate(request, templateParams, "email/newDeviceWarning.html", false, processedTemplate -> {
-            sender.sendEmail(request, user.email, mailFrom, null, null,
+            sender.sendEmail(request, Collections.singletonList(user.email), mailFrom, 
+                null, //cc
+                null, //bcc
                 "email.new.device.subject",
+                null,   // attachments
                 processedTemplate,
                 null,
                 true,
+                null, // headers
                 handlerToAsyncHandler( event -> {
                     if("ok".equals(event.body().getString("status")) == false) {
                         log.error("Failed to send email to user " + user.id + " : " + event.body().getString("message"));
