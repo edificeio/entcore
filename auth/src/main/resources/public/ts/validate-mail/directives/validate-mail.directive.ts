@@ -1,6 +1,6 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
-import { conf, session, notify, notif } from "ode-ngjs-front";
+import { conf, http, session, notify, notif } from "ode-ngjs-front";
 import { IEmailValidationInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
@@ -39,8 +39,12 @@ export class ValidateMailController implements IController {
 		return this.me.functions && this.me.functions.SUPER_ADMIN && this.me.functions.SUPER_ADMIN.scope;
 	}
 
-	get isTypeEmail	() {
+	get isTypeEmail() {
 		return this.type === "email";
+	}
+
+	get isTypeSms() {
+		return this.type === "sms";
 	}
 
 	get finalPhoneNumber():String {
@@ -54,13 +58,10 @@ export class ValidateMailController implements IController {
 		])
 		.then( unused => (this.isTypeEmail ? session().getEmailValidationInfos() : session().getMobileValidationInfos()) as Promise<IEmailValidationInfos | IMobileValidationInfos>)
 		.catch( e => {
-			if(this.isTypeEmail) {
-				setTimeout( () => notify.error('validate-mail.error.network', 4000), 500 );
-				return null;
-			} else if (this.type === "sms") {
-				setTimeout( () => notify.error('validate-sms.error.network', 4000), 500 );
-				return null;
-			}
+			setTimeout( () => {
+				notify.error(this.isTypeEmail ? 'validate-mail.error.network' : 'validate-sms.error.network', 4000);
+			}, 500 );
+			return null;
 		});
 
 		if( this.infos ) {
@@ -105,48 +106,52 @@ export class ValidateMailController implements IController {
 		};
 	}
 
-	public validateMail() {
+	public async validateMail() {
 		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
 		const time = new Date().getTime();
 
-		return session().checkEmail(this.emailAddress)
-		.then( () => {
+		try {
+			await session().checkEmail(this.emailAddress);
+			if( http().latestResponse.status>=400 ) {
+				throw ('validate-mail.error.network');
+			}
+
 			this.step = "code";
 			this.inputCode && delete this.inputCode;
-		})
-		.catch( e => {
-			notify.error('validate-mail.error.network');
-		})
-		.then( () => {
+
+			// Effective wait
 			const waitMs = (this.infos ? this.infos.waitInSeconds:10) * 1000;
 			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
 			const debounceTime:IPromisified<void> = notif().promisify();
 			setTimeout( () => debounceTime.resolve(), duration);
 			return debounceTime.promise;
-		})
-		;
+		} catch( e ) {
+			notify.error('validate-mail.error.network');
+		}
 	}
 
-	public validateSms() {
+	public async validateSms() {
 		// Wait at least infos.waitInSeconds (defaults to 10) seconds while validating
 		const time = new Date().getTime();
 
-		return session().checkMobile(this.finalPhoneNumber)
-		.then( () => {
+		try {
+			await session().checkMobile(this.finalPhoneNumber);
+			if( http().latestResponse.status>=400 ) {
+				throw ('validate-sms.error.network');
+			}
+
 			this.step = "code";
 			this.inputCode && delete this.inputCode;
-		})
-		.catch( e => {
-			notify.error('validate-sms.error.network');
-		})
-		.then( () => {
+
+			// Effective wait
 			const waitMs = (this.infos ? this.infos.waitInSeconds:10) * 1000;
 			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
 			const debounceTime:IPromisified<void> = notif().promisify();
 			setTimeout( () => debounceTime.resolve(), duration);
 			return debounceTime.promise;
-		})
-		;
+		} catch( e ) {
+			notify.error('validate-sms.error.network');
+		}
 	}
 
 	public validateCode():Promise<OTPStatus> {
@@ -159,14 +164,10 @@ export class ValidateMailController implements IController {
 				this.status = "ok";
 			} else {
 				this.status = "ko";
-				if( validation.state === "outdated" && this.isTypeEmail ) {
-					this.koStatusCause = 'validate-mail.error.ttl';
-				} else if (validation.state === "outdated" && this.type === "sms") {
-					this.koStatusCause = 'validate-sms.error.ttl';
-				} else if (this.isTypeEmail){
-					this.koStatusCause = 'validate-mail.error.code';
+				if( validation.state === "outdated" ) {
+					this.koStatusCause = this.isTypeEmail ? 'validate-mail.error.ttl' : 'validate-sms.error.ttl';
 				} else {
-					this.koStatusCause = 'validate-sms.error.code';
+					this.koStatusCause = this.isTypeEmail ? 'validate-mail.error.code' : 'validate-sms.error.code';
 				}
 			}
 		})
@@ -248,9 +249,9 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 		scope.onValidate = async (step:ValidationStep): Promise<void> => {
 			ctrl.status = "wait";
 			if( step === "input" ) {
-				if(ctrl.type === "email") {
+				if(ctrl.isTypeEmail) {
 					await ctrl.validateMail();
-				} else if (ctrl.type === "sms") {
+				} else if (ctrl.isTypeSms) {
 					await ctrl.validateSms();
 				}
 			}
