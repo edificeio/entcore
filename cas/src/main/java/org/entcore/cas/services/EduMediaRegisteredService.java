@@ -67,6 +67,9 @@ public class EduMediaRegisteredService extends AbstractCas20ExtensionRegisteredS
             case "Student" :
                 additionnalAttributes.add(createTextElement(EM_PROFILES, "National_1", doc));
                 break;
+            case "Relative" :
+                additionnalAttributes.add(createTextElement(EM_PROFILES, "National_2", doc));
+                break;
             case "Teacher" :
                 // Lastname
                 if (data.containsKey("lastName")) {
