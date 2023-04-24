@@ -11,6 +11,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
 import org.entcore.auth.users.NewDeviceWarningTask;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
@@ -29,7 +31,8 @@ public class TestController extends BaseController {
     }
 
     @Get("/test/newdevicemail")
-    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminFilter.class)
     public void newDevice(final HttpServerRequest request) {
         NDWTask.sendFakeEmail(request, emailOrError -> {
             request.response().putHeader("content-type", "text/html; charset=utf-8");
