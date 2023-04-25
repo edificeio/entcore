@@ -110,6 +110,10 @@ public abstract class AbstractDataValidationService extends TemplatedEmailRender
 			// We are going to update a user's session data => TODO propagate it
 			query.append(", u."+field+" = {value} ");
 			params.put("value", DataStateUtils.getValid(state));
+
+			if( "email".equals(field) ) {
+				query.append(", u.emailSearchField=LOWER({value}) ");
+			}
 		}
 		neo.execute(query.toString(), params, m -> {
 			Either<String, JsonObject> r = validEmpty(m);
