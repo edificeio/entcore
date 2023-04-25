@@ -126,7 +126,8 @@ export class ValidateMailController implements IController {
 			setTimeout( () => debounceTime.resolve(), duration);
 			return debounceTime.promise;
 		} catch( e ) {
-			notify.error('validate-mail.error.network');
+			const msg = (typeof e !== "string") ? 'validate-mail.error.network' : e;			
+			notify.error(msg);
 		}
 	}
 
@@ -150,16 +151,20 @@ export class ValidateMailController implements IController {
 			setTimeout( () => debounceTime.resolve(), duration);
 			return debounceTime.promise;
 		} catch( e ) {
-			notify.error('validate-sms.error.network');
+			const msg = (typeof e !== "string") ? 'validate-sms.error.network' : e;
+			notify.error(msg);
 		}
 	}
 
-	public validateCode():Promise<OTPStatus> {
+	public async validateCode():Promise<OTPStatus> {
 		// Wait at least 0,5s while validating
 		const time = new Date().getTime();
 
-		return (this.isTypeEmail ? session().tryEmailValidation(this.inputCode) : session().tryMobileValidation(this.inputCode))
-		.then( validation => {
+		try {
+			const validation = await (this.isTypeEmail ? session().tryEmailValidation(this.inputCode) : session().tryMobileValidation(this.inputCode));
+			if( http().latestResponse.status>=400 ) {
+				throw (http().latestResponse.statusText);
+			}
 			if( validation.state === "valid" ) {
 				this.status = "ok";
 			} else {
@@ -170,18 +175,18 @@ export class ValidateMailController implements IController {
 					this.koStatusCause = this.isTypeEmail ? 'validate-mail.error.code' : 'validate-sms.error.code';
 				}
 			}
-		})
-		.catch( e => {
-			notify.error(this.isTypeEmail ? 'validate-mail.error.network' : 'validate-sms.error.network');
-		})
-		.then( () => {
+
 			const waitMs = 500;
 			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
 			const debounceTime:IPromisified<void> = notif().promisify();
 			setTimeout( () => debounceTime.resolve(), duration);
-			return debounceTime.promise;
-		})
-		.then( () => this.status );
+			return debounceTime.promise.then( () => this.status );
+
+		} catch(e) {
+			notify.error(this.isTypeEmail ? 'validate-mail.error.network' : 'validate-sms.error.network');
+			this.status = "";
+			return this.status;
+		}
 	}
 
 	public renewCode():Promise<void> {
