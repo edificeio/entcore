@@ -293,7 +293,7 @@ public class FileStorage implements Storage {
 	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
 							final Handler<JsonObject> handler) {
 		try {
-			writeBuffer(getWritePath(id), id, buff, contentType, filename, handler);
+			writeBuffer(getWritePath(id), id, buff, contentType, filename, true, handler);
 		} catch (FileNotFoundException e) {
 			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
 			log.warn(e.getMessage(), e);
