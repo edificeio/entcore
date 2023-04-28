@@ -33,6 +33,7 @@ import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
 import org.entcore.common.storage.impl.StorageFileAnalyzer;
+import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
 import org.entcore.common.storage.impl.SwiftStorage;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
@@ -97,7 +98,8 @@ public class StorageFactory {
 				if(this.messagingClient.canListen()) {
 					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
 							fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
-							fileAnalyzerConfiguration.getInteger("max-size", -1)
+							fileAnalyzerConfiguration.getInteger("max-size", -1),
+							fileAnalyzerConfiguration.getString("replacement-content", DEFAULT_CONTENT)
 					);
 				} else {
 					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();

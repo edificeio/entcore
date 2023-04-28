@@ -35,7 +35,7 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
 
     public StorageFileAnalyzer(final Vertx vertx,
                                final Storage storage) {
-        this(vertx, storage, new Configuration(emptyList(), -1));
+        this(vertx, storage, new Configuration());
     }
 
     public StorageFileAnalyzer(final Vertx vertx,
@@ -83,14 +83,14 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
     private Future<FileAnalyzer.Report> xssFilter(final UploadedFileMessage uploadedFileMessage, final byte[] fileContent) {
         final Promise<FileAnalyzer.Report> report = Promise.promise();
         final String stripped = XSSUtils.stripXSS(new String(fileContent, StandardCharsets.UTF_8));
-        if(stripped.length() == fileContent.length) {
+        if(stripped.getBytes(StandardCharsets.UTF_8).length == fileContent.length) {
             logger.debug("The file " + uploadedFileMessage.getId() + " was safe");
             report.complete(new FileAnalyzer.Report(true, Collections.singletonList("xss.filtered.ok")));
         } else {
             logger.warn("The file " + uploadedFileMessage.getId() + " has been filtered so we will reupload it");
             final List<String> actions = new ArrayList<>();
             actions.add("xss.filtered.strip");
-            replaceFileWithContent(uploadedFileMessage, stripped).onComplete(replaceResult -> {
+            replaceFileWithContent(uploadedFileMessage, configuration.replacementContent).onComplete(replaceResult -> {
                 final boolean succeeded = replaceResult.failed();
                 actions.add(succeeded ? "file.replaced" : "file.replacing.error");
                 report.complete(new FileAnalyzer.Report(true, actions));
@@ -120,12 +120,17 @@ public class StorageFileAnalyzer implements AppMessageProcessor<UploadedFileMess
     public static class Configuration {
         private final List<Pattern> handledMimeTypes;
         private final long maxSize;
+        private final String replacementContent;
+        public static final String DEFAULT_CONTENT = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" >\n" +
+                "<text text-anchor=\"middle\" font-size=\"10px\" x=\"50%\" y=\"50%\">Contenu remplacé</text>\n" +
+                "</svg>";
 
         public Configuration() {
-            this(emptyList(), -1);
+            this(emptyList(), -1, DEFAULT_CONTENT);
         }
-        public Configuration(final List<String> handledMimeTypes, final long maxSize) {
+        public Configuration(final List<String> handledMimeTypes, final long maxSize, final String replacementContent) {
             this.maxSize = maxSize;
+            this.replacementContent = replacementContent;
             if(handledMimeTypes == null) {
                 this.handledMimeTypes = emptyList();
             } else {
