@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "birthDate": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "zipCode": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "loginAlias": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "homePhone": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string"
+    },
+    "childrenIds": {
+      "type": "string"
+    }
+  }
+}

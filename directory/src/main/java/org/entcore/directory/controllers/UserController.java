@@ -123,7 +123,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void update(final HttpServerRequest request) {
-		bodyToJson(request, new Handler<JsonObject>() {
+		bodyToJson(request, pathPrefix + "updateUser", new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
