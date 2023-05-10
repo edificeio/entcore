@@ -52,9 +52,21 @@ public class UserImportProcessing extends BaseImportProcessing {
 	}
 
 	@Override
-	public void process(final JsonObject object) {
-		if (resp.contains(object.getString("externalId"))) {
+	public void process(final JsonObject object)
+	{
+		if (resp.contains(object.getString("externalId")))
+		{
 			object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Relative"));
+
+			String mobile = object.getString("mobile");
+			JsonArray mobilePhone = object.getJsonArray("mobilePhone");
+			if (mobile == null && mobilePhone != null)
+			{
+				String firstMobilePhone = mobilePhone.getString(0);
+				if(firstMobilePhone != null)
+					object.put("mobile", firstMobilePhone);
+			}
+
 			importer.createOrUpdateUser(object);
 		}
 	}
