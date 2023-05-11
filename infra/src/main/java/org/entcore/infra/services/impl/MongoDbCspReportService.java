@@ -41,7 +41,12 @@ public class MongoDbCspReportService implements CspReportService {
 	@Override
 	public Future<JsonObject> store(JsonObject cspReport) {
 		Promise<JsonObject> promise = Promise.promise();
-		mongo.save(CSP_VIOLATION_REPORT, cspReport, validActionResultHandler( result -> {
+
+		JsonObject document = new JsonObject();
+		document.put("created", MongoDb.now());
+		document.put("report", cspReport);
+
+		mongo.save(CSP_VIOLATION_REPORT, document, validActionResultHandler( result -> {
 			if( result.isLeft() ) {
 				promise.fail( result.left().getValue() );
 			} else {
