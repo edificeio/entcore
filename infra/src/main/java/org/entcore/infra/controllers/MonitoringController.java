@@ -31,6 +31,9 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
+import org.entcore.infra.services.CspReportService;
+import org.entcore.infra.services.impl.MongoDbCspReportService;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -49,11 +52,10 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 
 
 public class MonitoringController extends BaseController {
-	private static final Logger log = LoggerFactory.getLogger(MonitoringController.class);
-
 	private boolean postgresql;
 	private long dbCheckTimeout;
 	private boolean enableNeo4jMetrics;
+	private CspReportService cspReportSvc; 
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -61,6 +63,7 @@ public class MonitoringController extends BaseController {
 		dbCheckTimeout = config.getLong("dbCheckTimeout", 5000l);
 		postgresql = config.getBoolean("sql", true);
 		enableNeo4jMetrics = config.getBoolean("neo4jMetricsEnable", false);
+		cspReportSvc = new MongoDbCspReportService();
 	}
 
 	@Get("/monitoring/db")
@@ -159,10 +162,11 @@ public class MonitoringController extends BaseController {
 	 * See https://www.w3.org/TR/CSP2/#violation-reports
 	 */
 	@Post("/monitoring/csp")
+	@SecuredAction(type = ActionType.AUTHENTICATED, value = "")
 	public void cspReport(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "cspReport", body -> {
 			final JsonObject report = body.getJsonObject("csp-report");
-			log.warn("[cspReport] violating iframe source "+ report.getString("blocked-uri") +" loaded from "+ report.getString("document-uri"));
+			cspReportSvc.store(report);
 			Renders.ok(request);
 		});
 	}
