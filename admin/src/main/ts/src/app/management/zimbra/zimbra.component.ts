@@ -6,9 +6,10 @@ import {Data} from '@angular/router';
 import {OdeComponent} from 'ngx-ode-core';
 import {GroupModel} from '../../core/store/models/group.model';
 import {NotifyService} from '../../core/services/notify.service';
-import {ReturnedMail, ReturnedMailStatut} from './ReturnedMail';
+import { RecallMail } from './recallmail.model';
 import {switchMap} from 'rxjs/operators';
 import {BundlesService} from 'ngx-ode-sijil';
+import { ActionStatus } from 'src/app/management/zimbra/enum/action-status.enum';
 
 @Component({
     selector: 'ode-zimbra',
@@ -23,11 +24,11 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
     public roleId: string;
     public checkboxes: boolean[] = [];
     public checkboxesMail: boolean[] = [];
-    public returnedMails: ReturnedMail[] = [];
+    public recalledMails: RecallMail[] = [];
     public removeConfirmationDisplayed = false;
     public deleteConfirmationDisplayed = false;
     public detailLightboxDisplayed = false;
-    public returnedMail = new ReturnedMail();
+    public recallMail: RecallMail;
 
     constructor(injector: Injector,
                 private zimbraService: ZimbraService,
@@ -47,9 +48,13 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
                 this.checkboxes = [];
                 this.checkboxesMail = [];
                 this._getGroups();
-                this._getReturnedMails();
+                this._getRecalledMails();
             }
         }));
+    }
+
+    refreshMails(): void {
+        this._getRecalledMails();
     }
 
     /**
@@ -135,16 +140,17 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
     }
 
     /**
-     * Get the list of returned mails to validate.
+     * Get the list of recalled mails to validate.
      */
-    private _getReturnedMails(): void {
-        this.subscriptions.add(this.zimbraService.getReturnedMails(this.structure.id).subscribe(
-            (returnedMails) => {
-                this.returnedMails = returnedMails;
-                this.returnedMails.forEach(mail => {
-                    this.checkboxesMail[mail.id] = false;
-                    mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + mail.statut);
-                    mail.estimatedTime = this._secondsToHms(mail.number_message);
+    private _getRecalledMails(): void {
+        this.subscriptions.add(this.zimbraService.getRecalledMails(this.structure.id).subscribe(
+            (recalledMails) => {
+                this.recalledMails = Array.from(recalledMails).sort((a, b) => b.action.date - a.action.date);
+                this.recalledMails.forEach(mail => {
+                    this.checkboxesMail[mail.recallMailId] = false;
+                    let status = RecallMail.getActionStatus(mail.action);
+                    mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + status);
+                    mail.status = status;
                 });
                 this.changeDetector.detectChanges();
             },
@@ -156,13 +162,9 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
         ));
     }
 
-    /**
-     * Delete a returned mail from table
-     */
-    public deleteReturnedMail(returnedMail: ReturnedMail): void {
-        this.subscriptions.add(this.zimbraService.deleteReturnedMail(returnedMail.id).subscribe(
-            (returnedMailDelete) => {
-                this.returnedMails.splice(this.returnedMails.findIndex(mail => mail.id === returnedMailDelete.id), 1);
+    public deleteRecalledMail(recallMail: RecallMail): void {
+        this.subscriptions.add(this.zimbraService.deleteRecalledMail(recallMail.recallMailId).subscribe(() => {
+                this.refreshMails();
                 this.notifyService.success(
                     'management.zimbra.return.delete.success.content',
                     'management.zimbra.return.delete.success.title');
@@ -175,121 +177,82 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
             }));
     }
 
-    /**
-     * Remove all selected returned mails.
-     */
-    public removeSelectedReturnedMails(): void {
+
+
+    public removeSelectedRecallMails(): void {
         const ids: number[] = [];
-        this.getSelectedReturnedMail().forEach(mail => {
-            ids.push(mail.id);
-            mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.PROGRESS');
-            mail.statut = 'PROGRESS';
-            mail.date = new Date().toString();
+        this.recalledMails.filter(message => this.checkboxesMail[message.recallMailId]).forEach(message => {
+            ids.push(message.recallMailId);
         });
-        this.changeDetector.detectChanges();
-        this.subscriptions.add(this.zimbraService.removeReturnedMails(ids).subscribe(
-            (mailsResponse: ReturnedMailStatut[]) => {
-                let successCount, failCount = 0;
-                this.getSelectedReturnedMail().forEach((mail: ReturnedMail) => {
-                    mailsResponse.forEach((mailResponse: ReturnedMailStatut) => {
-                        if (mailResponse.id === mail.id) {
-                            mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + mailResponse.statut);
-                            mail.statut = mailResponse.statut;
-                            mail.date = mailResponse.date;
-                        }
-                        if (mailResponse.statut === 'ERROR') {
-                            failCount++;
-                        }
-                        if (mailResponse.statut === 'REMOVED') {
-                            successCount++;
-                        }
-                    });
-                    this.checkboxesMail[mail.id] = false;
-                });
-                this.changeDetector.detectChanges();
-                if (successCount === 0) {
-                    this.notifyService.error(
-                        'management.zimbra.return.remove.error.content',
-                        'management.zimbra.return.remove.error.title');
-                } else if (failCount > 0) {
-                    this.notifyService.error(
-                        { key: 'management.zimbra.return.remove.someFail.content', parameters: { failCount, successCount } },
-                        'management.zimbra.return.remove.someFail.title');
-                } else {
-                    this.notifyService.success(
-                        'management.zimbra.return.remove.success.content',
-                        'management.zimbra.return.remove.success.title');
-                }
-            },
-            (err) => {
-                this.notifyService.notify(
-                    'management.zimbra.return.remove.error.content',
-                    'management.zimbra.return.remove.error.title', err.error.error, 'error');
-            }
-        ));
+        this.subscriptions.add(this.zimbraService.acceptRecalls(ids).subscribe(() => {
+            this.refreshMails();
+        },
+        (err) => {
+            this.notifyService.notify(
+                'management.zimbra.return.remove.error.content',
+                'management.zimbra.return.remove.error.title', err.error.error, 'error');
+        }));
     }
 
-    /**
-     * Get all selected returned mails.
-     */
-    public getSelectedReturnedMail(): ReturnedMail[] {
-        const mails = [];
-        this.returnedMails.forEach(mess => {
-            const isChecked = this.checkboxesMail[mess.id];
-            if (isChecked === true) {
-                mails.push(mess);
-            }
-        });
-        return mails;
+    public getSelectedRecalledMail(): RecallMail[] {
+        return this.recalledMails.filter(message => this.checkboxesMail[message.recallMailId])
     }
 
     /**
      * Check checkbox if statut is WAITING or ERROR.
      */
-    public checkCheckBox(returnedMail: ReturnedMail) {
-        if (returnedMail.statut === 'WAITING' || returnedMail.statut === 'ERROR') {
-            this.checkboxesMail[returnedMail.id] = !this.checkboxesMail[returnedMail.id];
+    public checkCheckBox(recallMail: RecallMail) {
+        if (recallMail.status === 'WAITING' || recallMail.status === 'ERROR') {
+            this.checkboxesMail[recallMail.recallMailId] = !this.checkboxesMail[recallMail.recallMailId];
         }
     }
 
     /**
-     * Check if all returned mails are checked (excepted removed and progress).
+     * Check if all recalled mails are checked (excepted removed and progress).
      */
     public areAllChecked(): boolean {
-        return this.returnedMails.filter(mess => mess.statut === 'WAITING' || mess.statut === 'PROGRESS').length > 0 &&
-            this.returnedMails.every(mess => mess.statut === 'REMOVED' || mess.statut === 'PROGRESS' || this.checkboxesMail[mess.id]);
+        return this.recalledMails.filter(mess => mess.status === 'WAITING' || mess.status === 'ERROR').length > 0 &&
+            this.recalledMails.every(mess => mess.status === 'REMOVED' || mess.status === 'PROGRESS' || this.checkboxesMail[mess.recallMailId]);
     }
 
     /**
-     * Check all returned mails (excepted removed and progress).
+     * Check all recalled mails (excepted removed and progress).
      */
     public checkAll(): void {
         const allChecked = this.areAllChecked();
-        this.returnedMails.forEach(mess => {
-            if (mess.statut !== 'REMOVED' && mess.statut !== 'PROGRESS') {
-                this.checkboxesMail[mess.id] = !allChecked;
+        this.recalledMails.forEach(mess => {
+            if (mess.status !== 'REMOVED' && mess.status !== 'PROGRESS') {
+                this.checkboxesMail[mess.recallMailId] = !allChecked;
             }
         });
     }
 
+    getProgressionMessageDependingOnRecalls(recallMail: RecallMail) {
+        if (recallMail.status == ActionStatus.WAITING) {
+            return recallMail.action.tasks.total.toString() + " " + this.bundles.translate('management.zimbra.recall.number.message' + (recallMail.action.tasks.total > 1 ? ".plural" : ""));
+        } else {
+            return recallMail.action.tasks.finished.toString() + " / " + recallMail.action.tasks.total.toString();
+        }
+    }
+
     /**
-     * Open lightbox which give details of a returned mail.
+     * Open lightbox which give details of a recalled mail.
      */
-    public openDetailLightBox(returnedMail: ReturnedMail): void {
-        this.returnedMail = returnedMail;
+    public openDetailLightBox(recallMail: RecallMail): void {
+        this.recallMail = recallMail;
         this.detailLightboxDisplayed = true;
     }
 
     /**
-     * Open lightbox which delete a returned mail.
+     * Open lightbox which delete a recalled mail.
      */
-    public openDeleteLightBox(returnedMail: ReturnedMail): void {
-        this.returnedMail = returnedMail;
+    public openDeleteLightBox(recalledMail: RecallMail): void {
+        this.recallMail = recalledMail;
         this.deleteConfirmationDisplayed = true;
     }
 
     /**
-     * Open lightbox which returned mail.
+     * Open lightbox which recalled mail.
      */
     public openPopUpRemoveConfirmation(): void {
         this.removeConfirmationDisplayed = true;

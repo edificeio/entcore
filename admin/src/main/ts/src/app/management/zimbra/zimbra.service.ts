@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {GroupModel} from '../../core/store/models/group.model';
 import {RoleModel} from '../../core/store/models/role.model';
-import {ReturnedMail, ReturnedMailStatut} from './ReturnedMail';
+import {RecallMail} from './recallmail.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,29 +22,24 @@ export class ZimbraService {
   }
 
   /**
-   * Get the list of all returned mails.
+   * Get the list of all recalled mails.
    * @param structureId Id for the current structure.
    */
-  public getReturnedMails(structureId: string): Observable<ReturnedMail[]> {
-    return this.httpClient.get<ReturnedMail[]>(`/zimbra/return/list?structureId=${structureId}`);
+  public getRecalledMails(structureId: string): Observable<RecallMail[]> {
+    return this.httpClient.get<{recallMails: RecallMail[]}>(`/zimbra/recall/structure/${structureId}/list`).map(response => response.recallMails);
   }
 
-  /**
-   * Delete the selected returned mail.
-   * @param id Id of the selected returnedMail.
-   */
-  public deleteReturnedMail(id: number) {
-    return this.httpClient.delete<ReturnedMailStatut>(`/zimbra/return/delete/${id}`);
-  }
 
   /**
-   * Remove selected mails.
-   * @param mailIds List of mails ids to be removed from mailbox.
+   * Delete the selected recalled mail.
+   * @param id Id of the selected recalledMail.
    */
-  public removeReturnedMails(mailIds: number[]): Observable<ReturnedMailStatut[]> {
-    let params = '';
-    mailIds.forEach(id => params += `id=${id}&`);
-    return this.httpClient.delete<ReturnedMailStatut[]>(`/zimbra/delete/sent?${params}`);
+  public deleteRecalledMail(id: number) {
+    return this.httpClient.delete<void>(`/zimbra/recall/${id}/delete`);
+  }
+
+  public acceptRecalls(mailIds: number[]) {
+    return this.httpClient.put<void>(`/zimbra/recall/accept/multiple`, {"ids": mailIds});
   }
 
 
