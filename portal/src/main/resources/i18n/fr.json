@@ -814,6 +814,8 @@
   "explorer.modal.onboarding.trash.prev": "Précédent",
   "explorer.modal.onboarding.trash.next": "Suivant",
   "explorer.modal.onboarding.trash.close": "Fermer",
+  "explorer.search.pending": "Recherche en cours...",
+  "explorer.search.adml.hint": "Saisissez 3 lettres pour démarrer la recherche",
   "read": "Consulter",
   "contrib": "Contribuer",
   "manager": "Gérer"
