@@ -26,6 +26,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.directory.pojo.TransversalSearchQuery;
 
 import java.util.List;
 
@@ -87,7 +88,7 @@ public interface UserService {
 			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId, JsonArray expectedProfiles,
-			String filterActivated, String searchTerm, String searchType, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+				   String filterActivated, final TransversalSearchQuery searchQuery, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void delete(List<String> users, Handler<Either<String, JsonObject>> result);
 

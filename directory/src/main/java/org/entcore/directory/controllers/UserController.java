@@ -41,7 +41,6 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.MobileValidation;
-import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -57,6 +56,8 @@ import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
+import org.entcore.directory.pojo.TransversalSearchQuery;
+import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
@@ -72,6 +73,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -502,7 +504,7 @@ public class UserController extends BaseController {
 							}
 						};
 					}
-					userService.listAdmin(structureId, false, classId, null, types, filterActive, null, null, user, handler);
+					userService.listAdmin(structureId, false, classId, null, types, filterActive, TransversalSearchQuery.EMPTY, user, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -700,15 +702,35 @@ public class UserController extends BaseController {
 					final String nameFilter = request.params().get("name");
 					if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
 						// Retro-compability : if a "name" parameter is defined, it should be interpreted like a searchTerm (+searchType=displayName)
-						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, nameFilter, "displayName", user, arrayResponseHandler(request));
+						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, new TransversalSearchQuery(nameFilter, ""), user, arrayResponseHandler(request));
 					} else {
-						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchTerm, searchType, user, arrayResponseHandler(request));
+						final Optional<TransversalSearchQuery> maybeSearchQuery = searchQueryFromRequest(request);
+						if(maybeSearchQuery.isPresent()) {
+							userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, maybeSearchQuery.get(), user, arrayResponseHandler(request));
+						} else {
+							badRequest(request);
+						}
 					}
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	private Optional<TransversalSearchQuery> searchQueryFromRequest(final HttpServerRequest request) {
+		final TransversalSearchQuery searchQuery;
+		final MultiMap params = request.params();
+		final String searchType = params.get("searchType");
+		final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
+		if(TransversalSearchType.NAME.equals(type)) {
+			searchQuery = new TransversalSearchQuery(params.get("lastName"), params.get("firstName"));
+		} else if(TransversalSearchType.EMAIL.equals(type)) {
+			searchQuery = new TransversalSearchQuery(params.get("email"));
+		} else {
+			searchQuery = null;
+		}
+		return Optional.ofNullable(searchQuery);
 	}
 
 	@Put("/user/:studentId/related/:relativeId")
