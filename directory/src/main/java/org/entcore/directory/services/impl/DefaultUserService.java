@@ -41,6 +41,8 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.common.validation.ValidationException;
 import org.entcore.directory.Directory;
+import org.entcore.directory.pojo.TransversalSearchQuery;
+import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
@@ -510,13 +512,18 @@ public class DefaultUserService implements UserService {
 	@Override
 	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
 						  JsonArray expectedProfiles, UserInfos userInfos, io.vertx.core.Handler<fr.wseduc.webutils.Either<String,JsonArray>> results) {
-		listAdmin(structureId, includeSubStructure, classId, groupId, expectedProfiles, null, null, null, userInfos, results);
+		listAdmin(structureId, includeSubStructure, classId, groupId, expectedProfiles, null, TransversalSearchQuery.EMPTY, userInfos, results);
 	};
 
 	@Override
-	public void listAdmin(String structureId, boolean includeSubStructure, String classId, String groupId,
-						  JsonArray expectedProfiles, String filterActivated, String searchTerm, String searchType,
-						  UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+	public void listAdmin(String structureId, boolean includeSubStructure,
+						  String classId,
+						  String groupId,
+						  JsonArray expectedProfiles,
+						  String filterActivated,
+						  final TransversalSearchQuery searchQuery,
+						  final UserInfos userInfos,
+						  final Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
 		String filter = "";
 		String filterProfile = "WHERE 1=1 ";
@@ -527,7 +534,7 @@ public class DefaultUserService implements UserService {
 			"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 			"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) ";
 		if (expectedProfiles != null && expectedProfiles.size() > 0) {
-			filterProfile += "AND p.name IN {expectedProfiles} ";
+			filterProfile += "AND head(u.profiles) IN {expectedProfiles} ";
 			params.put("expectedProfiles", expectedProfiles);
 		}
 		if (classId != null && !classId.trim().isEmpty()) {
@@ -542,7 +549,7 @@ public class DefaultUserService implements UserService {
 			params.put("groupId", groupId);
 		}
 		String condition = "";
-		String functionMatch = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
+		String functionMatch = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
 				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
@@ -564,16 +571,32 @@ public class DefaultUserService implements UserService {
 				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		}
-		searchTerm = normalize( searchTerm );
-		if(searchTerm != null){
-			if ("email".equals(searchType)) {
-				condition += "AND u.emailSearchField CONTAINS {searchTerm} ";
+		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) && isNotEmpty(searchQuery.getEmail())) {
+			final String emailSearchTerm = normalize(searchQuery.getEmail());
+			condition += "AND u.emailSearchField CONTAINS {email} ";
+			params.put("email", searchQuery.getEmail());
+		} else if(TransversalSearchType.NAME.equals(searchQuery.getSearchType()) && (
+				isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName()))) {
+			final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
+			final String lastNameSearchTerm = normalize(searchQuery.getLastName());
+			final StringBuilder sbuilder = new StringBuilder();
+			sbuilder.append(" AND ");
+			final boolean hasLastName;
+			if(isEmpty(lastNameSearchTerm)) {
+				hasLastName = false;
 			} else {
-				condition += "AND u.displayNameSearchField CONTAINS {searchTerm} ";
-				// Remove accents when searching for a display name.
-				searchTerm = StringUtils.stripAccents(searchTerm);
+				sbuilder.append("u.lastNameSearchField STARTS WITH {lastName}");
+				params.put("lastName", lastNameSearchTerm);
+				hasLastName = true;
 			}
-			params.put("searchTerm", searchTerm);
+			if(isNotEmpty(firstNameSearchTerm)) {
+				if(hasLastName) {
+					sbuilder.append(" and ");
+				}
+				sbuilder.append("u.firstNameSearchField STARTS WITH {firstName}");
+				params.put("firstName", firstNameSearchTerm);
+			}
+			condition += sbuilder.toString();
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
@@ -589,7 +612,7 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH " + filter + "(u:User) " +
 				functionMatch + filterProfile + condition + optionalMatch +
-				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
+				"RETURN DISTINCT u.id as id, head(u.profiles) as type, u.externalId as externalId, " +
 				"u.activationCode as code, " +
 				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " +
 				"u.login as originalLogin, " +
@@ -607,8 +630,8 @@ public class DefaultUserService implements UserService {
 				"HEAD(COLLECT(distinct parent.externalId)) as parent1ExternalId, " + // Hack for GEPI export
 				"HEAD(TAIL(COLLECT(distinct parent.externalId))) as parent2ExternalId, " + // Hack for GEPI export
 				"COUNT(distinct class.id) > 0 as hasClass, " + // Hack for Esidoc export
-				"CASE WHEN p.name = 'Teacher' THEN 'PROFS' ELSE 'ELEVES' END as chamiloProfile, " + // Hack for chamilo export
-				"CASE WHEN p.name = 'Teacher' THEN collect(distinct {name: sub.label}) ELSE collect(distinct {name: class.name}) END as allClassesSubject, " + // Hack for chamilo export
+				"CASE WHEN head(u.profiles) = 'Teacher' THEN 'PROFS' ELSE 'ELEVES' END as chamiloProfile, " + // Hack for chamilo export
+				"CASE WHEN head(u.profiles) = 'Teacher' THEN collect(distinct {name: sub.label}) ELSE collect(distinct {name: class.name}) END as allClassesSubject, " + // Hack for chamilo export
 				"split(u.birthDate, '-')[0] as birthYear, " + // Hack for Pmb export
 				"REPLACE(u.address,';',' ') as safeAddress " + // Hack for Pmb export
 				"ORDER BY type DESC, displayName ASC ";
