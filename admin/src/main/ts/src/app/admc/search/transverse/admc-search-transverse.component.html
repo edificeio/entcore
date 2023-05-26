@@ -1,19 +1,18 @@
 <ode-side-layout [showCompanion]="true">
   <div side-card>
-    <ode-list
+    <admc-user-search-list
       [model]="userlist"
       [inputFilter]="userListService.filterByInput"
       [sort]="userListService.sorts"
-      searchPlaceholder="search.user"
       noResultsLabel="list.results.no.users"
-      placeholder="list.placeholder"
+      [searchType]="selectedSearchTypeValue"
       [isSelected]="isSelected"
       [limit]="userListService.limit"
       [searchSubmit]="search"
       [searchInput]="true"
-      [isSearchButtonDisabled]="searchTerm?.trim().length < 3"
+      [isSearchButtonDisabled]="disableSearch"
       [searchDelay]="0"
-      (inputChange)="searchTerm = $event"
+      (inputChange)="searchTerms = $event"
       (onSelect)="handleSelectUser($event)"
       (scrolledDown)="userListService.addPageDown()"
       (listChange)="refreshListCount($event)"
@@ -72,7 +71,7 @@
         </span>
         <span class="structures">{{ userStructures(item) }}</span>
       </ng-template>
-    </ode-list>
+    </admc-user-search-list>
   </div>
   <div side-companion>
     <router-outlet></router-outlet>

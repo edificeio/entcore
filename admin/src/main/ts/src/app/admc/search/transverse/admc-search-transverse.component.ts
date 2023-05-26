@@ -2,11 +2,12 @@ import { Component, EventEmitter, Injector, Input, Output } from "@angular/core"
 import { OdeComponent } from "ngx-ode-core";
 import { BundlesService } from "ngx-ode-sijil";
 import { SpinnerService } from "ngx-ode-ui";
-import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
+import { SearchTypeEnum, SearchTypeValue } from "src/app/core/enum/SearchTypeEnum";
 import { UserListService } from "src/app/core/services/userlist.service";
 import { UserModel } from "src/app/core/store/models/user.model";
 import { UsersStore } from "src/app/users/users.store";
 import { AdmcSearchService } from "../admc-search.service";
+import { UserSearchTerms } from "../components/user-search-input/user-search-input.component";
 
 @Component({
     selector: 'ode-admc-search-transverse',
@@ -16,10 +17,10 @@ import { AdmcSearchService } from "../admc-search.service";
 export class AdmcSearchTransverseComponent extends OdeComponent {
     
     nbUser: number;
-    searchTerm: string;
+    searchTerms: UserSearchTerms;
     userlist: UserModel[];
     searchTypes: Array<{label: string, value: SearchTypeEnum}>;
-    selectedSearchTypeValue: string;
+    selectedSearchTypeValue: SearchTypeValue;
 
     // Selection
     @Input() selectedUser: UserModel;
@@ -47,6 +48,7 @@ export class AdmcSearchTransverseComponent extends OdeComponent {
             }
         ];
         this.selectedSearchTypeValue = SearchTypeEnum.DISPLAY_NAME;
+        this.searchTerms = [];
     }
 
     refreshListCount(list): void {
@@ -59,7 +61,7 @@ export class AdmcSearchTransverseComponent extends OdeComponent {
         return this.selectedUser && user && this.selectedUser.id === user.id;
     }
 
-    handleSelectSearchType(searchTypeValue: string): void {
+    handleSelectSearchType(searchTypeValue: SearchTypeValue): void {
         this.selectedSearchTypeValue = searchTypeValue;
     }
 
@@ -74,9 +76,19 @@ export class AdmcSearchTransverseComponent extends OdeComponent {
         return "";
     }
 
+    get disableSearch():boolean {
+        return !(
+            this.searchTerms && (
+                (this.searchTerms[0] && this.searchTerms[0].trim().length >= 3)
+                    ||
+                (this.searchTerms[1] && this.searchTerms[1].trim().length >= 3)
+            )
+        );
+    }
+
     search = (): void => {
         this.spinner.perform('portal-content', 
-            this.admcSearchService.search(this.searchTerm, this.selectedSearchTypeValue).then(data => {
+            this.admcSearchService.search(this.searchTerms, this.selectedSearchTypeValue).then(data => {
                 this.userlist = data;
                 this.refreshListCount(data);
                 this.changeDetector.markForCheck();

@@ -1,0 +1,20 @@
+form input[hidden] {
+  display: none!important;
+}
+
+:host .search {
+  &-container {
+    margin: 0;
+    display: flex;
+  }
+  
+  &-icon {
+    padding-left: 0;
+  }
+
+  &-button {
+    margin: 0;
+    background: #ff8352;
+    color: white;
+  }
+}
