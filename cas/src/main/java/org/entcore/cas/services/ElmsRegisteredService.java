@@ -23,6 +23,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
     private static final Logger log = LoggerFactory.getLogger(ElmsRegisteredService.class);
 
     private static final String ID = "id";
+    private static final String LOGIN = "login";
     private static final String FIRSTNAME = "firstName";
     private static final String LASTNAME = "lastName";
     private static final String STRUCTURE = "structure";
@@ -32,7 +33,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
     private static final String UAI = "UAI";
     private static final String IN_GAR_GROUP = "inGarGroup";
     private static final String IN_GAR_GROUPS = "inGarGroups";
-    private static final String IN_VALIDATEUR_GROUPS = "inValidateurGroups";
+    private static final String IN_VALIDATEUR_GROUP = "inValidateurGroup";
     private static final String GROUPS = "groups";
     private static final String VALIDEUR_GROUP = "Valideur de commande";
     private static final String GROUPDISPLAYNAME = "groupDisplayName";
@@ -72,6 +73,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
 
                     User user = new User();
                     JsonObject userData = new JsonObject()
+                            .put(principalAttributeName, data.getString(principalAttributeName))
                             .put(ID, data.getString(ID))
                             .put(FIRSTNAME, data.getString(FIRSTNAME))
                             .put(LASTNAME, data.getString(LASTNAME))
@@ -83,7 +85,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
                     userHandler.handle(user);
                 }).onFailure((err) -> {
                     log.error(String.format("[entcoreCAS@%s::getUser] " +
-                            "Failed to get User for eLMS. %s", this.getClass().getName(), err.getMessage()));
+                            "Failed to get User for eMLS. %s", this.getClass().getName(), err.getMessage()));
                     userHandler.handle(null);
                 });
     }
@@ -128,7 +130,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
                                 .filter(JsonObject.class::isInstance)
                                 .map(JsonObject.class::cast)
                                 .anyMatch(group -> VALIDEUR_GROUP.equals(group.getString(GROUPDISPLAYNAME)));
-                        rootElement.appendChild(createTextElement(IN_VALIDATEUR_GROUPS, String.valueOf(isInValidateurGroup), doc));
+                        rootElement.appendChild(createTextElement(IN_VALIDATEUR_GROUP, String.valueOf(isInValidateurGroup), doc));
                     }
 
                     additionalAttributes.add(rootElement);
