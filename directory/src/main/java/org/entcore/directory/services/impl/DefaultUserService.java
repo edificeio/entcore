@@ -585,7 +585,7 @@ public class DefaultUserService implements UserService {
 			if(isEmpty(lastNameSearchTerm)) {
 				hasLastName = false;
 			} else {
-				sbuilder.append("u.lastNameSearchField STARTS WITH {lastName}");
+				sbuilder.append(" u.lastNameSearchField STARTS WITH {lastName} ");
 				params.put("lastName", lastNameSearchTerm);
 				hasLastName = true;
 			}
@@ -593,7 +593,7 @@ public class DefaultUserService implements UserService {
 				if(hasLastName) {
 					sbuilder.append(" and ");
 				}
-				sbuilder.append("u.firstNameSearchField STARTS WITH {firstName}");
+				sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
 				params.put("firstName", firstNameSearchTerm);
 			}
 			condition += sbuilder.toString();

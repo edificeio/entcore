@@ -36,6 +36,8 @@
 
   "search.structure": "Rechercher un établissement",
   "search.user": "Rechercher un utilisateur",
+  "search.user.firstname": "Prénom",
+  "search.user.lastname": "Nom",
   "search.group": "Rechercher un groupe",
   "search.broadcast.list": "Rechercher une liste",
   "search.class": "Rechercher une classe",
