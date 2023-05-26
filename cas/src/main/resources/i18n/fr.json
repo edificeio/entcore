@@ -57,6 +57,6 @@
   "AtNormandieRegisteredService.description": "Service CAS spécifique de la région Normandie pour accompagner tous les 15-25 ans dans leur quotidien avec un dispositif d'aides conçu pour répondre à leurs besoins et à leurs envies.",
   "SpipRegisteredService.name": "SPIP",
   "SpipRegisteredService.description": "Service CAS spécifique pour le <a href='https://www.site.ac-aix-marseille.fr/' target='blank'>SPIP de l'Académie Aix-Marseille</a>",
-  "ElmsRegisteredService.name": "eLMS",
-  "ElmsRegisteredService.description": "eLMS"
+  "ElmsRegisteredService.name": "eMLS",
+  "ElmsRegisteredService.description": "Service CAS spécifique pour le libraire eMLS"
 }
