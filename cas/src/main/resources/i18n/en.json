@@ -47,6 +47,6 @@
   "AtNormandieRegisteredService.description": "AtoutNormandie",
   "SpipRegisteredService.name": "SPIP",
   "SpipRegisteredService.description": "SPIP",
-  "ElmsRegisteredService.name": "eLMS",
-  "ElmsRegisteredService.description": "eLMS"
+  "ElmsRegisteredService.name": "eMLS",
+  "ElmsRegisteredService.description": "Service CAS spécifique pour le libraire eMLS"
 }
