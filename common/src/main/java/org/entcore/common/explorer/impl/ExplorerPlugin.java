@@ -21,8 +21,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
-import org.entcore.common.explorer.to.MuteRequest;
-import org.entcore.common.explorer.to.MuteResponse;
+import org.entcore.common.explorer.to.*;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -46,7 +45,16 @@ import static java.lang.System.currentTimeMillis;
 
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
-    public static final String RESOURCES_GETSHARE = "getshare";
+    public static final String FOLDERS_ADDRESS = "explorer.folders";
+    public enum ResourceActions{
+        GetShares,
+    }
+
+    public enum FolderActions{
+        Upsert,
+        Delete,
+        List
+    }
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final IExplorerPluginCommunication communication;
     protected Function<Void, Void> listener;
@@ -336,7 +344,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     public Future<Map<String, JsonArray>> getShareInfo(Set<String> ids) {
         final JsonArray payload = new JsonArray(new ArrayList(ids));
         final Promise<Map<String,JsonArray>> promise = Promise.promise();
-        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", RESOURCES_GETSHARE);
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", ResourceActions.GetShares.name());
         communication.vertx().eventBus().request(RESOURCES_ADDRESS, payload, deliveryOptions, message -> {
             if(message.succeeded()) {
                 final Map<String, JsonArray> map = new HashMap<>();
@@ -345,6 +353,59 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                     map.put(id, received.getJsonArray(id, new JsonArray()));
                 }
                 promise.complete(map);
+            }else{
+                promise.fail(message.cause());
+            }
+        });
+        return promise.future();
+    }
+
+    @Override
+    public Future<FolderResponse> upsertFolder(final UserInfos user, final FolderUpsertRequest request) {
+        final JsonObject payload = JsonObject.mapFrom(request);
+        final Promise<FolderResponse> promise = Promise.promise();
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", FolderActions.Upsert.name()).setSendTimeout(180000);
+        communication.vertx().eventBus().request(FOLDERS_ADDRESS, payload, deliveryOptions, message -> {
+            if(message.succeeded()) {
+                final JsonObject received = (JsonObject) message.result().body();
+                final FolderResponse response = received.mapTo(FolderResponse.class);
+                promise.complete(response);
+            }else{
+                promise.fail(message.cause());
+            }
+        });
+        return promise.future();
+    }
+
+    @Override
+    public Future<List<FolderResponse>> listFolder(final UserInfos user, final FolderListRequest request) {
+        final Promise<List<FolderResponse>> promise = Promise.promise();
+        final JsonObject payload = JsonObject.mapFrom(request);
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", FolderActions.List.name()).setSendTimeout(180000);
+        communication.vertx().eventBus().request(FOLDERS_ADDRESS, payload, deliveryOptions, message -> {
+            if(message.succeeded()) {
+                final JsonArray received = (JsonArray) message.result().body();
+                final List<FolderResponse> responses = received.stream().map(e -> {
+                    return ((JsonObject)e).mapTo(FolderResponse.class);
+                }).collect(Collectors.toList());
+                promise.complete(responses);
+            }else{
+                promise.fail(message.cause());
+            }
+        });
+        return promise.future();
+    }
+
+    @Override
+    public Future<FolderDeleteResponse> deleteFolder(final UserInfos user, final FolderDeleteRequest request) {
+        final JsonObject payload = JsonObject.mapFrom(request);
+        final Promise<FolderDeleteResponse> promise = Promise.promise();
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", FolderActions.Delete.name()).setSendTimeout(180000);
+        communication.vertx().eventBus().request(FOLDERS_ADDRESS, payload, deliveryOptions, message -> {
+            if(message.succeeded()) {
+                final JsonObject received = (JsonObject) message.result().body();
+                final FolderDeleteResponse response = received.mapTo(FolderDeleteResponse.class);
+                promise.complete(response);
             }else{
                 promise.fail(message.cause());
             }
