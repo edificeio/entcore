@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.to.*;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
@@ -83,6 +84,12 @@ public interface IExplorerPlugin {
     Future<Void> notifyDelete(UserInfos user, JsonObject source);
 
     Future<Void> notifyDelete(UserInfos user, List<JsonObject> sources);
+
+    Future<List<FolderResponse>> listFolder(UserInfos user, FolderListRequest request);
+
+    Future<FolderResponse> upsertFolder(UserInfos user, FolderUpsertRequest sources);
+
+    Future<FolderDeleteResponse> deleteFolder(UserInfos user, FolderDeleteRequest sources);
 
     default Future<String> create(UserInfos user, JsonObject source, boolean isCopy){
         return create(user, source, isCopy, Optional.empty());

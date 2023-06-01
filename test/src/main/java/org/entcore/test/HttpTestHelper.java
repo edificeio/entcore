@@ -203,6 +203,25 @@ public class HttpTestHelper {
             return this;
         }
 
+        public TestHttpServerResponse jsonArrayHandler(Handler<JsonArray> bufferHandler) {
+            bodyHandler = e->{
+                bufferHandler.handle(new JsonArray(e.toString()));
+            };
+            return this;
+        }
+
+
+        public TestHttpServerResponse endJsonArrayHandler(Handler<JsonArray> bufferHandler) {
+            final JsonArray res = new JsonArray();
+            jsonArrayHandler(json ->{
+                res.addAll(json);
+            });
+            endHandler(e->{
+                bufferHandler.handle(res);
+            });
+            return this;
+        }
+
         @Override
         public HttpServerResponse write(Buffer buffer) {
             bodyHandler.handle(buffer);
