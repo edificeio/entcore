@@ -403,6 +403,9 @@
   "explorer.domino.info.views.title": "Nombre de vues",
   "explorer.domino.info.comments.title": "Nombre de commentaires",
   "explorer.resource.updated": "Modifié",
+
+  "explorer.trash.modal.title": "Accès à la ressource",
+  "explorer.trash.modal.text": "Les ressources placées dans la corbeille ne sont pas consultables. Veuillez restaurer la ressource ou demander à l’auteur ou un gestionnaire de le faire pour vous afin de pouvoir la consulter",
   "exercizer": "Exercices",
   "exercizer.behaviours.distributed.on": "Distribué pour le",
   "file.heavy": "Fichier lourd",
@@ -602,6 +605,7 @@
   "resid.art": "Résidence d'artiste",
   "resize": "Redimensionner",
   "restore": "Restaurer",
+  "close": "Fermer",
   "rotate": "Pivoter",
   "ru_RU": "Russe",
   "saturday": "samedi",
