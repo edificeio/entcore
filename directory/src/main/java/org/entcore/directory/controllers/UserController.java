@@ -726,7 +726,7 @@ public class UserController extends BaseController {
 		if(TransversalSearchType.NAME.equals(type)) {
 			searchQuery = new TransversalSearchQuery(params.get("lastName"), params.get("firstName"));
 		} else if(TransversalSearchType.EMAIL.equals(type)) {
-			searchQuery = new TransversalSearchQuery(params.get("email"));
+			searchQuery = new TransversalSearchQuery(params.get("searchTerm"));
 		} else {
 			searchQuery = null;
 		}
