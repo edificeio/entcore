@@ -210,6 +210,7 @@
   "webconference": "Videoconférence",
   "wednesday": "wednesday",
   "welcome": "Welcome, [[username]] !",
+  "welcome.text.1": "Welcome, ",
   "widget.notes.placeholder": "Enter your personal notes",
   "wiki": "Wiki",
   "workspace": "Workspace",
