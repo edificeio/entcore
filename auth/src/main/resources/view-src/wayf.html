@@ -56,6 +56,18 @@
 			}
 		}
 
+		var intervalPartId = setInterval(displayPartner, 200);
+		function displayPartner() {
+			if ($("#partner")) {
+				if ($("#partner").attr('src') != 'wayf.logo.partner') {
+					$("#partner").show();
+					clearInterval(intervalPartId);
+				} else {
+					clearInterval(intervalPartId);
+				}
+			}
+		}
+
 		function showLoader(element)
 		{
 			element.querySelector("i18n").classList.add("loader-hide");
@@ -102,6 +114,7 @@
 			<div style="float:right">
 				<a href="{{#i18n}}auth.charter{{/i18n}}" target="_blank" translate content="wayf.label.cgu" style="font-size: 1.5vh;"></a>
 			</div>
+			<img id="partner" src="{{#i18n}}wayf.logo.partner{{/i18n}}" style="width:300px;display:none" alt="Logo partenaire">
 		</section>
 	</div>
 </default-styles>
