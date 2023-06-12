@@ -56,6 +56,13 @@ public final class SamlUtils {
 	private static Document getDocumentFromString(final String xmlContent) throws Exception {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		documentBuilderFactory.setNamespaceAware(true);
+
+		documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
+		documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", Boolean.FALSE);
+		documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", Boolean.TRUE);
+		documentBuilderFactory.setFeature("http://javax.xml.XMLConstants/feature/secure-processing", Boolean.TRUE);
+		documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
+
 		return documentBuilderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(xmlContent)));
 	}
 
