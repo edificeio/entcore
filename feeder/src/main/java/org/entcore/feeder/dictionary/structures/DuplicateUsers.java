@@ -421,7 +421,7 @@ public class DuplicateUsers {
 		TransactionManager.getNeo4jHelper().execute(
 						"MATCH (u:User {id: {userId}}), (mu:User) " +
 						"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-						"AND u.source IN ['AAF1D','AAF'] AND mu.source IN ['AAF1D','AAF']" +
+						"AND (u.source IN ['AAF1D','AAF'] AND mu.source IN ['AAF1D','AAF']) OR (u.source IN ['CSV','MANUAL'] AND mu.source IN ['CSV','MANUAL']) " +
 						"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
 						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds, " +
 							"u.federated as federated, COLLECT(mu.federated) as mergeUserFederated "
@@ -470,6 +470,11 @@ public class DuplicateUsers {
 							try {
 								TransactionHelper tx = TransactionManager.getTransaction();
 
+								// Backup users relations before they are merged.
+								// This will allow restoring relations if/when unmerged later.
+								mergeUserIds.stream().forEach( id -> User.backupRelationship(id, tx) );
+
+								// Do merge
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +

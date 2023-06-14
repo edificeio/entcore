@@ -422,6 +422,55 @@ public class User {
 		transaction.add(query, params);
 	}
 
+	public static void restoreRelationship(String userId, TransactionHelper transaction) {
+		JsonObject params = new JsonObject().put("userId", userId);
+
+		String query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING CREATE UNIQUE u-[:IN]->g";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING CREATE UNIQUE u-[:COMMUNIQUE]->g";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING CREATE UNIQUE u<-[:COMMUNIQUE]-g";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_OUTGOING CREATE UNIQUE (u)-[:COMMUNIQUE_DIRECT]->(n)";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_INCOMING CREATE UNIQUE (u)<-[:COMMUNIQUE_DIRECT]-(n)";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (n:User) WHERE n.id IN b.RELATED_OUTGOING CREATE UNIQUE (u)-[:RELATED]->(n)";
+		transaction.add(query, params);
+
+		query =
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+			"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING CREATE UNIQUE (u)<-[:RELATED]-(n)";
+		transaction.add(query, params);
+
+		//TODO il faut faire le détachement backupé par cette fusion :
+		/*
+		query =
+				"MATCH (u:User { id : {userId}})-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure), " +
+				" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+				"WITH b, COLLECT(s.id) as sIds " +
+				"SET b.structureIds = sIds";
+		transaction.add(query, params);
+		*/
+	}
+
 	public static void preDelete(String userId, TransactionHelper transaction) {
 		JsonObject params = new JsonObject().put("userId", userId);
 		String mQuery =
