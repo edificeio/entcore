@@ -20,6 +20,7 @@ export type UnlinkedUserDetails = BackendDirectoryUserResponse & {
     functions?: Array<[string, Array<string>]>;
     deleteDate?: number;
     disappearanceDate?: number;
+    mergedWith?: string;
 };
 
 export type ListSearchParameters = {
@@ -117,4 +118,45 @@ export class UnlinkedUserService {
             throw response.statusText;
         });
     }
+
+    public getMergedWithDetails(userId: string): Promise<string|null> {
+        return http.get<BackendDirectoryUserResponse>(`/directory/user/${userId}`)
+            .then( response => {
+                if( response.status===200 ) return response.data;
+                throw response.statusText;
+            })
+            .then( response => `${response.displayName} (${response.login})` )
+            .catch( () => {
+                this.notify.error("user.root.error", "user.root.error.text");
+                return null;
+            });
+    }
+
+    public unmerge(userId:string, mergedLogin:string): Promise<Array<string>> {
+        const payload = {
+          originalUserId: userId,
+          mergedLogins: [mergedLogin]
+        }
+        return http.post<{mergedLogins:Array<string>}>('/directory/duplicate/user/unmergeByLogins', payload)
+            .then( response => {
+                if( response.status===200 ) return response.data;
+                throw response.statusText;
+            })
+            .then( result => {
+              this.notify.success({
+                key: 'notify.user.unmerge.content',
+                parameters: {mergedLogin: mergedLogin}
+              }, 'notify.user.unmerge.title');
+              return result.mergedLogins;
+            })
+            .catch( err => {
+              this.notify.error({
+                key: 'notify.user.unmerge.error.content',
+                parameters: {mergedLogin: mergedLogin}
+              }, 'notify.user.unmerge.error.title', err);
+              throw err;
+            });
+      }
+    
+
 }
