@@ -33,6 +33,14 @@ export type ListSearchParameters = {
     searchTerm?: string;
 };
 
+export type MergedWithDescription = {
+    id: string;
+    displayName: string;
+    login: string;
+    profiles: string[];
+    structureNodes?: { id: string, source: string, type: string, name: string }[];
+};
+
 @Injectable()
 export class UnlinkedUserService {
     constructor( private notify:NotifyService ) {
@@ -119,13 +127,20 @@ export class UnlinkedUserService {
         });
     }
 
-    public getMergedWithDetails(userId: string): Promise<string|null> {
+    public getMergedWithDetails(userId: string): Promise<MergedWithDescription|null> {
         return http.get<BackendDirectoryUserResponse>(`/directory/user/${userId}`)
             .then( response => {
                 if( response.status===200 ) return response.data;
                 throw response.statusText;
             })
-            .then( response => `${response.displayName} (${response.login})` )
+            .then( response => {
+                return {
+                    id: response.id, 
+                    displayName: response.displayName, 
+                    profiles: response.profiles,
+                    structureNodes: response.structureNodes
+                };
+            })
             .catch( () => {
                 this.notify.error("user.root.error", "user.root.error.text");
                 return null;

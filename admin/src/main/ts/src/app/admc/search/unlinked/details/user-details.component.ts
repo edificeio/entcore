@@ -5,7 +5,7 @@ import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
 import { NotifyService } from "src/app/core/services/notify.service";
 import { Config } from "src/app/core/resolvers/Config";
-import { UnlinkedUserDetails, UnlinkedUserService } from "../unlinked.service";
+import { MergedWithDescription, UnlinkedUserDetails, UnlinkedUserService } from "../unlinked.service";
 import { AbstractControl, NgForm } from "@angular/forms";
 import { catchError, tap } from "rxjs/operators";
 
@@ -31,7 +31,7 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
 //  public showPersEducNatBlockingConfirmation = false;
   public showMergedLogins: boolean = false;
   public details: UnlinkedUserDetails;
-  public mergedWithDetails: string|null = null;
+  public mergedWithDetails: MergedWithDescription|null = null;
   public imgSrc: string;
   public imgLoaded: boolean = false;
   public editMode: boolean = false;

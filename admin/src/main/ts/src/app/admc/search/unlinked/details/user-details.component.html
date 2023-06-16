@@ -121,7 +121,13 @@
               <ul>
                 <li>
                   <div class="is-display-flex has-space-between has-align-items-center">
-                    <div>{{ mergedWithDetails }}</div>
+                    <a *ngIf="mergedWithDetails.structureNodes && mergedWithDetails.structureNodes.length"
+                       [routerLink]="['/', 'admin', mergedWithDetails.structureNodes[0].id, 'users', 'list', mergedWithDetails.id, 'details']">
+                      {{ mergedWithDetails.displayName }} ({{mergedWithDetails.login}})
+                    </a>
+                    <div *ngIf="!mergedWithDetails.structureNodes || !mergedWithDetails.structureNodes.length">
+                      {{ mergedWithDetails.displayName }} ({{mergedWithDetails.login}})
+                    </div>
                     <button type="button" class="button is-primary" (click)="unmerge()">
                       <s5l>mergedLogins.unmerge</s5l>
                       <i class="fa fa-scissors"></i>
