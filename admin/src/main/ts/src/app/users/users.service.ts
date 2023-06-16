@@ -29,7 +29,7 @@ export interface BackendDirectoryUserResponse {
     mobilePhone: string[];
     workPhone: string;
     activationCode: string;
-    structureNodes: { source: string, type: string, name: string }[];
+    structureNodes: { id: string, source: string, type: string, name: string }[];
     type: string[];
 }
 
