@@ -137,6 +137,7 @@ export class UnlinkedUserService {
                 return {
                     id: response.id, 
                     displayName: response.displayName, 
+                    login: response.login, 
                     profiles: response.profiles,
                     structureNodes: response.structureNodes
                 };
