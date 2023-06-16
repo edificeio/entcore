@@ -741,6 +741,34 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.back();
 	};
 
+	$scope.switchForm = async function(index: number) {
+		$scope.indexFormChanged(index);
+		$scope.showDefaultValue = false;
+		$scope.defaultValueTitle = '';
+		template.open('main', 'mono-class');
+		template.open('list', 'dominos');
+
+		if (index === 0) {
+			if (!$scope.users.all.length) $scope.display.loading = true;
+			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
+			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
+			template.open('dominosUser', 'dominos-user');
+		}
+		else if (index === 1) {
+			if (!$scope.groups.all.length) $scope.display.loading = true;
+			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
+			$scope.groups = directory.directory.groups;
+			template.open('dominosGroup', 'dominos-group');
+		}
+		
+		$scope.display.searchmobile = false;
+		$scope.display.showCloseMobile = $scope.display.searchmobile;
+		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+		$scope.$apply();
+	}
+
 	$scope.canFavoriteFormInitSearch = function() {
 		return $scope.create.favorite.search || $scope.create.favorite.filters.structures || $scope.create.favorite.filters.classes || 
 				$scope.create.favorite.filters.profles || $scope.create.favorite.filters.functions || 
