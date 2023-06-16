@@ -25,7 +25,7 @@
 			<div class="spacer-small"></div>
 			<search-module
 				ng-model="search.index"
-				ng-change="indexFormChanged(index)"
+				ng-change="switchForm(index)"
 				search="searchDirectory()"
 				images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 				<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
