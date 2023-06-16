@@ -71,9 +71,8 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
       this.spinner.perform("portal-content",
         this.svc.getMergedWithDetails(this.details.mergedWith).then( desc => {
           this.mergedWithDetails = desc;
-          if( this.mergedWithDetails ) {
-            this.showMergedLogins = true;
-          }
+          this.showMergedLogins = true;
+          this.changeDetector.markForCheck();
         })
       );
     }
@@ -84,6 +83,7 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
       this.svc.unmerge(this.details.mergedWith, this.details.login)
       .then( ()=> {
         if( this.details.mergedWith ) delete this.details.mergedWith;
+        this.changeDetector.markForCheck();
       })
     );
   }
