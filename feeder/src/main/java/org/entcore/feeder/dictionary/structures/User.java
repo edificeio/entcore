@@ -422,53 +422,43 @@ public class User {
 		transaction.add(query, params);
 	}
 
-	public static void restoreRelationship(String userId, TransactionHelper transaction) {
-		JsonObject params = new JsonObject().put("userId", userId);
+	public static void restoreRelationship(String mergedUserLogin, TransactionHelper transaction) {
+		JsonObject params = new JsonObject().put("mergedUserLogin", mergedUserLogin);
 
 		String query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING CREATE UNIQUE u-[:IN]->g";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING MERGE (u)-[:IN]->(g)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING CREATE UNIQUE u-[:COMMUNIQUE]->g";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING MERGE (u)-[:COMMUNIQUE]->(g)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING CREATE UNIQUE u<-[:COMMUNIQUE]-g";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING MERGE (u)<-[:COMMUNIQUE]-(g)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_OUTGOING CREATE UNIQUE (u)-[:COMMUNIQUE_DIRECT]->(n)";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_OUTGOING MERGE (u)-[:COMMUNIQUE_DIRECT]->(n)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_INCOMING CREATE UNIQUE (u)<-[:COMMUNIQUE_DIRECT]-(n)";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_INCOMING MERGE (u)<-[:COMMUNIQUE_DIRECT]-(n)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (n:User) WHERE n.id IN b.RELATED_OUTGOING CREATE UNIQUE (u)-[:RELATED]->(n)";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (n:User) WHERE n.id IN b.RELATED_OUTGOING MERGE (u)-[:RELATED]->(n)";
 		transaction.add(query, params);
 
 		query =
-			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-			"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING CREATE UNIQUE (u)<-[:RELATED]-(n)";
+			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING MERGE (u)<-[:RELATED]-(n)";
 		transaction.add(query, params);
-
-		//TODO il faut faire le détachement backupé par cette fusion :
-		/*
-		query =
-				"MATCH (u:User { id : {userId}})-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure), " +
-				" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
-				"WITH b, COLLECT(s.id) as sIds " +
-				"SET b.structureIds = sIds";
-		transaction.add(query, params);
-		*/
 	}
 
 	public static void preDelete(String userId, TransactionHelper transaction) {

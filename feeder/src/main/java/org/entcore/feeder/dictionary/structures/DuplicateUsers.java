@@ -421,7 +421,7 @@ public class DuplicateUsers {
 		TransactionManager.getNeo4jHelper().execute(
 						"MATCH (u:User {id: {userId}}), (mu:User) " +
 						"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-						"AND (u.source IN ['AAF1D','AAF'] AND mu.source IN ['AAF1D','AAF']) OR (u.source IN ['CSV','MANUAL'] AND mu.source IN ['CSV','MANUAL']) " +
+						"AND ((u.source IN ['AAF1D','AAF'] AND mu.source IN ['AAF1D','AAF']) OR (u.source IN ['CSV','MANUAL'] AND mu.source IN ['CSV','MANUAL'])) " +
 						"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
 						"RETURN u.mergeKey as mergeKey, COLLECT(mu.id) as mergeUserIds, " +
 							"u.federated as federated, COLLECT(mu.federated) as mergeUserFederated "
@@ -472,7 +472,7 @@ public class DuplicateUsers {
 
 								// Backup users relations before they are merged.
 								// This will allow restoring relations if/when unmerged later.
-								mergeUserIds.stream().forEach( id -> User.backupRelationship(id, tx) );
+								mergeUserIds.forEach(id -> User.backupRelationship(id.toString(), tx));
 
 								// Do merge
 								tx.add(
@@ -537,8 +537,8 @@ public class DuplicateUsers {
 			message.reply(error.put("message", "invalid.original.user"));
 			return;
 		}
-		final JsonArray mergedLogins = message.body().getJsonArray("mergedLogins");
-		if (mergedLogins == null || mergedLogins.size() < 1) {
+		final JsonArray mergedUsersLogins = message.body().getJsonArray("mergedLogins");
+		if (mergedUsersLogins == null || mergedUsersLogins.size() < 1) {
 			message.reply(error.put("message", "invalid.merged.logins"));
 			return;
 		}
@@ -551,8 +551,9 @@ public class DuplicateUsers {
 			"REMOVE u2.mergedWith";
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			for( int i=0; i<mergedLogins.size(); i++ ) {
-				final String mergedLogin = mergedLogins.getString(i);
+			for( int i=0; i<mergedUsersLogins.size(); i++ ) {
+				final String mergedLogin = mergedUsersLogins.getString(i);
+				User.restoreRelationship(mergedLogin, tx);
 				tx.add(
 					updQuery, 
 					new JsonObject().put("userId", originalUserId).put("mergedLogin", mergedLogin)
