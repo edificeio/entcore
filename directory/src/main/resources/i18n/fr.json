@@ -309,6 +309,7 @@
     "directory.empty.favorite.composition.description": "Il n'est pas permis d'enregistrer un favori vide.",
     "directory.export.tab": "Export et publipostage",
     "directory.favorite.share": "favoris de partage",
+    "directory.favorites": "Favoris",
     "directory.favorite.name": "Nom de mon favori",
     "directory.filterResults": "Filtrer les résultats",
     "directory.filters": "Filtres",

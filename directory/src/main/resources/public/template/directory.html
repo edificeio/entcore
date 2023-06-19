@@ -27,7 +27,8 @@
 				ng-model="search.index"
 				ng-change="switchForm(index)"
 				search="searchDirectory()"
-				images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
+				images='["directory-user", "directory-group", "directory-bookmark"]'
+				i18n='["share.users", "share.groups", "directory.favorites"]'>
 				<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
 					<div>
 						<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
