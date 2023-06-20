@@ -14,6 +14,15 @@ public interface IExplorerPluginClient {
     static ExplorerPluginClient withBus(Vertx vertx, String application, String type) {
         return new ExplorerPluginClientDefault(vertx, application, type);
     }
+    static ExplorerPluginClient withBus(Vertx vertx, String application) {
+        return new ExplorerPluginClientDefault(vertx, application);
+    }
+
+    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to);
+
+    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to, Set<String> apps);
+
+    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to, Set<String> apps, boolean includeFolders);
 
     Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to);
 

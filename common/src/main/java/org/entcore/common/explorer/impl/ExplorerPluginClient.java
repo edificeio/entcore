@@ -22,6 +22,19 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     static final Logger log = LoggerFactory.getLogger(ExplorerPluginClient.class);
 
     @Override
+    public Future<IndexResponse> getForIndexation(final Optional<Date> from, final Optional<Date> to){
+        return getForIndexation(from, to, new HashSet<>());
+    }
+    @Override
+    public Future<IndexResponse> getForIndexation(final Optional<Date> from, final Optional<Date> to, final Set<String> apps){
+        return getForIndexation(from, to, apps, false);
+    }
+    @Override
+    public Future<IndexResponse> getForIndexation(final Optional<Date> from, final Optional<Date> to, final Set<String> apps, final boolean includeFolders){
+        return getForIndexation(new UserInfos(), from, to, apps, includeFolders);
+    }
+
+    @Override
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to){
         return getForIndexation(user, from, to, new HashSet<>(), false);
     }
@@ -35,8 +48,12 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps, final boolean includeFolders){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryReindex.name());
-        headers.add("userId", user.getUserId());
-        headers.add("userName", user.getUsername());
+        if(user.getUserId() != null){
+            headers.add("userId", user.getUserId());
+        }
+        if(user.getUsername() != null){
+            headers.add("userName", user.getUsername());
+        }
         final JsonObject payload = new JsonObject();
         payload.put("includeFolders", includeFolders);
         if(from.isPresent()){
