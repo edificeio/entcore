@@ -198,7 +198,7 @@ public class Directory extends BaseServer {
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
-			final RemoteClientCluster RemoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
+			final RemoteClientCluster remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
 			final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
 			((DefaultRemoteUserService) remoteUserService).setRemoteClientCluster(remoteClientCluster);
 			final RemoteUserController remoteUserController = new RemoteUserController();
