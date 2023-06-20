@@ -937,7 +937,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "merge-by-keys")
 				.put("originalUserId", userId)
 				.put("mergeKeys", body.getJsonArray("mergeKeys"));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(5, handler)));
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(13, handler)));
 	}
 
 	@Override

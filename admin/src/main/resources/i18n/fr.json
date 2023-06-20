@@ -1197,7 +1197,7 @@
   "mergedLogins": "Comptes fusionnés",
   "mergedLogins.view": "Voir les comptes rattachés",
   "mergedLogins.box.title": "Parents fusionnés avec le compte de {{displayName}}",
-  "mergedLogins.box.content": "Après détachement, le compte parent détaché retrouvera ses droits le lendemain matin.<br>Un traitement de nuit est nécessaire pour lui réaffecter ses droits initaux.",
+  "mergedLogins.box.content": "Après détachement, le compte parent détaché retrouvera ses droits d’origine.<br>Pour les comptes issus des annuaires académiques, un traitement de nuit pourra ensuite les compléter.<br>Pour les autres comptes, une action manuelle sera requise si des droits complémentaires sont nécessaires.",
   "mergedLogins.unmerge": "Détacher",
   "notify.user.unmerge.title": "Détachement effectué",
   "notify.user.unmerge.content": "Le compte '{{mergedLogin}}' a bien été détaché.",
