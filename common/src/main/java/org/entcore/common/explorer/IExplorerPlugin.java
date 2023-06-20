@@ -16,8 +16,19 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface IExplorerPlugin {
+    static String addressFor(String application, Optional<String> resourceType) {
+        if(resourceType.isPresent()){
+            return addressFor(application, resourceType.get());
+        }else{
+            return addressForApp(application);
+        }
+    }
     static String addressFor(String application, String resourceType) {
         final String id = String.format("explorer.application.%s.%s", application, resourceType);
+        return id;
+    }
+    static String addressForApp(String application) {
+        final String id = String.format("explorer.application.%s.all", application);
         return id;
     }
     static String addressForIngestStateUpdate(String application, String entityTType) {

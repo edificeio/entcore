@@ -57,7 +57,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final IExplorerPluginCommunication communication;
-    protected Function<Void, Void> listener;
+    protected final List<Function<Void, Void>> listeners = new ArrayList<>();
     protected Function<Void, Void> listenerIngestJobUpdate;
     protected JsonObject explorerConfig = new JsonObject();
     protected Integer reindexBatchSize = 100;
@@ -664,10 +664,14 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public void start() {
-        final String id = IExplorerPlugin.addressFor(getApplication(), getResourceType());
-        this.listener = communication.listen(id, message -> {
+        final String idForResource = IExplorerPlugin.addressFor(getApplication(), getResourceType());
+        final String idForApp = IExplorerPlugin.addressForApp(getApplication());
+        this.listeners.add(communication.listen(idForResource, message -> {
             onExplorerQuery(message);
-        });
+        }));
+        this.listeners.add(communication.listen(idForApp, message -> {
+            onExplorerQuery(message);
+        }));
         final String idUpdate = IExplorerPlugin.addressForIngestStateUpdate(getApplication(), getResourceType());
         this.listenerIngestJobUpdate = communication.listenForAcks(idUpdate, messages -> {
             onJobStateUpdatedMessageReceived(messages)
@@ -681,10 +685,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public void stop() {
-        if (this.listener != null) {
-            this.listener.apply(null);
-        }
-        this.listener = null;
+        this.listeners.forEach(listener -> {
+            listener.apply(null);
+        });
+        this.listeners.clear();
         if (this.listenerIngestJobUpdate != null) {
             this.listenerIngestJobUpdate.apply(null);
         }

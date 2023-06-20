@@ -10,16 +10,23 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.IExplorerPlugin;
 
 import java.time.Duration;
+import java.util.Optional;
 
 public class ExplorerPluginClientDefault extends ExplorerPluginClient {
     private final Vertx vertx;
     private final String application;
-    private final String resourceType;
+    private final Optional<String> resourceType;
+
+    public ExplorerPluginClientDefault(final Vertx vertx, final String application) {
+        this.vertx = vertx;
+        this.application = application;
+        this.resourceType = Optional.empty();
+    }
 
     public ExplorerPluginClientDefault(final Vertx vertx, final String application, final String resourceType) {
         this.vertx = vertx;
         this.application = application;
-        this.resourceType = resourceType;
+        this.resourceType = Optional.ofNullable(resourceType);
     }
 
     @Override
