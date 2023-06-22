@@ -47,16 +47,7 @@ import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -91,8 +82,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void deleteGroups(JsonArray groups) {
+	public void deleteGroups(final JsonArray groups, final Handler<List<DeletedResource>> handler) {
 		if(groups == null) {
+			handler.handle(new ArrayList<>());
 			return;
 		}
 
@@ -102,39 +94,62 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			else if (groups.getJsonObject(i) != null && groups.getJsonObject(i).getString("group") == null)
 				groups.remove(i);
 		}
-    if(groups.size() == 0)
-        return;
+		if(groups.size() == 0){
+			handler.handle(new ArrayList<>());
+			return;
+		}
 
 		final String[] groupIds = new String[groups.size()];
 		for (int i = 0; i < groups.size(); i++) {
 			JsonObject j = groups.getJsonObject(i);
 			groupIds[i] = j.getString("group");
 		}
-
+		final long timestamp = System.currentTimeMillis();
 		final JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("shared.groupId").in(groupIds));
-
-		MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+		final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+		modifier.set("_deleteGroupsKey", timestamp);
 		modifier.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("groupId").in(groupIds)));
 
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
 			log.error("Error deleting groups : invalid collection " + collection + " in class " + this.getClass().getName());
+			handler.handle(new ArrayList<>());
 			return;
 		}
-		mongo.update(collection, matcher, modifier.build(), false, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error("Error deleting groups in collection " + collection +
-							" : " + event.body().getString("message"));
-				}
+		mongo.update(collection, matcher, modifier.build(), false, true,(event)-> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				log.error("Error deleting groups in collection " + collection +
+						" : " + event.body().getString("message"));
+			}else{
+				handler.handle(new ArrayList<>());
 			}
+
+			// find deleted resources
+			final QueryBuilder findByKey = QueryBuilder.start("_deleteGroupsKey").is(timestamp);
+			final JsonObject query = MongoQueryBuilder.build(findByKey);
+			mongo.find(collection, query, eventFind -> {
+				final JsonArray results = eventFind.body().getJsonArray("results");
+				final List<DeletedResource> list = new ArrayList<>();
+				if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
+					results.forEach(elem -> {
+						if(elem instanceof  JsonObject){
+							final JsonObject jsonElem = (JsonObject) elem;
+							final String id = jsonElem.getString("_id");
+							list.add(new DeletedResource(id));
+						}
+					});
+				} else {
+					log.error("[deleteGroups] Could not found deleted resources:"+ eventFind.body());
+				}
+				handler.handle(list);
+			});
 		});
 	}
 
 	@Override
-	public void deleteUsers(JsonArray users) {
+	public void deleteUsers(final JsonArray users, final Handler<List<DeletedResource>> handler) {
 		if(users == null) {
+			handler.handle(new ArrayList<>());
 			return;
 		}
 		for(int i = users.size(); i-- > 0;) {
@@ -143,8 +158,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			else if (users.getJsonObject(i) != null && users.getJsonObject(i).getString("id") == null)
 				users.remove(i);
 		}
-		if(users.size() == 0)
+		if(users.size() == 0){
+			handler.handle(new ArrayList<>());
 			return;
+		}
 
 		final String[] userIds = new String[users.size()];
 		for (int i = 0; i < users.size(); i++) {
@@ -152,39 +169,54 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			userIds[i] = j.getString("id");
 		}
 
-		final JsonObject criteria = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
-
-		MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-		modifier.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds)));
+		final long timestamp = System.currentTimeMillis();
+		final JsonObject criteriaShared = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
+		final MongoUpdateBuilder modifierShared = new MongoUpdateBuilder();
+		modifierShared.set("_deleteUsersKey", timestamp);
+		modifierShared.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds)));
 
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
-			log.error("Error deleting groups : invalid collection " + collection + " in class " + this.getClass().getName());
+			log.error("Error deleting users : invalid collection " + collection + " in class " + this.getClass().getName());
+			handler.handle(new ArrayList<>());
 			return;
 		}
-		mongo.update(collection, criteria, modifier.build(), false, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error("Error deleting users shared in collection " + collection  +
-							" : " + event.body().getString("message"));
-				}
-
-				final JsonObject criteria = MongoQueryBuilder.build(QueryBuilder.start("owner.userId").in(userIds));
-				MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-				modifier.set("owner.deleted", true);
-				mongo.update(collection, criteria, modifier.build(), false, true,  new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-						if (!"ok".equals(event.body().getString("status"))) {
-							log.error("Error deleting users shared in collection " + collection +
-									" : " + event.body().getString("message"));
-						} else if (managerRight != null && !managerRight.trim().isEmpty()) {
-							removeObjects(collection);
-						}
-					}
-				});
+		mongo.update(collection, criteriaShared, modifierShared.build(),false, true, (eventShared) -> {
+			if (!"ok".equals(eventShared.body().getString("status"))) {
+				log.error("Error deleting users shared in collection " + collection  +
+						" : " + eventShared.body().getString("message"));
 			}
+			final JsonObject criteria = MongoQueryBuilder.build(QueryBuilder.start("owner.userId").in(userIds));
+			final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+			modifier.set("owner.deleted", true);
+			modifier.set("_deleteUsersKey", timestamp);
+			mongo.update(collection, criteria, modifier.build(), false, true,  (eventOwner) -> {
+				if (!"ok".equals(eventOwner.body().getString("status"))) {
+					log.error("Error deleting users shared in collection " + collection +
+							" : " + eventOwner.body().getString("message"));
+				} else if (managerRight != null && !managerRight.trim().isEmpty()) {
+					removeObjects(collection);
+				}
+				// find deleted resources
+				final QueryBuilder findByKey = QueryBuilder.start("_deleteUsersKey").is(timestamp);
+				final JsonObject query = MongoQueryBuilder.build(findByKey);
+				mongo.find(collection, query, eventFind -> {
+					final JsonArray results = eventFind.body().getJsonArray("results");
+					final List<DeletedResource> list = new ArrayList<>();
+					if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
+						results.forEach(elem -> {
+							if(elem instanceof  JsonObject){
+								final JsonObject jsonElem = (JsonObject) elem;
+								final String id = jsonElem.getString("_id");
+								list.add(new DeletedResource(id));
+							}
+						});
+					} else {
+						log.error("[deleteUsers] Could not found deleted resources:"+ eventFind.body());
+					}
+					handler.handle(list);
+				});
+			});
 		});
 	}
 
@@ -820,13 +852,14 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								idsMapObj.put(entry.getKey(), new JsonObject(entry.getValue()));
 
 							JsonObject finalRapport =
-									new JsonObject()
-											.put("resourcesNumber", Integer.toString(nbResources))
-											.put("duplicatesNumber", Integer.toString(nbDuplicates))
-											.put("errorsNumber", Integer.toString(nbErrors))
-											.put("resourcesIdsMap", idsMapObj)
-											.put("duplicatesNumberMap", dupsPerCollection)
-											.put("mainResourceName", mainResourceNameFinal);
+								new JsonObject()
+									.put("resourcesNumber", Integer.toString(nbResources))
+									.put("duplicatesNumber", Integer.toString(nbDuplicates))
+									.put("errorsNumber", Integer.toString(nbErrors))
+									.put("resourcesIdsMap", idsMapObj)
+									.put("duplicatesNumberMap", dupsPerCollection)
+									.put("mainResourceName", mainResourceNameFinal)
+										.put("mainRepository", MongoDbConf.getInstance().getCollection());
 
 							handler.handle(finalRapport);
 						}
@@ -862,4 +895,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		});
 	}
 
+	@Override
+	public Optional<String> getMainRepositoryName(){
+		return Optional.ofNullable(MongoDbConf.getInstance().getCollection());
+	}
 }

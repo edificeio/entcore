@@ -1,5 +1,6 @@
 package org.entcore.common.service.impl;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,10 +11,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.folders.FolderImporter;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,7 +211,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 .put("duplicatesNumber", String.valueOf(duplicatesNumber))
                                 .put("resourcesIdsMap", finalMap)
                                 .put("duplicatesNumberMap", dupsMap)
-                                .put("mainResourceName", mainResourceName);
+                                .put("mainResourceName", mainResourceName)
+                                    .put("mainRepository", MongoDbConf.getInstance().getCollection());
 
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
                         handler.handle(reply);
@@ -315,5 +319,21 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                 handler.handle(statements);
             }
         });
+    }
+
+    protected List<DeletedResource> transactionToDeletedResources(final Either<String, JsonArray> event){
+        if(event.isRight()){
+            final JsonArray ids = event.right().getValue();
+            final List<DeletedResource> deleted = new ArrayList<>();
+            for(final Object json : ids){
+                if(json instanceof  JsonObject){
+                    final DeletedResource del = new DeletedResource(((JsonObject)json).getValue("id").toString());
+                    deleted.add(del);
+                }
+            }
+            return deleted;
+        }else{
+            return new ArrayList<>();
+        }
     }
 }
