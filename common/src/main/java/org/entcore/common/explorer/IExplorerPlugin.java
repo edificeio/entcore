@@ -152,6 +152,7 @@ public interface IExplorerPlugin {
     Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages);
     enum ExplorerRemoteAction {
         QueryReindex,
+        QueryReindexById,
         QueryCreate,
         QueryDelete,
         QueryShare,

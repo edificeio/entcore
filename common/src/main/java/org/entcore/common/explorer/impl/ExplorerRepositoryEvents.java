@@ -32,6 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.user.RepositoryEvents;
+
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 /**
  * This implementation of the RepositoryEvents follows the proxy pattern.
@@ -144,25 +157,29 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		realRepositoryEvents.deleteGroups(groups, new Handler<List<JsonObject>>() {
-			@Override
-			public void handle(List<JsonObject> jos) {
-				if( pluginClientsForApp != null ) {
-					//plugin.notifyUpsert(/*FIXME*/ null, jos);
-				}
-			}
+		this.deleteGroups(groups, (e)-> {});
+	}
+
+	@Override
+	public void deleteGroups(JsonArray groups, Handler<List<DeletedResource>> handler) {
+		realRepositoryEvents.deleteGroups(groups, deleted -> {
+			handler.handle(deleted);
+			final Set<String> ids = deleted.stream().map(e -> e.id).collect(Collectors.toSet());
+			plugin.onReindexByIdAction(Optional.empty(), ids);
 		});
 	}
 
 	@Override
 	public void deleteUsers(JsonArray users) {
-		realRepositoryEvents.deleteUsers(users, new Handler<List<JsonObject>>() {
-			@Override
-			public void handle(List<JsonObject> jos) {
-				if( pluginClientsForApp != null ) {
-					//plugin.notifyUpsert(/*FIXME*/ null, jos);
-				}
-			}
+		this.deleteUsers(users, (e) -> {});
+	}
+
+	@Override
+	public void deleteUsers(JsonArray users, Handler<List<DeletedResource>> handler) {
+		realRepositoryEvents.deleteUsers(users, deleted -> {
+			handler.handle(deleted);
+			final Set<String> ids = deleted.stream().map(e -> e.id).collect(Collectors.toSet());
+			plugin.onReindexByIdAction(Optional.empty(), ids);
 		});
 	}
 
@@ -189,5 +206,14 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	@Override
 	public void tenantsStructuresUpdated(JsonArray addedTenantsStructures, JsonArray deletedTenantsStructures) {
 		realRepositoryEvents.tenantsStructuresUpdated(addedTenantsStructures, deletedTenantsStructures);
+	}
+	@Override
+	public  void timetableImported(String uai) {
+		realRepositoryEvents.timetableImported(uai);
+	}
+
+	@Override
+	public Optional<String> getMainRepositoryName() {
+		return realRepositoryEvents.getMainRepositoryName();
 	}
 }

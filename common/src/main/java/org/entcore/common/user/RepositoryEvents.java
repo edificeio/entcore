@@ -19,11 +19,14 @@
 
 package org.entcore.common.user;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.share.ShareModel;
 
 public interface RepositoryEvents {
 
@@ -40,24 +43,28 @@ public interface RepositoryEvents {
 
 
 	default void deleteGroups(JsonArray groups) {
-		deleteGroups(groups, null);
+		deleteGroups(groups, (e) -> {});
 	}
 
 	/**
 	 * @param groups to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteGroups(JsonArray groups, Handler<List<JsonObject>> handler) {}
+	default void deleteGroups(JsonArray groups, Handler<List<DeletedResource>> handler) {
+		handler.handle(new ArrayList<>());
+	}
 
 	default void deleteUsers(JsonArray users) {
-		deleteUsers(users, null);
+		deleteUsers(users, (e) -> {});
 	}
 
 	/**
 	 * @param users to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteUsers(JsonArray users, Handler<List<JsonObject>> handler) {}
+	default void deleteUsers(JsonArray users, Handler<List<DeletedResource>> handler) {
+		handler.handle(new ArrayList<>());
+	}
 
 	default void usersClassesUpdated(JsonArray updates) {}
 
@@ -73,4 +80,16 @@ public interface RepositoryEvents {
 	default void tenantsStructuresUpdated(JsonArray addedTenantsStructures, JsonArray deletedTenantsStructures) {}
 
 	default void timetableImported(String uai) {}
+
+	default Optional<String> getMainRepositoryName(){
+		return Optional.empty();
+	}
+
+	class DeletedResource{
+		public final String id;
+
+		public DeletedResource(String id) {
+			this.id = id;
+		}
+	}
 }

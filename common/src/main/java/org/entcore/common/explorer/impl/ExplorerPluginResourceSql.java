@@ -19,14 +19,7 @@ import org.entcore.common.user.UserInfos;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -218,6 +211,51 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     @Override
+    protected void doFetchByIdForIndex(ExplorerStream<JsonObject> stream, Collection<String> ids) {
+        if(ids.isEmpty()){
+            stream.end();
+            return;
+        }
+        final StringBuilder query = new StringBuilder();
+        if(getShareTableName().isPresent()){
+            final String schema = getTableName().split("\\.")[0];
+            final String shareTable = getShareTableName().get();
+            query.append(" SELECT t.*, ");
+            query.append(String.format(" JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared, ", schema));
+            query.append(" ARRAY_TO_JSON(ARRAY_AGG(group_id)) AS groups ");
+            query.append(String.format(" FROM %s AS t ", getTableName()));
+            query.append(String.format(" LEFT JOIN %s s ON t.id = s.resource_id ", shareTable));
+            query.append(String.format(" LEFT JOIN %s.members ON (member_id = %s.members.id AND group_id IS NOT NULL) ",schema, schema));
+        }else{
+            query.append(String.format("SELECT * FROM %s ", getTableName()));
+        }
+        // WHERE
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final Set<Integer> safeIds = ids.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet());
+        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), safeIds);
+        query.append(String.format("WHERE id IN (%s) ",inPlaceholder));
+        // GROUP BY
+        if(getShareTableName().isPresent()){
+            query.append(" GROUP BY t.id ");
+        }
+        pgPool.queryStream(query.toString(),tuple, getBatchSize()).onSuccess(result -> {
+            result.handler(row -> {
+                final JsonObject json = PostgresClient.toJson(row);
+                if(getShareTableName().isPresent()) {
+                    SqlResult.parseSharedFromArray(json);
+                }
+                stream.add(json);
+            }).endHandler(finish -> {
+                stream.end();
+            }).exceptionHandler(e->{
+                log.error("Failed to sqlSelect resources "+getTableName()+ "for reindex : ", e);
+            });
+        }).onFailure(e->{
+            log.error("Failed to create sqlCursor resources "+getTableName()+ "for reindex : ", e);
+        });
+    }
+
+    @Override
     protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final Map<String, Object> map = new HashMap<>();
         for(final JsonObject source : sources){
@@ -243,6 +281,9 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
 
     @Override
     protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
         final Set<Integer> safeIds = ids.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet());
         final String queryTpl = "DELETE FROM %s WHERE id IN (%s);";
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);

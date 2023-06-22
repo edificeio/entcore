@@ -24,13 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -214,6 +208,20 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
     }
 
     @Override
+    protected void doFetchByIdForIndex(ExplorerStream<JsonObject> stream, Collection<String> ids) {
+        if(ids.isEmpty()){
+            stream.end();
+            return;
+        }
+        final JsonObject queryJson = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
+        mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
+            stream.add(Arrays.asList(result));
+        }).endHandler(e->{
+            stream.end();
+        });
+    }
+
+    @Override
     protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final List<Future> futures = new ArrayList<>();
         final List<String> ids = new ArrayList<>();
@@ -239,6 +247,9 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
 
     @Override
     protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
         final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
         final Promise<MongoClientDeleteResult> promise = Promise.promise();
         mongoClient.removeDocuments(getCollectionName(), query , promise);
