@@ -725,7 +725,7 @@ public class UserController extends BaseController {
 		} if( !StringUtils.isEmpty(lastNameFilter) || !StringUtils.isEmpty(firstNameFilter) ) {
 			return TransversalSearchQuery.searchByFullName(lastNameFilter, firstNameFilter);
 		} else if( !StringUtils.isEmpty(searchTerm) ) {
-			final TransversalSearchType type = TransversalSearchType.fromCode(searchTerm);
+			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
 			if(TransversalSearchType.EMAIL.equals(type))
 				return TransversalSearchQuery.searchByMail(searchTerm);
 			if(TransversalSearchType.NAME.equals(type))
