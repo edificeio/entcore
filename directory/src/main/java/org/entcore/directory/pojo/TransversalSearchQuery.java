@@ -1,28 +1,57 @@
 package org.entcore.directory.pojo;
 
 public class TransversalSearchQuery {
-    public static final TransversalSearchQuery EMPTY = new TransversalSearchQuery(null);
-    private final String email;
+    public static final TransversalSearchQuery EMPTY = new TransversalSearchQuery(TransversalSearchType.NONE, null, null, null);
+    private final String term;
     private final String lastName;
     private final String firstName;
     private final TransversalSearchType searchType;
 
-    public TransversalSearchQuery(final String lastName, final String firstName) {
+    private TransversalSearchQuery(
+            final TransversalSearchType type,
+            final String lastName, 
+            final String firstName, 
+            final String term 
+            ) {
+        this.searchType = type;
         this.lastName = lastName;
         this.firstName = firstName;
-        this.searchType = TransversalSearchType.NAME;
-        this.email = null;
+        this.term = term;
     }
 
-    public TransversalSearchQuery(final String email) {
-        this.email = email;
-        this.lastName = null;
-        this.firstName = null;
-        this.searchType = TransversalSearchType.EMAIL;
+    public static TransversalSearchQuery searchByFullName(final String lastName, final String firstName) {
+        return new TransversalSearchQuery(
+            TransversalSearchType.NAME,
+            lastName,
+            firstName,
+            null
+        );
+    }
+
+    public static TransversalSearchQuery searchByDisplayName(final String fullname) {
+        return new TransversalSearchQuery(
+            TransversalSearchType.NAME,
+            null,
+            null,
+            fullname
+        );
+    }
+
+    public static TransversalSearchQuery searchByMail(final String email) {
+        return new TransversalSearchQuery(
+            TransversalSearchType.EMAIL,
+            null,
+            null,
+            email
+        );
     }
 
     public String getEmail() {
-        return email;
+        return term;
+    }
+
+    public String getDisplayName() {
+        return term;
     }
 
     public String getLastName() {

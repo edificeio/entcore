@@ -572,35 +572,40 @@ public class DefaultUserService implements UserService {
 			}
 		}
 		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) && isNotEmpty(searchQuery.getEmail())) {
-			final String emailSearchTerm = normalize(searchQuery.getEmail());
-			condition += "AND u.emailSearchField CONTAINS {email} ";
-			params.put("email", searchQuery.getEmail());
-		} else if(TransversalSearchType.NAME.equals(searchQuery.getSearchType()) && (
-				isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName()))) {
-			final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
-			final String lastNameSearchTerm = normalize(searchQuery.getLastName());
-			final StringBuilder sbuilder = new StringBuilder();
-			sbuilder.append(" AND ");
-			final boolean hasLastName;
-			if(isEmpty(lastNameSearchTerm)) {
-				hasLastName = false;
-			} else {
-				sbuilder.append(" u.lastNameSearchField STARTS WITH {lastName} ");
-				params.put("lastName", lastNameSearchTerm);
-				hasLastName = true;
-			}
-			if(isNotEmpty(firstNameSearchTerm)) {
-				if(hasLastName) {
-					sbuilder.append(" and ");
+			final String searchTerm = normalize(searchQuery.getEmail());
+			condition += " AND u.emailSearchField CONTAINS {email} ";
+			params.put("email", searchTerm);
+		} else if(TransversalSearchType.NAME.equals(searchQuery.getSearchType())) {
+			if( isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName()) ) {
+				final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
+				final String lastNameSearchTerm = normalize(searchQuery.getLastName());
+				final StringBuilder sbuilder = new StringBuilder();
+				sbuilder.append(" AND ");
+				final boolean hasLastName;
+				if(isEmpty(lastNameSearchTerm)) {
+					hasLastName = false;
+				} else {
+					sbuilder.append(" u.lastNameSearchField STARTS WITH {lastName} ");
+					params.put("lastName", lastNameSearchTerm);
+					hasLastName = true;
 				}
-				sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
-				params.put("firstName", firstNameSearchTerm);
+				if(isNotEmpty(firstNameSearchTerm)) {
+					if(hasLastName) {
+						sbuilder.append(" AND ");
+					}
+					sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
+					params.put("firstName", firstNameSearchTerm);
+				}
+				condition += sbuilder.toString();
+			} else if(isNotEmpty(searchQuery.getDisplayName())) {
+				final String searchTerm = normalize(searchQuery.getDisplayName());
+				condition += " AND u.displayNameSearchField CONTAINS {displayName} ";
+				params.put("displayName", searchTerm);
 			}
-			condition += sbuilder.toString();
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
-				condition += "AND NOT(u.activationCode IS NULL)  ";
+				condition += "AND NOT(u.activationCode IS NULL) ";
 			} else if("active".equals(filterActivated)){
 				condition += "AND u.activationCode IS NULL ";
 			}
