@@ -852,11 +852,12 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void mergeDuplicate(String userId1, String userId2, Handler<Either<String, JsonObject>> handler) {
-		JsonObject action = new JsonObject()
+	public void mergeDuplicate(final String userId1, final String userId2, final boolean keepRelations, final Handler<Either<String, JsonObject>> handler) {
+		final JsonObject action = new JsonObject()
 				.put("action", "merge-duplicate")
 				.put("userId1", userId1)
-				.put("userId2", userId2);
+				.put("userId2", userId2)
+				.put("keepRelations", keepRelations);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
 	}
 

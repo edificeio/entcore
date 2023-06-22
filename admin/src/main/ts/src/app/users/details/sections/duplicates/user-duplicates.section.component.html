@@ -29,7 +29,7 @@
         <i class="fa fa-arrow-left"></i>
         <i class="fa fa-arrow-right"></i>
       </button>
-      <button class="actions-list__button" (click)="merge(duplicate.id)"
+      <button class="actions-list__button" (click)="showMergeUsersConfirmation = true"
               *ngIf="canMerge(duplicate)" [disabled]="spinner.isLoading(duplicate.id)">
         <ode-spinner-cube class="button-spinner"
                       waitingFor="duplicate.id"></ode-spinner-cube>
@@ -47,6 +47,26 @@
       </button>
     </li>
   </ul>
+    <ode-lightbox-confirm
+            [show]="showMergeUsersConfirmation"
+            [lightboxTitle]="'warning'"
+            (onConfirm)="merge(duplicate.id, true); showMergeUsersConfirmation = false;"
+            (onCancel)="merge(duplicate.id, false): showMergeUsersConfirmation = false"
+    >
+        <p>
+            <s5l
+                    [s5l-params]="{
+                    userName: user.displayName,
+                    userProfile: user.type | translate,
+                    structureName: structure.name
+                  }"
+            >user.add.adml.disclaimer.info</s5l
+            >
+        </p>
+        <p>
+            <s5l>user.add.adml.disclaimer.confirm</s5l>
+        </p>
+    </ode-lightbox-confirm>
   <ode-lightbox *ngIf="!!comparedUserId" [show]="true" (onClose)="comparedUserId = null;">
     <ode-smart-users-comparison [user1]="user.id"
                             [user2]="comparedUserId"></ode-smart-users-comparison>

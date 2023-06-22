@@ -125,7 +125,7 @@ public interface UserService {
 
 	void listDuplicates(JsonArray structures, boolean inherit, Handler<Either<String, JsonArray>> results);
 
-	void mergeDuplicate(String userId1, String userId2, Handler<Either<String,JsonObject>> handler);
+	void mergeDuplicate(String userId1, String userId2, final boolean keepRelations, final Handler<Either<String,JsonObject>> handler);
 
 	void listByUAI(List<String> UAI,JsonArray expectedTypes,boolean isExportFull, JsonArray fields, Handler<Either<String, JsonArray>> results);
 
