@@ -524,6 +524,7 @@ public class DefaultUserService implements UserService {
 						  final UserInfos userInfos,
 						  final Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
+		boolean restrictResultsToFunction = false;
 		String filterUser = "";
 		if (classId != null && !classId.trim().isEmpty()) {
 			filterUser = "(n:Class {id : {classId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
@@ -535,9 +536,15 @@ public class DefaultUserService implements UserService {
 		} else if (groupId != null && !groupId.trim().isEmpty()) {
 			filterUser = "(n:Group {id : {groupId}})<-[:IN]-";
 			params.put("groupId", groupId);
+		} else {
+			restrictResultsToFunction = true;
 		}
 
 		String conditionUser = "WHERE 1=1 ";
+		if (expectedProfiles != null && expectedProfiles.size() > 0) {
+			conditionUser += "AND head(u.profiles) IN {expectedProfiles} ";
+			params.put("expectedProfiles", expectedProfiles);
+		}
 		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) && isNotEmpty(searchQuery.getEmail())) {
 			final String searchTerm = normalize(searchQuery.getEmail());
 			conditionUser += " AND u.emailSearchField CONTAINS {email} ";
@@ -581,7 +588,9 @@ public class DefaultUserService implements UserService {
 			conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
 		}
 
-		String filterFunction = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
+		// This second level of filtering ensures the data is in the scope of the connected user
+		// excepted when the query is already restricted to a class, group or structure.
+		String filterFunction = "WITH u ";
 		String conditionFunction = "WHERE 1=1 ";
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
@@ -591,15 +600,16 @@ public class DefaultUserService implements UserService {
 		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
-			if (scope != null && !scope.isEmpty()) {
-				conditionFunction += "AND s.id IN {scope} ";
+			if (restrictResultsToFunction && scope != null && !scope.isEmpty()) {
+				filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
+				conditionFunction += "AND (fs.id IN {scope}) ";
 				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
-				filterFunction = "WITH u MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
+				filterFunction += "MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
 				conditionFunction += "AND c.id IN {scope} ";
 				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
@@ -607,6 +617,7 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH " + filterUser + "(u:User) " + conditionUser
 				+ filterFunction + conditionFunction + 
+				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 				"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
@@ -622,7 +633,7 @@ public class DefaultUserService implements UserService {
 				"u.email as email, u.homePhone as phone, u.mobile as mobile, u.zipCode as zipCode, u.address as address, " +
 				"u.city as city, u.country as country, " +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
-				"collect(distinct {id: s.id, name: s.name}) as structures, " +
+				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct {id: s.id, name: s.name}) END as structures, " +
 				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
 				"collect(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
