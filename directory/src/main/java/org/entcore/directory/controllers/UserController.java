@@ -707,7 +707,6 @@ public class UserController extends BaseController {
 	}
 
 	private TransversalSearchQuery searchQueryFromRequest(final HttpServerRequest request) {
-		final TransversalSearchQuery searchQuery;
 		final MultiMap params = request.params();
 		final String searchType = params.get("searchType");
 		final String searchTerm = params.get("searchTerm");
