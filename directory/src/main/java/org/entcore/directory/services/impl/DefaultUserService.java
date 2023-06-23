@@ -53,7 +53,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.*;
-import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -525,55 +524,23 @@ public class DefaultUserService implements UserService {
 						  final UserInfos userInfos,
 						  final Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
-		String filter = "";
-		String filterProfile = "WHERE 1=1 ";
-		String optionalMatch =
-			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
-			"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
-			"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
-			"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-			"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) ";
-		if (expectedProfiles != null && expectedProfiles.size() > 0) {
-			filterProfile += "AND head(u.profiles) IN {expectedProfiles} ";
-			params.put("expectedProfiles", expectedProfiles);
-		}
+		String filterUser = "";
 		if (classId != null && !classId.trim().isEmpty()) {
-			filter = "(n:Class {id : {classId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
+			filterUser = "(n:Class {id : {classId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
 			params.put("classId", classId);
 		} else if (structureId != null && !structureId.trim().isEmpty()) {
-			filter = "(n:Structure {id : {structureId}})" + (includeSubStructure ? "<-[:HAS_ATTACHMENT*0..]-(:Structure)" : "") +
+			filterUser = "(n:Structure {id : {structureId}})" + (includeSubStructure ? "<-[:HAS_ATTACHMENT*0..]-(:Structure)" : "") +
 					"<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
 			params.put("structureId", structureId);
 		} else if (groupId != null && !groupId.trim().isEmpty()) {
-			filter = "(n:Group {id : {groupId}})<-[:IN]-";
+			filterUser = "(n:Group {id : {groupId}})<-[:IN]-";
 			params.put("groupId", groupId);
 		}
-		String condition = "";
-		String functionMatch = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
-		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
-				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
-				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
-			results.handle(new Either.Left<String, JsonArray>("forbidden"));
-			return;
-		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
-			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
-			List<String> scope = f.getScope();
-			if (scope != null && !scope.isEmpty()) {
-				condition = "AND s.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
-			}
-		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
-			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
-			List<String> scope = f.getScope();
-			if (scope != null && !scope.isEmpty()) {
-				functionMatch = "WITH u MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
-				condition = "AND c.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
-			}
-		}
+
+		String conditionUser = "WHERE 1=1 ";
 		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) && isNotEmpty(searchQuery.getEmail())) {
 			final String searchTerm = normalize(searchQuery.getEmail());
-			condition += " AND u.emailSearchField CONTAINS {email} ";
+			conditionUser += " AND u.emailSearchField CONTAINS {email} ";
 			params.put("email", searchTerm);
 		} else if(TransversalSearchType.NAME.equals(searchQuery.getSearchType())) {
 			if( isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName()) ) {
@@ -596,27 +563,55 @@ public class DefaultUserService implements UserService {
 					sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
 					params.put("firstName", firstNameSearchTerm);
 				}
-				condition += sbuilder.toString();
+				conditionUser += sbuilder.toString();
 			} else if(isNotEmpty(searchQuery.getDisplayName())) {
 				final String searchTerm = normalize(searchQuery.getDisplayName());
-				condition += " AND u.displayNameSearchField CONTAINS {displayName} ";
+				conditionUser += " AND u.displayNameSearchField CONTAINS {displayName} ";
 				params.put("displayName", searchTerm);
 			}
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
-				condition += "AND NOT(u.activationCode IS NULL) ";
+				conditionUser += "AND NOT(u.activationCode IS NULL) ";
 			} else if("active".equals(filterActivated)){
-				condition += "AND u.activationCode IS NULL ";
+				conditionUser += "AND u.activationCode IS NULL ";
 			}
 		}
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-			condition += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+			conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
 		}
 
+		String filterFunction = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
+		String conditionFunction = "WHERE 1=1 ";
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				conditionFunction += "AND s.id IN {scope} ";
+				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+			}
+		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				filterFunction = "WITH u MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
+				conditionFunction += "AND c.id IN {scope} ";
+				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+			}
+		}
 		String query =
-				"MATCH " + filter + "(u:User) " +
-				functionMatch + filterProfile + condition + optionalMatch +
+				"MATCH " + filterUser + "(u:User) " + conditionUser
+				+ filterFunction + conditionFunction + 
+				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
+				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
+				"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+				"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) " +
 				"RETURN DISTINCT u.id as id, head(u.profiles) as type, u.externalId as externalId, " +
 				"u.activationCode as code, " +
 				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " +
