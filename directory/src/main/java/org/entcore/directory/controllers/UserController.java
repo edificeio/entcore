@@ -697,20 +697,8 @@ public class UserController extends BaseController {
 					final String groupId = request.params().get("groupId");
 					final String filterActive = request.params().get("filterActive");
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
-					final String searchType = request.params().get("searchType"); // searchType possible values: displayName or email
 
-					final String nameFilter = request.params().get("name");
-					if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
-						// Retro-compability : if a "name" parameter is defined, it should be interpreted like a searchTerm (+searchType=displayName)
-						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, new TransversalSearchQuery(nameFilter, ""), user, arrayResponseHandler(request));
-					} else {
-						final Optional<TransversalSearchQuery> maybeSearchQuery = searchQueryFromRequest(request);
-						if(maybeSearchQuery.isPresent()) {
-							userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, maybeSearchQuery.get(), user, arrayResponseHandler(request));
-						} else {
-							badRequest(request);
-						}
-					}
+					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchQueryFromRequest(request), user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
@@ -718,19 +706,31 @@ public class UserController extends BaseController {
 		});
 	}
 
-	private Optional<TransversalSearchQuery> searchQueryFromRequest(final HttpServerRequest request) {
-		final TransversalSearchQuery searchQuery;
+	private TransversalSearchQuery searchQueryFromRequest(final HttpServerRequest request) {
 		final MultiMap params = request.params();
 		final String searchType = params.get("searchType");
-		final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
-		if(TransversalSearchType.NAME.equals(type)) {
-			searchQuery = new TransversalSearchQuery(params.get("lastName"), params.get("firstName"));
-		} else if(TransversalSearchType.EMAIL.equals(type)) {
-			searchQuery = new TransversalSearchQuery(params.get("searchTerm"));
-		} else {
-			searchQuery = null;
+		final String searchTerm = params.get("searchTerm");
+		final String nameFilter = params.get("name");
+		final String lastNameFilter = params.get("lastName");
+		final String firstNameFilter = params.get("firstName");
+
+		/* Retro-compability : 
+		 * - if a "name" query parameter exists, its value must be used like a displayName.
+		 * - if a "lastName" or "firstName" query parameter exists, make an optimized search by fullname.
+		 * - otherwise, just apply the "searchTerm" and "searchType" query parameter, if any.
+		 */
+		if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
+			return TransversalSearchQuery.searchByDisplayName(nameFilter);
+		} if( !StringUtils.isEmpty(lastNameFilter) || !StringUtils.isEmpty(firstNameFilter) ) {
+			return TransversalSearchQuery.searchByFullName(lastNameFilter, firstNameFilter);
+		} else if( !StringUtils.isEmpty(searchTerm) ) {
+			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
+			if(TransversalSearchType.EMAIL.equals(type))
+				return TransversalSearchQuery.searchByMail(searchTerm);
+			if(TransversalSearchType.DISPLAY_NAME.equals(type))
+				return TransversalSearchQuery.searchByDisplayName(searchTerm);
 		}
-		return Optional.ofNullable(searchQuery);
+		return TransversalSearchQuery.EMPTY;
 	}
 
 	@Put("/user/:studentId/related/:relativeId")
