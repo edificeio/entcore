@@ -727,7 +727,7 @@ public class UserController extends BaseController {
 			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
 			if(TransversalSearchType.EMAIL.equals(type))
 				return TransversalSearchQuery.searchByMail(searchTerm);
-			if(TransversalSearchType.NAME.equals(type))
+			if(TransversalSearchType.DISPLAY_NAME.equals(type))
 				return TransversalSearchQuery.searchByDisplayName(searchTerm);
 		}
 		return TransversalSearchQuery.EMPTY;
