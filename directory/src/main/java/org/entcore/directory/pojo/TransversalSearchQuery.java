@@ -21,7 +21,7 @@ public class TransversalSearchQuery {
 
     public static TransversalSearchQuery searchByFullName(final String lastName, final String firstName) {
         return new TransversalSearchQuery(
-            TransversalSearchType.NAME,
+            TransversalSearchType.FULL_NAME,
             lastName,
             firstName,
             null
@@ -30,7 +30,7 @@ public class TransversalSearchQuery {
 
     public static TransversalSearchQuery searchByDisplayName(final String fullname) {
         return new TransversalSearchQuery(
-            TransversalSearchType.NAME,
+            TransversalSearchType.DISPLAY_NAME,
             null,
             null,
             fullname

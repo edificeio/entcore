@@ -524,6 +524,7 @@ public class DefaultUserService implements UserService {
 						  final UserInfos userInfos,
 						  final Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
+		// Truthy when the query MUST be limited to the current user's scope (i.e. when an ADML is doing a transversal search)
 		boolean restrictResultsToFunction = false;
 		String filterUser = "";
 		if (classId != null && !classId.trim().isEmpty()) {
@@ -545,37 +546,41 @@ public class DefaultUserService implements UserService {
 			conditionUser += "AND head(u.profiles) IN {expectedProfiles} ";
 			params.put("expectedProfiles", expectedProfiles);
 		}
-		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) && isNotEmpty(searchQuery.getEmail())) {
+		if(TransversalSearchType.EMAIL.equals(searchQuery.getSearchType()) 
+				&& isNotEmpty(searchQuery.getEmail())
+				) {
 			final String searchTerm = normalize(searchQuery.getEmail());
 			conditionUser += " AND u.emailSearchField CONTAINS {email} ";
 			params.put("email", searchTerm);
-		} else if(TransversalSearchType.NAME.equals(searchQuery.getSearchType())) {
-			if( isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName()) ) {
-				final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
-				final String lastNameSearchTerm = normalize(searchQuery.getLastName());
-				final StringBuilder sbuilder = new StringBuilder();
-				sbuilder.append(" AND ");
-				final boolean hasLastName;
-				if(isEmpty(lastNameSearchTerm)) {
-					hasLastName = false;
-				} else {
-					sbuilder.append(" u.lastNameSearchField STARTS WITH {lastName} ");
-					params.put("lastName", lastNameSearchTerm);
-					hasLastName = true;
-				}
-				if(isNotEmpty(firstNameSearchTerm)) {
-					if(hasLastName) {
-						sbuilder.append(" AND ");
-					}
-					sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
-					params.put("firstName", firstNameSearchTerm);
-				}
-				conditionUser += sbuilder.toString();
-			} else if(isNotEmpty(searchQuery.getDisplayName())) {
-				final String searchTerm = normalize(searchQuery.getDisplayName());
-				conditionUser += " AND u.displayNameSearchField CONTAINS {displayName} ";
-				params.put("displayName", searchTerm);
+		} else if(TransversalSearchType.FULL_NAME.equals(searchQuery.getSearchType())
+				&& (isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName())) 
+				) {
+			final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
+			final String lastNameSearchTerm = normalize(searchQuery.getLastName());
+			final StringBuilder sbuilder = new StringBuilder();
+			sbuilder.append(" AND ");
+			final boolean hasLastName;
+			if(isEmpty(lastNameSearchTerm)) {
+				hasLastName = false;
+			} else {
+				sbuilder.append(" u.lastNameSearchField STARTS WITH {lastName} ");
+				params.put("lastName", lastNameSearchTerm);
+				hasLastName = true;
 			}
+			if(isNotEmpty(firstNameSearchTerm)) {
+				if(hasLastName) {
+					sbuilder.append(" AND ");
+				}
+				sbuilder.append(" u.firstNameSearchField STARTS WITH {firstName} ");
+				params.put("firstName", firstNameSearchTerm);
+			}
+			conditionUser += sbuilder.toString();
+		} else if(TransversalSearchType.DISPLAY_NAME.equals(searchQuery.getSearchType()) 
+				&& isNotEmpty(searchQuery.getDisplayName())
+				) {
+			final String searchTerm = normalize(searchQuery.getDisplayName());
+			conditionUser += " AND u.displayNameSearchField CONTAINS {displayName} ";
+			params.put("displayName", searchTerm);
 		}
 		if(filterActivated != null){
 			if("inactive".equals(filterActivated)){
