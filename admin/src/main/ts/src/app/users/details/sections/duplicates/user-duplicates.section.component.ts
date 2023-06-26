@@ -20,6 +20,9 @@ import { UserService } from 'src/app/core/services/user.service';
 })
 export class UserDuplicatesSectionComponent extends AbstractSection implements OnInit {
 
+    showMergeUsersConfirmation: boolean = false;
+    duplicatedUserId: string;
+
     constructor(public spinner: SpinnerService,
                 protected cdRef: ChangeDetectorRef,
                 private router: Router,
