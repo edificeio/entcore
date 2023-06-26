@@ -24,6 +24,7 @@ import io.vertx.core.AsyncResult;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -295,6 +296,7 @@ public class DuplicateUsers {
 								relationship.getJsonObject("data"), rsType, isOutgoingRs
 						));
 					}
+					promiseFetchUsersRelationsToKeep.complete(toKeep);
 				}
 			});
 		} else {
@@ -426,13 +428,13 @@ public class DuplicateUsers {
 			}
 		};
 
-		final String realUserId1 = params.getString("userId1");
-		final String realUserId2 = params.getString("userId2");
+		final String userIdThatWillStay = params.getString("userId1");
+		final String userIdThatWillDisappear = params.getString("userId2");
 
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params, duplicatesChecker);
-			addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, realUserId1, realUserId2, tx);
+			addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, tx);
 			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
 			message.reply(new JsonObject().put("status", "ok"));
 		} else {
@@ -440,7 +442,7 @@ public class DuplicateUsers {
 				TransactionHelper txl = TransactionManager.getTransaction();
 				txl.add(INCREMENT_RELATIVE_SCORE, params);
 				txl.add(query, params, duplicatesChecker);
-				addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, realUserId1, realUserId2, tx);
+				addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, txl);
 				txl.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
@@ -461,36 +463,41 @@ public class DuplicateUsers {
 	}
 
 	private void addMissingRelationshipAfterMerge(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
-												  final String userId1, final String userId2,
+												  final String userIdThatWillStay, final String userIdThatWillDisappear,
 												  final TransactionHelper tx) {
-		relationshipsToKeepPerUser.getUserRelationship(userId2).stream()
-				.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userId1, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
-        .forEach(rsToMove -> {
+		relationshipsToKeepPerUser.getUserRelationship(userIdThatWillDisappear).stream()
+		.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
+        .forEach(rsToDuplicate -> {
 			final JsonObject params = new JsonObject()
-					.put("userId1", userId1)
-					.put("otheNodeId", rsToMove.getOtherNodeId());
+					.put("userId1", userIdThatWillStay)
+					.put("otheNodeId", rsToDuplicate.getOtherNodeId());
 			final StringBuilder query = new StringBuilder();
-			final String otherNodeLabels = rsToMove.getOtherNodeLabels().isEmpty() ? "" : ":" + rsToMove.getOtherNodeLabels().stream().collect(Collectors.joining(":"));
+			final String otherNodeLabels = rsToDuplicate.getOtherNodeLabels().isEmpty() ? "" : ":" + rsToDuplicate.getOtherNodeLabels().stream().collect(Collectors.joining(":"));
+			final String typeOfTheRsToDuplicate = StringUtils.isBlank(rsToDuplicate.getType()) ? "" : ":" + rsToDuplicate.getType();
+			final char rsLeftSign = rsToDuplicate.isOutoing() ? ' ' : '<';
+			final char rsRightSign = rsToDuplicate.isOutoing() ? '>' : ' ';
 			query.append("MATCH (user:User{id:{userId1}}) ")
-					.append("MATCH (nodeToLink:").append(otherNodeLabels).append("{id:{otheNodeId}}) ")
-					.append("MERGE (user)-[r:]-(noteToLink) ");
-			if(rsToMove.getProperties() != null && !rsToMove.getProperties().isEmpty()) {
+					.append("MATCH (nodeToLink").append(otherNodeLabels).append("{id:{otheNodeId}}) ")
+					.append("MERGE (user)").append(rsLeftSign).append("-[r").append(typeOfTheRsToDuplicate).append("]-").append(rsRightSign).append("(nodeToLink) ");
+			if(rsToDuplicate.getProperties() != null && !rsToDuplicate.getProperties().isEmpty()) {
 				query.append("SET ");
-				query.append(
-						rsToMove.getProperties().stream().map(rsProperty -> {
-							final String name = rsProperty.getKey();
-							final Object value = rsProperty.getValue();
-							params.put("rs_prop_" + name, value);
-							return new StringBuilder()
-									.append(" r.").append(name).append(" = {rs_prop_").append(name).append("}")
-									.toString();
-						}).collect(Collectors.joining(", ")));
+				final String copiedRsPropertiesSetter = rsToDuplicate.getProperties().stream().map(rsProperty -> {
+					final String name = rsProperty.getKey();
+					final Object value = rsProperty.getValue();
+					params.put("rs_prop_" + name, value);
+					return new StringBuilder()
+							.append(" r.").append(name).append(" = {rs_prop_").append(name).append("}")
+							.toString();
+				}).collect(Collectors.joining(", "));
+				query.append(copiedRsPropertiesSetter);
 			}
-			log.info("Adding query : " + query);
-			log.info(params.encodePrettily());
+			// TODO vérifier avec @dboi si il ne faut pas ajouter source: MANUAL dans tous les cas
+			if(log.isDebugEnabled()) {
+				log.debug("Adding query : " + query);
+				log.debug(params.encodePrettily());
+			}
 			tx.add(query.toString(), params);
 		});
-		System.out.println("End");
 	}
 
 	public void mergeBykeys(final Message<JsonObject> message) {
