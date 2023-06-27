@@ -15,7 +15,7 @@ export class ValidateMailController implements IController {
 	public force?:Boolean;
 	public redirect?:string;
 	public fullscreen?:Boolean;
-	public type?:ValidationType = "email";
+	public type:ValidationType = "email";
 
 	// Input data
 	public emailAddress?:String;
