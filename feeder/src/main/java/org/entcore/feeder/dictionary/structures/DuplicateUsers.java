@@ -259,8 +259,14 @@ public class DuplicateUsers {
 		mergeDuplicate(message, null);
 	}
 
-	private Future<RelationshipsToKeepPerUser> fetchRelationshipsToKeep(final boolean keepRelations,
-																		final String... userIds) {
+	/**
+	 * @param keepRelations {@code true} if some relations should be kept after a merge of duplicated users, {@code false}
+	 *                                  otherwise
+	 * @param userIds Ids of the users involved in the merge
+	 * @return A summary of all the relations that should be kept
+	 */
+	public Future<RelationshipsToKeepPerUser> fetchRelationshipsToKeep(final boolean keepRelations,
+																	   final String... userIds) {
 		final Neo4j neo4j = TransactionManager.getNeo4jHelper();
 		final Promise<RelationshipsToKeepPerUser> promiseFetchUsersRelationsToKeep = Promise.promise();
 		if(keepRelations && userIds != null && userIds.length > 1) {
@@ -466,7 +472,7 @@ public class DuplicateUsers {
 												  final String userIdThatWillStay, final String userIdThatWillDisappear,
 												  final TransactionHelper tx) {
 		relationshipsToKeepPerUser.getUserRelationship(userIdThatWillDisappear).stream()
-		.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
+				.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
         .forEach(rsToDuplicate -> {
 			final JsonObject params = new JsonObject()
 					.put("userId1", userIdThatWillStay)
