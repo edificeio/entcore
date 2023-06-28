@@ -83,6 +83,8 @@
   "bpr.form.publication.licence.text.4": "Les billets actuellement en brouillon et les billets ajoutés après la publication du Blog dans la Bibliothèque ne seront pas visibles.",
   "bpr.form.publication.response.error.content": "Veuillez réessayer et contacter l'équipe Support si le problème persiste.",
   "bpr.form.publication.response.error.title": "Oups, quelque chose s'est mal passé !",
+  "bpr.form.publication.response.empty.title": "Veuillez renseigner un titre sans espaces",
+  "bpr.form.publication.response.empty.description": "Veuillez renseigner une description sans espaces",
   "bpr.form.publication.response.success.button": "Voir dans la Bibliothèque",
   "bpr.form.publication.response.success.content.1": "Bravo ! Votre activité va permettre d'inspirer d'autres enseignants de la communauté.",
   "bpr.form.publication.response.success.content.2": "N'hésitez pas à explorer vous-même d'autres activités et à échanger avec d'autres enseignants !",
