@@ -96,7 +96,7 @@ public class DuplicateUsersTest {
         duplicateUsers.fetchRelationshipsToKeep(false, "user1", "user2")
         .onSuccess(rss -> {
             duplicateUsers.addDisappearingUserRelationship(rss, "user1", "user2", tx);
-            context.assertEquals(0, tx.queryAndParams.size(), "Should try to copy 2 relationships");
+            context.assertEquals(0, tx.queryAndParams.size(), "Should not try to copy relationships");
             async.complete();
         })
         .onFailure(e -> context.fail(e));
