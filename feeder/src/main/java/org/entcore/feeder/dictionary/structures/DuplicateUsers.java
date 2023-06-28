@@ -485,8 +485,8 @@ public class DuplicateUsers {
 	public void addDisappearingUserRelationship(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
 												final String userIdThatWillStay, final String userIdThatWillDisappear,
 												final TransactionHelper tx) {
-		relationshipsToKeepPerUser.getUserRelationship(userIdThatWillDisappear).stream()
-				.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
+		relationshipsToKeepPerUser.getNodeRelationships(userIdThatWillDisappear).stream()
+				.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutgoing()))
         .forEach(rsToDuplicate -> {
 			final JsonObject params = new JsonObject()
 					.put("userId1", userIdThatWillStay)
@@ -494,8 +494,8 @@ public class DuplicateUsers {
 			final StringBuilder query = new StringBuilder();
 			final String otherNodeLabels = rsToDuplicate.getOtherNodeLabels().isEmpty() ? "" : ":" + rsToDuplicate.getOtherNodeLabels().stream().collect(Collectors.joining(":"));
 			final String typeOfTheRsToDuplicate = StringUtils.isBlank(rsToDuplicate.getType()) ? "" : ":" + rsToDuplicate.getType();
-			final String rsLeftSign = rsToDuplicate.isOutoing() ? "" : "<";
-			final String rsRightSign = rsToDuplicate.isOutoing() ? ">" : "";
+			final String rsLeftSign = rsToDuplicate.isOutgoing() ? "" : "<";
+			final String rsRightSign = rsToDuplicate.isOutgoing() ? ">" : "";
 			query.append("MATCH (user:User{id:{userId1}}) ")
 					.append("MATCH (nodeToLink").append(otherNodeLabels).append("{id:{otheNodeId}}) ")
 					.append("MERGE (user)").append(rsLeftSign).append("-[r").append(typeOfTheRsToDuplicate).append("]-").append(rsRightSign).append("(nodeToLink) ");

@@ -61,8 +61,8 @@ public class DuplicateUsersTest {
         duplicateUsers.fetchRelationshipsToKeep(false)
         .onSuccess(rss -> {
             context.assertNotNull(rss, "Should not have fetched relationships but the returned object should not be null");
-            context.assertTrue(rss.getUserRelationship("user1").isEmpty(), "Should not have fetched relationships but the returned object should not be null");
-            context.assertTrue(rss.getUserRelationship("user2").isEmpty(), "Should not have fetched relationships but the returned object should not be null");
+            context.assertTrue(rss.getNodeRelationships("user1").isEmpty(), "Should not have fetched relationships but the returned object should not be null");
+            context.assertTrue(rss.getNodeRelationships("user2").isEmpty(), "Should not have fetched relationships but the returned object should not be null");
             async.complete();
         })
         .onFailure(e -> context.fail(e));
@@ -74,13 +74,13 @@ public class DuplicateUsersTest {
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
         .onSuccess(rss -> {
             context.assertNotNull(rss, "Should have fetched relationships");
-            final List<RelationshipToKeepForDuplicatedUser> user1Rss = rss.getUserRelationship("user1");
+            final List<RelationshipToKeepForDuplicatedUser> user1Rss = rss.getNodeRelationships("user1");
             context.assertEquals(4, user1Rss.size(), "Should have fetched relationships of user 1");
             context.assertTrue(rss.isUserHasRs("user1", "IN", "struct1", true));
             context.assertTrue(rss.isUserHasRs("user1", "IN", "struct2", true));
             context.assertTrue(rss.isUserHasRs("user1", "RELATED", "user1Child1", false));
             context.assertTrue(rss.isUserHasRs("user1", "RELATED", "user1Child2", false));
-            final List<RelationshipToKeepForDuplicatedUser> user2Rss = rss.getUserRelationship("user2");
+            final List<RelationshipToKeepForDuplicatedUser> user2Rss = rss.getNodeRelationships("user2");
             context.assertEquals(2, user2Rss.size(), "Should have fetched relationships of user 2");
             context.assertTrue(rss.isUserHasRs("user2", "IN", "struct2", true));
             context.assertTrue(rss.isUserHasRs("user2", "RELATED", "user2Child1", false));
