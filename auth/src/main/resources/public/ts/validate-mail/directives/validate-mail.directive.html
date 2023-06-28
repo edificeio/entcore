@@ -14,8 +14,8 @@
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
             <div class="mb-12">
-                <img class="mx-auto" ng-if="ctrl.type === 'email'" src="/auth/public/img/validate-mail.svg" height="150"></img>
-                <img class="mx-auto" ng-if="ctrl.type === 'sms'" src="/auth/public/img/validate-sms.svg" height="150"></img>
+                <img class="mx-auto" ng-if="ctrl.type === 'email'" src="/auth/public/img/validate-mail.svg" height="150" width="150"></img>
+                <img class="mx-auto" ng-if="ctrl.type === 'sms'" src="/auth/public/img/validate-sms.svg" height="150" width="150"></img>
             </div>
 
             <div class="text-center">
@@ -30,7 +30,7 @@
     <div class="my-12" ng-switch-when="input">
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
-                <div class="mb-32 text-center">
+                <div class="mb-16 text-center">
                     <div ng-if="ctrl.force">
                         <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.hint.force</i18n>
                         <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.hint.force</i18n>
@@ -125,7 +125,7 @@
     <div class="my-12" ng-switch-when="code">
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
-                <div class="mb-32 text-center">
+                <div class="mb-16 text-center">
                     <div ng-if="ctrl.type === 'email'">
                         <i18n>validate-mail.step2.hint.paragraph1</i18n>
                         <span> [[ctrl.emailAddress]].</span>
