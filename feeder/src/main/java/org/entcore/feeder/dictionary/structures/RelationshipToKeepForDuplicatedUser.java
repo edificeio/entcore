@@ -9,16 +9,16 @@ public class RelationshipToKeepForDuplicatedUser {
     private final Set<String> otherNodeLabels;
     private final JsonObject properties;
     private final String type;
-    private final boolean outoing;
+    private final boolean outgoing;
 
     public RelationshipToKeepForDuplicatedUser(final String otherNodeId, final Set<String> otherNodeLabels,
                                                final JsonObject properties, final String type,
-                                               final boolean outoing) {
+                                               final boolean outgoing) {
         this.otherNodeId = otherNodeId;
         this.otherNodeLabels = otherNodeLabels;
         this.properties = properties;
         this.type = type;
-        this.outoing = outoing;
+        this.outgoing = outgoing;
     }
 
     public String getOtherNodeId() {
@@ -33,8 +33,8 @@ public class RelationshipToKeepForDuplicatedUser {
         return type;
     }
 
-    public boolean isOutoing() {
-        return outoing;
+    public boolean isOutgoing() {
+        return outgoing;
     }
 
     public Set<String> getOtherNodeLabels() {
@@ -48,7 +48,7 @@ public class RelationshipToKeepForDuplicatedUser {
                 ", otherNodeLabels='" + otherNodeLabels + '\'' +
                 ", properties=" + properties +
                 ", type='" + type + '\'' +
-                ", outoing=" + outoing +
+                ", outoing=" + outgoing +
                 '}';
     }
 }
