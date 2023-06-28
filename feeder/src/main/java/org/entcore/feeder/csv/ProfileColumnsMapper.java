@@ -208,7 +208,7 @@ public class ProfileColumnsMapper {
 				.put("classeseleves", "childClasses")
 				.put("classesdeleleve", "childClasses")
 				.put("pcs", "ignore")
-				.put("datedenaissanceeleve", "birthDate")
+				.put("datedenaissanceeleve", "ignore")
 				.put("communicationadresses", "ignore");
 		JsonObject teacherMapping = baseMappings.copy()
 				.put("presencedevanteleves", "teaches")
