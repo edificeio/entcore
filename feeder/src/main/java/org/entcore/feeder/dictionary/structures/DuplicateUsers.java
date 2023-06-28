@@ -440,7 +440,7 @@ public class DuplicateUsers {
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params, duplicatesChecker);
-			addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, tx);
+			addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, tx);
 			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
 			message.reply(new JsonObject().put("status", "ok"));
 		} else {
@@ -448,7 +448,7 @@ public class DuplicateUsers {
 				TransactionHelper txl = TransactionManager.getTransaction();
 				txl.add(INCREMENT_RELATIVE_SCORE, params);
 				txl.add(query, params, duplicatesChecker);
-				addMissingRelationshipAfterMerge(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, txl);
+				addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, txl);
 				txl.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
@@ -468,9 +468,23 @@ public class DuplicateUsers {
 		}
 	}
 
-	public void addMissingRelationshipAfterMerge(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
-												  final String userIdThatWillStay, final String userIdThatWillDisappear,
-												  final TransactionHelper tx) {
+	/**
+	 * Builds the necessary Neo4J requests to "copy" the relationships of the disappearing users iff they are not already
+	 * present on the remaining user. It preserves :
+	 * - type
+	 * - direction
+	 * - properties
+	 * of the copied relationships.
+	 * @TODO check with @dboi if an attribute source should be manually added to avoid the relationships to be erased by
+	 * an AAF synchronization.
+	 * @param relationshipsToKeepPerUser summary of the relationships of the duplicated users
+	 * @param userIdThatWillStay
+	 * @param userIdThatWillDisappear
+	 * @param tx Current Neo4J transaction
+	 */
+	public void addDisappearingUserRelationship(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
+												final String userIdThatWillStay, final String userIdThatWillDisappear,
+												final TransactionHelper tx) {
 		relationshipsToKeepPerUser.getUserRelationship(userIdThatWillDisappear).stream()
 				.filter(rsToMove -> !relationshipsToKeepPerUser.isUserHasRs(userIdThatWillStay, rsToMove.getType(), rsToMove.getOtherNodeId(), rsToMove.isOutoing()))
         .forEach(rsToDuplicate -> {
