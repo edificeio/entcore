@@ -468,7 +468,7 @@ public class DuplicateUsers {
 		}
 	}
 
-	private void addMissingRelationshipAfterMerge(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
+	public void addMissingRelationshipAfterMerge(final RelationshipsToKeepPerUser relationshipsToKeepPerUser,
 												  final String userIdThatWillStay, final String userIdThatWillDisappear,
 												  final TransactionHelper tx) {
 		relationshipsToKeepPerUser.getUserRelationship(userIdThatWillDisappear).stream()
@@ -480,8 +480,8 @@ public class DuplicateUsers {
 			final StringBuilder query = new StringBuilder();
 			final String otherNodeLabels = rsToDuplicate.getOtherNodeLabels().isEmpty() ? "" : ":" + rsToDuplicate.getOtherNodeLabels().stream().collect(Collectors.joining(":"));
 			final String typeOfTheRsToDuplicate = StringUtils.isBlank(rsToDuplicate.getType()) ? "" : ":" + rsToDuplicate.getType();
-			final char rsLeftSign = rsToDuplicate.isOutoing() ? ' ' : '<';
-			final char rsRightSign = rsToDuplicate.isOutoing() ? '>' : ' ';
+			final String rsLeftSign = rsToDuplicate.isOutoing() ? "" : "<";
+			final String rsRightSign = rsToDuplicate.isOutoing() ? ">" : "";
 			query.append("MATCH (user:User{id:{userId1}}) ")
 					.append("MATCH (nodeToLink").append(otherNodeLabels).append("{id:{otheNodeId}}) ")
 					.append("MERGE (user)").append(rsLeftSign).append("-[r").append(typeOfTheRsToDuplicate).append("]-").append(rsRightSign).append("(nodeToLink) ");

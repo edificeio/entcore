@@ -1,6 +1,5 @@
 package org.entcore.feeder.user;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -11,12 +10,9 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.feeder.Feeder;
 import org.entcore.feeder.dictionary.structures.DuplicateUsers;
 import org.entcore.feeder.dictionary.structures.RelationshipToKeepForDuplicatedUser;
 import org.entcore.feeder.exceptions.TransactionException;
-import org.entcore.feeder.test.integration.java.FeederTest;
-import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -27,7 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
 public class DuplicateUsersTest {
@@ -36,6 +36,7 @@ public class DuplicateUsersTest {
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
 
     private static DuplicateUsers duplicateUsers;
+    private static Neo4j neo4j;
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
@@ -45,7 +46,7 @@ public class DuplicateUsersTest {
         final String base = neo4jContainer.getHttpUrl() + "/db/data/";
         final JsonObject neo4jConfig = new JsonObject()
                 .put("server-uri", base).put("poolSize", 1);
-        final Neo4j neo4j = Neo4j.getInstance();
+        neo4j = Neo4j.getInstance();
         neo4j.init(test.vertx(), neo4jConfig
                 .put("server-uri", base)
                 .put("ignore-empty-statements-error", false));
@@ -88,6 +89,67 @@ public class DuplicateUsersTest {
         .onFailure(e -> context.fail(e));
     }
 
+    @Test
+    public void testAddMissingRelationshipAfterMergeWhenWeDoNotWantToKeepRss(final TestContext context) {
+        final Async async = context.async();
+        final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
+        duplicateUsers.fetchRelationshipsToKeep(false, "user1", "user2")
+        .onSuccess(rss -> {
+            duplicateUsers.addMissingRelationshipAfterMerge(rss, "user1", "user2", tx);
+            context.assertEquals(0, tx.queryAndParams.size(), "Should try to copy 2 relationships");
+            async.complete();
+        })
+        .onFailure(e -> context.fail(e));
+    }
+
+    @Test
+    public void testAddMissingRelationshipAfterMergeWhenWetWantToKeepRssOfUser2(final TestContext context) {
+        final Async async = context.async();
+        final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
+        duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
+        .onSuccess(rss -> {
+            duplicateUsers.addMissingRelationshipAfterMerge(rss, "user1", "user2", tx);
+            context.assertEquals(1, tx.queryAndParams.size(), "Should try to copy 1 relationship only");
+
+            final List<QueryAndParams> childrenToBeCopied = tx.findByRsTypeAndDirection("RELATED", false);
+            context.assertEquals(1, childrenToBeCopied.size());
+            final QueryAndParams childToBeCopied = childrenToBeCopied.get(0);
+            context.assertEquals("user2Child1", childToBeCopied.params.getString("otheNodeId"));
+            context.assertEquals("user1", childToBeCopied.params.getString("userId1"));
+            async.complete();
+        })
+        .onFailure(e -> context.fail(e));
+    }
+
+    @Test
+    public void testAddMissingRelationshipAfterMergeWhenWetWantToKeepRssOfUser1(final TestContext context) {
+        final Async async = context.async();
+        final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
+        duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
+                .onSuccess(rss -> {
+                    duplicateUsers.addMissingRelationshipAfterMerge(rss, "user2", "user1", tx);
+                    context.assertEquals(3, tx.queryAndParams.size(), "Should try to copy 3 relationships");
+                    final List<QueryAndParams> groupsToBeCopied = tx.findByRsTypeAndDirection("IN", true);
+                    context.assertEquals(1, groupsToBeCopied.size());
+                    final QueryAndParams groupToBeCopiedForUser1 = groupsToBeCopied.get(0);
+                    context.assertEquals("struct1", groupToBeCopiedForUser1.params.getString("otheNodeId"));
+                    context.assertEquals("user2", groupToBeCopiedForUser1.params.getString("userId1"));
+
+                    final List<QueryAndParams> childrenToBeCopied = tx.findByRsTypeAndDirection("RELATED", false);
+                    context.assertEquals(2, childrenToBeCopied.size());
+                    context.assertTrue(
+                        childrenToBeCopied.stream().map(rs -> rs.params.getString("userId1")).allMatch(uid -> uid.equals("user2")),
+                        "All children should be copied to the same user user2");
+                    final Set<String> childrenToCopy = new HashSet<>();
+                    childrenToCopy.add("user1Child1");
+                    childrenToCopy.add("user1Child2");
+                    context.assertEquals(childrenToCopy, childrenToBeCopied.stream().map(rs -> rs.params.getString("otheNodeId")).collect(Collectors.toSet()),
+                            "All of user1's children should be copied and only them");
+                    async.complete();
+                })
+                .onFailure(e -> context.fail(e));
+    }
+
     public static Future<Void> prepareData() {
         final Promise<Void> promise = Promise.promise();
         TransactionHelper txl = null;
@@ -122,6 +184,32 @@ public class DuplicateUsersTest {
             promise.fail(e);
         }
         return promise.future();
+    }
+
+    private static class QueryAndParams {
+        private final String query;
+        private final JsonObject params;
+
+        private QueryAndParams(final String query, final JsonObject params) {
+            this.query = query;
+            this.params = params;
+        }
+    }
+    private static class DummyTransactionHelper extends TransactionHelper {
+
+        private final List<QueryAndParams> queryAndParams = new ArrayList<>();
+
+        public DummyTransactionHelper(final Neo4j neo4j) {
+            super(neo4j);
+        }
+        public void add(String query, JsonObject params) {
+            queryAndParams.add(new QueryAndParams(query, params));
+        }
+
+        public List<QueryAndParams> findByRsTypeAndDirection(final String rsType, final boolean outgoing) {
+            final String needle = "MERGE (user)" + (outgoing ? "" : "<")+ "-[r:" + rsType + "]-" + (outgoing ? ">" : "")+ "(nodeToLink)";
+            return queryAndParams.stream().filter(qAndP -> qAndP.query.toLowerCase().contains(needle.toLowerCase())).collect(Collectors.toList());
+        }
     }
 
 }
