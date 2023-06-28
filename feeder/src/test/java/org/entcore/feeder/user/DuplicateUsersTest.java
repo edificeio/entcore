@@ -95,7 +95,7 @@ public class DuplicateUsersTest {
         final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
         duplicateUsers.fetchRelationshipsToKeep(false, "user1", "user2")
         .onSuccess(rss -> {
-            duplicateUsers.addMissingRelationshipAfterMerge(rss, "user1", "user2", tx);
+            duplicateUsers.addDisappearingUserRelationship(rss, "user1", "user2", tx);
             context.assertEquals(0, tx.queryAndParams.size(), "Should try to copy 2 relationships");
             async.complete();
         })
@@ -108,7 +108,7 @@ public class DuplicateUsersTest {
         final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
         .onSuccess(rss -> {
-            duplicateUsers.addMissingRelationshipAfterMerge(rss, "user1", "user2", tx);
+            duplicateUsers.addDisappearingUserRelationship(rss, "user1", "user2", tx);
             context.assertEquals(1, tx.queryAndParams.size(), "Should try to copy 1 relationship only");
 
             final List<QueryAndParams> childrenToBeCopied = tx.findByRsTypeAndDirection("RELATED", false);
@@ -127,7 +127,7 @@ public class DuplicateUsersTest {
         final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
                 .onSuccess(rss -> {
-                    duplicateUsers.addMissingRelationshipAfterMerge(rss, "user2", "user1", tx);
+                    duplicateUsers.addDisappearingUserRelationship(rss, "user2", "user1", tx);
                     context.assertEquals(3, tx.queryAndParams.size(), "Should try to copy 3 relationships");
                     final List<QueryAndParams> groupsToBeCopied = tx.findByRsTypeAndDirection("IN", true);
                     context.assertEquals(1, groupsToBeCopied.size());

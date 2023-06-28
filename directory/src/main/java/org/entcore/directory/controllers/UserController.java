@@ -56,7 +56,7 @@ import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
-import org.entcore.directory.pojo.MergeUsersRequest;
+import org.entcore.directory.pojo.MergeUsersMetadata;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
@@ -74,7 +74,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -778,37 +777,19 @@ public class UserController extends BaseController {
 	}
 
 	/**
-	 * Merges two users.
+	 * Merges two duplicated users.
 	 *
-	 * @deprecated
-	 *
-	 * Calls to this method should be replaced by calls to {@link UserController#mergeDuplicateV2(HttpServerRequest)}
-	 * as it allows callers to specify whether or not relationships should be kept
-	 *
-	 * @param request
+	 * @param request body is an instance of MergeUsersMetadata and indicates if the relationships of the disappearing user
 	 */
-	@Deprecated
 	@Put("/duplicate/merge/:userId1/:userId2")
 	@ResourceFilter(AdmlOfTwoUsers.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void mergeDuplicate(final HttpServerRequest request) {
-		final String userId1 = request.params().get("userId1");
-		final String userId2 = request.params().get("userId2");
-		userService.mergeDuplicate(userId1, userId2, false, defaultResponseHandler(request));
-	}
-
-	@Put("/duplicate/merge")
-	@ResourceFilter(AdmlOfTwoUsers.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void mergeDuplicateV2(final HttpServerRequest request) {
-		RequestUtils.bodyToClass(request, MergeUsersRequest.class).onSuccess(mergeUsersRequest -> {
-			userService.mergeDuplicate(
-				mergeUsersRequest.getTarget(),
-				mergeUsersRequest.getSource(),
-				mergeUsersRequest.isKeepRelations(),
-				defaultResponseHandler(request));
+		RequestUtils.bodyToClass(request, MergeUsersMetadata.class).onSuccess(mergeUsersMetadata -> {
+			final String userId1 = request.params().get("userId1");
+			final String userId2 = request.params().get("userId2");
+			userService.mergeDuplicate(userId1, userId2, mergeUsersMetadata != null && mergeUsersMetadata.isKeepRelations(), defaultResponseHandler(request));
 		});
 	}
 
