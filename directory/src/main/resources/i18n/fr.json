@@ -158,6 +158,7 @@
     "classAdmin.class.select.structure": "Sélectionner l’établissement dans laquelle votre classe se trouve.",
     "classAdmin.class.select.structure.placeholder": "Sélectionnez un établissement",
     "classAdmin.class.select.classes": "Sélectionner votre ou vos classes dans la liste suivante, si elle n’y figure pas encore, demandez de l’aide dans l’application Assistance.",
+    "classAdmin.class.name.edit.title": "Renommer la classe",
     "directory": "Annuaire",
     "directory.Guest": "Invité",
     "directory.Personnel": "Personnel",

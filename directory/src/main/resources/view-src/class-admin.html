@@ -19,7 +19,39 @@
 		<!--HEADER-->
 		<h1 data-reload class="flex-row"><i class="settings-class"></i> <span class="horizontal-spacing" translate content="classAdmin.title"></span></h1>
 		
-		<div class="bottom-spacing-three horizontal-spacing">
+		<div class="centered twelve cell info vertical-spacing-twice" ng-if="classrooms.length === 0">
+			<i18n>classAdmin.noAttachment.message</i18n>
+		</div>
+		<section type="button" class="select-button left-text low-text row">
+			<div class="row" ng-if="classrooms.length === 0">
+				<span translate content="classAdmin.noAttachment"></span>
+			</div>
+			<div class="row" ng-if="classrooms.length > 0">
+				<div class="cell class-admin__class-list">
+					<select 
+						class="cell twelve class-admin__select"
+						ng-model="selectedClass" 
+						ng-change="selectClassroom(selectedClass)"
+						ng-options="classroom as optionLabelFor(classroom) for classroom in classrooms track by classroom.id">
+					</select>
+				</div>
+				<div class="cell one class-admin__edit">
+					<button type="button" ng-click="showEditClassName()"><i class="edit"></i></button>
+				</div>
+				<lightbox show="display.editClassName" on-close="hideEditClassName(false)">
+					<h1><i18n>classAdmin.class.name.edit.title</i18n></h1>
+
+					<input class="seven cell inline-editing" type="text" ng-model="selectedClass.name" />
+			
+					<div class="row">
+						<button type="button" class="submit right-magnet cell" ng-click="hideEditClassName(true);" ng-disabled="!selectedClass.name.length"><i18n>directory.save</i18n></button>
+						<button type="button" class="cancel right-magnet cell" ng-click="hideEditClassName(false)"><i18n>cancel</i18n></button>
+					</div>
+				</lightbox>
+			</div>
+		</section>
+
+		<div class="horizontal-spacing vertical-spacing-twice">
 			<span class="indication italic-text">
 				<i18n>classAdmin.structure.informations.sourceType</i18n>
 			</span>
@@ -42,31 +74,6 @@
 			</span>
 		</div>
 		
-		<div class="centered twelve cell info vertical-spacing-twice" ng-if="classrooms.length === 0">
-			<i18n>classAdmin.noAttachment.message</i18n>
-		</div>
-		<section type="button" class="select-button left-text low-text row">
-			<div class="class-admin__class-list" ng-if="classrooms.length !== 0">
-				<input type="text" class="right-spacing active class-admin__input twelve" ng-model="selectedClass.name" complete-change="saveClassInfos()">
-				<p class="italic-text left-spacing class-admin__school" ng-if="belongsToMultipleSchools()">[[selectedSchoolName(selectedClass)]]</p>
-				<i class="sort horizontal-margin-twice absolute-magnet" ng-class="{ double: belongsToMultipleSchools() }" ng-click="openClassList($event)" ng-if="classrooms.length > 1"></i>
-				<div class="clear"></div>
-			</div>
-			<div class="row" ng-if="classrooms.length === 0">
-				<span translate content="classAdmin.noAttachment"></span>
-			</div>
-			<div class="found-users-list" ng-if="listOpened">
-				<div ng-repeat="classroom in classrooms" ng-if="classroom.id !== selectedClass.id" class="row temp">
-					<div ng-click="selectClassroom(classroom)" class="row found-users-list__item">
-						<a class="cell right-spacing">
-							<span>[[classroom.name]]</span>
-							<span class="italic-text class-admin__school" ng-if="belongsToMultipleSchools()">- [[selectedSchoolName(classroom)]]</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</section>
-
 		<section class="class-admin__options">
 			<a workflow="directory.allowClassAdminAddUsers" class="button-big three" ng-disabled="!atLeastOneClass()" href="#" ng-click="openCreateUserModal()">
 				<i18n>classAdmin.add.users</i18n>
