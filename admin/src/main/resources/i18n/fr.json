@@ -681,7 +681,7 @@
   "import.files.deposit": "Dépôt des fichiers",
   "import.fields.checking": "Vérification des champs",
   "import.class.checking": "Vérification des classes",
-  "import.warning.aaf": "Attention, votre source d’alimentation est automatique, les comptes utilisateurs ainsi que les classes sont créés par l’Annuaire Académique Fédérateur, pour les voir apparaître il faut mettre à jour vos bases élèves et parents. N’hésitez pas à contacter le support via l’application assistance, disponible dans Mes applis.",
+  "import.warning.aaf": "Attention, les comptes utilisateurs et les classes sont importés automatiquement via l’Annuaire Académique Fédérateur (AAF) : vous n’avez donc pas à les créer. Pour les voir apparaître, il faut mettre à jour vos bases élèves et parents et s’assurer auprès de l'Erun ou de l’académie que votre école figure bien dans les fichiers (AAF).",
 
   "import.filesDeposit": "Dépôt des fichiers",
   "import.header.selectFile": "Sélectionnez les profils pour lesquels vous souhaitez lancer un import :",
