@@ -158,17 +158,18 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	}
 	$scope.hideEditClassName = function(save:boolean) {
 		if( save ) {
+			const backup = $scope.selectedClass;
+			backup.name = $scope.save.editClassName;
 			// Save and update collection
-			directoryService.saveClassInfos($scope.selectedClass)
+			directoryService.saveClassInfos(backup)
 			.then( c => {
+				// Here, $scope may have changed... $scope.selectedClass may have changed too... Big mess.
 				const idx = $scope.classrooms.findIndex( e => e.id===$scope.selectedClass.id );
 				if( 0<=idx && idx<$scope.classrooms.length ) {
-					$scope.classrooms[idx].name = $scope.selectedClass.name;
+					$scope.classrooms[idx].name = backup.name;
 				}
 				$scope.safeApply('classrooms');
 			});
-		} else {
-			$scope.selectedClass.name = $scope.save.editClassName;
 		}
 		$scope.save.editClassName = undefined;
 		$scope.display.editClassName = false;
