@@ -10,6 +10,7 @@ import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.sql.SqlResult;
@@ -75,7 +76,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     }
 
     @Override
-    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexResourcesRequest request) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
         if(getShareTableName().isPresent()){
@@ -90,28 +91,44 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
         }else{
             query.append(String.format("SELECT * FROM %s ", getTableName()));
         }
-        if (from.isPresent() && to.isPresent()) {
-            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+        final Date from = request.getFrom();
+        final Date to = request.getTo();
+        int nbParameters = 0;
+        final List<String> filters = new ArrayList<>();
+        if (from != null && to != null) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
-            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             tuple.addValue(localTo);
-            query.append(String.format("WHERE %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
-        } else if (from.isPresent()) {
-            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+            filters.add(String.format(" %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
+            nbParameters = 2;
+        } else if (from != null) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
-            query.append(String.format("WHERE %s >= $1 ",getCreatedAtColumn()));
-        } else if (to.isPresent()) {
-            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+            filters.add(String.format(" %s >= $1 ",getCreatedAtColumn()));
+            nbParameters = 1;
+        } else if (to != null) {
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localTo);
-            query.append(String.format("WHERE %s < $1 ",getCreatedAtColumn()));
+            filters.add(String.format(" %s < $1 ",getCreatedAtColumn()));
+            nbParameters = 1;
+        }
+        if(request.getIds() != null && !request.getIds().isEmpty()) {
+            nbParameters ++;
+            filters.add(getIdColumn() + " IN $" + nbParameters + " ");
+            tuple.addValue(request.getIds());
+        }
+        if(!filters.isEmpty()) {
+            query.append(" WHERE ");
+            query.append(filters.stream().collect(Collectors.joining(" AND ")));
         }
         if(getShareTableName().isPresent()){
             query.append(" GROUP BY t.id ");

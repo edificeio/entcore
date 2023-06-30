@@ -19,12 +19,20 @@
 package org.entcore.common.explorer.impl;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 /**
  * This implementation of the RepositoryEvents follows the proxy pattern.
@@ -32,15 +40,17 @@ import io.vertx.core.json.JsonObject;
  */
 public class ExplorerRepositoryEvents implements RepositoryEvents {
 
+	private static final Logger log = LoggerFactory.getLogger(ExplorerRepositoryEvents.class);
+
 	private RepositoryEvents realRepositoryEvents;
-	private ExplorerPlugin plugin;
+	private Map<String, IExplorerPluginClient> pluginClientsForApp;
 
 	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents) {
 		this.realRepositoryEvents = realRepositoryEvents;
 	}
 
-	public ExplorerRepositoryEvents setPlugin(ExplorerPlugin plugin) {
-		this.plugin = plugin;
+	public ExplorerRepositoryEvents setPlugin(IExplorerPluginClient plugin, final Map<String, IExplorerPluginClient> pluginClientsForApp) {
+		this.pluginClientsForApp = pluginClientsForApp;
 		return this;
 	}
 
@@ -63,12 +73,37 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 			@Override
 			public void handle(JsonObject jo) {
 				handler.handle(jo);
-				if( plugin != null ) {
-					// TODO ya quoi dans le JsonObject ? Est-ce bien ce qui est attendu par notifyUpsert() ??
-					plugin.notifyUpsert(/*FIXME*/ null, jo);
-				}
+				reindexResourcesAfterImport(userId, userLogin, userName, jo);
+
 			}
 		});
+	}
+
+	private void reindexResourcesAfterImport(final String userId, final String userLogin, final String userName, final JsonObject jo) {
+		if( pluginClientsForApp != null && jo.containsKey("resourcesIdsMap")) {
+			final JsonObject resourcesIdsMap = jo.getJsonObject("resourcesIdsMap");
+			resourcesIdsMap.stream().forEach(e -> {
+				final String collection = e.getKey();
+				final JsonObject idsMapForApp = (JsonObject) e.getValue();
+				if(idsMapForApp != null && !idsMapForApp.isEmpty()) {
+					final Set<String> idsToReindex = idsMapForApp.stream().map(i -> (String) i.getValue()).collect(Collectors.toSet());
+					if(idsToReindex.isEmpty()) {
+						log.info("Nothing to reindex in EUR");
+					} else {
+						log.info("Reindexing " + idsToReindex.size() + " resources in EUR");
+						final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
+						final UserInfos userInfos = new UserInfos();
+						userInfos.setUserId(userId);
+						userInfos.setLogin(userLogin);
+						userInfos.setFirstName(userName);
+						pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex));
+					}
+				}
+			});
+		} else {
+			log.debug("Nothing to do as no plugin client is defined (" + (pluginClientsForApp == null) +
+					") and/or resourcesIdsMap is not set (" + (jo.containsKey("resourcesIdsMap")) + ")");
+		}
 	}
 
 	@Override
@@ -76,8 +111,8 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.deleteGroups(groups, new Handler<List<JsonObject>>() {
 			@Override
 			public void handle(List<JsonObject> jos) {
-				if( plugin != null ) {
-					plugin.notifyUpsert(/*FIXME*/ null, jos);
+				if( pluginClientsForApp != null ) {
+					//plugin.notifyUpsert(/*FIXME*/ null, jos);
 				}
 			}
 		});
@@ -88,8 +123,8 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.deleteUsers(users, new Handler<List<JsonObject>>() {
 			@Override
 			public void handle(List<JsonObject> jos) {
-				if( plugin != null ) {
-					plugin.notifyUpsert(/*FIXME*/ null, jos);
+				if( pluginClientsForApp != null ) {
+					//plugin.notifyUpsert(/*FIXME*/ null, jos);
 				}
 			}
 		});

@@ -10,6 +10,8 @@ import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Instant;
@@ -59,22 +61,28 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource {
     }
 
     @Override
-    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexSubResourcesRequest request) {
         int i = 1;
         final QueryBuilder query = QueryBuilder.start();
-        if (from.isPresent() || to.isPresent()) {
-            if (from.isPresent()) {
-                final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
-            }
-            if (to.isPresent()) {
-                final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
-            }
+        final Date from = request.getFrom();
+        final Date to = request.getTo();
+        if (from != null) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
+        }
+        if (to != null) {
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
+        }
+        if(request.getIds() != null && !request.getIds().isEmpty()) {
+            query.and(getIdColumn()).in(request.getIds());
+        }
+        if(request.getParentIds() != null && !request.getParentIds().isEmpty()) {
+            query.and(getParentColumn()).in(request.getIds());
         }
         final JsonObject queryJson = MongoQueryBuilder.build(query);
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
@@ -85,6 +93,7 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource {
     }
 
     protected String getIdColumn() { return "_id"; }
+    protected abstract String getParentColumn();
 
     protected String getCreatedAtColumn() { return "createdAt"; }
 

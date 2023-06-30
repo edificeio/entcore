@@ -77,7 +77,7 @@ public abstract class ExplorerFolderTreeSql extends ExplorerFolderTree{
     }
 
     @Override
-    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Date from, final Date to) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
         if(getUserTableName().isPresent()){
@@ -98,24 +98,24 @@ public abstract class ExplorerFolderTreeSql extends ExplorerFolderTree{
             }
         }
         //WHERE
-        if (from.isPresent() && to.isPresent()) {
-            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+        if (from != null && to != null) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
-            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             tuple.addValue(localTo);
             query.append(String.format("WHERE f.%s >= $1 AND f.%s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
-        } else if (from.isPresent()) {
-            final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+        } else if (from != null) {
+            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             query.append(String.format("WHERE f.%s >= $1 ",getCreatedAtColumn()));
-        } else if (to.isPresent()) {
-            final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+        } else if (to != null) {
+            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localTo);
