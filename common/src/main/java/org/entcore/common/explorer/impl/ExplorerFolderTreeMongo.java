@@ -79,17 +79,17 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
     }
 
     @Override
-    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to) {
+    protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Date from, final Date to) {
         final QueryBuilder query = QueryBuilder.start();
-        if (from.isPresent() || to.isPresent()) {
-            if (from.isPresent()) {
-                final LocalDateTime localFrom = Instant.ofEpochMilli(from.get().getTime())
+        if (from != null || to != null) {
+            if (from != null) {
+                final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
                 query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
             }
-            if (to.isPresent()) {
-                final LocalDateTime localTo = Instant.ofEpochMilli(to.get().getTime())
+            if (to != null) {
+                final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
                 query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
