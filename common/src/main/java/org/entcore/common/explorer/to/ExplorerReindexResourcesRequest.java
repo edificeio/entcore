@@ -3,18 +3,24 @@ package org.entcore.common.explorer.to;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import static java.util.Collections.emptySet;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
+/**
+ * Filter for resources to be reindexed in EUR.
+ */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class ExplorerReindexResourcesRequest {
+    /** Earliest creation date of the sub-resources to reindex.*/
     private final Date from;
+    /** Latest creation date of the sub-resources to reindex.*/
     private final Date to;
+    /** Identifier of the apps of the resources to reindex.*/
     private final Set<String> apps;
+    /** {@code true} if folders should also be reindexed.*/
     private final boolean includeFolders;
+    /** Ids of the resources to reindex.*/
     private final Set<String> ids;
 
 

@@ -7,11 +7,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import java.util.Set;
 
+/**
+ * Filter for sub resources to be reindexed in EUR.
+ */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class ExplorerReindexSubResourcesRequest {
+    /** Earliest creation date of the sub-resources to reindex.*/
     private final Date from;
+    /** Latest creation date of the sub-resources to reindex.*/
     private final Date to;
+    /** Ids of the parent resources whose sub-resources should be reindexed.*/
     private final Set<String> parentIds;
+    /** Ids of the sub-resources to reindex.*/
     private final Set<String> ids;
 
     @JsonCreator

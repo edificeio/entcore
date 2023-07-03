@@ -58,7 +58,7 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
 						 String locale, String host, Handler<Boolean> handler) {
 		realRepositoryEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
-	};
+	}
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
@@ -79,9 +79,10 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		});
 	}
 
-	private void reindexResourcesAfterImport(final String userId, final String userLogin, final String userName, final JsonObject jo) {
-		if( pluginClientsForApp != null && jo.containsKey("resourcesIdsMap")) {
-			final JsonObject resourcesIdsMap = jo.getJsonObject("resourcesIdsMap");
+	private void reindexResourcesAfterImport(final String userId, final String userLogin, final String userName,
+											 final JsonObject reindexationReport) {
+		if( pluginClientsForApp != null && reindexationReport.containsKey("resourcesIdsMap")) {
+			final JsonObject resourcesIdsMap = reindexationReport.getJsonObject("resourcesIdsMap");
 			resourcesIdsMap.stream().forEach(e -> {
 				final String collection = e.getKey();
 				final JsonObject idsMapForApp = (JsonObject) e.getValue();
@@ -102,7 +103,7 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 			});
 		} else {
 			log.debug("Nothing to do as no plugin client is defined (" + (pluginClientsForApp == null) +
-					") and/or resourcesIdsMap is not set (" + (jo.containsKey("resourcesIdsMap")) + ")");
+					") and/or resourcesIdsMap is not set (" + (reindexationReport.containsKey("resourcesIdsMap")) + ")");
 		}
 	}
 
