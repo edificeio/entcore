@@ -19,6 +19,12 @@ public interface IExplorerPluginClient {
         return new ExplorerPluginClientDefault(vertx, application);
     }
 
+    /**
+     * Reindex resources.
+     * @param user User requesting the reindexation
+     * @param request Filter for the resources to reindex
+     * @return A swift report of the indexation process
+     */
     Future<IndexResponse> reindex(UserInfos user, ExplorerReindexResourcesRequest request);
 
     Future<List<String>> createAll(UserInfos user, List<JsonObject> json, boolean isCopy);
