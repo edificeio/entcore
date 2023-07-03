@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import static java.util.Collections.emptySet;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesResponse;
@@ -14,10 +13,7 @@ import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,12 +32,13 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
                 headers.add("userName", user.getUsername());
             }
         }
-        final Future<ExplorerReindexResourcesResponse> future = send(headers, JsonObject.mapFrom(request), Duration.ofDays(100));
+        final Future<JsonObject> future = send(headers, JsonObject.mapFrom(request), Duration.ofDays(100));
         log.info("Trigger indexation " + request);
         return future.map(res->{
             log.info(String.format("End trigger indexation " + res));
-            final int nb_message = res.getNbMessages();
-            final int nb_batch = res.getNbBatch();
+            final ExplorerReindexResourcesResponse response = res.mapTo(ExplorerReindexResourcesResponse.class);
+            final int nb_message = response.getNbMessages();
+            final int nb_batch = response.getNbBatch();
             return new IndexResponse(nb_batch, nb_message);
         });
     }

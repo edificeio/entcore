@@ -18,21 +18,20 @@
 
 package org.entcore.common.explorer.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
-
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This implementation of the RepositoryEvents follows the proxy pattern.
@@ -42,16 +41,17 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(ExplorerRepositoryEvents.class);
 
-	private RepositoryEvents realRepositoryEvents;
-	private Map<String, IExplorerPluginClient> pluginClientsForApp;
+	/** Proxyfied events repository that will be used to import/export resources.*/
+	private final RepositoryEvents realRepositoryEvents;
+	/**
+	 * Associates the table or collection imported to the plugin to use to reindex the associated resources.
+	 */
+	private final Map<String, IExplorerPluginClient> pluginClientsForApp;
 
-	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents) {
+	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents,
+									final Map<String, IExplorerPluginClient> pluginClientsForApp) {
 		this.realRepositoryEvents = realRepositoryEvents;
-	}
-
-	public ExplorerRepositoryEvents setPlugin(IExplorerPluginClient plugin, final Map<String, IExplorerPluginClient> pluginClientsForApp) {
 		this.pluginClientsForApp = pluginClientsForApp;
-		return this;
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 					if(idsToReindex.isEmpty()) {
 						log.info("Nothing to reindex in EUR");
 					} else {
-						log.info("Reindexing " + idsToReindex.size() + " resources in EUR");
+						log.info("Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
 						final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
 						final UserInfos userInfos = new UserInfos();
 						userInfos.setUserId(userId);

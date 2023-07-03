@@ -1,5 +1,6 @@
 package org.entcore.common.explorer.impl;
 
+import static fr.wseduc.bus.BusHelper.reply;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.CompositeFuture;
@@ -13,7 +14,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerFolderTree;
@@ -22,7 +26,14 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
-import org.entcore.common.explorer.to.*;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesResponse;
+import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
+import org.entcore.common.explorer.to.FolderDeleteRequest;
+import org.entcore.common.explorer.to.FolderDeleteResponse;
+import org.entcore.common.explorer.to.FolderListRequest;
+import org.entcore.common.explorer.to.FolderResponse;
+import org.entcore.common.explorer.to.FolderUpsertRequest;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -31,10 +42,8 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -268,7 +277,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         final Set<String> apps = request.getApps();
         if(apps !=  null && !apps.contains(getApplication())){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
-            message.reply(new JsonObject());
+            reply(message, new ExplorerReindexResourcesResponse(0, 0, emptyMap()));
             return;
         }
         log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
@@ -289,9 +298,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                         getApplication(), getResourceType(), getResourceType());
                 mess.withVersion(now);
                 return mess;
-            }).compose(messages -> {
-                return communication.pushMessage(messages);
-            });
+            }).compose(communication::pushMessage);
         }, metricsEnd -> {
             log.info(String.format("Ending indexation for app=%s type=%s %s metrics=%s",getApplication(), getResourceType(), request, metricsEnd));
             metrics.mergeIn(metricsEnd);
@@ -321,7 +328,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 //wait all
                 CompositeFuture.all(futures).onComplete(e->{
                     if(e.succeeded()){
-                        message.reply(metrics);
+                        reply(message,new ExplorerReindexResourcesResponse(
+                                metrics.getInteger("nb_message", 0),
+                                metrics.getInteger("nb_batch", 0), metrics.getMap()));
                     }else{
                         message.fail(500, ExplorerRemoteError.ReindexFailed.getError());
                         log.error("Failed to reindex subresources: "+ getApplication(), root.cause());
@@ -336,14 +345,12 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public Future<JsonArray> getShareInfo(String id) {
-        return getShareInfo(new HashSet<>(Arrays.asList(id))).map(e->{
-            return e.getOrDefault(id, new JsonArray());
-        });
+        return getShareInfo(singleton(id)).map(e-> e.getOrDefault(id, new JsonArray()));
     }
 
     @Override
     public Future<Map<String, JsonArray>> getShareInfo(Set<String> ids) {
-        final JsonArray payload = new JsonArray(new ArrayList(ids));
+        final JsonArray payload = new JsonArray(singletonList(ids));
         final Promise<Map<String,JsonArray>> promise = Promise.promise();
         final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", ResourceActions.GetShares.name());
         communication.vertx().eventBus().request(RESOURCES_ADDRESS, payload, deliveryOptions, message -> {
