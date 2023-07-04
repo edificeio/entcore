@@ -44,10 +44,24 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	/** Proxyfied events repository that will be used to import/export resources.*/
 	private final RepositoryEvents realRepositoryEvents;
 	/**
-	 * Associates the table or collection imported to the plugin to use to reindex the associated resources.
+	 * It will be used after an import to select the right {@code pluginClients} corresponding to the types of resources
+	 * which were imported.
 	 */
 	private final Map<String, IExplorerPluginClient> pluginClientsForApp;
 
+	/**
+	 *
+	 * @param realRepositoryEvents The repository event to proxyfy
+	 * @param pluginClientsForApp Mapping table to use after an import to route imported resources reindexation queries
+	 *                            to their matching {@code pluginClients}.
+	 *                            <u>Example:</u><br />
+	 *                            For blog, we should have an association :
+	 *                            <ul>
+	 *                            <li>"blogs" -> blogPluginClient</li>
+  	 *                            <li>"posts" -> postsPluginClient</li>
+	 *                            </ul>
+	 *                            because blogs and posts are stored in collections named "blogs" and "posts".
+	 */
 	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents,
 									final Map<String, IExplorerPluginClient> pluginClientsForApp) {
 		this.realRepositoryEvents = realRepositoryEvents;
@@ -77,9 +91,27 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		});
 	}
 
+	/**
+	 * For the resources imported :
+	 * <ol>
+	 *     <li>regroup them by type (blogs, subjects, posts, etc.)</li>
+	 *     <li>get the pluginClient corresponding to the type</li>
+	 *     <li>if the pluginClient exists, send a reindexation request with the ids of the requests</li>
+	 * </ol>
+	 * After reindex requests were sent (even if they fail) call the downstream process
+	 * @param userId User id
+	 * @param userLogin User login
+	 * @param userName User name
+	 * @param reindexationReport Report returned by a call to {@link ExplorerRepositoryEvents#importResources(String, String, String, String, String, String, String, boolean, Handler)}
+	 * @param handler downstream process which will be called after reindexation queries were emitted
+	 */
 	private void indexResourcesAfterImport(final String userId, final String userLogin, final String userName,
 											 final JsonObject reindexationReport, final Handler<JsonObject> handler) {
 		try {
+			// resourcesIdsMap associates :
+			// - key : the table or collections in which the resources were imported
+			// - value : a Map associating the id of the resource we wanted to import and the actual id with which it
+			//           was actually imported
 			if (pluginClientsForApp != null && reindexationReport != null && reindexationReport.containsKey("resourcesIdsMap")) {
 				final JsonObject resourcesIdsMap = reindexationReport.getJsonObject("resourcesIdsMap");
 				resourcesIdsMap.stream().filter(e -> pluginClientsForApp.containsKey(e.getKey())).forEach(e -> {

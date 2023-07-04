@@ -93,7 +93,6 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
         }
         final Date from = request.getFrom();
         final Date to = request.getTo();
-        int nbParameters = 0;
         final List<String> filters = new ArrayList<>();
         if (from != null && to != null) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
@@ -105,30 +104,25 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             tuple.addValue(localFrom);
             tuple.addValue(localTo);
             filters.add(String.format(" %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
-            nbParameters = 2;
         } else if (from != null) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             filters.add(String.format(" %s >= $1 ",getCreatedAtColumn()));
-            nbParameters = 1;
         } else if (to != null) {
             final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localTo);
             filters.add(String.format(" %s < $1 ",getCreatedAtColumn()));
-            nbParameters = 1;
         }
         if(request.getIds() != null && !request.getIds().isEmpty()) {
-            nbParameters ++;
-            filters.add(getIdColumn() + " IN $" + nbParameters + " ");
-            tuple.addValue(request.getIds());
+            filters.add("t." + getIdColumn() + " IN (" + String.join(",", request.getIds()) + ") ");
         }
         if(!filters.isEmpty()) {
             query.append(" WHERE ");
-            query.append(filters.stream().collect(Collectors.joining(" AND ")));
+            query.append(String.join(" AND ", filters));
         }
         if(getShareTableName().isPresent()){
             query.append(" GROUP BY t.id ");
@@ -140,11 +134,11 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
                     SqlResult.parseSharedFromArray(json);
                 }
                 stream.add(json);
-            }).endHandler(finish -> {
-                stream.end();
-            }).exceptionHandler(e->{
-                log.error("Failed to sqlSelect resources "+getTableName()+ "for reindex : ", e);
-            });
+            })
+            .endHandler(finish -> stream.end())
+            .exceptionHandler(e->
+                log.error("Failed to sqlSelect resources "+getTableName()+ "for reindex : ", e)
+            );
         }).onFailure(e->{
             log.error("Failed to create sqlCursor resources "+getTableName()+ "for reindex : ", e);
         });
