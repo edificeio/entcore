@@ -72,39 +72,42 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.importResources(importId, userId, userLogin, userName, importPath, locale, host, forceImportAsDuplication, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject jo) {
-				handler.handle(jo);
-				reindexResourcesAfterImport(userId, userLogin, userName, jo);
-
+				indexResourcesAfterImport(userId, userLogin, userName, jo, handler);
 			}
 		});
 	}
 
-	private void reindexResourcesAfterImport(final String userId, final String userLogin, final String userName,
-											 final JsonObject reindexationReport) {
-		if( pluginClientsForApp != null && reindexationReport.containsKey("resourcesIdsMap")) {
-			final JsonObject resourcesIdsMap = reindexationReport.getJsonObject("resourcesIdsMap");
-			resourcesIdsMap.stream().forEach(e -> {
-				final String collection = e.getKey();
-				final JsonObject idsMapForApp = (JsonObject) e.getValue();
-				if(idsMapForApp != null && !idsMapForApp.isEmpty()) {
-					final Set<String> idsToReindex = idsMapForApp.stream().map(i -> (String) i.getValue()).collect(Collectors.toSet());
-					if(idsToReindex.isEmpty()) {
-						log.info("Nothing to reindex in EUR");
-					} else {
-						log.info("Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
-						final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
-						final UserInfos userInfos = new UserInfos();
-						userInfos.setUserId(userId);
-						userInfos.setLogin(userLogin);
-						userInfos.setFirstName(userName);
-						pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex));
+	private void indexResourcesAfterImport(final String userId, final String userLogin, final String userName,
+											 final JsonObject reindexationReport, final Handler<JsonObject> handler) {
+		try {
+			if (pluginClientsForApp != null && reindexationReport != null && reindexationReport.containsKey("resourcesIdsMap")) {
+				final JsonObject resourcesIdsMap = reindexationReport.getJsonObject("resourcesIdsMap");
+				resourcesIdsMap.stream().filter(e -> pluginClientsForApp.containsKey(e.getKey())).forEach(e -> {
+					final String collection = e.getKey();
+					final JsonObject idsMapForApp = (JsonObject) e.getValue();
+					if (idsMapForApp != null && !idsMapForApp.isEmpty()) {
+						final Set<String> idsToReindex = idsMapForApp.stream().map(i -> (String) i.getValue()).collect(Collectors.toSet());
+						if (idsToReindex.isEmpty()) {
+							log.info("Nothing to reindex in EUR");
+						} else {
+							log.info("Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
+							final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
+							final UserInfos userInfos = new UserInfos();
+							userInfos.setUserId(userId);
+							userInfos.setLogin(userLogin);
+							userInfos.setFirstName(userName);
+							pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex));
+						}
 					}
-				}
-			});
-		} else {
-			log.debug("Nothing to do as no plugin client is defined (" + (pluginClientsForApp == null) +
-					") and/or resourcesIdsMap is not set (" + (reindexationReport.containsKey("resourcesIdsMap")) + ")");
+				});
+			} else {
+				log.debug("Nothing to do as no plugin client is defined (" + (pluginClientsForApp == null) +
+						") and/or resourcesIdsMap is not set (" + (reindexationReport == null || reindexationReport.containsKey("resourcesIdsMap")) + ")");
+			}
+		} catch (Exception e) {
+			log.error("An error occurred while trying to index imported content " + (reindexationReport == null ? "" : reindexationReport.encodePrettily()), e);
 		}
+		handler.handle(reindexationReport);
 	}
 
 	@Override

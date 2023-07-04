@@ -17,7 +17,6 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerFolderTree;
@@ -350,7 +349,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public Future<Map<String, JsonArray>> getShareInfo(Set<String> ids) {
-        final JsonArray payload = new JsonArray(singletonList(ids));
+        final JsonArray payload = new JsonArray(new ArrayList(ids));
         final Promise<Map<String,JsonArray>> promise = Promise.promise();
         final DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader("action", ResourceActions.GetShares.name());
         communication.vertx().eventBus().request(RESOURCES_ADDRESS, payload, deliveryOptions, message -> {
