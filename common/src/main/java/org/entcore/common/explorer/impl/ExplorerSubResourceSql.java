@@ -78,7 +78,6 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
         }else{
             query.append(String.format("SELECT * FROM %s ", getTableName()));
         }
-        int nbParams = 0;
         final List<String> filters = new ArrayList<>();
         if (from != null && to != null) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
@@ -90,35 +89,28 @@ public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
             tuple.addValue(localFrom);
             tuple.addValue(localTo);
             filters.add(String.format(" %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
-            nbParams += 2;
         } else if (from != null) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             filters.add(String.format(" %s >= $1 ",getCreatedAtColumn()));
-            nbParams ++;
         } else if (to != null) {
             final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localTo);
             filters.add(String.format(" %s < $1 ",getCreatedAtColumn()));
-            nbParams ++;
         }
         if(request.getIds() != null && !request.getIds().isEmpty()) {
-            nbParams ++;
-            filters.add(getIdColumn() + " in $" + nbParams);
-            tuple.addValue(request.getIds());
+            filters.add("t." + getIdColumn() + " IN (" + String.join(",", request.getIds()) + ") ");
         }
         if(request.getParentIds() != null && !request.getParentIds().isEmpty()) {
-            nbParams ++;
-            filters.add(getParentIdColumn() + " in $" + nbParams);
-            tuple.addValue(request.getParentIds());
+            filters.add("t." + getParentIdColumn() + " in (" + String.join(",", request.getParentIds()) + ") ");
         }
         if(!filters.isEmpty()) {
             query.append(" WHERE ");
-            query.append(filters.stream().collect(Collectors.joining(" AND ")));
+            query.append(String.join(" AND ", filters));
         }
         if(getShareTableName().isPresent()){
             query.append(" GROUP BY t.id ");

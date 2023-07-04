@@ -274,7 +274,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected void onReindexAction(final Message<JsonObject> message, final ExplorerReindexResourcesRequest request){
         final long now = currentTimeMillis();
         final Set<String> apps = request.getApps();
-        if(apps !=  null && !apps.contains(getApplication())){
+        if(apps !=  null && !apps.isEmpty() && !apps.contains(getApplication())){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
             reply(message, new ExplorerReindexResourcesResponse(0, 0, emptyMap()));
             return;
