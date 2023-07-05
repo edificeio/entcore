@@ -17,6 +17,7 @@ interface ITask {
     finished: number;
     error: number;
     total: number;
+    lastUpdate: number;
 }
 
 export class RecallMail {

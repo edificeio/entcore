@@ -87,6 +87,9 @@
                       <i class='fa fa-paper-plane  is-size-5'></i>
                   </span>
                   {{ recalledMail.statutDisplayed }}
+                  <div *ngIf="recalledMail.action.tasks.lastUpdate != -1 && recalledMail.status == 'REMOVED'">
+                    {{ recalledMail.action.tasks.lastUpdate | date: 'dd/MM/yyyy HH:mm:ss' }}
+                  </div>
                   <br>
                 </td>
                 <td> 
