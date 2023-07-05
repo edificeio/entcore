@@ -41,11 +41,11 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
