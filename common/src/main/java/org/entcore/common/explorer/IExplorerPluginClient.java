@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginClientDefault;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -18,17 +19,13 @@ public interface IExplorerPluginClient {
         return new ExplorerPluginClientDefault(vertx, application);
     }
 
-    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to);
-
-    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to, Set<String> apps);
-
-    Future<IndexResponse> getForIndexation(Optional<Date> from, Optional<Date> to, Set<String> apps, boolean includeFolders);
-
-    Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to);
-
-    Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to, Set<String> apps);
-
-    Future<IndexResponse> getForIndexation(UserInfos user, Optional<Date> from, Optional<Date> to, Set<String> apps, boolean includeFolders);
+    /**
+     * Reindex resources.
+     * @param user User requesting the reindexation
+     * @param request Filter for the resources to reindex
+     * @return A swift report of the indexation process
+     */
+    Future<IndexResponse> reindex(UserInfos user, ExplorerReindexResourcesRequest request);
 
     Future<List<String>> createAll(UserInfos user, List<JsonObject> json, boolean isCopy);
 

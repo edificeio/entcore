@@ -12,6 +12,7 @@ import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
     }
 
     @Override
-    public Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to) {
+    public Future<JsonObject> reindex(final ExplorerReindexSubResourcesRequest subResourcesRequest) {
         final long now = currentTimeMillis();
         final Integer reindexBatchSize = this.parent.reindexBatchSize;
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
@@ -167,9 +168,9 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
                 return getCommunication().pushMessage(messages);
             });
         }, metricsEnd -> {
-            log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getResourceType(), from, to, metricsEnd));
+            log.info(String.format("Ending indexation for app=%s type=%s %s metrics=%s",getApplication(), getResourceType(), subResourcesRequest, metricsEnd));
         });
-        this.doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
+        this.doFetchForIndex(stream, subResourcesRequest);
         return stream.getEndFuture();
     }
 
@@ -191,7 +192,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
 
     protected abstract Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source);
 
-    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
+    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexSubResourcesRequest subResourcesRequest);
 
 
     public void start() {

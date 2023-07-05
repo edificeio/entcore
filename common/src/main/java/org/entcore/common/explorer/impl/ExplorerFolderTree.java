@@ -42,7 +42,7 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
     }
 
     @Override
-    public Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to) {
+    public Future<JsonObject> reindex(final Date from, final Date to) {
         final Integer reindexBatchSize = this.parent.reindexBatchSize;
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             final List<ExplorerMessage> messages =  toMessages(bulk);
@@ -50,7 +50,7 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
         }, metricsEnd -> {
             log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getFolderResourceType(), from, to, metricsEnd));
         });
-        this.doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
+        this.doFetchForIndex(stream, from, to);
         return stream.getEndFuture();
     }
 
@@ -95,5 +95,5 @@ public abstract class ExplorerFolderTree implements IExplorerFolderTree {
 
     protected abstract Date getCreatedAtForModel(final JsonObject json);
 
-    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
+    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Date from, final Date to);
 }
