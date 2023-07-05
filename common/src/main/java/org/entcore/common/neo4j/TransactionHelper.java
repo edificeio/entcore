@@ -17,7 +17,7 @@
  *
  */
 
-package org.entcore.feeder.utils;
+package org.entcore.common.neo4j;
 
 import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;

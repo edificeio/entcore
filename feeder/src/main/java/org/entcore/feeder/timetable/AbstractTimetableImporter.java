@@ -25,6 +25,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.dictionary.structures.Importer;
