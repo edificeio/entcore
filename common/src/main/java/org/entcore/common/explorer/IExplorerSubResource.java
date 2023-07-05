@@ -2,12 +2,12 @@ package org.entcore.common.explorer;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface IExplorerSubResource {
 
@@ -35,7 +35,11 @@ public interface IExplorerSubResource {
 
     Future<Void> notifyDelete(UserInfos user, List<JsonObject> sources);
 
-    Future<JsonObject> reindex(final Optional<Long> from, final Optional<Long> to);
+    /**
+     * @param subResourcesRequest Filter that sub-resources to reindex should match
+     * @return A swift report of the reindexation
+     */
+    Future<JsonObject> reindex(final ExplorerReindexSubResourcesRequest subResourcesRequest);
 
     Future<Void> onDeleteParent(final Collection<String> parentIds);
 
@@ -50,7 +54,7 @@ public interface IExplorerSubResource {
     /**
      * Methods call by Ingest Job to notify a plugin that a batch of messages have a status update.
      * @param messages Messages whose status has changed
-     * @return A future which will succeed if all messages are ack-ed, false otherwise
+     * @return A future which will succeed if all messages are ack-ed
      */
     Future<Void> onJobStateUpdatedMessageReceived(final List<IngestJobStateUpdateMessage> messages);
 }
