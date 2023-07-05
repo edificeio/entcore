@@ -631,11 +631,13 @@ public class ManualFeeder extends BusModBase {
 						"WITH u, p " +
 						"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
 						"(pg:ProfileGroup)-[:HAS_PROFILE]->p, s-[:BELONGS]->(struct:Structure) " +
-						"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u, cpg<-[:IN {source:'MANUAL'}]-u " +
+						"MERGE (pg)<-[inProfileGroup:IN]-(u) " +
+						"CREATE UNIQUE (cpg)<-[:IN {source:'MANUAL'}]-(u) " +
 						"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
 						"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
 						"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
-						"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
+						"u.structures ELSE coalesce(u.structures, []) + struct.externalId END, " +
+						"inProfileGroup.source = CASE WHEN inProfileGroup.source = 'MANUAL' THEN 'MANUAL' ELSE null END " +
 						"RETURN DISTINCT u.id as id";
 		statementsBuilder.add(query, params);
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {

@@ -61,12 +61,16 @@ export class ValidateMfaController implements IController {
 		return session()?.description.mobile;
 	}
 
-	public validateCode():Promise<OTPStatus> {
+	public async validateCode():Promise<OTPStatus> {
 		// Wait at least 0,5s while validating
 		const time = new Date().getTime();
 
-		return (session().tryMfaCode(this.inputCode))
-		.then( validation => {
+		try {
+			const validation = await session().tryMfaCode(this.inputCode);
+			if( http().latestResponse.status>=400 ) {
+				throw ('validate-mfa.error.network');
+			}
+
 			if( validation.state === "valid" ) {
 				this.status = "ok";
 			} else {
@@ -77,18 +81,19 @@ export class ValidateMfaController implements IController {
 					this.koStatusCause = 'validate-mfa.error.code';
 				}
 			}
-		})
-		.catch( e => {
-			notify.error('validate-mfa.error.network');
-		})
-		.then( () => {
+
 			const waitMs = 500;
 			const duration = Math.min( Math.max(waitMs-new Date().getTime()+time, 0), waitMs);
 			const debounceTime:IPromisified<void> = notif().promisify();
 			setTimeout( () => debounceTime.resolve(), duration);
-			return debounceTime.promise;
-		})
-		.then( () => this.status );
+
+			return debounceTime.promise.then( () => this.status );
+		} catch( e ) {
+			const msg = (typeof e !== "string") ? 'validate-mfa.error.network' : e;
+			notify.error(msg);
+			this.status = "";
+			return this.status;
+		}
 	}
 
 	public renewCode():Promise<void> {

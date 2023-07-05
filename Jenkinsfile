@@ -12,10 +12,10 @@ pipeline {
       stage('Test') {
         steps {
           script {
-            try {
+//            try {
             sh './build.sh test'
-            } catch (err) {
-            }
+//            } catch (err) {
+//            }
           }
         }
       }

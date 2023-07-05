@@ -15,6 +15,9 @@ class Directive implements IDirective<IScope,JQLite,IAttributes,IController[]> {
     restrict = 'A';
 	require = ['^validateMail'];
 
+	constructor(private conf:any) {
+	}
+
     link(scope:IScope, elem:JQLite, attrs:IAttributes, controllers?:IController[]): void {
 		if( !controllers ) return;
         const validationCtrl:ValidateMailController|null = controllers[0] as ValidateMailController;
@@ -25,8 +28,8 @@ class Directive implements IDirective<IScope,JQLite,IAttributes,IController[]> {
 		if(elem && elem[0] && window && window.intlTelInput) {
 			const intlPhoneInput = window.intlTelInput(elem[0], {
 			  customContainer: "w-100",
-			  onlyCountries: ["fr"],
 			  utilsScript:"https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+			  ...this.conf,
 			});
 			if( intlPhoneInput ) {
 				validationCtrl.intlFormat = () => intlPhoneInput.getNumber();
@@ -54,6 +57,7 @@ class Directive implements IDirective<IScope,JQLite,IAttributes,IController[]> {
 }
 
 /** The intl-phone-input directive. */
-export function DirectiveFactory() {
-	return new Directive();
+export function DirectiveFactory(conf) {
+	return new Directive(conf);
 }
+DirectiveFactory.$inject=["intlPhoneInputConf"];

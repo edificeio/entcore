@@ -741,6 +741,34 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.back();
 	};
 
+	$scope.switchForm = async function(index: number) {
+		$scope.indexFormChanged(index);
+		$scope.showDefaultValue = false;
+		$scope.defaultValueTitle = '';
+		template.open('main', 'mono-class');
+		template.open('list', 'dominos');
+
+		if (index === 0) {
+			if (!$scope.users.all.length) $scope.display.loading = true;
+			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
+			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
+			template.open('dominosUser', 'dominos-user');
+		}
+		else if (index === 1) {
+			if (!$scope.groups.all.length) $scope.display.loading = true;
+			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
+			$scope.groups = directory.directory.groups;
+			template.open('dominosGroup', 'dominos-group');
+		}
+		
+		$scope.display.searchmobile = false;
+		$scope.display.showCloseMobile = $scope.display.searchmobile;
+		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+		$scope.$apply();
+	}
+
 	$scope.canFavoriteFormInitSearch = function() {
 		return $scope.create.favorite.search || $scope.create.favorite.filters.structures || $scope.create.favorite.filters.classes || 
 				$scope.create.favorite.filters.profles || $scope.create.favorite.filters.functions || 
@@ -777,51 +805,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		else {
 			await $scope.selectFavorite($scope.favorites.first(), noupdate);
 		}
-	};
-
-	/* RM#30674 FEAT (JCBE) : generates a default content to display on wide screens, instead of emptyscreen. */
-	$scope.selectDefaultValues = async function() {
-		$scope.showDefaultValue = false;
-		$scope.defaultValueTitle = "";
-
-		if (model.me.type === 'PERSRELELEVE') {
-			// Defaults to "teachers of my children".
-			$scope.defaultValueTitle = lang.translate('directory.default.relative.title');
-			await directory.directory.users.searchDirectory("", {
-					structures: model.me.structures,
-					profiles: ["Teacher"]
-				}, null, false
-			);
-		}
-
-		if (model.me.type === 'ELEVE') {
-			// Defaults to "My classroom"
-			$scope.defaultValueTitle = lang.translate('birthday.class') +" - "+ model.me.level;
-			await directory.directory.users.searchDirectory("", {
-					classes: model.me.classes
-				}, null, false
-			);
-		}
-
-		if ( model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT' ) {
-			// Defaults to "Teachers and personnels of the main structure with communication rules".
-			$scope.defaultValueTitle = lang.translate('directory.default.teacher.title') +" "+ model.me.structureNames[0];
-			await directory.directory.users.searchDirectory("", {
-					structures: [model.me.structures[0]],
-					profiles: ["Teacher", "Personnel"]
-				}, null, false
-			);
-		}
-
-		if( $scope.defaultValueTitle.length > 0 ) {
-			$scope.users = directory.directory.users;
-			$scope.allUsers = Object.assign([], $scope.users);
-			template.open('dominosUser', 'dominos-user');
-			$scope.showDefaultValue = true;
-		}
-
-		$scope.$apply();
-		return $scope.showDefaultValue;
 	};
 
 	$scope.sortByName = function(a, b) {
@@ -963,7 +946,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		switch( params.filters ) {
 			case 'users': $scope.search.index = 0; break;
 			case 'groups': $scope.search.index = 1; break;
-			default: params.filters = 'users'; break;
+			default: params.filters = 'users'; $scope.search.index = 0; break;
 		}
 
 		if( typeof params.profile === "string" ) {
@@ -1029,10 +1012,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if( showResultsPanel ) {
 				$scope.display.searchmobile = true;
 			}
-		} else {
-			/* RM#30674 FEAT (JCBE) : applies only to wide screens. */
-			if (!ui.breakpoints.checkMaxWidth("wideScreen"))
-				await $scope.selectDefaultValues();
-		}
+		} 
 	}
 }]);

@@ -5,6 +5,7 @@ import io.vertx.core.Context;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -67,7 +68,6 @@ public class FeederTest {
     }
 
     @Test
-    @Ignore
     public void testShouldImportAafAndRemoveUser(final TestContext context) {
         final Async async = context.async();
         final EventBus eb = test.vertx().eventBus();
@@ -81,7 +81,7 @@ public class FeederTest {
                 //wait for query
                 test.vertx().setTimer(300, e -> {
                     //recreate the link between u AND cpg (when aaf)
-                    test.database().executeNeo4j("MATCH (u:User { id : {userId}})-[rr:IN]->(dpg:DefaultProfileGroup), (cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) MERGE u-[r:IN]->cpg RETURN ID(rr), ID(dpg), ID(u)", params).onComplete(context.asyncAssertSuccess(res20 -> {
+                    test.database().executeNeo4j("MATCH (u:User { id : {userId}}), (cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) MERGE u-[r:IN]->cpg RETURN ID(u)", params).onComplete(context.asyncAssertSuccess(res20 -> {
                         final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance());
                         ManualFeeder.applyRemoveUserFromStructure(userId, null, "1", null, transaction);
                         transaction.commit((Message<JsonObject> message2) -> {
@@ -90,6 +90,50 @@ public class FeederTest {
                             async.complete();
                         });
                     }));
+                });
+            });
+        }));
+    }
+
+    /**
+     * This test aims at verifying that, when a user is manually added to a class :
+     * - a relation between the user and the class profile group is created and marked with a MANUAL source
+     * - no additional relation between the user and the structure profile group is created if one already exists
+     * @param context test context to handle assertion in asynchronous environment
+     */
+    @Test
+    public void testShouldAddUserToClass(final TestContext context) {
+        final String prepareDatabaseQuery = "" +
+                "MERGE (u:User {id : {userId}})-[inStructureProfileGroup:IN {labelForCurrentTest : 'originalRelation'}]->(spg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) " +
+                "WITH spg, s " +
+                "MERGE (cpg:ProfileGroup)-[:DEPENDS]->(spg)-[:HAS_PROFILE]->(p:Profile) " +
+                "WITH cpg, s " +
+                "MERGE (cpg)-[:DEPENDS]->(c:Class  {id : {classId}})-[:BELONGS]->(s) " +
+                "RETURN cpg";
+        final JsonObject params = new JsonObject().put("userId", "user-id-1").put("classId", "class-id-1").put("structureId", "structure-id-1");
+        // prepare database
+        test.database().executeNeo4j(prepareDatabaseQuery, params).onComplete(context.asyncAssertSuccess(preparedDatabaseResult -> {
+            // execute method to be tested
+            test.vertx().eventBus().send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-add-user").put("userId", "user-id-1").put("classId", "class-id-1"), (AsyncResult<Message<JsonObject>> feederResponse) -> {
+                context.assertEquals("ok", feederResponse.result().body().getString("status"));
+                context.assertEquals(1, feederResponse.result().body().getJsonArray("results").getJsonArray(0).size());
+                // wait for query to complete
+                test.vertx().setTimer(300, timerComplete -> {
+                    final String verificationQuery = "" +
+                            "MATCH (u:User {id : {userId}})-[newlyCreatedIn:IN]->(cpg:ProfileGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
+                            "WITH u, newlyCreatedIn, c " +
+                            "MATCH (u)-[inStructureProfileGroup]->(spg:ProfileGroup)-[:DEPENDS]->(s:Structure{id : {structureId}}) " +
+                            "RETURN u, newlyCreatedIn, c, inStructureProfileGroup";
+                    test.database().executeNeo4j(verificationQuery, params).onComplete(context.asyncAssertSuccess(verificationQueryResults -> {
+                        // verify method execution
+                        context.assertEquals(1, verificationQueryResults.size());
+                        context.assertEquals(4, verificationQueryResults.getJsonObject(0).size());
+                        context.assertEquals("user-id-1", verificationQueryResults.getJsonObject(0).getJsonObject("u").getJsonObject("data").getString("id"));
+                        context.assertEquals("MANUAL", verificationQueryResults.getJsonObject(0).getJsonObject("newlyCreatedIn").getJsonObject("data").getString("source"));
+                        context.assertEquals("class-id-1", verificationQueryResults.getJsonObject(0).getJsonObject("c").getJsonObject("data").getString("id"));
+                        context.assertEquals("originalRelation", verificationQueryResults.getJsonObject(0).getJsonObject("inStructureProfileGroup").getJsonObject("data").getString("labelForCurrentTest"));
+                    }));
+                    context.async().complete();
                 });
             });
         }));

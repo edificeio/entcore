@@ -1,0 +1,25 @@
+<form
+    class="search-container"
+    (ngSubmit)="searchInput && handleSubmit()">
+    <input
+        #searchBox1
+        [placeholder]="searchPlaceholders[0] | translate"
+        class="search-input"
+        name="searchFirstNameTerm"
+        type="search"
+        (input)="search([searchBox1.value, searchBox2.value || ''])" />
+    <input
+        #searchBox2
+        [hidden]="!showSearchByFullname"
+        [placeholder]="searchPlaceholders[1] | translate"
+        ngClass="{}"
+        class="search-input"
+        name="searchLastNameTerm"
+        type="search"
+        (input)="search([searchBox1.value, searchBox2.value || ''])" />
+    <button class="search-button" *ngIf="searchInput" [attr.disabled]="isSearchButtonDisabled ? true : null">
+        <i class="fa fa-search is-size-4 search-icon"></i>
+    </button>
+</form>
+
+<!-- <input *ngIf="!searchInput" type="search" #searchBox (input)="search(searchBox.value)"/> -->
