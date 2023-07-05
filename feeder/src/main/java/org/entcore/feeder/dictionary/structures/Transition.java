@@ -23,7 +23,7 @@ import io.vertx.core.Vertx;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.ResultMessage;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;

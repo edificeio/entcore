@@ -21,7 +21,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

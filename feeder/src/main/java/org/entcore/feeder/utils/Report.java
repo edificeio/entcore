@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
