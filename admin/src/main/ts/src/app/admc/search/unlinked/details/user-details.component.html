@@ -104,6 +104,42 @@
       <ode-form-field label="login"><span>{{ details.login }}</span></ode-form-field>
       <ode-form-field label="source"><span>{{ details.source | translate }}</span></ode-form-field>
       <ode-form-field label="activation.code" *ngIf="details.activationCode"><span>{{ details.activationCode }}</span></ode-form-field>
+
+      <ode-form-field label="mergedLogins" *ngIf="details.mergedWith && details.mergedWith.length" >
+        <div>
+          <button type="button" class="noflex" (click)="showMergedWithDetails()">
+            <s5l>mergedLogins.view</s5l>
+            <i class="fa fa-eye"></i>
+          </button>
+
+          <ode-lightbox class="merge-info" [show]="showMergedLogins" (onClose)="showMergedLogins = false">
+            <h2><s5l [s5l-params]="{displayName: details.displayName}">mergedLogins.box.title</s5l></h2>
+            <div>
+              <div class="message is-info">
+                <div class="message-body">&nbsp;<s5l>mergedLogins.box.content</s5l></div>
+              </div>
+              <ul>
+                <li>
+                  <div *ngIf="mergedWithDetails" class="is-display-flex has-space-between has-align-items-center">
+                    <a *ngIf="mergedWithDetails.structureNodes && mergedWithDetails.structureNodes.length"
+                       [routerLink]="['/', 'admin', mergedWithDetails.structureNodes[0].id, 'users', 'list', mergedWithDetails.id, 'details']">
+                      {{ mergedWithDetails.displayName }} ({{mergedWithDetails.login}})
+                    </a>
+                    <div *ngIf="!mergedWithDetails.structureNodes || !mergedWithDetails.structureNodes.length">
+                      {{ mergedWithDetails.displayName }} ({{mergedWithDetails.login}})
+                    </div>
+                    <button type="button" class="button is-primary" (click)="unmerge()">
+                      <s5l>mergedLogins.unmerge</s5l>
+                      <i class="fa fa-scissors"></i>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </ode-lightbox>
+        </div>
+      </ode-form-field>
+
     </fieldset>
   </form>
 </ode-panel-section>

@@ -56,6 +56,11 @@
         {% endif %}
         "activationAutoLogin": true,
         "teacherForgotPasswordEmail": false,
+        "publicConf" : {
+          "intl-phone-input": {
+            "onlyCountries": {{ authPhoneInputCountries|default(["fr"]) }}
+          }
+        },
         {% if not(ha) or item == 'jobs' %}
        	"new-device-warning":
         {

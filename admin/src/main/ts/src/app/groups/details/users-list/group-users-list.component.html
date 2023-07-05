@@ -30,13 +30,14 @@
   </div>
 
   <ng-template let-item>
-    <span class="display-name">{{item?.lastName.toUpperCase()}} {{item?.firstName}}</span>
+    <span class="display-name" [ngClass]="{isolated: areScopeDisjoint(item?.structures)}">{{item?.lastName.toUpperCase()}} {{item?.firstName}}</span>
 
     <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
     <span class="structures">
-                    <ul>
-                        <li *ngFor="let s of item?.structures">{{ s.name }}</li>
-                    </ul>
-                </span>
+        <ul>
+            <li *ngIf="!(item?.structures?.length)">&nbsp;-&nbsp;</li>
+            <li *ngFor="let s of item?.structures">{{ s.name }}</li>
+        </ul>
+    </span>
   </ng-template>
 </ode-list>

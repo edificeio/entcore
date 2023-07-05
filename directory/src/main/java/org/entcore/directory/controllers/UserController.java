@@ -41,7 +41,6 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.MobileValidation;
-import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -57,6 +56,8 @@ import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
+import org.entcore.directory.pojo.TransversalSearchQuery;
+import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
@@ -72,6 +73,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -502,7 +504,7 @@ public class UserController extends BaseController {
 							}
 						};
 					}
-					userService.listAdmin(structureId, false, classId, null, types, filterActive, null, null, user, handler);
+					userService.listAdmin(structureId, false, classId, null, types, filterActive, TransversalSearchQuery.EMPTY, user, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -695,20 +697,40 @@ public class UserController extends BaseController {
 					final String groupId = request.params().get("groupId");
 					final String filterActive = request.params().get("filterActive");
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
-					final String searchType = request.params().get("searchType"); // searchType possible values: displayName or email
 
-					final String nameFilter = request.params().get("name");
-					if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
-						// Retro-compability : if a "name" parameter is defined, it should be interpreted like a searchTerm (+searchType=displayName)
-						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, nameFilter, "displayName", user, arrayResponseHandler(request));
-					} else {
-						userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchTerm, searchType, user, arrayResponseHandler(request));
-					}
+					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchQueryFromRequest(request), user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	private TransversalSearchQuery searchQueryFromRequest(final HttpServerRequest request) {
+		final MultiMap params = request.params();
+		final String searchType = params.get("searchType");
+		final String searchTerm = params.get("searchTerm");
+		final String nameFilter = params.get("name");
+		final String lastNameFilter = params.get("lastName");
+		final String firstNameFilter = params.get("firstName");
+
+		/* Retro-compability : 
+		 * - if a "name" query parameter exists, its value must be used like a displayName.
+		 * - if a "lastName" or "firstName" query parameter exists, make an optimized search by fullname.
+		 * - otherwise, just apply the "searchTerm" and "searchType" query parameter, if any.
+		 */
+		if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
+			return TransversalSearchQuery.searchByDisplayName(nameFilter);
+		} if( !StringUtils.isEmpty(lastNameFilter) || !StringUtils.isEmpty(firstNameFilter) ) {
+			return TransversalSearchQuery.searchByFullName(lastNameFilter, firstNameFilter);
+		} else if( !StringUtils.isEmpty(searchTerm) ) {
+			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
+			if(TransversalSearchType.EMAIL.equals(type))
+				return TransversalSearchQuery.searchByMail(searchTerm);
+			if(TransversalSearchType.DISPLAY_NAME.equals(type))
+				return TransversalSearchQuery.searchByDisplayName(searchTerm);
+		}
+		return TransversalSearchQuery.EMPTY;
 	}
 
 	@Put("/user/:studentId/related/:relativeId")

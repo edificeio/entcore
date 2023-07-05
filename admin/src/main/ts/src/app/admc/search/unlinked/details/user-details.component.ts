@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit, ViewChild, Input, Output, EventEmitter } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 import { Data, NavigationEnd } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
 import { NotifyService } from "src/app/core/services/notify.service";
 import { Config } from "src/app/core/resolvers/Config";
-import { UnlinkedUserDetails, UnlinkedUserService } from "../unlinked.service";
+import { MergedWithDescription, UnlinkedUserDetails, UnlinkedUserService } from "../unlinked.service";
 import { AbstractControl, NgForm } from "@angular/forms";
+import { catchError, tap } from "rxjs/operators";
 
 @Component({
   selector: "ode-unlinked-user-details",
@@ -27,7 +29,9 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
 
   public showRemoveUserConfirmation = false;
 //  public showPersEducNatBlockingConfirmation = false;
+  public showMergedLogins: boolean = false;
   public details: UnlinkedUserDetails;
+  public mergedWithDetails: MergedWithDescription|null = null;
   public imgSrc: string;
   public imgLoaded: boolean = false;
   public editMode: boolean = false;
@@ -35,8 +39,9 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
   constructor(
     injector: Injector,
     public spinner: SpinnerService,
+    private http: HttpClient,
     private ns: NotifyService,
-    private svc:UnlinkedUserService
+    private svc:UnlinkedUserService,
   ) {
     super(injector);
   }
@@ -59,6 +64,28 @@ export class UnlinkedUserDetailsComponent extends OdeComponent implements OnInit
       if (!(evt instanceof NavigationEnd)) return;
       window.scrollTo(0, 0);
     });
+  }
+
+  showMergedWithDetails() {
+    if( this.details.mergedWith ) {
+      this.spinner.perform("portal-content",
+        this.svc.getMergedWithDetails(this.details.mergedWith).then( desc => {
+          this.mergedWithDetails = desc;
+          this.showMergedLogins = true;
+          this.changeDetector.markForCheck();
+        })
+      );
+    }
+  }
+
+  unmerge() {
+    this.spinner.perform("portal-content", 
+      this.svc.unmerge(this.details.mergedWith, this.details.login)
+      .then( ()=> {
+        if( this.details.mergedWith ) delete this.details.mergedWith;
+        this.changeDetector.markForCheck();
+      })
+    );
   }
 
   restoreUser() {

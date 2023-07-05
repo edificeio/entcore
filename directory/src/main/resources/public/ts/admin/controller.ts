@@ -7,7 +7,7 @@ import { ActionsDelegate, ActionsDelegateScope } from './delegates/actions';
 import { UserInfosDelegate, UserInfosDelegateScope } from './delegates/userInfos';
 import { UserCreateDelegateScope, UserCreateDelegate } from './delegates/userCreate';
 import { ExportDelegateScope, ExportDelegate } from './delegates/userExport';
-import { User } from './model';
+import { ClassRoom, User } from './model';
 import { UserFindDelegate, UserFindDelegateScope } from './delegates/userFind';
 import { ChooseClassDelegate, ChooseClassDelegateScope } from './delegates/choose-class';
 
@@ -22,9 +22,13 @@ export interface ClassAdminControllerScope extends UserListDelegateScope, UserIn
 	resetLightboxDelegateClose(): void;
 	smoothScrollTo(path: string)
 	getProfileColor(user: User): string;
+	optionLabelFor(classroom:ClassRoom):string;
+	showEditClassName():void;
+	hideEditClassName(cancel:boolean):void;
 	//Legacy
-	import: { csv: File[] }
-	display: { importing: boolean }
+	import: { csv: File[] };
+	display: { importing: boolean; editClassName: boolean };
+	save: { editClassName?: string };
 	resetPasswords(user?: User);
 	goToImport();
 	importCSV();
@@ -90,8 +94,10 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	})
 	//LEGACY CODE
 	$scope.display = {
-		importing: false
+		importing: false,
+		editClassName: false
 	}
+	$scope.save = {};
 	$scope.import = { csv: [] };
 	$scope.resetPasswords = async function (user) {
 		if (!model.me.email) {
@@ -139,5 +145,33 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	$scope.hasONDE = function(){
 		const currentLanguage = (window as any).currentLanguage || window.navigator.language;
 		return currentLanguage=="fr";
+	}
+	$scope.optionLabelFor = function(classroom:ClassRoom) {
+		if( $scope.belongsToMultipleSchools() ) {
+			return `${classroom.name} - ${$scope.selectedSchoolName(classroom)}`;
+		}
+		return classroom.name;
+	}
+	$scope.showEditClassName = function() {
+		$scope.display.editClassName = true;
+		$scope.save.editClassName = $scope.selectedClass.name;
+	}
+	$scope.hideEditClassName = function(save:boolean) {
+		if( save ) {
+			const backup = $scope.selectedClass;
+			backup.name = $scope.save.editClassName;
+			// Save and update collection
+			directoryService.saveClassInfos(backup)
+			.then( c => {
+				// Here, $scope may have changed... $scope.selectedClass may have changed too... Big mess.
+				const idx = $scope.classrooms.findIndex( e => e.id===$scope.selectedClass.id );
+				if( 0<=idx && idx<$scope.classrooms.length ) {
+					$scope.classrooms[idx].name = backup.name;
+				}
+				$scope.safeApply('classrooms');
+			});
+		}
+		$scope.save.editClassName = undefined;
+		$scope.display.editClassName = false;
 	}
 }]);

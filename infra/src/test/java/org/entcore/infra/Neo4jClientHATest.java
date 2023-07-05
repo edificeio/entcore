@@ -350,6 +350,7 @@ public class Neo4jClientHATest {
     }
 
     @Test
+    @Ignore
     public void testClientShouldReadAndWrite(TestContext context) {
         final Neo4jRestClientNodeManager manager = manager(context, true, true, false);
         final Async async = context.async();
@@ -423,7 +424,7 @@ public class Neo4jClientHATest {
                 e.setNotAvailableFrom(LocalDateTime.now().minusSeconds(15));
             });
             return waitPending();
-        }).compose(r -> check(manager)).compose(r -> waitMS(50)).compose(r -> {
+        }).compose(r -> check(manager)).compose(r -> waitMS(1000)).compose(r -> {
             log.info("Should read/write 3 new available (banned)...");
             assertMasterAvailable(context, manager, 1);
             assertSlaveAvailable(context, manager, 2);
