@@ -44,11 +44,11 @@ export class GroupUsersListComponent extends OdeComponent implements OnInit  {
         this.changeDetector.markForCheck();
     }
 
-    areScopeDisjoint(ids:Array<string>|null) {
+    areScopeDisjoint(structs:Array<{id:string, name:string, externalId:string}>|null) {
         if( this.isADMC ) return false;
-        if( !ids ) return true;
-        for( const id in ids ) {
-            if( this.scope.indexOf(id)>=0 ) return false;
+        if( !structs ) return true;
+        for( const struct of structs ) {
+            if( struct && this.scope.indexOf(struct.id)>=0 ) return false;
         }
         return true;
     }
