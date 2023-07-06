@@ -313,6 +313,7 @@ class Directive implements IDirective<ValidateMailScope,JQLite,IAttributes,ICont
 			scope.canRenderUi = true;
 			scope.$apply();
 			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
+			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
 		});
     }
 }
