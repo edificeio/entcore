@@ -263,7 +263,8 @@ public class DuplicateUsers {
 	 * @param keepRelations {@code true} if some relations should be kept after a merge of duplicated users, {@code false}
 	 *                                  otherwise
 	 * @param userIds Ids of the users involved in the merge
-	 * @return A summary of all the relations that should be kept
+	 * @return A summary of all the relations that should be kept (groups, relatives, classes, functions, communication
+	 * links)
 	 */
 	public Future<RelationshipsToKeepPerUser> fetchRelationshipsToKeep(final boolean keepRelations,
 																	   final String... userIds) {
@@ -272,12 +273,11 @@ public class DuplicateUsers {
 		if(keepRelations && userIds != null && userIds.length > 1) {
 			final JsonObject params = new JsonObject().put("userIds", Arrays.asList(userIds));
 			final String query = "MATCH (u:User)-[r]-(linkedNode) " +
-					"WHERE u.id in {userIds} " +
-					"AND type(r) IN ['IN', 'RELATED'] " +
-					"WITH u, r, linkedNode.id as otherNodeId, labels(linkedNode) as otherNodeLabels, startNode(r).id as startNodeId " +
-					"RETURN DISTINCT u.id as userId, type(r) as rsType, r as rs, otherNodeId as otherNodeId," +
-					"       otherNodeLabels, " +
-					"       CASE WHEN startNodeId = u.id THEN 'OUTGOING' ELSE 'INCOMING' END as rsDirection";
+					"WHERE u.id in {userIds} AND NOT linkedNode.id in {userIds} " +
+					"AND type(r) IN ['IN', 'RELATED', 'COMMUNIQUE_DIRECT', 'COMMUNIQUE'] AND linkedNode.id <> u.id " +
+					"RETURN DISTINCT u.id as userId, type(r) as rsType, r as rs, linkedNode.id as otherNodeId," +
+					"       labels(linkedNode) as otherNodeLabels, " +
+					"       CASE WHEN startNode(r).id = u.id THEN 'OUTGOING' ELSE 'INCOMING' END as rsDirection";
 			neo4j.execute(query, params, event -> {
 				final JsonObject body = event.body();
 				if(body.getString("status").equals("error")) {

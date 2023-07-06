@@ -56,7 +56,7 @@ public class DuplicateUsersTest {
     }
 
     @Test
-    public void testFecthDataWhenWeDontWantToKeepRss(final TestContext context) {
+    public void testFecthDataWhenWeDontWantToKeep(final TestContext context) {
         final Async async = context.async();
         duplicateUsers.fetchRelationshipsToKeep(false)
         .onSuccess(rss -> {
@@ -69,24 +69,40 @@ public class DuplicateUsersTest {
     }
 
     @Test
-    public void testFecthDataWhenWeWantToKeepRss(final TestContext context) {
+    public void testFecthDataWhenWeWantToKeep(final TestContext context) {
         final Async async = context.async();
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
         .onSuccess(rss -> {
             context.assertNotNull(rss, "Should have fetched relationships");
             final List<RelationshipToKeepForDuplicatedUser> user1Rss = rss.getNodeRelationships("user1");
-            context.assertEquals(4, user1Rss.size(), "Should have fetched relationships of user 1");
+            context.assertEquals(6, user1Rss.size(), "Should have fetched relationships of user 1");
             context.assertTrue(rss.isUserHasRs("user1", "IN", "struct1", true));
             context.assertTrue(rss.isUserHasRs("user1", "IN", "struct2", true));
             context.assertTrue(rss.isUserHasRs("user1", "RELATED", "user1Child1", false));
             context.assertTrue(rss.isUserHasRs("user1", "RELATED", "user1Child2", false));
+            context.assertTrue(rss.isUserHasRs("user1", "COMMUNIQUE", "struct1", false));
+            context.assertTrue(rss.isUserHasRs("user1", "COMMUNIQUE", "struct2", true));
+            context.assertTrue(user1Rss.stream()
+                    .filter(u -> u.getOtherNodeId().equals("struct1") && u.getType().equals("IN"))
+                    .allMatch(rs -> "CSV".equals(rs.getProperties().getString("source")))
+            );
+            context.assertTrue(user1Rss.stream()
+                    .filter(u -> u.getOtherNodeId().equals("struct2") && u.getType().equals("IN"))
+                    .allMatch(rs -> "CSV".equals(rs.getProperties().getString("source")))
+            );
             final List<RelationshipToKeepForDuplicatedUser> user2Rss = rss.getNodeRelationships("user2");
-            context.assertEquals(2, user2Rss.size(), "Should have fetched relationships of user 2");
+            context.assertEquals(4, user2Rss.size(), "Should have fetched relationships of user 2");
             context.assertTrue(rss.isUserHasRs("user2", "IN", "struct2", true));
             context.assertTrue(rss.isUserHasRs("user2", "RELATED", "user2Child1", false));
+            context.assertTrue(rss.isUserHasRs("user2", "COMMUNIQUE", "struct2", false));
+            context.assertTrue(rss.isUserHasRs("user2", "COMMUNIQUE_DIRECT", "user2Child1", true));
+            context.assertTrue(user2Rss.stream()
+                    .filter(u -> u.getOtherNodeId().equals("struct2") && u.getType().equals("IN"))
+                    .allMatch(rs -> "AAF1D".equals(rs.getProperties().getString("source")))
+            );
             async.complete();
         })
-        .onFailure(e -> context.fail(e));
+        .onFailure(context::fail);
     }
 
     @Test
@@ -109,26 +125,38 @@ public class DuplicateUsersTest {
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
         .onSuccess(rss -> {
             duplicateUsers.addDisappearingUserRelationship(rss, "user1", "user2", tx);
-            context.assertEquals(1, tx.queryAndParams.size(), "Should try to copy 1 relationship only");
+            context.assertEquals(3, tx.queryAndParams.size(), "Should try to copy 1 relationship only");
 
             final List<QueryAndParams> childrenToBeCopied = tx.findByRsTypeAndDirection("RELATED", false);
             context.assertEquals(1, childrenToBeCopied.size());
             final QueryAndParams childToBeCopied = childrenToBeCopied.get(0);
             context.assertEquals("user2Child1", childToBeCopied.params.getString("otheNodeId"));
             context.assertEquals("user1", childToBeCopied.params.getString("userId1"));
+
+            final List<QueryAndParams> communiqueToBeCopied = tx.findByRsTypeAndDirection("COMMUNIQUE", false);
+            context.assertEquals(1, communiqueToBeCopied.size());
+            final QueryAndParams commToBeCopied = communiqueToBeCopied.get(0);
+            context.assertEquals("struct2", commToBeCopied.params.getString("otheNodeId"));
+            context.assertEquals("user1", commToBeCopied.params.getString("userId1"));
+
+
+            final List<QueryAndParams> communiqueDirectToBeCopied = tx.findByRsTypeAndDirection("COMMUNIQUE_DIRECT", true);
+            context.assertEquals(1, communiqueDirectToBeCopied.size());
+            final QueryAndParams commDirectToBeCopied = communiqueDirectToBeCopied.get(0);
+            context.assertEquals("user2Child1", commDirectToBeCopied.params.getString("otheNodeId"));
+            context.assertEquals("user1", commDirectToBeCopied.params.getString("userId1"));
             async.complete();
         })
-        .onFailure(e -> context.fail(e));
+        .onFailure(context::fail);
     }
 
     @Test
-    public void testAddMissingRelationshipAfterMergeWhenWetWantToKeepRssOfUser1(final TestContext context) {
+    public void testAddMissingRelationshipAfterMergeWhenWetWantToKeepOfUser1(final TestContext context) {
         final Async async = context.async();
         final DummyTransactionHelper tx = new DummyTransactionHelper(neo4j);
         duplicateUsers.fetchRelationshipsToKeep(true, "user1", "user2")
                 .onSuccess(rss -> {
                     duplicateUsers.addDisappearingUserRelationship(rss, "user2", "user1", tx);
-                    context.assertEquals(3, tx.queryAndParams.size(), "Should try to copy 3 relationships");
                     final List<QueryAndParams> groupsToBeCopied = tx.findByRsTypeAndDirection("IN", true);
                     context.assertEquals(1, groupsToBeCopied.size());
                     final QueryAndParams groupToBeCopiedForUser1 = groupsToBeCopied.get(0);
@@ -140,6 +168,25 @@ public class DuplicateUsersTest {
                     context.assertTrue(
                         childrenToBeCopied.stream().map(rs -> rs.params.getString("userId1")).allMatch(uid -> uid.equals("user2")),
                         "All children should be copied to the same user user2");
+
+                    List<QueryAndParams> communicationsToBeCopied = tx.findByRsTypeAndDirection("COMMUNIQUE", false);
+                    context.assertEquals(1, communicationsToBeCopied.size());
+                    context.assertTrue(
+                            communicationsToBeCopied.stream().map(rs -> rs.params.getString("userId1")).allMatch(uid -> uid.equals("user2")),
+                            "All communications should be copied to the same user user2");
+                    context.assertTrue(
+                            communicationsToBeCopied.stream().map(rs -> rs.params.getString("otheNodeId")).allMatch(uid -> uid.equals("struct1")),
+                            "All communications should be copied to the same user user2");
+
+                    communicationsToBeCopied = tx.findByRsTypeAndDirection("COMMUNIQUE", true);
+                    context.assertEquals(1, communicationsToBeCopied.size());
+                    context.assertTrue(
+                            communicationsToBeCopied.stream().map(rs -> rs.params.getString("userId1")).allMatch(uid -> uid.equals("user2")),
+                            "All communications should be copied to the same user user2");
+                    context.assertTrue(
+                            communicationsToBeCopied.stream().map(rs -> rs.params.getString("otheNodeId")).allMatch(uid -> uid.equals("struct2")),
+                            "All communications should be copied to the same user user2");
+
                     final Set<String> childrenToCopy = new HashSet<>();
                     childrenToCopy.add("user1Child1");
                     childrenToCopy.add("user1Child2");
@@ -147,7 +194,7 @@ public class DuplicateUsersTest {
                             "All of user1's children should be copied and only them");
                     async.complete();
                 })
-                .onFailure(e -> context.fail(e));
+                .onFailure(context::fail);
     }
 
     public static Future<Void> prepareData() {
@@ -161,6 +208,9 @@ public class DuplicateUsersTest {
             // - can communicate with structure 1 (incoming) and structure 2 (outgoing)
             // User 2 in only in structure 2 and has 1 kid user2Child1
             // - can communicate with structure 2 (incoming)
+            // - can directly communicate with user2Child1 (outgoing)
+            // - can directly communicate with user1 (incoming)
+            // - has an outgoing relationship to a node that should not been copied
             txl.add("create (u1:User{id: 'user1'})-[:IN{source:'CSV'}]->(s1:Group:ProfileGroup:Visible{id: 'struct1'})", new JsonObject());
             txl.add("create (u2:User{id: 'user2'})-[:IN{source:'AAF1D'}]->(s1:Group:ProfileGroup:Visible{id: 'struct2'})", new JsonObject());
             txl.add("MATCH (u1:User{id: 'user1'}), (s2:Group{id: 'struct2'}) CREATE (u1)-[:IN{source:'CSV'}]->(s2)", new JsonObject());
@@ -169,7 +219,10 @@ public class DuplicateUsersTest {
             txl.add("MATCH (u2:User{id: 'user2'}) CREATE (u2)<-[:RELATED]-(:User{id: 'user2Child1'})", new JsonObject());
             txl.add("MATCH (u1:User{id: 'user1'}) MATCH (s1:Group{id: 'struct1'}) CREATE (s1)-[:COMMUNIQUE]->(u1)", new JsonObject());
             txl.add("MATCH (u1:User{id: 'user1'}) MATCH (s2:Group{id: 'struct2'}) CREATE (s2)<-[:COMMUNIQUE]-(u1)", new JsonObject());
-            txl.add("MATCH (u2:User{id: 'user2'}) MATCH (s2:Group{id: 'struct2'}) CREATE (s2)-[:COMMUNIQUE]->(u1)", new JsonObject());
+            txl.add("MATCH (u2:User{id: 'user2'}) MATCH (s2:Group{id: 'struct2'}) CREATE (s2)-[:COMMUNIQUE]->(u2)", new JsonObject());
+            txl.add("MATCH (u2:User{id: 'user2'}) MATCH (user2Child1:User{id: 'user2Child1'}) CREATE (u2)-[:COMMUNIQUE_DIRECT]->(user2Child1)", new JsonObject());
+            txl.add("MATCH (u2:User{id: 'user2'}) MATCH (u1:User{id: 'user1'}) CREATE (u2)<-[:COMMUNIQUE]-(u1)", new JsonObject());
+            txl.add("MATCH (u2:User{id: 'user2'}) CREATE (u2)-[:NOT_COPIED{source:'doesNotMatter'}]->(:Uncharted{id: 'unchartedId'})", new JsonObject());
             txl.commit(new Handler<Message<JsonObject>>() {
                 @Override
                 public void handle(Message<JsonObject> event) {
