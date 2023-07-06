@@ -13,7 +13,7 @@
 
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
-            <div class="mb-3 text-center">
+            <div class="mb-12">
                 <img class="mx-auto" ng-if="ctrl.type === 'email'" src="/auth/public/img/validate-mail.svg" height="150" width="150"></img>
                 <img class="mx-auto" ng-if="ctrl.type === 'sms'" src="/auth/public/img/validate-sms.svg" height="150" width="150"></img>
             </div>
@@ -32,16 +32,16 @@
             <div class="col-md-9 col-sm-12">
                 <div class="mb-16 text-center">
                     <div ng-if="ctrl.force">
-                        <i18n ng-if="ctrl.isTypeEmail">validate-mail.step1.hint.force</i18n>
-                        <i18n ng-if="ctrl.isTypeSms">validate-sms.step1.hint.force</i18n>
+                        <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.hint.force</i18n>
+                        <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.hint.force</i18n>
                     </div>
                     <div ng-if="ctrl.force && (ctrl.isAdml || ctrl.isAdmc)">
-                        <i18n ng-if="ctrl.isTypeEmail">validate-mail.step1.hint.adml</i18n>
-                        <i18n ng-if="ctrl.isTypeSms">validate-sms.step1.hint.adml</i18n>
+                        <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.hint.adml</i18n>
+                        <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.hint.adml</i18n>
                     </div>
                     <div>
-                        <i18n ng-if="ctrl.isTypeEmail">validate-mail.step1.hint</i18n>
-                        <i18n ng-if="ctrl.isTypeSms">validate-sms.step1.hint</i18n>
+                        <i18n ng-if="ctrl.type === 'email'">validate-mail.step1.hint</i18n>
+                        <i18n ng-if="ctrl.type === 'sms'">validate-sms.step1.hint</i18n>
                     </div>
                 </div>
 
@@ -50,14 +50,14 @@
                         <svg class="icon-svg" ng-if="ctrl.type === 'email'" width="20" height="20">
                             <use href="/auth/public/icons/validate-icons.svg#mail"></use>
                         </svg>
-                        <svg class="icon-svg" ng-if="ctrl.isTypeSms" width="20" height="20">
+                        <svg class="icon-svg" ng-if="ctrl.type === 'sms'" width="20" height="20">
                             <use href="/auth/public/icons/validate-icons.svg#phone"></use>
                         </svg>
                         <span ng-if="ctrl.type === 'email'" class="align-middle ms-4" translate content="validate-mail.step1.form.mail"></span>
                         <span ng-if="ctrl.type === 'sms'" class="align-middle ms-4" translate content="validate-sms.step1.form.phone"></span>
                     </label>
                     <input type="email" id="input-data" style="background-color: white;" name="inputEmail"
-                            ng-if="ctrl.isTypeEmail"
+                            ng-if="ctrl.type === 'email'"
                             ng-pattern="ctrl.acceptableEmailPattern"
                             ng-model="ctrl.emailAddress"
                             ng-class="ctrl.inputToBTCss(formValidate.inputEmail)"
@@ -65,24 +65,24 @@
 
                     <input type="tel" id="input-data" style="background-color: white;" name="inputPhone"
                             data-intl-phone-input
-                            ng-if="ctrl.isTypeSms"
+                            ng-if="ctrl.type === 'sms'"
                             ng-model="ctrl.mobilePhone"
                             ng-class="ctrl.inputToBTCss(formValidate.inputPhone)" />
 
                     <div class="text-danger mt-8 mb-16">
                         <small>
-                            <label for="input-data" ng-if="formValidate.inputEmail.$error.email && ctrl.isTypeEmail">
+                            <label for="input-data" ng-if="formValidate.inputEmail.$error.email && ctrl.type === 'email'">
                                 <i18n>validate-mail.error.mail</i18n>
                             </label>
-                            <label for="input-data" ng-if="formValidate.inputPhone.$invalid && ctrl.isTypeSms">
+                            <label for="input-data" ng-if="formValidate.inputPhone.$invalid && ctrl.type === 'sms'">
                                 <i18n>validate-sms.error.phone</i18n>
                             </label>
                         </small>
                         <small class="d-inline-block">
-                            <label for="input-data" ng-if="formValidate.inputEmail.$error.pattern && ctrl.isTypeEmail">
+                            <label for="input-data" ng-if="formValidate.inputEmail.$error.pattern && ctrl.type === 'email'">
                                 <i18n>validate-mail.error.same</i18n>
                             </label>
-                            <label for="input-data" ng-if="ctrl.infos.mobileState.valid === ctrl.mobilePhone && ctrl.mobilePhone && ctrl.isTypeSms">
+                            <label for="input-data" ng-if="ctrl.infos.mobileState.valid === ctrl.mobilePhone && ctrl.mobilePhone && ctrl.type === 'sms'">
                                 <i18n>validate-sms.error.same</i18n>
                             </label>
                         </small>
@@ -130,16 +130,16 @@
                         <i18n>validate-mail.step2.hint.paragraph1</i18n>
                         <span> [[ctrl.emailAddress]].</span>
                     </div>
-                    <div ng-if="ctrl.isTypeSms">
+                    <div ng-if="ctrl.type === 'sms'">
                         <i18n>validate-sms.step2.hint.paragraph1</i18n>
                         <span> [[ctrl.mobilePhone]].</span>
                     </div>
                     <div>
-                        <i18n ng-if="ctrl.isTypeEmail">validate-mail.step2.hint.paragraph2</i18n>
-                        <i18n ng-if="ctrl.isTypeSms">validate-sms.step2.hint.paragraph2</i18n>
+                        <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.hint.paragraph2</i18n>
+                        <i18n ng-if="ctrl.type === 'sms'">validate-sms.step2.hint.paragraph2</i18n>
                     </div>
                     <div>
-                        <i18n ng-if="ctrl.isTypeEmail">validate-mail.step2.hint.paragraph3</i18n>
+                        <i18n ng-if="ctrl.type === 'email'">validate-mail.step2.hint.paragraph3</i18n>
                     </div>
                 </div>
 
@@ -168,16 +168,16 @@
                                 <use href="/auth/public/icons/validate-icons.svg#successOutline"></use>
                             </svg>
                             <div>
-                                <i18n ng-if="ctrl.isTypeEmail">validate-mail.success.paragraph1</i18n>
-                                <i18n ng-if="ctrl.isTypeSms">validate-sms.success.paragraph1</i18n>
+                                <i18n ng-if="ctrl.type === 'email'">validate-mail.success.paragraph1</i18n>
+                                <i18n ng-if="ctrl.type === 'sms'">validate-sms.success.paragraph1</i18n>
                             </div>
                             <div ng-if="ctrl.redirect">
-                                <i18n ng-if="ctrl.isTypeEmail">validate-mail.success.paragraph2</i18n>
-                                <i18n ng-if="ctrl.isTypeSms">validate-sms.success.paragraph2</i18n>
+                                <i18n ng-if="ctrl.type === 'email'">validate-mail.success.paragraph2</i18n>
+                                <i18n ng-if="ctrl.type === 'sms'">validate-sms.success.paragraph2</i18n>
                             </div>
                             <div ng-if="!ctrl.fullscreen">
-                                <i18n ng-if="ctrl.isTypeEmail">validate-mail.success.paragraph2.fullscreen</i18n>
-                                <i18n ng-if="ctrl.isTypeSms">validate-sms.success.paragraph2.fullscreen</i18n>
+                                <i18n ng-if="ctrl.type === 'email'">validate-mail.success.paragraph2.fullscreen</i18n>
+                                <i18n ng-if="ctrl.type === 'sms'">validate-sms.success.paragraph2.fullscreen</i18n>
                             </div>
                         </div>
                         <div ng-if="ctrl.status==='ko'" class="text-danger">
