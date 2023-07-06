@@ -56,6 +56,7 @@ import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
+import org.entcore.directory.pojo.MergeUsersMetadata;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
@@ -73,7 +74,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -98,21 +98,20 @@ public class UserController extends BaseController {
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		this.userBookData = config.getJsonObject("user-book-data");
 		if(this.userBookData == null)
 			this.userBookData = new JsonObject();
 
 		this.userBookMoods = this.userBookData.getJsonArray("moods");
-		if(this.userBookMoods == null)
-		{
+		if(this.userBookMoods == null) {
 			this.userBookMoods = new JsonArray();
 			this.userBookData.put("moods", this.userBookMoods);
 		}
 		if(this.userBookMoods.contains("default") == false)
 			this.userBookMoods.add("default");
-		
+
 	}
 
 	@Get("/userbook/moods")
@@ -133,8 +132,8 @@ public class UserController extends BaseController {
 						final  String userId = request.params().get("userId");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
-						   !user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
-						   !user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
+								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
+								!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
 							body.remove("lastName");
 							body.remove("firstName");
 						}
@@ -164,13 +163,10 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
 	@MfaProtected()
-	public void updateUserLogin(final HttpServerRequest request)
-	{
-		bodyToJson(request, new Handler<JsonObject>()
-		{
+	public void updateUserLogin(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(final JsonObject body)
-			{
+			public void handle(final JsonObject body) {
 				final String userId = request.params().get("userId");
 				final String login = body.getString("login");
 
@@ -197,8 +193,7 @@ public class UserController extends BaseController {
 					return;
 				}
 				String mood = body.getString("mood");
-				if(mood != null && userBookMoods.contains(mood) == false)
-				{
+				if(mood != null && userBookMoods.contains(mood) == false) {
 					badRequest(request);
 					return;
 				}
@@ -361,7 +356,7 @@ public class UserController extends BaseController {
 						.put("moodImg", mood);
 				if (mood != null && !mood.trim().isEmpty() && !mood.equals("default")) {
 					notification.notifyTimeline(request, "userbook_mood.userbook_mood", user, userIds,
-						user.getUserId() + System.currentTimeMillis() + "mood", params);
+							user.getUserId() + System.currentTimeMillis() + "mood", params);
 				}
 				if (motto != null && !motto.trim().isEmpty()) {
 					notification.notifyTimeline(request, "userbook_motto.userbook_motto", user, userIds,
@@ -384,16 +379,16 @@ public class UserController extends BaseController {
 		final Integer limitResultInt = limitResult==null ? null : Integer.valueOf(limitResult);
 		final String searchType = request.params().get("searchType");
 		final String searchTerm = request.params().get("searchTerm");
-	
+
 		userService.listIsolated(
-			structureId, 
-			expectedProfile,
-			sortOn,
-			fromIndexInt,
-			limitResultInt,
-			searchType,
-			searchTerm,
-			arrayResponseHandler(request)
+				structureId,
+				expectedProfile,
+				sortOn,
+				fromIndexInt,
+				limitResultInt,
+				searchType,
+				searchTerm,
+				arrayResponseHandler(request)
 		);
 	}
 
@@ -474,30 +469,30 @@ public class UserController extends BaseController {
 										}
 									}
 									processTemplate(request, new JsonObject().put("list", r.right().getValue()).put(profile,true),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
-											@Override
-											public void handle(final String export) {
-												if (export != null) {
-													String filename = request.params().get("filename") != null ?
-															request.params().get("filename") : "export"+exportType+"."+format;
-													if ("xml".equals(format)) {
-														request.response().putHeader("Content-Type", "text/xml");
-													} else {
-														request.response().putHeader("Content-Type", "application/csv");
-													}
-													request.response().putHeader("Content-Disposition",
-															"attachment; filename="+filename);
-
-													//hack Chamilo, PMB without bom
-													if ("Chamilo".equals(exportType) || "Pmb-teacher".equals(exportType) || "Pmb-student".equals(exportType)) {
-														request.response().end(export);
-													} else {
-														request.response().end('\ufeff' + export);
-													}
+										@Override
+										public void handle(final String export) {
+											if (export != null) {
+												String filename = request.params().get("filename") != null ?
+														request.params().get("filename") : "export"+exportType+"."+format;
+												if ("xml".equals(format)) {
+													request.response().putHeader("Content-Type", "text/xml");
 												} else {
-													renderError(request);
+													request.response().putHeader("Content-Type", "application/csv");
 												}
+												request.response().putHeader("Content-Disposition",
+														"attachment; filename="+filename);
+
+												//hack Chamilo, PMB without bom
+												if ("Chamilo".equals(exportType) || "Pmb-teacher".equals(exportType) || "Pmb-student".equals(exportType)) {
+													request.response().end(export);
+												} else {
+													request.response().end('\ufeff' + export);
+												}
+											} else {
+												renderError(request);
 											}
-										});
+										}
+									});
 								} else {
 									renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 								}
@@ -524,19 +519,19 @@ public class UserController extends BaseController {
 			public void handle(JsonObject event) {
 				userService.addFunction(userId, event.getString("functionCode"),
 						event.getJsonArray("scope"), event.getString("inherit", ""), r -> {
-					if (r.isRight()) {
-						final String groupId = (String) r.right().getValue().remove("groupId");
-						if (isNotEmpty(groupId)) {
-							JsonObject j = new JsonObject()
-									.put("action", "setCommunicationRules")
-									.put("groupId", groupId);
-							eb.send("wse.communication", j);
-						}
-						recreateSession(userId, request, eb, () -> renderJson(request, r.right().getValue()));
-					} else {
-						badRequest(request, r.left().getValue());
-					}
-				});
+							if (r.isRight()) {
+								final String groupId = (String) r.right().getValue().remove("groupId");
+								if (isNotEmpty(groupId)) {
+									JsonObject j = new JsonObject()
+											.put("action", "setCommunicationRules")
+											.put("groupId", groupId);
+									eb.send("wse.communication", j);
+								}
+								recreateSession(userId, request, eb, () -> renderJson(request, r.right().getValue()));
+							} else {
+								badRequest(request, r.left().getValue());
+							}
+						});
 			}
 		});
 	}
@@ -552,9 +547,9 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addHeadTeacherManual(userId,
-					event.getString("structureExternalId"),
-					event.getString("classExternalId") ,
-					recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
+						event.getString("structureExternalId"),
+						event.getString("classExternalId") ,
+						recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
 				);
 			}
 		});
@@ -569,9 +564,9 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"),
-				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
-			);
+				userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"),
+						recreateSessionHandler(userId, request, eb, defaultResponseHandler(request))
+				);
 			}
 		});
 	}
@@ -587,7 +582,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addDirectionManual(userId, event.getString("structureExternalId"),
-				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
+						recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -601,8 +596,8 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "removeDirection", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.removeDirectionManual(userId, event.getString("structureExternalId"),
-				recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
+				userService.removeDirectionManual(userId, event.getString("structureExternalId"),
+						recreateSessionHandler(userId, request, eb, defaultResponseHandler(request)));
 			}
 		});
 	}
@@ -781,14 +776,21 @@ public class UserController extends BaseController {
 		userService.ignoreDuplicate(userId1, userId2, defaultResponseHandler(request));
 	}
 
+	/**
+	 * Merges two duplicated users.
+	 *
+	 * @param request body is an instance of MergeUsersMetadata and indicates if the relationships of the disappearing user
+	 */
 	@Put("/duplicate/merge/:userId1/:userId2")
 	@ResourceFilter(AdmlOfTwoUsers.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void mergeDuplicate(final HttpServerRequest request) {
-		final String userId1 = request.params().get("userId1");
-		final String userId2 = request.params().get("userId2");
-		userService.mergeDuplicate(userId1, userId2, defaultResponseHandler(request));
+		RequestUtils.bodyToClass(request, MergeUsersMetadata.class).onSuccess(mergeUsersMetadata -> {
+			final String userId1 = request.params().get("userId1");
+			final String userId2 = request.params().get("userId2");
+			userService.mergeDuplicate(userId1, userId2, mergeUsersMetadata != null && mergeUsersMetadata.isKeepRelations(), defaultResponseHandler(request));
+		});
 	}
 
 	@Get("/duplicates")
@@ -960,13 +962,13 @@ public class UserController extends BaseController {
 		UserUtils.getUserInfos(eb, request, infos -> {
 			if (infos != null) {
 				MobileValidation.getDetails(eb, infos.getUserId())
-				.onSuccess( details -> {
-					DataStateUtils.formatAsResponse( details.getJsonObject("mobileState") );
-					renderJson( request, details );
-				})
-				.onFailure( e -> {
-					badRequest( request, e.getMessage() );
-				});
+						.onSuccess( details -> {
+							DataStateUtils.formatAsResponse( details.getJsonObject("mobileState") );
+							renderJson( request, details );
+						})
+						.onFailure( e -> {
+							badRequest( request, e.getMessage() );
+						});
 			} else {
 				notFound(request, "user.not.found");
 			}
@@ -982,14 +984,14 @@ public class UserController extends BaseController {
 				if (infos != null) {
 					// Initialize a new mobile phone number validation flow
 					MobileValidation.setPending(eb, infos.getUserId(), payload.getString("mobile"))
-					.compose( pendingMobileState -> {
-						// Send the validation email to the user
-						return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
-					})
-					.onSuccess(e -> ok(request))
-					.onFailure( e -> {
-						renderError( request, new JsonObject().put("error", e.getMessage()) );
-					});
+							.compose( pendingMobileState -> {
+								// Send the validation email to the user
+								return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
+							})
+							.onSuccess(e -> ok(request))
+							.onFailure( e -> {
+								renderError( request, new JsonObject().put("error", e.getMessage()) );
+							});
 				} else {
 					notFound(request, "user.not.found");
 				}
@@ -1007,18 +1009,18 @@ public class UserController extends BaseController {
 					// Try a validation code
 					final String userId = infos.getUserId();
 					MobileValidation.tryValidate(eb, UserUtils.getSessionIdOrTokenId(request).get(), userId, payload.getString("key"))
-					.onSuccess( mobileState -> {
-						// Mobile is validated and updated => session has evolved and must be recreated.
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-							recreateSession(infos, userId, request, eb).onComplete(complete ->
-								renderJson( request, mobileState )
-							);
-						});
-						CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
-					})
-					.onFailure( e -> {
-						renderError( request, new JsonObject().put("error", e.getMessage()) );
-					});
+							.onSuccess( mobileState -> {
+								// Mobile is validated and updated => session has evolved and must be recreated.
+								UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+									recreateSession(infos, userId, request, eb).onComplete(complete ->
+											renderJson( request, mobileState )
+									);
+								});
+								CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
+							})
+							.onFailure( e -> {
+								renderError( request, new JsonObject().put("error", e.getMessage()) );
+							});
 				} else {
 					notFound(request, "user.not.found");
 				}
@@ -1032,13 +1034,13 @@ public class UserController extends BaseController {
 		UserUtils.getUserInfos(eb, request, infos -> {
 			if (infos != null) {
 				EmailValidation.getDetails(eb, infos.getUserId())
-				.onSuccess( details -> {
-					DataStateUtils.formatAsResponse( details.getJsonObject("emailState") );
-					renderJson( request, details );
-				})
-				.onFailure( e -> {
-					badRequest( request, e.getMessage() );
-				});
+						.onSuccess( details -> {
+							DataStateUtils.formatAsResponse( details.getJsonObject("emailState") );
+							renderJson( request, details );
+						})
+						.onFailure( e -> {
+							badRequest( request, e.getMessage() );
+						});
 			} else {
 				notFound(request, "user.not.found");
 			}
@@ -1054,14 +1056,14 @@ public class UserController extends BaseController {
 				if (infos != null) {
 					// Initialize a new mail validation flow
 					EmailValidation.setPending(eb, infos.getUserId(), payload.getString("email"))
-					.compose( pendingEmailState -> {
-						// Send the validation email to the user
-						return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
-					})
-					.onSuccess(e -> ok(request))
-					.onFailure( e -> {
-						renderError( request, new JsonObject().put("error", e.getMessage()) );
-					});
+							.compose( pendingEmailState -> {
+								// Send the validation email to the user
+								return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
+							})
+							.onSuccess(e -> ok(request))
+							.onFailure( e -> {
+								renderError( request, new JsonObject().put("error", e.getMessage()) );
+							});
 				} else {
 					notFound(request, "user.not.found");
 				}
@@ -1079,16 +1081,16 @@ public class UserController extends BaseController {
 					// Try a validation code
 					final String userId = infos.getUserId();
 					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
-					.onSuccess( emailState -> {
-						
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-							recreateSession(infos, userId, request, eb)
-								.onComplete(result -> renderJson( request, emailState ));
-						});
-					})
-					.onFailure( e -> {
-						renderError( request, new JsonObject().put("error", e.getMessage()) );
-					});
+							.onSuccess( emailState -> {
+
+								UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+									recreateSession(infos, userId, request, eb)
+											.onComplete(result -> renderJson( request, emailState ));
+								});
+							})
+							.onFailure( e -> {
+								renderError( request, new JsonObject().put("error", e.getMessage()) );
+							});
 				} else {
 					notFound(request, "user.not.found");
 				}

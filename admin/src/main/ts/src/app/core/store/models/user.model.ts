@@ -100,8 +100,11 @@ export class UserModel extends Model<UserModel> {
             });
     }
 
-    async mergeDuplicate(duplicateId: string): Promise<{ id: string, structure?: { id: string, name: string } }> {
-        await this.http.put(`/directory/duplicate/merge/${this.id}/${duplicateId}`);
+    async mergeDuplicate(duplicateId: string, keepRelations: boolean): Promise<{ id: string, structure?: { id: string, name: string } }> {
+        const payload = {
+            keepRelations: keepRelations
+        };
+        await this.http.put(`/directory/duplicate/merge/${this.id}/${duplicateId}`, payload);
         const duplicate = this.duplicates.find(d => d.id === duplicateId);
         this.duplicates = this.duplicates.filter(d => d.id !== duplicateId);
         try {
