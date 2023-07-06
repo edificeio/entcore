@@ -48,7 +48,7 @@ public class RelationshipToKeepForDuplicatedUser {
                 ", otherNodeLabels='" + otherNodeLabels + '\'' +
                 ", properties=" + properties +
                 ", type='" + type + '\'' +
-                ", outoing=" + outgoing +
+                ", outgoing=" + outgoing +
                 '}';
     }
 }
