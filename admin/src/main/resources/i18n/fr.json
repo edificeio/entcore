@@ -1607,5 +1607,5 @@
   "presences.search.students": "Gestion globale : recherche sur tous les étudiants et groupes (API)",
   "statistics_presences.view.restricted": "Restreint : accès aux statistiques de ses groupes",
   "statistics_presences.view": "Statistiques : accès",
-  "user.merge.disclaimer.confirm": "Voulez-vous conserver les rattachements des deux comptes (Etablissement ) ? Par défaut la fusion va simplement, conserver le compte principal (compte déjà activé ou en alimentation automatique) et supprimer le compte en doublon."
+  "user.merge.disclaimer.confirm": "Voulez-vous conserver les rattachements des deux comptes : établissements, classes, groupes et rattachement enfants pour les comptes parents ? Par défaut la fusion va simplement conserver le compte principal (compte déjà activé ou celui en alimentation automatique) et supprimer le compte en doublon."
 }
