@@ -821,7 +821,7 @@
   "explorer.emptyScreen.blog.txt2d.create": "Vous partez en voyage linguistique et souhaitez partager toutes vos aventures ? Devenez apprenti reporter ! Seul ou à plusieurs, publiez et partagez facilement textes, photos et vidéos. => Créer un blog",
   "explorer.emptyScreen.blog.txt2d.consultation": "Il n’y a pas encore de blog. Patience ! Des sujets passionnants s’apprêtent à déferler sur cette page.",
   "explorer.emptyScreen.trash.title": "C'est vide par ici !",
-  "explorer.emptyScreen.folder.title": "Ce fichier est vide",
+  "explorer.emptyScreen.label": "Ce dossier est vide pour le moment. Vous pouvez organiser vos blogs dedans, dès maintenant !",
   "explorer.emptyScreen.trash.alt": "Illustration de la corbeille",
   "explorer.emptyScreen.folder.empty.alt": "Illustration d'un dossier vide",
   "explorer.modal.onboarding.trash.title": "Du nouveau sur le Blog !",
