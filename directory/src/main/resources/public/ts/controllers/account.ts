@@ -48,6 +48,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 				$scope.userCharterUrl = lang.translate("auth.charter");
 				$scope.miUrl = lang.translate("auth.data.protection");
 				$scope.hasMI = $scope.miUrl != "auth.data.protection";
+				$scope.$apply();
 			});
 			
 			$scope.cguUrl = lang.translate("cgu.file");
