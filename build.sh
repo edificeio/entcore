@@ -45,6 +45,9 @@ else
   NODE_OPTION="--module $MODULE"
 fi
 
+#To override some gradle properties at build time
+GRADLE_PROPERTIES=""
+
 #try jenkins branch name => then local git branch name => then jenkins params
 echo "[buildNode] Get branch name from jenkins env..."
 BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
@@ -64,6 +67,26 @@ fi
 echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
+
+isProductionBranch () {
+  # a function that ends without an explicit return statement returns the exit code of the last executed command
+  [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ] || [ "$BRANCH_NAME" = 'release' ]
+}
+
+overrideGradleVersion () {
+  local FROM_VERSION=`grep version= gradle.properties | sed -e "s/version=//"`
+  local BASE_VERSION=`echo $FROM_VERSION | sed -e "s/-SNAPSHOT//"`
+  local TO_VERSION="${BASE_VERSION}-${BRANCH_NAME}-SNAPSHOT"
+  local fx_ul='\e[4m'
+  local fx_off='\e[0m'
+  echo -e $fx_ul'/!\\ Overriding branch version '$FROM_VERSION' with '$TO_VERSION' /!\\'$fx_off
+  GRADLE_PROPERTIES="${GRADLE_PROPERTIES} -Pversion=${TO_VERSION}"
+}
+
+#Override version for non-production branches
+if ! isProductionBranch; then
+  overrideGradleVersion
+fi
 
 clean () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
@@ -87,7 +110,7 @@ buildNode () {
       exit -1
     fi
 
-    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
+    if isProductionBranch; then
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
@@ -123,7 +146,7 @@ buildAdminNode() {
 }
 
 buildGradle () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install "$GRADLE_OPTION"publishToMavenLocal
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle $GRADLE_PROPERTIES "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install "$GRADLE_OPTION"publishToMavenLocal
 }
 
 testGradle () {
@@ -168,7 +191,7 @@ publish () {
     echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"publish
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle $GRADLE_PROPERTIES "$GRADLE_OPTION"publish
 }
 
 for param in "$@"
