@@ -705,7 +705,6 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}}) " +
 				"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
-				"WITH u, f " +
 				"MERGE u-[rf:HAS_FUNCTION]->f ";
 
 		JsonArray scope = null;
@@ -723,7 +722,6 @@ public class User {
 					"MATCH (u:User { id : {userId}}) " +
 					"OPTIONAL MATCH (s:Structure) WHERE s.id IN {scope} " +
 					"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
-					"WITH u, s, f " +
 					"MERGE (fg:Group:FunctionGroup { externalId : s.id + '-' + {functionCode}}) " +
 					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = s.name + '-' + f.name, fg.displayNameSearchField = lower(s.name) + lower(f.name), fg.filter = f.name\n" +
 					"CREATE UNIQUE s<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
