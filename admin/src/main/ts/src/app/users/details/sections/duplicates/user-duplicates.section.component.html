@@ -51,7 +51,10 @@
             [show]="showMergeUsersConfirmation"
             [lightboxTitle]="'warning'"
             (onConfirm)="merge(duplicatedUserId, true); showMergeUsersConfirmation = false;"
-            (onCancel)="merge(duplicatedUserId, false); showMergeUsersConfirmation = false"
+            (onCancel)="showMergeUsersConfirmation = false"
+            (onExtra)="merge(duplicatedUserId, false); showMergeUsersConfirmation = false;"
+            [extraButtons]="['user.merge.oldmerge.button']"
+            [confirmText]="'user.merge.newmerge.button'"
     >
         <p>
             <s5l>user.merge.disclaimer.confirm</s5l>
