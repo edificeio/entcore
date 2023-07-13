@@ -17,6 +17,7 @@ import org.w3c.dom.Element;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -26,7 +27,10 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         ADMIN,
         CHECKER,
         EDITOR,
-        READER
+        READER,
+        ADMINDF,
+        USERDF,
+        PARTNRINDUS
     }
 
     private static final Logger log = LoggerFactory.getLogger(SmartSchoolRegisteredService.class);
@@ -39,6 +43,7 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
     private static final String STRUCTURE = "structure";
     private static final String RIGHT = "right";
     private static final String ACTIVE_STRUCTURE = "active_structure";
+    private static final String DIGITAL_FACTORY_STRUCTURE_NAME = "Digital Factory";
 
     private static final List<String> CHECKER_FUNCTIONS = Arrays.asList("gestionnaireressources", "gestionnaireformation", "offcomecole");
     private static final List<String> EDITOR_FUNCTIONS = Arrays.asList("enseignantinstructeur", "experttice", "encadrementapprenant");
@@ -47,15 +52,17 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
     protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionnalAttributes) {
         try {
             JsonArray userFunctions = data.getJsonArray("functions", new JsonArray());
+            JsonArray structureNodes = data.getJsonArray("structureNodes", new JsonArray());
+            JsonArray userProfiles = data.getJsonArray("profiles", new JsonArray());
 
             user.setUser(data.getString("id"));
             Element rootElement = createElement(EA_ATTRIBUTES, doc);
             rootElement.appendChild(createTextElement(FIRSTNAME, data.getString(FIRSTNAME, ""), doc));
             rootElement.appendChild(createTextElement(LASTNAME, data.getString(LASTNAME, ""), doc));
             rootElement.appendChild(createTextElement(EMAIL, data.getString(EMAIL, ""), doc));
-            rootElement.appendChild(createTextElement(RIGHT, getRight(userFunctions), doc));
+            rootElement.appendChild(createTextElement(RIGHT, getRight(userFunctions, structureNodes, userProfiles), doc));
             rootElement.appendChild(createTextElement(ACTIVE_STRUCTURE, data.getJsonArray("structures", new JsonArray()).getString(0), doc));
-            addStructures(data.getJsonArray("structureNodes", new JsonArray()), doc, rootElement);
+            addStructures(structureNodes, doc, rootElement);
             additionnalAttributes.add(rootElement);
         } catch (Exception e) {
             log.error("Failed to transform user for SmartSchool CAS response", e);
@@ -69,9 +76,28 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         }
     }
 
-    private String getRight(JsonArray functions) {
+    private String getRight(JsonArray functions, JsonArray structureNodes, JsonArray userProfiles) {
         if (functions.contains("SuperAdmin")) {
             return RIGHTS.ADMIN.toString();
+        }
+
+        Optional<JsonObject> digitaleFactoryStructure = structureNodes.stream()
+                .filter(JsonObject.class::isInstance)
+                .map(JsonObject.class::cast)
+                .filter(structureNode -> DIGITAL_FACTORY_STRUCTURE_NAME.equals(structureNode.getString("name")))
+                .findFirst();
+
+        if (digitaleFactoryStructure.isPresent()) {
+            if (functions.contains("AdminLocal")) {
+                return RIGHTS.ADMINDF.toString();
+            }
+            if (userProfiles.contains("Guest")) {
+                if (functions.contains("partenaireministere")) {
+                    return RIGHTS.USERDF.toString();
+                } else {
+                    return RIGHTS.PARTNRINDUS.toString();
+                }
+            }
         }
 
         List<String> userFunctions = functions.getList();
