@@ -704,10 +704,8 @@ public class User {
 			TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (u:User { id : {userId}}) " +
-				"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
-				"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
-				"WITH u, collect (f1) + collect(f2) as c " +
-				"UNWIND c as f " +
+				"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
+				"WITH u, f " +
 				"MERGE u-[rf:HAS_FUNCTION]->f ";
 
 		JsonArray scope = null;
@@ -723,16 +721,12 @@ public class User {
 		if(scope != null){
 			String query2 =
 					"MATCH (u:User { id : {userId}}) " +
-					"OPTIONAL MATCH (n1:Structure) WHERE n1.id IN {scope} " +
-					"OPTIONAL MATCH (n2:Class) WHERE n2.id IN {scope} " +
-					"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
-					"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
-					"WITH u, collect (n1) + collect(n2) as c1 , collect (f1) + collect(f2) as c2 " +
-					"UNWIND c1 as n " +
-					"UNWIND c2 as f " +
-					"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
-					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) + lower(f.name), fg.filter = f.name\n" +
-					"CREATE UNIQUE n<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
+					"OPTIONAL MATCH (s:Structure) WHERE s.id IN {scope} " +
+					"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
+					"WITH u, s, f " +
+					"MERGE (fg:Group:FunctionGroup { externalId : s.id + '-' + {functionCode}}) " +
+					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = s.name + '-' + f.name, fg.displayNameSearchField = lower(s.name) + lower(f.name), fg.filter = f.name\n" +
+					"CREATE UNIQUE s<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
 					"RETURN fg.id as groupId ";
 			JsonObject p2 = new JsonObject()
 				.put("scope", scope)
