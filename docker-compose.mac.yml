@@ -1,0 +1,31 @@
+version: "3.3"
+services:
+  gradle:
+    image: jleobernard/gradle:4.5.1
+    working_dir: /home/gradle/project
+    volumes:
+      - $PWD:$PWD
+      - ./:/home/gradle/project
+      - ~/.m2:/home/gradle/.m2
+      - ~/.gradle:/home/gradle/.gradle
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  node:
+    image: jleobernard/node:16
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+      - ~/.npm:/.npm
+      - /opt/projects/recette_validation:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
+      - ../infra-front:/home/node/infra-front
+
+  node16:
+    image: jleobernard/node:16
+    working_dir: /home/node/app
+    volumes:
+      - ./admin/src/main/ts:/home/node/app
+      - ./admin:/home/node/base
+      - ~/.npm:/.npm
+      - /opt/projects/recette_validation:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
+    environment:
+        - NG_CLI_ANALYTICS=false

@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ $(uname -m) == 'arm64' ]]; then
+  DOCKER_EXTRA_OPTS="-f docker-compose.mac.yml"
+  GRADLE_EXTRA=" --daemon --build-cache"
+else
+  DOCKER_EXTRA_OPTS=""
+  GRADLE_EXTRA=""
+fi
+
 if [ ! -e node_modules ]
 then
   mkdir node_modules
@@ -66,7 +74,7 @@ echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
 
 clean () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
+  docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
 }
 
 buildNode () {
@@ -91,20 +99,20 @@ buildNode () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
+        docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
@@ -114,16 +122,16 @@ buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
 
 buildGradle () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install "$GRADLE_OPTION"publishToMavenLocal
+  docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install
 }
 
 testGradle () {
@@ -137,14 +145,14 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
+      docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
 }
 
 watch () {
-  docker-compose run --rm \
+  docker-compose $DOCKER_EXTRA_OPTS run --rm \
     -u "$USER_UID:$GROUP_GID" \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
@@ -153,11 +161,11 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
+  docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm run start"
 }
 
 infra () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
+  docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
 }
 
 publish () {
@@ -168,7 +176,7 @@ publish () {
     echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"publish
+  docker-compose $DOCKER_EXTRA_OPTS run --rm -u "$USER_UID:$GROUP_GID" gradle gradle "$GRADLE_OPTION"publish
 }
 
 for param in "$@"
