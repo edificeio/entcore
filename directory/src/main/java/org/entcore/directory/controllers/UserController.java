@@ -786,7 +786,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void mergeDuplicate(final HttpServerRequest request) {
-		RequestUtils.bodyToClass(request, MergeUsersMetadata.class).onSuccess(mergeUsersMetadata -> {
+		RequestUtils.bodyToClass(request, MergeUsersMetadata.class, () -> new MergeUsersMetadata(false)).onSuccess(mergeUsersMetadata -> {
 			final String userId1 = request.params().get("userId1");
 			final String userId2 = request.params().get("userId2");
 			userService.mergeDuplicate(userId1, userId2, mergeUsersMetadata != null && mergeUsersMetadata.isKeepRelations(), defaultResponseHandler(request));
