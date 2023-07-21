@@ -19,29 +19,15 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
-import fr.wseduc.mongodb.MongoUpdateBuilder;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.Either;
 
-import org.entcore.common.email.EmailFactory;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.user.UserInfos;
-import org.entcore.feeder.Feeder;
-import org.entcore.common.neo4j.TransactionHelper;
-import org.entcore.feeder.utils.TransactionManager;
-import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -49,8 +35,19 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.common.email.EmailFactory;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
+import org.entcore.common.user.UserInfos;
+import org.entcore.feeder.Feeder;
+import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.Validator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -737,14 +734,9 @@ public class User {
 
 	public static void removeFunction(String userId, String functionCode, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f) " +
-				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-				"WITH r.scope as scope, r, u, f " +
-				"DELETE r " +
-				"WITH coalesce(scope, []) as ids, u, f " +
-				"UNWIND ids as s " +
-				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN|COMMUNIQUE]-u " +
-				"DELETE r";
+				"MATCH (u:User { id : {userId}})-[hasFunction:HAS_FUNCTION]->(f:Function {externalId : {functionCode}}), (u)-[inOrComm:IN|COMMUNIQUE]-(fg:FunctionGroup) " +
+				"WHERE fg.externalId ENDS WITH {functionCode} " +
+				"DELETE hasFunction, inOrComm";
 		JsonObject params = new JsonObject()
 				.put("userId", userId)
 				.put("functionCode", functionCode);
