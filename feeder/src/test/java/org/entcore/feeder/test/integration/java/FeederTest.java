@@ -213,12 +213,13 @@ public class FeederTest {
         final String prepareDatabaseQuery = "" +
                 "MERGE (u:User {id : {userId}})-[:HAS_FUNCTION]->(:Function { externalId : {functionCode}}) " +
                 "WITH u " +
-                "MERGE (u)-[:IN]->(:FunctionGroup { externalId : {mainStructureFunctionGroupId}}) " +
-                "MERGE (u)-[:IN]->(:FunctionGroup { externalId : {subStructureFunctionGroupId1}}) " +
-                "MERGE (u)-[:IN]->(:FunctionGroup { externalId : {subStructureFunctionGroupId2}}) " +
-                "MERGE (u)-[:COMMUNIQUE]->(:FunctionGroup { externalId : {subStructureFunctionGroupId2}}) " +
-                "MERGE (u)-[:COMMUNIQUE]->(:FunctionGroup { externalId : {subStructureFunctionGroupId2}}) " +
-                "MERGE (u)-[:COMMUNIQUE]->(:FunctionGroup { externalId : {subStructureFunctionGroupId2}}) ";
+                "MERGE (u)-[:IN]->(fg:FunctionGroup { externalId : {mainStructureFunctionGroupId}}) " +
+                "MERGE (u)-[:IN]->(fg:FunctionGroup { externalId : {subStructureFunctionGroupId1}}) " +
+                "MERGE (u)-[:IN]->(fg:FunctionGroup { externalId : {subStructureFunctionGroupId2}}) " +
+                "WITH u, fg " +
+                "MERGE (u)-[:COMMUNIQUE]->(fg) " +
+                "MERGE (u)-[:COMMUNIQUE]->(fg) " +
+                "MERGE (u)-[:COMMUNIQUE]->(fg) ";
         final JsonObject params = new JsonObject()
                 .put("userId", "user-id-1")
                 .put("functionCode", "ADMIN_LOCAL")
