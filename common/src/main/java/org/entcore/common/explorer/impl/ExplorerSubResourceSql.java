@@ -22,6 +22,55 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Assuming that {@code TSub} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
+ * type TSub (like {@code TExplorerPlugin} who would be the name of the parent plugin handling resources of T), here is
+ * the archetypal way of implementing this abstract class.
+ * <pre>{@code public class TSubExplorerPlugin extends ExplorerSubResourceSql {
+ *
+ *     public TSubExplorerPlugin(final TExplorerPlugin plugin) {
+ *         super(plugin, plugin.getPgClient());
+ *     }
+ *
+ *     @Override
+ *     protected String getTableName() {
+ *         return "tsub_table_name"; // TODO change to reflect TSub's schema
+ *     }
+ *
+ *     @Override
+ *     public String getEntityType() {
+ *         return "tsub_entity_type"; // TODO Change this to reflect the name of your subresource, it should be
+ *                                    // the name of TSub in lowercase
+ *     }
+ *
+ *     @Override
+ *     protected String getParentId(final JsonObject jsonObject) {
+ *         return jsonObject.getValue(getParentIdColumn()).toString(); // TODO change this to reflect TSub's schema if need be
+ *     }
+ *
+ *     @Override
+ *     protected String getParentIdColumn() {
+ *         return "t_id";  // TODO change this to reflect TSub's schema
+ *     }
+ *
+ *     @Override
+ *     protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
+ *         final String id = source.getValue("id").toString();
+ *         // TODO Implement here the way you want to put data in ExplorerMessage from your database object
+ *         // with successive calls like message.withSubResourceHtml(id, source.getString("XXX", ""), source.getLong("version", 0L));
+ *         return Future.succeededFuture(message);
+ *     }
+ *
+ *     @Override
+ *     public Future<Void> onDeleteParent(final Collection<String> collection) {
+ *         // TODO nothing to do if DELETE CASCADE, otherwise implement the logic to delete
+ *         // subresources of deleted resources whose ids are in collection
+ *         return Future.succeededFuture();
+ *     }
+ *
+ * }
+ * }</pre>
+ */
 public abstract class ExplorerSubResourceSql extends ExplorerSubResource{
     protected final IPostgresClient postgresClient;
 

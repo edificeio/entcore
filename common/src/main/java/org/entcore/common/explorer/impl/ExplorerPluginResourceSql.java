@@ -29,6 +29,79 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Assuming that {@code T} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
+ * type T, here is the archetypal way of implementing this abstract class.
+ * <pre>{@code public class PostExplorerPlugin extends ExplorerSubResourceMongo {
+ *     public static final String TYPE = Blog.BLOG_TYPE;
+ *     public static final String COLLECTION = Blog.POSTS_COLLECTION;
+ *     static Logger log = LoggerFactory.getLogger(PostExplorerPlugin.class);
+ *         // Implement here the logic of how to get a UserInfos out of a record of T from the database
+ *         // Implement here the logic of how to get a UserInfos out of a record of T from the database
+ *
+ *     public PostExplorerPlugin(final BlogExplorerPlugin plugin) {
+ *         super(plugin, plugin.getMongoClient());
+ *     }
+ *
+ *     @Override
+ *     protected Optional<UserInfos> getCreatorForModel(final JsonObject json) {
+ *         if(!json.containsKey("author") || !json.getJsonObject("author").containsKey("userId")){
+ *             return Optional.empty();
+ *         }
+ *         final JsonObject author = json.getJsonObject("author");
+ *         final UserInfos user = new UserInfos();
+ *         user.setUserId( author.getString("userId"));
+ *         user.setUsername(author.getString("username"));
+ *         user.setLogin(author.getString("login"));
+ *         return Optional.of(user);
+ *     }
+ *
+ *     @Override
+ *     public Future<Void> onDeleteParent(final Collection<String> ids) {
+ *         if(ids.isEmpty()) {
+ *             return Future.succeededFuture();
+ *         }
+ *         final MongoClient mongo = ((BlogExplorerPlugin)super.parent).getMongoClient();
+ *         final JsonObject filter = MongoQueryBuilder.build(QueryBuilder.start(getParentColumn()).in(ids));
+ *         final Promise<MongoClientDeleteResult> promise = Promise.promise();
+ *         log.info("Deleting post related to deleted blog. Number of blogs="+ids.size());
+ *         mongo.removeDocuments(COLLECTION, filter, promise);
+ *         return promise.future().map(e->{
+ *             log.info("Deleted post related to deleted blog. Number of posts="+e.getRemovedCount());
+ *             return null;
+ *         });
+ *     }
+ *
+ *     @Override
+ *     public String getEntityType() {
+ *         return "t_entity_type"; // TODO Change this to reflect the name of your resource, it should be
+ *                                 // the name of TSub in lowercase;
+ *     }
+ *
+ *     @Override
+ *     protected String getParentId(JsonObject jsonObject) {
+ *         final JsonObject blogRef = jsonObject.getJsonObject("t"); // TODO change to reflect T's schema
+ *         return blogRef.getString("$id");
+ *     }
+ *
+ *
+ *     @Override
+ *     protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
+ *         final String id = source.getString("_id");
+ *         // Implement here the way you want to put data in ExplorerMessage from your database object
+ *         // with successive calls like message.withXXX(source.getString("XXX", ""));
+ *         return Future.succeededFuture(message);
+ *     }
+ *
+ *     @Override
+ *     protected String getCollectionName() { return COLLECTION; }
+ *
+ *     protected String getParentColumn() {
+ *         return "T.$id"; // TODO change this to reflect T's schema
+ *     }
+ *
+ * }}</pre>
+ */
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final IPostgresClient pgPool;
     protected List<String> defaultColumns = Arrays.asList("version", "ingest_job_state");
