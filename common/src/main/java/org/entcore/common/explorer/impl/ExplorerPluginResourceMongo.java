@@ -33,6 +33,113 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Assuming that {@code T} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
+ * type T (like {@code TSubExplorerPlugin} who would be the name of the plugin handling a sub resource of T), here is
+ * the archetypal way of implementing this abstract class.
+ * <pre>{@code
+ * public class TExplorerPlugin extends ExplorerPluginResourceMongo {
+ *     public static final String APPLICATION = T.APPLICATION;
+ *     public static final String TYPE = T.TYPE;
+ *     public static final String COLLECTION = T.T_COLLECTION;
+ *     static Logger log = LoggerFactory.getLogger(TExplorerPlugin.class);
+ *     private final MongoClient mongoClient;
+ *     private final TFoldersExplorerPlugin folderPlugin;
+ *     private final TSubExplorerPlugin tSubPlugin;
+ *     private ShareService shareService;
+ *     private final Map<String, SecuredAction> securedActions;
+ *
+ *     public static TExplorerPlugin create(final Map<String, SecuredAction> securedActions) throws Exception {
+ *         final IExplorerPlugin plugin = ExplorerPluginFactory.createMongoPlugin((params)->{
+ *             return new TExplorerPlugin(params.getCommunication(), params.getDb(), securedActions);
+ *         });
+ *         return (TExplorerPlugin) plugin;
+ *     }
+ *
+ *     public TExplorerPlugin(final IExplorerPluginCommunication communication, final MongoClient mongoClient, final Map<String, SecuredAction> securedActions) {
+ *         super(communication, mongoClient);
+ *         this.mongoClient = mongoClient;
+ *         this.securedActions = securedActions;
+ *         //init folder plugin
+ *         this.folderPlugin = new TFoldersExplorerPlugin(this);
+ *         //init subresource plugin
+ *         this.postPlugin = new TSubExplorerPlugin(this);
+ *     }
+ *
+ *     public TSubExplorerPlugin tSubPlugin(){ return tSubPlugin; }
+ *
+ *     public TFoldersExplorerPlugin folderPlugin(){ return folderPlugin; }
+ *
+ *     public MongoClient getMongoClient() {return mongoClient;}
+ *
+ *     public ShareService createShareService(final Map<String, List<String>> groupedActions) {
+ *         this.shareService = createMongoShareService(T.T_COLLECTION, securedActions, groupedActions);
+ *         return this.shareService;
+ *     }
+ *
+ *     @Override
+ *     protected Optional<ShareService> getShareService() {
+ *         return Optional.ofNullable(shareService);
+ *     }
+ *
+ *     @Override
+ *     protected String getApplication() { return APPLICATION; }
+ *
+ *     @Override
+ *     protected String getResourceType() { return TYPE; }
+ *
+ *     @Override
+ *     protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
+ *         // Implement here the way you want to put data in ExplorerMessage from your database object
+ *         // with successive calls like message.withXXX(source.getString("XXX", ""));
+ *         return Future.succeededFuture(message);
+ *     }
+ *
+ *     @Override
+ *     public Map<String, SecuredAction> getSecuredActions() {
+ *         return securedActions;
+ *     }
+ *
+ *     @Override
+ *     protected String getCollectionName() { return COLLECTION; }
+ *
+ *     @Override
+ *     protected String getCreatedAtColumn() {
+ *         return "created"; // Or whatever the name of the column is for this resource
+ *     }
+ *
+ *     @Override
+ *     public Optional<UserInfos> getCreatorForModel(final JsonObject json) {
+ *         // Implement here the logic of how to get a UserInfos out of a record of T from the database
+ *         if(!json.containsKey("author") || !json.getJsonObject("author").containsKey("userId")){
+ *             return Optional.empty();
+ *         }
+ *         final JsonObject author = json.getJsonObject("author");
+ *         final UserInfos user = new UserInfos();
+ *         user.setUserId( author.getString("userId"));
+ *         user.setUsername(author.getString("username"));
+ *         user.setLogin(author.getString("login"));
+ *         return Optional.ofNullable(user);
+ *     }
+ *
+ *     @Override
+ *     protected void setCreatorForModel(UserInfos user, JsonObject json) {
+ *         // Implement here the logic of how to put the data of a UserInfos into record of T to be stored in the database
+ *         final JsonObject author = new JsonObject();
+ *         author.put("userId", user.getUserId());
+ *         author.put("username", user.getUsername());
+ *         author.put("login", user.getLogin());
+ *         json.put("author", author);
+ *     }
+ *
+ *     @Override
+ *     protected List<ExplorerSubResource> getSubResourcesPlugin() {
+ *         return Collections.singletonList(tSubPlugin);
+ *     }
+ *
+ * }
+ * }</pre>
+ */
 public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final MongoClient mongoClient;
