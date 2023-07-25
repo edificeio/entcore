@@ -165,28 +165,11 @@ object DirectoryScenario {
       .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id-delete")))
 
     // add user function
-    .exec(http("User add function ")
-      .post("""/directory/user/function/${teacherId}""")
-      .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "DELETE_${now}", "scope": ["${classId}"]}"""))
-      .check(status.is(200)))
 
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "scope": ["${schoolId}"]}"""))
-      .check(status.is(200)))
-
-    .exec(http("User add function ")
-      .post("""/directory/user/function/${teacherId}""")
-      .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "DELETE_FS_${now}", "scope": ["${classId}"]}"""))
-      .check(status.is(200)))
-
-    .exec(http("User add function ")
-      .post("""/directory/user/function/${teacherId}""")
-      .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "CLASS_ADMIN_FS_${now}", "scope": ["${classId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")
