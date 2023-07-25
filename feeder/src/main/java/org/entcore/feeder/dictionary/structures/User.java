@@ -19,29 +19,14 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
-import fr.wseduc.mongodb.MongoUpdateBuilder;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.Either;
-
-import org.entcore.common.email.EmailFactory;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.user.UserInfos;
-import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.TransactionHelper;
-import org.entcore.feeder.utils.TransactionManager;
-import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -49,8 +34,19 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.common.email.EmailFactory;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
+import org.entcore.common.user.UserInfos;
+import org.entcore.feeder.Feeder;
+import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.Validator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -704,10 +700,7 @@ public class User {
 			TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (u:User { id : {userId}}) " +
-				"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
-				"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
-				"WITH u, collect (f1) + collect(f2) as c " +
-				"UNWIND c as f " +
+				"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
 				"MERGE u-[rf:HAS_FUNCTION]->f ";
 
 		JsonArray scope = null;
@@ -723,16 +716,11 @@ public class User {
 		if(scope != null){
 			String query2 =
 					"MATCH (u:User { id : {userId}}) " +
-					"OPTIONAL MATCH (n1:Structure) WHERE n1.id IN {scope} " +
-					"OPTIONAL MATCH (n2:Class) WHERE n2.id IN {scope} " +
-					"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
-					"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
-					"WITH u, collect (n1) + collect(n2) as c1 , collect (f1) + collect(f2) as c2 " +
-					"UNWIND c1 as n " +
-					"UNWIND c2 as f " +
-					"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
-					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) + lower(f.name), fg.filter = f.name\n" +
-					"CREATE UNIQUE n<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
+					"OPTIONAL MATCH (s:Structure) WHERE s.id IN {scope} " +
+					"OPTIONAL MATCH (f:Function { externalId : {functionCode}}) " +
+					"MERGE (fg:Group:FunctionGroup { externalId : s.id + '-' + {functionCode}}) " +
+					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = s.name + '-' + f.name, fg.displayNameSearchField = lower(s.name) + lower(f.name), fg.filter = f.name\n" +
+					"CREATE UNIQUE s<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
 					"RETURN fg.id as groupId ";
 			JsonObject p2 = new JsonObject()
 				.put("scope", scope)
@@ -745,14 +733,9 @@ public class User {
 
 	public static void removeFunction(String userId, String functionCode, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f) " +
-				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-				"WITH r.scope as scope, r, u, f " +
-				"DELETE r " +
-				"WITH coalesce(scope, []) as ids, u, f " +
-				"UNWIND ids as s " +
-				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN|COMMUNIQUE]-u " +
-				"DELETE r";
+				"MATCH (u:User { id : {userId}})-[hasFunction:HAS_FUNCTION]->(f:Function {externalId : {functionCode}}), (u)-[inOrComm:IN|COMMUNIQUE]-(fg:FunctionGroup) " +
+				"WHERE fg.externalId ENDS WITH {functionCode} " +
+				"DELETE hasFunction, inOrComm";
 		JsonObject params = new JsonObject()
 				.put("userId", userId)
 				.put("functionCode", functionCode);
