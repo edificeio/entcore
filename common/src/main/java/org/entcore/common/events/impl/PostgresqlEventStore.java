@@ -22,6 +22,7 @@ package org.entcore.common.events.impl;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,6 +44,7 @@ import io.vertx.pgclient.SslMode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -54,6 +56,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 	private PgPool pgClient;
 	private Set<String> knownEvents;
 	private final AtomicInteger retryInitKnownEvents = new AtomicInteger(MAX_RETRY);
+	private final Set<String> allowedEvents = new HashSet<>();
 
 	public void init() {
 		init(ar -> {
@@ -90,6 +93,11 @@ public class PostgresqlEventStore extends GenericEventStore {
 						.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
 				}
 				pgClient = PgPool.pool(vertx, options, poolOptions);
+
+				final JsonArray allowedEventsConf =  eventStorePGConfig.getJsonArray("allowed-events");
+				if (allowedEventsConf != null && !allowedEventsConf.isEmpty()) {
+					allowedEventsConf.stream().forEach(x -> allowedEvents.add(x.toString()));
+				}
 				listKnownEvents(ar -> {
 					if (ar.succeeded()) {
 						knownEvents = ar.result();
@@ -116,7 +124,13 @@ public class PostgresqlEventStore extends GenericEventStore {
 			row -> row.getString("table_name").replace("_events", "").toUpperCase(), Collectors.toSet());
 		pgClient.query(listEventsTypesQuery).collecting(collector).execute(ar -> {
 			if (ar.succeeded()) {
-				handler.handle(Future.succeededFuture(ar.result().value()));
+				final Set<String> knownEventsResult;
+				if (!allowedEvents.isEmpty()) {
+					knownEventsResult = ar.result().value().stream().filter(allowedEvents::contains).collect(Collectors.toSet());
+				} else {
+					knownEventsResult = ar.result().value();
+				}
+				handler.handle(Future.succeededFuture(knownEventsResult));
 			} else {
 				handler.handle(Future.failedFuture(ar.cause()));
 			}
@@ -162,7 +176,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			event.remove("sessionId");
 			e = event;
 			tableName = "events." + eventType.toLowerCase() + "_events";
-		} else {
+		} else if (allowedEvents.isEmpty()) {
 			e = new JsonObject();
 			final String module = (String) event.remove("module");
 			if (module != null) {
@@ -170,6 +184,9 @@ public class PostgresqlEventStore extends GenericEventStore {
 			}
 			e.put("payload", event.encode());
 			tableName = "events.unknown_events";
+		} else {
+			handler.handle(new Either.Right<>(null));
+			return;
 		}
 		e.put("id", (id != null ? id : UUID.randomUUID().toString()));
 		e.put("event_type", eventType);
