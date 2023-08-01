@@ -18,6 +18,7 @@
 
 package org.entcore.common.explorer.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,23 +29,8 @@ import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.entcore.common.explorer.IdAndVersion;
-import org.entcore.common.user.RepositoryEvents;
-
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
 
 /**
  * This implementation of the RepositoryEvents follows the proxy pattern.
@@ -61,7 +47,14 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	 * which were imported.
 	 */
 	private final Map<String, IExplorerPluginClient> pluginClientsForApp;
-
+	/**
+	 * It will be used when a group or a user is deleted to notify delete
+	 */
+	private final IExplorerPluginClient mainPluginClient;
+	/**
+	 * Make possible for anyone to listen reindex
+	 */
+	private Handler<AsyncResult<IExplorerPluginClient.IndexResponse>>onReindex = e->{};
 	/**
 	 *
 	 * @param realRepositoryEvents The repository event to proxyfy
@@ -74,11 +67,19 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
   	 *                            <li>"posts" -> postsPluginClient</li>
 	 *                            </ul>
 	 *                            because blogs and posts are stored in collections named "blogs" and "posts".
+	 * @param mainPluginClient PluginClient of the main resource type of the application (for example blog)
 	 */
 	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents,
-									final Map<String, IExplorerPluginClient> pluginClientsForApp) {
+									final Map<String, IExplorerPluginClient> pluginClientsForApp,
+									final IExplorerPluginClient mainPluginClient) {
+		this.mainPluginClient = mainPluginClient;
 		this.realRepositoryEvents = realRepositoryEvents;
 		this.pluginClientsForApp = pluginClientsForApp;
+	}
+
+	public ExplorerRepositoryEvents setOnReindex(Handler<AsyncResult<IExplorerPluginClient.IndexResponse>> onReindex) {
+		this.onReindex = onReindex;
+		return this;
 	}
 
 	@Override
@@ -133,15 +134,15 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 					if (idsMapForApp != null && !idsMapForApp.isEmpty()) {
 						final Set<String> idsToReindex = idsMapForApp.stream().map(i -> (String) i.getValue()).collect(Collectors.toSet());
 						if (idsToReindex.isEmpty()) {
-							log.info("Nothing to reindex in EUR");
+							log.info("[importResources] Nothing to reindex in EUR");
 						} else {
-							log.info("Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
+							log.info("[importResources] Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
 							final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
 							final UserInfos userInfos = new UserInfos();
 							userInfos.setUserId(userId);
 							userInfos.setLogin(userLogin);
 							userInfos.setFirstName(userName);
-							pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex));
+							pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex)).onComplete(this.onReindex);
 						}
 					}
 				});
@@ -161,11 +162,12 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	}
 
 	@Override
-	public void deleteGroups(JsonArray groups, Handler<List<DeletedResource>> handler) {
+	public void deleteGroups(JsonArray groups, Handler<List<ResourceChanges>> handler) {
 		realRepositoryEvents.deleteGroups(groups, deleted -> {
 			handler.handle(deleted);
 			final Set<String> ids = deleted.stream().map(e -> e.id).collect(Collectors.toSet());
-			plugin.onReindexByIdAction(Optional.empty(), ids);
+			log.info("[deleteGroups] Reindexing " + ids.size() + " main resources in EUR");
+			mainPluginClient.reindex(new ExplorerReindexResourcesRequest(ids)).onComplete(this.onReindex);
 		});
 	}
 
@@ -175,11 +177,24 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 	}
 
 	@Override
-	public void deleteUsers(JsonArray users, Handler<List<DeletedResource>> handler) {
+	public void deleteUsers(JsonArray users, Handler<List<ResourceChanges>> handler) {
 		realRepositoryEvents.deleteUsers(users, deleted -> {
 			handler.handle(deleted);
-			final Set<String> ids = deleted.stream().map(e -> e.id).collect(Collectors.toSet());
-			plugin.onReindexByIdAction(Optional.empty(), ids);
+			final Set<String> updatedIds = deleted.stream().filter(e -> !e.deleted).map(e -> e.id).collect(Collectors.toSet());
+			final Set<String> deletedIds = deleted.stream().filter(e -> e.deleted).map(e -> e.id).collect(Collectors.toSet());
+			log.info("[deleteUsers] Reindexing " + updatedIds.size() + " main resources in EUR");
+			final UserInfos user = new UserInfos();
+			user.setUserId("respository-event");
+			user.setUsername("respository-event");
+			if(updatedIds.isEmpty()){
+				log.info("[deleteUsers] Deleting " + deletedIds.size() + " main resources in EUR");
+				mainPluginClient.deleteById(user, deletedIds).map(e -> new IExplorerPluginClient.IndexResponse(0,0)).onComplete(this.onReindex);
+			}else{
+				mainPluginClient.reindex(new ExplorerReindexResourcesRequest(updatedIds)).compose(e -> {
+					log.info("[deleteUsers] Deleting " + deletedIds.size() + " main resources in EUR");
+					return mainPluginClient.deleteById(user, deletedIds).map(e);
+				}).onComplete(this.onReindex);
+			}
 		});
 	}
 

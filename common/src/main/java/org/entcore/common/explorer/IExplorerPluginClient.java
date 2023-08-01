@@ -26,6 +26,12 @@ public interface IExplorerPluginClient {
      * @return A swift report of the indexation process
      */
     Future<IndexResponse> reindex(UserInfos user, ExplorerReindexResourcesRequest request);
+    /**
+     * Reindex resources.
+     * @param request Filter for the resources to reindex
+     * @return A swift report of the indexation process
+     */
+    Future<IndexResponse> reindex(ExplorerReindexResourcesRequest request);
 
     Future<List<String>> createAll(UserInfos user, List<JsonObject> json, boolean isCopy);
 

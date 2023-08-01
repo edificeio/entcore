@@ -21,6 +21,11 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     static final Logger log = LoggerFactory.getLogger(ExplorerPluginClient.class);
 
     @Override
+    public Future<IndexResponse> reindex(final ExplorerReindexResourcesRequest request) {
+        return reindex(null, request);
+    }
+
+    @Override
     public Future<IndexResponse> reindex(final UserInfos user, final ExplorerReindexResourcesRequest request){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryReindex.name());
@@ -40,6 +45,8 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
             final int nb_message = response.getNbMessages();
             final int nb_batch = response.getNbBatch();
             return new IndexResponse(nb_batch, nb_message);
+        }).onFailure(e->{
+            log.error("Trigger indexxation failed:", e);
         });
     }
 
