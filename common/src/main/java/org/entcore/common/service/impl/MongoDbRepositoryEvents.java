@@ -30,7 +30,6 @@ import org.entcore.common.folders.impl.DocumentHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -82,7 +81,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void deleteGroups(final JsonArray groups, final Handler<List<DeletedResource>> handler) {
+	public void deleteGroups(final JsonArray groups, final Handler<List<ResourceChanges>> handler) {
 		if(groups == null) {
 			handler.handle(new ArrayList<>());
 			return;
@@ -120,22 +119,19 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			if (!"ok".equals(event.body().getString("status"))) {
 				log.error("Error deleting groups in collection " + collection +
 						" : " + event.body().getString("message"));
-			}else{
-				handler.handle(new ArrayList<>());
 			}
-
 			// find deleted resources
 			final QueryBuilder findByKey = QueryBuilder.start("_deleteGroupsKey").is(timestamp);
 			final JsonObject query = MongoQueryBuilder.build(findByKey);
 			mongo.find(collection, query, eventFind -> {
 				final JsonArray results = eventFind.body().getJsonArray("results");
-				final List<DeletedResource> list = new ArrayList<>();
+				final List<ResourceChanges> list = new ArrayList<>();
 				if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
 					results.forEach(elem -> {
 						if(elem instanceof  JsonObject){
 							final JsonObject jsonElem = (JsonObject) elem;
 							final String id = jsonElem.getString("_id");
-							list.add(new DeletedResource(id));
+							list.add(new ResourceChanges(id, false));
 						}
 					});
 				} else {
@@ -147,7 +143,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	@Override
-	public void deleteUsers(final JsonArray users, final Handler<List<DeletedResource>> handler) {
+	public void deleteUsers(final JsonArray users, final Handler<List<ResourceChanges>> handler) {
 		if(users == null) {
 			handler.handle(new ArrayList<>());
 			return;
@@ -186,7 +182,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				log.error("Error deleting users shared in collection " + collection  +
 						" : " + eventShared.body().getString("message"));
 			}
-			final JsonObject criteria = MongoQueryBuilder.build(QueryBuilder.start("owner.userId").in(userIds));
+			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").in(userIds);
+			QueryBuilder findByOwner = QueryBuilder.start("owner.userId").in(userIds);
+			QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
+			final JsonObject criteria = MongoQueryBuilder.build(findByAuthorOrOwner);
 			final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 			modifier.set("owner.deleted", true);
 			modifier.set("_deleteUsersKey", timestamp);
@@ -194,25 +193,28 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				if (!"ok".equals(eventOwner.body().getString("status"))) {
 					log.error("Error deleting users shared in collection " + collection +
 							" : " + eventOwner.body().getString("message"));
-				} else if (managerRight != null && !managerRight.trim().isEmpty()) {
-					removeObjects(collection);
 				}
-				// find deleted resources
+				// find updated resources
 				final QueryBuilder findByKey = QueryBuilder.start("_deleteUsersKey").is(timestamp);
 				final JsonObject query = MongoQueryBuilder.build(findByKey);
 				mongo.find(collection, query, eventFind -> {
 					final JsonArray results = eventFind.body().getJsonArray("results");
-					final List<DeletedResource> list = new ArrayList<>();
+					final List<ResourceChanges> list = new ArrayList<>();
 					if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
 						results.forEach(elem -> {
 							if(elem instanceof  JsonObject){
 								final JsonObject jsonElem = (JsonObject) elem;
 								final String id = jsonElem.getString("_id");
-								list.add(new DeletedResource(id));
+								final boolean deleted = jsonElem.getJsonObject("owner", new JsonObject()).getBoolean("deleted", false);
+								list.add(new ResourceChanges(id, deleted));
 							}
 						});
 					} else {
 						log.error("[deleteUsers] Could not found deleted resources:"+ eventFind.body());
+					}
+					// delete objects
+					if (managerRight != null && !managerRight.trim().isEmpty()) {
+						removeObjects(collection);
 					}
 					handler.handle(list);
 				});
