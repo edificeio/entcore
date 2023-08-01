@@ -20,8 +20,11 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -30,21 +33,16 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
-import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
-import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
-import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
+import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultSchoolService implements SchoolService {
 	private final int firstLevel = 1;
@@ -397,7 +395,7 @@ public class DefaultSchoolService implements SchoolService {
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups " +
 			"OPTIONAL MATCH (u)-[:IN]->(mgroup: ManualGroup) " +
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, functionalGroups, CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups " +
-			"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->()-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+			"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(f:Function) " +
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, functionalGroups, manualGroups, CASE WHEN f IS NULL THEN [] ELSE COLLECT(distinct [f.externalId, rf.scope]) END as functions " +
 			"RETURN DISTINCT " +
 			"u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login," +

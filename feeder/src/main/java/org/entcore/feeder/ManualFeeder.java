@@ -19,9 +19,11 @@
 
 package org.entcore.feeder;
 
-import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.Json;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -34,10 +36,6 @@ import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
 
 import java.text.SimpleDateFormat;
@@ -1060,30 +1058,6 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void apply(TransactionHelper tx) {
 				Profile.deleteFunction(functionCode, tx);
-			}
-		});
-	}
-
-	public void createFunctionGroup(Message<JsonObject> message) {
-		final JsonArray functions = message.body().getJsonArray("functions");
-		if (functions == null || functions.size() == 0) {
-			sendError(message, "missing.functions");
-			return;
-		}
-		final String name = message.body().getString("name");
-		if (name == null || name.trim().isEmpty()) {
-			sendError(message, "missing.name");
-			return;
-		}
-		final String externalId = message.body().getString("externalId");
-		if (externalId == null || externalId.trim().isEmpty()) {
-			sendError(message, "missing.externalId");
-			return;
-		}
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Profile.createFunctionGroup(functions, name, externalId, tx);
 			}
 		});
 	}

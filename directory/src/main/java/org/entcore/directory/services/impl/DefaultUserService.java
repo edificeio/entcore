@@ -32,7 +32,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.DefaultFunctions;
@@ -50,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -244,7 +242,7 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
-				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) as children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
@@ -254,11 +252,11 @@ public class DefaultUserService implements UserService {
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
 					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) as functions, u.functions as aafFunctions," +
-					"CASE WHEN children IS NULL THEN [] ELSE filter(x IN children WHERE x.id IS NOT NULL) END as children, " +
-					"CASE WHEN parents IS NULL THEN [] ELSE filter(x IN parents WHERE x.id IS NOT NULL) END as parents, " +
-					"CASE WHEN admGroups IS NULL THEN [] ELSE filter(x IN admGroups WHERE x.id IS NOT NULL) END as functionalGroups, " +
-					"CASE WHEN admStruct IS NULL THEN [] ELSE filter(x IN admStruct WHERE x.id IS NOT NULL) END as administrativeStructures, " +
-					"CASE WHEN subjectCodes IS NULL THEN [] ELSE filter(x IN subjectCodes WHERE x IS NOT NULL) END as subjectCodes, ";
+					"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
+					"filter(x IN coalesce(parents, []) WHERE x.id IS NOT NULL)) as parents, " +
+					"filter(x IN coalesce(admGroups, []) WHERE x.id IS NOT NULL)) as functionalGroups, " +
+					"filter(x IN coalesce(admStruct, []) WHERE x.id IS NOT NULL)) as administrativeStructures, " +
+					"filter(x IN coalesce(subjectCodes, []) WHERE x.id IS NOT NULL)) as subjectCodes, ";
 		} else {
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
@@ -626,7 +624,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 				"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
-				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) " +
 				"RETURN DISTINCT u.id as id, head(u.profiles) as type, u.externalId as externalId, " +
 				"u.activationCode as code, " +
@@ -758,7 +756,7 @@ public class DefaultUserService implements UserService {
 
 	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
 		String query =
-				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->(f:Function) " +
 				"RETURN COLLECT(distinct [f.externalId, rf.scope]) as functions";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
@@ -804,7 +802,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
 				"OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
-				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH n-[:ADMINISTRATIVE_ATTACHMENT]->(sa:Structure) " +
 				"RETURN distinct " +
