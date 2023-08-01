@@ -61,17 +61,6 @@ public class DefaultProfileService implements ProfileService {
 	}
 
 	@Override
-	public void createFunctionGroup(JsonArray functionsCodes, String name, String externalId,
-			Handler<Either<String, JsonObject>> result) {
-		JsonObject action = new JsonObject()
-				.put("action", "manual-create-function-group")
-				.put("functions", functionsCodes)
-				.put("externalId", externalId)
-				.put("name", name);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
-	}
-
-	@Override
 	public void deleteFunctionGroup(String functionGroupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-function-group")
