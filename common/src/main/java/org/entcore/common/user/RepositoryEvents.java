@@ -26,7 +26,6 @@ import java.util.Optional;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.share.ShareModel;
 
 public interface RepositoryEvents {
 
@@ -50,7 +49,7 @@ public interface RepositoryEvents {
 	 * @param groups to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteGroups(JsonArray groups, Handler<List<DeletedResource>> handler) {
+	default void deleteGroups(JsonArray groups, Handler<List<ResourceChanges>> handler) {
 		handler.handle(new ArrayList<>());
 	}
 
@@ -62,7 +61,7 @@ public interface RepositoryEvents {
 	 * @param users to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteUsers(JsonArray users, Handler<List<DeletedResource>> handler) {
+	default void deleteUsers(JsonArray users, Handler<List<ResourceChanges>> handler) {
 		handler.handle(new ArrayList<>());
 	}
 
@@ -85,11 +84,13 @@ public interface RepositoryEvents {
 		return Optional.empty();
 	}
 
-	class DeletedResource{
+	class ResourceChanges {
 		public final String id;
+		public final boolean deleted;
 
-		public DeletedResource(String id) {
+		public ResourceChanges(String id, boolean deleted) {
 			this.id = id;
+			this.deleted = deleted;
 		}
 	}
 }

@@ -321,13 +321,13 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
         });
     }
 
-    protected List<DeletedResource> transactionToDeletedResources(final Either<String, JsonArray> event){
+    protected List<ResourceChanges> transactionToDeletedResources(final Either<String, JsonArray> event){
         if(event.isRight()){
             final JsonArray ids = event.right().getValue();
-            final List<DeletedResource> deleted = new ArrayList<>();
+            final List<ResourceChanges> deleted = new ArrayList<>();
             for(final Object json : ids){
                 if(json instanceof  JsonObject){
-                    final DeletedResource del = new DeletedResource(((JsonObject)json).getValue("id").toString());
+                    final ResourceChanges del = new ResourceChanges(((JsonObject)json).getValue("id").toString(), false);
                     deleted.add(del);
                 }
             }
