@@ -183,6 +183,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
         translateMessage(language, keys -> {
             final JsonObject notif = new JsonObject();
             final JsonObject data = new JsonObject();
+            final JsonObject apns = new JsonObject();
             final JsonObject pushNotif = notification.getJsonObject("pushNotif", new JsonObject());
             String body = pushNotif.getString("body", "");
             body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
@@ -209,8 +210,11 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     data.put("notification", notif);
                 message.put("data", data);
             }
-            if(typeNotification)
+            if(typeNotification) {
                 message.put("notification", notif);
+                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("badge", 1)));
+                message.put("apns", apns);
+            }
 
             handler.handle(message);
         });
