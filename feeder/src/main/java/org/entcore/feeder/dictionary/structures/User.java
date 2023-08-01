@@ -862,7 +862,7 @@ public class User {
 			filter = " WHERE f.externalId IN {functions} ";
 		}
 		String query =
-				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u" +
+				"MATCH (f:Function)<-[rf:HAS_FUNCTION]-u" +
 				filter +
 				"WITH DISTINCT u.externalId as externalId, rf.scope as scope, f " +
 				"MATCH (s:Structure) " +
