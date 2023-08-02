@@ -149,21 +149,6 @@ object DirectoryScenario {
       .body(StringBody("""{"externalId": "DELETE_${now}", "name": "To delete"}"""))
       .check(status.is(201), jsonPath("$.id").find.saveAs("function-delete")))
 
-    // create function group
-    .exec(http("Create function group")
-      .post("""/directory/functiongroup""")
-      .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionsCodes": ["CLASS_ADMIN_${now}"], "name": "Admin de la classe ${now}",
-       "externalId" : "CLASS_ADMIN_FS_${now}"}"""))
-      .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id")))
-
-    .exec(http("Create function group")
-      .post("""/directory/functiongroup""")
-      .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionsCodes": ["DELETE_${now}"],"name": "Delete ${now}",
-       "externalId" : "DELETE_FS_${now}"}"""))
-      .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id-delete")))
-
     // add user function
 
     .exec(http("User add function ")

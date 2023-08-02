@@ -2,38 +2,37 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.data.FileResolver;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.http.Renders.*;
-
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.*;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.services.MassMailService;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.DefaultFunctions.*;
-import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 
 public class DefaultMassMailService extends Renders implements MassMailService {
     protected static final Logger log = LoggerFactory.getLogger(DefaultMassMailService.class);
@@ -469,7 +468,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
-                        "OPTIONAL MATCH (u:User)-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) ";
+                        "OPTIONAL MATCH (u:User)-[rf:HAS_FUNCTION]->(f:Function) ";
 
         JsonObject params = new JsonObject().put("structureId", structureId);
 
