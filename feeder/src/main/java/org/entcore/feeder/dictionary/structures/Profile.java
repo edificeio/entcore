@@ -19,11 +19,10 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.feeder.utils.TransactionHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.feeder.utils.TransactionHelper;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -120,22 +119,6 @@ public class Profile {
 				"OPTIONAL MATCH f-[r]-() " +
 				"DELETE r,f ";
 		JsonObject params = new JsonObject().put("externalId", functionExternalId);
-		transaction.add(query, params);
-	}
-	public static void createFunctionGroup(JsonArray functions, String name, String externalId,
-			TransactionHelper transaction) {
-		JsonObject fg = new JsonObject()
-				.put("id", UUID.randomUUID().toString())
-				.put("name", name)
-				.put("externalId", externalId);
-		JsonObject params = new JsonObject()
-				.put("functions", functions)
-				.put("props", fg);
-		String query =
-				"MATCH (f:Function) " +
-				"WHERE f.externalId IN {functions} " +
-				"CREATE (fg:Functions {props})-[:CONTAINS_FUNCTION]->f " +
-				"RETURN fg.id as id ";
 		transaction.add(query, params);
 	}
 

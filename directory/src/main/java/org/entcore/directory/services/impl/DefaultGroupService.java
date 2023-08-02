@@ -21,21 +21,19 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.Directory;
-import org.entcore.directory.services.GroupService;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.Directory;
+import org.entcore.directory.services.GroupService;
 
 import java.util.List;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
@@ -96,7 +94,7 @@ public class DefaultGroupService implements GroupService {
 		}
 		String query =
 				"MATCH (s:Structure)" + recursion + "<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
-				"OPTIONAL MATCH (s)" + recursion + "<-[:BELONGS]-(c: Class)<-[:DEPENDS]-(g) " +
+				"OPTIONAL MATCH (g)-[:DEPENDS]->(c:Class) " +
 				"WITH g, collect({name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +

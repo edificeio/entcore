@@ -94,18 +94,6 @@ public class ProfileController extends BaseController {
 		profileService.deleteFunction(function, defaultResponseHandler(request, 204));
 	}
 
-	@Post("/functiongroup")
-	@SecuredAction("profile.create.function.group")
-	public void createFunctionGroup(final HttpServerRequest request) {
-		bodyToJson(request, pathPrefix + "createFunctionGroup", new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject event) {
-				profileService.createFunctionGroup(event.getJsonArray("functionsCodes"),
-						event.getString("name"), event.getString("externalId"), notEmptyResponseHandler(request, 201));
-			}
-		});
-	}
-
 	@Delete("/functiongroup/:groupId")
 	@SecuredAction("profile.delete.function.group")
 	public void deleteFunctionGroup(final HttpServerRequest request) {
