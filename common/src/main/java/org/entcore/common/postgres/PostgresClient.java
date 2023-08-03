@@ -368,6 +368,9 @@ public class PostgresClient implements IPostgresClient {
 
     @Override
     public Future<RowStream<Row>> queryStream(String query, Tuple tuple, int batchSize) {
+        if(this.pool == null){
+            this.pool = this.getClientPool();
+        }
         return this.pool.queryStream(query, tuple, batchSize);
     }
 

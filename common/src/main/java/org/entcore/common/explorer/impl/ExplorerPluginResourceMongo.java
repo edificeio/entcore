@@ -208,20 +208,6 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
     }
 
     @Override
-    protected void doFetchByIdForIndex(ExplorerStream<JsonObject> stream, Collection<String> ids) {
-        if(ids.isEmpty()){
-            stream.end();
-            return;
-        }
-        final JsonObject queryJson = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
-        mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
-            stream.add(Arrays.asList(result));
-        }).endHandler(e->{
-            stream.end();
-        });
-    }
-
-    @Override
     protected Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
         final List<Future> futures = new ArrayList<>();
         final List<String> ids = new ArrayList<>();

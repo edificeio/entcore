@@ -119,12 +119,6 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 onReindexAction(message, request);
                 break;
             }
-            case QueryReindexById: {
-                final JsonArray ids = message.body().getJsonArray("ids", new JsonArray());
-                final List<String> idList = ids.stream().map(e -> e.toString()).collect(Collectors.toList());
-                onReindexByIdAction(Optional.ofNullable(message), idList);
-                break;
-            }
             case QueryMetrics: {
                 //TODO
                 message.reply(new JsonObject());
@@ -336,61 +330,6 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 });
             }else{
                 message.fail(500, ExplorerRemoteError.ReindexFailed.getError());
-                log.error("Failed to reindex resources: "+ getApplication(), root.cause());
-            }
-        });
-    }
-
-
-    protected void onReindexByIdAction(final Optional<Message<JsonObject>> message, final Collection<String> ids){
-        final long now = currentTimeMillis();
-        log.info(String.format("Starting indexation by ids for app=%s type=%s count=%s",getApplication(), getResourceType(), ids.size()));
-        final JsonObject metrics = new JsonObject();
-        final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
-            // TODO JBE missing saving state and version here
-            for (JsonObject entry : bulk) {
-                setVersion(entry, now);
-            }
-            return toMessage(bulk, e -> {
-                final String id = getIdForModel(e);
-                final UserInfos user = getCreatorForModel(e).orElseGet(() -> {
-                    log.error("Could not found creator for "+getApplication()+ " with id : "+id);
-                    return new UserInfos();
-                });
-                final ExplorerMessage mess = ExplorerMessage.upsert(
-                        new IdAndVersion(id, now), user, isForSearch(),
-                        getApplication(), getResourceType(), getResourceType());
-                mess.withVersion(now);
-                return mess;
-            }).compose(messages -> {
-                return communication.pushMessage(messages);
-            });
-        }, metricsEnd -> {
-            log.info(String.format("Ending indexation for app=%s type=%s count=%s metrics=%s",getApplication(), getResourceType(), ids.size(), metricsEnd));
-            metrics.mergeIn(metricsEnd);
-        });
-        doFetchByIdForIndex(stream, ids);
-        stream.getEndFuture().onComplete(root->{
-            if(root.succeeded()){
-                final List<Future> futures = new ArrayList<>();
-                //TODO  need to reindex subresources?
-                //wait all
-                CompositeFuture.all(futures).onComplete(e->{
-                    if(e.succeeded()){
-                        if(message.isPresent()){
-                            message.get().reply(metrics);
-                        }
-                    }else{
-                        if(message.isPresent()) {
-                            message.get().fail(500, ExplorerRemoteError.ReindexFailed.getError());
-                        }
-                        log.error("Failed to reindex subresources: "+ getApplication(), root.cause());
-                    }
-                });
-            }else{
-                if(message.isPresent()) {
-                    message.get().fail(500, ExplorerRemoteError.ReindexFailed.getError());
-                }
                 log.error("Failed to reindex resources: "+ getApplication(), root.cause());
             }
         });
@@ -702,8 +641,6 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected abstract Optional<ShareService> getShareService();
 
     protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexResourcesRequest request);
-
-    protected abstract void doFetchByIdForIndex(final ExplorerStream<JsonObject> stream, final Collection<String> ids);
 
     protected abstract Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy);
 

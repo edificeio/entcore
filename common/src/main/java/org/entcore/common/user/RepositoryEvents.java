@@ -84,8 +84,17 @@ public interface RepositoryEvents {
 		return Optional.empty();
 	}
 
+	/**
+	 * This class return a resource that have been changed onDeleteUser and onDeleteGroup
+	 */
 	class ResourceChanges {
+		/**
+		 * ID of the changed resource
+		 */
 		public final String id;
+		/**
+		 * Whether this resource has been deleted (if false the resource has been updated)
+		 */
 		public final boolean deleted;
 
 		public ResourceChanges(String id, boolean deleted) {
