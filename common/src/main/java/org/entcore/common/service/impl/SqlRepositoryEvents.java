@@ -176,6 +176,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                     {
                         JsonArray results = message.body().getJsonArray("results");
                         Map<String, Integer> dupsMap = new HashMap<String, Integer>();
+                        final JsonObject idsByTable = new JsonObject();
 
                         for (int i = 0; i < results.size(); i++)
                         {
@@ -196,6 +197,16 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 if (jo.getJsonArray("fields").contains("noduplicates")) {
                                     resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(1);
                                 }
+                                if (jo.getJsonArray("fields").contains("ids")) {
+                                    final JsonArray values = jo.getJsonArray("results").getJsonArray(0);
+                                    final String table = values.getString(0);
+                                    final JsonArray ids = values.getJsonArray(2);
+                                    final JsonArray prevIds = idsByTable.getJsonArray(table, new JsonArray());
+                                    if(ids != null){
+                                        prevIds.addAll(ids.getJsonArray(0));
+                                    }
+                                    idsByTable.put(table, prevIds);
+                                }
                             }
                         }
 
@@ -212,7 +223,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 .put("resourcesIdsMap", finalMap)
                                 .put("duplicatesNumberMap", dupsMap)
                                 .put("mainResourceName", mainResourceName)
-                                    .put("mainRepository", MongoDbConf.getInstance().getCollection());
+                                    .put("mainRepository", MongoDbConf.getInstance().getCollection())
+                                    .put("newIds", idsByTable);
 
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
                         handler.handle(reply);
@@ -271,8 +283,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                             String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
                                     ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
                             String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
-                            String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT '" + table + "' AS table, "
-                                                    + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
+                            String conflictNothing = "ON CONFLICT DO NOTHING RETURNING id) SELECT '" + table + "' AS table, "
+                                                    + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + ", array_agg(rows.id) AS ids FROM rows";
 
                             for (int i = 0; i < finalResults.size(); i++) {
                                 JsonArray entry = finalResults.getJsonArray(i);
@@ -280,7 +292,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                                 if (tablesWithId.containsKey(table)) {
                                     builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
-                                            " RETURNING 1) SELECT '" + table + "' AS table, count(*) AS noduplicates FROM rows", entry);
+                                            " RETURNING id) SELECT '" + table + "' AS table, count(*) AS noduplicates, array_agg(rows.id) AS ids FROM rows", entry);
                                 }
                                 builder.prepared(query + conflictNothing, entry);
                             }
