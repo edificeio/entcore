@@ -226,7 +226,13 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             setCreatedAtForModel(user, json);
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
-            mongoClient.insert(getCollectionName(), json, promise);
+            if(json instanceof fr.wseduc.webutils.collections.JsonObject){
+                final JsonObject jsonObject = new JsonObject();
+                jsonObject.mergeIn(json);
+                mongoClient.insert(getCollectionName(), jsonObject, promise);
+            }else{
+                mongoClient.insert(getCollectionName(), json, promise);
+            }
         }
         return CompositeFuture.all(futures).map(ids);
     }
