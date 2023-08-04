@@ -2,15 +2,15 @@
     <div class="row justify-content-center">
         <div class="col-md-9 col-sm-12">
             <div ng-if="ctrl.status!=='ko' && ctrl.status!=='ok'" class="mb-12 text-center">
-                <img class="mx-auto" src="/auth/public/img/validate-mfa-ok.svg" height="150"></img>
+                <img class="mx-auto" src="/auth/public/img/validate-mfa-ok.svg" height="200" width="200"></img>
             </div>
 
             <div ng-if="ctrl.status==='ko'" class="mb-12 text-center">
-                <img class="mx-auto" src="/auth/public/img/validate-mfa-nok.svg" height="150"></img>
+                <img class="mx-auto" src="/auth/public/img/validate-mfa-nok.svg" height="200" width="200"></img>
             </div>
 
             <div ng-if="ctrl.status==='ok'" class="mb-12 text-center">
-                <img class="mx-auto" src="/auth/public/img/validate-mfa-done.svg" height="150"></img>
+                <img class="mx-auto" src="/auth/public/img/validate-mfa-done.svg" height="200" width="200"></img>
             </div>
 
             <div class="text-center">
@@ -24,7 +24,7 @@
     <div class="my-12">
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
-                <div class="mb-32 text-center">
+                <div class="mb-16 text-center">
                     <div>
                         <i18n>validate-mfa.step2.hint.paragraph1</i18n>
                         <span> [[ctrl.mobile]].</span>
@@ -54,7 +54,7 @@
                             </div>
                         </div>
                         <div ng-if="ctrl.status==='ok'" class="text-success">
-                            <svg class="icon-svg" width="20" height="20">
+                            <svg class="icon-svg mx-auto" width="20" height="20">
                                 <use href="/auth/public/icons/validate-icons.svg#successOutline"></use>
                             </svg>
                             <div>
@@ -84,7 +84,7 @@
                     </div>
 
                     <div>
-                        <button type="button" id="btnRenew" class="btn btn-ghost-tertiary mx-auto fw-bold d-flex align-items-center" ng-click="onCodeRenew()">
+                        <button disabled type="button" id="btnRenew" class="btn btn-ghost-tertiary mx-auto fw-bold d-flex align-items-center" ng-click="onCodeRenew()">
                             <svg class="icon-svg me-4" width="20" height="20">
                                 <use href="/auth/public/icons/validate-icons.svg#redo"></use>
                             </svg>

@@ -1,5 +1,6 @@
 package org.entcore.common.explorer.impl;
 
+import static fr.wseduc.bus.BusHelper.reply;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.CompositeFuture;
@@ -13,6 +14,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerFolderTree;
@@ -21,7 +25,14 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerSubResource;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.IngestJobState;
-import org.entcore.common.explorer.to.*;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesResponse;
+import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
+import org.entcore.common.explorer.to.FolderDeleteRequest;
+import org.entcore.common.explorer.to.FolderDeleteResponse;
+import org.entcore.common.explorer.to.FolderListRequest;
+import org.entcore.common.explorer.to.FolderResponse;
+import org.entcore.common.explorer.to.FolderUpsertRequest;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -32,16 +43,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static io.vertx.core.json.JsonObject.mapFrom;
-import static java.lang.System.currentTimeMillis;
 
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
@@ -57,7 +64,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     }
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final IExplorerPluginCommunication communication;
-    protected Function<Void, Void> listener;
+    protected final List<Function<Void, Void>> listeners = new ArrayList<>();
     protected Function<Void, Void> listenerIngestJobUpdate;
     protected JsonObject explorerConfig = new JsonObject();
     protected Integer reindexBatchSize = 100;
@@ -115,11 +122,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                 break;
             }
             case QueryReindex: {
-                final boolean includeFolders = message.body().getBoolean("includeFolders", false);
-                final Optional<Long> from = Optional.ofNullable(message.body().getLong("from"));
-                final Optional<Long> to = Optional.ofNullable(message.body().getLong("to"));
-                final Optional<JsonArray> apps = Optional.ofNullable(message.body().getJsonArray("apps"));
-                onReindexAction(message, from , to, apps, includeFolders);
+                final ExplorerReindexResourcesRequest request = message.body().mapTo(ExplorerReindexResourcesRequest.class);
+                onReindexAction(message, request);
                 break;
             }
             case QueryMetrics: {
@@ -267,14 +271,15 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         }
     }
 
-    protected void onReindexAction(final Message<JsonObject> message, final Optional<Long> from, final Optional<Long> to, final Optional<JsonArray> apps, final boolean includeFolders){
+    protected void onReindexAction(final Message<JsonObject> message, final ExplorerReindexResourcesRequest request){
         final long now = currentTimeMillis();
-        if(apps.isPresent() && !apps.get().contains(getApplication())){
+        final Set<String> apps = request.getApps();
+        if(apps !=  null && !apps.isEmpty() && !apps.contains(getApplication())){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
-            message.reply(new JsonObject());
+            reply(message, new ExplorerReindexResourcesResponse(0, 0, emptyMap()));
             return;
         }
-        log.info(String.format("Starting indexation for app=%s type=%s from=%s to=%s includeFolders=%s",getApplication(), getResourceType(), from, to, includeFolders));
+        log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
         final JsonObject metrics = new JsonObject();
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             // TODO JBE missing saving state and version here
@@ -292,35 +297,39 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
                         getApplication(), getResourceType(), getResourceType());
                 mess.withVersion(now);
                 return mess;
-            }).compose(messages -> {
-                return communication.pushMessage(messages);
-            });
+            }).compose(communication::pushMessage);
         }, metricsEnd -> {
-            log.info(String.format("Ending indexation for app=%s type=%s from=%s to=%s metrics=%s",getApplication(), getResourceType(), from, to, metricsEnd));
+            log.info(String.format("Ending indexation for app=%s type=%s %s metrics=%s",getApplication(), getResourceType(), request, metricsEnd));
             metrics.mergeIn(metricsEnd);
         });
-        doFetchForIndex(stream, from.map(e -> new Date(e)), to.map(e -> new Date(e)));
+        doFetchForIndex(stream, request);
         stream.getEndFuture().onComplete(root->{
             if(root.succeeded()){
                 //reindex subresources
                 final List<Future> futures = new ArrayList<>();
                 for(final IExplorerSubResource sub : this.subResources){
-                    futures.add(sub.reindex(from, to).onSuccess(submetrics->{
+                    final ExplorerReindexSubResourcesRequest subResReq = new ExplorerReindexSubResourcesRequest(
+                            request.getFrom(), request.getTo(),
+                            request.getIds(), emptySet()
+                    );
+                    futures.add(sub.reindex(subResReq).onSuccess(submetrics->{
                         final JsonArray tmp = metrics.getJsonArray("subresources", new JsonArray());
                         tmp.add(submetrics);
                         metrics.put("subresources", tmp);
                     }));
                 }
                 //reindex folders
-                if(includeFolders && folderTree.isPresent()){
-                    futures.add(folderTree.get().reindex(from, to).onSuccess(folderMetrics->{
+                if(request.isIncludeFolders() && folderTree.isPresent()){
+                    futures.add(folderTree.get().reindex(request.getFrom(), request.getTo()).onSuccess(folderMetrics->{
                         metrics.put("folders", folderMetrics);
                     }));
                 }
                 //wait all
                 CompositeFuture.all(futures).onComplete(e->{
                     if(e.succeeded()){
-                        message.reply(metrics);
+                        reply(message,new ExplorerReindexResourcesResponse(
+                                metrics.getInteger("nb_message", 0),
+                                metrics.getInteger("nb_batch", 0), metrics.getMap()));
                     }else{
                         message.fail(500, ExplorerRemoteError.ReindexFailed.getError());
                         log.error("Failed to reindex subresources: "+ getApplication(), root.cause());
@@ -335,9 +344,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public Future<JsonArray> getShareInfo(String id) {
-        return getShareInfo(new HashSet<>(Arrays.asList(id))).map(e->{
-            return e.getOrDefault(id, new JsonArray());
-        });
+        return getShareInfo(singleton(id)).map(e-> e.getOrDefault(id, new JsonArray()));
     }
 
     @Override
@@ -640,7 +647,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     protected abstract Optional<ShareService> getShareService();
 
-    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Optional<Date> from, final Optional<Date> to);
+    protected abstract void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexResourcesRequest request);
 
     protected abstract Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy);
 
@@ -664,10 +671,14 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public void start() {
-        final String id = IExplorerPlugin.addressFor(getApplication(), getResourceType());
-        this.listener = communication.listen(id, message -> {
+        final String idForResource = IExplorerPlugin.addressFor(getApplication(), getResourceType());
+        final String idForApp = IExplorerPlugin.addressForApp(getApplication());
+        this.listeners.add(communication.listen(idForResource, message -> {
             onExplorerQuery(message);
-        });
+        }));
+        this.listeners.add(communication.listen(idForApp, message -> {
+            onExplorerQuery(message);
+        }));
         final String idUpdate = IExplorerPlugin.addressForIngestStateUpdate(getApplication(), getResourceType());
         this.listenerIngestJobUpdate = communication.listenForAcks(idUpdate, messages -> {
             onJobStateUpdatedMessageReceived(messages)
@@ -681,10 +692,10 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public void stop() {
-        if (this.listener != null) {
-            this.listener.apply(null);
-        }
-        this.listener = null;
+        this.listeners.forEach(listener -> {
+            listener.apply(null);
+        });
+        this.listeners.clear();
         if (this.listenerIngestJobUpdate != null) {
             this.listenerIngestJobUpdate.apply(null);
         }

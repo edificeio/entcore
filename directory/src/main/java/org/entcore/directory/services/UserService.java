@@ -125,7 +125,14 @@ public interface UserService {
 
 	void listDuplicates(JsonArray structures, boolean inherit, Handler<Either<String, JsonArray>> results);
 
-	void mergeDuplicate(String userId1, String userId2, Handler<Either<String,JsonObject>> handler);
+	/**
+	 * Merge two duplicated user.
+	 * @param userId1 Id of one of the duplicated user
+	 * @param userId2Id of the other duplicated user
+	 * @param keepRelations {@code true} if the relationships of the disappearing user should be copied to the remaining user
+	 * @param handler Downstream action after merger
+	 */
+	void mergeDuplicate(String userId1, String userId2, final boolean keepRelations, final Handler<Either<String,JsonObject>> handler);
 
 	void listByUAI(List<String> UAI,JsonArray expectedTypes,boolean isExportFull, JsonArray fields, Handler<Either<String, JsonArray>> results);
 

@@ -7,14 +7,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesResponse;
 import org.entcore.common.user.UserInfos;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,39 +21,24 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
     static final Logger log = LoggerFactory.getLogger(ExplorerPluginClient.class);
 
     @Override
-    public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to){
-        return getForIndexation(user, from, to, new HashSet<>(), false);
-    }
-
-    @Override
-    public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps){
-        return getForIndexation(user, from, to, apps, false);
-    }
-
-    @Override
-    public Future<IndexResponse> getForIndexation(final UserInfos user, final Optional<Date> from, final Optional<Date> to, final Set<String> apps, final boolean includeFolders){
+    public Future<IndexResponse> reindex(final UserInfos user, final ExplorerReindexResourcesRequest request){
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("action", ExplorerPlugin.ExplorerRemoteAction.QueryReindex.name());
-        headers.add("userId", user.getUserId());
-        headers.add("userName", user.getUsername());
-        final JsonObject payload = new JsonObject();
-        payload.put("includeFolders", includeFolders);
-        if(from.isPresent()){
-            payload.put("from", from.get().getTime());
+        if(user != null) {
+            if (user.getUserId() != null) {
+                headers.add("userId", user.getUserId());
+            }
+            if (user.getUsername() != null) {
+                headers.add("userName", user.getUsername());
+            }
         }
-        if(to.isPresent()){
-            payload.put("to", to.get().getTime());
-        }
-        if(!apps.isEmpty()){
-            payload.put("apps", new JsonArray(new ArrayList(apps)));
-        }
-        //nb_message,nb_batch
-        final Future<JsonObject> future = send(headers, payload, Duration.ofDays(100));
-        log.info(String.format("Trigger indexation from=%s to=%s",from, to));
+        final Future<JsonObject> future = send(headers, JsonObject.mapFrom(request), Duration.ofDays(100));
+        log.info("Trigger indexation " + request);
         return future.map(res->{
-            log.info(String.format("End trigger indexation from=%s to=%s metrics=%s",from, to, res));
-            final int nb_message = res.getInteger("nb_message");
-            final int nb_batch = res.getInteger("nb_batch");
+            log.info(String.format("End trigger indexation " + res));
+            final ExplorerReindexResourcesResponse response = res.mapTo(ExplorerReindexResourcesResponse.class);
+            final int nb_message = response.getNbMessages();
+            final int nb_batch = response.getNbBatch();
             return new IndexResponse(nb_batch, nb_message);
         });
     }

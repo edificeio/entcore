@@ -56,6 +56,30 @@
 			}
 		}
 
+		var intervalInsertId = setInterval(displayInsert, 200);
+		function displayInsert() {
+			if ($("#insert span")[0] && $("#insert span")[0].innerHTML) {
+				if ($("#insert span")[0].innerHTML != 'wayf.insert.title') {
+					$("#insert").show();
+					clearInterval(intervalInsertId);
+				} else {
+					clearInterval(intervalInsertId);
+				}
+			}
+		}
+
+		var intervalPartId = setInterval(displayPartner, 200);
+		function displayPartner() {
+			if ($("#partner")) {
+				if ($("#partner").attr('src') != 'wayf.logo.partner') {
+					$("#partner").show();
+					clearInterval(intervalPartId);
+				} else {
+					clearInterval(intervalPartId);
+				}
+			}
+		}
+
 		function showLoader(element)
 		{
 			element.querySelector("i18n").classList.add("loader-hide");
@@ -100,8 +124,14 @@
 				{{/providers}}
 			</section>
 			<div style="float:right">
+				<div id="insert" style="margin-bottom:45px;font-size: 1.5vh;display:none" >
+					<i18n>wayf.insert.title</i18n><br>
+					<a href="{{#i18n}}wayf.insert.link{{/i18n}}" target="_blank" translate content="wayf.insert.link.content"></a>
+				</div>
+
 				<a href="{{#i18n}}auth.charter{{/i18n}}" target="_blank" translate content="wayf.label.cgu" style="font-size: 1.5vh;"></a>
 			</div>
+			<img id="partner" src="{{#i18n}}wayf.logo.partner{{/i18n}}" style="margin-left:15px;width:{{#i18n}}wayf.logo.partner.width{{/i18n}};display:none" alt="Logo partenaire">
 		</section>
 	</div>
 </default-styles>

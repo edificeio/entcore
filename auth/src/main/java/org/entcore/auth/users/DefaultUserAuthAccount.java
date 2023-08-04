@@ -23,6 +23,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
+import fr.wseduc.webutils.eventbus.ResultMessage;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.NTLM;
@@ -72,6 +73,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final boolean storePasswordEventEnabled;
 	private final long resetCodeExpireDelay;
 
+	private final boolean ignoreSendResetPasswordMailError;
+
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
@@ -93,6 +96,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.eventStore = eventStore;
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
+		this.ignoreSendResetPasswordMailError = config.getBoolean("reset-pwd-mail-ignore-error", false);
 	}
 
 	@Override
@@ -473,10 +477,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				true,
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					public void handle(Message<JsonObject> event) {
-						if("error".equals(event.body().getString("status"))){
-							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-						} else {
-							handler.handle(new Either.Right<String, JsonObject>(event.body().put("sent", true)));
+							if ("error".equals(event.body().getString("status"))) {
+								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+							} else {
+								handler.handle(new Either.Right<String, JsonObject>(event.body().put("sent", true)));
 						}
 					}
 				}));
@@ -509,13 +513,18 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				true,
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					public void handle(Message<JsonObject> event) {
-						if("error".equals(event.body().getString("status"))){
-							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-						} else {
-							handler.handle(new Either.Right<String, JsonObject>(event.body()));
+						if(!ignoreSendResetPasswordMailError) {
+							if ("error".equals(event.body().getString("status"))) {
+								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+							} else {
+								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+							}
 						}
 					}
 				}));
+		if(ignoreSendResetPasswordMailError) {
+			handler.handle(new Either.Right<>(new ResultMessage().body()));
+		}
 	}
 
 	@Override
