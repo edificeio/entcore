@@ -268,14 +268,22 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withShared(final ShareModel shareModel) {
-        message.put("rights", new JsonArray(shareModel.getSerializedRights()));
+        if(shareModel == null || shareModel.getSerializedRights() == null) {
+            message.put("rights", (JsonArray)null);
+        } else {
+            message.put("rights", new JsonArray(shareModel.getSerializedRights()));
+        }
         return this;
     }
 
     @Deprecated
     public ExplorerMessage withShared(final JsonArray shared, final List<String> rights) {
-        // dont need to push shared to explorer
-        message.put("rights", new JsonArray(rights));
+        if(rights == null) {
+            message.put("rights", (JsonArray)null);
+        } else {
+            // don't need to push shared to explorer
+            message.put("rights", new JsonArray(rights));
+        }
         return this;
     }
 
@@ -321,14 +329,14 @@ public class ExplorerMessage {
     public Optional<JsonArray> getOptionalShared() {
         return Optional.ofNullable(message.getJsonArray("shared"));
     }
-    public Optional<JsonArray> getOptionalRights() {
-        return Optional.ofNullable(message.getJsonArray("rights"));
-    }
+
     public JsonArray getShared() {
         return message.getJsonArray("shared", new JsonArray());
     }
     public JsonArray getRights() {
-        return message.getJsonArray("rights", new JsonArray());
+        // This call should return null when the message holds no pertinent information about the rights and not an
+        // empty array which means `empty the rights, please`
+        return message.getJsonArray("rights");
     }
     public String getCreatorId() {
         return message.getString("creatorId", "");

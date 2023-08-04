@@ -259,7 +259,7 @@ export class UserConnectionSectionComponent
   }
 
   generateMergeKey() {
-    this.spinner.perform("portal-content", this.details.generateMergeKey());
+    this.spinner.perform("portal-content", this.details.generateMergeKey().then(() => this.cdRef.markForCheck()));
   }
 
   unmerge(mergedLogin:string) {

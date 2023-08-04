@@ -82,7 +82,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	public MongoDbRepositoryEvents(Vertx vertx, String managerRight, String revisionsCollection,
-			String revisionIdAttribute) {
+								   String revisionIdAttribute) {
 		super(vertx);
 		this.managerRight = managerRight;
 		this.revisionsCollection = revisionsCollection;
@@ -96,8 +96,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			return;
 		}
 
-		for(int i = groups.size(); i-- > 0;)
-		{
+		for(int i = groups.size(); i-- > 0;) {
 			if(groups.hasNull(i))
 				groups.remove(i);
 			else if (groups.getJsonObject(i) != null && groups.getJsonObject(i).getString("group") == null)
@@ -138,8 +137,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		if(users == null) {
 			return;
 		}
-		for(int i = users.size(); i-- > 0;)
-		{
+		for(int i = users.size(); i-- > 0;) {
 			if(users.hasNull(i))
 				users.remove(i);
 			else if (users.getJsonObject(i) != null && users.getJsonObject(i).getString("id") == null)
@@ -241,7 +239,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	protected void exportFiles(final JsonArray results, String exportPath, Set<String> usedFileName,
-			final AtomicBoolean exported, final Handler<Boolean> handler) {
+							   final AtomicBoolean exported, final Handler<Boolean> handler) {
 		if (results.isEmpty()) {
 			exported.set(true);
 			log.info(title + " exported successfully to : " + exportPath);
@@ -275,96 +273,78 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-			JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler)
-	{
-			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
-			QueryBuilder findByOwner = QueryBuilder.start("owner.userId").is(userId);
-			QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
+								JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler) {
+		QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
+		QueryBuilder findByOwner = QueryBuilder.start("owner.userId").is(userId);
+		QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
 
-			QueryBuilder findByShared = QueryBuilder.start().or(
+		QueryBuilder findByShared = QueryBuilder.start().or(
 				QueryBuilder.start("shared.userId").is(userId).get(),
 				QueryBuilder.start("shared.groupId").in(g).get()
-			);
-			QueryBuilder findByAuthorOrOwnerOrShared = exportSharedResources == false ? findByAuthorOrOwner : QueryBuilder.start().or(
+		);
+		QueryBuilder findByAuthorOrOwnerOrShared = exportSharedResources == false ? findByAuthorOrOwner : QueryBuilder.start().or(
 				findByAuthorOrOwner.get(),
 				findByShared.get()
-			);
+		);
 
-			JsonObject query;
+		JsonObject query;
 
-			if(resourcesIds == null)
-				query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
-			else
-			{
-				QueryBuilder limitToResources = findByAuthorOrOwnerOrShared.and(
+		if(resourcesIds == null)
+			query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
+		else {
+			QueryBuilder limitToResources = findByAuthorOrOwnerOrShared.and(
 					QueryBuilder.start("_id").in(resourcesIds).get()
-				);
-				query = MongoQueryBuilder.build(limitToResources);
-			}
+			);
+			query = MongoQueryBuilder.build(limitToResources);
+		}
 
-			final AtomicBoolean exported = new AtomicBoolean(false);
-			final String collection = MongoDbConf.getInstance().getCollection();
+		final AtomicBoolean exported = new AtomicBoolean(false);
+		final String collection = MongoDbConf.getInstance().getCollection();
 
-			mongo.find(collection, query, new Handler<Message<JsonObject>>()
-			{
-				@Override
-				public void handle(Message<JsonObject> event)
-				{
-					JsonArray results = event.body().getJsonArray("results");
+		mongo.find(collection, query, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonArray results = event.body().getJsonArray("results");
 
-					if ("ok".equals(event.body().getString("status")) && results != null)
-					{
-						for(int i = results.size(); i-->0;)
-							DocumentHelper.clearComments(results.getJsonObject(i), true);
+				if ("ok".equals(event.body().getString("status")) && results != null) {
+					for(int i = results.size(); i-->0;)
+						DocumentHelper.clearComments(results.getJsonObject(i), true);
 
-						createExportDirectory(exportPath, locale, new Handler<String>()
-						{
-							@Override
-							public void handle(String path)
-							{
-								if (path != null)
-								{
-									Handler<Boolean> finish = new Handler<Boolean>()
-									{
-										@Override
-										public void handle(Boolean bool)
-										{
-											if (bool)
-											{
-												exportFiles(results, path, new HashSet<String>(), exported, handler);
-											}
-											else
-											{
-												// Should never happen, export doesn't fail if docs export fail.
-												handler.handle(exported.get());
-											}
+					createExportDirectory(exportPath, locale, new Handler<String>() {
+						@Override
+						public void handle(String path) {
+							if (path != null) {
+								Handler<Boolean> finish = new Handler<Boolean>() {
+									@Override
+									public void handle(Boolean bool) {
+										if (bool) {
+											exportFiles(results, path, new HashSet<String>(), exported, handler);
+										} else {
+											// Should never happen, export doesn't fail if docs export fail.
+											handler.handle(exported.get());
 										}
-									};
+									}
+								};
 
-									if(exportDocuments == true)
-										exportDocumentsDependancies(results, path, finish);
-									else
-										finish.handle(Boolean.TRUE);
-								}
+								if(exportDocuments == true)
+									exportDocumentsDependancies(results, path, finish);
 								else
-								{
-									handler.handle(exported.get());
-								}
+									finish.handle(Boolean.TRUE);
+							} else {
+								handler.handle(exported.get());
 							}
-						});
-					}
-					else
-					{
-						log.error(title + " : Could not proceed query " + query.encode(),
-								event.body().getString("message"));
-						handler.handle(exported.get());
-					}
+						}
+					});
+				} else {
+					log.error(title + " : Could not proceed query " + query.encode(),
+							event.body().getString("message"));
+					handler.handle(exported.get());
 				}
-			});
+			}
+		});
 	}
 
-	protected JsonObject revertExportChanges(JsonObject document, String importPrefix)
-	{
+	protected JsonObject revertExportChanges(JsonObject document, String importPrefix) {
 		String title = DocumentHelper.getTitle(document);
 		String name = DocumentHelper.getName(document);
 		String headline = DocumentHelper.getAppProperty(document, "headline");
@@ -384,13 +364,11 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected static void transformDocumentDuplicate(JsonObject document, String collectionName, String duplicateSuffix, boolean hintUpdateDuplicateName)
-	{
+	protected static void transformDocumentDuplicate(JsonObject document, String collectionName, String duplicateSuffix, boolean hintUpdateDuplicateName) {
 		// Override this method to apply custom transformations to an object
 
 
-		if(hintUpdateDuplicateName == true)
-		{
+		if(hintUpdateDuplicateName == true) {
 			String title = DocumentHelper.getTitle(document);
 			String name = DocumentHelper.getName(document);
 			String headline = DocumentHelper.getAppProperty(document, "headline");
@@ -409,15 +387,13 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	protected JsonObject transformDocumentBeforeImport(JsonObject document, String collectionName,
-		String importId, String userId, String userLogin, String userName)
-	{
+													   String importId, String userId, String userLogin, String userName) {
 		// Override this method to apply custom transformations to an object
 		return document;
 	}
 
 	protected JsonObject sanitiseDocument(JsonObject document, String collectionName, String collectionPrefix,
-		String importId, String userId, String userLogin, String userName)
-	{
+										  String importId, String userId, String userLogin, String userName) {
 		MongoDbCrudService.setUserMetadata(document, userId, userName);
 		MongoDbShareService.removeShareMetadata(document);
 		DocumentHelper.clearComments(document);
@@ -428,28 +404,23 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return document;
 	}
 
-	protected boolean filterMongoDocumentFile(String filePath, Buffer fileContents)
-	{
+	protected boolean filterMongoDocumentFile(String filePath, Buffer fileContents) {
 		return true;
 	}
 
-	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName)
-	{
+	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName) {
 		Future<Map<String, JsonObject>> promise = Future.future();
 
 		if(this.fileImporter == null)
-				promise.fail("Cannot import documents without a file importer instance");
+			promise.fail("Cannot import documents without a file importer instance");
 
 		MongoDbRepositoryEvents self = this;
-		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>()
-		{
+		this.fs.readDir(dirPath, new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<List<String>> result)
-			{
+			public void handle(AsyncResult<List<String>> result) {
 				if(result.succeeded() == false)
 					promise.fail(result.cause());
-				else
-				{
+				else {
 					List<String> filesInDir = result.result();
 					int nbFiles = filesInDir.size();
 
@@ -458,19 +429,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					AtomicInteger unprocessed = new AtomicInteger(nbFiles);
 					AtomicInteger nbErrors = new AtomicInteger(0);
 
-					for(int i = 0; i < nbFiles; ++i)
-					{
+					for(int i = 0; i < nbFiles; ++i) {
 						mongoDocs.add(null);
 						mongoDocsFileNames.add(null);
 					}
 
 					List<FolderImporterContext> contexts = Collections.synchronizedList(new LinkedList<FolderImporterContext>());
 
-					Handler finaliseRead = new Handler<Void>()
-					{
+					Handler finaliseRead = new Handler<Void>() {
 						@Override
-						public void handle(Void result)
-						{
+						public void handle(Void result) {
 							for(FolderImporterContext importedCtx : contexts)
 								self.fileImporter.applyFileIdsChange(importedCtx, mongoDocs);
 
@@ -482,25 +450,18 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						}
 					};
 
-					for(String filePath : filesInDir)
-					{
-						self.fs.props(filePath, new Handler<AsyncResult<FileProps>>()
-						{
+					for(String filePath : filesInDir) {
+						self.fs.props(filePath, new Handler<AsyncResult<FileProps>>() {
 							@Override
-							public void handle(AsyncResult<FileProps> propsResult)
-							{
+							public void handle(AsyncResult<FileProps> propsResult) {
 								if(propsResult.succeeded() == false)
 									promise.fail(propsResult.cause());
-								else
-								{
-									if(propsResult.result().isDirectory() == true)
-									{
+								else {
+									if(propsResult.result().isDirectory() == true) {
 										FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
-										self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>()
-										{
+										self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>() {
 											@Override
-											public void handle(JsonObject rapport)
-											{
+											public void handle(JsonObject rapport) {
 												int ix = unprocessed.decrementAndGet();
 
 												nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
@@ -510,22 +471,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 													finaliseRead.handle(null);
 											}
 										});
-									}
-									else
-									{
-										self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>()
-										{
+									} else {
+										self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>() {
 											@Override
-											public void handle(AsyncResult<Buffer> fileResult)
-											{
+											public void handle(AsyncResult<Buffer> fileResult) {
 												if(fileResult.succeeded() == false)
 													promise.fail(fileResult.cause());
-												else
-												{
+												else {
 													int ix = unprocessed.decrementAndGet();
 
-													if(filterMongoDocumentFile(filePath, fileResult.result()) == true)
-													{
+													if(filterMongoDocumentFile(filePath, fileResult.result()) == true) {
 														mongoDocs.set(ix, fileResult.result().toJsonObject());
 														mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
 													}
@@ -547,18 +502,50 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		return promise;
 	}
 
+	/**
+	 * Try to import {@code documents} in {@code collection} by following these steps :
+	 * <ol>
+	 *     <li>Filter out empty documents</li>
+	 *     <li>Find existing documents in the collection with the same ids</li>
+	 *     <li>For each document that already exists, generate a new id (hopefully this one will be unique), propagate
+	 *     this new id to related resources, folders, etc. and adapt the duplicata data to reflect that it is a duplicata</li>
+	 *     <li>Save the resources</li>
+	 *     <li>Register errors, duplicates and oks and call {@code handler} with the report</li>
+	 * </ol>
+	 * @param collection Name of the collection in which the {@code documents} should be imported
+	 * @param documents The documents to import
+	 * @param duplicateSuffix Suffix to add to the fields {@code title}, {@code name} or {@code headline} of a resource
+	 *                           that we tried to import but which was detected as a duplicata of an already existing
+	 *                           owned resource iff {@code hintUpdateDuplicateName} is {@code true}
+	 * @param hintUpdateDuplicateName {@code true} iff we want to add a suffix to duplicated resources
+	 * @param handler Downstream processes which will receive a report containing the following fields :
+	 *              <ul>
+	 *                <li>{@code rapport}
+	 *                	<ul>
+	 *                		<li>{@code resourcesNumber}: number of resources imported</li>
+	 *                		<li>{@code duplicatesNumber}: number of resources which where marked as duplicated</li>
+	 *                		<li>{@code errorsNumber}: number of resources which could not be imported</li>
+	 *                	</ul>
+	 *                </li>
+	 *                <li>{@code collection}: name of the collection in which the resources were imported</li>
+	 *                <li>{@code idsMap}: association between the ids of the resources that were to be imported and the id with which they were indeed imported
+	 *                <ul>
+	 *                	<li>=> the key and the value are the same except for duplicates</li>
+	 *                	<li>=> if one wishes to know imported ids, it suffices to take only the values of {@code idsMap}</li>
+	 *                </ul>
+	 *                </li>
+	 *              </ul>
+	 */
 	public static void importDocuments(String collection, List<JsonObject> documents, String duplicateSuffix, boolean hintUpdateDuplicateName,
-		Handler<JsonObject> handler)
-	{
-		if(documents.size() == 0)
-		{
+									   Handler<JsonObject> handler) {
+		if(documents.size() == 0) {
 			JsonObject rapport =
-						new JsonObject()
+					new JsonObject()
 							.put("rapport",
-								new JsonObject()
-								.put("resourcesNumber", Integer.toString(0))
-								.put("duplicatesNumber", Integer.toString(0))
-								.put("errorsNumber", Integer.toString(0))
+									new JsonObject()
+											.put("resourcesNumber", Integer.toString(0))
+											.put("duplicatesNumber", Integer.toString(0))
+											.put("errorsNumber", Integer.toString(0))
 							)
 							.put("collection", collection)
 							.put("idsMap", new JsonObject());
@@ -574,12 +561,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		Map<String, Integer> idToIxMap = new HashMap<String, Integer>();
 		Map<String, String> oldIdsToNewIds = new HashMap<String, String>();
 
-		for(int i = 0, skipped = 0, l = documents.size(); i < l; ++i)
-		{
+		for(int i = 0, skipped = 0, l = documents.size(); i < l; ++i) {
 			JsonObject d = documents.get(i);
 
-			if(d == null)
-			{
+			if(d == null) {
 				++skipped;
 				continue;
 			}
@@ -593,27 +578,23 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 
 		QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
-
-		mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>()
-		{
+		// HINT: a little optimisation could be made here if we only fetched the resources id because that's all
+		// we're going to use
+		mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> searchMsg)
-			{
+			public void handle(Message<JsonObject> searchMsg) {
 				JsonObject body = searchMsg.body();
 
-				if(body.getString("status").equals("ok"))
-				{
+				if(body.getString("status").equals("ok")) {
 					JsonArray foundDocs = body.getJsonArray("results");
 					int nbDuplicates = 0;
 
-					for(int i = foundDocs.size(); i-- > 0;)
-					{
+					for(int i = foundDocs.size(); i-- > 0;) {
 						String foundId = DocumentHelper.getId(foundDocs.getJsonObject(i));
 
 						// Find already-existing resources
 						Integer mapIx = idToIxMap.get(foundId);
-						if(mapIx != null)
-						{
+						if(mapIx != null) {
 							String newId = UUID.randomUUID().toString();
 							oldIdsToNewIds.put(foundId, newId);
 
@@ -627,8 +608,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					}
 
 					// Update documents that are inside duplicate folders to link them to the new folder
-					for(int i = 0, l = savePayload.size(); i < l; ++i)
-					{
+					for(int i = 0, l = savePayload.size(); i < l; ++i) {
 						JsonObject d = savePayload.getJsonObject(i);
 
 						if(d == null)
@@ -644,18 +624,15 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						applyIdsChange(savePayload, oldIdsToNewIds);
 
 					final int totalDuplicates = nbDuplicates;
-					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>()
-					{
+					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>() {
 						@Override
-						public void handle(Message<JsonObject> saveMsg)
-						{
+						public void handle(Message<JsonObject> saveMsg) {
 							JsonObject body = saveMsg.body();
 							int nbErrors = -1;
 
 							if(body.getString("status").equals("ok"))
 								nbErrors = 0;
-							else
-							{
+							else {
 								JsonObject mongoError = new JsonObject(body.getString("message"));
 
 								nbErrors = savePayload.size() - mongoError.getInteger("n");
@@ -665,33 +642,31 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							convertedMap.putAll(oldIdsToNewIds);
 
 							JsonObject rapport =
-								new JsonObject()
-									.put("rapport",
-										new JsonObject()
-										.put("resourcesNumber", Integer.toString(savePayload.size() - nbErrors))
-										.put("duplicatesNumber", Integer.toString(totalDuplicates))
-										.put("errorsNumber", Integer.toString(nbErrors))
-									)
-									.put("collection", collection)
-									.put("idsMap", new JsonObject(convertedMap));
+									new JsonObject()
+											.put("rapport",
+													new JsonObject()
+															.put("resourcesNumber", Integer.toString(savePayload.size() - nbErrors))
+															.put("duplicatesNumber", Integer.toString(totalDuplicates))
+															.put("errorsNumber", Integer.toString(nbErrors))
+											)
+											.put("collection", collection)
+											.put("idsMap", new JsonObject(convertedMap));
 
 							handler.handle(rapport);
 						}
 					});
-				}
-				else
-				{
+				} else {
 					// If the find fails, don't import anything
 					JsonObject rapport =
-						new JsonObject()
-							.put("rapport",
-								new JsonObject()
-								.put("resourcesNumber", Integer.toString(0))
-								.put("duplicatesNumber", Integer.toString(0))
-								.put("errorsNumber", Integer.toString(savePayload.size()))
-							)
-							.put("collection", collection)
-							.put("idsMap", new JsonObject());
+							new JsonObject()
+									.put("rapport",
+											new JsonObject()
+													.put("resourcesNumber", Integer.toString(0))
+													.put("duplicatesNumber", Integer.toString(0))
+													.put("errorsNumber", Integer.toString(savePayload.size()))
+									)
+									.put("collection", collection)
+									.put("idsMap", new JsonObject());
 
 					handler.handle(rapport);
 				}
@@ -699,24 +674,34 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		});
 	}
 
+	/**
+	 *
+	 * @param importId Identifier of the current import process
+	 * @param userId Id of the user requesting the import
+	 * @param userLogin Login of the user requesting the import
+	 * @param userName Name of the user requesting the import
+	 * @param importPath Complete path on the fs to the root of the resources to import
+	 *                      (e.g. /opt/data/1688042705171_91c22b66-ba1b-4fde-a3fe-95219cc18d4a/Blog to import blog data
+	 *                   of the archive unzipped in /opt/data/1688042705171_91c22b66-ba1b-4fde-a3fe-95219cc18d4a)
+	 * @param locale
+	 * @param host
+	 * @param forceImportAsDuplication
+	 * @param handler
+	 */
 	@Override
 	public void importResources(String importId, String userId, String userLogin, String userName, String importPath,
-		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler)
-	{
+								String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler) {
 		MongoDbRepositoryEvents self = this;
 
 		final JsonObject duplicateSuffixWrapper = new JsonObject();
 
-		Handler readDirsHandler = new Handler<Map<String, JsonObject>>()
-		{
+		Handler readDirsHandler = new Handler<Map<String, JsonObject>>() {
 			@Override
-			public void handle(Map<String, JsonObject> docs)
-			{
+			public void handle(Map<String, JsonObject> docs) {
 				Map<String, String> prefixMap = self.collectionNameToImportPrefixMap;
 
 				// Single collection case, aka the generic mongoDB apps
-				if(prefixMap.size() == 0)
-				{
+				if(prefixMap.size() == 0) {
 					//prefixMap = new HashMap<String, String>();
 					prefixMap.put(MongoDbConf.getInstance().getCollection(), "");
 				}
@@ -725,50 +710,43 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				List<Future> collFuturesChain = new LinkedList<Future>();
 
 				/**
-						Collections depending on others are expected to be bigger than the collections they depend on.
-						e.g. Forum posts depend on their thread and there are more forum posts than there are forum threads.
+				 Collections depending on others are expected to be bigger than the collections they depend on.
+				 e.g. Forum posts depend on their thread and there are more forum posts than there are forum threads.
 
-						Thus, it is worth the extra memory avoiding to loop multiple times on the depending collections for id changes.
-					*/
+				 Thus, it is worth the extra memory avoiding to loop multiple times on the depending collections for id changes.
+				 */
 				Map<String, String> previousIdsMapCombined = new HashMap<String, String>();
 				// Should be Map<String, Map<String, String>> but casting to JsonObject fails...
 				Map<String, Map<String, Object>> previousIdsMapByCollection = new HashMap<String, Map<String, Object>>();
 
 				String mainResourceName = "";
 
-				for(Map.Entry<String, String> prefix : prefixMap.entrySet())
-				{
+				for(Map.Entry<String, String> prefix : prefixMap.entrySet()) {
 					if(mainResourceName.equals("") == true)
-							mainResourceName = prefix.getKey();
+						mainResourceName = prefix.getKey();
 					ArrayList<JsonObject> collectionDocs = new ArrayList<JsonObject>(docs.size());
 
 					// Sort documents depending on their collection
-					for(Map.Entry<String, JsonObject> entry : docs.entrySet())
-					{
+					for(Map.Entry<String, JsonObject> entry : docs.entrySet()) {
 						if(entry == null || entry.getKey() == null || entry.getValue() == null)
-								continue;
+							continue;
 
-						if(entry.getKey().startsWith(prefix.getValue()) == true)
-						{
+						if(entry.getKey().startsWith(prefix.getValue()) == true) {
 							JsonObject finalDoc = self.sanitiseDocument(entry.getValue(), prefix.getKey(), prefix.getValue(), importId, userId, userLogin, userName);
 							if(finalDoc != null)
 								collectionDocs.add(finalDoc);
 						}
 					}
 
-					if(collectionDocs.size() != 0)
-					{
+					if(collectionDocs.size() != 0) {
 						Future<JsonObject> collDone = Future.future();
 						Future<JsonObject> collChain = Future.future();
 
 						// Import collections one by one because we might need to apply id changes
-						Handler importNextCollection = new Handler<AsyncResult<JsonObject>>()
-						{
+						Handler importNextCollection = new Handler<AsyncResult<JsonObject>>() {
 							@Override
-							public void handle(AsyncResult<JsonObject> previousResult)
-							{
-								if(previousResult != null)
-								{
+							public void handle(AsyncResult<JsonObject> previousResult) {
+								if(previousResult != null) {
 									// Replace old ids with new ids
 									for(int i = collectionDocs.size(); i-- > 0;)
 										AbstractRepositoryEvents.applyIdsChange(collectionDocs.get(i), previousIdsMapCombined);
@@ -777,29 +755,26 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								boolean hint = previousResult == null;
 
 								MongoDbRepositoryEvents.importDocuments(prefix.getKey(), collectionDocs, duplicateSuffixWrapper.getString("str"), hint,
-									new Handler<JsonObject>()
-								{
-									@Override
-									public void handle(JsonObject result)
-									{
-										JsonObject previousIdsMap = result.getJsonObject("idsMap");
+										new Handler<JsonObject>() {
+											@Override
+											public void handle(JsonObject result) {
+												JsonObject previousIdsMap = result.getJsonObject("idsMap");
 
-										Map<String, Object> collectionIdsMap = new HashMap<String, Object>();
+												Map<String, Object> collectionIdsMap = new HashMap<String, Object>();
 
-										// Fill the ids maps
-										for(String key : previousIdsMap.getMap().keySet())
-										{
-											String newId = previousIdsMap.getString(key);
-											collectionIdsMap.put(key, newId);
-											previousIdsMapCombined.put(key, newId);
-										}
+												// Fill the ids maps
+												for(String key : previousIdsMap.getMap().keySet()) {
+													String newId = previousIdsMap.getString(key);
+													collectionIdsMap.put(key, newId);
+													previousIdsMapCombined.put(key, newId);
+												}
 
-										previousIdsMapByCollection.put(prefix.getKey(), collectionIdsMap);
+												previousIdsMapByCollection.put(prefix.getKey(), collectionIdsMap);
 
-										collChain.complete(result);
-										collDone.complete(result);
-									}
-								});
+												collChain.complete(result);
+												collDone.complete(result);
+											}
+										});
 							}
 						};
 
@@ -817,13 +792,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				final String mainResourceNameFinal = mainResourceName;
 
 				// Fuse reports into a final one
-				CompositeFuture.join(collFutures).setHandler(new Handler<AsyncResult<CompositeFuture>>()
-				{
+				CompositeFuture.join(collFutures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
 					@Override
-					public void handle(AsyncResult<CompositeFuture> result)
-					{
-						if(result.succeeded() == true)
-						{
+					public void handle(AsyncResult<CompositeFuture> result) {
+						if(result.succeeded() == true) {
 							List<JsonObject> rapports = result.result().list();
 
 							int nbResources = 0;
@@ -832,8 +804,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 							Map<String, Integer> dupsPerCollection = new HashMap<String, Integer>();
 
-							for(JsonObject rapWrapper : rapports)
-							{
+							for(JsonObject rapWrapper : rapports) {
 								JsonObject rap = rapWrapper.getJsonObject("rapport");
 								Integer dups = Integer.parseInt(rap.getString("duplicatesNumber"));
 
@@ -849,13 +820,13 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								idsMapObj.put(entry.getKey(), new JsonObject(entry.getValue()));
 
 							JsonObject finalRapport =
-								new JsonObject()
-									.put("resourcesNumber", Integer.toString(nbResources))
-									.put("duplicatesNumber", Integer.toString(nbDuplicates))
-									.put("errorsNumber", Integer.toString(nbErrors))
-									.put("resourcesIdsMap", idsMapObj)
-									.put("duplicatesNumberMap", dupsPerCollection)
-									.put("mainResourceName", mainResourceNameFinal);
+									new JsonObject()
+											.put("resourcesNumber", Integer.toString(nbResources))
+											.put("duplicatesNumber", Integer.toString(nbDuplicates))
+											.put("errorsNumber", Integer.toString(nbErrors))
+											.put("resourcesIdsMap", idsMapObj)
+											.put("duplicatesNumberMap", dupsPerCollection)
+											.put("mainResourceName", mainResourceNameFinal);
 
 							handler.handle(finalRapport);
 						}
@@ -869,25 +840,22 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		Future<Map<String, JsonObject>> readDirs = this.readAllDocumentsFromDir(importPath, userId, userName);
 		Future<String> dupSuffix = this.getDuplicateSuffix(locale);
 
-		CompositeFuture.join(readDirs, dupSuffix).setHandler(new Handler<AsyncResult<CompositeFuture>>()
-		{
+		CompositeFuture.join(readDirs, dupSuffix).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
 			@Override
-			public void handle(AsyncResult<CompositeFuture> ftr)
-			{
+			public void handle(AsyncResult<CompositeFuture> ftr) {
 				duplicateSuffixWrapper.put("str", dupSuffix.result());
 
 				if(readDirs.succeeded() == true)
 					readDirsHandler.handle(readDirs.result());
-				else
-				{
+				else {
 					// Error in readDirs
 					handler.handle(new JsonObject()
-						.put("resourcesNumber", Integer.toString(0))
-						.put("duplicatesNumber", Integer.toString(0))
-						.put("errorsNumber", Integer.toString(1))
-						.put("resourcesIdsMap", new JsonObject())
-						.put("duplicatesNumberMap", new JsonObject())
-						.put("mainResourceName", "")
+							.put("resourcesNumber", Integer.toString(0))
+							.put("duplicatesNumber", Integer.toString(0))
+							.put("errorsNumber", Integer.toString(1))
+							.put("resourcesIdsMap", new JsonObject())
+							.put("duplicatesNumberMap", new JsonObject())
+							.put("mainResourceName", "")
 					);
 				}
 			}

@@ -18,13 +18,20 @@
 
 package org.entcore.common.explorer.impl;
 
-import java.util.List;
-
-import org.entcore.common.user.RepositoryEvents;
-
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.user.UserInfos;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This implementation of the RepositoryEvents follows the proxy pattern.
@@ -32,23 +39,40 @@ import io.vertx.core.json.JsonObject;
  */
 public class ExplorerRepositoryEvents implements RepositoryEvents {
 
-	private RepositoryEvents realRepositoryEvents;
-	private ExplorerPlugin plugin;
+	private static final Logger log = LoggerFactory.getLogger(ExplorerRepositoryEvents.class);
 
-	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents) {
+	/** Proxyfied events repository that will be used to import/export resources.*/
+	private final RepositoryEvents realRepositoryEvents;
+	/**
+	 * It will be used after an import to select the right {@code pluginClients} corresponding to the types of resources
+	 * which were imported.
+	 */
+	private final Map<String, IExplorerPluginClient> pluginClientsForApp;
+
+	/**
+	 *
+	 * @param realRepositoryEvents The repository event to proxyfy
+	 * @param pluginClientsForApp Mapping table to use after an import to route imported resources reindexation queries
+	 *                            to their matching {@code pluginClients}.
+	 *                            <u>Example:</u><br />
+	 *                            For blog, we should have an association :
+	 *                            <ul>
+	 *                            <li>"blogs" -> blogPluginClient</li>
+  	 *                            <li>"posts" -> postsPluginClient</li>
+	 *                            </ul>
+	 *                            because blogs and posts are stored in collections named "blogs" and "posts".
+	 */
+	public ExplorerRepositoryEvents(final RepositoryEvents realRepositoryEvents,
+									final Map<String, IExplorerPluginClient> pluginClientsForApp) {
 		this.realRepositoryEvents = realRepositoryEvents;
-	}
-
-	public ExplorerRepositoryEvents setPlugin(ExplorerPlugin plugin) {
-		this.plugin = plugin;
-		return this;
+		this.pluginClientsForApp = pluginClientsForApp;
 	}
 
 	@Override
 	public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
 						 String locale, String host, Handler<Boolean> handler) {
 		realRepositoryEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
-	};
+	}
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
@@ -62,13 +86,60 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.importResources(importId, userId, userLogin, userName, importPath, locale, host, forceImportAsDuplication, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject jo) {
-				handler.handle(jo);
-				if( plugin != null ) {
-					// TODO ya quoi dans le JsonObject ? Est-ce bien ce qui est attendu par notifyUpsert() ??
-					plugin.notifyUpsert(/*FIXME*/ null, jo);
-				}
+				indexResourcesAfterImport(userId, userLogin, userName, jo, handler);
 			}
 		});
+	}
+
+	/**
+	 * For the resources imported :
+	 * <ol>
+	 *     <li>regroup them by type (blogs, subjects, posts, etc.)</li>
+	 *     <li>get the pluginClient corresponding to the type</li>
+	 *     <li>if the pluginClient exists, send a reindexation request with the ids of the requests</li>
+	 * </ol>
+	 * After reindex requests were sent (even if they fail) call the downstream process
+	 * @param userId User id
+	 * @param userLogin User login
+	 * @param userName User name
+	 * @param reindexationReport Report returned by a call to {@link ExplorerRepositoryEvents#importResources(String, String, String, String, String, String, String, boolean, Handler)}
+	 * @param handler downstream process which will be called after reindexation queries were emitted
+	 */
+	private void indexResourcesAfterImport(final String userId, final String userLogin, final String userName,
+											 final JsonObject reindexationReport, final Handler<JsonObject> handler) {
+		try {
+			// resourcesIdsMap associates :
+			// - key : the table or collections in which the resources were imported
+			// - value : a Map associating the id of the resource we wanted to import and the actual id with which it
+			//           was actually imported
+			if (pluginClientsForApp != null && reindexationReport != null && reindexationReport.containsKey("resourcesIdsMap")) {
+				final JsonObject resourcesIdsMap = reindexationReport.getJsonObject("resourcesIdsMap");
+				resourcesIdsMap.stream().filter(e -> pluginClientsForApp.containsKey(e.getKey())).forEach(e -> {
+					final String collection = e.getKey();
+					final JsonObject idsMapForApp = (JsonObject) e.getValue();
+					if (idsMapForApp != null && !idsMapForApp.isEmpty()) {
+						final Set<String> idsToReindex = idsMapForApp.stream().map(i -> (String) i.getValue()).collect(Collectors.toSet());
+						if (idsToReindex.isEmpty()) {
+							log.info("Nothing to reindex in EUR");
+						} else {
+							log.info("Reindexing " + idsToReindex.size() + " resources in EUR of type " + collection);
+							final IExplorerPluginClient pluginClient = pluginClientsForApp.get(collection);
+							final UserInfos userInfos = new UserInfos();
+							userInfos.setUserId(userId);
+							userInfos.setLogin(userLogin);
+							userInfos.setFirstName(userName);
+							pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex));
+						}
+					}
+				});
+			} else {
+				log.debug("Nothing to do as no plugin client is defined (" + (pluginClientsForApp == null) +
+						") and/or resourcesIdsMap is not set (" + (reindexationReport == null || reindexationReport.containsKey("resourcesIdsMap")) + ")");
+			}
+		} catch (Exception e) {
+			log.error("An error occurred while trying to index imported content " + (reindexationReport == null ? "" : reindexationReport.encodePrettily()), e);
+		}
+		handler.handle(reindexationReport);
 	}
 
 	@Override
@@ -76,8 +147,8 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.deleteGroups(groups, new Handler<List<JsonObject>>() {
 			@Override
 			public void handle(List<JsonObject> jos) {
-				if( plugin != null ) {
-					plugin.notifyUpsert(/*FIXME*/ null, jos);
+				if( pluginClientsForApp != null ) {
+					//plugin.notifyUpsert(/*FIXME*/ null, jos);
 				}
 			}
 		});
@@ -88,8 +159,8 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 		realRepositoryEvents.deleteUsers(users, new Handler<List<JsonObject>>() {
 			@Override
 			public void handle(List<JsonObject> jos) {
-				if( plugin != null ) {
-					plugin.notifyUpsert(/*FIXME*/ null, jos);
+				if( pluginClientsForApp != null ) {
+					//plugin.notifyUpsert(/*FIXME*/ null, jos);
 				}
 			}
 		});

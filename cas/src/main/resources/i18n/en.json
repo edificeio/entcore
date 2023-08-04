@@ -48,5 +48,11 @@
   "SpipRegisteredService.name": "SPIP",
   "SpipRegisteredService.description": "SPIP",
   "ElmsRegisteredService.name": "eMLS",
-  "ElmsRegisteredService.description": "Service CAS spécifique pour le libraire eMLS"
+  "ElmsRegisteredService.description": "Service CAS spécifique pour le libraire eMLS",
+  "ExternalIdRegisteredService.name" : "ExternalId",
+  "ExternalIdRegisteredService.description" : "Renvoie uniquement l'identifiant externe sans préfixe académique au client CAS.",
+  "Spip2RegisteredService.name": "SPIP2",
+  "Spip2RegisteredService.description": "Service CAS spécifique pour Spip, le service Spip2 utilise l'identifiant externe sans préfixe académique comme attribut principal.",
+  "GRR2RegisteredService.name": "GRR2",
+  "GRR2RegisteredService.description": "Service CAS spécifique pour GRR, le service GRR2 utilise l'identifiant externe sans préfixe académique comme attribut principal."
 }

@@ -20,6 +20,9 @@ import { UserService } from 'src/app/core/services/user.service';
 })
 export class UserDuplicatesSectionComponent extends AbstractSection implements OnInit {
 
+    showMergeUsersConfirmation: boolean = false;
+    duplicatedUserId: string;
+
     constructor(public spinner: SpinnerService,
                 protected cdRef: ChangeDetectorRef,
                 private router: Router,
@@ -66,8 +69,8 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
         this.comparedUserId = comparedId;
     }
 
-    merge = (dupId) => {
-        return this.spinner.perform(dupId, this.user.mergeDuplicate(dupId)).then(res => {
+    merge = (dupId, keepRelations) => {
+        return this.spinner.perform(dupId, this.user.mergeDuplicate(dupId, keepRelations)).then(res => {
             if (res.id !== this.user.id && res.structure) {
                 this.usersStore.structure.users.data.splice(
                     this.usersStore.structure.users.data.findIndex(u => u.id === this.user.id), 1
