@@ -212,7 +212,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
             }
             if(typeNotification) {
                 message.put("notification", notif);
-                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("badge", 1)));
+                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("badge", 1).put("content-available", 1)));
                 message.put("apns", apns);
             }
 
