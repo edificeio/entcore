@@ -21,6 +21,7 @@ package org.entcore.common.service.impl;
 
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoDbAPI;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.mongodb.MongoDbConf;
@@ -115,7 +116,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			handler.handle(new ArrayList<>());
 			return;
 		}
-		mongo.update(collection, matcher, modifier.build(), false, true,(event)-> {
+		mongo.update(collection, matcher, modifier.build(), false, true, MongoDbAPI.WriteConcern.MAJORITY, (event)-> {
 			if (!"ok".equals(event.body().getString("status"))) {
 				log.error("Error deleting groups in collection " + collection +
 						" : " + event.body().getString("message"));
@@ -177,7 +178,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			handler.handle(new ArrayList<>());
 			return;
 		}
-		mongo.update(collection, criteriaShared, modifierShared.build(),false, true, (eventShared) -> {
+		mongo.update(collection, criteriaShared, modifierShared.build(),false, true, MongoDbAPI.WriteConcern.MAJORITY, (eventShared) -> {
 			if (!"ok".equals(eventShared.body().getString("status"))) {
 				log.error("Error deleting users shared in collection " + collection  +
 						" : " + eventShared.body().getString("message"));
@@ -189,7 +190,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 			modifier.set("owner.deleted", true);
 			modifier.set("_deleteUsersKey", timestamp);
-			mongo.update(collection, criteria, modifier.build(), false, true,  (eventOwner) -> {
+			mongo.update(collection, criteria, modifier.build(), false, true, MongoDbAPI.WriteConcern.MAJORITY, (eventOwner) -> {
 				if (!"ok".equals(eventOwner.body().getString("status"))) {
 					log.error("Error deleting users shared in collection " + collection +
 							" : " + eventOwner.body().getString("message"));
