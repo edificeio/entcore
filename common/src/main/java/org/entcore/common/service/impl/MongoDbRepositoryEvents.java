@@ -83,6 +83,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void deleteGroups(final JsonArray groups, final Handler<List<ResourceChanges>> handler) {
+		log.info("[deleteGroups] start...");
 		if(groups == null) {
 			handler.handle(new ArrayList<>());
 			return;
@@ -128,6 +129,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				final JsonArray results = eventFind.body().getJsonArray("results");
 				final List<ResourceChanges> list = new ArrayList<>();
 				if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
+					log.info("[deleteGroups] resource to delete count="+results.size());
 					results.forEach(elem -> {
 						if(elem instanceof  JsonObject){
 							final JsonObject jsonElem = (JsonObject) elem;
@@ -145,6 +147,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void deleteUsers(final JsonArray users, final Handler<List<ResourceChanges>> handler) {
+		log.info("[deleteUsers] start...");
 		if(users == null) {
 			handler.handle(new ArrayList<>());
 			return;
@@ -171,7 +174,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		final MongoUpdateBuilder modifierShared = new MongoUpdateBuilder();
 		modifierShared.set("_deleteUsersKey", timestamp);
 		modifierShared.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds)));
-
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
 			log.error("Error deleting users : invalid collection " + collection + " in class " + this.getClass().getName());
@@ -202,6 +204,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					final JsonArray results = eventFind.body().getJsonArray("results");
 					final List<ResourceChanges> list = new ArrayList<>();
 					if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
+						log.info("[deleteUsers] resource to delete count="+results.size());
 						results.forEach(elem -> {
 							if(elem instanceof  JsonObject){
 								final JsonObject jsonElem = (JsonObject) elem;
