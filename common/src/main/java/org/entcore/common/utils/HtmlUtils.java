@@ -51,6 +51,9 @@ public class HtmlUtils {
     private static final Pattern attachmentLinkPattern = Pattern.compile("<a(\\s+[^>]*?)href=\"([^\"]+?)\"(\\s*[^>]*?)><div(\\s+[^>]*?)class=\"download\"><\\/div>([^<]+?)<\\/a>");
     private static final Pattern plainTextPattern = Pattern.compile(">([^</]+)");
     private static final Pattern htmlEntityPattern = Pattern.compile("&.*?;");
+    private static final Pattern unsafeAttributePattern = Pattern.compile("(ng-[a-zA-Z0-9-]+\\s*=\\s*\"[^\"]*\")|"
+            + "(on[a-zA-Z]+\\s*=\\s*\"[^\"]*\")|"
+            + "(href\\s*=\\s*\"javascript:[^\"]*\")");
 
     public static JsonArray getAllImagesSrc(String htmlContent){
         JsonArray images = new JsonArray();
@@ -185,6 +188,12 @@ public class HtmlUtils {
         }
         // 6. Compute Json Array in order
         return new JsonArray(new ArrayList(medias.values()));
+    }
+
+    public static String removeUnsafeAttributes(String inputHtml) {
+        final Matcher matcher = unsafeAttributePattern.matcher(inputHtml);
+        final String cleanHtml = matcher.replaceAll("");
+        return cleanHtml;
     }
 
 }

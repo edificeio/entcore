@@ -24,13 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -226,13 +220,22 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             setCreatedAtForModel(user, json);
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
-            mongoClient.insert(getCollectionName(), json, promise);
+            if(json instanceof fr.wseduc.webutils.collections.JsonObject){
+                final JsonObject jsonObject = new JsonObject();
+                jsonObject.mergeIn(json);
+                mongoClient.insert(getCollectionName(), jsonObject, promise);
+            }else{
+                mongoClient.insert(getCollectionName(), json, promise);
+            }
         }
         return CompositeFuture.all(futures).map(ids);
     }
 
     @Override
     protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
         final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
         final Promise<MongoClientDeleteResult> promise = Promise.promise();
         mongoClient.removeDocuments(getCollectionName(), query , promise);

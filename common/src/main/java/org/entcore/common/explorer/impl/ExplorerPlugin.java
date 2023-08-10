@@ -39,14 +39,7 @@ import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -671,6 +664,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public void start() {
+        log.info("ExplorerPlugin starting....");   
         final String idForResource = IExplorerPlugin.addressFor(getApplication(), getResourceType());
         final String idForApp = IExplorerPlugin.addressForApp(getApplication());
         this.listeners.add(communication.listen(idForResource, message -> {
@@ -688,6 +682,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         for (ExplorerSubResource explorerSubResource : getSubResourcesPlugin()) {
             explorerSubResource.start();
         }
+        log.info("ExplorerPlugin started");    
     }
 
     @Override
