@@ -19,7 +19,9 @@
 
 package org.entcore.common.user;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -40,24 +42,28 @@ public interface RepositoryEvents {
 
 
 	default void deleteGroups(JsonArray groups) {
-		deleteGroups(groups, null);
+		deleteGroups(groups, (e) -> {});
 	}
 
 	/**
 	 * @param groups to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteGroups(JsonArray groups, Handler<List<JsonObject>> handler) {}
+	default void deleteGroups(JsonArray groups, Handler<List<ResourceChanges>> handler) {
+		handler.handle(new ArrayList<>());
+	}
 
 	default void deleteUsers(JsonArray users) {
-		deleteUsers(users, null);
+		deleteUsers(users, (e) -> {});
 	}
 
 	/**
 	 * @param users to be deleted
 	 * @param handler to handle a post-delete effect on deleted users data
 	 */
-	default void deleteUsers(JsonArray users, Handler<List<JsonObject>> handler) {}
+	default void deleteUsers(JsonArray users, Handler<List<ResourceChanges>> handler) {
+		handler.handle(new ArrayList<>());
+	}
 
 	default void usersClassesUpdated(JsonArray updates) {}
 
@@ -73,4 +79,27 @@ public interface RepositoryEvents {
 	default void tenantsStructuresUpdated(JsonArray addedTenantsStructures, JsonArray deletedTenantsStructures) {}
 
 	default void timetableImported(String uai) {}
+
+	default Optional<String> getMainRepositoryName(){
+		return Optional.empty();
+	}
+
+	/**
+	 * This class return a resource that have been changed onDeleteUser and onDeleteGroup
+	 */
+	class ResourceChanges {
+		/**
+		 * ID of the changed resource
+		 */
+		public final String id;
+		/**
+		 * Whether this resource has been deleted (if false the resource has been updated)
+		 */
+		public final boolean deleted;
+
+		public ResourceChanges(String id, boolean deleted) {
+			this.id = id;
+			this.deleted = deleted;
+		}
+	}
 }

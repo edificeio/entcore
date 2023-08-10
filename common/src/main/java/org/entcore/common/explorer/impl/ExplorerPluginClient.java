@@ -40,6 +40,8 @@ public abstract class ExplorerPluginClient implements IExplorerPluginClient {
             final int nb_message = response.getNbMessages();
             final int nb_batch = response.getNbBatch();
             return new IndexResponse(nb_batch, nb_message);
+        }).onFailure(e->{
+            log.error("Trigger indexation failed. request="+request.toString(), e);
         });
     }
 

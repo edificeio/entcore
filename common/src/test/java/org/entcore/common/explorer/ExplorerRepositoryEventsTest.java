@@ -33,7 +33,7 @@ public class ExplorerRepositoryEventsTest {
         pluginMap.put("toto", plugin);
         final ExplorerRepositoryEvents explorerRepositoryEvents = new ExplorerRepositoryEvents(
                 new RepositoryEventsWithSuppliedImportReport(new JsonObject()),
-                pluginMap);
+                pluginMap,plugin);
         explorerRepositoryEvents.importResources("importId", "userId", "userLogin",
                 "userName", "importPath", "locale", "host", false, e -> {
             context.assertTrue(plugin.requests.isEmpty(), "Reindex should not have been called");
@@ -48,7 +48,7 @@ public class ExplorerRepositoryEventsTest {
         pluginMap.put("toto", plugin);
         final ExplorerRepositoryEvents explorerRepositoryEvents = new ExplorerRepositoryEvents(
                 new RepositoryEventsWithSuppliedImportReport(null),
-                pluginMap);
+                pluginMap,plugin);
         explorerRepositoryEvents.importResources("importId", "userId", "userLogin", "userName",
                 "importPath", "locale", "host", false, e -> {
                 context.assertTrue(plugin.requests.isEmpty(), "Reindex should not have been called");
@@ -62,7 +62,7 @@ public class ExplorerRepositoryEventsTest {
         pluginMap.put("toto", plugin);
         final ExplorerRepositoryEvents explorerRepositoryEvents = new ExplorerRepositoryEvents(
                 new RepositoryEventsWithSuppliedImportReport(populateImportedResourcesForApp("tata")),
-                pluginMap);
+                pluginMap,plugin);
         explorerRepositoryEvents.importResources("importId", "userId", "userLogin", "userName",
         "importPath", "locale", "host", false, e -> {
             context.assertTrue(plugin.requests.isEmpty(), "Reindex should not have been called because no data were of a type handled by the plugin");
@@ -76,7 +76,7 @@ public class ExplorerRepositoryEventsTest {
         pluginMap.put("toto", plugin);
         final ExplorerRepositoryEvents explorerRepositoryEvents = new ExplorerRepositoryEvents(
             new RepositoryEventsWithSuppliedImportReport(populateImportedResourcesForApp("toto")),
-            pluginMap);
+            pluginMap,plugin);
         explorerRepositoryEvents.importResources("importId", "userId", "userLogin", "userName",
                 "importPath", "locale", "host", false, e -> {
             context.assertEquals(1, plugin.requests.size(), "Reindex should have been called once for imported data");
@@ -118,6 +118,11 @@ public class ExplorerRepositoryEventsTest {
 
         @Override
         public Future<IndexResponse> reindex(final UserInfos user, final ExplorerReindexResourcesRequest request) {
+            return Future.succeededFuture(new IndexResponse(0, 0));
+        }
+
+        @Override
+        public Future<IndexResponse> reindex(ExplorerReindexResourcesRequest request) {
             return Future.succeededFuture(new IndexResponse(0, 0));
         }
 
@@ -168,7 +173,7 @@ public class ExplorerRepositoryEventsTest {
         }
 
         @Override
-        public void deleteGroups(final JsonArray groups, final Handler<List<JsonObject>> handler) {
+        public void deleteGroups(JsonArray groups, Handler<List<ResourceChanges>> handler) {
             handler.handle(Collections.emptyList());
         }
 
@@ -177,7 +182,7 @@ public class ExplorerRepositoryEventsTest {
         }
 
         @Override
-        public void deleteUsers(final JsonArray users, final Handler<List<JsonObject>> handler) {
+        public void deleteUsers(JsonArray users, Handler<List<ResourceChanges>> handler) {
             handler.handle(Collections.emptyList());
         }
 

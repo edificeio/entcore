@@ -1,5 +1,6 @@
 package org.entcore.common.service.impl;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,10 +11,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.folders.FolderImporter;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,6 +176,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                     {
                         JsonArray results = message.body().getJsonArray("results");
                         Map<String, Integer> dupsMap = new HashMap<String, Integer>();
+                        final JsonObject idsByTable = new JsonObject();
 
                         for (int i = 0; i < results.size(); i++)
                         {
@@ -193,6 +197,16 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 if (jo.getJsonArray("fields").contains("noduplicates")) {
                                     resourcesNumber += jo.getJsonArray("results").getJsonArray(0).getInteger(1);
                                 }
+                                if (jo.getJsonArray("fields").contains("ids")) {
+                                    final JsonArray values = jo.getJsonArray("results").getJsonArray(0);
+                                    final String table = values.getString(0);
+                                    final JsonArray ids = values.getJsonArray(2);
+                                    final JsonArray prevIds = idsByTable.getJsonArray(table, new JsonArray());
+                                    if(ids != null){
+                                        prevIds.addAll(ids.getJsonArray(0));
+                                    }
+                                    idsByTable.put(table, prevIds);
+                                }
                             }
                         }
 
@@ -208,7 +222,9 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 .put("duplicatesNumber", String.valueOf(duplicatesNumber))
                                 .put("resourcesIdsMap", finalMap)
                                 .put("duplicatesNumberMap", dupsMap)
-                                .put("mainResourceName", mainResourceName);
+                                .put("mainResourceName", mainResourceName)
+                                    .put("mainRepository", MongoDbConf.getInstance().getCollection())
+                                    .put("newIds", idsByTable);
 
                         log.info(title + " : Imported "+ resourcesNumber + " resources (" + duplicatesNumber + " duplicates) with " + errorsNumber + " errors." );
                         handler.handle(reply);
@@ -267,8 +283,8 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                             String insert = "WITH rows AS (INSERT INTO " + schema + "." + table + " (" + String.join(",",
                                     ((List<String>) fields.getList()).stream().map(f -> "\"" + f + "\"").toArray(String[]::new)) + ") VALUES ";
                             String conflictUpdate = "ON CONFLICT(id) DO UPDATE SET id = ";
-                            String conflictNothing = "ON CONFLICT DO NOTHING RETURNING 1) SELECT '" + table + "' AS table, "
-                                                    + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + " FROM rows";
+                            String conflictNothing = "ON CONFLICT DO NOTHING RETURNING id) SELECT '" + table + "' AS table, "
+                                                    + "count(*) AS " + (tablesWithId.containsKey(table) ? "duplicates" : "noduplicates") + ", array_agg(rows.id) AS ids FROM rows";
 
                             for (int i = 0; i < finalResults.size(); i++) {
                                 JsonArray entry = finalResults.getJsonArray(i);
@@ -276,7 +292,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 
                                 if (tablesWithId.containsKey(table)) {
                                     builder.prepared(query + conflictUpdate + tablesWithId.get(table) +
-                                            " RETURNING 1) SELECT '" + table + "' AS table, count(*) AS noduplicates FROM rows", entry);
+                                            " RETURNING id) SELECT '" + table + "' AS table, count(*) AS noduplicates, array_agg(rows.id) AS ids FROM rows", entry);
                                 }
                                 builder.prepared(query + conflictNothing, entry);
                             }
@@ -315,5 +331,21 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                 handler.handle(statements);
             }
         });
+    }
+
+    protected List<ResourceChanges> transactionToDeletedResources(final Either<String, JsonArray> event){
+        if(event.isRight()){
+            final JsonArray ids = event.right().getValue();
+            final List<ResourceChanges> deleted = new ArrayList<>();
+            for(final Object json : ids){
+                if(json instanceof  JsonObject){
+                    final ResourceChanges del = new ResourceChanges(((JsonObject)json).getValue("id").toString(), false);
+                    deleted.add(del);
+                }
+            }
+            return deleted;
+        }else{
+            return new ArrayList<>();
+        }
     }
 }

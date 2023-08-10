@@ -19,14 +19,7 @@ import org.entcore.common.user.UserInfos;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -243,6 +236,9 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
 
     @Override
     protected Future<List<Boolean>> doDelete(final UserInfos user, final List<String> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
         final Set<Integer> safeIds = ids.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet());
         final String queryTpl = "DELETE FROM %s WHERE id IN (%s);";
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
