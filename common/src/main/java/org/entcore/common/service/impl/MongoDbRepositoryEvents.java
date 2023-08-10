@@ -204,29 +204,33 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					final JsonArray results = eventFind.body().getJsonArray("results");
 					final List<ResourceChanges> list = new ArrayList<>();
 					if ("ok".equals(eventFind.body().getString("status")) && results != null && !results.isEmpty()) {
-						log.info("[deleteUsers] resource to delete count="+results.size());
+						log.info("[deleteUsers] resource to update count="+results.size());
 						results.forEach(elem -> {
 							if(elem instanceof  JsonObject){
 								final JsonObject jsonElem = (JsonObject) elem;
 								final String id = jsonElem.getString("_id");
-								final boolean deleted = jsonElem.getJsonObject("owner", new JsonObject()).getBoolean("deleted", false);
-								list.add(new ResourceChanges(id, deleted));
+								list.add(new ResourceChanges(id, false));
 							}
 						});
 					} else {
-						log.error("[deleteUsers] Could not found deleted resources:"+ eventFind.body());
+						log.error("[deleteUsers] Could not found updated resources:"+ eventFind.body());
 					}
+					// trigger update
+					handler.handle(list);
 					// delete objects
 					if (managerRight != null && !managerRight.trim().isEmpty()) {
 						removeObjects(collection);
 					}
-					handler.handle(list);
 				});
 			});
 		});
 	}
 
 	protected void removeObjects(final String collection) {
+		this.removeObjects(collection, e -> {});
+	}
+
+	protected void removeObjects(final String collection, final Handler<List<ResourceChanges>> handler) {
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder.start("shared." + managerRight).notEquals(true).put("owner.deleted").is(true));
 
@@ -269,6 +273,13 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 									}
 								});
 							}
+							// trigger delete
+							final List<ResourceChanges> list = new ArrayList<>();
+							log.info("[deleteUsers] resource to delete count="+objectIds.length);
+							for(final String id : objectIds){
+								list.add(new ResourceChanges(id, false));
+							}
+							handler.handle(list);
 						}
 					});
 				}
