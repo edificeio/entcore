@@ -44,7 +44,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 

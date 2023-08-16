@@ -76,7 +76,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 				payload.put("nonce", nonce);
 			}
 			try {
-				handler.handle(new DefaultAsyncResult<>(jwt.encodeAndSign(payload)));
+				handler.handle(new DefaultAsyncResult<>(jwt != null ? jwt.encodeAndSign(payload) : payload.toString()));
 			} catch (Exception e) {
 				handler.handle(new DefaultAsyncResult<String>(e));
 			}

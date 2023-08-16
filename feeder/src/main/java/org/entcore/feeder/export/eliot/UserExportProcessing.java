@@ -21,7 +21,7 @@ package org.entcore.feeder.export.eliot;
 
 import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.utils.Function;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;

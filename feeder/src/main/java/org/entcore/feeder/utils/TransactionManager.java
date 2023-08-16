@@ -20,6 +20,7 @@
 package org.entcore.feeder.utils;
 
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.exceptions.TransactionException;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;

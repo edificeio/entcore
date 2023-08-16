@@ -26,6 +26,7 @@ import fr.wseduc.webutils.security.Md5;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.common.utils.DateUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;

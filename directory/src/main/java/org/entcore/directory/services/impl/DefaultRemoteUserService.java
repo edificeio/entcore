@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.remote.RemoteClient;
+import org.entcore.common.remote.RemoteClientCluster;
 import org.entcore.common.remote.RemoteClientResponse;
 import org.entcore.directory.services.RemoteUserService;
 import org.entcore.common.user.UserDataSync;
@@ -46,7 +46,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultRemoteUserService.class);
 	private MongoDb mongo = MongoDb.getInstance();
-	private RemoteClient remoteClient;
+	private RemoteClientCluster remoteClientCluster;
 	private EmailSender emailSender;
 
 	public DefaultRemoteUserService(EmailSender emailSender)
@@ -67,7 +67,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 		if(isNotEmpty(structureId)) {
 			uri += "&structureId=" + structureId;
 		}
-		remoteClient.getRemote(uri, futures);
+		remoteClientCluster.getRemote(uri, futures);
 		CompositeFuture.all(futures).map(CompositeFuture::list).setHandler(ar -> {
 			if (ar.succeeded()) {
 				final List<Future> futuresMongo = new ArrayList<>();
@@ -126,8 +126,8 @@ public class DefaultRemoteUserService implements RemoteUserService {
 		return future;
 	}
 
-	public void setRemoteClient(RemoteClient remoteClient) {
-		this.remoteClient = remoteClient;
+	public void setRemoteClientCluster(RemoteClientCluster remoteClientCluster) {
+		this.remoteClientCluster = remoteClientCluster;
 	}
 
 }

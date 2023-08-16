@@ -22,6 +22,7 @@ package org.entcore.feeder.csv;
 import com.opencsv.CSVReader;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;

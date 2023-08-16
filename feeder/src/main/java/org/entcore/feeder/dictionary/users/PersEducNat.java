@@ -22,7 +22,7 @@ package org.entcore.feeder.dictionary.users;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.utils.Report;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
