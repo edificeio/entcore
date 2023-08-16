@@ -41,8 +41,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
@@ -133,6 +131,18 @@ public class MonitoringController extends BaseController {
 		Renders.renderJson(request, versions);
 	}
 
+	@Get("/monitoring/detailedVersions")
+	@SecuredAction(value = "",  type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void checkDetailedVersions(final HttpServerRequest request) {
+		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
+		LocalMap<String, JsonObject> versionMap = vertx.sharedData().getLocalMap("detailedVersions");
+		for (Map.Entry<String,JsonObject> entry : versionMap.entrySet()) {
+			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));
+		}
+		Renders.renderJson(request, versions);
+	}
+
 	private Handler<Message<JsonObject>> getResponseHandler(final String module, final long timerId,
 			final JsonObject result, final AtomicInteger count, final HttpServerRequest request, final AtomicBoolean closed) {
 		return new Handler<Message<JsonObject>>() {
@@ -160,7 +170,7 @@ public class MonitoringController extends BaseController {
 
 	/**
 	 * This endpoint receives CSP reports objects.
-	 * See https://www.w3.org/TR/CSP2/#violation-reports
+	 * See <a href="https://www.w3.org/TR/CSP2/#violation-reports">...</a>
 	 */
 	@Post("/monitoring/csp")
 	@SecuredAction(type = ActionType.AUTHENTICATED, value = "")

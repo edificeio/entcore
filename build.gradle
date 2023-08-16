@@ -55,9 +55,44 @@ subprojects {
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
+  task generateCommitId {
+    doLast {
+      def commitId = 'unknown'
+      def stdout = new ByteArrayOutputStream()
+      try {
+        def result = exec {
+          commandLine 'git', 'rev-parse', 'HEAD'
+          standardOutput = stdout
+        }
+        commitId = stdout.toString().trim()
+      } catch (Exception e) {
+        e.printStackTrace()
+        commitId = 'error'
+      }
+      project.ext.set('commitId', commitId)
+      def branch = 'unknown'
+      try {
+        def stdoutBranch = new ByteArrayOutputStream()
+        def resultBranch = exec {
+          commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+          standardOutput = stdoutBranch
+        }
+        branch = stdoutBranch.toString().trim()
+      } catch (Exception e) {
+        e.printStackTrace()
+        branch = 'error'
+      }
+      project.ext.set('branchName', branch)
+      def date = new Date()
+      def formattedDate = date.format('yyyyMMddHHmmss')
+      project.ext.set('buildTime', formattedDate)
+    }
+  }
+
   compileJava {
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
+    dependsOn generateCommitId
   }
 
   compileTestJava {
@@ -119,7 +154,10 @@ subprojects {
     sourceSets.main.resources.srcDirs += [ "deployment" ]
     manifest {
       attributes(
-          "Main-Verticle": "service:mod"
+          "Main-Verticle": "service:mod",
+          "SCM-Commit-Id": "${-> project.ext.commitId}",
+          "SCM-Branch": "${-> project.ext.branchName}",
+          "Build-Time": "${-> project.ext.buildTime}"
       )
     }
   }
