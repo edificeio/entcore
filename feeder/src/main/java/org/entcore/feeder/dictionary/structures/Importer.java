@@ -24,6 +24,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.users.AbstractUser;

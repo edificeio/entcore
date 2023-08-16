@@ -28,6 +28,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.dictionary.structures.*;
@@ -935,7 +936,7 @@ public class ManualFeeder extends BusModBase {
 		String query =
 				"MATCH (u:User)" +
 				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
-				"return u.id as id, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
+				"return u.id as id, u.externalId AS externalId, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
 		neo4j.execute(query, new JsonObject().put("users", users), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {

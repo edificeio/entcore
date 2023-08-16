@@ -22,7 +22,7 @@ package org.entcore.feeder.dictionary.users;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.Report;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;

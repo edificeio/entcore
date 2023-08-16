@@ -13,7 +13,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.dictionary.structures.DuplicateUsers;
 import org.entcore.feeder.dictionary.structures.RelationshipToKeepForDuplicatedUser;
 import org.entcore.feeder.exceptions.TransactionException;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.entcore.test.TestHelper;

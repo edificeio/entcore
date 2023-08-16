@@ -32,6 +32,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.utils.ExceptionUtils;
 
 import java.net.URI;
 import java.util.Base64;

@@ -32,7 +32,7 @@ import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.remote.RemoteClient;
+import org.entcore.common.remote.RemoteClientCluster;
 import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -198,9 +198,9 @@ public class Directory extends BaseServer {
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
-			final RemoteClient remoteClient = new RemoteClient(vertx, remoteNodes);
+			final RemoteClientCluster remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
 			final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
-			((DefaultRemoteUserService) remoteUserService).setRemoteClient(remoteClient);
+			((DefaultRemoteUserService) remoteUserService).setRemoteClientCluster(remoteClientCluster);
 			final RemoteUserController remoteUserController = new RemoteUserController();
 			remoteUserController.setRemoteUserService(remoteUserService);
 			addController(remoteUserController);

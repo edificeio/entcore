@@ -35,7 +35,7 @@ import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.utils.ResultMessage;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;

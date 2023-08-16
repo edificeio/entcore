@@ -898,6 +898,13 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/oauth2/userinfo")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void userInfoPost(final HttpServerRequest request)
+	{
+		this.userInfo(request);
+	}
+
 	private void createStatsEvent(JsonObject infos, String clientId) {
 		JsonObject custom = new JsonObject().put("override-module", clientId)
 				.put("connector-type", "OAuth2");

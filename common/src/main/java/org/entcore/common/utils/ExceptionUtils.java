@@ -17,7 +17,7 @@
 
  */
 
-package org.entcore.common.neo4j;
+package org.entcore.common.utils;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

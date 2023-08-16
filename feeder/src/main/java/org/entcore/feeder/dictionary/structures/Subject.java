@@ -2,7 +2,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import io.vertx.core.json.JsonObject;
 import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 
 public class Subject {
 

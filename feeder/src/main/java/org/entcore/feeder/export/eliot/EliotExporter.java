@@ -24,7 +24,7 @@ import org.entcore.feeder.dictionary.structures.Tenant;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.utils.Function;
 import org.entcore.feeder.utils.ResultMessage;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

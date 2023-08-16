@@ -22,7 +22,7 @@ package org.entcore.feeder.dictionary.structures;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.common.neo4j.TransactionHelper;
 
 import java.util.Collections;
 import java.util.HashSet;
