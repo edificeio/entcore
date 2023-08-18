@@ -1,12 +1,7 @@
 #!/bin/bash
 
-if [[ $(uname -m) == 'arm64' ]]; then
-  DOCKER_EXTRA_OPTS="-f docker-compose.mac.yml"
-  GRADLE_EXTRA=" --daemon --build-cache"
-else
-  DOCKER_EXTRA_OPTS=""
-  GRADLE_EXTRA=""
-fi
+DOCKER_EXTRA_OPTS=""
+GRADLE_EXTRA=""
 
 if [ ! -e node_modules ]
 then

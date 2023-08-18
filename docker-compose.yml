@@ -11,9 +11,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   node:
-    image: opendigitaleducation/node:16-alpine
+    image: opendigitaleducation/node:16-alpine-pnpm
     working_dir: /home/node/app
-    net: host
     volumes:
       - ./:/home/node/app
       - ~/.npm:/.npm
@@ -21,9 +20,8 @@ services:
       - ../infra-front:/home/node/infra-front
 
   node16:
-    image: opendigitaleducation/node:16-alpine
+    image: opendigitaleducation/node:16-alpine-pnpm
     working_dir: /home/node/app
-    net: host
     volumes:
       - ./admin/src/main/ts:/home/node/app
       - ./admin:/home/node/base
