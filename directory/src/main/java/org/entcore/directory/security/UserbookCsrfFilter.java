@@ -19,6 +19,7 @@
 
 package org.entcore.directory.security;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.http.filter.CsrfFilter;
@@ -37,6 +38,7 @@ public class UserbookCsrfFilter extends CsrfFilter {
 	@Override
 	public void canAccess(final HttpServerRequest request, final Handler<Boolean> handler) {
 		if (request instanceof SecureHttpServerRequest && "GET".equals(request.method().name()) &&
+				isEmpty(((SecureHttpServerRequest) request).getAttribute("client_id")) &&
 				(request.uri().contains("/userbook/api/edit") || request.uri().contains("/userbook/api/set"))) {
 			compareToken(request, handler);
 		} else {
