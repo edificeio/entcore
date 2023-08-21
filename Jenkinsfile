@@ -6,14 +6,14 @@ pipeline {
       stage('Build') {
         steps {
           checkout scm
-          sh './build.sh --no-user clean install'
+          sh './build.sh clean install'
         }
       }
       stage('Test') {
         steps {
           script {
 //            try {
-            sh './build.sh --no-user test'
+            sh './build.sh test'
 //            } catch (err) {
 //            }
           }
@@ -21,7 +21,7 @@ pipeline {
       }
       stage('Publish') {
         steps {
-          sh './build.sh --no-user publish'
+          sh './build.sh publish'
         }
       }
     }
