@@ -154,6 +154,10 @@ public class Starter extends BaseServer {
 			if(metricsOptions != null) {
 				serverMap.put("metricsOptions", metricsOptions.encode());
 			}
+			final JsonObject contentTransformer = config.getJsonObject("content-transformer");
+			if (contentTransformer != null) {
+				serverMap.put("content-transformer", contentTransformer.encode());
+			}
 			//initModulesHelpers(node);
 
 			/* sharedConf sub-object */
