@@ -536,6 +536,8 @@ public class DefaultUserService implements UserService {
 			filterUser = "(n:Group {id : {groupId}})<-[:IN]-";
 			params.put("groupId", groupId);
 		} else {
+			// WB-2077, if we have no filter on the user we at least must only return users attached to structures
+			filterUser = "(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-";
 			restrictResultsToFunction = true;
 		}
 
