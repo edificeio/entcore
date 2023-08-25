@@ -108,6 +108,18 @@
             "auth": "{{ nodePdfToken }}",
             "url" : "{{ nodePdfUrl }}"
         },
+        {% if contentTransformerUrl is defined %}
+        "content-transformer": {
+            "url": "{{ contentTransformerUrl }}",
+            "content-transformer-metrics": {
+                "enabled": {{ contentTransformerMetricsEnabled | default('true'}}
+                {% if contentTransformerMetricsSla is defined %}
+                ,
+                "sla": {{ contentTransformerMetricsSla }}
+                {% endif %}
+            }
+        },
+        {% endif %}
         {% if explorerEnabled is defined %}
         "explorerConfig": {
             "enabled": true,
