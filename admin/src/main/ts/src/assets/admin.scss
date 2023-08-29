@@ -1547,105 +1547,105 @@ ode-list {
   }
 }
 
-ode-user-list,
-ode-admc-search-transverse,
-ode-tree-user-list,
-ode-group-users-list,
-ode-group-input-users,
-ode-group-output-users {
-  ode-list {
-    li {
-      position: relative;
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      .display-name {
-        font-size: 14px;
-        flex: 1;
+ode-user-list ode-list,
+ode-admc-search-transverse admc-user-search-list,
+ode-tree-user-list ode-list,
+ode-group-users-list ode-list,
+ode-group-input-users ode-list,
+ode-group-output-users ode-list {
+  li {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    .display-name {
+      font-size: 14px;
+      flex: 1;
+      padding-right: 5px;
+    }
+    i {
+      &.profile {
+        color: $grey-dark;
+        border: 1px solid $shadow-light;
+        background-color: $white-transparent;
+        font-size: 12px;
+        font-style: normal;
+        border-radius: 30px;
+        padding: 5px 15px;
+        text-align: center;
+        &::before {
+          content: " ";
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-right: 5px;
+        }
+      }
+      &.Student.profile::before {
+        background-color: $orange;
+      }
+      &.Teacher.profile::before {
+        background-color: $green;
+      }
+      &.Relative.profile::before {
+        background-color: $cyan;
+      }
+      &.Personnel.profile::before {
+        background-color: $purple;
+      }
+      &.Guest.profile::before {
+        background-color: $pink;
+      }
+      &.fa {
+        font-size: 1.3em;
         padding-right: 5px;
-      }
-      i {
-        &.profile {
-          color: $grey-dark;
-          border: 1px solid $shadow-light;
-          background-color: $white-transparent;
-          font-size: 12px;
-          font-style: normal;
-          border-radius: 30px;
-          padding: 5px 15px;
-          text-align: center;
-          &::before {
-            content: " ";
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-          }
+        &.fa-lock {
+          color: #aaa;
         }
-        &.Student.profile::before {
-          background-color: $orange;
-        }
-        &.Teacher.profile::before {
-          background-color: $green;
-        }
-        &.Relative.profile::before {
-          background-color: $cyan;
-        }
-        &.Personnel.profile::before {
-          background-color: $purple;
-        }
-        &.Guest.profile::before {
-          background-color: $pink;
-        }
-        &.fa {
-          font-size: 1.3em;
-          padding-right: 5px;
-          &.fa-lock {
-            color: #aaa;
-          }
-          &.fa-times-circle,
-          &.fa-ban {
-            color: $contrast;
-          }
-        }
-        &.duplicates {
-          padding-right: 5px;
-          font-size: 1.8em;
-          color: $accent;
-          &::before {
-            content: "\e7fb";
-          }
-        }
-        &.waiting-predelete {
-          padding-right: 5px;
-          font-size: 1.5em;
+        &.fa-times-circle,
+        &.fa-ban {
           color: $contrast;
-          &::before {
-            content: "\e936";
-          }
-        }
-        &.check,
-        &.check-empty {
-          margin-left: 12px;
         }
       }
-      &.selected {
-        i.duplicates {
-          color: $accent-light;
+      &.duplicates {
+        padding-right: 5px;
+        font-size: 1.8em;
+        color: $accent;
+        &::before {
+          content: "\e7fb";
         }
+      }
+      &.waiting-predelete {
+        padding-right: 5px;
+        font-size: 1.5em;
+        color: $contrast;
+        &::before {
+          content: "\e936";
+        }
+      }
+      &.check,
+      &.check-empty {
+        margin-left: 12px;
+      }
+    }
+    &.selected {
+      i.duplicates {
+        color: $accent-light;
       }
     }
   }
 }
 
-ode-tree-user-list,
-ode-admc-search-transverse {
-  ode-list {
-    li {
-      display: block;
-    }
+ode-tree-user-list ode-list li {
+  display: block;
+}
+
+ode-admc-search-transverse admc-user-search-list li {
+  display: block;
+  &>span {
+    gap: 12px;
   }
 }
 
