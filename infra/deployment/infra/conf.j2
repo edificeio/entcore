@@ -112,7 +112,7 @@
         "content-transformer": {
             "url": "{{ contentTransformerUrl }}",
             "content-transformer-metrics": {
-                "enabled": {{ contentTransformerMetricsEnabled | default('true'}}
+                "enabled": {{ contentTransformerMetricsEnabled | default('true')}}
                 {% if contentTransformerMetricsSla is defined %}
                 ,
                 "sla": {{ contentTransformerMetricsSla }}
