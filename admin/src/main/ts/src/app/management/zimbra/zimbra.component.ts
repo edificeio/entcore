@@ -149,7 +149,9 @@ export class ZimbraComponent extends OdeComponent implements OnInit {
                 this.recalledMails.forEach(mail => {
                     this.checkboxesMail[mail.recallMailId] = false;
                     let status = RecallMail.getActionStatus(mail.action);
-                    mail.statutDisplayed = this.bundles.translate('management.zimbra.return.statut.' + status);
+                    let statusKey = 'management.zimbra.recall.statut.' + status;
+                    statusKey = (status === ActionStatus.REMOVED && mail.action.tasks.lastUpdate != -1) ? statusKey + ".date" : statusKey;
+                    mail.statutDisplayed = this.bundles.translate(statusKey);
                     mail.status = status;
                 });
                 this.changeDetector.detectChanges();
