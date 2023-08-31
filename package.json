@@ -27,7 +27,7 @@
     "angular-sanitize": "1.7.9",
     "axios": "0.15.3",
     "core-js": "^2.4.1",
-    "entcore": "4.7.6",
+    "entcore": "4.7.7",
     "entcore-generic-icons": "https://github.com/opendigitaleducation/generic-icons.git",
     "entcore-toolkit": "^1.0.1",
     "humane-js": "^3.2.2",
