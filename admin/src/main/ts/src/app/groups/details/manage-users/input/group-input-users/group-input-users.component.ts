@@ -21,6 +21,7 @@ import {
 } from "../../../../../core/services/userlist.filters.service";
 import { SpinnerService } from "ngx-ode-ui";
 import { BundlesService } from "ngx-ode-sijil";
+import { SearchTypeEnum } from "src/app/core/enum/SearchTypeEnum";
 
 @Component({
   selector: "ode-group-input-users",
@@ -130,7 +131,7 @@ export class GroupInputUsersComponent
     this.userListService.inputFilter = this.searchTerm;
     this.spinner.perform(
       "portal-content",
-      this.usersService.search(this.userListService.inputFilter).then(data => {
+      this.usersService.search(this.userListService.inputFilter, SearchTypeEnum.DISPLAY_NAME).then(data => {
         this.model = data;
 
         this.refreshListCount(data);
