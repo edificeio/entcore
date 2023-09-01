@@ -712,6 +712,7 @@ public class UserController extends BaseController {
 		/* Retro-compability : 
 		 * - if a "name" query parameter exists, its value must be used like a displayName.
 		 * - if a "lastName" or "firstName" query parameter exists, make an optimized search by fullname.
+		 * - if searchType is the string "undefined", consider it is "displayName" instead.
 		 * - otherwise, just apply the "searchTerm" and "searchType" query parameter, if any.
 		 */
 		if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
@@ -722,7 +723,7 @@ public class UserController extends BaseController {
 			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
 			if(TransversalSearchType.EMAIL.equals(type))
 				return TransversalSearchQuery.searchByMail(searchTerm);
-			if(TransversalSearchType.DISPLAY_NAME.equals(type))
+			if(TransversalSearchType.DISPLAY_NAME.equals(type) || "undefined".equals(searchType))
 				return TransversalSearchQuery.searchByDisplayName(searchTerm);
 		}
 		return TransversalSearchQuery.EMPTY;
