@@ -38,6 +38,13 @@ i.presences::before {
   color: $yellow;
 }
 
+i.edt-large::before,
+i.type.edt::before,
+i.edt::before {
+  content: "\e964";
+  color: $blue;
+}
+
 //  CONNECTORS
 i.esidoc-large,
 i.type.esidoc,
