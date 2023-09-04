@@ -411,6 +411,16 @@ i.competences {
     }
 }
 
+i.edt-large,
+i.type.edt,
+i.edt {
+    @include fonticon;
+    &::before {
+      content: "\e964";
+      color: $blue;
+    }
+}
+
 i.searchengine-large,
 i.searchengine.cas,
 i.type.searchengine,
