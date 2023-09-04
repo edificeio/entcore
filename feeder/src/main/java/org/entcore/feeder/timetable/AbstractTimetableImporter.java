@@ -423,6 +423,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected void addSubject(String id, JsonObject currentEntity) {
 		final String code = currentEntity.getString("Code");
+		if(code == null)
+			return;
+
 		String subjectId = subjectsMapping.get(code);
 		if (isEmpty(subjectId)) {
 			final String externalId = structureExternalId + "$" + currentEntity.getString("Code");
