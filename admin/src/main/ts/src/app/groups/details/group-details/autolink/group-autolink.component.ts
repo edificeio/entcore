@@ -257,4 +257,12 @@ export class GroupAutolinkComponent extends OdeComponent {
             this.uncheckAllChildren(child.children);
         });
     }
+
+    selectAll(): void {
+        this.checkAllChildren(this.structureTreeItems);
+    }
+
+    unselectAll(): void {
+        this.uncheckAllChildren(this.structureTreeItems);
+    }
 }

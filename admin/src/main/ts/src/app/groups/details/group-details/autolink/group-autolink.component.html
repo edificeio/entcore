@@ -77,6 +77,10 @@
         <h2>
           <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresLightbox.title</s5l>
         </h2>
+        <p>
+          <s5l class="select-link" (click)="selectAll()">select.all</s5l>
+          / <s5l class="select-link" (click)="unselectAll()">deselect.all</s5l>
+        </p>
         <div class="has-vertical-margin-20" style="overflow: auto">
           <ode-item-tree
             [items]="structureTreeItems"
