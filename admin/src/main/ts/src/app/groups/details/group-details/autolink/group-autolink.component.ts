@@ -190,8 +190,8 @@ export class GroupAutolinkComponent extends OdeComponent {
                 check: !!this.lightboxSubStructureIds && !!this.lightboxSubStructureIds.find(subId => subId === child.id)
             };
         };
-        if (this.structure && this.structure.children) {
-            return this.structure.children.map(myMap);
+        if (this.structure) {            
+            return [myMap(this.structure)];
         }
         return [];
     }
