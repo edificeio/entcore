@@ -1063,7 +1063,8 @@ public class DuplicateUsers {
 						"WITH u, ub, prevUb " +
 						"WHERE prevUb IS NULL " +
 						"SET ub.theme = null " +
-						"CREATE UNIQUE (u)-[:USERBOOK]->(ub)";
+						"CREATE UNIQUE (u)-[:USERBOOK]->(ub) " +
+						"SET ub.userid = {id}";
 		tx.add(query1, params);
 		final String query2 =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
