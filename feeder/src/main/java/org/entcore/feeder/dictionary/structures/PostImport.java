@@ -54,6 +54,9 @@ public class PostImport {
 	private final Neo4j neo4j = TransactionManager.getNeo4jHelper();
 	private final JsonObject config;
 	private final Vertx vertx;
+	private final JsonArray manualGroupLinkUsersAutoSources;
+	private final JsonArray fixIncorrectStoragesSources;
+	private final JsonArray tenantLinkStructureSources;
 	protected final FeederLogger logger = new FeederLogger(e -> "PostImport");
 
 	public PostImport(Vertx vertx, DuplicateUsers duplicateUsers, JsonObject config) {
@@ -62,6 +65,12 @@ public class PostImport {
 		eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 		this.duplicateUsers = duplicateUsers;
 		this.config = config;
+		this.manualGroupLinkUsersAutoSources = config
+				.getJsonArray("manual-group-link-users-auto-sources", new JsonArray().add("AAF"));
+		this.fixIncorrectStoragesSources = config
+				.getJsonArray("fix-incorrect-storages-sources", new JsonArray().add("AAF"));
+		this.tenantLinkStructureSources = config
+				.getJsonArray("tenant-link-structure-sources", new JsonArray().add("AAF").add("AAF1D"));
 	}
 
 	public void execute() {
@@ -125,15 +134,16 @@ public class PostImport {
 						config.getJsonArray("publish-classes-update").contains(source)) {
 					publishClassesUpdate();
 				}
-				if (config.getBoolean("tenant-link-structure", true)) {
+				if (Boolean.TRUE.equals(config.getBoolean("tenant-link-structure", true)) &&
+					tenantLinkStructureSources.contains(source)) {
 					Tenant.linkStructures(eb);
 				}
-				if(config.getBoolean("manual-group-link-users-auto", true) == true)
-				{
+				if(Boolean.TRUE.equals(config.getBoolean("manual-group-link-users-auto", true)) &&
+						manualGroupLinkUsersAutoSources.contains(source)) {
 					Group.runLinkRules();
 				}
-				if(config.getBoolean("fix-incorrect-storages", true) == true)
-				{
+				if(Boolean.TRUE.equals(config.getBoolean("fix-incorrect-storages", true)) &&
+						fixIncorrectStoragesSources.contains(source)) {
 					fixIncorrectStorages();
 				}
 			}
