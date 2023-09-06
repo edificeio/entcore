@@ -191,10 +191,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				String sp = message.body().getString("SP");
 				String acs = message.body().getString("acs");
 				boolean sign = message.body().getBoolean("AuthnRequestsSigned", false);
+				boolean includeAcs = message.body().getBoolean("AuthnRequestsIncludeAcs", true);
 				if (message.body().getBoolean("SimpleSPEntityID", false)) {
 					sendOK(message, generateSimpleSPEntityIDRequest(idp, sp));
 				} else {
-					sendOK(message, generateAuthnRequest(idp, sp, acs, sign));
+					sendOK(message, generateAuthnRequest(idp, sp, acs, sign, includeAcs));
 				}
 				break;
 			case "generate-saml-response":
@@ -792,7 +793,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				SamlUtils.SIMPLE_RS);
 	}
 
-	private JsonObject generateAuthnRequest(String idp, String sp, String acs, boolean sign)
+	private JsonObject generateAuthnRequest(String idp, String sp, String acs, boolean sign, boolean includeAcs)
 			throws NoSuchFieldException, IllegalAccessException, MarshallingException, IOException,
 			NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		final String id = "ENT_" + UUID.randomUUID().toString();
@@ -822,8 +823,12 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		authRequest.setForceAuthn(false);
 		authRequest.setIsPassive(false);
 		authRequest.setIssueInstant(new DateTime());
-		authRequest.setProtocolBinding("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
-		authRequest.setAssertionConsumerServiceURL(acs);
+		if (includeAcs) {
+			authRequest.setProtocolBinding("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+			authRequest.setAssertionConsumerServiceURL(acs);
+		} else {
+			logger.info("Not include ACS and Binding for idp " + idp);
+		}
 		authRequest.setAssertionConsumerServiceIndex(1);
 		authRequest.setAttributeConsumingServiceIndex(1);
 		authRequest.setIssuer(issuer);
