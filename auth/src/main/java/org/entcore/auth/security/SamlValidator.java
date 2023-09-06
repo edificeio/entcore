@@ -114,6 +114,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	private SamlServiceProviderFactory spFactory;
 	private IDPAssertionStore idpAssertionsStore;
 	private HttpClient httpClient;
+	private JsonObject idpSpIssuerMapping;
 
 	private void debug(String message) {
 		if (logger.isDebugEnabled()) {
@@ -153,6 +154,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				logger.error("Empty issuer");
 				return;
 			}
+
+			idpSpIssuerMapping = config.getJsonObject("saml-idp-spissuer", new JsonObject());
 
 			for (String f : vertx.fileSystem().readDirBlocking(path)) {
 				loadSignatureTrustEngine(f);
@@ -866,7 +869,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		NameID nameId = SamlUtils.buildSAMLObjectWithDefaultName(NameID.class);
 		nameId.setFormat(nId.getFormat());
 		nameId.setValue(nId.getValue());
-		String spIssuer = this.issuer;
+		String spIssuer = this.idpSpIssuerMapping.getString(idp, this.issuer);
 		if (isNotEmpty(nId.getNameQualifier())) {
 			nameId.setNameQualifier(nId.getNameQualifier());
 		}
