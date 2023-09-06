@@ -1,5 +1,5 @@
 /*
- * Copyright © "Open Digital Education", 2015
+ * Copyright © "Open Digital Education", 2023
  *
  * This program is published by "Open Digital Education".
  * You must indicate the name of the software and the company in any production /contribution
@@ -19,37 +19,11 @@
 
 package org.entcore.auth.services.impl;
 
-import fr.wseduc.webutils.Either;
-import org.entcore.common.validation.StringValidation;
-import org.opensaml.saml2.core.Assertion;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
-
-public class SSOAgents extends AbstractSSOProvider {
+public class SSOAzure extends SSOAgents {
 
 	@Override
-	public void execute(Assertion assertion, Handler<Either<String, Object>> handler) {
-		if (!validConditions(assertion, handler)) return;
-
-		String mail = getAttribute(assertion, getAttributeName());
-		if (mail == null) {
-			mail = getAttribute(assertion, "ctemail");
-			if (mail == null) {
-				handler.handle(new Either.Left<String, Object>("invalid.email"));
-				return;
-			}
-		}
-
-		if (StringValidation.isEmail(mail)) { // PersEducNat
-			executeQuery("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
-					assertion, handler);
-		} else {
-			handler.handle(new Either.Left<String, Object>("invalid.email"));
-		}
-	}
-
 	protected String getAttributeName() {
-		return "mail";
+		return "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
 	}
 
 }
