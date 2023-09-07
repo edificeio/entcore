@@ -128,9 +128,8 @@ public class BasicQuotaService implements org.entcore.common.folders.QuotaServic
 	public void init(final String userId) {
 		String query = "MATCH (n:User {id : {userId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
 				+ "WITH n, sum(CASE WHEN has(p.defaultQuota) THEN p.defaultQuota ELSE 104857600 END) as quota "
-				+ "MERGE (m:UserBook { userid : {userId}}) "
-				+ "SET m.quota = quota, m.storage = 0, m.alertSize = false " + "WITH m, n "
-				+ "CREATE UNIQUE n-[:USERBOOK]->m";
+				+ "MERGE (n)-[:USERBOOK]->(m:UserBook) "
+				+ "SET m.userid = {userId}, m.quota = quota, m.storage = 0, m.alertSize = false ";
 		JsonObject params = new JsonObject().put("userId", userId);
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
