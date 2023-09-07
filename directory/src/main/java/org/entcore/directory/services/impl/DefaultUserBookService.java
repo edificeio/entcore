@@ -431,9 +431,9 @@ public class DefaultUserBookService implements UserBookService {
 			params.put("avatar", userBookData.getString("default-avatar"));
 			params.put("theme", userBookData.getString("default-theme", ""));
 			final StringBuilder query = new StringBuilder();
-			query.append("MERGE (m:UserBook { userid : {userId}}) ");
-			query.append("SET m.type = 'USERBOOK', m.picture = {avatar}, m.motto = '', m.health = '', m.mood = 'default', m.theme =  {theme} ");
-			query.append("WITH m MATCH (n:User {id : {userId}}) CREATE UNIQUE n-[:USERBOOK]->m");
+			query.append("MATCH (n:User {id : {userId}}) ");
+			query.append("MERGE (n)-[:USERBOOK]->(m:UserBook) ");
+			query.append("SET m.userid = {userId}, m.type = 'USERBOOK', m.picture = {avatar}, m.motto = '', m.health = '', m.mood = 'default', m.theme =  {theme} ");
 			queries.add(query.toString(), params);
 		}
 		final JsonArray listOfHobbies = userBookData.getJsonArray("hobbies", new JsonArray());
