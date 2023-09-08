@@ -93,7 +93,7 @@ public class DefaultUserBookServiceTest {
     @Test
     public void testInitUserBookOfUserWithGoodUserBook(final TestContext testContext) {
         final String userId = "userIdTestInitUserBookOfUserWithGoodUserBook";
-        final Async async = testContext.async(3);
+        final Async async = testContext.async(2);
         prepareData(userId, userId).onComplete(testContext.asyncAssertSuccess(h -> {
             defaultUserBookService.initUserbook(userId, "theme", new JsonObject());
             test.vertx().setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
