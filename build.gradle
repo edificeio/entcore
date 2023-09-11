@@ -212,6 +212,7 @@ project(':common') {
     }
     compile "io.vertx:vertx-micrometer-metrics:$vertxVersion"
     compile "io.micrometer:micrometer-registry-prometheus:$micrometerPrometheusVersion"
+    compile "com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:$owaspVersion"
     testCompile project(':test')
   }
 }
