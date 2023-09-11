@@ -43,6 +43,7 @@ public class HtmlUtilsTest {
         assertCleaned(context, "should not inject script with no closing tag", "<SCRIPT SRC=http://xss.rocks/xss.js?< B >");
         assertCleaned(context, "should not keep event attribute", "<div onclick=\"alert('XSS')\"></div>", "<div></div>");
         assertCleaned(context, "should not keep event with ng attribute", "<div ng-load=\"$eval.constructor('alert(0)')()\" ng-init=\"alert('XSS')\" /></div>", "<div></div>");
+        assertCleaned(context, "should not keep js injection with \\0 in href", "<a href=\"java\\0script:alert('XSS')\" ></a>");
         assertCleaned(context, "should not keep js injection with \\0", "<img src=\"java\\0script:alert('XSS')\" />");
         assertCleaned(context, "should not keep js injection with meta char", "<img src=\" &#14; javascript:alert('XSS');\" />");
         assertCleaned(context, "should not keep js injection with non-alpha non-digit", "<div onload!#$%&()*~+-_.,:;?@[/|\\]^`=alert(\"XSS\")></div>", "<div></div>");
