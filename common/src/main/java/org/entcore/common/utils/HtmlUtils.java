@@ -3,6 +3,7 @@ package org.entcore.common.utils;
 import fr.wseduc.webutils.collections.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,6 +139,7 @@ public class HtmlUtils {
             // forbidden: "usemap",
             "value", "width", "wrap"
     };
+    static final PolicyFactory policy = new HtmlPolicyBuilder().allowStandardUrlProtocols().allowElements(ALLOWED_CUSTOM_ELEMENTS).allowElements(ALLOWED_ELEMENTS).allowAttributes(ALLOW_ATTRIBUTES).globally().toFactory();
 
     public static JsonArray getAllImagesSrc(String htmlContent){
         JsonArray images = new JsonArray();
@@ -280,9 +282,8 @@ public class HtmlUtils {
         return cleanHtml;
     }
 
-    public static String xssSanitize(String input) {
-        final HtmlPolicyBuilder policy = new HtmlPolicyBuilder();
-        String cleanHtml = policy.allowStandardUrlProtocols().allowElements(ALLOWED_CUSTOM_ELEMENTS).allowElements(ALLOWED_ELEMENTS).allowAttributes(ALLOW_ATTRIBUTES).globally().toFactory().sanitize(input);
+    public static String xssSanitize(final String input) {
+        final String cleanHtml = policy.sanitize(input);
         return cleanHtml;
     }
 }
