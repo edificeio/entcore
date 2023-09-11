@@ -99,9 +99,9 @@ public class HtmlUtils {
             // embed content
             //forbidden :  "embed", "iframe", "object",
             "picture",
-            //forbidden :  "portal", "source",
-            // svg and math
-            "svg", "math", "canvas",
+            //forbidden :  "portal", "source","svg",
+            // math and canvas
+            "math", "canvas",
             // scription
             // forbidden: "noscript", "script",
             // demarcating
