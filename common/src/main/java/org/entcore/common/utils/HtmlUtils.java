@@ -76,6 +76,91 @@ public class HtmlUtils {
     private static final Pattern unsafeAttributePattern = Pattern.compile("(ng-[a-zA-Z0-9-]+\\s*=\\s*\"[^\"]*\")|"
             + "(on[a-zA-Z]+\\s*=\\s*\"[^\"]*\")|"
             + "(href\\s*=\\s*\"javascript:[^\"]*\")");
+    /**
+     * Custom html element allowed in xss sanitizer
+     */
+    private static final String[] ALLOWED_CUSTOM_ELEMENTS = new String[] {"mathjax"};
+    /**
+     * HTML element allowed in xss sanitizer
+     * https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+     */
+    private static final String[] ALLOWED_ELEMENTS = new String[]{
+            // document metadata
+            //forbidden : "base", "head", "link", "meta", "style", "title", "body",
+            // content sectionning
+            "address", "article", "aside", "footer", "header",
+            "h1", "h2", "h3", "h4", "h5", "h6", "hgroup", "main", "nav", "section", "search",
+            // text content
+            "blockquote", "dd", "div", "dl", "dt", "figcaption", "figure", "hr", "li", "menu", "ol", "p", "pre", "ul",
+            // inline text
+            "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em", "i", "kbd", "mark", "q", "rp", "rt", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr",
+            //image multimedia
+            "area", "audio", "img", "map", "track", "video",
+            // embed content
+            //forbidden :  "embed", "iframe", "object",
+            "picture",
+            //forbidden :  "portal", "source",
+            // svg and math
+            "svg", "math", "canvas",
+            // scription
+            // forbidden: "noscript", "script",
+            // demarcating
+            // forbidden: "del", "ins",
+            // table
+            "caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", "button", "datalist", "fieldset",
+            // form
+            // forbiddent: "form", "input", "label", "legend", "meter", "optgroup", "option", "output", "progress", "select", "textarea",
+            // interactive elements
+            // forbidden: "details", "dialog", "summary",
+            // webcomponents
+            // forbidden: "slot","template",
+            // obsolete
+            // forbidden: "acronym", "big", "center", "content", "dir", "font", "frame", "frameset", "image", "marquee", "menuitem", "nobr", "noembed", "noframes", "param", "plaintext", "rb", "rtc", "shadow", "strike", "tt", "xmp"
+    };
+    /**
+     * HTML attributes allowed in xss sanitizer
+     * https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes
+     */
+    private static final String[] ALLOW_ATTRIBUTES = new String[]{
+            //forbidden "accept","accept-charset","accesskey","action",
+            "align",
+            // forbidden: "allow",
+            "alt",
+            // forbidden: "async","autocapitalize","autocomplete",
+            "autoplay", "background", "bgcolor", "border",
+            // forbidden "buffered","capture","charset",
+            "checked", "cite", "class", "color", "cols", "colspan",
+            // forbidden: "content","contenteditable","contextmenu",
+            "controls", "coords",
+            // forbidden: "crossorigin","csp","data","data-*","datetime","decoding","default","defer",
+            "dir",
+            // forbidden: "dirname",
+            "disabled",
+            //forbidden: "download","draggable","enctype","enterkeyhint",
+            "for",
+            //forbidden: "form","formaction","formenctype","formmethod","formnovalidate","formtarget","headers",
+            "height",
+            // forbidden: "hidden","high",
+            "href", "hreflang",
+            // forbidden: "http-equiv"
+            "id",
+            // forbidden: "integrity","intrinsicsize","inputmode","ismap","itemprop","kind",
+            "label", "lang",
+            // forbidden: "language","loading","list","loop","low","manifest","max","maxlength","minlength","media","method","min","multiple","muted","name","novalidate","open","optimum","pattern","ping","placeholder","playsinline","poster","preload",
+            "readonly",
+            // forbidden "referrerpolicy","rel","required","reversed",
+            "role", "rows", "rowspan",
+            // forbidden "sandbox","scope","scoped",
+            "selected",
+            // forbidden "shape","size","sizes","slot","span",
+            "spellcheck", "src",
+            // forbidden "srcdoc","srclang","srcset","start","step",
+            "style", "summary", "tabindex", "target", "title", "translate", "type",
+            // forbidden: "usemap",
+            "value", "width", "wrap"
+    };
+    static final PolicyFactory policy = new HtmlPolicyBuilder().allowStandardUrlProtocols().allowElements(ALLOWED_CUSTOM_ELEMENTS).allowElements(ALLOWED_ELEMENTS).allowAttributes(ALLOW_ATTRIBUTES).globally().toFactory();
+
 
     public static JsonArray getAllImagesSrc(String htmlContent) {
         JsonArray images = new JsonArray();
@@ -218,4 +303,8 @@ public class HtmlUtils {
         return cleanHtml;
     }
 
+    public static String xssSanitize(final String input) {
+        final String cleanHtml = policy.sanitize(input);
+        return cleanHtml;
+    }
 }
