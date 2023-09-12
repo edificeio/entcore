@@ -21,6 +21,7 @@ package org.entcore.feeder.utils;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.Source;
 import org.entcore.feeder.exceptions.TransactionException;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -75,7 +76,7 @@ public class TransactionManager {
 		if (transactions.containsKey(name)) {
 			throw new TransactionException("Concurrent transaction already in use");
 		}
-		TransactionHelper tx = new TransactionHelper(neo4j, 1000, transactionId);
+		TransactionHelper tx = new TransactionHelper(neo4j, Source.UNKNOWN, 1000, transactionId);
 		transactions.put(name, tx);
 		return tx;
 	}
