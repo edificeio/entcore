@@ -24,9 +24,20 @@ import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.utils.Report;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import org.entcore.common.utils.Identifier;
+import org.entcore.common.utils.ExternalId;
+import org.entcore.common.schema.users.User;
+import org.entcore.common.schema.users.Teacher;
+import org.entcore.common.schema.users.Personnel;
+import org.entcore.common.schema.structures.Structure;
+import org.entcore.common.schema.utils.matchers.Matcher;
+import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +71,13 @@ public class PersEducNat extends AbstractUser {
 			}
 			log.warn(error);
 		} else {
+
+			User user;
+			if(DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID.equals(profileExternalId))
+				user = new Teacher(new ExternalId<User>(object.getString("externalId")));
+			else
+				user = new Personnel(new ExternalId<User>(object.getString("externalId")));
+
 			if (nodeQueries) {
 				object.put("source", currentSource);
 				if (userImportedExternalId != null) {
@@ -119,38 +137,21 @@ public class PersEducNat extends AbstractUser {
 					}
 					transactionHelper.add(query, p);
 				}
-				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0) {
-					String query;
-					structuresByFunctions = getMappingStructures(structuresByFunctions);
-					JsonObject p = new JsonObject().put("userExternalId", externalId);
-					if (structuresByFunctions.size() == 1) {
-						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
-								"(u:User { externalId : {userExternalId}}) " +
-								"WHERE NOT(HAS(u.mergedWith)) " +
-								"MERGE u-[:IN]->g";
-						p.put("structureAdmin", structuresByFunctions.getString(0))
-								.put("profileExternalId", profileExternalId);
-					} else {
-						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"(u:User { externalId : {userExternalId}}) " +
-								"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
-								"AND p.externalId = {profileExternalId} " +
-								"MERGE u-[:IN]->g ";
-						p.put("structuresAdmin", structuresByFunctions)
-								.put("profileExternalId", profileExternalId);
-					}
-					transactionHelper.add(query, p);
+				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0)
+				{
 
-					if (Boolean.FALSE.equals(isMultiEtab)) {
-						String qs =
-								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
-										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r ";
+					List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structuresByFunctions.size());
+					for(int i = structuresByFunctions.size(); i-- > 0;)
+						structuresIds.add(new ExternalId<Structure>(structuresByFunctions.getString(i)));
+
+					user.attach(transactionHelper, structuresIds);
+					if (Boolean.FALSE.equals(isMultiEtab))
+					{
+						user.dettach(transactionHelper, new IdentifierMatcher<Structure>(Matcher.Operation.EXCLUDE, structuresIds));
 						JsonObject ps = new JsonObject()
 								.put("userExternalId", externalId)
 								.put("source", currentSource)
 								.put("structures", structuresByFunctions);
-						transactionHelper.add(qs, ps);
 						final String daa =
 								"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
 										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
