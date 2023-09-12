@@ -4,17 +4,16 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class HtmlUtilsTest {
-    private static Logger log = LoggerFactory.getLogger(HtmlUtilsTest.class);
+public class SanitizerUtilsTest {
+    private static Logger log = LoggerFactory.getLogger(SanitizerUtilsTest.class);
 
 
     void assertSame(final TestContext context, final String message, final String test) {
-        final String cleaned = HtmlUtils.xssSanitize(test);
+        final String cleaned = SanitizerUtils.sanitizeHtml(test);
         context.assertEquals(cleaned, test, message);
     }
 
@@ -23,7 +22,7 @@ public class HtmlUtilsTest {
     }
 
     void assertCleaned(final TestContext context, final String message, final String test, final String cleanValue) {
-        final String cleaned = HtmlUtils.xssSanitize(test);
+        final String cleaned = SanitizerUtils.sanitizeHtml(test);
         context.assertEquals(cleanValue, cleaned, message);
     }
 
@@ -53,6 +52,19 @@ public class HtmlUtilsTest {
         assertCleaned(context, "should not inject using img and html caracter", "<img src=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;/>");
         assertCleaned(context, "should not inject using img and hex", "<img src=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29/>");
         assertCleaned(context, "should not inject using img and base64", "<img onload=\"eval(atob('ZG9jdW1lbnQubG9jYXRpb249Imh0dHA6Ly9saXN0ZXJuSVAvIitkb2N1bWVudC5jb29raWU='))\"/>");
+        // SVG
+        assertSame(context, "should keep svg elements", "<svg width=\"100\" height=\"100\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"10\" y=\"10\" width=\"80\" height=\"80\" fill=\"blue\" stroke=\"black\" stroke-width=\"2\"></rect><circle cx=\"50\" cy=\"50\" r=\"30\" fill=\"red\" stroke=\"green\" stroke-width=\"3\"></circle><ellipse cx=\"80\" cy=\"30\" rx=\"25\" ry=\"15\" fill=\"yellow\" stroke=\"purple\" stroke-width=\"2\"></ellipse><g fill=\"none\" stroke=\"gray\" stroke-width=\"1\"></g></svg>");
+        assertCleaned(context, "should clean svg script", "<svg><script></script></svg>","<svg></svg>");
+        assertCleaned(context, "should clean svg event", "<svg><rect onclick=\"alert('XSS')\"></rect></svg>","<svg><rect></rect></svg>");
+        // BASE64
+        assertCleaned(context, "should clean base64 xss", "<img src=\"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgICA8Zm9yZWlnbk9iamVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICAgICAgICA8c2NyaXB0PmFsZXJ0KGRvY3VtZW50LmRvbWFpbik7PC9zY3JpcHQ+CiAgICA8L2ZvcmVpZ25PYmplY3Q+Cjwvc3ZnPg==\">", "<img src=\"\" />");
+        final String imageBase64 = "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY&#43;nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1&#43;9kLp&#43;vbbpoDh&#43;6TklxBeAi9TL0taeWpdmZzQDry0AcO&#43;jQ12RyohqqoYoo8RDwJrU&#43;qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx&#43;f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl&#43;TvuiRW1m3n0eDl0vRPcEysqdXn&#43;jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ&#43;kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R&#43;h6rYSUb3ekokRY6f/YukArN979jcW&#43;V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2&#43;D3P&#43;4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y&#43;ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ&#43;gqjk8VWFYmHrwBzW/n&#43;uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t&#43;2nNu5sxxpDFNx&#43;huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw&#43;/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is&#43;hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu&#43;fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII&#61;\" />";
+        assertSame(context, "should keep valid base64 image", imageBase64);
+        assertSame(context, "should keep empty base64 image", "<img src=\"\" />");
+        assertSame(context, "should keep absent src image", "<img alt=\"\" />");
+        // IFRAME
+        assertSame(context, "should keep allowed attributes", "<iframe height=\"1\" loading=\"lazy\" name=\"name\" src=\"/iframe.html\"></iframe>");
+        assertCleaned(context, "should not keep forbidden attributes", "<iframe allow=\"*\" allowfullscreen=\"true\" allowpaymentrequest=\"true\" credentialless=\"true\" csp=\"default-src\" referrerpolicy=\"no-referrer\" sandbox=\"allow-downloads\" srcdoc=\"<html></html>\"></iframe>", "<iframe></iframe>");
     }
 
 }
