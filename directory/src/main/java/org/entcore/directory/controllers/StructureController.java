@@ -125,7 +125,7 @@ public class StructureController extends BaseController {
 			@Override
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
-					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
+					if (r.right().getValue() != null) {
 						JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 						ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
@@ -153,7 +153,7 @@ public class StructureController extends BaseController {
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
-		structureService.unlink(structureId, userId, notEmptyResponseHandler(request));
+		structureService.unlink(structureId, userId, defaultResponseHandler(request));
 	}
 
 	@Get("/structure/admin/list")
