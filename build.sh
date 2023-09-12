@@ -130,7 +130,7 @@ buildAdminNode() {
 }
 
 buildGradle () {
-  docker-compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"shadowJar "$GRADLE_OPTION"install
+  docker-compose run --rm $USER_OPTION gradle bash -c "git config --global --add safe.directory /home/gradle/project && gradle ${GRADLE_OPTION}shadowJar ${GRADLE_OPTION}install"
 }
 
 testGradle () {
