@@ -25,16 +25,22 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.Json;
+import org.entcore.common.bus.MessageUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.Source;
+//import org.entcore.common.schema.users.User;
+//import org.entcore.common.schema.structures.Structure;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.utils.Id;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -387,116 +393,85 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
-	public void addUser(final Message<JsonObject> message) {
+	public void addUser(final Message<JsonObject> message)
+	{
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
 
+		TransactionHelper tx = TransactionHelper.DEFAULT;
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		if(transactionId != null)
+			tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL, transactionId);
+
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			addUserInStructure(message, userId, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			MessageUtils.replyWithResults(message,
+				new org.entcore.common.schema.users.User(userId).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+			);
+
+		}
+		else if (classId != null && !classId.trim().isEmpty())
 			addUserInClass(message, userId, classId);
+		else
+		{
+			sendError(message, "structureId or classId must be specified");
 			return;
 		}
-		sendError(message, "structureId or classId must be specified");
+
+		if(Boolean.TRUE.equals(commit))
+			tx.commit();
 	}
 
 
-	public void addUsers(final Message<JsonObject> message) {
+	public void addUsers(final Message<JsonObject> message)
+	{
 		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
 		if (userIds.isEmpty()) return;
 
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			addUsersInStructure(message, userIds, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
-			addUsersInClass(message, userIds, classId);
-			return;
-		}
-		sendError(message, "structureId or classId must be specified");
-	}
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			TransactionHelper tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL);
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
+			for(Object userId : userIds.getList())
+				new org.entcore.common.schema.users.User(userId.toString()).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
 
-	private void addUserInStructure(final Message<JsonObject> message,
-			String userId, String structureId) {
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		JsonObject params = new JsonObject()
-				.put("structureId", structureId)
-				.put("userId", userId);
-		String query =
-				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WITH u, p " +
-				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
-				"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
-				"CREATE UNIQUE pg<-[:IN {source: inSource}]-u " +
-				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-				"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
-				"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
-				"RETURN DISTINCT u.id as id";
-		String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
-		statementsBuilder.add(query, params);
-		statementsBuilder.add(removeDefaultGroup, params);
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-				} else {
-					message.reply(event.body());
+			tx.commit(new Handler<Message<JsonObject>>()
+			{
+				@Override
+				public void handle(Message<JsonObject> res)
+				{
+					message.reply(res.body());
 				}
-			}
-		});
-	}
-
-	private void addUsersInStructure(final Message<JsonObject> message,
-									JsonArray userIds, String structureId) {
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		for(Object userId : userIds.getList()){
-			JsonObject params = new JsonObject()
-					.put("structureId", structureId)
-					.put("userId", userId.toString());
-			String query =
-					"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-							"WITH u, p " +
-							"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p) " +
-							"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
-							"MERGE (pg)<-[:IN {source: inSource}]-(u) " +
-							"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-							"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
-							"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
-							"RETURN DISTINCT u.id as id";
-			String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
-			statementsBuilder.add(query, params);
-			statementsBuilder.add(removeDefaultGroup, params);
+			});
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), null, true, res-> {
-				message.reply(res.body());
-		});
+		else if (classId != null && !classId.trim().isEmpty())
+			addUsersInClass(message, userIds, classId);
+		else
+			sendError(message, "structureId or classId must be specified");
 	}
 
-	public void removeUser(final Message<JsonObject> message) {
+	public void removeUser(final Message<JsonObject> message)
+	{
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
 
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			removeUserFromStructure(message, userId, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
-			removeUserFromClass(message, userId, classId);
-			return;
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			MessageUtils.replyWithResults(message,
+				new org.entcore.common.schema.users.User(userId.toString()).dettach(TransactionHelper.DEFAULT, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+			);
 		}
-		sendError(message, "structureId or classId must be specified");
+		else if (classId != null && !classId.trim().isEmpty())
+			removeUserFromClass(message, userId, classId);
+		else
+			sendError(message, "structureId or classId must be specified");
 	}
 
 	public void removeUsers(final Message<JsonObject> message) {
