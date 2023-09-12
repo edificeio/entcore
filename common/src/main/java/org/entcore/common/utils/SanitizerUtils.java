@@ -161,7 +161,7 @@ public class SanitizerUtils {
             .allowAttributes(ALLOW_SVG_ATTRIBUTES).onElements(ALLOW_SVG_ELEMENTS)
             // allow data image
             .allowUrlProtocols("data")
-            .allowElements(new Base64SanitizePolicy(), "img", "image", "iframe")
+            .allowElements(new Base64SanitizePolicy(), "img", "image")
             .toFactory();
 
     /**
