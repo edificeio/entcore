@@ -30,6 +30,8 @@ import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
+import org.entcore.common.schema.Source;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -66,6 +68,7 @@ public class Importer {
 	private AtomicBoolean isInUse = new AtomicBoolean(false);
 	private String currentSource;
 	private Neo4j neo4j;
+	private Source source;
 	private ConcurrentMap<String, ImporterStructure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
@@ -101,8 +104,9 @@ public class Importer {
 		this.isInUse.set(true);
 		this.neo4j = neo4j;
 		this.currentSource = source;
+		this.source = Source.fromString(source);
 		this.report = new Report(acceptLanguage);
-		this.transactionHelper = new TransactionHelper(neo4j, 1000);
+		this.transactionHelper = new TransactionHelper(neo4j, this.source, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -333,7 +337,7 @@ public class Importer {
 	 * Warning : all data in old uncommitted transaction will be lost.
 	 */
 	public void reinitTransaction() {
-		transactionHelper = new TransactionHelper(neo4j, 1000);
+		transactionHelper = new TransactionHelper(neo4j, this.source, 1000);
 		if(persEducNat != null)
 			persEducNat.setTransactionHelper(transactionHelper);
 	}
