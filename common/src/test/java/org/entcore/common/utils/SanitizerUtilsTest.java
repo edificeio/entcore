@@ -65,6 +65,7 @@ public class SanitizerUtilsTest {
         // IFRAME
         assertSame(context, "should keep allowed attributes", "<iframe height=\"1\" loading=\"lazy\" name=\"name\" src=\"/iframe.html\"></iframe>");
         assertCleaned(context, "should not keep forbidden attributes", "<iframe allow=\"*\" allowfullscreen=\"true\" allowpaymentrequest=\"true\" credentialless=\"true\" csp=\"default-src\" referrerpolicy=\"no-referrer\" sandbox=\"allow-downloads\" srcdoc=\"<html></html>\"></iframe>", "<iframe></iframe>");
+        assertCleaned(context, "should clean iframe xss injection", "<iframe src=\"data:image/svg+xml;base64,CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPGNpcmNsZSByPSIxMCIgY3g9IjEwIiBjeT0iMTAiIGZpbGw9ImdyZWVuIi8+CiAgPGltYWdlIGhyZWY9IngiIG9uZXJyb3I9ImphdmFzY3JpcHQ6YWxlcnQoJ1hTUycpIiAvPgo8L3N2Zz4=\"></iframe>","<iframe src=\"\"></iframe>");
     }
 
 }
