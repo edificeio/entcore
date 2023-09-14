@@ -13,31 +13,31 @@
       "type": "string"
     },
     "birthDate": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "address": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "zipCode": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "city": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "loginAlias": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "email": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "homePhone": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "mobile": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "childrenIds": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }
