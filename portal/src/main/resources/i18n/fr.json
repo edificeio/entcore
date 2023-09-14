@@ -834,5 +834,6 @@
   "explorer.emptyScreen.title.consultation": "C’est un peu calme ici...",
   "read": "Consulter",
   "contrib": "Contribuer",
-  "manager": "Gérer"
+  "manager": "Gérer",
+  "explorer.assetid.notfound": "La ou les ressources sélectionnées ne sont pas encore disponibles. Veuillez ressayer l'action dans quelques instants"
 }
