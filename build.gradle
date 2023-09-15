@@ -401,6 +401,7 @@ project(':test') {
     compile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
     compile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"
     compile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+    compile 'org.mockito:mockito-inline:4.11.0'
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-app')
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-recorder')
   }
