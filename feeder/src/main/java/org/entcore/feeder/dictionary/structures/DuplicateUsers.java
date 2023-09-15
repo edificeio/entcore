@@ -1057,13 +1057,15 @@ public class DuplicateUsers {
 				.put("id", principalUser.getString("id")).put("oldId", oldUser.getString("id"));
 		final String query1 =
 				"MATCH (old:User {id: {oldId}})-[r:USERBOOK]->(ub:UserBook), (u:User {id: {id}}) " +
-						"DELETE r " +
-						"WITH u, ub " +
+						"WITH u, ub, r " +
 						"OPTIONAL MATCH (u)-[:USERBOOK]->(prevUb:UserBook) " +
-						"WITH u, ub, prevUb " +
+						"WITH u, ub, prevUb, r " +
 						"WHERE prevUb IS NULL " +
 						"SET ub.theme = null " +
-						"CREATE UNIQUE (u)-[:USERBOOK]->(ub)";
+						"CREATE UNIQUE (u)-[:USERBOOK]->(ub) " +
+						"SET ub.userid = {id} " +
+						"DELETE r"; // We only delete the relationship between the old user and the userbook if it was transfered to the new user
+									// So we will be able to delete unlinked UserBook nodes with query4
 		tx.add(query1, params);
 		final String query2 =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
@@ -1084,8 +1086,9 @@ public class DuplicateUsers {
 						"WHERE old.oldId IS NULL OR old.oldId <> {id} " +
 						"WITH old, old.id AS oldId, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail " +
 						"OPTIONAL MATCH (old)-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+						"OPTIONAL MATCH (old)-[rUb:USERBOOK]->(ub:UserBook) " +
 						"OPTIONAL MATCH (old)-[r]-() " +
-						"DELETE r, rb, b, old " +
+						"DELETE r, rb, b, old, rUb, ub " +
 						"WITH oldId, oldLogin, oldPassword, oldEmail " +
 						"MATCH (u:User {login: {id}}) " +
 						"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +

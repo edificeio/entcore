@@ -1,4 +1,4 @@
-package org.entcore.feeder.user;
+package org.entcore.feeder.dictionary.structures;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,10 +10,8 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.feeder.dictionary.structures.DuplicateUsers;
-import org.entcore.feeder.dictionary.structures.RelationshipToKeepForDuplicatedUser;
-import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.entcore.test.TestHelper;
@@ -158,7 +156,7 @@ public class DuplicateUsersTest {
                 .onSuccess(rss -> {
                     duplicateUsers.addDisappearingUserRelationship(rss, "user2", "user1", tx);
                     final List<QueryAndParams> groupsToBeCopied = tx.findByRsTypeAndDirection("IN", true);
-                    context.assertEquals(1, groupsToBeCopied.size());
+                    context.assertEquals(1, groupsToBeCopied.size(), "There should be only one group to be copied but found : " + groupsToBeCopied);
                     final QueryAndParams groupToBeCopiedForUser1 = groupsToBeCopied.get(0);
                     context.assertEquals("struct1", groupToBeCopiedForUser1.params.getString("otheNodeId"));
                     context.assertEquals("user2", groupToBeCopiedForUser1.params.getString("userId1"));
@@ -246,6 +244,14 @@ public class DuplicateUsersTest {
         private QueryAndParams(final String query, final JsonObject params) {
             this.query = query;
             this.params = params;
+        }
+
+        @Override
+        public String toString() {
+            return "QueryAndParams{" +
+                    "query='" + query + '\'' +
+                    ", params=" + params +
+                    '}';
         }
     }
     private static class DummyTransactionHelper extends TransactionHelper {

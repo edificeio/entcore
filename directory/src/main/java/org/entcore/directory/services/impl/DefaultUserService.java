@@ -256,7 +256,7 @@ public class DefaultUserService implements UserService {
 					"filter(x IN coalesce(parents, []) WHERE x.id IS NOT NULL) as parents, " +
 					"filter(x IN coalesce(admGroups, []) WHERE x.id IS NOT NULL) as functionalGroups, " +
 					"filter(x IN coalesce(admStruct, []) WHERE x.id IS NOT NULL) as administrativeStructures, " +
-					"filter(x IN coalesce(subjectCodes, []) WHERE x.id IS NOT NULL) as subjectCodes, ";
+					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, ";
 		} else {
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
