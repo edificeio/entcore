@@ -236,7 +236,7 @@ public class PostImportActionsTest {
     }
 
 
-    private JsonObject getPostImportConfigForSource(final String source) {
+    public static  JsonObject getPostImportConfigForSource(final String source) {
         return new JsonObject()
                 .put("notify-apps-after-import", false)
                 .put("manual-group-link-users-auto", false)
@@ -248,12 +248,12 @@ public class PostImportActionsTest {
         return config.put("manual-group-link-users-auto", true);
     }
 
-    private JsonObject withAllowedSourceForLinkStructure(final JsonObject config, final String source) {
+    public static  JsonObject withAllowedSourceForLinkStructure(final JsonObject config, final String source) {
         config.put("tenant-link-structure-sources", new JsonArray().add(source));
         return config;
     }
 
-    private JsonObject withAllowedSourceForAutoSources(final JsonObject config, final String source) {
+    public static JsonObject withAllowedSourceForAutoSources(final JsonObject config, final String source) {
         config.put("manual-group-link-users-auto-sources", new JsonArray().add(source));
         return config;
     }
