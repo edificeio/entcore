@@ -85,6 +85,7 @@ public class EDTHandler extends DefaultHandler {
 					if(persEducNatOnly == Mode.ALL_BUT_PERS_EDUC_NAT)
 						break;
 				case "Matiere":
+				case "Mef":
 				case "Eleve":
 				case "Responsable":
 				case "Classe":

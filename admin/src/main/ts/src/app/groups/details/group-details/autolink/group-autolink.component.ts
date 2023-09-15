@@ -177,6 +177,7 @@ export class GroupAutolinkComponent extends OdeComponent {
 
     public openSubStructuresLightbox() {
         this.lightboxSubStructureIds = Object.assign([], this.form.subStructuresIds);
+        this.structureTreeItems = this.getSubStructuresTreeItems();
         this.showSubStructuresLightbox = true;
     }
 
@@ -204,6 +205,7 @@ export class GroupAutolinkComponent extends OdeComponent {
             this.lightboxSubStructureIds = this.lightboxSubStructureIds.slice(0, index).concat(this.lightboxSubStructureIds.slice(index + 1, this.lightboxSubStructureIds.length));
             this.uncheckAllChildren(child.children);
         }
+        this.structureTreeItems = this.getSubStructuresTreeItems();
     }
 
     public saveAndClose(): void {
@@ -254,5 +256,13 @@ export class GroupAutolinkComponent extends OdeComponent {
             }
             this.uncheckAllChildren(child.children);
         });
+    }
+
+    selectAll(): void {
+        this.checkAllChildren(this.structureTreeItems);
+    }
+
+    unselectAll(): void {
+        this.uncheckAllChildren(this.structureTreeItems);
     }
 }
