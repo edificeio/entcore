@@ -19,11 +19,63 @@
 
 package org.entcore.auth.services.impl;
 
-public class SSOAzure extends SSOAgents {
+import org.entcore.common.validation.StringValidation;
+import org.opensaml.saml2.core.Assertion;
+
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.isEmpty;
+
+public class SSOAzure extends AbstractSSOProvider {
+
+	protected static final String EMAIL_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+	protected static final String ENTPERSONJOINTURE_ATTTRIBUTE = "ENTPersonJointure";
+
+	private final JsonObject issuerAcademiePrefix;
+
+	public SSOAzure() {
+		this(
+			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject())
+		);
+	}
+
+	public SSOAzure(JsonObject issuerAcademiePrefix) {
+		this.issuerAcademiePrefix = issuerAcademiePrefix;
+	}
 
 	@Override
-	protected String getAttributeName() {
-		return "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+	public void execute(Assertion assertion, Handler<Either<String, Object>> handler) {
+		if (!validConditions(assertion, handler)) return;
+
+		final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
+		if (isNotEmpty(entPersonJointure)) {
+			final String externalId = getExternalId(assertion, entPersonJointure);
+			executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
+						assertion, handler);
+		} else {
+			final String mail = getAttribute(assertion, EMAIL_ATTTRIBUTE);
+			if (isEmpty(mail)) {
+				handler.handle(new Either.Left<>("invalid.email"));
+				return;
+			}
+			if (StringValidation.isEmail(mail)) {
+				executeQuery("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
+						assertion, handler);
+			} else {
+				handler.handle(new Either.Left<>("invalid.email"));
+			}
+		}
+	}
+
+	protected String getExternalId(Assertion assertion, String entPersonJointure) {
+		if (issuerAcademiePrefix == null || issuerAcademiePrefix.isEmpty()) {
+			return entPersonJointure;
+		}
+		return issuerAcademiePrefix.getString(assertion.getIssuer().getValue(), "") + entPersonJointure;
 	}
 
 }
