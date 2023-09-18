@@ -451,6 +451,7 @@ public class DefaultTimetableService implements TimetableService {
 							.put("feeder", "PRONOTE")
 							.put("structureExternalId", externalId)
 							.put("path", path),
+						new DeliveryOptions().setSendTimeout(600000l),
 						fr.wseduc.webutils.Utils.handlerToAsyncHandler(new Handler<Message<JsonObject>>()
 						{
 							@Override
