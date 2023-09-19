@@ -64,5 +64,7 @@
   "Spip2RegisteredService.name": "SPIP2",
   "Spip2RegisteredService.description": "Service CAS spécifique pour Spip, le service Spip2 utilise l'identifiant externe sans préfixe académique comme attribut principal.",
   "GRR2RegisteredService.name": "GRR2",
-  "GRR2RegisteredService.description": "Service CAS spécifique pour GRR, le service GRR2 utilise l'identifiant externe sans préfixe académique comme attribut principal."
+  "GRR2RegisteredService.description": "Service CAS spécifique pour GRR, le service GRR2 utilise l'identifiant externe sans préfixe académique comme attribut principal.",
+  "IkigaiRegisteredService.name": "Ikigai",
+  "IkigaiRegisteredService.description": "Service CAS spécifique pour Ikigai, le service Ikigai utilise le login comme attribut principal."
 }
