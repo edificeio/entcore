@@ -117,6 +117,8 @@ public interface UserService {
 
 	void getInfos(String userId, Handler<Either<String,JsonObject>> eitherHandler);
 
+	void getUserStructuresClasses(String userId, Handler<Either<String, JsonObject>> result);
+
 	void relativeStudent(String relativeId, String studentId, Handler<Either<String,JsonObject>> eitherHandler);
 
 	void unlinkRelativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler);

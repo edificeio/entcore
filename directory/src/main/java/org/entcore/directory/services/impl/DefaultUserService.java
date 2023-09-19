@@ -816,6 +816,18 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void getUserStructuresClasses(String userId, Handler<Either<String, JsonObject>> result) {
+		final String query =
+				"MATCH (u:User {id:{id}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+				"WITH DISTINCT u, s, COLLECT(DISTINCT c.name) as classes " +
+				"RETURN u.id as id, u.externalId as externalId, u.firstName as firstName, u.lastName as lastName, " +
+				"u.email as email, u.emailAcademy as emailAcademy, head(u.profiles) as profile, u.login as login, " +
+				"COLLECT([s.UAI, s.name, classes]) as structuresWithClasses ";
+		neo.execute(query, new JsonObject().put("id", userId), validUniqueResultHandler(result));
+	}
+
+	@Override
 	public void relativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-relative-student")
