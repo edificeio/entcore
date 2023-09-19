@@ -552,6 +552,9 @@ public class DirectoryController extends BaseController {
 			case "getUserInfos" :
 				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
 				break;
+			case "getUserStructuresClasses":
+				userService.getUserStructuresClasses(userId, BusResponseHandler.busResponseHandler(message));
+				break;
 			case "getMainStructure" :
 				JsonArray structuresToExclude = message.body().getJsonArray("structures-to-exclude");
 				userService.getMainStructure(userId, structuresToExclude, BusResponseHandler.busResponseHandler(message));
