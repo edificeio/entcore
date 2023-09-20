@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { template, notify, idiom as lang, ng, ui, model, moment, $, angular } from 'entcore';
+import { $, angular, idiom as lang, model, moment, ng, notify, template, ui } from 'entcore';
 import { directory } from '../model';
 
 export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', '$location', ($scope, $window, route, $location) => {
@@ -576,7 +576,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if($scope.currentUser !== undefined){
 				$scope.scroolTop();
 			}
-			$scope.filterPrivateInfos(); // Tmp fix: MOZO-77 prevent display of private data on this screen until backend removes them from the response.
+			$scope.removePrivateInfos(); // Tmp fix: MOZO-77 prevent display of private data on this screen until backend removes them from the response.
 			$scope.$apply('currentUser');
 		});
 
