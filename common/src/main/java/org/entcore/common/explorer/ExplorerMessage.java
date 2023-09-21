@@ -218,7 +218,7 @@ public class ExplorerMessage {
         return this;
     }
 
-    public ExplorerMessage withSubResourceContent(final String id, final String content, final ExplorerContentType type) {
+    public ExplorerMessage withSubResourceContent(final String id, final String content, final ExplorerContentType type, final long version) {
         final JsonArray subResources = message.getJsonArray(SUBRESOURCES_KEY, new JsonArray());
         final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
         final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
@@ -235,6 +235,7 @@ public class ExplorerMessage {
                 break;
         }
         subResource.put("deleted", false);
+        subResource.put("version", version);
         subResources.add(subResource);
         message.put(SUBRESOURCES_KEY, subResources);
         return this;
