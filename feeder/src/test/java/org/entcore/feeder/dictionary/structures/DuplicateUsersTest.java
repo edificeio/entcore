@@ -11,6 +11,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.Source;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -259,7 +260,7 @@ public class DuplicateUsersTest {
         private final List<QueryAndParams> queryAndParams = new ArrayList<>();
 
         public DummyTransactionHelper(final Neo4j neo4j) {
-            super(neo4j);
+            super(neo4j, Source.UNKNOWN);
         }
         public void add(String query, JsonObject params) {
             queryAndParams.add(new QueryAndParams(query, params));
