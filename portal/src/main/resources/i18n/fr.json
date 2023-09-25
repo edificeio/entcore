@@ -354,7 +354,7 @@
   "es_ES": "Espagnol",
   "explorer.filters": "Filtres",
   "explorer.emptyScreen.error.text": "Un problème est survenu lors du chargement des ressources. Si le problème persiste, contactez le support.",
-  "explorer.emptyScreen.error.alt": "Panneau d'erreur",
+  "explorer.emptyScreen.error.alt": "Un problème est survenu lors du chargement des ressources. Si le problème persiste, contactez le support.",
   "explorer.imagepicker.label": "Charger une image",
   "explorer.imagepicker.button.add": "Ajouter une image",
   "explorer.imagepicker.button.delete": "Supprimer l'image",
