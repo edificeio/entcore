@@ -518,16 +518,19 @@ public class DefaultSchoolService implements SchoolService {
 			List<Long> education_levels = StringUtils.isEmpty(education) ? Collections.EMPTY_LIST :
 					Arrays.stream(education.split(",")).mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
 			Boolean hasApp = jo.getBoolean("hasApp");
+			Boolean ignoreMFA = jo.getBoolean("ignoreMFA");
 
 			if (structureId != null) {
 				String query = "MATCH (s:Structure {id: {structureId}}) " +
 						"SET s.levelsOfEducation = {levelsOfEducation} " +
 						"SET s.distributions = {distributions} " +
+						"SET s.ignoreMFA = {ignoreMFA} " +
 						"SET s.hasApp = {hasApp}";
 
 				JsonObject params = new JsonObject().put("structureId", structureId)
 						.put("levelsOfEducation", education_levels)
 						.put("distributions", distributions)
+						.put("ignoreMFA", ignoreMFA)
 						.put("hasApp", hasApp);
 
 				s.add(query, params);
