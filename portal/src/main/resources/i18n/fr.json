@@ -352,6 +352,7 @@
   "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "en_EN": "Anglais",
   "es_ES": "Espagnol",
+  "explorer.filters": "Filtres",
   "explorer.emptyScreen.error.text": "Un problème est survenu lors du chargement des ressources. Si le problème persiste, contactez le support.",
   "explorer.emptyScreen.error.alt": "Panneau d'erreur",
   "explorer.imagepicker.label": "Charger une image",
