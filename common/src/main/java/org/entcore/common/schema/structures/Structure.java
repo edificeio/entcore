@@ -90,12 +90,14 @@ public class Structure implements IdObject
 
         structuresMatcher.setNodeName("s");
         usersMatcher.setNodeName("u");
-        Matcher sourceMatcher = tx.source == Source.MANUAL ? new UniversalMatcher() : new SourceMatcher("r", Source.UNKNOWN, Source.MANUAL, tx.source);
+        Matcher sourceMatcher = tx.source == Source.MANUAL ? new UniversalMatcher() : new SourceMatcher("attached", Source.UNKNOWN, tx.source);
         CompoundMatcher fullMatcher = new CompoundMatcher(usersMatcher, structuresMatcher, sourceMatcher);
 
         String query =
-            "MATCH (u:User)-[r:IN]->(g:Group)-[:DEPENDS*1..2]->(s:Structure) " +
-            "WHERE " + fullMatcher + " ";
+            "MATCH (u:User)-[attached:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+            "WHERE " + fullMatcher + " " +  // Match users that are attached to this structure (but exclude people who are only in the manual groups)
+            "WITH u, s " +
+            "MATCH (u)-[r:IN]-(g:Group)-[:DEPENDS*1..2]-(s) ";
 
         JsonObject params = new JsonObject();
         fullMatcher.addParams(params);
@@ -118,7 +120,7 @@ public class Structure implements IdObject
             "DELETE r, c " + // Remove user from groups
             "WITH u, s " +
             "MATCH (u)-[r:HAS_FUNCTION]->() " +
-            "WHERE s.id IN r.scope AND " + sourceMatcher +
+            "WHERE s.id IN r.scope " +
             "OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ss:Structure) " +
             "WITH s, r, count(CASE WHEN ss.id IN r.scope THEN 1 ELSE NULL END) as parentADML " +
             "WHERE parentADML = 0 " +
