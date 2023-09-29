@@ -51,6 +51,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
@@ -58,6 +59,7 @@ import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserAuthAccount.class);
+	private static final long SEND_EMAIL_ACK_DELAY = 10000L;
 
 	private final Neo neo;
 	private final Vertx vertx;
@@ -409,13 +411,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 	}
 
-	@Override
-	public void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName, String login, String profile, JsonArray functions,
-										final Handler<Either<String, JsonObject>> handler)
-	{
-		if (email == null || email.trim().isEmpty())
-		{
-			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+	private void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName,
+			String login, String profile, JsonArray functions) {
+		if (email == null || email.trim().isEmpty()) {
 			return;
 		}
 
@@ -453,9 +451,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				userAllowed |= hasAllowedFunction;
 			}
 
-			if(userAllowed == false)
-			{
-				handler.handle(new Either.Right<String, JsonObject>(new JsonObject().put("sent", false)));
+			if(userAllowed == false) {
 				return;
 			}
 		}
@@ -464,6 +460,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject json = new JsonObject()
 				.put("host", notification.getHost(request))
 				.put("displayName", displayName);
+
+		final AtomicBoolean sendEmailAck = new AtomicBoolean(false);
+		if (Boolean.TRUE.equals(config.getBoolean("log-send-email-ack", false))) {
+			vertx.setTimer(SEND_EMAIL_ACK_DELAY, res -> {
+				if (!sendEmailAck.get()) {
+					log.error("No ack after 10s of sending changedPassword by email: "+login+"/"+email);
+				}
+			});
+		}
 
 		notification.sendEmail(
 				request,
@@ -475,15 +480,16 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"email/changedPassword.html",
 				json,
 				true,
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-					public void handle(Message<JsonObject> event) {
-							if ("error".equals(event.body().getString("status"))) {
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(event.body().put("sent", true)));
+				res -> {
+					sendEmailAck.set(true);
+					if (res.succeeded()) {
+						if (log.isDebugEnabled()) {
+							log.debug("Success sending changedPassword by email: "+login+"/"+email);
 						}
-					}
-				}));
+					 } else {
+						log.error("Error sending changedPassword by email: "+login+"/"+email, res.cause());
+					 }
+				});
 	}
 
 	@Override
@@ -646,14 +652,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					String login = user.getString("login");
 					String profile = user.getString("profile");
 					JsonArray functions = user.getJsonArray("functions");
-					sendChangedPasswordMail(request, email, dName, login, profile, functions, new Handler<Either<String, JsonObject>>()
-					{
-						@Override
-						public void handle(Either<String, JsonObject> res)
-						{
-							handler.handle(user.getString("id")); // Ignore email failures: email is optional
-						}
-					});
+					sendChangedPasswordMail(request, email, dName, login, profile, functions);
+					handler.handle(user.getString("id")); // Ignore email failures: email is optional
 				}
 				else
 					handler.handle(user != null ? user.getString("id") : null);
@@ -687,14 +687,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					String profile = user.getString("profile");
 					JsonArray functions = user.getJsonArray("functions");
 
-					sendChangedPasswordMail(request, email, dName, login, profile, functions, new Handler<Either<String, JsonObject>>()
-					{
-						@Override
-						public void handle(Either<String, JsonObject> res)
-						{
-							handler.handle(user.getString("id")); // Ignore email failures: email is optional
-						}
-					});
+					sendChangedPasswordMail(request, email, dName, login, profile, functions);
+					handler.handle(user.getString("id")); // Ignore email failures: email is optional
 				}
 				else
 					handler.handle(user != null ? user.getString("id") : null);
