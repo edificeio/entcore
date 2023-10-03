@@ -159,7 +159,7 @@ public abstract class ExplorerSubResource implements IExplorerSubResource {
                     log.error("Could not found creator for subresource "+getApplication()+ " with id : "+id);
                     return new UserInfos();
                 });
-                final ExplorerMessage mess = ExplorerMessage.upsert(new IdAndVersion(id, now), user, isForSearch(),
+                final ExplorerMessage mess = ExplorerMessage.upsert(new IdAndVersion(id, now), isForSearch(),
                                 getApplication(), parent.getResourceType(), getEntityType())
                         .withVersion(now);
                 return mess;
