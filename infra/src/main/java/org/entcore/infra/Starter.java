@@ -36,6 +36,7 @@ import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
+import org.entcore.infra.cron.MonitoringEventsChecker;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
 import org.entcore.infra.services.impl.ExecCommandWorker;
@@ -209,6 +210,16 @@ public class Starter extends BaseServer {
 			antiVirusController.setAntivirusService(antivirusService);
 			addController(antiVirusController);
 			vertx.deployVerticle(ExecCommandWorker.class.getName(), new DeploymentOptions().setWorker(true));
+		}
+		final JsonObject checkMonitoringEvents = config.getJsonObject("check-monitoring-events");
+		if (checkMonitoringEvents != null) {
+			MonitoringEventsChecker monitoringEventsChecker = new MonitoringEventsChecker(
+				vertx.eventBus(),
+				checkMonitoringEvents.getInteger("session-min-delay", 1000),
+				checkMonitoringEvents.getInteger("session-threshold", 1000),
+				checkMonitoringEvents.getLong("session-window-duration", 300000L)
+			);
+			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
 		}
 	}
 
