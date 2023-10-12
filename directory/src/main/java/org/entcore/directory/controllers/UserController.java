@@ -292,6 +292,19 @@ public class UserController extends BaseController {
 		);
 	}
 
+	@Get("/saooti")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void myinfosSaooti(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user ->
+			userService.getForSaooti(user.getUserId())
+				.onSuccess(result -> renderJson(request, result))
+				.onFailure(err -> {
+					log.error("[Cas@UserController::myinfosSaooti] " + err.getMessage());
+					badRequest(request, err.getMessage());
+				})
+		);
+	}
+
 	@Get("/myclasses")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void myclasses(final HttpServerRequest request) {
