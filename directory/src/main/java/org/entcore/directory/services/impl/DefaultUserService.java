@@ -23,7 +23,9 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -45,10 +47,8 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -222,6 +222,84 @@ public class DefaultUserService implements UserService {
 				handler.handle(new Either.Left<>("Problem with get in DefaultUserService : " + result.left().getValue()));
 			}
 		});
+	}
+
+	@Override
+	public Future<JsonObject> getForSaooti(String id) {
+		Promise<JsonObject> promise = Promise.promise();
+
+		final JsonArray filter = createExternalFilter();
+		filter.remove("lastName");
+		filter.remove("firstName");
+		filter.add("classes");
+		filter.add("directionManual");
+		filter.add("groups");
+		filter.add("removedFromStructures");
+		get(id, false, filter, true, infos -> {
+			if (infos.isLeft()) {
+				promise.fail("Problem with get in DefaultUserService : " + infos.left().getValue());
+				return;
+			}
+
+			JsonObject userInfos = infos.right().getValue();
+			JsonArray profiles = userInfos.getJsonArray("profiles", new JsonArray());
+			JsonObject finalResult = new JsonObject();
+
+			// Maps structureExternalId with UAI
+			Map<String, String> mapExternalIdWithUai = new HashMap<>();
+			userInfos.getJsonArray("structureNodes").stream()
+				.filter(Objects::nonNull)
+				.map(JsonObject.class::cast)
+				.forEach(structureNode -> mapExternalIdWithUai.put(structureNode.getString("externalId"), structureNode.getString("UAI")));
+
+			// Format structures
+			JsonArray structures = new JsonArray();
+			userInfos.getJsonObject("functions").getMap().values().stream()
+				.filter(Objects::nonNull)
+				.map(JsonObject.class::cast)
+				.forEach(function -> function.getJsonArray("structureExternalIds").stream()
+					.distinct()
+					.forEach(externalId -> {
+						String uai = mapExternalIdWithUai.get(externalId);
+						JsonObject matchingStructure = structures.stream()
+							.map(JsonObject.class::cast)
+							.filter(structure -> structure.getString("UAI").equals(uai))
+							.findFirst()
+							.orElse(null);
+
+						// If structure already exist we only add new function
+						if (matchingStructure != null) {
+							JsonArray functions = matchingStructure.getJsonArray("functions").add(function.getString("functionName"));
+							matchingStructure.put("functions", functions);
+						}
+						// Else we create it
+						else {
+							JsonObject structure = new JsonObject()
+								.put("UAI", uai)
+								.put("functions", new JsonArray().add(function.getString("functionName")));
+							structures.add(structure);
+						}
+					})
+				);
+
+			// Format functions
+			for (Object oStruct : structures) {
+				JsonObject structure = (JsonObject)oStruct;
+				JsonArray functions = structure.getJsonArray("functions");
+				if (functions.size() == 0) structure.put("functions", "");
+				else if (functions.size() == 1) structure.put("functions", functions.getString(0));
+			}
+
+			// Fill finalResult with expected data
+			finalResult.put("id", userInfos.getString("id"));
+			finalResult.put("lastName", userInfos.getString("lastName"));
+			finalResult.put("firstName", userInfos.getString("firstName"));
+			finalResult.put("profiles", profiles.size() > 0 ? profiles.getString(0) : "");
+			finalResult.put("structures", structures);
+			promise.complete(finalResult);
+		});
+
+		return promise.future();
 	}
 
 	@Override
