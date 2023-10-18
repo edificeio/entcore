@@ -44,6 +44,7 @@ public class InheritShareComputer {
 					if(userId != null){
 						final JsonObject currentShare = byUser.computeIfAbsent(userId, e -> {
 							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
+							byUser.put(userId, newShare);
 							merged.add(newShare);
 							return newShare;
 						});
@@ -51,6 +52,7 @@ public class InheritShareComputer {
 					}else if(groupId != null){
 						final JsonObject currentShare = byGroup.computeIfAbsent(groupId, e -> {
 							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
+							byGroup.put(groupId, newShare);
 							merged.add(newShare);
 							return newShare;
 						});
