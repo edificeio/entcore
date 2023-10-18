@@ -1072,7 +1072,9 @@ class QueryHelper {
 				String id = DocumentHelper.getId(doc);
 				String parent = DocumentHelper.getParent(doc);
 				String oldParent = DocumentHelper.getParentOld(doc);
+				final JsonArray shared = doc.getJsonArray("shared", new JsonArray());
 				final JsonArray inheritedShares = doc.getJsonArray("inheritedShares", new JsonArray());
+				final JsonArray mergedShares = InheritShareComputer.concatShares(inheritedShares, shared);
 				// if oldparent is not in my virtual tree=> remove parent
 				if (oldParent != null) {
 					if (parentIdsOk.contains(oldParent) || treeIds.contains(oldParent)) {
@@ -1081,7 +1083,7 @@ class QueryHelper {
 						idsToRemoveParent.add(id);
 						// doc is moved to root => shared = inheritedshares
 						if(inheritedShares.size() > 0){
-							futures.add(update(id, new MongoUpdateBuilder().set("shared", inheritedShares)));
+							futures.add(update(id, new MongoUpdateBuilder().set("shared", mergedShares)));
 						}
 					}
 				} else if(parent != null){
@@ -1091,7 +1093,7 @@ class QueryHelper {
 						idsToRemoveParent.add(id);
 						// doc is moved to root => shared = inheritedshares
 						if(inheritedShares.size() > 0){
-							futures.add(update(id, new MongoUpdateBuilder().set("shared", inheritedShares)));
+							futures.add(update(id, new MongoUpdateBuilder().set("shared", mergedShares)));
 						}
 					}
 				}//else do nothing

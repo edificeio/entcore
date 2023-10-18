@@ -321,19 +321,23 @@ public class FolderTest {
      *
      * <u>STEPS</u> :
      * <ol>
+     *     <li>Create user "reader" and "writter"</li>
      *     <li>Create folder1 for user13</li>
      *     <li>Create folder2 for user13 (child of folder1)</li>
      *     <li>Verify that folder1 is child of folder2</li>
      *     <li>Share folder1 to reader</li>
+     *     <li>Share folder2 to writer</li>
      *     <li>Verify that folder1 has share to reader</li>
-     *     <li>Verify that folder2 has inherited share to reader</li>
+     *     <li>Verify that folder2 has shared share to writer</li>
+     *     <li>Verify that folder2 has inherited share to reader and writer</li>
      *     <li>Delete folder1</li>
      *     <li>Verify that folder1 and folder2 has been deleted</li>
      *     <li>Restore folder2</li>
      *     <li>Verify that folder2 has no more parent and is not trashed</li>
-     *     <li>Verify that folder2 has direct shared to reader</li>
+     *     <li>Verify that folder2 has direct shared to reader and writer</li>
      *     <li>Verify that folder2 has inherited shared to reader</li>
      * </ol>
+     *
      * @param context
      * @throws Exception
      */
@@ -343,55 +347,60 @@ public class FolderTest {
         final UserInfos user = test.directory().generateUser("user13");
         // create reader
         test.directory().createActiveUser("reader", "password", "email").onComplete(context.asyncAssertSuccess(reader -> {
-            // create folder tree
-            workspaceService.createFolder(folder("folder1","folder1"), user, context.asyncAssertSuccess(onCreateFolder1 -> {
-                workspaceService.createFolder("folder1", user, folder("folder2","folder2"), context.asyncAssertSuccess(onCreateFolder2 -> {
-                    // share folder tree
-                    workspaceService.share("folder1", readOnly(user, reader), context.asyncAssertSuccess(onShare->{
-                        workspaceService.findByQuery(new ElementQuery(true),user, context.asyncAssertSuccess(folders -> {
-                            // check folder tree
-                            context.assertEquals(2, folders.size());
-                            final JsonObject folder1 = folders.getJsonObject(0);
-                            final JsonObject folder2 = folders.getJsonObject(1);
-                            context.assertEquals("folder1", DocumentHelper.getName(folder1));
-                            context.assertEquals("folder2", DocumentHelper.getName(folder2));
-                            context.assertNull(DocumentHelper.getParent(folder1));
-                            context.assertEquals("folder1", DocumentHelper.getParent(folder2));
-                            context.assertEquals(1, folder1.getJsonArray("shared").size());
-                            context.assertEquals(1, folder1.getJsonArray("inheritedShares").size());
-                            context.assertEquals(0, folder2.getJsonArray("shared").size());
-                            context.assertEquals(1, folder2.getJsonArray("inheritedShares").size());
-                            // trash folder tree
-                            workspaceService.trash("folder1", user, context.asyncAssertSuccess(onDelete -> {
-                                final ElementQuery queryTrashed = new ElementQuery(true);
-                                queryTrashed.setTrash(true);
-                                queryTrashed.setHierarchical(true);
-                                workspaceService.findByQuery(queryTrashed, user, context.asyncAssertSuccess(deletedFolders -> {
-                                    // check trash
-                                    context.assertEquals(2, deletedFolders.size());
-                                    final JsonObject delFolder1 = deletedFolders.getJsonObject(0);
-                                    final JsonObject delFolder2 = deletedFolders.getJsonObject(1);
-                                    context.assertEquals(true, delFolder1.getBoolean("deleted"));
-                                    context.assertEquals(1, delFolder1.getJsonArray("shared").size());
-                                    context.assertEquals(1, delFolder1.getJsonArray("inheritedShares").size());
-                                    context.assertEquals(true, delFolder2.getBoolean("deleted"));
-                                    context.assertEquals(0, delFolder2.getJsonArray("shared").size());
-                                    context.assertEquals(1, delFolder2.getJsonArray("inheritedShares").size());
-                                    // restore folder2
-                                    workspaceService.restore("folder2", user, context.asyncAssertSuccess(onRestore -> {
-                                        final ElementQuery queryRestored = new ElementQuery(true);
-                                        queryRestored.setTrash(false);
-                                        queryRestored.setHierarchical(true);
-                                        workspaceService.findByQuery(queryRestored, user, context.asyncAssertSuccess(restoredFolders -> {
-                                            // check restore
-                                            context.assertEquals(1, restoredFolders.size());
-                                            final JsonObject restoredFolder1 = restoredFolders.getJsonObject(0);
-                                            context.assertNull(DocumentHelper.getParent(restoredFolder1));
-                                            context.assertEquals(false, restoredFolder1.getBoolean("deleted"));
-                                            // should have direct shares to reader1
-                                            context.assertEquals(1, restoredFolder1.getJsonArray("shared").size());
-                                            context.assertEquals(1, restoredFolder1.getJsonArray("inheritedShares").size());
-                                            async.complete();
+            // create reader
+            test.directory().createActiveUser("writter", "password", "email").onComplete(context.asyncAssertSuccess(writter -> {
+                // create folder tree
+                workspaceService.createFolder(folder("folder1", "folder1"), user, context.asyncAssertSuccess(onCreateFolder1 -> {
+                    workspaceService.createFolder("folder1", user, folder("folder2", "folder2"), context.asyncAssertSuccess(onCreateFolder2 -> {
+                        // share folder tree
+                        workspaceService.share("folder1", readOnly(user, reader), context.asyncAssertSuccess(onShare -> {
+                            workspaceService.share("folder2", readWrite(user, writter), context.asyncAssertSuccess(onShareWriter -> {
+                                workspaceService.findByQuery(new ElementQuery(true), user, context.asyncAssertSuccess(folders -> {
+                                    // check folder tree
+                                    context.assertEquals(2, folders.size());
+                                    final JsonObject folder1 = folders.getJsonObject(0);
+                                    final JsonObject folder2 = folders.getJsonObject(1);
+                                    context.assertEquals("folder1", DocumentHelper.getName(folder1));
+                                    context.assertEquals("folder2", DocumentHelper.getName(folder2));
+                                    context.assertNull(DocumentHelper.getParent(folder1));
+                                    context.assertEquals("folder1", DocumentHelper.getParent(folder2));
+                                    context.assertEquals(1, folder1.getJsonArray("shared").size());
+                                    context.assertEquals(1, folder1.getJsonArray("inheritedShares").size());
+                                    context.assertEquals(1, folder2.getJsonArray("shared").size());
+                                    context.assertEquals(2, folder2.getJsonArray("inheritedShares").size());
+                                    // trash folder tree
+                                    workspaceService.trash("folder1", user, context.asyncAssertSuccess(onDelete -> {
+                                        final ElementQuery queryTrashed = new ElementQuery(true);
+                                        queryTrashed.setTrash(true);
+                                        queryTrashed.setHierarchical(true);
+                                        workspaceService.findByQuery(queryTrashed, user, context.asyncAssertSuccess(deletedFolders -> {
+                                            // check trash
+                                            context.assertEquals(2, deletedFolders.size());
+                                            final JsonObject delFolder1 = deletedFolders.getJsonObject(0);
+                                            final JsonObject delFolder2 = deletedFolders.getJsonObject(1);
+                                            context.assertEquals(true, delFolder1.getBoolean("deleted"));
+                                            context.assertEquals(1, delFolder1.getJsonArray("shared").size());
+                                            context.assertEquals(1, delFolder1.getJsonArray("inheritedShares").size());
+                                            context.assertEquals(true, delFolder2.getBoolean("deleted"));
+                                            context.assertEquals(1, delFolder2.getJsonArray("shared").size());
+                                            context.assertEquals(2, delFolder2.getJsonArray("inheritedShares").size());
+                                            // restore folder2
+                                            workspaceService.restore("folder2", user, context.asyncAssertSuccess(onRestore -> {
+                                                final ElementQuery queryRestored = new ElementQuery(true);
+                                                queryRestored.setTrash(false);
+                                                queryRestored.setHierarchical(true);
+                                                workspaceService.findByQuery(queryRestored, user, context.asyncAssertSuccess(restoredFolders -> {
+                                                    // check restore
+                                                    context.assertEquals(1, restoredFolders.size());
+                                                    final JsonObject restoredFolder1 = restoredFolders.getJsonObject(0);
+                                                    context.assertNull(DocumentHelper.getParent(restoredFolder1));
+                                                    context.assertEquals(false, restoredFolder1.getBoolean("deleted"));
+                                                    // should have direct shares to reader1
+                                                    context.assertEquals(2, restoredFolder1.getJsonArray("shared").size());
+                                                    context.assertEquals(2, restoredFolder1.getJsonArray("inheritedShares").size());
+                                                    async.complete();
+                                                }));
+                                            }));
                                         }));
                                     }));
                                 }));
