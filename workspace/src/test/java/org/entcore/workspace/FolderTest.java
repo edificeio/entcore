@@ -22,10 +22,16 @@
 
 package org.entcore.workspace;
 
+import java.util.Arrays;
 import java.util.Optional;
 
+import io.vertx.core.json.JsonArray;
+import org.checkerframework.checker.units.qual.A;
+import org.entcore.common.folders.ElementQuery;
+import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
+import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
@@ -33,6 +39,7 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
+import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
@@ -49,16 +56,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.testcontainers.containers.Neo4jContainer;
 
 @RunWith(VertxUnitRunner.class)
 public class FolderTest {
     private static final TestHelper test = TestHelper.helper();
+    @ClassRule
+    public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     @ClassRule
     public static MongoDBContainer mongoContainer = test.database().createMongoContainer();
     static WorkspaceService workspaceService;
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
+        test.database().initNeo4j(context, neo4jContainer);
         final ShareService shareService = test.share().createMongoShareService(context,
                 DocumentDao.DOCUMENTS_COLLECTION);
         final Storage storage = new StorageFactory(test.vertx(), new JsonObject(),
@@ -83,6 +94,15 @@ public class FolderTest {
 
     private JsonObject folder(String name) {
         return new JsonObject().put("name", name);
+    }
+    private JsonObject folder(String name, final String id) {
+        return new JsonObject().put("name", name).put("_id", id);
+    }
+
+    private ElementShareOperations readOnly(UserInfos user, final String userid) {
+        return ElementShareOperations.addShareObject(WorkspaceController.SHARED_ACTION, user,
+                new JsonObject().put("groups", new JsonObject()).put("users", new JsonObject().put(userid,
+                        new JsonArray().add("org-entcore-workspace-controllers-WorkspaceController|renameFolder"))));
     }
 
     @Test
@@ -206,13 +226,13 @@ public class FolderTest {
         workspaceService.setAllowDuplicate(true);
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        workspaceService.addFile(Optional.of("test1"), folder("file2-a"), user.getUserId(), user.getUsername(),
+        workspaceService.addFile(Optional.of("test1"), folder("file2-b"), user.getUserId(), user.getUsername(),
                 res0 -> {
                     context.assertTrue(res0.succeeded());
-                    workspaceService.addFile(Optional.of("test1"), folder("file2-a"), user.getUserId(),
+                    workspaceService.addFile(Optional.of("test1"), folder("file2-b"), user.getUserId(),
                             user.getUsername(), res1 -> {
                                 context.assertTrue(res1.succeeded());
-                                context.assertEquals("file2-a", res1.result().getString("name"));
+                                context.assertEquals("file2-b", res1.result().getString("name"));
                                 async.complete();
                             });
                 });
@@ -240,9 +260,9 @@ public class FolderTest {
     public void testWorkspaceServiceShouldCreateDuplicateDocumentAtRoot(TestContext context) {
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        workspaceService.addFile(Optional.empty(), folder("file2-a"), user.getUserId(), user.getUsername(), res0 -> {
+        workspaceService.addFile(Optional.empty(), folder("file2-c"), user.getUserId(), user.getUsername(), res0 -> {
             context.assertTrue(res0.succeeded());
-            workspaceService.addFile(Optional.empty(), folder("file2-a"), user.getUserId(), user.getUsername(),
+            workspaceService.addFile(Optional.empty(), folder("file2-c"), user.getUserId(), user.getUsername(),
                     res1 -> {
                         context.assertTrue(res1.succeeded());
                         async.complete();
@@ -278,5 +298,91 @@ public class FolderTest {
                         async.complete();
                     });
         });
+    }
+    /**
+     * <u>GOAL</u> : Reset shared when restoring a child
+     *
+     * <u>STEPS</u> :
+     * <ol>
+     *     <li>Create folder1 for user13</li>
+     *     <li>Create folder2 for user13 (child of folder1)</li>
+     *     <li>Verify that folder1 is child of folder2</li>
+     *     <li>Share folder1 to reader</li>
+     *     <li>Verify that folder1 has share to reader</li>
+     *     <li>Verify that folder2 has inherited share to reader</li>
+     *     <li>Delete folder1</li>
+     *     <li>Verify that folder1 and folder2 has been deleted</li>
+     *     <li>Restore folder2</li>
+     *     <li>Verify that folder2 has no more parent and is not trashed</li>
+     *     <li>Verify that folder2 has direct shared to reader</li>
+     *     <li>Verify that folder2 has inherited shared to reader</li>
+     * </ol>
+     * @param context
+     * @throws Exception
+     */
+    @Test
+    public void shouldRestoreAChild(TestContext context) {
+        final Async async = context.async();
+        final UserInfos user = test.directory().generateUser("user13");
+        // create reader
+        test.directory().createActiveUser("reader", "password", "email").onComplete(context.asyncAssertSuccess(reader -> {
+            // create folder tree
+            workspaceService.createFolder(folder("folder1","folder1"), user, context.asyncAssertSuccess(onCreateFolder1 -> {
+                workspaceService.createFolder("folder1", user, folder("folder2","folder2"), context.asyncAssertSuccess(onCreateFolder2 -> {
+                    // share folder tree
+                    workspaceService.share("folder1", readOnly(user, reader), context.asyncAssertSuccess(onShare->{
+                        workspaceService.findByQuery(new ElementQuery(true),user, context.asyncAssertSuccess(folders -> {
+                            // check folder tree
+                            context.assertEquals(2, folders.size());
+                            final JsonObject folder1 = folders.getJsonObject(0);
+                            final JsonObject folder2 = folders.getJsonObject(1);
+                            context.assertEquals("folder1", DocumentHelper.getName(folder1));
+                            context.assertEquals("folder2", DocumentHelper.getName(folder2));
+                            context.assertNull(DocumentHelper.getParent(folder1));
+                            context.assertEquals("folder1", DocumentHelper.getParent(folder2));
+                            context.assertEquals(1, folder1.getJsonArray("shared").size());
+                            context.assertEquals(1, folder1.getJsonArray("inheritedShares").size());
+                            context.assertEquals(0, folder2.getJsonArray("shared").size());
+                            context.assertEquals(1, folder2.getJsonArray("inheritedShares").size());
+                            // trash folder tree
+                            workspaceService.trash("folder1", user, context.asyncAssertSuccess(onDelete -> {
+                                final ElementQuery queryTrashed = new ElementQuery(true);
+                                queryTrashed.setTrash(true);
+                                queryTrashed.setHierarchical(true);
+                                workspaceService.findByQuery(queryTrashed, user, context.asyncAssertSuccess(deletedFolders -> {
+                                    // check trash
+                                    context.assertEquals(2, deletedFolders.size());
+                                    final JsonObject delFolder1 = deletedFolders.getJsonObject(0);
+                                    final JsonObject delFolder2 = deletedFolders.getJsonObject(1);
+                                    context.assertEquals(true, delFolder1.getBoolean("deleted"));
+                                    context.assertEquals(1, delFolder1.getJsonArray("shared").size());
+                                    context.assertEquals(1, delFolder1.getJsonArray("inheritedShares").size());
+                                    context.assertEquals(true, delFolder2.getBoolean("deleted"));
+                                    context.assertEquals(0, delFolder2.getJsonArray("shared").size());
+                                    context.assertEquals(1, delFolder2.getJsonArray("inheritedShares").size());
+                                    // restore folder2
+                                    workspaceService.restore("folder2", user, context.asyncAssertSuccess(onRestore -> {
+                                        final ElementQuery queryRestored = new ElementQuery(true);
+                                        queryRestored.setTrash(false);
+                                        queryRestored.setHierarchical(true);
+                                        workspaceService.findByQuery(queryRestored, user, context.asyncAssertSuccess(restoredFolders -> {
+                                            // check restore
+                                            context.assertEquals(1, restoredFolders.size());
+                                            final JsonObject restoredFolder1 = restoredFolders.getJsonObject(0);
+                                            context.assertNull(DocumentHelper.getParent(restoredFolder1));
+                                            context.assertEquals(false, restoredFolder1.getBoolean("deleted"));
+                                            // should have direct shares to reader1
+                                            context.assertEquals(1, restoredFolder1.getJsonArray("shared").size());
+                                            context.assertEquals(1, restoredFolder1.getJsonArray("inheritedShares").size());
+                                            async.complete();
+                                        }));
+                                    }));
+                                }));
+                            }));
+                        }));
+                    }));
+                }));
+            }));
+        }));
     }
 }
