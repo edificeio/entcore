@@ -1,8 +1,6 @@
 package org.entcore.common.folders.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.QueryHelper.DocumentQueryBuilder;
@@ -31,6 +29,39 @@ class InheritShareComputer {
 			all.addAll(childrens);
 			return all;
 		}
+	}
+
+	public static JsonArray concatShares(final JsonArray... shared){
+		final JsonArray merged = new JsonArray();
+		final Map<String, JsonObject> byUser = new HashMap<>();
+		final Map<String, JsonObject> byGroup = new HashMap<>();
+		for(final JsonArray current : shared){
+			for(final Object share : current){
+				if(share instanceof JsonObject){
+					final JsonObject shareJson = (JsonObject) share;
+					final String userId = shareJson.getString("userId");
+					final String groupId = shareJson.getString("groupId");
+					if(userId != null){
+						final JsonObject currentShare = byUser.computeIfAbsent(userId, e -> {
+							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
+							byUser.put(userId, newShare);
+							merged.add(newShare);
+							return newShare;
+						});
+						currentShare.mergeIn(shareJson);
+					}else if(groupId != null){
+						final JsonObject currentShare = byGroup.computeIfAbsent(groupId, e -> {
+							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
+							byGroup.put(groupId, newShare);
+							merged.add(newShare);
+							return newShare;
+						});
+						currentShare.mergeIn(shareJson);
+					}
+				}
+			}
+		}
+		return merged;
 	}
 
 	public static void mergeShared(JsonObject parentFolder, JsonObject current, boolean resetSharedIfNeeded) throws RuntimeException {
