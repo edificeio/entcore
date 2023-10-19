@@ -95,15 +95,6 @@ public class FolderTest {
     private JsonObject folder(String name) {
         return new JsonObject().put("name", name);
     }
-    private JsonObject folder(String name, final String id) {
-        return new JsonObject().put("name", name).put("_id", id);
-    }
-
-    private ElementShareOperations readOnly(UserInfos user, final String userid) {
-        return ElementShareOperations.addShareObject(WorkspaceController.SHARED_ACTION, user,
-                new JsonObject().put("groups", new JsonObject()).put("users", new JsonObject().put(userid,
-                        new JsonArray().add("org-entcore-workspace-controllers-WorkspaceController|renameFolder"))));
-    }
 
     private JsonObject folder(String name, final String id) {
         return new JsonObject().put("name", name).put("_id", id);
