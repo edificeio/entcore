@@ -10,7 +10,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-class InheritShareComputer {
+public class InheritShareComputer {
 	static class InheritShareResult {
 		public final Optional<JsonObject> parentRoot;
 		public final JsonObject root;
@@ -44,7 +44,6 @@ class InheritShareComputer {
 					if(userId != null){
 						final JsonObject currentShare = byUser.computeIfAbsent(userId, e -> {
 							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
-							byUser.put(userId, newShare);
 							merged.add(newShare);
 							return newShare;
 						});
@@ -52,7 +51,6 @@ class InheritShareComputer {
 					}else if(groupId != null){
 						final JsonObject currentShare = byGroup.computeIfAbsent(groupId, e -> {
 							final JsonObject newShare = new JsonObject().mergeIn(shareJson);
-							byGroup.put(groupId, newShare);
 							merged.add(newShare);
 							return newShare;
 						});
