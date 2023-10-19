@@ -170,9 +170,9 @@
             "patterns" : []
         },
 		{
-		"class":"org.entcore.cas.services.AtNormandieRegisteredService",
-		"principalAttributeName":"id",
-		"patterns":[]
+            "class":"org.entcore.cas.services.AtNormandieRegisteredService",
+            "principalAttributeName":"id",
+            "patterns":[]
 		},
         {
             "class": "org.entcore.cas.services.DefaultRegisteredService",
@@ -206,6 +206,11 @@
         },
         {
             "class": "org.entcore.cas.services.IkigaiRegisteredService",
+            "principalAttributeName": "login",
+            "patterns": []
+        },
+        {
+            "class": "org.entcore.cas.services.WebGerestRegisteredService",
             "principalAttributeName": "login",
             "patterns": []
         }

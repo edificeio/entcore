@@ -1190,11 +1190,17 @@ public class Importer {
 	}
 
 	public void deleteOldProfileAttachments() {
+		// Split in two query for performance reason
 		final String query =
-				"MATCH (u:User)-[r:IN|COMMUNIQUE]-(pg:ProfileGroup) " +
-				"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND HAS(pg.filter) AND pg.filter <> head(u.profiles) " +
+				"MATCH (u:User)-[r:IN|COMMUNIQUE]-(pg:ProfileGroup {filter:'Teacher'}) " +
+				"WHERE head(u.profiles) = 'Personnel' AND pg.filter <> head(u.profiles) " +
 				"DELETE r";
 		transactionHelper.add(query, new JsonObject());
+		final String query2 =
+				"MATCH (u:User)-[r:IN|COMMUNIQUE]-(pg:ProfileGroup {filter:'Personnel'}) " +
+				"WHERE head(u.profiles) = 'Teacher' AND pg.filter <> head(u.profiles) " +
+				"DELETE r";
+		transactionHelper.add(query2, new JsonObject());
 	}
 
 	public Report getReport() {

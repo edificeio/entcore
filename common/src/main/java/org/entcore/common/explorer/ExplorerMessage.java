@@ -64,6 +64,14 @@ public class ExplorerMessage {
         this.priority = action.getPriority(search);
     }
 
+    public static ExplorerMessage upsert(final IdAndVersion id, final boolean forSearch,
+                                         final String application, final String resourceType, final String entityType) {
+        final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Upsert, forSearch);
+        builder.withVersion(id.getVersion());
+        builder.withType(application, resourceType, entityType);
+        return builder;
+    }
+
     public static ExplorerMessage upsert(final IdAndVersion id, final UserInfos user, final boolean forSearch,
                                          final String application, final String resourceType, final String entityType) {
         final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Upsert, forSearch);
@@ -93,6 +101,11 @@ public class ExplorerMessage {
 
     public ExplorerMessage withCreatedAt(final Date date){
         message.put("createdAt", date.getTime());
+        return this;
+    }
+
+    public ExplorerMessage withUpdatedAt(final Date date){
+        message.put("updatedAt", date.getTime());
         return this;
     }
 
