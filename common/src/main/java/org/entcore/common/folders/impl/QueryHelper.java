@@ -1067,30 +1067,42 @@ class QueryHelper {
 			Set<String> treeIds = docs.stream().map(o -> DocumentHelper.getId(o)).collect(Collectors.toSet());
 			Set<String> idsToRename = new HashSet<>();
 			Set<String> idsToRemoveParent = new HashSet<>();
+			final List<Future> futures = new ArrayList<>();
 			for (JsonObject doc : docs) {
 				String id = DocumentHelper.getId(doc);
 				String parent = DocumentHelper.getParent(doc);
 				String oldParent = DocumentHelper.getParentOld(doc);
+				final JsonArray shared = doc.getJsonArray("shared", new JsonArray());
+				final JsonArray inheritedShares = doc.getJsonArray("inheritedShares", new JsonArray());
+				final JsonArray mergedShares = InheritShareComputer.concatShares(inheritedShares, shared);
 				// if oldparent is not in my virtual tree=> remove parent
 				if (oldParent != null) {
 					if (parentIdsOk.contains(oldParent) || treeIds.contains(oldParent)) {
 						idsToRename.add(id);
 					} else {
 						idsToRemoveParent.add(id);
+						// doc is moved to root => shared = inheritedshares
+						if(inheritedShares.size() > 0){
+							futures.add(update(id, new MongoUpdateBuilder().set("shared", mergedShares)));
+						}
 					}
 				} else if(parent != null){
 					if (parentIdsOk.contains(parent) || treeIds.contains(parent)) {
 						//do nothing
 					} else {
 						idsToRemoveParent.add(id);
+						// doc is moved to root => shared = inheritedshares
+						if(inheritedShares.size() > 0){
+							futures.add(update(id, new MongoUpdateBuilder().set("shared", mergedShares)));
+						}
 					}
 				}//else do nothing
 			}
-			Future<Void> futureRename = updateAll(idsToRename,
-					new MongoUpdateBuilder().rename("eParentOld", "eParent"));
-			Future<Void> futureRemove = updateAll(idsToRemoveParent,
-					new MongoUpdateBuilder().unset("eParentOld").unset("eParent"));
-			return CompositeFuture.all(futureRename, futureRemove).mapEmpty();
+			futures.add(updateAll(idsToRename,
+					new MongoUpdateBuilder().rename("eParentOld", "eParent")));
+			futures.add(updateAll(idsToRemoveParent,
+					new MongoUpdateBuilder().unset("eParentOld").unset("eParent")));
+			return CompositeFuture.all(futures).mapEmpty();
 		});
 	}
 

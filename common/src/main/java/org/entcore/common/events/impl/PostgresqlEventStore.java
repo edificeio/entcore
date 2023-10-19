@@ -25,7 +25,9 @@ import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -52,11 +54,13 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class PostgresqlEventStore extends GenericEventStore {
 
 	private static final int MAX_RETRY = 10;
+	private static final long PERSIST_DELAY = 10000L;
 	private String platform;
 	private PgPool pgClient;
 	private Set<String> knownEvents;
 	private final AtomicInteger retryInitKnownEvents = new AtomicInteger(MAX_RETRY);
 	private final Set<String> allowedEvents = new HashSet<>();
+	private boolean enablePersistTimer = false;
 
 	public void init() {
 		init(ar -> {
@@ -107,6 +111,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 						handler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
+				enablePersistTimer = eventStorePGConfig.getBoolean("enable-persist-fallback-timer", false);
 			} else {
 				handler.handle(Future.failedFuture(new ValidationException("Missing postgresql config.")));
 			}
@@ -234,7 +239,27 @@ public class PostgresqlEventStore extends GenericEventStore {
 		payload.put("id", UUID.randomUUID().toString());
 		payload.put("date", LocalDateTime.now().toString());
 		payload.put("platform_id", platform);
+		final AtomicBoolean ack = new AtomicBoolean(false);
+		final AtomicLong timerId = new AtomicLong(-1);
+		if (enablePersistTimer) {
+			final long tId = vertx.setTimer(PERSIST_DELAY, r -> {
+				if (!ack.get()) {
+					logger.warn("Ack not receive after 10s. Retry persist payload id : " + payload.getString("id"));
+					insertEvent(payload, tableName, either2 -> {
+						logger.info("Receive return of retry insert payload id : " + payload.getString("id"));
+						if (either2.isLeft()) {
+							logger.error("Error adding custom event : " + payload.encode() + " - " + either2.left().getValue());
+						}
+					});
+				}
+			});
+			timerId.set(tId);
+		}
 		insertEvent(payload, tableName, either -> {
+			ack.set(true);
+			if (timerId.get() > 0) {
+				vertx.cancelTimer(timerId.get());
+			}
 			if (either.isLeft()) {
 				logger.error("Error adding custom event : " + payload.encode() + " - " + either.left().getValue());
 			}

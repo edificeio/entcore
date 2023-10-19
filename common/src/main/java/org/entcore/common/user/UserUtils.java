@@ -20,6 +20,8 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -49,6 +51,7 @@ import io.vertx.core.logging.LoggerFactory;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
+import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
@@ -63,6 +66,8 @@ import java.util.stream.Collectors;
 
 public class UserUtils {
 
+	public static final String FIND_SESSION = "findSession";
+	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
 	private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
@@ -567,12 +572,30 @@ public class UserUtils {
 					final String key = findSession.getString("sessionId", "user="+findSession.getString("userId"));
 					log.error("Could not found session: " + key + " cause: " + message.cause());
 				}
-				final long timeGetSessionDelay = System.currentTimeMillis() - startSessionTime;
-				if (timeGetSessionDelay > LOG_SESSION_DELAY) {
-					log.info("Find session time : " + timeGetSessionDelay + " ms.");
-				}
+				findSessionMonitoring(startSessionTime, message);
 			}
 		});
+	}
+
+	private static void findSessionMonitoring(long startSessionTime, AsyncResult<Message<JsonObject>> message) {
+		final long timeGetSessionDelay = System.currentTimeMillis() - startSessionTime;
+		if (timeGetSessionDelay > LOG_SESSION_DELAY) {
+			log.info("Find session time : " + timeGetSessionDelay + " ms.");
+			final MongoDb mongoDb = MongoDb.getInstance();
+			if (mongoDb.isInitialized()) {
+				final JsonObject sessionMonitoring = new JsonObject()
+						.put("date", MongoDb.now())
+						.put("epoch", startSessionTime)
+						.put("type", FIND_SESSION)
+						.put("hostname", HostUtils.getHostName())
+						.put("delay", timeGetSessionDelay)
+						.put("ar-succeeded", message.succeeded());
+				if (message.succeeded()) {
+					sessionMonitoring.put("status-ok", "ok".equals(message.result().body().getString("status")));
+				}
+				mongoDb.save(MONITORINGEVENTS, sessionMonitoring);
+			}
+		}
 	}
 
 	public static void getSessionByUserId(EventBus eb, final String userId, final Handler<JsonObject> handler) {

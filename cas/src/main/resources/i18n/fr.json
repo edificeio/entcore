@@ -66,5 +66,7 @@
   "GRR2RegisteredService.name": "GRR2",
   "GRR2RegisteredService.description": "Service CAS spécifique pour GRR, le service GRR2 utilise l'identifiant externe sans préfixe académique comme attribut principal.",
   "IkigaiRegisteredService.name": "Ikigai",
-  "IkigaiRegisteredService.description": "Service CAS spécifique pour Ikigai, le service Ikigai utilise le login comme attribut principal."
+  "IkigaiRegisteredService.description": "Service CAS spécifique pour Ikigai, le service Ikigai utilise le login comme attribut principal.",
+  "WebGesrestRegisteredService.name": "Web Gerest",
+  "WebGesrestRegisteredService.description": "Service CAS 3.0 spécifique pour Web Gerest, le service Web Gerest utilise l'identifiant externe sans préfixe académique comme attribut principal."
 }
