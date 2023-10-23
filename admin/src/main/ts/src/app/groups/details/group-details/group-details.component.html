@@ -1,30 +1,52 @@
 <div class="panel-header is-display-flex has-space-between">
   <div>
-    <div><span>{{ groupsStore.group.name }}</span></div>
-    <div class="members-count" *ngIf="groupsStore.group?.subType === 'BroadcastGroup'">
-        {{ groupsStore.group.nbUsers }}&nbsp;
-        {{ 'members' | translate:{count: groupsStore.group.nbUsers} }}
+    <div>
+      <span>{{ groupsStore.group.name }}</span>
+    </div>
+    <div
+      class="members-count"
+      *ngIf="groupsStore.group?.subType === 'BroadcastGroup'"
+    >
+      {{ groupsStore.group.nbUsers }}&nbsp;
+      {{ "members" | translate : { count: groupsStore.group.nbUsers } }}
     </div>
   </div>
   <div>
-    <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true"
-            (click)="$renameButtonClicked.next()"
-            class="lct-group-update-button">
+    <button
+      type="button"
+      *ngIf="
+        groupsStore.group?.type === 'ManualGroup' &&
+        groupsStore.group?.lockDelete != true &&
+        showActions
+      "
+      (click)="$renameButtonClicked.next()"
+      class="lct-group-update-button"
+    >
       <s5l>group.rename.button</s5l>
       <i class="fa fa-pencil is-size-5"></i>
     </button>
-    <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true"
-            (click)="$deleteButtonClicked.next(groupsStore.group)"
-            class="lct-group-delete-button">
+    <button
+      type="button"
+      *ngIf="
+        groupsStore.group?.type === 'ManualGroup' &&
+        groupsStore.group?.lockDelete != true &&
+        showActions
+      "
+      (click)="$deleteButtonClicked.next(groupsStore.group)"
+      class="lct-group-delete-button"
+    >
       <s5l>group.delete.button</s5l>
       <i class="fa fa-trash is-size-5"></i>
     </button>
-    <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete == true"
-            disabled="true"
-            class="lct-group-delete-button">
+    <button
+      type="button"
+      *ngIf="
+        groupsStore.group?.type === 'ManualGroup' &&
+        groupsStore.group?.lockDelete == true
+      "
+      disabled="true"
+      class="lct-group-delete-button"
+    >
       <s5l>group.delete.button.lock</s5l>
       <i class="fa fa-lock is-size-5"></i>
     </button>
@@ -32,35 +54,66 @@
 </div>
 
 <div class="padded">
-  <button (click)="showLightBox()" *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup'">
+  <button
+    (click)="showLightBox()"
+    *ngIf="
+      groupsStore.group?.type === 'ManualGroup' &&
+      groupsStore.group?.subType !== 'BroadcastGroup'
+    "
+  >
     <s5l>group.details.add.users</s5l>
   </button>
 
-  <ode-lightbox class="inner-list" [show]="showAddUsersLightBox" (onClose)="closeLightBox()">
-    <ode-group-manage-users (closeEmitter)="closeLightBox()"></ode-group-manage-users>
+  <ode-lightbox
+    class="inner-list"
+    [show]="showAddUsersLightBox"
+    (onClose)="closeLightBox()"
+  >
+    <ode-group-manage-users
+      (closeEmitter)="closeLightBox()"
+    ></ode-group-manage-users>
   </ode-lightbox>
 
-  <button class="button--with-icon" (click)="openGroupCommunication(groupsStore.group)">
+  <button
+    class="button--with-icon"
+    (click)="openGroupCommunication(groupsStore.group)"
+  >
     <s5l>group.details.button.comm.rules</s5l>
     <i class="fa fa-podcast"></i>
   </button>
 
-  <ode-group-users-list [users]="groupsStore.group?.users" *ngIf="groupsStore.group?.subType !== 'BroadcastGroup'">
-                <span class="lct-communication-rule"
-                      *ngIf="internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'"
-                      (click)="$toggleCommunicationRuleClicked.next(groupsStore.group)">
-                    <span class="lct-communication-rule__can-communicate"
-                          *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
-                        <s5l class="lct-communication-rule__text">group.details.members.can.communicate</s5l> <i
-                      class="lct-communication-rule__switch fa fa-toggle-on"></i>
-                    </span>
-                    <ng-template #cannotCommunicateTogether>
-                        <span class="lct-communication-rule__cannot-communicate">
-                            <s5l class="lct-communication-rule__text">group.details.members.cannot.communicate</s5l> <i
-                          class="lct-communication-rule__switch fa fa-toggle-off"></i>
-                        </span>
-                    </ng-template>
-                </span>
+  <ode-group-users-list
+    [users]="groupsStore.group?.users"
+    *ngIf="groupsStore.group?.subType !== 'BroadcastGroup'"
+  >
+    <span
+      class="lct-communication-rule"
+      *ngIf="
+        internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'
+      "
+      (click)="$toggleCommunicationRuleClicked.next(groupsStore.group)"
+    >
+      <span
+        class="lct-communication-rule__can-communicate"
+        *ngIf="
+          internalCommunicationRule === 'BOTH';
+          else cannotCommunicateTogether
+        "
+      >
+        <s5l class="lct-communication-rule__text"
+          >group.details.members.can.communicate</s5l
+        >
+        <i class="lct-communication-rule__switch fa fa-toggle-on"></i>
+      </span>
+      <ng-template #cannotCommunicateTogether>
+        <span class="lct-communication-rule__cannot-communicate">
+          <s5l class="lct-communication-rule__text"
+            >group.details.members.cannot.communicate</s5l
+          >
+          <i class="lct-communication-rule__switch fa fa-toggle-off"></i>
+        </span>
+      </ng-template>
+    </span>
   </ode-group-users-list>
 </div>
 
@@ -69,48 +122,90 @@
   [structure]="groupsStore.structure"
   [disciplineOptions]="autolinkDisciplineOptions"
   [functionOptions]="autolinkFunctionOptions"
+  [showActions]="showActions"
 >
 </ode-group-autolink>
 
-<ode-lightbox-confirm *ngIf="groupsStore && groupsStore.group"
-                  lightboxTitle="group.internal-communication-rule.change.confirm.title"
-                  [show]="confirmationDisplayed"
-                  (onCancel)="$confirmationClicked.next('cancel')"
-                  (onConfirm)="$confirmationClicked.next('confirm')">
-  <i class='fa fa-exclamation-triangle is-danger'></i>
-  <span *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage"
-        [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+<ode-lightbox-confirm
+  *ngIf="groupsStore && groupsStore.group"
+  lightboxTitle="group.internal-communication-rule.change.confirm.title"
+  [show]="confirmationDisplayed"
+  (onCancel)="$confirmationClicked.next('cancel')"
+  (onConfirm)="$confirmationClicked.next('confirm')"
+>
+  <i class="fa fa-exclamation-triangle is-danger"></i>
+  <span
+    *ngIf="
+      internalCommunicationRule === 'BOTH';
+      else cannotCommunicateTogetherConfirmMessage
+    "
+    [innerHTML]="
+      'group.internal-communication-rule.remove.confirm.content'
+        | translate
+          : { groupName: groupNameService.getGroupName(groupsStore.group) }
+    "
+  ></span>
   <ng-template #cannotCommunicateTogetherConfirmMessage>
-    <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+    <span
+      [innerHTML]="
+        'group.internal-communication-rule.add.confirm.content'
+          | translate
+            : { groupName: groupNameService.getGroupName(groupsStore.group) }
+      "
+    ></span>
   </ng-template>
 </ode-lightbox-confirm>
 
-<ode-lightbox-confirm lightboxTitle="group.delete.confirm.title"
-                  [show]="deleteConfirmationDisplayed"
-                  (onCancel)="$deleteConfirmationClicked.next('cancel')"
-                  (onConfirm)="$deleteConfirmationClicked.next('confirm')">
-  <span [innerHTML]="'group.delete.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+<ode-lightbox-confirm
+  lightboxTitle="group.delete.confirm.title"
+  [show]="deleteConfirmationDisplayed"
+  (onCancel)="$deleteConfirmationClicked.next('cancel')"
+  (onConfirm)="$deleteConfirmationClicked.next('confirm')"
+>
+  <span
+    [innerHTML]="
+      'group.delete.confirm.content'
+        | translate
+          : { groupName: groupNameService.getGroupName(groupsStore.group) }
+    "
+  ></span>
 </ode-lightbox-confirm>
 
-<ode-lightbox [show]="renameLightboxDisplayed" (onClose)="this.renameConfirmationClicked.next('cancel')">
+<ode-lightbox
+  [show]="renameLightboxDisplayed"
+  (onClose)="this.renameConfirmationClicked.next('cancel')"
+>
   <h2><s5l>group.rename.lightbox.title</s5l></h2>
   <div class="rename-lightbox__form">
     <form #renameForm="ngForm">
       <ode-form-field label="group.rename.lightbox.name">
-        <input type="text" [(ngModel)]="groupNewName" name="groupNewName"
-               required pattern=".*\S+.*" #groupNewNameInput="ngModel"
-               (blur)="onGroupNameBlur(groupNewName)">
+        <input
+          type="text"
+          [(ngModel)]="groupNewName"
+          name="groupNewName"
+          required
+          pattern=".*\S+.*"
+          #groupNewNameInput="ngModel"
+          (blur)="onGroupNameBlur(groupNewName)"
+        />
         <ode-form-errors [control]="groupNewNameInput"></ode-form-errors>
       </ode-form-field>
 
       <div class="is-display-flex has-flex-end">
-        <button type="button" class="cancel" (click)="renameConfirmationClicked.next('cancel')">
-          {{ 'cancel' | translate }}
+        <button
+          type="button"
+          class="cancel"
+          (click)="renameConfirmationClicked.next('cancel')"
+        >
+          {{ "cancel" | translate }}
         </button>
-        <button type="button" class="confirm has-left-margin-10"
-                (click)="renameConfirmationClicked.next('confirm')"
-                [disabled]="renameForm.pristine || renameForm.invalid">
-          {{ 'confirm' | translate }}
+        <button
+          type="button"
+          class="confirm has-left-margin-10"
+          (click)="renameConfirmationClicked.next('confirm')"
+          [disabled]="renameForm.pristine || renameForm.invalid"
+        >
+          {{ "confirm" | translate }}
         </button>
       </div>
     </form>
