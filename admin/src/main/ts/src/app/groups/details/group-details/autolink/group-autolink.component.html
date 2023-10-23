@@ -3,9 +3,13 @@
   section-title="group.details.broadcast.autoLink.mainSection.title"
   [folded]="true"
 >
-  <form (ngSubmit)="onAutolinkSubmit()" #autoLinkForm="ngForm">
+  <form
+    (ngSubmit)="onAutolinkSubmit()"
+    #autoLinkForm="ngForm"
+    [className]="!showActions ? 'readonly-form' : ''"
+  >
     <!-- Autolink form submit button -->
-    <section class="is-display-flex has-flex-end">
+    <section class="is-display-flex has-flex-end" *ngIf="showActions">
       <button type="submit">
         <s5l>save</s5l>
         <i class="fa fa-save"></i>
@@ -35,7 +39,9 @@
           id="allStructures"
         />
         <label for="allStructures" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.structuresSection.includeSubStructuresLabel</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.structuresSection.includeSubStructuresLabel</s5l
+          >
         </label>
       </div>
 
@@ -45,37 +51,59 @@
           [(ngModel)]="form.subStructuresRadio"
           name="autolinkStructures"
           value="manual"
-          (click)="
-            showSubStructutresPickerButton = true; 
-            this.checked = true
-          "
+          (click)="showSubStructutresPickerButton = true; this.checked = true"
           id="structuresSelect"
         />
         <label for="structuresSelect" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.structuresSection.pickStructuresLabel</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.structuresSection.pickStructuresLabel</s5l
+          >
         </label>
       </div>
       <!-- Substructures opening button -->
-      <div *ngIf="showSubStructutresPickerButton || form.subStructuresIds?.length > 0">
+      <div
+        *ngIf="
+          showActions &&
+          (showSubStructutresPickerButton || form.subStructuresIds?.length > 0)
+        "
+      >
         <button
           (click)="openSubStructuresLightbox()"
           type="button"
           class="is-flex-none has-right-margin-10 has-left-margin-30"
         >
-          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.select</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.structuresSection.subStructuresPicker.select</s5l
+          >
         </button>
         <span>
           {{ form.subStructuresIds?.length }}
-          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.selected</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.structuresSection.subStructuresPicker.selected</s5l
+          >
         </span>
       </div>
+
+      <ode-item-tree
+        [items]="structureTreeItems"
+        order="name"
+        display="name"
+        *ngIf="
+          !showActions &&
+          (showSubStructutresPickerButton || form.subStructuresIds?.length > 0)
+        "
+        [checkboxMode]="true"
+      >
+      </ode-item-tree>
       <!-- Substructures lightbox -->
       <ode-lightbox
         [show]="showSubStructuresLightbox"
         (onClose)="showSubStructuresLightbox = false"
       >
         <h2>
-          <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresLightbox.title</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.structuresSection.subStructuresLightbox.title</s5l
+          >
         </h2>
         <p>
           <s5l class="select-link" (click)="selectAll()">select.all</s5l>
@@ -120,15 +148,20 @@
           (click)="
             showTeachersSubSection = true;
             showPersonnelSubSection = false;
-            this.checked = true;
+            this.checked = true
           "
         />
         <label for="autolinkTeachers" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.profilesSection.include.teachers</s5l
+          >
         </label>
       </div>
 
-      <div *ngIf="showTeachersSubSection || form.profile === 'Teacher'" class="bordered-section">
+      <div
+        *ngIf="showTeachersSubSection || form.profile === 'Teacher'"
+        class="bordered-section"
+      >
         <!-- All teachers -->
         <div class="is-display-flex has-vertical-padding-10">
           <input
@@ -138,13 +171,12 @@
             value="all"
             id="autolinkTeachersAll"
             [checked]="isAllTeachersRadioChecked()"
-            (click)="
-              showDisciplinesPicker = false; 
-              this.checked = true;
-            "
+            (click)="showDisciplinesPicker = false; this.checked = true"
           />
           <label for="autolinkTeachersAll" class="has-left-padding-10">
-            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.all</s5l>
+            <s5l
+              >group.details.broadcast.autoLink.profilesSection.include.teachers.all</s5l
+            >
           </label>
         </div>
 
@@ -156,13 +188,12 @@
             name="teacherSubSectionRadio"
             value="HeadTeacher"
             id="autolinkHeadTeachers"
-            (click)="
-              showDisciplinesPicker = false; 
-              this.checked = true;
-            "
+            (click)="showDisciplinesPicker = false; this.checked = true"
           />
           <label for="autolinkHeadTeachers" class="has-left-padding-10">
-            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.headteachers</s5l>
+            <s5l
+              >group.details.broadcast.autoLink.profilesSection.include.teachers.headteachers</s5l
+            >
           </label>
         </div>
 
@@ -174,20 +205,25 @@
             name="teacherSubSectionRadio"
             value="disciplines"
             id="autolinkDisciplines"
-            (click)="
-              showDisciplinesPicker = true; 
-              this.checked = true;
-            "
+            (click)="showDisciplinesPicker = true; this.checked = true"
           />
           <label for="autolinkDisciplines" class="has-left-padding-10">
-            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.disciplines</s5l>
+            <s5l
+              >group.details.broadcast.autoLink.profilesSection.include.teachers.disciplines</s5l
+            >
           </label>
         </div>
-        <div *ngIf="showDisciplinesPicker || form.teacherSubSectionRadio === 'disciplines'">
+        <div
+          *ngIf="
+            showDisciplinesPicker ||
+            form.teacherSubSectionRadio === 'disciplines'
+          "
+        >
           <ode-multi-combo
             [comboModel]="disciplineOptions"
             [(outputModel)]="form.selectedDisciplines"
             [title]="'disciplines.multi.combo.title' | translate"
+            *ngIf="showActions"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
@@ -196,7 +232,7 @@
               (click)="unselectDiscipline(item)"
             >
               <s5l>{{ item }}</s5l>
-              <i class="fa fa-trash is-size-5"></i>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
             </div>
           </div>
         </div>
@@ -213,15 +249,20 @@
           (click)="
             showPersonnelSubSection = true;
             showTeachersSubSection = false;
-            this.checked = true;
+            this.checked = true
           "
         />
         <label for="autolinkPersonnel" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.profilesSection.include.personnels</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.profilesSection.include.personnels</s5l
+          >
         </label>
       </div>
 
-      <div *ngIf="showPersonnelSubSection || form.profile === 'Personnel'" class="bordered-section">
+      <div
+        *ngIf="showPersonnelSubSection || form.profile === 'Personnel'"
+        class="bordered-section"
+      >
         <!-- Functions -->
         <div class="is-display-flex has-vertical-padding-10">
           <input
@@ -232,7 +273,9 @@
             (click)="handleFunctionsClick($event)"
           />
           <label for="autolinkFunctions" class="has-left-padding-10">
-            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.functions</s5l>
+            <s5l
+              >group.details.broadcast.autoLink.profilesSection.include.teachers.functions</s5l
+            >
           </label>
         </div>
         <div *ngIf="showFunctionsPicker || form.personnelSubSectionCheckbox">
@@ -240,6 +283,7 @@
             [comboModel]="functionOptions"
             [(outputModel)]="form.selectedFunctions"
             [title]="'functionsgroup.multi.combo.title' | translate"
+            *ngIf="showActions"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
@@ -248,7 +292,7 @@
               (click)="unselectFunction(item)"
             >
               <s5l>{{ item }}</s5l>
-              <i class="fa fa-trash is-size-5"></i>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
             </div>
           </div>
         </div>
@@ -265,11 +309,13 @@
           (click)="
             showPersonnelSubSection = false;
             showTeachersSubSection = false;
-            this.checked = true;
+            this.checked = true
           "
         />
         <label for="autolinkStudents" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.profilesSection.include.students</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.profilesSection.include.students</s5l
+          >
         </label>
       </div>
 
@@ -284,11 +330,13 @@
           (click)="
             showPersonnelSubSection = false;
             showTeachersSubSection = false;
-            this.checked = true;
+            this.checked = true
           "
         />
         <label for="autolinkRelatives" class="has-left-padding-10">
-          <s5l>group.details.broadcast.autoLink.profilesSection.include.relatives</s5l>
+          <s5l
+            >group.details.broadcast.autoLink.profilesSection.include.relatives</s5l
+          >
         </label>
       </div>
     </section>
@@ -308,7 +356,7 @@
           (click)="
             showPersonnelSubSection = false;
             showTeachersSubSection = false;
-            this.checked = true;
+            this.checked = true
           "
         />
         <label for="autolinkAdml" class="has-left-padding-10">
