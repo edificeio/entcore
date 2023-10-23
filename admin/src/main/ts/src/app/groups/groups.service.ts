@@ -68,29 +68,6 @@ export class GroupsService {
   public getFuncAndDisciplines(
     structure: StructureModel
   ): Observable<Array<GroupModel>> {
-    return of([
-      {
-        id: "b98d178f-6487-4f84-9b8c-a974f4128e2f",
-        name: "LETTRES HISTOIRE GEOGRAPHIE-Discipline",
-        displayName: null,
-        filter: "LETTRES HISTOIRE GEOGRAPHIE",
-        labels: ["Group", "FunctionGroup", "DisciplineGroup"],
-      } as GroupModel,
-      {
-        id: "b98d178f-6487-4f84-9b8c-a974f4128e2f",
-        name: "LETTRES MATH-Discipline",
-        displayName: null,
-        filter: "LETTRES MATH ",
-        labels: ["Group", "FunctionGroup", "DisciplineGroup"],
-      } as GroupModel,
-      {
-        id: "b98d178f-6487-4f84-9b8c-a974f4128e2f",
-        name: "ADMIN-Discipline",
-        displayName: null,
-        filter: "ADMIN",
-        labels: ["Group", "FunctionGroup", "FuncGroup"],
-      } as GroupModel,
-    ]);
     return this.httpClient.get<Array<GroupModel>>(
       "/directory/group/admin/funcAndDisciplines",
       {
