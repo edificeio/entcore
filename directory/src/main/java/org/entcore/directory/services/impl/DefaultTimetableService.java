@@ -19,12 +19,15 @@
 
 package org.entcore.directory.services.impl;
 
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.request.filter.Filter;
 import io.vertx.core.eventbus.DeliveryOptions;
+import org.bson.conversions.Bson;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.Directory;
@@ -37,7 +40,6 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
-import com.mongodb.QueryBuilder;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -69,7 +71,7 @@ public class DefaultTimetableService implements TimetableService {
 		final JsonObject sort = new JsonObject().put("startDate", 1);
 		final JsonObject keys = KEYS.copy();
 		if (lastDate > 0) {
-			query.put("$or", new fr.wseduc.webutils.collections.JsonArray()
+			query.put("$or", new JsonArray()
 					.add(new JsonObject().put("modified", new JsonObject().put("$gte", lastDate)))
 					.add(new JsonObject().put("deleted", new JsonObject().put("$gte", lastDate))));
 			keys.put("deleted", 1);
@@ -102,7 +104,7 @@ public class DefaultTimetableService implements TimetableService {
 
 		if (groupNames != null) {
 			JsonObject dateOperand =  new JsonObject()
-					.put("$and", new fr.wseduc.webutils.collections.JsonArray()
+					.put("$and", new JsonArray()
 							.add(new JsonObject().put("startDate" ,betweenStart))
 							.add(new JsonObject().put("endDate" ,betweenEnd)));
 
@@ -119,7 +121,7 @@ public class DefaultTimetableService implements TimetableService {
 
 			query.put("$and", new JsonArray().add(dateOperand).add(groupOperand));
 		} else {
-			query.put("$and", new fr.wseduc.webutils.collections.JsonArray()
+			query.put("$and", new JsonArray()
 					.add(new JsonObject().put("startDate", betweenStart))
 					.add(new JsonObject().put("endDate", betweenEnd)));
 		}
@@ -151,7 +153,7 @@ public class DefaultTimetableService implements TimetableService {
 		StringBuilder whereClause = new StringBuilder().append(" WHERE 1=1");
 		if (teachers != null && !teachers.isEmpty()) {
 			query.append("<-[r:TEACHES]-(u:User)");
-			params.put("teacherIds", new fr.wseduc.webutils.collections.JsonArray(teachers));
+			params.put("teacherIds", new JsonArray(teachers));
 			whereClause.append(" AND u.id IN  {teacherIds}");
 		}
 		if (!StringUtils.isEmpty(externalGroupId)) {
@@ -179,7 +181,7 @@ public class DefaultTimetableService implements TimetableService {
 	public void initStructure(String structureId, JsonObject conf, Handler<Either<String, JsonObject>> handler) {
 		JsonObject action = new JsonObject().put("action", "manual-init-timetable-structure")
 				.put("conf", conf.put("structureId", structureId));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override
@@ -328,7 +330,7 @@ public class DefaultTimetableService implements TimetableService {
 				{
 					String UAI = either.right().getValue();
 
-					QueryBuilder query = QueryBuilder.start("UAI").is(UAI);
+					Bson query = Filters.eq("UAI", UAI);
 					JsonObject sort = new JsonObject()
 						.put("created", -1);
 					JsonObject projection = new JsonObject()
@@ -364,9 +366,9 @@ public class DefaultTimetableService implements TimetableService {
 				{
 					String UAI = either.right().getValue();
 
-					QueryBuilder query = QueryBuilder.start().and(
-						QueryBuilder.start("UAI").is(UAI).get(),
-						QueryBuilder.start("_id").is(reportId).get()
+					Bson query = Filters.and(
+						Filters.eq("UAI", UAI),
+						Filters.eq("_id", reportId)
 					);
 					JsonObject projection = new JsonObject()
 						.put("_id", 1)
@@ -400,7 +402,7 @@ public class DefaultTimetableService implements TimetableService {
 				validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
-				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray errors = new JsonArray();
 				final JsonObject ge = new JsonObject().put("error.global", errors);
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")))
 				{
@@ -438,14 +440,14 @@ public class DefaultTimetableService implements TimetableService {
 			@Override
 			public void handle(Either<String, JsonObject> event)
 			{
-				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray errors = new JsonArray();
 				final JsonObject ge = new JsonObject().put("error.global", errors);
 
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("externalId")))
 				{
 					String externalId = event.right().getValue().getString("externalId");
 
-					eb.send("entcore.feeder",
+					eb.request("entcore.feeder",
 						new JsonObject()
 							.put("action", "import")
 							.put("feeder", "PRONOTE")
@@ -493,7 +495,7 @@ public class DefaultTimetableService implements TimetableService {
 				.put("updateGroups", isPunctual == false)
 				.put("updateTimetable", groupsOnly == false)
 				.put("language", acceptLanguage);
-		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {

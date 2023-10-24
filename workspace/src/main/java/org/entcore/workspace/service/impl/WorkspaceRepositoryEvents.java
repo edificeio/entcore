@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.mongodb.client.model.Filters;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.DeliveryOptions;
+import org.bson.conversions.Bson;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderExporter;
 import org.entcore.common.folders.FolderExporter.FolderExporterContext;
@@ -44,7 +46,6 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 
-import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -91,49 +92,49 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	public void exportResources(final JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, final String exportId, final String userId,
 								JsonArray groupIds, final String exportPathOrig, final String locale, String host, final Handler<Boolean> handler) {
 
-		QueryBuilder findByOwner = QueryBuilder.start("owner").is(userId);
-		QueryBuilder findByShared = QueryBuilder.start().or(QueryBuilder.start("inheritedShares.userId").is(userId).get(),
-				QueryBuilder.start("inheritedShares.groupId").in(groupIds).get());
-		QueryBuilder findByOwnerOrShared = exportSharedResources == false ? findByOwner : QueryBuilder.start().or(findByOwner.get(), findByShared.get());
+		Bson findByOwner = Filters.eq("owner", userId);
+		Bson findByShared = Filters.or(Filters.eq("inheritedShares.userId", userId),
+				Filters.in("inheritedShares.groupId", groupIds));
+		Bson findByOwnerOrShared = exportSharedResources == false ? findByOwner : Filters.or(findByOwner, findByShared);
 
-		QueryBuilder findByOwnerOrSharedResourcesRestricted;
+		Bson findByOwnerOrSharedResourcesRestricted;
 
 			if(resourcesIds == null)
 				findByOwnerOrSharedResourcesRestricted = findByOwnerOrShared;
 			else
 			{
-				findByOwnerOrSharedResourcesRestricted = findByOwnerOrShared.and(
-					QueryBuilder.start("_id").in(resourcesIds).get()
+				findByOwnerOrSharedResourcesRestricted = Filters.and(findByOwnerOrShared,
+					Filters.in("_id", resourcesIds)
 				);
 			}
 
 
-		QueryBuilder isNotShared = QueryBuilder.start().or(
-			QueryBuilder.start("isShared").exists(false).get(),
-			QueryBuilder.start("isShared").is(false).get()
+		Bson isNotShared = Filters.or(
+			Filters.exists("isShared", false),
+			Filters.eq("isShared", false)
 		);
-		QueryBuilder isNotProtected = QueryBuilder.start().or(
-			QueryBuilder.start("protected").exists(false).get(),
-			QueryBuilder.start("protected").is(false).get()
+		Bson isNotProtected = Filters.or(
+			Filters.exists("protected", false),
+			Filters.eq("protected", false)
 		);
-		QueryBuilder isNotPublic = QueryBuilder.start().or(
-			QueryBuilder.start("public").exists(false).get(),
-			QueryBuilder.start("public").is(false).get()
+		Bson isNotPublic = Filters.or(
+			Filters.exists("public", false),
+			Filters.eq("public", false)
 		);
-		QueryBuilder isNotDeleted = QueryBuilder.start().or(
-			QueryBuilder.start("deleted").exists(false).get(),
-			QueryBuilder.start("deleted").is(false).get()
+		Bson isNotDeleted = Filters.or(
+			Filters.exists("deleted", false),
+			Filters.eq("deleted", false)
 		);
 
-		QueryBuilder myDocs = QueryBuilder.start().and(isNotShared.get(),isNotProtected.get(),isNotPublic.get(),isNotDeleted.get());
-		QueryBuilder sharedDocs = QueryBuilder.start("isShared").is(true).and(isNotDeleted.get(),isNotProtected.get(),isNotPublic.get());
-		QueryBuilder protectedDocs = QueryBuilder.start("protected").is(true).and(isNotDeleted.get());
-		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true).and("trasher").is(userId);
+		Bson myDocs = Filters.and(isNotShared,isNotProtected,isNotPublic,isNotDeleted);
+		Bson sharedDocs = Filters.and(Filters.eq("isShared", true), isNotDeleted,isNotProtected,isNotPublic);
+		Bson protectedDocs = Filters.and(Filters.eq("protected", true), isNotDeleted);
+		Bson trashDocs = Filters.and(Filters.eq("deleted", true), Filters.eq("trasher", userId));
 
-		final JsonObject queryMyDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),myDocs.get()));
-		final JsonObject querySharedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),sharedDocs.get()));
-		final JsonObject queryProtectedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),protectedDocs.get()));
-		final JsonObject queryTrashDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrSharedResourcesRestricted.get(),trashDocs.get()));
+		final JsonObject queryMyDocs = MongoQueryBuilder.build(Filters.and(findByOwnerOrSharedResourcesRestricted,myDocs));
+		final JsonObject querySharedDocs = MongoQueryBuilder.build(Filters.and(findByOwnerOrSharedResourcesRestricted,sharedDocs));
+		final JsonObject queryProtectedDocs = MongoQueryBuilder.build(Filters.and(findByOwnerOrSharedResourcesRestricted,protectedDocs));
+		final JsonObject queryTrashDocs = MongoQueryBuilder.build(Filters.and(findByOwnerOrSharedResourcesRestricted,trashDocs));
 
 		final Map<String,JsonObject> queries = new HashMap<>();
 		queries.put("documents",queryMyDocs);
@@ -264,7 +265,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								.collect(Collectors.toList());
 						if(exportDocuments == false)
 							rows = new ArrayList<JsonObject>();
-						exporter.export(new FolderExporterContext(exportPathFolder), rows).setHandler(res ->
+						exporter.export(new FolderExporterContext(exportPathFolder), rows).onComplete(res ->
 						{
 							if (res.succeeded())
 							{
@@ -383,7 +384,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				continue;
 			final JsonObject j = (JsonObject) o;
 			final JsonObject query = MongoQueryBuilder
-					.build(QueryBuilder.start("inheritedShares.groupId").is(j.getString("group")));
+					.build(Filters.eq("inheritedShares.groupId", j.getString("group")));
 			final Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
@@ -402,7 +403,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					.pull("inheritedShares", new JsonObject().put("groupId", j.getString("group")))
 					.addToSet("old_shared", new JsonObject().put("groupId", j.getString("group")));
 			if (shareOldGroupsToUsers) {
-				JsonArray userShare = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray userShare = new JsonArray();
 				for (Object u : j.getJsonArray("users")) {
 					JsonObject share = new JsonObject().put("userId", u.toString())
 							.put(WorkspaceController.GET_ACTION, true).put(WorkspaceController.COPY_ACTION, true);
@@ -458,13 +459,13 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	}
 
 	private void removeFromInheritshares(Collection<String> userIds) {
-		final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
+		final JsonObject query = MongoQueryBuilder.build(Filters.in("shared.userId", userIds));
 		JsonObject update = new JsonObject()
 				.put("$pull",
 						new JsonObject().put("shared",
-								MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))))//
+								MongoQueryBuilder.build(Filters.in("userId", userIds))))//
 				.put("$pull", new JsonObject().put("inheritedShares",
-						MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))));
+						MongoQueryBuilder.build(Filters.in("userId", userIds))));
 
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, null,
 				new DeliveryOptions().setSendTimeout(timeout), event -> {

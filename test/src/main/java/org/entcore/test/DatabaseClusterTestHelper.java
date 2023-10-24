@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
@@ -176,13 +177,12 @@ public class DatabaseClusterTestHelper {
         public Future<AsyncResult<Object>> start(Vertx vertx, String urlO) {
             final String url = urlO.replaceAll("/db/data", "");
             if (this.containerByUrl.containsKey(url)) {
-                final Future<AsyncResult<Object>> future = Future.future();
-                vertx.executeBlocking(e -> {
+                return vertx.executeBlocking(() -> {
                     Neo4jContainer container = this.containerByUrl.get(url);
                     container.start();
                     this.containerByUrl.put(container.getHttpUrl(), container);
-                }, future.completer());
-                return future;
+                    return null;
+                });
             }
             return Future.failedFuture("Cant start docker (notfound): " + url);
         }
@@ -192,26 +192,24 @@ public class DatabaseClusterTestHelper {
             if(count == 0){
                 return Future.succeededFuture();
             }
-            final Future<AsyncResult<Object>> future = Future.future();
-            vertx.executeBlocking(res->{
+            return vertx.executeBlocking(()->{
                 getAll().parallelStream().forEach(e->{
                     if(e.isRunning()){
                         e.stop();
                     }
                 });
-                res.complete();
-            }, after->{
-                vertx.executeBlocking(res->{
+                return null;
+            }).compose(t ->
+                vertx.executeBlocking(()->{
                     getAll().parallelStream().forEach(e->{
                         if(!e.isRunning()){
                             e.start();
                             this.containerByUrl.put(e.getHttpUrl(), e);
                         }
                     });
-                    res.complete();
-                }, future.completer());
-            });
-            return future.mapEmpty();
+                    return null;
+                })
+            );
         }
 
         @Override

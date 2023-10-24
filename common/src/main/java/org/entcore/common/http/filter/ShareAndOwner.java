@@ -20,9 +20,10 @@
 package org.entcore.common.http.filter;
 
 import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.http.Binding;
+import org.bson.conversions.Bson;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
@@ -39,19 +40,18 @@ public class ShareAndOwner implements ResourcesProvider {
 	public void authorize(HttpServerRequest request, Binding binding, UserInfos user, Handler<Boolean> handler) {
 		String id = request.params().get(conf.getResourceIdLabel());
 		if (id != null && !id.trim().isEmpty()) {
-			List<DBObject> groups = new ArrayList<>();
+			List<Bson> groups = new ArrayList<>();
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
-			groups.add(QueryBuilder.start("userId").is(user.getUserId())
-					.put(sharedMethod).is(true).get());
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()),
+					Filters.eq(sharedMethod, true)));
 			for (String gpId: user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId)
-						.put(sharedMethod).is(true).get());
+				groups.add(Filters.and(Filters.eq("groupId", gpId),
+						Filters.and(Filters.eq(sharedMethod, true))));
 			}
-			QueryBuilder query = QueryBuilder.start("_id").is(id).or(
-					QueryBuilder.start("owner.userId").is(user.getUserId()).get(),
-					QueryBuilder.start("shared").elemMatch(
-							new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get()
-			);
+			Bson query = Filters.and(Filters.eq("_id", id),
+					Filters.or(
+						Filters.eq("owner.userId", user.getUserId()),
+						Filters.elemMatch("shared", Filters.or(groups))));
 			MongoAppFilter.executeCountQuery(request, conf.getCollection(), MongoQueryBuilder.build(query), 1, handler);
 		} else {
 			handler.handle(false);
