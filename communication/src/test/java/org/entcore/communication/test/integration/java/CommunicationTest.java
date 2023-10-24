@@ -331,7 +331,7 @@
 //	}
 //
 //	private void importWithoutCom(final Handler<String> handler) {
-//		eb.send(ENTCORE_FEEDER, new JsonObject().put("action", "import"), new Handler<Message<JsonObject>>() {
+//		eb.request(ENTCORE_FEEDER, new JsonObject().put("action", "import"), new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
 //				assertEquals("ok", message.body().getString("status"));
@@ -365,7 +365,7 @@
 //
 //
 //	private void initDefaultComRules(String structureId, final Handler<Void> handler) {
-//		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
+//		eb.request(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "initDefaultCommunicationRules")
 //				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {
@@ -398,7 +398,7 @@
 //	}
 //
 //	private void applyDefaultComRules(String structureId, final Handler<Void> handler) {
-//		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
+//		eb.request(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "setMultipleDefaultCommunicationRules")
 //				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {
@@ -459,7 +459,7 @@
 //	}
 //
 //	private void initAndApplyDefaultCommunicationRules(String structureId, final Handler<Void> handler) {
-//		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
+//		eb.request(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "initAndApplyDefaultCommunicationRules")
 //				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {

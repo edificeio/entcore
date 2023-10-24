@@ -31,11 +31,7 @@ import javax.xml.bind.Unmarshaller;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.buffer.Buffer;
@@ -100,11 +96,14 @@ public class CasClientController extends BaseController
         }
 	}
 
-    protected void addHeaders(HttpClientRequest req)
+    protected HttpClientRequest addHeaders(HttpClientRequest req)
     {
-        if(this.headers != null)
-            for(String header : headers.fieldNames())
+        if(this.headers != null) {
+            for (String header : headers.fieldNames()) {
                 req.putHeader(header, headers.getString(header));
+            }
+        }
+        return req;
     }
 
     private void redirectToCas(HttpServerRequest request, String url, String redirection)
@@ -119,65 +118,51 @@ public class CasClientController extends BaseController
         this.redirectToCas(request, this.loginURL, this.serviceRedirection);
     }
 
-    protected void serviceValidate(HttpServerRequest request, Handler<AuthenticationSuccessType> handler)
-    {
+    protected void serviceValidate(HttpServerRequest request, Handler<AuthenticationSuccessType> handler) {
         request.pause();
-
         String validateURL = this.serviceValidateURL + "?service=" + this.serviceRedirection + "&ticket=" + request.getParam("ticket");
+        this.httpClient.request(new RequestOptions()
+            .setMethod(HttpMethod.GET)
+            .setAbsoluteURI(validateURL)
+        )
+        .map(this::addHeaders)
+        .flatMap(HttpClientRequest::send)
+        .onSuccess(response -> {
+            if (response.statusCode() == 200) {
+                response.bodyHandler(bodyBuffer -> {
+                    request.resume();
+                    try {
+                        JAXBContext context = JAXBContext.newInstance(ServiceResponseType.class);
+                        Unmarshaller unmarshaller = context.createUnmarshaller();
+                        StringReader bodyReader = new StringReader(bodyBuffer.toString());
 
-        HttpClientRequest validateRequest = this.httpClient.getAbs(validateURL, new Handler<HttpClientResponse>()
-        {
-            @Override
-            public void handle(final HttpClientResponse response)
-            {
-			    if (response.statusCode() == 200)
-                {
-			    	response.bodyHandler(new Handler<Buffer>()
-                    {
-                        @Override
-                        public void handle(Buffer bodyBuffer)
-                        {
-                            request.resume();
-                            try
-                            {
-			                    JAXBContext context = JAXBContext.newInstance(ServiceResponseType.class);
-			                    Unmarshaller unmarshaller = context.createUnmarshaller();
-                                StringReader bodyReader = new StringReader(bodyBuffer.toString());
+                        ServiceResponseType serviceResponse = (ServiceResponseType) JAXBIntrospector.getValue(unmarshaller.unmarshal(bodyReader));
+                        AuthenticationFailureType failure = serviceResponse.getAuthenticationFailure();
+                        AuthenticationSuccessType success = serviceResponse.getAuthenticationSuccess();
 
-                                ServiceResponseType serviceResponse = (ServiceResponseType) JAXBIntrospector.getValue(unmarshaller.unmarshal(bodyReader));
-                                AuthenticationFailureType failure = serviceResponse.getAuthenticationFailure();
-                                AuthenticationSuccessType success = serviceResponse.getAuthenticationSuccess();
+                        if (failure == null)
+                            handler.handle(success);
+                        else {
+                            String failureCode = failure.getCode();
+                            String failureValue = failure.getValue();
 
-                                if(failure == null)
-                                    handler.handle(success);
-                                else
-                                {
-                                    String failureCode = failure.getCode();
-                                    String failureValue = failure.getValue();
+                            log.error("CAS Client serviceValidate Error: " + failureCode + " (" + failureValue + ")");
 
-                                    log.error("CAS Client serviceValidate Error: " + failureCode + " (" + failureValue + ")");
-
-                                    request.response().setStatusCode(500);
-                                    request.response().end();
-                                }
-                            } catch (Exception e) {
-                                log.error(e.toString());
-                                request.response().setStatusCode(500);
-                                request.response().end();
-                            }
+                            request.response().setStatusCode(500);
+                            request.response().end();
                         }
-                    });
-                }
-			    else
-                {
-			    	log.error("CAS Client serviceValidate error: " + response.statusCode());
-                    request.response().setStatusCode(response.statusCode());
-                    request.response().end();
-                }
+                    } catch (Exception e) {
+                        log.error(e.toString());
+                        request.response().setStatusCode(500);
+                        request.response().end();
+                    }
+                });
+            } else {
+                log.error("CAS Client serviceValidate error: " + response.statusCode());
+                request.response().setStatusCode(response.statusCode());
+                request.response().end();
             }
         });
-        this.addHeaders(validateRequest);
-        validateRequest.end();
     }
 
     protected void loginUser(String userId, String login, HttpServerRequest request)

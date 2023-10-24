@@ -21,6 +21,7 @@ package org.entcore.directory;
 
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
@@ -61,9 +62,9 @@ public class Directory extends BaseServer {
 	}
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		final EventBus eb = getEventBus(vertx);
-		super.start();
+		super.start(startPromise);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 

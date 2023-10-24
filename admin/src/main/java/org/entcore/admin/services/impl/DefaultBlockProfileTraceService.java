@@ -1,17 +1,18 @@
 package org.entcore.admin.services.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.request.filter.Filter;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.bson.conversions.Bson;
 import org.entcore.admin.services.BlockProfileTraceService;
 import org.entcore.common.service.impl.MongoDbCrudService;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static org.entcore.common.mongodb.MongoDbResult.*;
@@ -43,9 +44,10 @@ public class DefaultBlockProfileTraceService extends MongoDbCrudService implemen
         actions.add("BLOCK");
         actions.add("UNBLOCK");
         // Query
-        QueryBuilder query = QueryBuilder
-                .start("structureId").is(structureId)
-                .and(QueryBuilder.start("action").in(actions).get());
+        Bson query = Filters.and(
+                Filters.eq("structureId", structureId),
+                Filters.in("action", actions)
+                );
         mongo.find(this.collection, MongoQueryBuilder.build(query), validResultsHandler(handler));
     }
 }

@@ -283,8 +283,8 @@ public class UserBookController extends BaseController {
 							public void handle(JsonArray manualGroups) {
 								JsonObject result = new JsonObject()
 									.put("users", personnel)
-									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray()))
-									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new fr.wseduc.webutils.collections.JsonArray()))
+									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new JsonArray()))
+									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new JsonArray()))
 									.put("manualGroups", manualGroups);
 								renderJson(request, result);
 							}
@@ -468,7 +468,7 @@ public class UserBookController extends BaseController {
 					welcomeMessage = messages.get("default");
 				}
 				if (welcomeMessage != null) {
-					conversationNotification.notify(request, "", new fr.wseduc.webutils.collections.JsonArray().add(message.body().getString("userId")),
+					conversationNotification.notify(request, "", new JsonArray().add(message.body().getString("userId")),
 							null, I18n.getInstance().translate("welcome.subject", getHost(request), I18n.acceptLanguage(request)),
 							welcomeMessage, new Handler<Either<String, JsonObject>>() {
 
@@ -518,7 +518,7 @@ public class UserBookController extends BaseController {
 				});
 				break;
 			case "get.userlist":
-				final JsonArray userIds = message.body().getJsonArray("userIds", new fr.wseduc.webutils.collections.JsonArray());
+				final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
 				String query =
 						"MATCH (u:User) " +
 						message.body().getString("additionalMatch", "") +
@@ -537,7 +537,7 @@ public class UserBookController extends BaseController {
 									.put("message", event.left().getValue()));
 								return;
 							}
-							JsonArray results = (event.right().getValue().getJsonObject(0)).getJsonArray("preferences", new fr.wseduc.webutils.collections.JsonArray());
+							JsonArray results = (event.right().getValue().getJsonObject(0)).getJsonArray("preferences", new JsonArray());
 							for(Object resultObj : results){
 								JsonObject result = (JsonObject) resultObj;
 								JsonObject prefs = new JsonObject();

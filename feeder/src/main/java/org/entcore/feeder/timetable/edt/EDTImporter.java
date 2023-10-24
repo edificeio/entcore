@@ -155,7 +155,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		if (!userImportedPronoteId.isEmpty()) {
 			final String query = "MATCH (u:User) where u.IDPN IN {pronoteIds} RETURN COLLECT(u.externalId) as externalIds";
 			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("pronoteIds",
-					new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userImportedPronoteId))), new Handler<Message<JsonObject>>() {
+					new JsonArray(new ArrayList<>(userImportedPronoteId))), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					JsonArray res = event.body().getJsonArray("result");
@@ -251,7 +251,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					if (j != null) {
 						JsonArray groups = j.getJsonArray("groups");
 						if (groups == null) {
-							groups = new fr.wseduc.webutils.collections.JsonArray();
+							groups = new JsonArray();
 							j.put("groups", groups);
 						}
 						groups.add(id);
@@ -342,7 +342,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		log.debug(currentEntity);
 		try {
 			JsonObject p = persEducNat.applyMapping(currentEntity);
-			p.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
+			p.put("profiles", new JsonArray().add(profile));
 			p.put("externalId", idPronote);
 			p.put(IDPN, idPronote);
 			if (isNotEmpty(p.getString("lastName")) && isNotEmpty(p.getString("firstName"))) {
@@ -603,7 +603,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					case "Professeur":
 						JsonArray teachersArray = c.getJsonArray("teacherIds");
 						if (teachersArray == null) {
-							teachersArray = new fr.wseduc.webutils.collections.JsonArray();
+							teachersArray = new JsonArray();
 							c.put("teacherIds", teachersArray);
 						}
 						final String tId = teachers.get(ident);
@@ -620,8 +620,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						JsonArray classesArray = c.getJsonArray("classes");
 						JsonArray classesExternalIdsArray = c.getJsonArray("classesExternalIds");
 						if (classesArray == null) {
-							classesArray = new fr.wseduc.webutils.collections.JsonArray();
-							classesExternalIdsArray = new fr.wseduc.webutils.collections.JsonArray();
+							classesArray = new JsonArray();
+							classesExternalIdsArray = new JsonArray();
 							c.put("classes", classesArray);
 							c.put("classesExternalIds", classesExternalIdsArray);
 						}
@@ -640,8 +640,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						JsonArray groupsArray = c.getJsonArray("groups");
 						JsonArray groupsExternalIds = c.getJsonArray("groupsExternalIds");
 						if (groupsArray == null) {
-							groupsArray = new fr.wseduc.webutils.collections.JsonArray();
-							groupsExternalIds = new fr.wseduc.webutils.collections.JsonArray();
+							groupsArray = new JsonArray();
+							groupsExternalIds = new JsonArray();
 							c.put("groups", groupsArray);
 							c.put("groupsExternalIds", groupsExternalIds);
 						}
@@ -659,7 +659,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					case "Materiel":
 						JsonArray equipmentsArray = c.getJsonArray("equipmentLabels");
 						if (equipmentsArray == null) {
-							equipmentsArray = new fr.wseduc.webutils.collections.JsonArray();
+							equipmentsArray = new JsonArray();
 							c.put("equipmentLabels", equipmentsArray);
 						}
 						final String eId = equipments.get(ident);
@@ -671,7 +671,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					case "Salle":
 						JsonArray roomsArray = c.getJsonArray("roomLabels");
 						if (roomsArray == null) {
-							roomsArray = new fr.wseduc.webutils.collections.JsonArray();
+							roomsArray = new JsonArray();
 							c.put("roomLabels", roomsArray);
 						}
 						final String rId = rooms.get(ident);
@@ -682,7 +682,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 					case "Personnel":
 						JsonArray personnelsArray = c.getJsonArray("personnelIds");
 						if (personnelsArray == null) {
-							personnelsArray = new fr.wseduc.webutils.collections.JsonArray();
+							personnelsArray = new JsonArray();
 							c.put("personnelIds", personnelsArray);
 						}
 						final String pId = personnels.get(ident);
@@ -695,7 +695,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 						if (isNotEmpty(studentId)) {
 							JsonArray studentsArray = c.getJsonArray("studentIds");
 							if (studentsArray == null) {
-								studentsArray = new fr.wseduc.webutils.collections.JsonArray();
+								studentsArray = new JsonArray();
 								c.put("studentIds", studentsArray);
 							}
 							studentsArray.add(studentId);

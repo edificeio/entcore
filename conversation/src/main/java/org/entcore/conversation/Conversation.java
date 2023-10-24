@@ -20,6 +20,7 @@
 package org.entcore.conversation;
 
 import fr.wseduc.cron.CronTrigger;
+import io.vertx.core.Promise;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -37,8 +38,8 @@ public class Conversation extends BaseServer {
 	public final static int DEFAULT_FOLDER_DEPTH = 3;
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 
 		Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 

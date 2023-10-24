@@ -1,11 +1,13 @@
 package org.entcore.timeline.events;
 
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -18,7 +20,6 @@ import org.entcore.timeline.services.TimelineConfigService;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.mongodb.QueryBuilder;
 
 public class CachedTimelineEventStore implements TimelineEventStore {
     private static Logger logger = LoggerFactory.getLogger(CachedTimelineEventStore.class);
@@ -57,7 +58,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<JsonObject> getExternalNotifications() {
-        Future<JsonObject> future = Future.future();
+        Promise<JsonObject> future = Promise.promise();
         if (externalNotificationsCache != null) {
             return Future.succeededFuture(externalNotificationsCache);
         }
@@ -81,7 +82,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         restriction.equals(TimelineNotificationsLoader.Restrictions.HIDDEN.name())) {
                     String notifType = notif.getString("type");
                     if (!restricted.containsKey(notifType)) {
-                        restricted.put(notifType, new fr.wseduc.webutils.collections.JsonArray());
+                        restricted.put(notifType, new JsonArray());
                     }
                     restricted.getJsonArray(notifType).add(notif.getString("event-type"));
                 }
@@ -89,7 +90,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             externalNotificationsCache = restricted;
             future.complete((restricted));
         });
-        return future;
+        return future.future();
     }
 
     @Override
@@ -107,13 +108,13 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             }
             copy.put("created", copy.getJsonObject("date"));
             copy.put("_id", resOriginal.getString("_id", ""));
-            shouldAddToCache(copy).setHandler(resShouldAdd -> {
-                final List<Future> futures = new ArrayList<>();
+            shouldAddToCache(copy).onComplete(resShouldAdd -> {
+                final List<Future<?>> futures = new ArrayList<>();
                 if(resShouldAdd.succeeded() && resShouldAdd.result()){
                     for (Object recipient : recipients) {
                         final JsonObject recipientJson = (JsonObject) recipient;
-                        final Future<Void> future = Future.future();
-                        futures.add(future);
+                        final Promise<Void> future = Promise.promise();
+                        futures.add(future.future());
                         final String key = getKey(recipientJson.getString("userId"));
                         cacheService.prependToList(key, copy.encode(), res -> {
                             if (res.succeeded()) {
@@ -135,7 +136,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                     }
                 }
                 //call original store
-                CompositeFuture.all(futures).setHandler(res -> {
+                Future.all(futures).onComplete(res -> {
                     if (!res.succeeded()) {
                         logger.error("Failed to add event:", res.cause());
                     }
@@ -150,7 +151,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<List<JsonObject>> getListFiltered(String userId, List<String> types){
-        Future<List<JsonObject>> future = Future.future();
+        Promise<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -167,7 +168,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         return false;
                     }
                     //
-                    if (types != null && types.size() > 0) {
+                    if (types != null && !types.isEmpty()) {
                         final String type = json.getString("type", "");
                         return types.contains(type);
                     } else {
@@ -179,11 +180,11 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                 future.fail(res.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     private Future<List<JsonObject>> getListUnfiltered(String userId){
-        Future<List<JsonObject>> future = Future.future();
+        Promise<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -194,7 +195,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                 future.fail(res.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     @Override
@@ -204,7 +205,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
         if (fromCache) {
             final String userId = recipient.getUserId();
             if(offset == 0){
-                getListFiltered(userId, types).setHandler(resJson ->{
+                getListFiltered(userId, types).onComplete(resJson ->{
                     if(resJson.succeeded()){
                         final List<JsonObject> allJson = resJson.result();
                         final JsonObject payload = new JsonObject();
@@ -218,7 +219,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                     }
                 });
             } else if(offset <= this.pageSize){
-                getListFiltered(userId, types).setHandler(resJson ->{
+                getListFiltered(userId, types).onComplete(resJson ->{
                     if(resJson.succeeded()){
                         final int length = resJson.result().size();
                         int newOffset = offset;
@@ -258,7 +259,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     protected void removeById(String id, final Handler<Void> handler){
-        mongo.findOne(DefaultTimelineEventStore.TIMELINE_COLLECTION, MongoQueryBuilder.build(QueryBuilder.start("_id").is(id)), message->{
+        mongo.findOne(DefaultTimelineEventStore.TIMELINE_COLLECTION, MongoQueryBuilder.build(Filters.eq("_id", id)), message->{
             //do action
             handler.handle(null);
             //then delete from cache
@@ -276,7 +277,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     protected void removeFromCache(String recipient, String id){
-        getListUnfiltered(recipient).setHandler(res->{
+        getListUnfiltered(recipient).onComplete(res->{
             if(res.succeeded()){
                 final List<JsonObject> jsons = res.result();
                 for(int i = 0 ; i < jsons.size(); i ++){

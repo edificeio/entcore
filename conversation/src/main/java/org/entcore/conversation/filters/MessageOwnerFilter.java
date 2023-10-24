@@ -53,7 +53,7 @@ public class MessageOwnerFilter implements ResourcesProvider {
 			"JOIN conversation.usermessages um ON m.id = um.message_id " +
 			"WHERE um.user_id = ? AND um.message_id = ? AND m.from = ?";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(user.getUserId())
 			.add(messageId)
 			.add(user.getUserId());

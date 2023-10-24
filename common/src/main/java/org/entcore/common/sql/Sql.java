@@ -74,7 +74,7 @@ public class Sql implements ISql {
 				.put("action", "prepared")
 				.put("statement", query)
 				.put("values", values);
-		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
+		eb.request(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class Sql implements ISql {
 		JsonObject j = new JsonObject()
 				.put("action", "raw")
 				.put("command", query);
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.request(address, j, handlerToAsyncHandler(handler));
 	}
 
 	@Override
@@ -107,13 +107,13 @@ public class Sql implements ISql {
 			handler.handle(new ErrorMessage("invalid.parameters"));
 			return;
 		}
-		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray fields = new JsonArray();
+		JsonArray values = new JsonArray();
 		for (String attr : params.fieldNames()) {
 			fields.add(attr);
 			values.add(params.getValue(attr));
 		}
-		insert(table, fields, new fr.wseduc.webutils.collections.JsonArray().add(values), returning, handler);
+		insert(table, fields, new JsonArray().add(values), returning, handler);
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class Sql implements ISql {
 		if (returning != null && !returning.trim().isEmpty()) {
 			j.put("returning", returning);
 		}
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.request(address, j, handlerToAsyncHandler(handler));
 	}
 
 	@Override
@@ -149,7 +149,7 @@ public class Sql implements ISql {
 		if (returning != null && !returning.trim().isEmpty()) {
 			j.put("returning", returning);
 		}
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.request(address, j, handlerToAsyncHandler(handler));
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public class Sql implements ISql {
 				.put("action", "select")
 				.put("table", table)
 				.put("fields", fields);
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.request(address, j, handlerToAsyncHandler(handler));
 	}
 
 	@Override
@@ -171,7 +171,7 @@ public class Sql implements ISql {
 		JsonObject j = new JsonObject()
 				.put("action", "transaction")
 				.put("statements", statements);
-		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
+		eb.request(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
 	public static String upsert(String table, String updateQuery, String insertQuery) {

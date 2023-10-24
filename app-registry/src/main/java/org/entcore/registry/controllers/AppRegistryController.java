@@ -184,7 +184,7 @@ public class AppRegistryController extends BaseController {
 				final String roleId = request.params().get("id");
 				if (roleId != null && !roleId.trim().isEmpty()) {
 					final String roleName = body.getString("role");
-					final JsonArray actions = body.getJsonArray("actions", new fr.wseduc.webutils.collections.JsonArray());
+					final JsonArray actions = body.getJsonArray("actions", new JsonArray());
 					final JsonObject role = new JsonObject();
 					if (roleName != null && !roleName.trim().isEmpty()) {
 						role.put("name", roleName);
@@ -372,7 +372,7 @@ public class AppRegistryController extends BaseController {
 					.put("structureId", structureId)
 					.put("emptyPattern", emptyPattern)
 					.put("inherits", inherits)
-                    .put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
+                    .put("patterns", new JsonArray().add(pattern)));
         }
 	}
 
@@ -450,16 +450,14 @@ public class AppRegistryController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void listCasTypes(final HttpServerRequest request) {
-		Server.getEventBus(vertx).send("cas.configuration", new JsonObject().put("action", "list-services"),
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					renderJson(request, event.body().getJsonArray("result"));
-				} else {
-					log.error(event.body().getString("message"));
-				}
-			}
-		}));
+		Server.getEventBus(vertx).request("cas.configuration", new JsonObject().put("action", "list-services"),
+				handlerToAsyncHandler(event -> {
+          if ("ok".equals(event.body().getString("status"))) {
+            renderJson(request, event.body().getJsonArray("result"));
+          } else {
+            log.error(event.body().getString("message"));
+          }
+        }));
 	}
 
 	@BusAddress("wse.app.registry")
@@ -492,7 +490,7 @@ public class AppRegistryController extends BaseController {
 			bodyToJson(request, new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject jo) {
-					eb.send(config.getString("address", "wse.app.registry"), jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					eb.request(config.getString("address", "wse.app.registry"), jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> reply) {
 							renderJson(request, reply.body());
@@ -603,7 +601,7 @@ public class AppRegistryController extends BaseController {
 					if (res.isRight()) {
 						message.reply(res.right().getValue());
 					} else {
-						message.reply(new fr.wseduc.webutils.collections.JsonArray());
+						message.reply(new JsonArray());
 					}
 				}
 			};
@@ -618,11 +616,11 @@ public class AppRegistryController extends BaseController {
 					appRegistryService.applicationAllowedProfileGroups(application, responseHandler);
 					break;
 				default:
-					message.reply(new fr.wseduc.webutils.collections.JsonArray());
+					message.reply(new JsonArray());
 					break;
 			}
 		} else {
-			message.reply(new fr.wseduc.webutils.collections.JsonArray());
+			message.reply(new JsonArray());
 		}
 	}
 
@@ -711,7 +709,7 @@ public class AppRegistryController extends BaseController {
 	private void updatedProfileGroupActions(String groupId) {
 		JsonObject message = new JsonObject().put("type", PROFILE_GROUP_ACTIONS_UPDATED);
 		if (groupId != null && !groupId.trim().isEmpty()) {
-			message.put("groups", new fr.wseduc.webutils.collections.JsonArray().add(groupId));
+			message.put("groups", new JsonArray().add(groupId));
 		}
 		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, message);
 	}

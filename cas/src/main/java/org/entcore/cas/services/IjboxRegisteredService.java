@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -59,7 +60,7 @@ public class IjboxRegisteredService extends EnglishAttackRegisteredService {
 			Element rootAttributes = createElement(EA_ATTRIBUTES, doc);
 
 			// Structures
-			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+			for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) o;
 				if (structure.containsKey("UAI")) {

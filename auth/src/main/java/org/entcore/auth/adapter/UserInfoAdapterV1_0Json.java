@@ -83,7 +83,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.remove("apps");
 			filteredInfos.remove("authorizedActions");
 			filteredInfos.remove("children");
-			JsonArray authorizedActions = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray authorizedActions = new JsonArray();
 			for (Object o: info.getJsonArray("authorizedActions")) {
 				JsonObject j = (JsonObject) o;
 				String name = j.getString("name");

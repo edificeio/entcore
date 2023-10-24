@@ -122,7 +122,7 @@ public class ClassController extends BaseController {
 							final String userId = r.right().getValue().getString("id");
 							boolean notify = config.getBoolean("createdUserEmail", false) &&
 									request.params().contains("sendCreatedUserEmail");
-							initPostCreate(classId, new fr.wseduc.webutils.collections.JsonArray().add(userId), notify, request);
+							initPostCreate(classId, new JsonArray().add(userId), notify, request);
 							if (notify) {
 								userService.sendUserCreatedEmail(request, userId,
 										new Handler<Either<String, Boolean>>() {
@@ -151,7 +151,7 @@ public class ClassController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
-		JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("type"));
+		JsonArray types = new JsonArray(request.params().getAll("type"));
 		boolean collectRelative = "true".equals(request.params().get("collectRelative"));
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
@@ -242,8 +242,8 @@ public class ClassController extends BaseController {
 					JsonObject j = new JsonObject()
 							.put("action", "setDefaultCommunicationRules")
 							.put("schoolId", schoolId);
-					eb.send("wse.communication", j);
-					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
+					eb.request("wse.communication", j);
+					JsonArray a = new JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					promise.complete(res.right().getValue());
 				} else {
@@ -312,7 +312,7 @@ public class ClassController extends BaseController {
 							JsonObject j = new JsonObject()
 									.put("action", "setDefaultCommunicationRules")
 									.put("schoolId", s.right().getValue().getString("id"));
-							eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+							eb.request("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 								public void handle(Message<JsonObject> event) {
 									if("error".equals(event.body().getString("status", ""))){
 										log.error("[initPostCreate] Set communication rules failed.");
@@ -350,7 +350,7 @@ public class ClassController extends BaseController {
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
 					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
-						initPostCreate(classId, new fr.wseduc.webutils.collections.JsonArray().add(userId));
+						initPostCreate(classId, new JsonArray().add(userId));
 						renderJson(request, r.right().getValue(), 200);
 					} else {
 						notFound(request);

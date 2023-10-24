@@ -7,10 +7,7 @@ import fr.wseduc.webutils.email.Bounce;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.eventbus.ResultMessage;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -231,7 +228,7 @@ public class PostgresEmailSender implements EmailSender {
                     }
                     addMeta(request, mail).compose(r -> {
                         return helper.createWithAttachments(mail, attList);
-                    }).setHandler(r -> {
+                    }).onComplete(r -> {
                         if (r.failed()) {
                             logger.error("Failed to save mail: ", r.cause());
                             if(handler != null){
@@ -263,7 +260,7 @@ public class PostgresEmailSender implements EmailSender {
     }
 
     private Future<PostgresEmailBuilder.EmailBuilder> addMeta(HttpServerRequest request, PostgresEmailBuilder.EmailBuilder mail) {
-        final Future<PostgresEmailBuilder.EmailBuilder> future = Future.future();
+        final Promise<PostgresEmailBuilder.EmailBuilder> future = Promise.promise();
         mail.withPriority(priority);
         final String moduleName = BaseServer.getModuleName();
         if (Utils.isNotEmpty(moduleName)) {
@@ -288,6 +285,6 @@ public class PostgresEmailSender implements EmailSender {
         }else{
             future.complete(mail);
         }
-        return future;
+        return future.future();
     }
 }

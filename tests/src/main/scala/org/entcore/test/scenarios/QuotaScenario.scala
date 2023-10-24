@@ -27,13 +27,13 @@ import net.minidev.json.{JSONArray, JSONValue}
 object QuotaScenario {
 
 	val scn =
-    exec(http("Get quota and storage")
+    exec(http("Get quota and storage - Student")
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
       104857600l == res.toLong || 512144000l == res.toLong)).is(true),
       jsonPath("$.storage").find.is("97080")))
 
-    .exec(http("Get quota and storage")
+    .exec(http("Get quota and storage - Teacher")
     .get("""/workspace/quota/user/${teacherId}""")
     .check(status.is(401)))
 
@@ -63,13 +63,13 @@ object QuotaScenario {
     .formParam("""password""", """blipblop""")
     .check(status.is(302)))
 
-    .exec(http("Get quota and storage")
+    .exec(http("Get quota and storage - Student bis")
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
     104857600l == res.toLong || 512144000l == res.toLong)).is(true),
       jsonPath("$.storage").find.is("97080")))
 
-    .exec(http("Get quota and storage")
+    .exec(http("Get quota and storage - Teacher bis")
     .get("""/workspace/quota/user/${teacherId}""")
     .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
       104857600l == res.toLong || 1073741824l == res.toLong)).is(true),
@@ -102,12 +102,12 @@ object QuotaScenario {
     .formParam("""password""", """password""")
     .check(status.is(302)))
 
-    .exec(http("Get quota and storage")
+    .exec(http("Get quota and storage - Student ter")
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.is("1073741823"),
       jsonPath("$.storage").find.is("97080")))
 
-    .exec(http("Get quota and storage")
+    .exec(http("Get quota and storage - Teacher ter")
     .get("""/workspace/quota/user/${teacherId}""")
     .check(status.is(200), jsonPath("$.quota").find.is("1073741823"),
       jsonPath("$.storage").find.lessThan("1048576")))

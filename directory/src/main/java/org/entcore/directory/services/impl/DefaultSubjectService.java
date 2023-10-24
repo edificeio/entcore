@@ -36,7 +36,7 @@ public class DefaultSubjectService implements SubjectService {
                 .put("action", "manual-add-subject")
                 .put("subject", subject);
 
-        eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
+        eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 
     }
 
@@ -45,7 +45,7 @@ public class DefaultSubjectService implements SubjectService {
         JsonObject action = new JsonObject()
                 .put("action", "manual-update-subject")
                 .put("subject", subject);
-        eb.send(Directory.FEEDER, action, handlerToAsyncHandler((validUniqueResultHandler(0, result))));
+        eb.request(Directory.FEEDER, action, handlerToAsyncHandler((validUniqueResultHandler(0, result))));
     }
 
     @Override
@@ -53,6 +53,6 @@ public class DefaultSubjectService implements SubjectService {
         JsonObject action = new JsonObject()
                 .put("action", "manual-delete-subject")
                 .put("subjectId", subjectId);
-        eb.send(Directory.FEEDER, action, handlerToAsyncHandler((validEmptyHandler(result))));
+        eb.request(Directory.FEEDER, action, handlerToAsyncHandler((validEmptyHandler(result))));
     }
 }

@@ -37,7 +37,7 @@ object CasScenario {
     .formParam("""password""", """blipblop""")
     .formParam("""callBack""", "%2Fcas%2Flogin%3Fservice%3Dhttp%253A%252F%252Fperdu.com")
     .check(status.is(302)))
-    .exec(http("Login cas")
+    .exec(http("Login cas - bis")
     .get("""/cas/login?service=http%3A%2F%2Fperdu.com""")
     .check(status.is(302),
       header("Location").find.transformOption(_.map{l => println(l);l.substring(l.indexOf("=")+1)}).exists.saveAs("casTicket")))

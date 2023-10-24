@@ -19,14 +19,15 @@
 
 package org.entcore.portal;
 
+import io.vertx.core.Promise;
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
 
 public class Portal extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		addController(new PortalController());
 	}
 

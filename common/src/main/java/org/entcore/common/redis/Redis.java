@@ -21,19 +21,18 @@ package org.entcore.common.redis;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.redis.RedisClient;
-import io.vertx.redis.RedisOptions;
 
 public class Redis {
 
     private RedisClient redisClient;
-    private RedisOptions redisOptions;
+
 
     private Redis() {
     }
 
     private static class RedisHolder {
         private static final Redis instance = new Redis();
+        private static JsonObject redisConfig;
     }
 
     public static Redis getInstance() {
@@ -41,22 +40,12 @@ public class Redis {
     }
 
     public void init(Vertx vertx, JsonObject redisConfig) {
-        this.redisOptions = new RedisOptions()
-                .setHost(redisConfig.getString("host"))
-                .setPort(redisConfig.getInteger("port"))
-                .setSelect(redisConfig.getInteger("select", 0));
-        if(redisConfig.containsKey("auth")){
-            this.redisOptions.setAuth(redisConfig.getString("auth"));
-        }
-        this.redisClient = RedisClient.create(vertx, redisOptions);
+        this.redisClient = RedisClient.create(vertx, new JsonObject().put("redisConfig", redisConfig));
+        RedisHolder.redisConfig = redisConfig;
     }
 
     public RedisClient getRedisClient() {
         return this.redisClient;
-    }
-
-    public RedisOptions getRedisOptions() {
-        return this.redisOptions;
     }
 
     public static RedisClient getClient() {
@@ -64,14 +53,12 @@ public class Redis {
     }
 
     public static RedisClient createClientForDb(Vertx vertx, Integer db) {
-        if(db.equals(getInstance().redisOptions.getSelect())){
+        if(RedisHolder.redisConfig.getInteger("select", 0).equals(db)) {
             return getInstance().getRedisClient();
         }
-        final RedisOptions options = getInstance().getRedisOptions();
-        return RedisClient.create(vertx, new RedisOptions()
-                                                .setHost(options.getHost())
-                                                .setPort(options.getPort())
-                                                .setSelect(db));
+        final JsonObject newRedisConfig = RedisHolder.redisConfig.copy();
+        newRedisConfig.put("select", db);
+        return RedisClient.create(vertx, newRedisConfig);
     }
 
 }

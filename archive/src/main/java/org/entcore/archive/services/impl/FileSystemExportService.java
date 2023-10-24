@@ -137,7 +137,7 @@ public class FileSystemExportService implements ExportService {
 																.put("action", handlerActionName)
 																.put("exportId", exportId)
 																.put("userId", user.getUserId())
-																.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
+																.put("groups", new JsonArray(new ArrayList<>(g)))
 																.put("path", exportDirectory)
 																.put("locale", locale)
 																.put("host", request == null || request.headers() == null ? "" : Renders.getScheme(request) + "://" + request.headers().get("Host"))
@@ -331,7 +331,7 @@ public class FileSystemExportService implements ExportService {
 
 								private void publish(final Message<JsonObject> event) {
 									final String address = getExportBusAddress(exportId);
-									eb.send(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
+									eb.request(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
 											new Handler<AsyncResult<Message<JsonObject>>>() {
 												@Override
 												public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -400,7 +400,7 @@ public class FileSystemExportService implements ExportService {
 		JsonObject manifest = new JsonObject();
 		Set<String> expectedExport = this.userExport.get(getUserId(exportId)).getExpectedExport();
 
-		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json ->
+		this.vertx.eventBus().request("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json ->
 		{
 			JsonObject i18n = (JsonObject)(json.result().body());
 			versionMap.forEach((k, v) ->
@@ -418,7 +418,7 @@ public class FileSystemExportService implements ExportService {
 			});
 
 			String path = exportDirectory + File.separator + "Manifest.json";
-			fs.writeFile(path, Buffer.factory.buffer(manifest.encodePrettily()), handler);
+			fs.writeFile(path, Buffer.buffer(manifest.encodePrettily()), handler);
 		});
 	}
 

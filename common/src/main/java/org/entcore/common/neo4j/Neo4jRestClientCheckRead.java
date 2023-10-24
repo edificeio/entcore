@@ -1,11 +1,9 @@
 package org.entcore.common.neo4j;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -30,16 +28,21 @@ public class Neo4jRestClientCheckRead implements Neo4jRestClientCheck {
 
     @Override
     public Future<Void> check(Neo4jRestClientNodeManager manager) {
-        final List<Future> futures = new ArrayList<>();
+        final List<Future<?>> futures = new ArrayList<>();
         for (final Neo4jRestClientNode node : manager.getClients()) {
-            final Future<Void> futureNode = Future.future();
-            futures.add(futureNode);
+            final Promise<Void> futureNode = Promise.promise();
+            futures.add(futureNode.future());
             if (node.isBanned()) {
-                completeQuiet(futureNode);
+                futureNode.tryComplete();
             } else {
                 //check only if not banned
                 final HttpClient client = node.getHttpClient();
-                final HttpClientRequest req = client.post("/db/data/cypher", resp -> {
+                client.request(HttpMethod.POST, "/db/data/cypher")
+                .map(req -> req.putHeader("Content-Type", "application/json")
+                               .putHeader("Accept", "application/json; charset=UTF-8"))
+                .map(this::prepareRequest)
+                .flatMap(req -> req.send(new JsonObject().put("query", readCheckQuery).encode()))
+                .onSuccess(resp -> {
                     resp.bodyHandler(body -> {
                         try {
                             if (resp.statusCode() == 200) {
@@ -51,43 +54,36 @@ public class Neo4jRestClientCheckRead implements Neo4jRestClientCheck {
                                     logger.error("Neo4j Read check failed with value: " + json);
                                     node.setReadable(false);
                                 }
-                                completeQuiet(futureNode);
+                                futureNode.tryComplete();
                             } else {
                                 logger.error("Neo4j Read check failed with status: " + resp.statusCode());
                                 node.setReadable(false);
-                                completeQuiet(futureNode);
+                                futureNode.tryComplete();
                             }
                         } catch (Exception e) {
                             logger.error("Neo4j Read check failed with message: " + e.getMessage());
                             node.setReadable(false);
-                            completeQuiet(futureNode);
+                            futureNode.tryComplete();
                         }
                     });
-                });
-                req.headers()
-                        .add("Content-Type", "application/json")
-                        .add("Accept", "application/json; charset=UTF-8");
-                prepareRequest(req);
-                final JsonObject bodyReq = new JsonObject().put("query", readCheckQuery);
-                final String bodyStr = bodyReq.encode();
-                req.exceptionHandler(e -> {
-                    if (e instanceof VertxException && "Connection was closed".equals(e.getMessage())) {
+                })
+                .onFailure(th -> {
+                    if (th instanceof VertxException && "Connection was closed".equals(th.getMessage())) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Neo4j Read check failed", e);
+                            logger.debug("Neo4j Read check failed", th);
                         }
-                    }else if(e instanceof ConnectException){
+                    }else if(th instanceof ConnectException){
                         //cannot connect to remote host
                         node.setReadable(false);
                     }  else {
-                        logger.error("Neo4j Read check failed", e);
+                        logger.error("Neo4j Read check failed", th);
                     }
                     //complete
-                    completeQuiet(futureNode);
+                    futureNode.tryComplete();
                 });
-                req.end(bodyStr);
             }
         }
-        return CompositeFuture.all(futures).mapEmpty();
+        return Future.all(futures).mapEmpty();
     }
 
     private HttpClientRequest prepareRequest(final HttpClientRequest request) {
@@ -95,12 +91,6 @@ public class Neo4jRestClientCheckRead implements Neo4jRestClientCheck {
             request.headers().add("Authorization", this.authorizationHeader);
         }
         return request;
-    }
-
-    private void completeQuiet(final Future<Void> futureNode){
-        if (!futureNode.isComplete()) {
-            futureNode.complete();
-        }
     }
 
 }

@@ -1,7 +1,8 @@
 package org.entcore.communication.services.impl;
 
-import fr.wseduc.webutils.collections.JsonArray;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
@@ -12,14 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fr.wseduc.webutils.collections.JsonObject;
-import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import java.util.HashMap;
-import java.util.Map;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultCommunicationServiceTest {

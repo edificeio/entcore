@@ -105,7 +105,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                         for(int r = rows.size(); r-- > 0;)
                                         {
                                             JsonArray row = rows.getJsonArray(r);
-                                            fr.wseduc.webutils.collections.JsonArray.setInJsonArray(row, fieldIx, null);
+                                            row.set(fieldIx, null);
                                         }
                                     }
                                 }
@@ -143,7 +143,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                 String userId, String username, String locale, SqlStatementsBuilder builder,
                                 boolean forceImportAsDuplication, Handler<JsonObject> handler)
     {
-        getDuplicateSuffix(locale).setHandler(new Handler<AsyncResult<String>>()
+        getDuplicateSuffix(locale).onComplete(new Handler<AsyncResult<String>>()
         {
             @Override
             public void handle(AsyncResult<String> suffix)

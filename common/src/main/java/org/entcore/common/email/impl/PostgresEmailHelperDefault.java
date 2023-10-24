@@ -1,10 +1,6 @@
 package org.entcore.common.email.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -12,11 +8,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.SslMode;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -71,7 +63,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
 
     @Override
     public Future<Void> setRead(UUID mailId, final JsonObject extraParams) {
-        final Future promise = Future.future();
+        final Promise promise = Promise.promise();
         final StringBuilder query = new StringBuilder();
         final List<String> placeholders = new ArrayList<>();
         final List<String> names = new ArrayList<>();
@@ -97,7 +89,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 promise.fail(r.cause());
             }
         });
-        return promise;
+        return promise.future();
     }
 
     public Future<Void> createWithAttachments(PostgresEmailBuilder.EmailBuilder mailB, List<PostgresEmailBuilder.AttachmentBuilder> attachmentsB) {
@@ -107,44 +99,31 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         }
 
         if (attachmentsB != null && !attachmentsB.isEmpty()) {
-            final Future<Void> promise = Future.future();
-            pool.begin(resTx -> {
-                if (resTx.succeeded()) {
-                    final List<Future> futures = new ArrayList<>();
-                    futures.add(insert(resTx.result(), tableName, mail).setHandler(r -> {
+            return  pool.withTransaction(sqlConnection -> {
+                final List<Future<?>> futures = new ArrayList<>();
+                futures.add(insert(sqlConnection, tableName, mail).onComplete(r -> {
+                    if (r.failed()) {
+                        log.error("Failed to create email: ", r.cause().getMessage());
+                    }
+                }));
+                for (final PostgresEmailBuilder.AttachmentBuilder attB : attachmentsB) {
+                    final Map<String, Object> att = attB.getAttachment();
+                    att.put("mail_id", mail.get("id"));
+                    futures.add(insert(sqlConnection, attachementTableName, att).onComplete(r -> {
                         if (r.failed()) {
-                            log.error("Failed to create email: ", r.cause().getMessage());
+                            log.error("Failed to create attachment: ", r.cause().getMessage());
                         }
                     }));
-                    for (final PostgresEmailBuilder.AttachmentBuilder attB : attachmentsB) {
-                        final Map<String, Object> att = attB.getAttachment();
-                        att.put("mail_id", mail.get("id"));
-                        futures.add(insert(resTx.result(), attachementTableName, att).setHandler(r -> {
-                            if (r.failed()) {
-                                log.error("Failed to create attachment: ", r.cause().getMessage());
-                            }
-                        }));
-                    }
-                    CompositeFuture.all(futures).setHandler(res -> {
-                        if (res.succeeded()) {
-                            resTx.result().commit(promise);
-                        } else {
-                            resTx.result().rollback();
-                            promise.fail(res.cause());
-                        }
-                    });
-                } else {
-                    promise.fail(resTx.cause());
                 }
+                return Future.all(futures).mapEmpty();
             });
-            return promise;
         } else {
             return insert(null, tableName, mail);
         }
     }
 
-    protected Future<Void> insert(Transaction transaction, String tableName, final Map<String, Object> params) {
-        final Future<Void> future = Future.future();
+    protected Future<Void> insert(SqlConnection transaction, String tableName, final Map<String, Object> params) {
+        final Promise<Void> future = Promise.promise();
         final StringBuilder query = new StringBuilder();
         final StringBuilder values = new StringBuilder();
         final Tuple tuple = Tuple.tuple();
@@ -154,7 +133,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         int index = 1;
         if (params.keySet().isEmpty()) {
             future.fail("Should not be empty");
-            return future;
+            return future.future();
         }
         for (final String key : params.keySet()) {
             query.append(separator).append(key);
@@ -180,7 +159,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
         } else {
             this.pool.preparedQuery(query.toString()).execute(tuple, h);
         }
-        return future;
+        return future.future();
     }
 
 }

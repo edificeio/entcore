@@ -193,7 +193,7 @@ public class CityConnectServiceProvider implements OpenIdConnectServiceProvider 
 					String userId = event.right().getValue().getString("id");
 
 					JsonObject sessionMessage = new JsonObject().put("action", "dropByUserId").put("userId", userId);
-					eb.send(SESSION_ADDRESS, sessionMessage, new Handler<AsyncResult<Message<JsonObject>>>()
+					eb.request(SESSION_ADDRESS, sessionMessage, new Handler<AsyncResult<Message<JsonObject>>>()
 					{
 						@Override
 						public void handle(AsyncResult<Message<JsonObject>> message)

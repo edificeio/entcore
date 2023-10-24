@@ -106,7 +106,7 @@ public final class TimelineLambda {
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String nestedTemplatePos = frag.execute();
 				Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
-				JsonArray nestedArray = new fr.wseduc.webutils.collections.JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
+				JsonArray nestedArray = new JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
 				try {
 					JsonObject nestedTemplate = nestedArray.getJsonObject(Integer.parseInt(nestedTemplatePos) - 1);
 					ctx.putAll(nestedTemplate.getJsonObject("params", new JsonObject()).getMap());

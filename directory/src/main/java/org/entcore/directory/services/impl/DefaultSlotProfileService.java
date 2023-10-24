@@ -1,10 +1,11 @@
 package org.entcore.directory.services.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import org.bson.conversions.Bson;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.directory.pojo.Slot;
 import org.entcore.directory.services.SlotProfileService;
@@ -27,7 +28,7 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void createSlot(String idSlotProfile, JsonObject slot, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        Bson query = Filters.eq("_id", idSlotProfile);
 
         // Set UUID
         slot.put(Slot.ID, UUID.randomUUID().toString());
@@ -42,7 +43,7 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void listSlots(String idSlotProfile, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        Bson query = Filters.eq("_id", idSlotProfile);
 
         // Projection
         JsonObject projection = new JsonObject().put("slots", 1).put("_id", 0);
@@ -67,8 +68,10 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void updateSlot(String idSlotProfile, JsonObject slot, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
-        query = query.and("slots").elemMatch(QueryBuilder.start(Slot.ID).is(slot.getString(Slot.ID)).get());
+        Bson query = Filters.and(
+                Filters.eq("_id", idSlotProfile),
+                Filters.elemMatch("slots", Filters.eq(Slot.ID, slot.getString(Slot.ID)))
+        );
 
         // Modifier
         MongoUpdateBuilder modifier = new MongoUpdateBuilder();
@@ -80,11 +83,11 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void deleteSlotFromSlotProfile(String idSlotProfile, String idSlot, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        Bson query = Filters.eq("_id", idSlotProfile);
 
         // Modifier
         MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-        modifier.pull("slots", MongoQueryBuilder.build(QueryBuilder.start(Slot.ID).is(idSlot)));
+        modifier.pull("slots", MongoQueryBuilder.build(Filters.eq(Slot.ID, idSlot)));
         modifier.set("modified", MongoDb.now());
         mongo.update(this.collection, MongoQueryBuilder.build(query), modifier.build(), validActionResultHandler(handler));
     }
@@ -92,7 +95,7 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void updateSlotProfile(String idSlotProfile, String name, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        Bson query = Filters.eq("_id", idSlotProfile);
 
         // Modifier
         MongoUpdateBuilder modifier = new MongoUpdateBuilder();
@@ -104,7 +107,7 @@ public class DefaultSlotProfileService extends MongoDbCrudService implements Slo
     @Override
     public void deleteSlotProfile(String idSlotProfile, Handler<Either<String, JsonObject>> handler) {
         // Query
-        QueryBuilder query = QueryBuilder.start("_id").is(idSlotProfile);
+        Bson query = Filters.eq("_id", idSlotProfile);
         mongo.delete(this.collection, MongoQueryBuilder.build(query), validActionResultHandler(handler));
     }
 }

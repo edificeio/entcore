@@ -67,7 +67,7 @@ public class ClamAvService extends AbstractAntivirusService {
 	public void scan(String file) {
 		String command = "clamdscan -m --fdpass " + file;
 		JsonObject m = new JsonObject().put("command", command);
-		vertx.eventBus().send("exec.command", m, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("exec.command", m, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {

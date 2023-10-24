@@ -10,14 +10,12 @@ import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.folders.impl.QueryHelper.DocumentQueryBuilder;
-import org.entcore.common.storage.FileStats;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -61,19 +59,17 @@ public class FolderManagerWithQuota implements FolderManager {
 	public void importFileZip(FolderImporterZip.FolderImporterZipContext context, Handler<AsyncResult<JsonObject>> handler) {
 		final Future<Long> size = this.zipImporter.getTotalSize(context);
 		final Future<Long> free = computFreeSpace(context.getUserId());
-		CompositeFuture.all(size, free).compose( all-> {
+		Future.all(size, free).compose( all-> {
 			if (size.result() <= free.result()) {
 				return Future.succeededFuture(null);
 			} else {
 				return Future.failedFuture("files.too.large");
 			}
 		}).compose(res->{
-			final Future<JsonObject> future = Future.future();
-			this.folderManager.importFileZip(context, future.completer());
-			return future;
-		}).compose(res->{
-			return decrementFreeSpace(context.getUserId(), size.result()).map(e-> res);
-		}).setHandler(handler);
+			final Promise<JsonObject> future = Promise.promise();
+			this.folderManager.importFileZip(context, future);
+			return future.future();
+		}).compose(res-> decrementFreeSpace(context.getUserId(), size.result()).map(e-> res)).onComplete(handler);
 	}
 
 	public void setAllowDuplicate(boolean allowDuplicate){
@@ -81,7 +77,7 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 	
 	public Future<Long> computFreeSpace(final UserInfos userInfos) {
-		Future<Long> future = Future.future();
+		Promise<Long> future = Promise.promise();
 //		try {
 //			long quota = Long.valueOf(userInfos.getAttribute("quota").toString());
 //			long storage = Long.valueOf(userInfos.getAttribute("storage").toString());
@@ -108,11 +104,11 @@ public class FolderManagerWithQuota implements FolderManager {
 			}
 		});
 		// }
-		return future;
+		return future.future();
 	}
 
 	private Future<Long> computFreeSpace(final String userId) {
-		Future<Long> future = Future.future();
+		Promise<Long> future = Promise.promise();
 		quotaService.quotaAndUsage(userId, new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> r) {
@@ -133,7 +129,7 @@ public class FolderManagerWithQuota implements FolderManager {
 				}
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private Future<Void> canCopy(Collection<String> sourceId, Either<String, UserInfos> user,
@@ -141,8 +137,7 @@ public class FolderManagerWithQuota implements FolderManager {
 		Future<Long> futureFreeSpace = user.isLeft() ? computFreeSpace(user.left().getValue())
 				: computFreeSpace(user.right().getValue());
 		return CompositeFuture.all(filesAndFolders, futureFreeSpace).compose(results -> {
-			@SuppressWarnings("unchecked")
-			final List<JsonObject> filesOrFolders = (List<JsonObject>) results.resultAt(0);
+			final List<JsonObject> filesOrFolders = results.resultAt(0);
 			Set<String> ids = filesOrFolders.stream().map(file -> DocumentHelper.getId(file))
 					.collect(Collectors.toSet());
 			DocumentQueryBuilder parentFilter = queryHelper.queryBuilder().withId(ids);
@@ -152,9 +147,7 @@ public class FolderManagerWithQuota implements FolderManager {
 			projections.add("_id");
 			projections.add("metadata");
 			return queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childrenFilter), true,projections)
-					.map(founded -> {
-						return DocumentHelper.getFileSize(founded);
-					});
+					.map(DocumentHelper::getFileSize);
 		}).compose(size -> {
 			Long freeSpace = futureFreeSpace.result();
 			if (freeSpace >= size) {
@@ -177,15 +170,15 @@ public class FolderManagerWithQuota implements FolderManager {
 				});
 		List<String> ids = new ArrayList<>();
 		ids.add(sourceId);
-		this.canCopy(ids, new Either.Right<String, UserInfos>(user), filesAndFolders).compose(e -> {
-			Future<JsonArray> innerFuture = Future.future();
-			this.folderManager.copy(sourceId, destinationFolderId, user, innerFuture.completer());
-			return innerFuture;
+		this.canCopy(ids, new Either.Right<>(user), filesAndFolders).compose(e -> {
+			Promise<JsonArray> innerFuture = Promise.promise();
+			this.folderManager.copy(sourceId, destinationFolderId, user, innerFuture);
+			return innerFuture.future();
 		}).compose(copies -> {
 			// update quota before return
 			final long size = DocumentHelper.getFileSize(copies);
 			return decrementFreeSpace(user.getUserId(), size).map(copies);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -195,14 +188,14 @@ public class FolderManagerWithQuota implements FolderManager {
 		Future<List<JsonObject>> filesAndFolders = queryHelper
 				.findAllAsList(queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withId(sourceIds));
 		this.canCopy(sourceIds, new Either.Right<String, UserInfos>(user), filesAndFolders).compose(e -> {
-			Future<JsonArray> innerFuture = Future.future();
-			this.folderManager.copyAll(sourceIds, destinationFolderId, user, innerFuture.completer());
-			return innerFuture;
+			Promise<JsonArray> innerFuture = Promise.promise();
+			this.folderManager.copyAll(sourceIds, destinationFolderId, user, innerFuture);
+			return innerFuture.future();
 		}).compose(copies -> {
 			// update quota before return
 			final long size = DocumentHelper.getFileSize(copies);
 			return decrementFreeSpace(user.getUserId(), size).map(copies);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -225,15 +218,15 @@ public class FolderManagerWithQuota implements FolderManager {
 				});
 		List<String> ids = new ArrayList<>();
 		ids.add(sourceId);
-		this.canCopy(ids, new Either.Right<String, UserInfos>(user), filesAndFolders).compose(e -> {
-			Future<JsonArray> innerFuture = Future.future();
-			this.folderManager.copyUnsafe(sourceId, destinationFolderId, user, innerFuture.completer());
-			return innerFuture;
+		this.canCopy(ids, new Either.Right<>(user), filesAndFolders).compose(e -> {
+			Promise<JsonArray> innerFuture = Promise.promise();
+			this.folderManager.copyUnsafe(sourceId, destinationFolderId, user, innerFuture);
+			return innerFuture.future();
 		}).compose(copies -> {
 			// update quota before return
 			final long size = DocumentHelper.getFileSize(copies);
 			return decrementFreeSpace(user.getUserId(), size).map(copies);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -259,7 +252,7 @@ public class FolderManagerWithQuota implements FolderManager {
 		if (amount == 0) {
 			return Future.succeededFuture();
 		}
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		quotaService.incrementStorage(userId, amount, this.quotaThreshold, ev -> {
 			if (ev.isRight()) {
 				future.complete(null);
@@ -267,7 +260,7 @@ public class FolderManagerWithQuota implements FolderManager {
 				future.fail(ev.left().getValue());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private Future<JsonArray> updateQuotaForDelete(Optional<String> currentUserId, JsonArray deleted) {
@@ -290,29 +283,29 @@ public class FolderManagerWithQuota implements FolderManager {
 
 	@Override
 	public void delete(String id, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
-		Future<JsonArray> future = Future.future();
-		this.folderManager.delete(id, user, future.completer());
-		future.compose(deleted -> { 
-			return updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted);
-		}).setHandler(handler);
+		Promise<JsonArray> future = Promise.promise();
+		this.folderManager.delete(id, user, future);
+		future.future()
+				.compose(deleted -> updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted))
+				.onComplete(handler);
 	}
 
 	@Override
 	public void deleteAll(Set<String> ids, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
-		Future<JsonArray> future = Future.future();
-		this.folderManager.deleteAll(ids, user, future.completer());
-		future.compose(deleted -> {
-			return updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted);
-		}).setHandler(handler);
+		Promise<JsonArray> future = Promise.promise();
+		this.folderManager.deleteAll(ids, user, future);
+		future.future()
+				.compose(deleted -> updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted))
+				.onComplete(handler);
 	}
 
 	@Override
 	public void deleteByQuery(ElementQuery query, Optional<UserInfos> user, Handler<AsyncResult<JsonArray>> handler) {
-		Future<JsonArray> future = Future.future();
-		this.folderManager.deleteByQuery(query, user, future.completer());
-		future.compose(deleted -> {
-			return updateQuotaForDelete(user.map(u->u.getUserId()), deleted);
-		}).setHandler(handler);
+		Promise<JsonArray> future = Promise.promise();
+		this.folderManager.deleteByQuery(query, user, future);
+		future.future()
+			.compose(deleted -> updateQuotaForDelete(user.map(UserInfos::getUserId), deleted))
+			.onComplete(handler);
 	}
 
 	@Override
@@ -336,7 +329,7 @@ public class FolderManagerWithQuota implements FolderManager {
 		if (amount == 0) {
 			return Future.succeededFuture();
 		}
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		quotaService.decrementStorage(userId, amount, this.quotaThreshold, ev -> {
 			if (ev.isRight()) {
 				JsonObject j = ev.right().getValue();
@@ -349,7 +342,7 @@ public class FolderManagerWithQuota implements FolderManager {
 				future.fail(ev.left().getValue());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override

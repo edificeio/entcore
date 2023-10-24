@@ -19,12 +19,12 @@
 
 package org.entcore.common.service.impl;
 
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import org.bson.conversions.Bson;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
@@ -90,16 +90,19 @@ public class MongoDbCrudService implements CrudService {
 
 	@Override
 	public void retrieve(String id, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder builder = QueryBuilder.start("_id").is(id);
+		Bson builder = Filters.eq("_id", id);
 		mongo.findOne(collection, MongoQueryBuilder.build(builder),
 				defaultRetrieveProjection, validResultHandler(handler));
 	}
 
 	@Override
 	public void retrieve(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder builder = QueryBuilder.start("_id").is(id);
+		Bson builder;
+		Bson idFilter = Filters.eq("_id", id);
 		if (user == null) {
-			builder.put("visibility").is(VisibilityFilter.PUBLIC.name());
+			builder = Filters.and(idFilter, Filters.eq("visibility", VisibilityFilter.PUBLIC.name()));
+		} else {
+			builder = idFilter;
 		}
 		mongo.findOne(collection, MongoQueryBuilder.build(builder),
 				defaultRetrieveProjection,validResultHandler(handler));
@@ -112,7 +115,7 @@ public class MongoDbCrudService implements CrudService {
 
 	@Override
 	public void update(String id, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder query = QueryBuilder.start("_id").is(id);
+		Bson query = Filters.eq("_id", id);
 		addPlainField(data);
 		MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 		for (String attr: data.fieldNames()) {
@@ -130,7 +133,7 @@ public class MongoDbCrudService implements CrudService {
 
 	@Override
 	public void delete(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder q = QueryBuilder.start("_id").is(id);
+		Bson q = Filters.eq("_id", id);
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
 	}
 
@@ -142,46 +145,43 @@ public class MongoDbCrudService implements CrudService {
 
 	@Override
 	public void list(VisibilityFilter filter, UserInfos user, Handler<Either<String, JsonArray>> handler) {
-		QueryBuilder query;
+		Bson query;
 		if (user != null) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			for (String gpId: user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+				groups.add(Filters.eq("groupId", gpId));
 			}
 			switch (filter) {
 				case OWNER:
-					query = QueryBuilder.start("owner.userId").is(user.getUserId());
+					query = Filters.eq("owner.userId", user.getUserId());
 					break;
 				case OWNER_AND_SHARED:
-					query = new QueryBuilder().or(
-							QueryBuilder.start("owner.userId").is(user.getUserId()).get(),
-							QueryBuilder.start("shared").elemMatch(
-									new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
-							).get());
+					query = Filters.or(
+								Filters.eq("owner.userId", user.getUserId()),
+								Filters.elemMatch("shared", Filters.or(groups))
+							);
 					break;
 				case SHARED:
-					query = QueryBuilder.start("shared").elemMatch(
-									new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get());
+					query = Filters.elemMatch("shared", Filters.or(groups));
 					break;
 				case PROTECTED:
-					query = QueryBuilder.start("visibility").is(VisibilityFilter.PROTECTED.name());
+					query = Filters.eq("visibility", VisibilityFilter.PROTECTED.name());
 					break;
 				case PUBLIC:
-					query = QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name());
+					query = Filters.eq("visibility", VisibilityFilter.PUBLIC.name());
 					break;
 				default:
-					query = new QueryBuilder().or(
-							QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name()).get(),
-							QueryBuilder.start("visibility").is(VisibilityFilter.PROTECTED.name()).get(),
-							QueryBuilder.start("owner.userId").is(user.getUserId()).get(),
-							QueryBuilder.start("shared").elemMatch(
-									new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
-							).get());
+					query = Filters.or(
+							Filters.eq("visibility", VisibilityFilter.PUBLIC.name()),
+							Filters.eq("visibility", VisibilityFilter.PROTECTED.name()),
+							Filters.eq("owner.userId", user.getUserId()),
+							Filters.elemMatch("shared", Filters.or(groups))
+					);
 					break;
 			}
 		} else {
-			query = QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name());
+			query = Filters.eq("visibility", VisibilityFilter.PUBLIC.name());
 		}
 		JsonObject sort = new JsonObject().put("modified", -1);
 		mongo.find(collection, MongoQueryBuilder.build(query), sort,
@@ -189,7 +189,7 @@ public class MongoDbCrudService implements CrudService {
 	}
 
 	public void isOwner(String id, UserInfos user, final Handler<Boolean> handler) {
-		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner.userId").is(user.getUserId());
+		Bson query = Filters.and(Filters.eq("_id", id), Filters.eq("owner.userId", user.getUserId()));
 		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {

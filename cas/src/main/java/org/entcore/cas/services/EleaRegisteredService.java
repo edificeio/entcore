@@ -48,7 +48,7 @@ public class EleaRegisteredService extends DefaultRegisteredService {
         final String userId = authCas.getUser();
         JsonObject jo = new JsonObject();
         jo.put("action", directoryAction).put("userId", userId).put("withClasses", true);
-        eb.send("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
+        eb.request("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
                 JsonObject res = event.body().getJsonObject("result");

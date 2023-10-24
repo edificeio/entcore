@@ -8,6 +8,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.jackson.JacksonCodec;
 
 import java.util.List;
 import java.util.function.Function;
@@ -35,7 +36,7 @@ public interface IExplorerPluginCommunication {
     default Function<Void, Void> listenForAcks(final String id, final Handler<List<IngestJobStateUpdateMessage>> onMessage) {
         final MessageConsumer<String> consumer = vertx().eventBus().consumer(id, message -> {
             final String rawBody = message.body();
-            final List<IngestJobStateUpdateMessage> messages = Json.decodeValue(message.body(), trUpdateMessages);
+            final List<IngestJobStateUpdateMessage> messages = JacksonCodec.decodeValue(message.body(), trUpdateMessages);
             onMessage.handle(messages);
         });
         return e->{

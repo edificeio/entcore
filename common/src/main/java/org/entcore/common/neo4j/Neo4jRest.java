@@ -102,10 +102,15 @@ public class Neo4jRest implements GraphDatabase {
 
 	private void createIndex(final JsonObject j) {
 		try {
-			final HttpClientRequest req = nodeManager.getMasterClient()
-					.post("/db/data/index/" + j.getString("for"), new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(HttpClientResponse event) {
+			final JsonObject body = new JsonObject().put("name", j.getString("name"));
+			body.put("config", new JsonObject()
+					.put("type", j.getString("type", "exact"))
+					.put("provider", "lucene"));
+			nodeManager.getMasterClient().request(HttpMethod.POST, "/db/data/index/" + j.getString("for"))
+					.map(this::prepareRequest)
+					.flatMap(request -> request.send(body.encode()))
+					.onFailure(th -> logger.error("Error creating index : " + j.encode(), th))
+					.onSuccess(event -> {
 					if (event.statusCode() != 201) {
 						event.bodyHandler(new Handler<Buffer>() {
 							@Override
@@ -114,15 +119,7 @@ public class Neo4jRest implements GraphDatabase {
 							}
 						});
 					}
-				}
 			});
-			prepareRequest(req);
-			JsonObject body = new JsonObject().put("name", j.getString("name"));
-			body.put("config", new JsonObject()
-					.put("type", j.getString("type", "exact"))
-					.put("provider", "lucene"));
-			req.exceptionHandler(e -> logger.error("Error creating index : " + j.encode(), e));
-			req.end(body.encode());
 		} catch (Neo4jConnectionException e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -143,10 +140,10 @@ public class Neo4jRest implements GraphDatabase {
 
 				@Override
 				public void handle(final HttpClientResponse resp) {
-					resp.bodyHandler(new Handler<Buffer>() {
-
-						@Override
-						public void handle(Buffer b) {
+					if (resp == null) {
+						handler.handle(new JsonObject().put("message", "Missing response from neo4j."));
+					} else {
+						resp.bodyHandler(b -> {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
@@ -159,8 +156,8 @@ public class Neo4jRest implements GraphDatabase {
 								handler.handle(new JsonObject().put("message",
 										resp.statusMessage() + " : " + b.toString()));
 							}
-						}
-					});
+						});
+					}
 				}
 			});
 		} catch (Neo4jConnectionException e) {
@@ -171,7 +168,7 @@ public class Neo4jRest implements GraphDatabase {
 
 	@Override
 	public void executeBatch(JsonArray queries, final Handler<JsonObject> handler) {
-		JsonArray body = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray body = new JsonArray();
 		int i = 0;
 		for (Object q : queries) {
 			JsonObject query = new JsonObject()
@@ -192,8 +189,8 @@ public class Neo4jRest implements GraphDatabase {
 						public void handle(Buffer b) {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
-								JsonArray json = new fr.wseduc.webutils.collections.JsonArray(b.toString("UTF-8"));
-								JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
+								JsonArray json = new JsonArray(b.toString("UTF-8"));
+								JsonArray out = new JsonArray();
 								for (Object j : json) {
 									JsonObject qr = (JsonObject) j;
 									out.add(new JsonObject().put("result",
@@ -246,58 +243,63 @@ public class Neo4jRest implements GraphDatabase {
 					new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(final HttpClientResponse resp) {
-					resp.bodyHandler(new Handler<Buffer>() {
+					if(resp == null) {
+						logger.error("Received a null response from neo4J");
+						handler.handle(new JsonObject().put("message", "no answer from server"));
+					} else {
+						resp.bodyHandler(new Handler<Buffer>() {
 
-						@Override
-						public void handle(Buffer b) {
-							logger.debug(b.toString());
-							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
-								JsonObject json = new JsonObject(b.toString("UTF-8"));
-								JsonArray results = json.getJsonArray("results");
-								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).size() == 0 &&
+							@Override
+							public void handle(Buffer b) {
+								logger.debug(b.toString());
+								if (resp.statusCode() != 404 && resp.statusCode() != 500) {
+									JsonObject json = new JsonObject(b.toString("UTF-8"));
+									JsonArray results = json.getJsonArray("results");
+									if (json.getJsonArray("errors", new JsonArray()).size() == 0 &&
 										results != null) {
-									JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
-									for (Object o : results) {
-										if (!(o instanceof JsonObject)) continue;
-										out.add(transformJson((JsonObject) o));
-									}
-									json.put("results", out);
-									String commit = json.getString("commit");
-									if (commit != null) {
-										String[] c = commit.split("/");
-										if (c.length > 2) {
-											json.put("transactionId", Integer.parseInt(c[c.length - 2]));
-										}
-									}
-									json.remove("errors");
-									handler.handle(json);
-								} else {
-									if (transactionId == null && commit && allowRetry && json.getJsonArray("errors") != null && json.getJsonArray("errors").size() > 0) {
-										JsonArray errors = json.getJsonArray("errors");
-										for (Object o : errors) {
+										JsonArray out = new JsonArray();
+										for (Object o : results) {
 											if (!(o instanceof JsonObject)) continue;
-											switch (((JsonObject) o).getString("code", "")) {
-												case "Neo.TransientError.Transaction.ConstraintsChanged":
-												case "Neo.TransientError.Transaction.DeadlockDetected":
-												case "Neo.TransientError.Transaction.InstanceStateChanged":
-												case "Neo.TransientError.Schema.SchemaModifiedConcurrently":
-													executeTransaction(statements, transactionId, commit, false, handler);
-													if (logger.isDebugEnabled()) {
-														logger.debug("Retry transaction : " + statements.encode());
-													}
-													return;
+											out.add(transformJson((JsonObject) o));
+										}
+										json.put("results", out);
+										String commit = json.getString("commit");
+										if (commit != null) {
+											String[] c = commit.split("/");
+											if (c.length > 2) {
+												json.put("transactionId", Integer.parseInt(c[c.length - 2]));
 											}
 										}
+										json.remove("errors");
+										handler.handle(json);
+									} else {
+										if (transactionId == null && commit && allowRetry && json.getJsonArray("errors") != null && json.getJsonArray("errors").size() > 0) {
+											JsonArray errors = json.getJsonArray("errors");
+											for (Object o : errors) {
+												if (!(o instanceof JsonObject)) continue;
+												switch (((JsonObject) o).getString("code", "")) {
+													case "Neo.TransientError.Transaction.ConstraintsChanged":
+													case "Neo.TransientError.Transaction.DeadlockDetected":
+													case "Neo.TransientError.Transaction.InstanceStateChanged":
+													case "Neo.TransientError.Schema.SchemaModifiedConcurrently":
+														executeTransaction(statements, transactionId, commit, false, handler);
+														if (logger.isDebugEnabled()) {
+															logger.debug("Retry transaction : " + statements.encode());
+														}
+														return;
+												}
+											}
+										}
+										handler.handle(new JsonObject().put("message",
+											json.getJsonArray("errors", new JsonArray()).encode()));
 									}
+								} else {
 									handler.handle(new JsonObject().put("message",
-											json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).encode()));
-								}
-							} else {
-								handler.handle(new JsonObject().put("message",
 										resp.statusMessage() + " : " + b.toString()));
+								}
 							}
-						}
-					});
+						});
+					}
 				}
 			});
 		} catch (Neo4jConnectionException e) {
@@ -307,41 +309,35 @@ public class Neo4jRest implements GraphDatabase {
 
 	@Override
 	public void resetTransactionTimeout(int transactionId, Handler<JsonObject> handler) {
-		executeTransaction(new fr.wseduc.webutils.collections.JsonArray(), transactionId, false, handler);
+		executeTransaction(new JsonArray(), transactionId, false, handler);
 	}
 
 	@Override
 	public void rollbackTransaction(int transactionId, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getMasterClient().delete(
-					basePath + "/transaction/" + transactionId, new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(final HttpClientResponse resp) {
-					resp.bodyHandler(new Handler<Buffer>() {
-
-						@Override
-						public void handle(Buffer b) {
+			nodeManager.getMasterClient()
+					.request(HttpMethod.DELETE, basePath + "/transaction/" + transactionId)
+					.map(this::prepareRequest)
+					.map(r -> r.putHeader("Accept", "application/json; charset=UTF-8"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(resp -> {
+						resp.bodyHandler(b -> {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
-								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).size() == 0) {
+								if (json.getJsonArray("errors", new JsonArray()).isEmpty()) {
 									json.remove("errors");
 									handler.handle(json);
 								} else {
 									handler.handle(new JsonObject().put("message",
-											json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).encode()));
+											json.getJsonArray("errors", new JsonArray()).encode()));
 								}
 							} else {
 								handler.handle(new JsonObject().put("message", resp.statusMessage()));
 							}
-						}
-					});
-				}
-			});
-			prepareRequest(req);
-			req.headers().add("Accept", "application/json; charset=UTF-8");
-			req.exceptionHandler(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
-			req.end();
+						});
+					})
+					.onFailure(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
 		}
@@ -350,30 +346,20 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void unmanagedExtension(String method, String uri, String body, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getMasterClient().request(HttpMethod.valueOf(method.toUpperCase()), uri,
-					new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(final HttpClientResponse response) {
-					response.bodyHandler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer buffer) {
+			nodeManager.getMasterClient().request(HttpMethod.valueOf(method.toUpperCase()), uri)
+					.map(this::prepareRequest)
+					.flatMap(r -> body == null ? r.send() : r.send(body))
+					.onSuccess(response ->  {
+						response.bodyHandler(buffer -> {
 							if (response.statusCode() <= 200 && response.statusCode() < 300) {
 								handler.handle(new JsonObject().put("result", buffer.toString()));
 							} else {
 								handler.handle((new JsonObject().put("message",
 										response.statusMessage()  + " : " + buffer.toString())));
 							}
-						}
-					});
-				}
-			});
-			prepareRequest(req);
-			req.exceptionHandler(e -> logger.error("Neo4j unmanaged extension error.", e));
-			if (body != null) {
-				req.end(body);
-			} else {
-				req.end();
-			}
+						});
+					})
+					.onFailure(e -> logger.error("Neo4j unmanaged extension error.", e));
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
 		}
@@ -387,7 +373,7 @@ public class Neo4jRest implements GraphDatabase {
 	private JsonArray transformJson(JsonObject json) {
 		final JsonArray columns = json.getJsonArray("columns");
 		final JsonArray data = json.getJsonArray("data");
-		final JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray out = new JsonArray();
 
 		if (data != null && columns != null) {
 			for (Object r: data) {
@@ -456,26 +442,29 @@ public class Neo4jRest implements GraphDatabase {
 		if (client == null) {
 			client = nodeManager.getMasterClient();
 		}
-		HttpClientRequest req = client.post(basePath + path, handler);
-		req.headers()
-				.add("Content-Type", "application/json")
-				.add("Accept", "application/json; charset=UTF-8");
-		prepareRequest(req);
 		final String b = Json.encode(body);
+		client.request(HttpMethod.POST, basePath + path)
+				.map(req -> req.putHeader("Content-Type", "application/json")
+						.putHeader("Accept", "application/json; charset=UTF-8"))
+				.map(this::prepareRequest)
+				.flatMap(r -> r.send(b))
+				.onSuccess(handler)
+				.onFailure(event -> {
+					logger.error("Neo4j error in request : " + path + " - " + b, event);
+					if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
+						logger.warn("Retry sendRequest with empty statements.");
+						try {
+							sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
+							return;
+						} catch (Neo4jConnectionException e) {
+							logger.error("Error when try retry sendRequest call.", e);
+						}
+						handler.handle(null);
+					} else {
+						handler.handle(null);
+					}
+				});
 
-		req.exceptionHandler(event -> {
-			logger.error("Neo4j error in request : " + path + " - " + b + ": " + event.getMessage(), event);
-			if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
-				logger.warn("Retry sendRequest with empty statements.");
-				try {
-					sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
-				} catch (Neo4jConnectionException e) {
-					logger.error("Error when try retry sendRequest call.", e);
-				}
-			}
-		});
-
-		req.end(b);
 	}
 
 }

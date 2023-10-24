@@ -660,11 +660,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 //							addErrorByFile(profile, "bad.columns.number", "" + ++i);
 //							continue;
 //						}
-						final JsonArray classesNames = new fr.wseduc.webutils.collections.JsonArray();
+						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
-						JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
-						user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
-						user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
+						JsonArray linkStudents = new JsonArray();
+						user.put("structures", new JsonArray().add(structure.getExternalId()));
+						user.put("profiles", new JsonArray().add(profile));
 						List<String[]> classes = new ArrayList<>();
 						for (int j = 0; j < strings.length; j++) {
 							if (j >= columns.size()) {
@@ -702,7 +702,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								case "array-string":
 									JsonArray a = user.getJsonArray(c);
 									if (a == null) {
-										a = new fr.wseduc.webutils.collections.JsonArray();
+										a = new JsonArray();
 										user.put(c, a);
 									}
 									if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) || "groups".equals(c)) &&
@@ -731,7 +731,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										if (o instanceof JsonArray) {
 											((JsonArray) o).add(v2);
 										} else {
-											JsonArray array = new fr.wseduc.webutils.collections.JsonArray();
+											JsonArray array = new JsonArray();
 											array.add(o).add(v2);
 											user.put(c, array);
 										}
@@ -755,7 +755,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						if (co != null && co instanceof JsonArray) {
 							classesA = (JsonArray) co;
 						} else if (co instanceof String) {
-							classesA = new fr.wseduc.webutils.collections.JsonArray().add(co);
+							classesA = new JsonArray().add(co);
 						} else {
 							classesA = null;
 						}
@@ -818,7 +818,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								break;
 							case "Relative":
 								boolean checkChildMapping = true;
-								linkStudents = new fr.wseduc.webutils.collections.JsonArray();
+								linkStudents = new JsonArray();
 								if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||
 										("Intitulé".equals(strings[1]) && "Adresse Organisme".equals(strings[2]))) {
 									break csvParserWhile;

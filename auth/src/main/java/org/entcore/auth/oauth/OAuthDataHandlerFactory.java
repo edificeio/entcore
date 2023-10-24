@@ -21,7 +21,6 @@ package org.entcore.auth.oauth;
 
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.json.JsonArray;
-import io.vertx.redis.RedisClient;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -32,6 +31,7 @@ import org.entcore.auth.services.impl.JwtVerifier;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.redis.Redis;
+import org.entcore.common.redis.RedisClient;
 
 public class OAuthDataHandlerFactory implements DataHandlerFactory {
 

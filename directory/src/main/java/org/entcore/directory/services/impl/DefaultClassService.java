@@ -56,7 +56,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-create-class")
 				.put("structureId", schoolId)
 				.put("data", classe);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-update-class")
 				.put("classId", classId)
 				.put("data", classe);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class DefaultClassService implements ClassService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-remove-class")
 				.put("classId", classId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -216,7 +216,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-add-user")
 				.put("classId", classId)
 				.put("userId", userId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -225,7 +225,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-add-users")
 				.put("classId", classId)
 				.put("userIds", userIds);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(result)));
 	}
 
 	@Override
@@ -234,7 +234,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-remove-user")
 				.put("classId", classId)
 				.put("userId", userId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -243,7 +243,7 @@ public class DefaultClassService implements ClassService {
 				.put("action", "manual-remove-users")
 				.put("classIds", classIds)
 				.put("userIds", userIds);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(handler)));
 	}
 
 	@Override
@@ -265,7 +265,7 @@ public class DefaultClassService implements ClassService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "WHERE (s.id IN {scope} OR c.id IN {scope}";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		}
 

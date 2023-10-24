@@ -64,7 +64,7 @@ public final class ApplicationUtils {
 		if (groups != null) {
 			json.put("groups", groups);
 		}
-		eb.send(APP_REGISTRY_ADDRESS, json, new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(APP_REGISTRY_ADDRESS, json, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> event) {
 				if (event.succeeded()) {
@@ -85,7 +85,7 @@ public final class ApplicationUtils {
 	}
 
 	public static void sendModifiedUserGroup(EventBus eb, JsonArray a, Handler<AsyncResult<Message<JsonObject>>> res) {
-		eb.send(APP_REGISTRY_PUBLISH_ADDRESS,
+		eb.request(APP_REGISTRY_PUBLISH_ADDRESS,
 				new JsonObject().put("type", USER_GROUP_UPDATED)
 						.put("users", a), res
 		);
@@ -94,7 +94,7 @@ public final class ApplicationUtils {
 	public static void setDefaultClassRoles(EventBus eb, String classId, Handler<AsyncResult<Message<JsonObject>>> handler) {
 		JsonObject json = new JsonObject();
 		json.put("action", "setDefaultClassRoles").put("classId", classId);
-		eb.send(APP_REGISTRY_BUS_ADDRESS, json, handler);
+		eb.request(APP_REGISTRY_BUS_ADDRESS, json, handler);
 	}
 
 	public static void afterImport(EventBus eb) {

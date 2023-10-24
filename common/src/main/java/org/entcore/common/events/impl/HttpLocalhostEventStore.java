@@ -25,6 +25,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 
 public class HttpLocalhostEventStore extends GenericEventStore {
@@ -37,33 +38,28 @@ public class HttpLocalhostEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
-		HttpClientRequest req = httpClient.post("/infra/event/localhost/store", new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(final HttpClientResponse response) {
+		httpClient.request(HttpMethod.POST, "/infra/event/localhost/store")
+		.flatMap(req -> req.send(event.encode()))
+		.onSuccess(response -> {
 				if (response.statusCode() == 200) {
-					handler.handle(new Either.Right<String, Void>(null));
+					handler.handle(new Either.Right<>(null));
 				} else if (response.statusCode() == 403) {
 					handler.handle(new Either.Left<String, Void>(
 							"Error : " + response.statusMessage() + ", Event : " + event.encode()));
 				} else {
-					response.bodyHandler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer b) {
-							if (b.length() > 0) {
-								JsonObject body = new JsonObject(b.toString());
-								handler.handle(new Either.Left<String, Void>(
-										"Error : " + body.getString("error") + ", Event : " + event.encode()));
-							} else {
-								handler.handle(new Either.Left<String, Void>(
-										"Error : " + response.statusMessage() + ", Event : " + event.encode()));
-							}
-						}
-					});
+					response.bodyHandler(b -> {
+            if (b.length() > 0) {
+              JsonObject body = new JsonObject(b.toString());
+              handler.handle(new Either.Left<>(
+                  "Error : " + body.getString("error") + ", Event : " + event.encode()));
+            } else {
+              handler.handle(new Either.Left<String, Void>(
+                  "Error : " + response.statusMessage() + ", Event : " + event.encode()));
+            }
+          });
 				}
-			}
-		});
-		req.exceptionHandler(e -> logger.error("Error storing event : " + event.encode(), e));
-		req.end(event.encode());
+			})
+		.onFailure(e -> logger.error("Error storing event : " + event.encode(), e));
 	}
 
 }

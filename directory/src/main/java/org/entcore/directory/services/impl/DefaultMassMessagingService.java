@@ -254,19 +254,16 @@ public class DefaultMassMessagingService implements MassMessagingService {
 		message.put("username", loginUsername);
 		message.put("message", mail);
 
-		eb.send(CONVERSATION_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					JsonObject resultSuccess = new JsonObject();
-					resultSuccess.put("message", "message sent successfully");
+		eb.request(CONVERSATION_ADDRESS, message, handlerToAsyncHandler(event -> {
+      if ("ok".equals(event.body().getString("status"))) {
+        JsonObject resultSuccess = new JsonObject();
+        resultSuccess.put("message", "message sent successfully");
 
-					handler.handle(new Either.Right<>(resultSuccess));
-				} else {
-					handler.handle(new Either.Left<>("failed to send messages"));
-				}
-			}
-		}));
+        handler.handle(new Either.Right<>(resultSuccess));
+      } else {
+        handler.handle(new Either.Left<>("failed to send messages"));
+      }
+    }));
 	}
 
 }

@@ -95,7 +95,7 @@
 //		String assertion = new String(Base64.decode(samlResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "validate-signature").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -110,7 +110,7 @@
 //		String assertion = new String(Base64.decode(modifiedResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "validate-signature").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -125,7 +125,7 @@
 //		String assertion = new String(Base64.decode(encryptedResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "validate-signature").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -140,7 +140,7 @@
 //		String assertion = new String(Base64.decode(encryptedResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "decrypt-assertion").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -155,7 +155,7 @@
 //		String assertion = new String(Base64.decode(encryptedResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "validate-signature-decrypt").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				System.out.println(event.body().getString("assertion"));
@@ -172,7 +172,7 @@
 //		String assertion = new String(Base64.decode(encryptedAgriResponse));
 //		JsonObject j = new JsonObject()
 //				.put("action", "validate-signature-decrypt").putString("response", assertion);
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -191,7 +191,7 @@
 //				.put("NameID", "e0710e87fc67dbf8af3303282160062b")
 //				.put("SessionIndex", "bc13317431f8b03b37185845e6578880")
 //				.put("IDP", "urn:fi:ac-poitiers:entts:1.0");
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -230,7 +230,7 @@
 //		JsonObject j = new JsonObject()
 //				.put("action", "generate-authn-request")
 //				.put("IDP", "urn:fi:ac-poitiers:entts:1.0");
-//		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+//		eb.request("saml", j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));

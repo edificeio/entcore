@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MVN_OPTS="-Duser.home=/var/maven"
+
 if [ ! -e node_modules ]
 then
   mkdir node_modules
@@ -72,8 +74,13 @@ echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
 
+init() {
+  me=`id -u`:`id -g`
+  echo "DEFAULT_DOCKER_USER=$me" > .env
+}
+
 clean () {
-  docker compose run --rm $USER_OPTION gradle gradle clean
+  docker compose run --rm maven mvn $MVN_OPTS clean
 }
 
 buildNode () {
@@ -129,16 +136,16 @@ buildAdminNode() {
   fi
 }
 
-buildGradle () {
-  docker compose run --rm $USER_OPTION gradle bash -c "git config --add safe.directory /home/gradle/project && gradle ${GRADLE_OPTION}shadowJar ${GRADLE_OPTION}install"
+install () {
+  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
 }
 
-testGradle () {
+test () {
   if [ -z "$JAVA_8_HOME" ]
   then
-    ./gradlew "$GRADLE_OPTION"test
+    mvn test
   else
-    JAVA_HOME=$JAVA_8_HOME ./gradlew "$GRADLE_OPTION"test
+    JAVA_HOME=$JAVA_8_HOME mvn test
   fi
 }
 
@@ -172,15 +179,15 @@ infra () {
   docker compose run --rm $USER_OPTION node sh -c "npm install /home/node/infra-front"
 }
 
-publish () {
-  if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
-  then
-    echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
-    echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
-    echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
-    echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
-  fi
-  docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
+publish() {
+  version=`docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  level=`echo $version | cut -d'-' -f3`
+  case "$level" in
+    *SNAPSHOT) export nexusRepository='snapshots' ;;
+    *)         export nexusRepository='releases' ;;
+  esac
+
+  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
 }
 
 check_prefix_sh_file() {
@@ -242,6 +249,9 @@ do
   case $param in
     '--no-user')
       ;;
+    init)
+      init
+      ;;
     clean)
       clean
       ;;
@@ -251,11 +261,8 @@ do
     buildNode)
       buildNode
       ;;
-    buildGradle)
-      buildGradle
-      ;;
     install)
-      buildNode && buildAdminNode && buildGradle
+      buildNode && buildAdminNode && install
       ;;
     localDep)
       localDep
@@ -267,7 +274,7 @@ do
       ngWatch
       ;;
     test)
-      testGradle
+      test
       ;;
     itTests)
       itTests

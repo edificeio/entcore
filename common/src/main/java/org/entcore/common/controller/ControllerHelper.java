@@ -246,7 +246,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 							JsonObject n = event.right().getValue()
 									.getJsonObject("notify-timeline");
 							if (n != null && notificationName != null) {
-								notifyShare(request, eb, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
+								notifyShare(request, eb, id, user, new JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
 							}
 							renderJson(request, addNormalizedRights(event.right().getValue()));

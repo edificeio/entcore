@@ -73,8 +73,8 @@ public class EliotExporter implements Exporter {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				Tenant.list(new fr.wseduc.webutils.collections.JsonArray().add("name").add("academy"), null, null, value);
-				Structure.list(ELIOT, new fr.wseduc.webutils.collections.JsonArray().add("academy"), null, null, value);
+				Tenant.list(new JsonArray().add("name").add("academy"), null, null, value);
+				Structure.list(ELIOT, new JsonArray().add("academy"), null, null, value);
 			}
 
 			@Override
@@ -136,10 +136,10 @@ public class EliotExporter implements Exporter {
 			public void handle(AsyncResult<List<String>> asyncResult) {
 				if (asyncResult.succeeded()) {
 					JsonObject j = new JsonObject()
-							.put("path", new fr.wseduc.webutils.collections.JsonArray(asyncResult.result()))
+							.put("path", new JsonArray(asyncResult.result()))
 							.put("zipFile", zipPath)
 							.put("deletePath", true);
-					vertx.eventBus().send(node + "entcore.zipper", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					vertx.eventBus().request(node + "entcore.zipper", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
@@ -167,7 +167,7 @@ public class EliotExporter implements Exporter {
 				.put("uri", exportDestination +
 						file.substring(file.lastIndexOf(File.separator) + 1))
 				.put("file", file);
-		eb.send(node + WEBDAV_ADDRESS, j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(node + WEBDAV_ADDRESS, j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {

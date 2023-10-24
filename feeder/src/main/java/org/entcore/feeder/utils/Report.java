@@ -95,7 +95,7 @@ public class Report {
 		final String file = "error." + filename;
 		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
+			f = new JsonArray();
 			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
@@ -108,7 +108,7 @@ public class Report {
 		final String file = "error." + filename;
 		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
+			f = new JsonArray();
 			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
@@ -162,7 +162,7 @@ public class Report {
 	public void addUser(String file, JsonObject props) {
 		JsonArray f = result.getJsonObject(FILES).getJsonArray(file);
 		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
+			f = new JsonArray();
 			result.getJsonObject(FILES).put(file, f);
 		}
 		f.add(props);
@@ -171,7 +171,7 @@ public class Report {
 	public void addProfile(String profile) {
 		JsonArray f = result.getJsonArray(PROFILES);
 		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
+			f = new JsonArray();
 			result.put(PROFILES, f);
 		}
 		f.add(profile);
@@ -180,7 +180,7 @@ public class Report {
 	public void addIgnored(String file, String reason, JsonObject object) {
 		JsonArray f = result.getJsonObject("ignored").getJsonArray(file);
 		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
+			f = new JsonArray();
 			result.getJsonObject("ignored").put(file, f);
 		}
 		f.add(new JsonObject().put("reason", reason).put("object", object));
@@ -199,7 +199,7 @@ public class Report {
 	}
 
 	public JsonArray getUsersExternalId() {
-		final JsonArray res = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray res = new JsonArray();
 		for (String f : result.getJsonObject(FILES).fieldNames()) {
 			JsonArray a = result.getJsonObject(FILES).getJsonArray(f);
 			if (a != null) {
@@ -293,7 +293,7 @@ public class Report {
 		} else {
 			filtered = loadedFiles.stream().sorted().collect(Collectors.toList());
 		}
-		return new fr.wseduc.webutils.collections.JsonArray(filtered);
+		return new JsonArray(filtered);
 	}
 
 	private void countDiff(Optional<String> prefixAcademy, String source, final Handler<JsonObject> handler) {

@@ -146,16 +146,13 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 										.put("name", i.getName() + ".txt")
 										.put("contentType", "text/plain")
 										.put("action", "updateInfos");
-								message.reply(m, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> r) {
-										if ("ok".equals(r.body().getString("status")) && r.body().getInteger("count", -1) > 0) {
-											log.info("File info " + i.getId() + " updated.");
-										} else {
-											log.error("Error updating file info " + i.getId());
-										}
-									}
-								}));
+								message.replyAndRequest(m, handlerToAsyncHandler(r -> {
+                  if ("ok".equals(r.body().getString("status")) && r.body().getInteger("count", -1) > 0) {
+                    log.info("File info " + i.getId() + " updated.");
+                  } else {
+                    log.error("Error updating file info " + i.getId());
+                  }
+                }));
 							}
 						}
 					});

@@ -1,17 +1,12 @@
 package org.entcore.workspace.service.impl;
 
 import com.google.thirdparty.publicsuffix.PublicSuffixType;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -19,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.bson.conversions.Bson;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
@@ -212,7 +208,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		JsonObject json = new JsonObject().put("action", "compress").put("quality", quality)
 				.put("src", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"))
 				.put("dest", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"));
-		eb.send(imageResizerAddress, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(imageResizerAddress, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				Integer size = event.body().getInteger("size");
@@ -278,7 +274,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	@Override
 	public Future<JsonObject> getRevision(String revisionId) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		revisionDao.findById(revisionId, ev -> {
 			if ("ok".equals(ev.getString("status"))) {
 				future.complete(ev.getJsonObject("result", new JsonObject()));
@@ -286,7 +282,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				future.fail("COuld not found revision : " + revisionId);
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded,
@@ -328,7 +324,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 											result.getString("owner"), userId, userName, metadata, new JsonObject());
 
 										if (handler != null)
-											daoPromise.setHandler(new Handler<AsyncResult<JsonObject>>()
+											daoPromise.onComplete(new Handler<AsyncResult<JsonObject>>()
 											{
 												@Override
 												public void handle(AsyncResult<JsonObject> daoResult)
@@ -350,14 +346,14 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void listRevisions(final String id, final Handler<Either<String, JsonArray>> handler) {
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(id);
+		final Bson builder = Filters.eq("documentId", id);
 		mongo.find(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(handler));
 	}
 
 	public void getRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler) {
-		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
+		final Bson builder = Filters.and(Filters.eq("_id", revisionId), Filters.eq("documentId", documentId));
 		mongo.findOne(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(handler));
 	}
@@ -386,7 +382,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					JsonObject item = (JsonObject) obj;
 					if (DocumentHelper.isFile(item) && !StringUtils.isEmpty(DocumentHelper.getFileId(item))) {
 						deleteAllRevisions(DocumentHelper.getId(item),
-								new fr.wseduc.webutils.collections.JsonArray().add(DocumentHelper.getFileId(item)));
+								new JsonArray().add(DocumentHelper.getFileId(item)));
 					}
 				}
 			}
@@ -399,12 +395,12 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		@SuppressWarnings("unchecked")
 		List<JsonObject> revisionsList = revisions.getList();
 		Set<String> fileIds = new HashSet<String>(StorageHelper.getListOfFileIds(revisionsList));
-		Future<JsonArray> future = Future.future();
+		Promise<JsonArray> future = Promise.promise();
 		JsonArray fileIdsJson = new JsonArray(new ArrayList<String>(fileIds));
 		storage.removeFiles(fileIdsJson, event -> {
 			future.complete(revisions);
 		});
-		return future;
+		return future.future();
 	}
 
 	private Future<JsonArray> deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
@@ -451,7 +447,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			} else {
 				return Future.succeededFuture(revision);
 			}
-		}).setHandler(revision -> {
+		}).onComplete(revision -> {
 			if (revision.succeeded()) {
 				handler.handle(new Either.Right<String, JsonObject>(revision.result()));
 			} else {
@@ -541,15 +537,15 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void incrementStorage(JsonObject added) {
-		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), null);
+		updateStorage(new JsonArray().add(added), null);
 	}
 
 	public void decrementStorage(JsonObject removed) {
-		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed));
+		updateStorage(null, new JsonArray().add(removed));
 	}
 
 	public void decrementStorage(JsonObject removed, Handler<Either<String, JsonObject>> handler) {
-		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed), handler);
+		updateStorage(null, new JsonArray().add(removed), handler);
 	}
 
 	public void incrementStorage(JsonArray added) {
@@ -561,7 +557,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void updateStorage(JsonObject added, JsonObject removed) {
-		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), new JsonArray().add(removed));
+		updateStorage(new JsonArray().add(added), new JsonArray().add(removed));
 	}
 
 	public void updateStorage(JsonArray addeds, JsonArray removeds) {
@@ -649,7 +645,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		Set<String> actions = new HashSet<>();
 		actions.add(WorkspaceController.SHARED_ACTION);
 		final Set<String> recipientId = new HashSet<>();
-		Future<Void> futureSHared = Future.future();
+		Promise<Void> futureSHared = Promise.promise();
 		if(id.isPresent()) {
 			shareService.findUserIdsForInheritShare(id.get(), user.getUserId(), Optional.of(actions), ev -> {
 				// get list of managers
@@ -664,7 +660,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			//no folder => no need to get folder's contributors
 			futureSHared.complete();
 		}
-		return futureSHared.compose(resShared -> {
+		return futureSHared.future().compose(resShared -> {
 			// get list of historic owner
 			return revisionDao.findByDocs(docIds).compose(versions -> {
 				for (Object version : versions) {
@@ -701,11 +697,11 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			default:
 				handler.handle(null);
 		}
-		QueryBuilder qb = QueryBuilder.start().and(
-                QueryBuilder.start("_id").in(documentIds).get(),
-                QueryBuilder.start().or(
-                    QueryBuilder.start("protected").is(true).get(),
-                    QueryBuilder.start("public").is(true).get()).get()
+		Bson qb = Filters.and(
+                Filters.in("_id", documentIds),
+                Filters.or(
+                    Filters.eq("protected", true),
+                    Filters.eq("public", true))
         );
 		JsonObject query = MongoQueryBuilder.build(qb);
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo,false, true, (MongoDb.WriteConcern)null, res -> handler.handle(res));
@@ -713,9 +709,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	@Override
 	public Future<JsonArray> transferAll(
-			final List<String> sourceIds, 
-			Optional<String> application, 
-			Visibility visibility, 
+			final List<String> sourceIds,
+			Optional<String> application,
+			Visibility visibility,
 			final UserInfos user
 		) {
 		if (sourceIds.isEmpty()) {
@@ -751,7 +747,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					} else {
 						DocumentHelper.setProtected(doc, true);
 					}
-				} else if( (isProtected && visibility==Visibility.PUBLIC) 
+				} else if( (isProtected && visibility==Visibility.PUBLIC)
 						|| (isPublic && visibility==Visibility.PROTECTED)) {
 					// We must change its visibility => set a temporary action.
 					doc.put("visibility_action", "change");
@@ -818,8 +814,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 						final JsonObject copy = copies.get(i);
 						for( int j=0; j<docs.size(); j++) {
 							final JsonObject original = docs.get(j);
-							if( original!=null 
-								&& source!=null 
+							if( original!=null
+								&& source!=null
 								&& DocumentHelper.getId(original).equals(DocumentHelper.getId(source))
 								) {
 									docs.set(j, copy);

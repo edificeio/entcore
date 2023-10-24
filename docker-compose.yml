@@ -1,13 +1,13 @@
 services:
-  gradle:
-    image: opendigitaleducation/gradle:4.5.1
-    working_dir: /home/gradle/project
+  maven:
+    image: maven:3.8.6-jdk-8
+    user: "$DEFAULT_DOCKER_USER"
+    working_dir: /usr/src/maven
     volumes:
-      - $PWD:$PWD
-      - ./:/home/gradle/project
-      - ~/.m2:/home/gradle/.m2
-      - ~/.gradle:/home/gradle/.gradle
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/usr/src/maven
+      - ~/.m2:/var/maven/.m2
+    environment:
+      MAVEN_CONFIG: /var/maven/.m2
 
   node:
     image: opendigitaleducation/node:16-alpine-pnpm

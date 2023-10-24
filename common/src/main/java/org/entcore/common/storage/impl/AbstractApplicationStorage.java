@@ -106,9 +106,9 @@ public abstract class AbstractApplicationStorage implements ApplicationStorage {
 			if (isNotEmpty(replyAction)) {
 				response.put("action", replyAction);
 			}
-			vertx.eventBus().send(replyTo, response, handlerToAsyncHandler(this));
+			vertx.eventBus().request(replyTo, response, handlerToAsyncHandler(this));
 		} else {
-			event.reply(response, handlerToAsyncHandler(this));
+			event.replyAndRequest(response, handlerToAsyncHandler(this));
 		}
 	}
 

@@ -3,6 +3,7 @@ package org.entcore.test;
 import fr.wseduc.webutils.security.BCrypt;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -23,30 +24,30 @@ public class UserbookTestHelper {
     }
 
     public Future<Integer> setQuotaForUserId(String userId, Long quota) {
-        Future<Integer> future = Future.future();
+        Promise<Integer> future = Promise.promise();
         test.database().executeNeo4jWithUniqueResult(
                 "MATCH (u:User) WHERE u.id={userId} MERGE (u)-[:USERBOOK]->(ub:UserBook { userid : {userId}}) SET ub.quota = {quota} RETURN ub.quota as quota",
-                new JsonObject().put("userId", userId).put("quota", quota)).setHandler(resCount -> {
+                new JsonObject().put("userId", userId).put("quota", quota)).onComplete(resCount -> {
             if (resCount.succeeded()) {
                 future.complete(resCount.result().getInteger("quota").intValue());
             } else {
                 future.fail(resCount.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     public Future<Integer> setStorageForUser(String userId, Long storage) {
-        Future<Integer> future = Future.future();
+        Promise<Integer> future = Promise.promise();
         test.database().executeNeo4jWithUniqueResult(
                 "MATCH (u:User) WHERE u.id={userId} MERGE (u)-[:USERBOOK]->(ub:UserBook { userid : {userId}}) SET ub.storage = {storage} RETURN ub.storage as storage",
-                new JsonObject().put("userId", userId).put("storage", storage)).setHandler(resCount -> {
+                new JsonObject().put("userId", userId).put("storage", storage)).onComplete(resCount -> {
             if (resCount.succeeded()) {
                 future.complete(resCount.result().getInteger("storage").intValue());
             } else {
                 future.fail(resCount.cause());
             }
         });
-        return future;
+        return future.future();
     }
 }

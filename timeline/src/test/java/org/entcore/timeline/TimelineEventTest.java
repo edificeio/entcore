@@ -86,7 +86,7 @@ public class TimelineEventTest {
         splitStore.setCombineResult(false);
         splitStore.add(event, res0 -> {
             final String id = res0.getString("_id");
-            test.database().executeMongoWithUniqueResultById("timeline", id).setHandler(res -> {
+            test.database().executeMongoWithUniqueResultById("timeline", id).onComplete(res -> {
                 context.assertTrue(res.succeeded());
                 final JsonObject json = res.result();
                 context.assertEquals(4, json.getJsonArray("recipients").size());
@@ -102,7 +102,7 @@ public class TimelineEventTest {
         splitStore.setCombineResult(false);
         splitStore.add(event, res0 -> {
             final String id = res0.getString("_id");
-            test.database().executeMongoWithUniqueResultById("timeline", id).setHandler(res -> {
+            test.database().executeMongoWithUniqueResultById("timeline", id).onComplete(res -> {
                 context.assertTrue(res.succeeded());
                 final JsonObject json = res.result();
                 context.assertEquals(5, json.getJsonArray("recipients").size());
@@ -119,7 +119,7 @@ public class TimelineEventTest {
         splitStore.setCombineResult(false);
         splitStore.add(event, res0 -> {
             final String id = res0.getString("_id");
-            test.database().executeMongoWithUniqueResultById("timeline", id).setHandler(res -> {
+            test.database().executeMongoWithUniqueResultById("timeline", id).onComplete(res -> {
                 context.assertTrue(res.succeeded());
                 final JsonObject json = res.result();
                 context.assertEquals(5, json.getJsonArray("recipients").size());
@@ -143,7 +143,7 @@ public class TimelineEventTest {
         splitStore.setCombineResult(false);
         splitStore.add(event, res0 -> {
             final String id = res0.getString("_id");
-            test.database().executeMongoWithUniqueResultById("timeline", id).setHandler(res -> {
+            test.database().executeMongoWithUniqueResultById("timeline", id).onComplete(res -> {
                 context.assertTrue(res.succeeded());
                 final JsonObject json = res.result();
                 final int value = count.incrementAndGet();

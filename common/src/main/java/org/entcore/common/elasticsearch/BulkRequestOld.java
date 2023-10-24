@@ -19,15 +19,22 @@
 
 package org.entcore.common.elasticsearch;
 
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
+
+import java.util.concurrent.Callable;
 
 public class BulkRequestOld {
 
 	private final HttpClientRequest request;
+	private final Handler<HttpClientResponse> onBody;
 
-	BulkRequestOld(HttpClientRequest request) {
+	BulkRequestOld(HttpClientRequest request, final Handler<HttpClientResponse> onBody) {
 		this.request = request;
+		this.onBody = onBody;
 	}
 
 	public void index(JsonObject element, JsonObject metadata) {
@@ -44,7 +51,7 @@ public class BulkRequestOld {
 	}
 
 	public void end() {
-		request.end();
+		request.send().onSuccess(onBody);
 	}
 
 }

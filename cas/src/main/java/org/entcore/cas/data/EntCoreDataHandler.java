@@ -27,7 +27,9 @@ import java.util.UUID;
 import fr.wseduc.cas.async.Tuple;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.exceptions.ValidationException;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.json.JsonArray;
+import org.bson.conversions.Bson;
 import org.entcore.cas.http.WrappedRequest;
 import org.entcore.cas.mapping.Mapping;
 import org.entcore.cas.services.RegisteredService;
@@ -51,6 +53,7 @@ import fr.wseduc.cas.exceptions.Try;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.mongodb.MongoDb;
 
+import static com.mongodb.client.model.Filters.eq;
 import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class EntCoreDataHandler extends DataHandler {
@@ -176,7 +179,7 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	public void persistAuth(final AuthCas authCas, final Handler<Boolean> handler) {
-		JsonObject query = new JsonObject().put("id", authCas.getId());
+		Bson query = eq("id", authCas.getId());
 		JsonObject doc = serialize(authCas);
 		if (doc == null) {
 			handler.handle(false);
@@ -184,7 +187,8 @@ public class EntCoreDataHandler extends DataHandler {
 		}
 		beforePersistAuth(authCas, doc);
 		doc.put("updatedAt", MongoDb.now());
-		mongoDb.update(COLLECTION, query, doc, true, false, new io.vertx.core.Handler<Message<JsonObject>>() {
+		JsonObject modifier = new JsonObject().put("$set", doc);
+		mongoDb.update(COLLECTION, MongoQueryBuilder.build(query), modifier, true, false, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle("ok".equals(event.body().getString("status")));

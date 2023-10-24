@@ -23,14 +23,16 @@ import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_DATE;
 import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_GROUPBY;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_TYPE;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
 import org.entcore.common.aggregation.filters.IndicatorFilter;
-import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
-import org.entcore.common.aggregation.filters.mongo.IndicatorFilterMongoImpl;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
 import org.entcore.common.aggregation.indicators.Indicator;
 import io.vertx.core.Handler;
@@ -70,7 +72,7 @@ public class IndicatorMongoImpl extends Indicator{
 	 * @param filters : Filters are used to filter traces further than the default type filtering.
 	 * @param groups : Groups are used to group results by several keys or combination of keys.
 	 */
-	public IndicatorMongoImpl(String key, Collection<IndicatorFilterMongoImpl> filters, Collection<IndicatorGroup> groups){
+	public IndicatorMongoImpl(String key, Collection<IndicatorFilter> filters, Collection<IndicatorGroup> groups){
 		super(key, filters, groups);
 		this.mongo = MongoDb.getInstance();
 		this.writtenIndicatorKey = key;
@@ -107,7 +109,7 @@ public class IndicatorMongoImpl extends Indicator{
 		//Document date
 		Date writeDate = this.writeDate;
 
-		final MongoDBBuilder criteriaQuery = new MongoDBBuilder();
+		List<Bson> criteriaQuery = new ArrayList<>();
 
 		//Synchronization handler
 		final AtomicInteger countDown = new AtomicInteger(results.size());
@@ -130,25 +132,25 @@ public class IndicatorMongoImpl extends Indicator{
 
 			if(group == null){
 				//When not using groups, set groupedBy specifically to not exists
-				criteriaQuery
-					.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
-					.and(STATS_FIELD_GROUPBY).exists(false);
+				criteriaQuery.add(Filters.and(
+						Filters.eq(STATS_FIELD_DATE, MongoDb.formatDate(writeDate)),
+						Filters.exists(STATS_FIELD_GROUPBY, false)));
 			} else {
 				//Adding date & group by to the criterias.
-				criteriaQuery
-					.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
-					.and(STATS_FIELD_GROUPBY).is(group.toString());
+				criteriaQuery.add(Filters.and(
+						Filters.eq(STATS_FIELD_DATE, MongoDb.formatDate(writeDate)),
+						Filters.eq(STATS_FIELD_GROUPBY, group.toString())));
 
 				//Adding the group ids values
 				IndicatorGroup g = group;
 				while(g != null){
-					criteriaQuery.and(g.getKey()+"_id").is(result.getJsonObject("_id").getString(g.getKey()));
+					criteriaQuery.add(Filters.eq(g.getKey()+"_id", result.getJsonObject("_id").getString(g.getKey())));
 					g = g.getParent();
 				}
 			}
 
 			//Perform write action
-			writeAction(criteriaQuery, result.getInteger("count"), synchroHandler);
+			writeAction(Filters.and(criteriaQuery), result.getInteger("count"), synchroHandler);
 		}
 	}
 
@@ -161,7 +163,7 @@ public class IndicatorMongoImpl extends Indicator{
 	 * @param resultsCount : Aggregation count.
 	 * @param handler : Synchronization handler, which must be called as a continuation.
 	 */
-	protected void writeAction(MongoDBBuilder criteriaQuery, int resultsCount, Handler<Message<JsonObject>> handler){
+	protected void writeAction(Bson criteriaQuery, int resultsCount, Handler<Message<JsonObject>> handler){
 		mongo.update(COLLECTIONS.stats.name(),
 				MongoQueryBuilder.build(criteriaQuery),
 				new MongoUpdateBuilder().inc(writtenIndicatorKey, resultsCount).build(),
@@ -203,13 +205,13 @@ public class IndicatorMongoImpl extends Indicator{
 	//Builds and executes an entire aggregation pipeline query for a given group, and recurse for each child.
 	private void executeAggregationQuery(final IndicatorGroup group, final Handler<JsonObject> finalHandler){
 		//Filter by trace type + custom filters
-		final MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
+		final Bson filteringQuery = Filters.eq(TRACE_FIELD_TYPE, indicatorKey);
 		for(IndicatorFilter filter : filters){
 			filter.filter(filteringQuery);
 		}
 
 		final JsonObject aggregation = new JsonObject();
-		JsonArray pipeline = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray pipeline = new JsonArray();
 		aggregation
 			.put("aggregate", COLLECTIONS.events.name())
 			.put("allowDiskUse", true)
@@ -264,7 +266,7 @@ public class IndicatorMongoImpl extends Indicator{
 		final Date start = new Date();
 
 		//Filtering by trace type + custom filters.
-		MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
+		Bson filteringQuery = Filters.eq(TRACE_FIELD_TYPE, indicatorKey);
 		for(IndicatorFilter filter : filters){
 			filter.filter(filteringQuery);
 		}

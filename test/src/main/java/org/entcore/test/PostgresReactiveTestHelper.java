@@ -1,6 +1,7 @@
 package org.entcore.test;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -19,18 +20,18 @@ import java.util.UUID;
 
 public class PostgresReactiveTestHelper {
     private final Vertx vertx;
-    private final Future<PgConnection> pgConnection;
+    private final Promise<PgConnection> pgConnection;
 
     public PostgresReactiveTestHelper(Vertx v, PostgreSQLContainer<?> postgres) {
         this.vertx = v;
-        this.pgConnection = Future.future();
+        this.pgConnection = Promise.promise();
         final PgConnectOptions options = new PgConnectOptions();
         options.setDatabase(postgres.getDatabaseName());
         options.setHost(postgres.getHost());
         options.setPassword(postgres.getPassword());
         options.setPort(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
         options.setUser(postgres.getUsername());
-        PgConnection.connect(vertx, options, this.pgConnection.completer());
+        PgConnection.connect(vertx, options, this.pgConnection);
     }
 
 
@@ -39,8 +40,8 @@ public class PostgresReactiveTestHelper {
         for (Object o : values) {
             tuple.addValue(o);
         }
-        return this.pgConnection.compose(conn -> {
-            final Future<List<JsonObject>> future = Future.future();
+        return this.pgConnection.future().compose(conn -> {
+            final Promise<List<JsonObject>> future = Promise.promise();
             conn.preparedQuery(query).execute(tuple, event -> {
                 try {
                     if (event.succeeded()) {
@@ -71,7 +72,7 @@ public class PostgresReactiveTestHelper {
                     future.fail(e);
                 }
             });
-            return future;
+            return future.future();
         });
     }
 }

@@ -84,7 +84,7 @@ public class MobileTimelineEventStore extends DefaultTimelineEventStore {
                 if (types.size() == 1) {
                     query.put("type", types.get(0));
                 } else {
-                    final JsonArray typesFilter = new fr.wseduc.webutils.collections.JsonArray();
+                    final JsonArray typesFilter = new JsonArray();
                     for (final String t : types) {
                         typesFilter.add(new JsonObject().put("type", t));
                     }
@@ -92,10 +92,10 @@ public class MobileTimelineEventStore extends DefaultTimelineEventStore {
                 }
             }
             if (restrictionFilter != null && restrictionFilter.size() > 0) {
-                final JsonArray nor = new fr.wseduc.webutils.collections.JsonArray();
+                final JsonArray nor = new JsonArray();
                 for (final String type : restrictionFilter.getMap().keySet()) {
                     for (final Object eventType : restrictionFilter.getJsonArray(type,
-                            new fr.wseduc.webutils.collections.JsonArray())) {
+                            new JsonArray())) {
                         nor.add(new JsonObject().put("type", type).put("event-type", eventType.toString()));
                     }
                     query.put("$nor", nor);

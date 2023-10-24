@@ -47,7 +47,7 @@ public class DefaultTenantService implements TenantService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-tenant")
 				.put("data", tenant);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
 	}
 
 	@Override

@@ -1,25 +1,30 @@
 package org.entcore.common.cache;
 
+import com.google.common.collect.Lists;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.redis.RedisClient;
+import io.vertx.redis.client.RedisAPI;
 import org.entcore.common.redis.Redis;
 import org.entcore.common.user.UserInfos;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class RedisCacheService implements CacheService {
     final String GLOBAL_KEY = "global:";
     final String USER_KEY = "user:";
     final String LANG_KEY = "global:";
-    final RedisClient redis;
+    final RedisAPI redis;
 
-    public RedisCacheService(RedisClient redis) {
+    public RedisCacheService(final RedisAPI redis) {
         this.redis = redis;
     }
 
@@ -27,15 +32,15 @@ public class RedisCacheService implements CacheService {
         if (redisConfig == null)
             throw new IllegalArgumentException("Could not create RedisCacheService because of missing redisConfig");
         Redis.getInstance().init(vertx, redisConfig);
-        this.redis = Redis.getClient();
+        this.redis = Redis.getClient().getClient();
 
     }
 
     private void doSet(String key, String value, Integer ttl, Handler<AsyncResult<Void>> handler) {
-        redis.set(key, value, res -> {
+        redis.set(newArrayList(key, value)).onComplete(res -> {
             if (res.succeeded()) {
                 if (ttl != null && ttl > 0) {
-                    redis.expire(key, ttl, resTtl -> {
+                    redis.expire(newArrayList(key, String.valueOf(ttl))).onComplete(resTtl -> {
                         handler.handle(new DefaultAsyncResult<>(null));
                     });
                 } else {
@@ -72,7 +77,7 @@ public class RedisCacheService implements CacheService {
     }
 
     private void doRemove(String key, Handler<AsyncResult<Void>> handler) {
-        redis.del(key, res -> {
+        redis.del(newArrayList(key)).onComplete(res -> {
             if (res.succeeded()) {
                 handler.handle(new DefaultAsyncResult<>(null));
             } else {
@@ -94,10 +99,10 @@ public class RedisCacheService implements CacheService {
     }
 
     private void doGet(String key, Handler<AsyncResult<Optional<String>>> handler) {
-        redis.get(key, ar -> {
+        redis.get(key).onComplete(ar -> {
             if (ar.succeeded()) {
-                if (ar.result() != null && !ar.result().isEmpty()) {
-                    final String value = ar.result();
+                if (ar.result() != null) {
+                    final String value = ar.result().toString(StandardCharsets.UTF_8);
                     handler.handle(new DefaultAsyncResult<>(Optional.ofNullable(value)));
                 } else {
                     handler.handle(new DefaultAsyncResult<>(Optional.empty()));
@@ -121,7 +126,7 @@ public class RedisCacheService implements CacheService {
     }
 
     public void getList(String key, Handler<AsyncResult<List<String>>> handler) {
-        redis.lrange(key, 0, -1, resArray -> {
+        redis.lrange(key, "0", "-1").onComplete(resArray -> {
             handler.handle(resArray.map(jsonarray -> {
                 final List<String> list = jsonarray.stream().map(a -> a.toString()).collect(Collectors.toList());
                 return list;
@@ -130,24 +135,24 @@ public class RedisCacheService implements CacheService {
     }
 
     public void prependToList(String key, String value, Handler<AsyncResult<Long>> handler) {
-        redis.lpush(key, value, res -> {
+        redis.lpush(newArrayList(key, value)).onComplete(res -> {
             handler.handle(new DefaultAsyncResult(res.succeeded() ? res.result() : res.cause()));
         });
     }
 
     public void removeLastFromList(String key, Handler<AsyncResult<String>> handler) {
-        redis.rpop(key, res -> {
+        redis.rpop(Collections.singletonList(key)).onComplete(res -> {
             handler.handle(new DefaultAsyncResult(res.succeeded() ? res.result() : res.cause()));
         });
     }
 
     public void removeFromList(String key, String value, Handler<AsyncResult<Long>> handler){
-        redis.lrem(key, 0l, value, res -> {
+        redis.lrem(key, "0", value).onComplete(res -> {
             handler.handle(new DefaultAsyncResult(res.succeeded() ? res.result() : res.cause()));
         });
     }
 
     public void getListLength(String key, Handler<AsyncResult<Long>> handler){
-        redis.llen(key, handler);
+        redis.llen(key, (Handler) handler);
     }
 }

@@ -12,20 +12,16 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.vertx.core.*;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.service.impl.AbstractRepositoryEvents;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.Future;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -172,9 +168,9 @@ public class FolderImporter
 	private Future<JsonObject> commitToMongo(FolderImporterContext context, Future<FolderImporterContext> beforeCommit)
 	{
 		FolderImporter self = this;
-		Future<JsonObject> promise = Future.future();
+		Promise<JsonObject> promise = Promise.promise();
 
-		beforeCommit.setHandler(new Handler<AsyncResult<FolderImporterContext>>()
+		beforeCommit.onComplete(new Handler<AsyncResult<FolderImporterContext>>()
 		{
 			@Override
 			public void handle(AsyncResult<FolderImporterContext> mappedContext)
@@ -227,10 +223,10 @@ public class FolderImporter
 			}
 		});
 
-		return promise;
+		return promise.future();
 	}
 
-	private void bufferToStorage(FolderImporterContext context, JsonObject document, String filePath, Future<Void> promise)
+	private void bufferToStorage(FolderImporterContext context, JsonObject document, String filePath, Promise<Void> promise)
 	{
 		final String docId = DocumentHelper.getId(document);
 		final String fileId = DocumentHelper.getFileId(document);
@@ -241,7 +237,7 @@ public class FolderImporter
 																	.put("filePath", filePath)
 																	.put("userId", context.userId);
 		final DeliveryOptions options = new DeliveryOptions().setSendTimeout(this.busTimeoutSec * 1000);
-		this.eb.send("org.entcore.workspace", importParams, options, new Handler<AsyncResult<Message<JsonObject>>>()
+		this.eb.request("org.entcore.workspace", importParams, options, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> message)
@@ -313,8 +309,8 @@ public class FolderImporter
 			String fileDocId = DocumentHelper.getId(fileDoc);
 			context.oldIdsToNewIds.put(fileDocId, fileDocId);
 
-			Future<Void> future = Future.future();
-			futures.add(future);
+			Promise<Void> future = Promise.promise();
+			futures.add(future.future());
 
 			if(DocumentHelper.isFolder(fileDoc) == false && context.skipDocumentImport == false)
 				this.bufferToStorage(context, fileDoc, context.basePath + File.separator + fileDoc.getString("localArchivePath"), future);
@@ -354,7 +350,7 @@ public class FolderImporter
 		context.updatedDocs = fileDocuments;
 		Future<JsonObject> doImport = this.commitToMongo(context, this.importDocuments(context).map(context));
 
-		doImport.setHandler(new Handler<AsyncResult<JsonObject>>()
+		doImport.onComplete(new Handler<AsyncResult<JsonObject>>()
 		{
 			@Override
 			public void handle(AsyncResult<JsonObject> res)
@@ -366,7 +362,7 @@ public class FolderImporter
 
 	private Future<FolderImporterContext> importFlatFiles(FolderImporterContext context)
 	{
-		Future<FolderImporterContext> importDone = Future.future().map(context);
+		Promise<FolderImporterContext> importDone = Promise.promise();
 		FolderImporter self = this;
 
 		Pattern fileId = Pattern.compile(StringUtils.UUID_REGEX);
@@ -391,8 +387,8 @@ public class FolderImporter
 
 					fileFor: for(String filePath : filesInDir)
 					{
-						Future<Void> future = Future.future();
-						futures.add(future);
+						Promise<Void> future = Promise.promise();
+						futures.add(future.future());
 
 						String fileTrunc = FileUtils.getFilename(filePath);
 						Matcher m = fileId.matcher(fileTrunc);
@@ -434,7 +430,7 @@ public class FolderImporter
 						self.bufferToStorage(context, fileDocument, filePath, future);
 					}
 
-					CompositeFuture.join(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>()
+					CompositeFuture.join(futures).onComplete(new Handler<AsyncResult<CompositeFuture>>()
 					{
 						@Override
 						public void handle(AsyncResult<CompositeFuture> res)
@@ -449,7 +445,7 @@ public class FolderImporter
 			}
 		});
 
-		return importDone;
+		return importDone.future().map(context);
 	}
 
 	/**
@@ -459,7 +455,7 @@ public class FolderImporter
 	public void importFoldersFlatFormat(FolderImporterContext context, Handler<JsonObject> handler)
 	{
 		Future<JsonObject> doImport = this.commitToMongo(context, this.importFlatFiles(context).map(context));
-		doImport.setHandler(new Handler<AsyncResult<JsonObject>>()
+		doImport.onComplete(new Handler<AsyncResult<JsonObject>>()
 		{
 			@Override
 			public void handle(AsyncResult<JsonObject> res)

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
@@ -49,8 +50,8 @@ import io.vertx.core.json.JsonObject;
 public class Timeline extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 
 		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");

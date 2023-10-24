@@ -58,7 +58,7 @@ public class StudentImportProcessing1d extends StudentImportProcessing {
 	static JsonArray parseRelativeField1d(JsonArray relative) {
 		JsonArray res = null;
 		if (relative != null && relative.size() > 0) {
-			res = new fr.wseduc.webutils.collections.JsonArray();
+			res = new JsonArray();
 			for (Object o : relative) {
 				if (!(o instanceof String)) continue;
 				String [] r = ((String) o).split("\\$");

@@ -6,6 +6,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -206,17 +207,16 @@ public class Neo4jRestClientNode {
 
     public void execute(final String query, final Optional<String> authorization, final Handler<Buffer> bodyHandler, final Handler<Throwable> handlerError) {
         final HttpClient client = getHttpClient();
-        final HttpClientRequest req = client.post("/db/data/cypher", resp -> {
+        client.request(HttpMethod.POST, "/db/data/cypher")
+        .map(req -> {
+            req.headers().add("Content-Type", "application/json").add("Accept", "application/json; charset=UTF-8");
+          authorization.ifPresent(s -> prepareRequest(s, req));
+            return req;
+        })
+        .flatMap(req -> req.send(new JsonObject().put("query", query).encode()))
+        .onSuccess(resp -> {
             resp.bodyHandler(bodyHandler);
-        });
-        req.headers().add("Content-Type", "application/json").add("Accept", "application/json; charset=UTF-8");
-        if (authorization.isPresent()) {
-            prepareRequest(authorization.get(), req);
-        }
-        final JsonObject bodyReq = new JsonObject().put("query", query);
-        final String bodyStr = bodyReq.encode();
-        req.exceptionHandler(handlerError);
-        req.end(bodyStr);
+        }).onFailure(handlerError);
     }
 
     private HttpClientRequest prepareRequest(final String authorizationHeader, final HttpClientRequest request) {

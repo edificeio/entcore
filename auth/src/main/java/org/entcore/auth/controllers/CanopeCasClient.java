@@ -28,9 +28,7 @@ import javax.xml.bind.JAXBElement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.eventbus.Message;
@@ -199,7 +197,7 @@ public class CanopeCasClient extends CasClientController
                 .put("classId", classId)
                 .put("userId", user.account.id);
 
-        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
         {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result)
@@ -227,7 +225,7 @@ public class CanopeCasClient extends CasClientController
                 .put("structureId", userCreationStructureId)
                 .put("data", user.getClasse(suffix));
 
-        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
         {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result)
@@ -330,7 +328,7 @@ public class CanopeCasClient extends CasClientController
                                 .put("profile", user.profile)
                                 .put("data", user.toJson());
 
-                        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+                        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
                         {
                             @Override
                             public void handle(AsyncResult<Message<JsonObject>> result)
@@ -366,61 +364,55 @@ public class CanopeCasClient extends CasClientController
         });
     }
 
-    private void checkTneEligibilty(HttpServerRequest request, CanopeUser user)
-    {
+    private void checkTneEligibilty(HttpServerRequest request, CanopeUser user) {
         String canopeId = user.email;
 
         String inputHash = Sha1.hash(canopeId + "CANOP3" + eligibiliteTneNoticeId);
         String outputHash = Sha1.hash(eligibiliteTneNoticeId + "CANOP3" + canopeId);
 
-        HttpClientRequest tneRequest = httpClient.postAbs(eligibiliteTneUrl, new Handler<HttpClientResponse>()
-        {
-            @Override
-            public void handle(final HttpClientResponse response)
-            {
-                response.bodyHandler(new Handler<Buffer>()
-                {
-                    @Override
-                    public void handle(Buffer tneBuffer)
-                    {
-                        request.resume();
-                        JsonObject tneResult = new JsonObject(tneBuffer.toString());
+        JsonObject tneBody = new JsonObject()
+            .put("tx_cndpusager_usagercndp[verbe]", eligibiliteTneVerbe)
+            .put("login", canopeId)
+            .put("noticeid", eligibiliteTneNoticeId)
+            .put("hash", inputHash);
 
-                        switch(tneResult.getInteger("errorCode"))
-                        {
-                            case 0:
-                                if(outputHash.equals(tneResult.getString("hash")))
-                                    loginOrCreateUser(request, user);
-                                else
-                                    Renders.renderError(request, new JsonObject().put("error", "tne.mismatch"));
-                                break;
-                            case 1:
-                            case 3:
-                                Renders.renderError(request, new JsonObject().put("error", "tne.request.error"));
-                                break;
-                            case 4:
-                            case 5:
-                                Renders.forbidden(request, "tne.ineligible");
-                                break;
-                            default:
-                                Renders.renderError(request, new JsonObject().put("error", "tne.request.unknown"));
-                                break;
-                        }
+        httpClient.request(new RequestOptions()
+                .setMethod(HttpMethod.POST)
+                .setAbsoluteURI(eligibiliteTneUrl))
+            .map(this::addHeaders)
+            .map(req -> req
+                .putHeader("Content-Type", "application/json")
+                .putHeader("Accept", "application/json"))
+            .flatMap(req -> req.send(tneBody.encode()))
+            .onSuccess(response -> {
+                response.bodyHandler(tneBuffer -> {
+                    request.resume();
+                    JsonObject tneResult = new JsonObject(tneBuffer.toString());
+
+                    switch (tneResult.getInteger("errorCode")) {
+                        case 0:
+                            if (outputHash.equals(tneResult.getString("hash")))
+                                loginOrCreateUser(request, user);
+                            else
+                                Renders.renderError(request, new JsonObject().put("error", "tne.mismatch"));
+                            break;
+                        case 1:
+                        case 3:
+                            Renders.renderError(request, new JsonObject().put("error", "tne.request.error"));
+                            break;
+                        case 4:
+                        case 5:
+                            Renders.forbidden(request, "tne.ineligible");
+                            break;
+                        default:
+                            Renders.renderError(request, new JsonObject().put("error", "tne.request.unknown"));
+                            break;
                     }
                 });
-            }
-        });
-
-        JsonObject tneBody = new JsonObject()
-                                .put("tx_cndpusager_usagercndp[verbe]", eligibiliteTneVerbe)
-                                .put("login", canopeId)
-                                .put("noticeid", eligibiliteTneNoticeId)
-                                .put("hash", inputHash);
-
-        addHeaders(tneRequest);
-        tneRequest.putHeader("Content-Type", "application/json");
-        tneRequest.putHeader("Accept", "application/json");
-        tneRequest.end(tneBody.toString());
+            }).onFailure(th -> {
+                log.error("Cannot create http request", th);
+                Renders.renderError(request, new JsonObject().put("error", "server.Error"));
+            });
     }
 
     @Get("/canope/logout")

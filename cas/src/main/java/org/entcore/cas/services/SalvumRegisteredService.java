@@ -80,7 +80,7 @@ public class SalvumRegisteredService extends AbstractCas20ExtensionRegisteredSer
 
 			// Structures
 			Element rootStructures = createElement(EA_STRUCTURE+"s", doc);
-			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+			for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) o;
 				Element rootStructure = createElement(EA_STRUCTURE, doc);
@@ -126,7 +126,7 @@ public class SalvumRegisteredService extends AbstractCas20ExtensionRegisteredSer
 					});
 
 					//Discipline
-					JsonArray jsonArrayFunctions = data.getJsonArray("ufunctions", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray jsonArrayFunctions = data.getJsonArray("ufunctions", new JsonArray());
 					if(jsonArrayFunctions.size() > 0){
 						Element rootDisciplines = createElement(EA_DISCIPLINE+"s", doc);
 						List<String> vTempListDiscipline = new ArrayList<>();

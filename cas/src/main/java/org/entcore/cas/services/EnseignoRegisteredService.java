@@ -52,13 +52,13 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put("action", directoryAction).put("userId", userId);
-		eb.send("directory", jo, handlerToAsyncHandler(event -> {
+		eb.request("directory", jo, handlerToAsyncHandler(event -> {
 			JsonObject res = event.body().getJsonObject("result");
 			log.debug("res : " + res);
 			if ("ok".equals(event.body().getString("status")) && res != null) {
 				JsonObject joG = new JsonObject();
 				joG.put("action", "getUserGoups").put("userId", userId);
-				eb.send("directory", joG, handlerToAsyncHandler(groups -> {
+				eb.request("directory", joG, handlerToAsyncHandler(groups -> {
 					JsonArray groupsRes = groups.body().getJsonArray("result");
 					log.debug("groups : " + groupsRes);
 					if ("ok".equals(groups.body().getString("status")) && groupsRes != null) {
@@ -86,7 +86,7 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 			additionnalAttributes.add(createTextElement("user_profil", data.getJsonArray("type").getString(0), doc));
 
 			// Structures
-			for (Object s : data.getJsonArray("structureNodes", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+			for (Object s : data.getJsonArray("structureNodes", new JsonArray()).getList()) {
 				if (!(s instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) s;
 				if (structure.containsKey("UAI")) {
@@ -96,13 +96,13 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 					JsonArray groupes_enseignements = new JsonArray();
 					JsonArray groupes_manuels = new JsonArray();
 					// groups : classes, manual groups...
-					for (Object o : data.getJsonArray("userGroups", new fr.wseduc.webutils.collections.JsonArray())) {
+					for (Object o : data.getJsonArray("userGroups", new JsonArray())) {
 						JsonObject group = (JsonObject) o;
 						if(group.containsKey("structures") && group.getValue("structures") != null) {
 							JsonObject structJson = group.getJsonArray("structures").getJsonObject(0);
 							if(structJson.getString("id").equals(structure.getString("id"))) {
 								if (group.containsKey("classes") && group.getValue("classes") != null) {
-									for (Object c : group.getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray())) {
+									for (Object c : group.getJsonArray("classes", new JsonArray())) {
 										JsonObject classe = (JsonObject) c;
 										if (classe.containsKey("name") && classe.getString("name") != null) {
 											classes.add(classe.getString("name"));
@@ -135,7 +135,7 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 			}
 
 			// children
-			for (Object o : data.getJsonArray("children", new fr.wseduc.webutils.collections.JsonArray())) {
+			for (Object o : data.getJsonArray("children", new JsonArray())) {
 				JsonObject child = (JsonObject) o;
 				if(child.getValue("id") != null){
 					additionnalAttributes.add(createTextElement("childrens", child.getString("id"), doc));
@@ -143,7 +143,7 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 			}
 
 			// parents
-			for (Object o : data.getJsonArray("parents", new fr.wseduc.webutils.collections.JsonArray())) {
+			for (Object o : data.getJsonArray("parents", new JsonArray())) {
 				JsonObject parent = (JsonObject) o;
 				if(parent.getValue("id") != null){
 					additionnalAttributes.add(createTextElement("parents", parent.getString("id"), doc));

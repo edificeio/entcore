@@ -9,6 +9,8 @@ import fr.wseduc.webutils.security.XSSUtils;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.DecodeException;
@@ -94,20 +96,20 @@ public class TraceFilter implements Filter {
             final long epoch = System.currentTimeMillis();
             request.response().endHandler(event -> {
                 List<Future> futures = new ArrayList<>();
-                Future<UserInfos> userFuture = Future.future();
-                Future<Object> bodyFuture = Future.future();
-                futures.add(userFuture);
+                Promise<UserInfos> userFuture = Promise.promise();
+	            Promise<Object> bodyFuture = Promise.promise();
+                futures.add(userFuture.future());
                 final JsonObject action = actions.get(getRequestServiceMethod(request));
                 if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
-                    futures.add(bodyFuture);
+                    futures.add(bodyFuture.future());
                     getBody(request, bodyFuture);
                 }
-                CompositeFuture.all(futures).setHandler(futureEvent -> {
+                CompositeFuture.all(futures).onComplete(futureEvent -> {
                     if (futureEvent.failed()) {
                         log.error("[TraceFilter] Failed to create trace : " + request.uri(), futureEvent.cause());
                         return;
                     }
-                    UserInfos user = userFuture.result();
+                    UserInfos user = userFuture.future().result();
 
                     JsonObject trace = new JsonObject()
                             .put("application", Config.getInstance().getConfig().getString("app-name"))
@@ -121,7 +123,7 @@ public class TraceFilter implements Filter {
                             .put("status", request.response().getStatusCode());
 
                     if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
-                        trace.put("resource", bodyFuture.result());
+                        trace.put("resource", bodyFuture.future().result());
                     }
 
                     MongoDb.getInstance().insert(COLLECTION, trace);
@@ -164,7 +166,7 @@ public class TraceFilter implements Filter {
         return event;
     }
 
-    private void getUser(HttpServerRequest request, Future<UserInfos> future) {
+    private void getUser(HttpServerRequest request, Promise<UserInfos> future) {
         UserUtils.getUserInfos(this.eb, request, user -> {
             if (user == null) {
                 future.fail("Null user");
@@ -174,7 +176,7 @@ public class TraceFilter implements Filter {
         });
     }
 
-    private void getBody(HttpServerRequest request, Future<Object> future) {
+    private void getBody(HttpServerRequest request, Promise<Object> future) {
         request.bodyHandler(bodyEvt -> {
             String body = XSSUtils.stripXSS(bodyEvt.toString("UTF-8"));
             if (body == null || "".equals(body.trim())){

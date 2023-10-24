@@ -21,14 +21,16 @@ package org.entcore.common.aggregation.filters.mongo;
 
 import java.util.Date;
 
-import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.entcore.common.aggregation.filters.IndicatorFilter;
 
 import static org.entcore.common.aggregation.MongoConstants.*;
 
 /**
  * Filters traces by a date interval.
  */
-public class DateFilter extends IndicatorFilterMongoImpl {
+public class DateFilter implements IndicatorFilter {
 	
 	private Date from, to;
 
@@ -42,8 +44,8 @@ public class DateFilter extends IndicatorFilterMongoImpl {
 		this.to = to;
 	}
 
-	public void filter(MongoDBBuilder builder) {
-		builder.and(TRACE_FIELD_DATE).greaterThanEquals(from.getTime()).lessThan(to.getTime());
+	public void filter(Bson builder) {
+		Filters.and(builder, Filters.gte(TRACE_FIELD_DATE, from.getTime()), Filters.lt(TRACE_FIELD_DATE, to.getTime()));
 	}
 
 }

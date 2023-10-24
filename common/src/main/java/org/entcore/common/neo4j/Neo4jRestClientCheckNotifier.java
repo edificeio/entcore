@@ -8,6 +8,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.email.EmailFactory;
@@ -136,21 +138,24 @@ public class Neo4jRestClientCheckNotifier implements  Neo4jRestClientCheck{
     }
 
     private void alertBySlack(Neo4jRestClientNodeManager manager, List<Neo4jRestClientNode> becameAvailable, List<Neo4jRestClientNode> becameUnavailable){
-        if(slackClient.isPresent() && slackHook.isPresent() && becameUnavailable.size() > 0){
-            final HttpClient client = slackClient.get();
-            final HttpClientRequest req = client.postAbs(slackHook.get(), e -> {
-                if (e.statusCode() != 200) {
-                    log.error("NEO4J Slack notifier bad status: " + e.statusCode() + "/" + e.statusMessage());
-                }
-            });
-            req.exceptionHandler(e -> {
-                log.error("NEO4J Slack notifier failed: ", e);
-            });
+        if(slackClient.isPresent() && slackHook.isPresent() && !becameUnavailable.isEmpty()){
             final StringBuilder body = new StringBuilder("NEO4j down: ");
             for(final Neo4jRestClientNode node : becameUnavailable){
-                body.append(node.getUrl()+" ");
+                body.append(node.getUrl()).append(" ");
             }
-            req.end(new JsonObject().put("text", body.toString()).toString());
+            final HttpClient client = slackClient.get();
+            client.request(new RequestOptions()
+                .setMethod(HttpMethod.POST)
+                .setAbsoluteURI(slackHook.get()))
+            .flatMap(req -> req.send(new JsonObject().put("text", body.toString()).toString()))
+            .onSuccess(response -> {
+                if (response.statusCode() != 200) {
+                    log.error("NEO4J Slack notifier bad status: " + response.statusCode() + "/" + response.statusMessage());
+                }
+            })
+            .onFailure(th -> {
+                log.error("NEO4J Slack notifier failed: ", th);
+            });
         }
     }
 

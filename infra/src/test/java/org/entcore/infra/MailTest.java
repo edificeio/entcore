@@ -41,76 +41,80 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 @RunWith(VertxUnitRunner.class)
 public class MailTest {
-    private static final TestHelper test = TestHelper.helper();
+  private static final TestHelper test = TestHelper.helper();
 
-    @ClassRule
-    public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("init_email.sql");
-    static PostgresEmailHelper helper;
-    static JsonObject postgresql;
+  @ClassRule
+  public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("init_email.sql");
+  static PostgresEmailHelper helper;
+  static JsonObject postgresql;
 
-    @BeforeClass
-    public static void setUp(TestContext context) throws Exception {
-        postgresql = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
-        final JsonObject config = new JsonObject().put("postgresql", postgresql).put("platform", "test");
-        final JsonObject moduleConfig = new JsonObject();
-        //sender = new PostgresEmailSender(null, test.vertx(), moduleConfig, config, 0);
-        helper = PostgresEmailHelper.create(test.vertx(), postgresql);
-        test.vertx().sharedData().getLocalMap("server").put("event-store", config.toString());
-        test.vertx().eventBus().localConsumer(PostgresEmailHelper.MAILER_ADDRESS, new MailController(test.vertx(), config));
-    }
+  @BeforeClass
+  public static void setUp(TestContext context) throws Exception {
+    postgresql = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
+    final JsonObject config = new JsonObject().put("postgresql", postgresql).put("platform", "test");
+    final JsonObject moduleConfig = new JsonObject();
+    //sender = new PostgresEmailSender(null, test.vertx(), moduleConfig, config, 0);
+    helper = PostgresEmailHelper.create(test.vertx(), postgresql);
+    test.vertx().sharedData().getLocalMap("server").put("event-store", config.toString());
+    test.vertx().eventBus().localConsumer(PostgresEmailHelper.MAILER_ADDRESS, new MailController(test.vertx(), config));
+  }
 
-    PostgresEmailBuilder.EmailBuilder mail() {
-        return PostgresEmailBuilder.mail().withPriority(0).withProfile("Teacher").withUserId("userid").withPlatformUrl("http://entcore.org").withPlatformId("platformid").withModule("infra").withBody("Test").withHeader("header", "value").withSubject("subject").withFrom("test@entcore.org").withTo("dest@entcore.org");
-    }
+  PostgresEmailBuilder.EmailBuilder mail() {
+    return PostgresEmailBuilder.mail().withPriority(0).withProfile("Teacher").withUserId("userid").withPlatformUrl("http://entcore.org").withPlatformId("platformid").withModule("infra").withBody("Test").withHeader("header", "value").withSubject("subject").withFrom("test@entcore.org").withTo("dest@entcore.org");
+  }
 
-    @Test
-    public void testMailShouldCreate(TestContext context) {
-        //multiple pgclient (eventstore) should not affect mailer
-        final PostgresqlEventStoreFactory fac = new PostgresqlEventStoreFactory();
-        fac.setVertx(test.vertx());
-        final EventStore store = fac.getEventStore("test");
-        final Async async = context.async();
-        final PostgresEmailBuilder.EmailBuilder mail = mail();
-        helper.createWithAttachments(mail, new ArrayList<>()).setHandler((r -> {
-            if (r.failed()) {
-                r.cause().printStackTrace();
-            }else {
-                helper.setRead((UUID)mail.getMail().get("id"),new JsonObject()).setHandler(r2->{
-                    if (r2.failed()) {
-                        r2.cause().printStackTrace();
-                    }
-                    context.assertTrue(r2.succeeded());
-                    async.complete();
-                });
-            }
-            context.assertTrue(r.succeeded());
-        }));
-    }
-
-    @Test
-    public void testMailShouldCreateInsideWorker(TestContext testCtx) {
-        //multiple pgclient (eventstore) should not affect mailer
-        final PostgresqlEventStoreFactory fac = new PostgresqlEventStoreFactory();
-        fac.setVertx(test.vertx());
-        final EventStore store = fac.getEventStore("test");
-        final Async async = testCtx.async();
-        test.vertx().deployVerticle("org.entcore.infra.MailWorkerForTest", new DeploymentOptions().setWorker(true).setInstances(1).setMultiThreaded(false).setConfig(new JsonObject().put("postgres", postgresql))
-                .setIsolationGroup("mail_worker_group")
-                .setIsolatedClasses(Arrays.asList("org.entcore.infra.*")), rDep -> {
-            test.vertx().eventBus().send(MailWorkerForTest.class.getSimpleName(),
-                    new JsonObject().put("action", "send"), r -> {
-                        if (r.failed()) {
-                            r.cause().printStackTrace();
-                        } else {
-                            final JsonObject json = (JsonObject)r.result().body();
-                            testCtx.assertTrue(json.getBoolean("success"));
-                        }
-                        async.complete();
-                    });
+  @Test
+  public void testMailShouldCreate(TestContext context) {
+    //multiple pgclient (eventstore) should not affect mailer
+    final PostgresqlEventStoreFactory fac = new PostgresqlEventStoreFactory();
+    fac.setVertx(test.vertx());
+    final EventStore store = fac.getEventStore("test");
+    final Async async = context.async();
+    final PostgresEmailBuilder.EmailBuilder mail = mail();
+    helper.createWithAttachments(mail, new ArrayList<>()).onComplete((r -> {
+      if (r.failed()) {
+        r.cause().printStackTrace();
+      } else {
+        helper.setRead((UUID) mail.getMail().get("id"), new JsonObject()).onComplete(r2 -> {
+          if (r2.failed()) {
+            r2.cause().printStackTrace();
+          }
+          context.assertTrue(r2.succeeded());
+          async.complete();
         });
-    }
+      }
+      context.assertTrue(r.succeeded());
+    }));
+  }
+
+  @Test
+  public void testMailShouldCreateInsideWorker(TestContext testCtx) {
+    //multiple pgclient (eventstore) should not affect mailer
+    final PostgresqlEventStoreFactory fac = new PostgresqlEventStoreFactory();
+    fac.setVertx(test.vertx());
+    final EventStore store = fac.getEventStore("test");
+    final Async async = testCtx.async();
+    DeploymentOptions deplomentOptions = new DeploymentOptions()
+        .setWorker(true).setInstances(1)
+        .setIsolationGroup("mail_worker_group")
+        .setIsolatedClasses(Collections.singletonList("org.entcore.infra.*"))
+        .setConfig(new JsonObject().put("postgres", postgresql));
+    test.vertx().deployVerticle("org.entcore.infra.MailWorkerForTest", deplomentOptions).onSuccess(rDep -> {
+      test.vertx().eventBus().request(MailWorkerForTest.class.getSimpleName(),
+          new JsonObject().put("action", "send"), r -> {
+            if (r.failed()) {
+              r.cause().printStackTrace();
+            } else {
+              final JsonObject json = (JsonObject) r.result().body();
+              testCtx.assertTrue(json.getBoolean("success"));
+            }
+            async.complete();
+          });
+    });
+  }
 }

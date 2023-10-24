@@ -19,15 +19,15 @@
 
 package org.entcore.common.http.filter;
 
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
-import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.bson.conversions.Bson;
+import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,21 +55,20 @@ public class MongoAppFilter extends BaseResourceProvider {
 	}
 
 	public void sharedAndOwner(HttpServerRequest request, String sharedMethod,
-			UserInfos user, Handler<Boolean> handler) {
+	                           UserInfos user, Handler<Boolean> handler) {
 		String id = request.params().get(resourceIdLabel);
 		if (id != null && !id.trim().isEmpty()) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId())
-					.put(sharedMethod).is(true).get());
-			for (String gpId: user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId)
-						.put(sharedMethod).is(true).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()),
+					Filters.eq(sharedMethod, true)));
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(Filters.and(Filters.eq("groupId", gpId),
+						Filters.eq(sharedMethod, true)));
 			}
-			QueryBuilder query = QueryBuilder.start("_id").is(id).or(
-					QueryBuilder.start("owner.userId").is(user.getUserId()).get(),
-					QueryBuilder.start("shared").elemMatch(
-							new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get()
-			);
+			Bson query = Filters.and(Filters.eq("_id", id),
+					Filters.or(
+							Filters.eq("owner.userId", user.getUserId()),
+							Filters.elemMatch("shared", Filters.or(groups))));
 			executeCountQuery(request, collection, MongoQueryBuilder.build(query), 1, handler);
 		} else {
 			handler.handle(false);
@@ -77,10 +76,10 @@ public class MongoAppFilter extends BaseResourceProvider {
 	}
 
 	public void ownerOnly(HttpServerRequest request, String sharedMethod,
-			UserInfos user, Handler<Boolean> handler) {
+	                      UserInfos user, Handler<Boolean> handler) {
 		String id = request.params().get(resourceIdLabel);
 		if (id != null && !id.trim().isEmpty()) {
-			QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner.userId").is(user.getUserId());
+			Bson query = Filters.and(Filters.eq("_id", id), Filters.eq("owner.userId", user.getUserId()));
 			executeCountQuery(request, collection, MongoQueryBuilder.build(query), 1, handler);
 		} else {
 			handler.handle(false);
@@ -88,7 +87,7 @@ public class MongoAppFilter extends BaseResourceProvider {
 	}
 
 	public static void executeCountQuery(final HttpServerRequest request, String collection,
-			JsonObject query, final int expectedCountResult, final Handler<Boolean> handler) {
+	                                     JsonObject query, final int expectedCountResult, final Handler<Boolean> handler) {
 		request.pause();
 		MongoDb mongo = MongoDb.getInstance();
 		mongo.count(collection, query, new Handler<Message<JsonObject>>() {

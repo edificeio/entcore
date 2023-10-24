@@ -76,7 +76,7 @@ public class IkigaiRegisteredService extends AbstractCas20ExtensionRegisteredSer
 			// Structures
 			Element rootStructures = createElement(EA_STRUCTURE+"s", doc);
 			final Set<String> totalClasses = new HashSet<>();
-			for (Object o : data.getJsonArray("structuresWithClasses", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+			for (Object o : data.getJsonArray("structuresWithClasses", new JsonArray()).getList()) {
 				if (!(o instanceof JsonArray)) continue;
 				final JsonArray structureWithClasses = (JsonArray) o;
 				Element rootStructure = createElement(EA_STRUCTURE, doc);

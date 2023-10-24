@@ -123,7 +123,7 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		}
 
 		if (vectors.size() > 1 || (!noPrefix && privateEtabsPrefix)) {
-			JsonArray joinKeys = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray joinKeys = new JsonArray();
 			for (String vector : vectors) {
 				final String joinKey = getJoinKey(vector);
 				if (isNotEmpty(joinKey)) {

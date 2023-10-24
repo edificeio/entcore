@@ -257,7 +257,7 @@ public class Importer {
 	}
 
 	private Future<Void> loadFieldOfStudy() {
-		final Future<Void> f = Future.future();
+		final Promise<Void> f = Promise.promise();
 		final String query = "MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
 			final JsonArray res = event.body().getJsonArray("result");
@@ -270,11 +270,11 @@ public class Importer {
 			}
 			f.complete();
 		});
-		return f;
+		return f.future();
 	}
 
 	private Future<Void> loadUsedIne() {
-		final Future<Void> f = Future.future();
+		final Promise<Void> f = Promise.promise();
 		final String query =
 				"MATCH (u:User) " +
 				"WHERE u.source IN {sources} AND HAS(u.ine) AND NOT(HAS(u.disappearanceDate)) AND NOT(HAS(u.deleteDate)) " +
@@ -286,7 +286,7 @@ public class Importer {
 		}
 		if (sources.isEmpty()) {
 			f.complete();
-			return f;
+			return f.future();
 		}
 		final JsonObject params = new JsonObject().put("sources", sources);
 		Neo4j.getInstance().execute(query, params, event -> {
@@ -297,7 +297,7 @@ public class Importer {
 			}
 			f.complete();
 		});
-		return f;
+		return f.future();
 	}
 
 	public TransactionHelper getTransaction() {
@@ -599,7 +599,7 @@ public class Importer {
 				guest.dettach(transactionHelper, new IdentifierMatcher<Structure>(Matcher.Operation.EXCLUDE, structuresIds));
 			}
 			if (externalId != null && linkClasses != null) {
-				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray classes = new JsonArray();
 				for (String[] structClass : linkClasses) {
 					if (structClass != null && structClass[0] != null && structClass[1] != null) {
 						String q =
@@ -716,7 +716,7 @@ public class Importer {
 							"DELETE r";
 					transactionHelper.add(daa, ps);
 				}
-				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray classes = new JsonArray();
 				if (externalId != null && linkClasses != null) {
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
@@ -748,7 +748,7 @@ public class Importer {
 							.put("classes", classes);
 					transactionHelper.add(q, p);
 				}
-				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray groups = new JsonArray();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {

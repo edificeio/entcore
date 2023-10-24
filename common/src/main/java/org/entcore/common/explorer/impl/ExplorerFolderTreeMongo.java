@@ -1,6 +1,6 @@
 package org.entcore.common.explorer.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.json.JsonArray;
@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
+import org.bson.conversions.Bson;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.user.UserInfos;
 
@@ -15,10 +16,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
@@ -80,22 +78,22 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
 
     @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final Date from, final Date to) {
-        final QueryBuilder query = QueryBuilder.start();
+        final Set<Bson> indexFilters = new HashSet<>();
         if (from != null || to != null) {
             if (from != null) {
                 final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
-                query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
+                indexFilters.add(Filters.gte(getCreatedAtColumn(), toMongoDate(localFrom)));
             }
             if (to != null) {
                 final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
-                query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
+                indexFilters.add(Filters.lt(getCreatedAtColumn(), toMongoDate(localTo)));
             }
         }
-        final JsonObject queryJson = MongoQueryBuilder.build(query);
+        final JsonObject queryJson = MongoQueryBuilder.build(Filters.and(indexFilters));
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
             stream.add(result);
         }).endHandler(e->{

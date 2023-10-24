@@ -28,10 +28,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.mongodb.client.model.Filters;
+import io.vertx.core.Promise;
 import com.mongodb.ReadPreference;
+import org.bson.conversions.Bson;
 import org.entcore.common.share.ShareInfosQuery;
 
-import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -46,7 +48,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
 
 public class MongoDbShareService extends GenericShareService {
 
@@ -75,9 +76,9 @@ public class MongoDbShareService extends GenericShareService {
 	@SuppressWarnings("unchecked")
 	private Future<Set<String>[]> findUserIdsAndGroups(String resourceId, final String currentUserId,
 			Optional<Set<String>> actions, String field) {
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put(field, 1);
-		Future<Set<String>[]> future = Future.future();
+		Promise<Set<String>[]> future = Promise.promise();
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEvent -> {
 			if ("ok".equals(mongoEvent.body().getString("status"))) {
 				JsonObject body = mongoEvent.body().getJsonObject("result", new JsonObject());
@@ -116,7 +117,7 @@ public class MongoDbShareService extends GenericShareService {
 				future.fail("Error finding shared resource.");
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override
@@ -133,7 +134,7 @@ public class MongoDbShareService extends GenericShareService {
 				all.remove(userId);
 				return all;
 			});
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	@Override
@@ -150,7 +151,7 @@ public class MongoDbShareService extends GenericShareService {
 				all.remove(userId);
 				return all;
 			});
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	private JsonObject getActionsByIds(String userId, JsonArray shared) {
@@ -160,7 +161,7 @@ public class MongoDbShareService extends GenericShareService {
 			if (!(o instanceof JsonObject))
 				continue;
 			JsonObject userShared = (JsonObject) o;
-			JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray a = new JsonArray();
 			for (String attrName : userShared.fieldNames()) {
 				if ("userId".equals(attrName) || "groupId".equals(attrName)) {
 					continue;
@@ -202,7 +203,7 @@ public class MongoDbShareService extends GenericShareService {
 			return;
 		}
 		//
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1).put("inheritedShares", 1);
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEvent -> {
 			if ("ok".equals(mongoEvent.body().getString("status"))) {
@@ -240,7 +241,7 @@ public class MongoDbShareService extends GenericShareService {
 			handler.handle(new Either.Left<String, JsonArray>("Invalid resourceId."));
 			return;
 		}
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
 		// read from primary to avoid mongo lag on cluster
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys,null,null, ReadPreference.primary(), mongoEVent -> {
@@ -262,12 +263,12 @@ public class MongoDbShareService extends GenericShareService {
 			return;
 		}
 		//
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEVent -> {
 			if ("ok".equals(mongoEVent.body().getString("status"))) {
 				JsonArray shared = mongoEVent.body().getJsonObject("result", new JsonObject()).getJsonArray("shared",
-						new fr.wseduc.webutils.collections.JsonArray());
+						new JsonArray());
 				final JsonArray actions = getResoureActions(securedActions);
 				JsonObject res = getActionsByIds(userId, shared);
 				getShareInfos(userId, actions, res.getJsonObject("groups"), res.getJsonObject("users"), acceptLanguage,
@@ -312,8 +313,8 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	private void inShare(String resourceId, String shareId, boolean group, final Handler<Boolean> handler) {
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId).put("shared")
-				.elemMatch(QueryBuilder.start(group ? "groupId" : "userId").is(shareId).get());
+		Bson query = Filters.and(Filters.eq("_id", resourceId),
+				Filters.elemMatch("shared", Filters.eq(group ? "groupId" : "userId", shareId)));
 		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -326,7 +327,7 @@ public class MongoDbShareService extends GenericShareService {
 	private void share(String resourceId, final String groupShareId, final List<String> actions, boolean isGroup,
 			final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
 		final JsonObject q = MongoQueryBuilder.build(query);
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
@@ -334,7 +335,7 @@ public class MongoDbShareService extends GenericShareService {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
-							new fr.wseduc.webutils.collections.JsonArray());
+							new JsonArray());
 					boolean exist = false;
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
@@ -428,7 +429,7 @@ public class MongoDbShareService extends GenericShareService {
 
 	@Override
 	public Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
-		final Future<JsonObject> futureValidateShares = Future.future();
+		final Promise<JsonObject> futureValidateShares = Promise.promise();
 		shareValidation(resourceId, userId, share, res -> {
 			if (res.isRight()) {
 				final JsonObject query = new JsonObject().put("_id", resourceId);
@@ -453,14 +454,14 @@ public class MongoDbShareService extends GenericShareService {
 				futureValidateShares.fail(res.left().getValue());
 			}
 		});
-		return futureValidateShares;
+		return futureValidateShares.future();
 	}
 
 	private void removeShare(String resourceId, final String shareId, List<String> removeActions, boolean isGroup,
 			final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
 		final List<String> actions = findRemoveActions(removeActions);
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		Bson query = Filters.eq("_id", resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
 		final JsonObject q = MongoQueryBuilder.build(query);
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
@@ -468,8 +469,8 @@ public class MongoDbShareService extends GenericShareService {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
-							new fr.wseduc.webutils.collections.JsonArray());
-					JsonArray shared = new fr.wseduc.webutils.collections.JsonArray();
+							new JsonArray());
+					JsonArray shared = new JsonArray();
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);

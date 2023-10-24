@@ -25,16 +25,17 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import javax.swing.text.html.Option;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,38 @@ public final class FileUtils {
 	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
 	private FileUtils(){}
+
+	public static String getNameWithExtension(String downloadName, JsonObject metadata) {
+		String name = downloadName;
+		if (metadata != null && metadata.getString("filename") != null) {
+			String filename = metadata.getString("filename");
+			int fIdx = filename.lastIndexOf('.');
+			String fExt = null;
+			if (fIdx >= 0) {
+				fExt = filename.substring(fIdx);
+			}
+			int dIdx = downloadName.lastIndexOf('.');
+			String dExt = null;
+			if (dIdx >= 0) {
+				dExt = downloadName.substring(dIdx);
+			}
+			if (fExt != null && !fExt.equals(dExt)) {
+				name += fExt;
+			}
+		}
+		return (name != null) ? Normalizer.normalize(name, Normalizer.Form.NFC) : name;
+	}
+
+	public static JsonObject metadata(HttpServerFileUpload upload) {
+		JsonObject metadata = new JsonObject();
+		metadata.put("name", upload.name());
+		metadata.put("filename", upload.filename());
+		metadata.put("content-type", upload.contentType());
+		metadata.put("content-transfer-encoding", upload.contentTransferEncoding());
+		metadata.put("charset", upload.charset());
+		metadata.put("size", upload.size());
+		return metadata;
+	}
 
 	public static void deleteImportPath(final Vertx vertx, final String path) {
 		deleteImportPath(vertx, path, new Handler<AsyncResult<Void>>() {

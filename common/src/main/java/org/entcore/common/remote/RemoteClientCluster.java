@@ -23,10 +23,12 @@
 package org.entcore.common.remote;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
@@ -54,17 +56,18 @@ public class RemoteClientCluster {
 	}
 
 	private Future<RemoteClientResponse> getRemote(String uri, RemoteClient client) {
-		final Future<RemoteClientResponse> future = Future.future();
-		final HttpClientRequest req = client.get(uri, httpClientResponse -> httpClientResponse.bodyHandler(buffer -> {
-			RemoteClientResponse remoteClientResponse = new RemoteClientResponse(httpClientResponse.statusCode(), buffer.toString());
-			if (httpClientResponse.statusCode() >= 200 && httpClientResponse.statusCode() < 300) {
-				future.complete(remoteClientResponse);
-			} else {
-				future.fail(new RemoteClientException(remoteClientResponse));
-			}
-		}));
-		req.end();
-		return future;
+		final Promise<RemoteClientResponse> future = Promise.promise();
+		client.request(HttpMethod.GET, uri)
+				.flatMap(HttpClientRequest::send)
+				.onSuccess(httpClientResponse -> httpClientResponse.bodyHandler(buffer -> {
+					RemoteClientResponse remoteClientResponse = new RemoteClientResponse(httpClientResponse.statusCode(), buffer.toString());
+					if (httpClientResponse.statusCode() >= 200 && httpClientResponse.statusCode() < 300) {
+						future.complete(remoteClientResponse);
+					} else {
+						future.fail(new RemoteClientException(remoteClientResponse));
+					}
+				}));
+		return future.future();
 	}
 
 }

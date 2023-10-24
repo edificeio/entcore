@@ -19,12 +19,15 @@
 
 package org.entcore.feeder.utils;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class ResultMessage implements Message<JsonObject> {
 
@@ -82,10 +85,6 @@ public class ResultMessage implements Message<JsonObject> {
 		}
 	}
 
-	@Override
-	public <R> void reply(Object message, Handler<AsyncResult<Message<R>>> replyHandler) {
-
-	}
 
 	@Override
 	public void reply(Object message, DeliveryOptions options) {
@@ -93,7 +92,22 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
-	public <R> void reply(Object message, DeliveryOptions options, Handler<AsyncResult<Message<R>>> replyHandler) {
+	public <R> Future<Message<R>> replyAndRequest(@Nullable Object message, DeliveryOptions options) {
+		return Future.failedFuture(new NotImplementedException("replyAndRequest"));
+	}
+
+	@Override
+	public <R> void replyAndRequest(@Nullable Object message, Handler<AsyncResult<Message<R>>> replyHandler) {
+
+	}
+
+	@Override
+	public <R> Future<Message<R>> replyAndRequest(@Nullable Object message) {
+		return Future.failedFuture(new NotImplementedException("replyAndRequest"));
+	}
+
+	@Override
+	public <R> void replyAndRequest(@Nullable Object message, DeliveryOptions options, Handler<AsyncResult<Message<R>>> replyHandler) {
 
 	}
 

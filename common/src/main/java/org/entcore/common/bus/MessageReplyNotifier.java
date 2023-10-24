@@ -19,6 +19,8 @@
 
 package org.entcore.common.bus;
 
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -66,17 +68,29 @@ public class MessageReplyNotifier<T> implements Message
 	}
 
 	@Override
-	public void reply(Object message, DeliveryOptions options, Handler replyHandler)
-	{
+	public Future<Message<Object>> replyAndRequest(@Nullable Object message, DeliveryOptions options) {
 		this.notifyReply();
-		this.inner.reply(message, options, replyHandler);
+		return this.inner.replyAndRequest(message, options);
 	}
 
 	@Override
-	public void reply(Object message, Handler replyHandler)
+	public Future<Message<Object>> replyAndRequest(@Nullable Object message) {
+		this.notifyReply();
+		return this.inner.replyAndRequest(message);
+	}
+
+	@Override
+	public void replyAndRequest(Object message, DeliveryOptions options, Handler replyHandler)
 	{
 		this.notifyReply();
-		this.inner.reply(message, replyHandler);
+		this.inner.replyAndRequest(message, options, replyHandler);
+	}
+
+	@Override
+	public void replyAndRequest(Object message, Handler replyHandler)
+	{
+		this.notifyReply();
+		this.inner.replyAndRequest(message, replyHandler);
 	}
 
 	@Override

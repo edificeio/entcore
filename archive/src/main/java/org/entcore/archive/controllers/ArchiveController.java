@@ -172,7 +172,7 @@ public class ArchiveController extends BaseController {
 		final String login = body.getString("login");
 		final String userId = body.getString("userId");
 		log.info("Début d'export par l'utilisateur " + login);
-		eb.send("entcore.export",
+		eb.request("entcore.export",
 				new JsonObject()
 						.put("action", "start")
 						.put("userId", userId)
@@ -427,7 +427,7 @@ public class ArchiveController extends BaseController {
 			{
 				if(user != null)
 				{
-					eb.send("entcore.export",
+					eb.request("entcore.export",
 						new JsonObject()
 							.put("action", "start")
 							.put("userId", user.getUserId())
