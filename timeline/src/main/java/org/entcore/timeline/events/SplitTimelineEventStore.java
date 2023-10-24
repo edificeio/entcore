@@ -107,14 +107,14 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                 copy.put("recipients", new JsonArray(part.recipients));
                 copy.put("recipientsIds", new JsonArray(part.recipients));
                 log.info("Save chunk. recipients="+ copy.getJsonArray("recipients").size()+ " | "+copy.fieldNames());
-                final Future<JsonObject> future = Future.future();
+                final Future<JsonObject> future = Promise.promise();
                 original.add(copy, res -> {
                     future.complete(res);
                 });
                 futures.add(future);
             }
             if (combineResult) {
-                CompositeFuture.all(futures).setHandler(res -> {
+                CompositeFuture.all(futures).onComplete(res -> {
                     final JsonObject json = res.result().list().stream().map(JsonObject.class::cast)
                             .reduce(new JsonObject().put("_ids", new JsonArray()), (a, b) -> {
                                 final String idb = b.getString("_id");
@@ -126,7 +126,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                 });
             } else {
                 for (Future<JsonObject> future : futures) {
-                    future.setHandler(res -> {
+                    future.onComplete(res -> {
                         if (res.succeeded()) {
                             result.handle(res.result());
                         } else {

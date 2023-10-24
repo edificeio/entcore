@@ -208,7 +208,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		JsonObject json = new JsonObject().put("action", "compress").put("quality", quality)
 				.put("src", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"))
 				.put("dest", storage.getProtocol() + "://" + storage.getBucket() + ":" + srcFile.getString("_id"));
-		eb.send(imageResizerAddress, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(imageResizerAddress, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				Integer size = event.body().getInteger("size");
@@ -274,7 +274,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	@Override
 	public Future<JsonObject> getRevision(String revisionId) {
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		revisionDao.findById(revisionId, ev -> {
 			if ("ok".equals(ev.getString("status"))) {
 				future.complete(ev.getJsonObject("result", new JsonObject()));
@@ -324,7 +324,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 											result.getString("owner"), userId, userName, metadata, new JsonObject());
 
 										if (handler != null)
-											daoPromise.setHandler(new Handler<AsyncResult<JsonObject>>()
+											daoPromise.onComplete(new Handler<AsyncResult<JsonObject>>()
 											{
 												@Override
 												public void handle(AsyncResult<JsonObject> daoResult)
@@ -395,7 +395,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		@SuppressWarnings("unchecked")
 		List<JsonObject> revisionsList = revisions.getList();
 		Set<String> fileIds = new HashSet<String>(StorageHelper.getListOfFileIds(revisionsList));
-		Future<JsonArray> future = Future.future();
+		Future<JsonArray> future = Promise.promise();
 		JsonArray fileIdsJson = new JsonArray(new ArrayList<String>(fileIds));
 		storage.removeFiles(fileIdsJson, event -> {
 			future.complete(revisions);
@@ -447,7 +447,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			} else {
 				return Future.succeededFuture(revision);
 			}
-		}).setHandler(revision -> {
+		}).onComplete(revision -> {
 			if (revision.succeeded()) {
 				handler.handle(new Either.Right<String, JsonObject>(revision.result()));
 			} else {
@@ -645,7 +645,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		Set<String> actions = new HashSet<>();
 		actions.add(WorkspaceController.SHARED_ACTION);
 		final Set<String> recipientId = new HashSet<>();
-		Future<Void> futureSHared = Future.future();
+		Future<Void> futureSHared = Promise.promise();
 		if(id.isPresent()) {
 			shareService.findUserIdsForInheritShare(id.get(), user.getUserId(), Optional.of(actions), ev -> {
 				// get list of managers

@@ -64,7 +64,7 @@ public class Admin extends BaseServer {
 				 .put("provider", smsProvider)
 				 .put("action", "ping");
 
-		 vertx.eventBus().send(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
+		 vertx.eventBus().request(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
 				 new Handler<AsyncResult<Message<JsonObject>>>() {
 					 @Override
 					 public void handle(AsyncResult<Message<JsonObject>> res) {

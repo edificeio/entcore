@@ -246,7 +246,7 @@ public class Importer {
 	}
 
 	private Future<Void> loadFieldOfStudy() {
-		final Future<Void> f = Future.future();
+		final Future<Void> f = Promise.promise();
 		final String query = "MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
 			final JsonArray res = event.body().getJsonArray("result");
@@ -263,7 +263,7 @@ public class Importer {
 	}
 
 	private Future<Void> loadUsedIne() {
-		final Future<Void> f = Future.future();
+		final Future<Void> f = Promise.promise();
 		final String query =
 				"MATCH (u:User) " +
 				"WHERE u.source IN {sources} AND HAS(u.ine) AND NOT(HAS(u.disappearanceDate)) AND NOT(HAS(u.deleteDate)) " +

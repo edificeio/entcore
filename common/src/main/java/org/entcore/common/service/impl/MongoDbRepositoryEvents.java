@@ -24,13 +24,11 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoDbAPI;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
+import io.vertx.core.*;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.folders.impl.DocumentHelper;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,8 +36,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
-import io.vertx.core.Future;
-import io.vertx.core.CompositeFuture;
 
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
@@ -482,7 +478,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	protected Future<Map<String, JsonObject>> readAllDocumentsFromDir(String dirPath, String userId, String userName) {
-		Future<Map<String, JsonObject>> promise = Future.future();
+		Promise<Map<String, JsonObject>> promise = Promise.promise();
 
 		if(this.fileImporter == null)
 			promise.fail("Cannot import documents without a file importer instance");
@@ -572,7 +568,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			}
 		});
 
-		return promise;
+		return promise.future();
 	}
 
 	/**
@@ -812,8 +808,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					}
 
 					if(collectionDocs.size() != 0) {
-						Future<JsonObject> collDone = Future.future();
-						Future<JsonObject> collChain = Future.future();
+						Promise<JsonObject> collDone = Promise.promise();
+						Promise<JsonObject> collChain = Promise.promise();
 
 						// Import collections one by one because we might need to apply id changes
 						Handler importNextCollection = new Handler<AsyncResult<JsonObject>>() {
@@ -855,20 +851,20 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						if(collFutures.size() == 0)
 							importNextCollection.handle(null);
 						else
-							collFuturesChain.get(collFuturesChain.size() - 1).setHandler(importNextCollection);
+							collFuturesChain.get(collFuturesChain.size() - 1).onComplete(importNextCollection);
 
-						collFuturesChain.add(collChain);
-						collFutures.add(collDone);
+						collFuturesChain.add(collChain.future());
+						collFutures.add(collDone.future());
 					}
 				}
 
 				final String mainResourceNameFinal = mainResourceName;
 
 				// Fuse reports into a final one
-				CompositeFuture.join(collFutures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
+				CompositeFuture.join(collFutures).onComplete(new Handler<AsyncResult<CompositeFuture>>() {
 					@Override
 					public void handle(AsyncResult<CompositeFuture> result) {
-						if(result.succeeded() == true) {
+						if(result.succeeded()) {
 							List<JsonObject> rapports = result.result().list();
 
 							int nbResources = 0;
@@ -914,7 +910,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		Future<Map<String, JsonObject>> readDirs = this.readAllDocumentsFromDir(importPath, userId, userName);
 		Future<String> dupSuffix = this.getDuplicateSuffix(locale);
 
-		CompositeFuture.join(readDirs, dupSuffix).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
+		CompositeFuture.join(readDirs, dupSuffix).onComplete(new Handler<AsyncResult<CompositeFuture>>() {
 			@Override
 			public void handle(AsyncResult<CompositeFuture> ftr) {
 				duplicateSuffixWrapper.put("str", dupSuffix.result());

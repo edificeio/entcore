@@ -10,6 +10,7 @@ import fr.wseduc.webutils.security.WrappedHttpServerRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -180,7 +181,7 @@ public class CacheFilter implements Filter {
         final String realKey = generateKeyWithQuery(request, useQueryParams,usePath?request.path():originalKey);
         if (CacheOperation.CACHE.equals(operation)) {
             //=== get or create from cache
-            final Future<Optional<String>> result = Future.future();
+            final Promise<Optional<String>> result = Promise.promise();
             switch(cacheScope){
                 case GLOBAL:
                     cacheService.get(realKey, resCache -> {
@@ -224,7 +225,7 @@ public class CacheFilter implements Filter {
                     break;
             }
             //=== after get => send response if founded
-            result.setHandler(res -> {
+            result.future().onComplete(res -> {
                 if(res.succeeded() && res.result().isPresent()){
                     request.response().end(res.result().get());
                 }else{

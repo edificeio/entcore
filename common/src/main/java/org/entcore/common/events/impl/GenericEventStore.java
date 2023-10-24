@@ -204,16 +204,13 @@ public abstract class GenericEventStore implements EventStore {
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
 
 	private void initBlacklist() {
-		eventBus.send("event.blacklist", new JsonObject(), new Handler<AsyncResult<Message<JsonArray>>>() {
-			@Override
-			public void handle(AsyncResult<Message<JsonArray>> message) {
-				if (message.succeeded()) {
-					userBlacklist = message.result().body();
-				} else {
-					userBlacklist = new fr.wseduc.webutils.collections.JsonArray();
-				}
-			}
-		});
+		eventBus.request("event.blacklist", new JsonObject(), (Handler<AsyncResult<Message<JsonArray>>>) message -> {
+      if (message.succeeded()) {
+        userBlacklist = message.result().body();
+      } else {
+        userBlacklist = new fr.wseduc.webutils.collections.JsonArray();
+      }
+    });
 	}
 
 	public void setEventBus(EventBus eventBus) {

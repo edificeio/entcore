@@ -1,5 +1,6 @@
 package org.entcore.common.postgres;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -12,6 +13,8 @@ import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+
 import static org.entcore.common.postgres.PostgresClientBusHelper.*;
 
 public class PostgresClientBusConsumer implements IPostgresClient {
@@ -46,19 +49,17 @@ public class PostgresClientBusConsumer implements IPostgresClient {
                         }
                     });
                 } else if (isTransaction(payload)) {
-                    this.transaction().onComplete(res -> {
-                        if (res.succeeded()) {
-                            final IPostgresTransaction transaction = res.result();
+                    this.transaction(sqlConnection -> {
                             final JsonArray params = jsonToTransactionParams(payload);
                             final List<JsonObject> results = new ArrayList<>(params.size());
-                            final List<Future> futureResults = new ArrayList<>();
+                            final List<Future<?>> futureResults = new ArrayList<>();
                             for (int i = 0; i < params.size(); i++) {
                                 final JsonObject param = params.getJsonObject(i);
                                 if (isQuery(param)) {
                                     final String query = jsonToQuery(param);
                                     final Tuple tuple = jsonToQueryTuple(param);
                                     final int index = i;
-                                    futureResults.add(transaction.addPreparedQuery(query, tuple).onComplete(queryRes -> {
+                                    futureResults.add(sqlConnection.preparedQuery(query).execute(tuple).onComplete(queryRes -> {
                                         if (queryRes.succeeded()) {
                                             final JsonObject result = resultToJson(queryRes.result());
                                             results.add(index, result);
@@ -70,7 +71,7 @@ public class PostgresClientBusConsumer implements IPostgresClient {
                                     final String channel = jsonToNotifyChannel(param);
                                     final String mess = jsonToNotifyMessage(param);
                                     final int index = i;
-                                    futureResults.add(transaction.notify(channel, mess).onComplete(notifyRes -> {
+                                    futureResults.add(IPostgresClient.notify(sqlConnection, channel, mess).onComplete(notifyRes -> {
                                         if (notifyRes.succeeded()) {
                                             final JsonObject result = resultNotifyToJson();
                                             results.add(index, result);
@@ -81,24 +82,14 @@ public class PostgresClientBusConsumer implements IPostgresClient {
                                     log.warn("Transaction parsed query failed: ", param);
                                 }
                             }
-                            transaction.commit().onComplete(resCommit -> {
-                                if (resCommit.succeeded()) {
-                                    //wait until all finish
-                                    CompositeFuture.all(futureResults).onSuccess(e -> {
-                                        final JsonObject jsonTr = transactionToJson(new JsonArray(results));
-                                        message.reply(jsonTr);
-                                    }).onFailure(e -> {
-                                        log.error("Transaction commit failed: ", e);
-                                    });
-                                } else {
-                                    message.fail(500, resCommit.cause().getMessage());
-                                    log.error("Transaction commit failed: ", resCommit.cause());
-                                }
-                            });
-                        } else {
-                            message.fail(500, res.cause().getMessage());
-                            log.error("Transaction failed: ", res.cause());
-                        }
+                            return Future.all(futureResults).mapEmpty()
+                                .onSuccess(e -> {
+                                    final JsonObject jsonTr = transactionToJson(new JsonArray(results));
+                                    message.reply(jsonTr);
+                                });
+                    }).onFailure(th -> {
+                        message.fail(500, th.getMessage());
+                        log.error("Transaction failed: ", th);
                     });
                 } else {
                     log.error("Could not parse query: " + payload);
@@ -131,7 +122,7 @@ public class PostgresClientBusConsumer implements IPostgresClient {
     }
 
     @Override
-    public Future<IPostgresTransaction> transaction() {
-        return pgClient.transaction();
+    public <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function) {
+        return pgClient.transaction(function);
     }
 }

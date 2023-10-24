@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.vertx.core.Promise;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
@@ -95,7 +96,7 @@ public class StorageHelper {
 		List<Future> copyFutures = new ArrayList<>();
 		Set<String> fileIds = new HashSet<>(StorageHelper.getListOfFileIds(files));
 		for (String fId : fileIds) {
-			Future<Entry<String, String>> future = Future.future();
+			Promise<Entry<String, String>> future = Promise.promise();
 			storage.copyFile(fId, res -> {
 				if (isOk(res)) {
 					future.complete(new AbstractMap.SimpleEntry<String, String>(fId, res.getString("_id")));
@@ -113,7 +114,7 @@ public class StorageHelper {
 					}
 				}
 			});
-			copyFutures.add(future);
+			copyFutures.add(future.future());
 		}
 		return CompositeFuture.all(copyFutures).map(copyStorageEvent -> {
 			@SuppressWarnings("unchecked")

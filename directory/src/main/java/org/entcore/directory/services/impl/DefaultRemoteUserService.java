@@ -68,7 +68,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 			uri += "&structureId=" + structureId;
 		}
 		remoteClientCluster.getRemote(uri, futures);
-		CompositeFuture.all(futures).map(CompositeFuture::list).setHandler(ar -> {
+		CompositeFuture.all(futures).map(CompositeFuture::list).onComplete(ar -> {
 			if (ar.succeeded()) {
 				final List<Future> futuresMongo = new ArrayList<>();
 				JsonArray a = new JsonArray();
@@ -100,7 +100,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 				if (a.size() > 0) {
 					futuresMongo.add(importOldPlateformsUsers(a));
 				}
-				CompositeFuture.all(futuresMongo).setHandler(ar2 -> {
+				CompositeFuture.all(futuresMongo).onComplete(ar2 -> {
 					if (ar2.succeeded()) {
 						handler.handle(new Either.Right<>(new JsonObject()));
 					} else {
@@ -115,7 +115,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 	}
 
 	private Future<Void> importOldPlateformsUsers(JsonArray buffer) {
-		Future<Void> future = Future.future();
+		Future<Void> future = Promise.promise();
 		mongo.bulk("oldplatformusers", buffer, event -> {
 			if ("ok".equals(event.body().getString("status"))) {
 				future.complete();

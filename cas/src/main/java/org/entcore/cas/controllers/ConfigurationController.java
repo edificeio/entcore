@@ -71,7 +71,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/mappings")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void getMappings(HttpServerRequest request) {
-		mappingService.getMappings().setHandler(res->{
+		mappingService.getMappings().onComplete(res->{
 			if(res.succeeded()){
 				Renders.renderJson(request, res.result().toJson());
 			}else{
@@ -97,7 +97,7 @@ public class ConfigurationController extends BaseController {
 	@MfaProtected()
 	public void createMapping(HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, r->{
-			mappingService.create(r).setHandler(res->{
+			mappingService.create(r).onComplete(res->{
 				if(res.succeeded()){
 					reloadMapping(request);
 				}else{
@@ -113,7 +113,7 @@ public class ConfigurationController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void deleteMapping(HttpServerRequest request) {
-		mappingService.delete(request.params().get("mappingId")).setHandler(res->{
+		mappingService.delete(request.params().get("mappingId")).onComplete(res->{
 			if(res.succeeded()){
 				reloadMapping(request);
 			}else{
@@ -126,7 +126,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configuration/mappings/:mappingId/usage")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void getMappingUsage(HttpServerRequest request) {
-		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.empty()).setHandler(res->{
+		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.empty()).onComplete(res->{
 			if(res.succeeded()){
 				Renders.renderJson(request, res.result());
 			}else{
@@ -141,7 +141,7 @@ public class ConfigurationController extends BaseController {
 	@ResourceFilter(AdmlOfStructure.class)
 	@MfaProtected()
 	public void getMappingUsageForStruct(HttpServerRequest request) {
-		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.of(request.params().get("structureId"))).setHandler(res->{
+		mappingService.getMappingUsage(request.params().get("mappingId"), Optional.of(request.params().get("structureId"))).onComplete(res->{
 			if(res.succeeded()){
 				Renders.renderJson(request, res.result());
 			}else{
@@ -161,7 +161,7 @@ public class ConfigurationController extends BaseController {
 	public void loadPatterns() {
 		log.info("Reloading cas pattern and mapping");
 		mappingService.reset();
-		eb.send("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
+		eb.request("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -231,7 +231,7 @@ public class ConfigurationController extends BaseController {
 		final String splitByStructureStr = request.params().get("splitByStructure");
 		final List<String> structures = request.params().getAll("structures");
 		final boolean splitByStructure;
-		final Future<List<String>> futureStructures = Future.future();
+		final Future<List<String>> futureStructures = Promise.promise();
 		//compute split flag if not exists
 		if(splitByStructureStr == null){
 			splitByStructure = mappingService.isSplitByStructure();
@@ -261,7 +261,7 @@ public class ConfigurationController extends BaseController {
 		}else{
 			futureStructures.complete(structures != null? structures : new ArrayList<>());
 		}
-		futureStructures.setHandler(r->{
+		futureStructures.onComplete(r->{
 			if(r.failed()){
 				renderJson(request, new JsonObject().put("error", r.cause().getMessage()));
 				return;

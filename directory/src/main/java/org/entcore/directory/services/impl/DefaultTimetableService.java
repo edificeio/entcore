@@ -179,7 +179,7 @@ public class DefaultTimetableService implements TimetableService {
 	public void initStructure(String structureId, JsonObject conf, Handler<Either<String, JsonObject>> handler) {
 		JsonObject action = new JsonObject().put("action", "manual-init-timetable-structure")
 				.put("conf", conf.put("structureId", structureId));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override
@@ -445,7 +445,7 @@ public class DefaultTimetableService implements TimetableService {
 				{
 					String externalId = event.right().getValue().getString("externalId");
 
-					eb.send("entcore.feeder",
+					eb.request("entcore.feeder",
 						new JsonObject()
 							.put("action", "import")
 							.put("feeder", "PRONOTE")
@@ -493,7 +493,7 @@ public class DefaultTimetableService implements TimetableService {
 				.put("updateGroups", isPunctual == false)
 				.put("updateTimetable", groupsOnly == false)
 				.put("language", acceptLanguage);
-		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {

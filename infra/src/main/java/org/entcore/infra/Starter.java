@@ -287,7 +287,7 @@ public class Starter extends BaseServer {
 
 		JsonObject message = new JsonObject()
 				.put("widget", widget);
-		vertx.eventBus().send("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				if("error".equals(event.body().getString("status"))){
 					log.error("Error while registering widget "+widgetName+". "+event.body().getJsonArray("errors"));

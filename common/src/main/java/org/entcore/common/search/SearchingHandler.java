@@ -70,7 +70,7 @@ public class SearchingHandler implements Handler<Message<JsonObject>> {
 					final String address = "search." + searchId;
 					final JsonObject message = new JsonObject().put("application", searchingEvents.getClass().getSimpleName());
 					message.put("results", event.right().getValue());
-					eb.send(address, message, new DeliveryOptions().setSendTimeout(5000l),
+					eb.request(address, message, new DeliveryOptions().setSendTimeout(5000l),
 							new Handler<AsyncResult<Message<JsonObject>>>() {
 								@Override
 								public void handle(AsyncResult<Message<JsonObject>> res) {

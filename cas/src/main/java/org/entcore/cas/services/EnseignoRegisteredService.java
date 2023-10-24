@@ -52,13 +52,13 @@ public class EnseignoRegisteredService extends AbstractCas20ExtensionRegisteredS
 		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put("action", directoryAction).put("userId", userId);
-		eb.send("directory", jo, handlerToAsyncHandler(event -> {
+		eb.request("directory", jo, handlerToAsyncHandler(event -> {
 			JsonObject res = event.body().getJsonObject("result");
 			log.debug("res : " + res);
 			if ("ok".equals(event.body().getString("status")) && res != null) {
 				JsonObject joG = new JsonObject();
 				joG.put("action", "getUserGoups").put("userId", userId);
-				eb.send("directory", joG, handlerToAsyncHandler(groups -> {
+				eb.request("directory", joG, handlerToAsyncHandler(groups -> {
 					JsonArray groupsRes = groups.body().getJsonArray("result");
 					log.debug("groups : " + groupsRes);
 					if ("ok".equals(groups.body().getString("status")) && groupsRes != null) {

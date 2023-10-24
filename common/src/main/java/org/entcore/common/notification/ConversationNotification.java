@@ -129,7 +129,7 @@ public class ConversationNotification {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
-					eb.send(CONVERSATION_ADDRESS, m, handlerToAsyncHandler(Neo4jResult.validUniqueResultHandler(result)));
+					eb.request(CONVERSATION_ADDRESS, m, handlerToAsyncHandler(Neo4jResult.validUniqueResultHandler(result)));
 				} else {
 					result.handle(new Either.Left<String, JsonObject>(message.body().getString("message")));
 				}

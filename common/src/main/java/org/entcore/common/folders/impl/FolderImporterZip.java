@@ -5,6 +5,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -63,7 +64,7 @@ public class FolderImporterZip {
 
     public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {
         if (context.guessedEncodingCache == null) {
-            final Future<Optional<String>> future = Future.future();
+            final Promise<Optional<String>> future = Promise.promise();
             FileUtils.guessZipEncondig(vertx, context.zipPath, encodings, r -> {
                 if (r.succeeded()) {
                     context.guessedEncodingCache = Optional.ofNullable(r.result().getEncoding());
@@ -72,7 +73,7 @@ public class FolderImporterZip {
                 }
                 future.complete(context.guessedEncodingCache);
             });
-            return future;
+            return future.future();
         } else {
             return Future.succeededFuture(context.guessedEncodingCache);
         }
@@ -80,22 +81,18 @@ public class FolderImporterZip {
 
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, HttpServerRequest request) {
         final String message = I18n.getInstance().translate("workspace.invalidfile.placeholder", Renders.getHost(request), I18n.acceptLanguage(request));
-        final Future<FolderImporterZipContext> future = Future.future();
+        final Promise<FolderImporterZipContext> future = Promise.promise();
         request.uploadHandler(upload -> {
-            if (!future.isComplete()) {
-                createContext(vertx, user, upload, message).setHandler(future.completer());
-            }
+            createContext(vertx, user, upload, message).onComplete(future);
         });
         request.exceptionHandler(res -> {
-            if (!future.isComplete()) {
-                future.fail("folder.zip.upload.notfound");
-            }
+            future.tryFail("folder.zip.upload.notfound");
         });
-        return future;
+        return future.future();
     }
 
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, ReadStream<Buffer> buffer, String invalidMessage) {
-        final Future<FolderImporterZipContext> future = Future.future();
+        final Promise<FolderImporterZipContext> future = Promise.promise();
         final String name = UUID.randomUUID().toString() + ".zip";
         final String zipPath = Paths.get(System.getProperty("java.io.tmpdir"), name).normalize().toString();
         buffer.pause();
@@ -117,24 +114,24 @@ public class FolderImporterZip {
                 future.fail(fileRes.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     public Future<Void> doPrepare(final FolderImporterZipContext context) {
         if (context.isPrepared()) {
-            return context.prepare;
+            return context.prepare.future();
         }
-        context.prepare = Future.future();
-        final Future<Void> futureAntivirus = Future.future();
+        context.prepare = Promise.promise();
+        final Promise<Void> futureAntivirus = Promise.promise();
         if(antivirusClient.isPresent()){
-            antivirusClient.get().scan(context.zipPath, futureAntivirus.completer());
+            antivirusClient.get().scan(context.zipPath, futureAntivirus);
         } else {
             logger.warn("Could not check zip because antivirus client is missing");
             futureAntivirus.complete();
         }
-        futureAntivirus.compose( r-> {
-            return getGuessedEncoding(context);
-        }).setHandler(r -> {
+        futureAntivirus.future()
+        .compose( r-> getGuessedEncoding(context))
+        .onComplete(r -> {
             if(r.failed()){
                 final Throwable e = r.cause();
                 logger.warn("Failed to analyze zip :" + e.getMessage());
@@ -185,7 +182,7 @@ public class FolderImporterZip {
                             final String name = Paths.get(info.path).getFileName().toString();
                             final JsonObject meta = new JsonObject().put("filename", name).put("size", info.size);
                             final JsonObject vContext = new JsonObject();
-                            final Future future = Future.future();
+                            final Promise future = Promise.promise();
                             this.fileValidator.get().process(meta,vContext, valid ->{
                                 if(valid.failed()){
                                     final FileInfo copy = new FileInfo(info.data, info.size, info.path, true);
@@ -193,9 +190,9 @@ public class FolderImporterZip {
                                 }
                                 future.complete();
                             });
-                            futures.add(future);
+                            futures.add(future.future());
                         }
-                        CompositeFuture.all(futures).setHandler((ee)-> {
+                        CompositeFuture.all(futures).onComplete((ee)-> {
                             if(ee.succeeded()){
                                 context.prepare.complete();
                             } else {
@@ -210,15 +207,15 @@ public class FolderImporterZip {
                 }
             });
         });
-        return context.prepare;
+        return context.prepare.future();
     }
 
     private Future<List<FileInfo>> copyToTemp(FolderImporterZipContext context, Optional<String> guessedEncoding) {
-        final Future<List<FileInfo>> future = Future.future();
+        final Promise<List<FileInfo>> future = Promise.promise();
         final Collection<FileInfo> infos = context.docToInsertById.values();
         if (infos.isEmpty()) {
             future.complete(new ArrayList<>());
-            return future;
+            return future.future();
         }
         final String fileName = Paths.get(context.zipPath).getFileName().toString().replaceAll(".zip", "");
         final Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), fileName).normalize();
@@ -266,25 +263,25 @@ public class FolderImporterZip {
                 future.fail(dir.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     public Future<JsonObject> doFinalize(final FolderImporterZipContext context) {
-        final Future<JsonObject> futureFinal = Future.future();
-        getGuessedEncoding(context).setHandler(rGuess -> {
+        final Promise<JsonObject> futureFinal = Promise.promise();
+        getGuessedEncoding(context).onComplete(rGuess -> {
             final Optional<String> guess = rGuess.result();
             doPrepare(context).compose(prep -> {
                 if (context.hasErrors()) {
                     context.cancel();
-                    Future<JsonObject> failure = Future.future();
+                    Promise<JsonObject> failure = Promise.promise();
                     //failure.complete(context.getResult());
                     failure.fail(context.errors.getJsonObject(0).getString("message"));
-                    return failure;
+                    return failure.future();
                 }
                 return copyToTemp(context, guess).compose(newFiles -> {
                     final List<Future> futures = new ArrayList<>();
                     for (final FileInfo newFile : newFiles) {
-                        final Future<Void> future = Future.future();
+                        final Promise<Void> future = Promise.promise();
                         manager.importFile(newFile.path, null, context.userId, writtenFile -> {
                             if (writtenFile.getString("status").equals("ok")) {
                                 final String storageId = DocumentHelper.getId(writtenFile);
@@ -305,23 +302,23 @@ public class FolderImporterZip {
                                 future.fail(error);
                             }
                         });
-                        futures.add(future);
+                        futures.add(future.future());
                     }
                     return CompositeFuture.all(futures).compose(res -> {
                         final List<JsonObject> list = context.getAllObjects();
-                        final Future<JsonObject> future = Future.future();
+                        final Promise<JsonObject> future = Promise.promise();
                         MongoDbRepositoryEvents.importDocuments("documents", list, "", false, r -> {
                             future.complete(context.getResult());
                         });
-                        return future;
+                        return future.future();
                     });
                 });
-            }).setHandler(r -> {
+            }).onComplete(r -> {
                 futureFinal.handle(r);
                 clean(context);
             });
         });
-        return futureFinal;
+        return futureFinal.future();
     }
 
     private void clean(FolderImporterZipContext context) {
@@ -340,13 +337,13 @@ public class FolderImporterZip {
 
     public Future<Long> getTotalSize(FolderImporterZipContext context) {
         return doPrepare(context).compose(res -> {
-            final Future<Long> future = Future.future();
+            final Promise<Long> future = Promise.promise();
             long total = 0;
             for (final FileInfo info : context.docToInsertById.values()) {
                 total += info.getRealSize(context);
             }
             future.complete(total);
-            return future;
+            return future.future();
         });
     }
 
@@ -381,7 +378,7 @@ public class FolderImporterZip {
         private final JsonArray errors = new JsonArray();
         private final Stack<JsonObject> ancestors = new Stack<>();
         private final Set<String> toClean = new HashSet<>();
-        private Future<Void> prepare;
+        private Promise<Void> prepare;
         private boolean cleanZip = false;
         private final String invalidMessage;
         private Optional<String> guessedEncodingCache;

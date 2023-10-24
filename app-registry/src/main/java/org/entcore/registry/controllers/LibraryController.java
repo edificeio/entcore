@@ -69,7 +69,7 @@ public class LibraryController extends BaseController {
             MultiMap attributes = res.resultAt(1);
             UserInfos user = res.resultAt(2);
             return service.publish(user, I18n.acceptLanguage(request), attributes, coverAndAvatarBufferList.get(0), coverAndAvatarBufferList.get(1));
-        }).setHandler(res -> {
+        }).onComplete(res -> {
             if (res.succeeded()) {
                 final JsonObject json = res.result();
                 if (json.getBoolean("success", false)) {
@@ -86,7 +86,7 @@ public class LibraryController extends BaseController {
     }
 
     private Future<List<Buffer>> getCoverAndTeacherAvatar(HttpServerRequest request) {
-        Future<List<Buffer>> bufferListFuture = Future.future();
+        Future<List<Buffer>> bufferListFuture = Promise.promise();
         List<Buffer> bufferList = new ArrayList<Buffer>();
         request.uploadHandler(upload -> {
             final Buffer buffer = Buffer.buffer();
@@ -105,7 +105,7 @@ public class LibraryController extends BaseController {
     }
 
     private Future<UserInfos> getUser(HttpServerRequest request) {
-        Future<UserInfos> futureUser = Future.future();
+        Future<UserInfos> futureUser = Promise.promise();
         UserUtils.getUserInfos(eb, request, res -> {
             if (res == null) {
                 futureUser.fail("Could not found user info");
@@ -120,9 +120,9 @@ public class LibraryController extends BaseController {
         MultiMap form = request.formAttributes();
         form.add("platformURL", Renders.getHost(request));
 
-        Future<MultiMap> future = Future.future();
+        Future<MultiMap> future = Promise.promise();
         request.endHandler(res -> {
-            futureUser.setHandler(resuser -> {
+            futureUser.onComplete(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
                     form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())

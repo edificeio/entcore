@@ -81,7 +81,7 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put(ACTION, directoryAction).put(USERID, userId);
-		eb.send(DIRECTORY, jo, handlerToAsyncHandler(event -> {
+		eb.request(DIRECTORY, jo, handlerToAsyncHandler(event -> {
 			JsonObject res = event.body().getJsonObject(RESULT);
 			log.debug("res : " + res);
 			if (OK.equals(event.body().getString(STATUS)) && res != null) {

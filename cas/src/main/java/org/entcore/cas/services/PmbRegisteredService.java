@@ -38,7 +38,7 @@ public class PmbRegisteredService extends DefaultRegisteredService {
 		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put("action", directoryAction).put("userId", userId);
-		eb.send("directory", jo, handlerToAsyncHandler(event -> {
+		eb.request("directory", jo, handlerToAsyncHandler(event -> {
 			JsonObject res = event.body().getJsonObject("result");
 			log.debug("res : " + res);
 			if ("ok".equals(event.body().getString("status")) && res != null) {
@@ -52,7 +52,7 @@ public class PmbRegisteredService extends DefaultRegisteredService {
 					}
 				}
 				JsonObject uais = new JsonObject().put("uais",uaisToCheck);
-				eb.send("fr.openent.pmb.controllers.PmbController|getPrincipalUAIs", uais, handlerToAsyncHandler(eventPmb -> {
+				eb.request("fr.openent.pmb.controllers.PmbController|getPrincipalUAIs", uais, handlerToAsyncHandler(eventPmb -> {
 					JsonArray uaisResponse = eventPmb.body().getJsonArray("result");
 					log.debug("res : " + res);
 					if ("ok".equals(eventPmb.body().getString("status")) && uaisResponse != null) {

@@ -111,7 +111,7 @@ public class EventStoreTest {
         test.vertx().deployVerticle("org.entcore.infra.EventWorkerForTest", new DeploymentOptions().setWorker(true).setInstances(1).setMultiThreaded(false).setConfig(new JsonObject().put("postgres", postgresql))
                 .setIsolationGroup("event_worker_group")
                 .setIsolatedClasses(Arrays.asList("org.entcore.infra.*")), rDep -> {
-            test.vertx().eventBus().send(EventWorkerForTest.class.getSimpleName(),
+            test.vertx().eventBus().request(EventWorkerForTest.class.getSimpleName(),
                     new JsonObject().put("action", "send"), r -> {
                         if (r.failed()) {
                             r.cause().printStackTrace();

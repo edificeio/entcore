@@ -251,6 +251,7 @@ project(':common') {
     compile "io.vertx:vertx-micrometer-metrics:$vertxVersion"
     compile "io.micrometer:micrometer-registry-prometheus:$micrometerPrometheusVersion"
     compile "com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:$owaspVersion"
+    compileOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     testCompile project(':test')
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
   }
@@ -402,6 +403,7 @@ project(':test') {
   dependencies {
     compileOnly project(':common')
     compile "io.vertx:vertx-unit:$vertxVersion"
+    compile "io.vertx:vertx-pg-client:$vertxVersion"
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "org.testcontainers:neo4j:$testContainerVersion"
     compile "org.testcontainers:mongodb:$testContainerVersion"

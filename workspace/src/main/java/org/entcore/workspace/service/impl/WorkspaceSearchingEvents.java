@@ -92,7 +92,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 			//
 			// start fetch
 			//
-			Future<JsonArray> futureQuery = Future.future();
+			Future<JsonArray> futureQuery = Promise.promise();
 			folderManager.findByQuery(queryFiles, user, futureQuery.completer());
 			futureQuery.map(files -> {
 				final List<String> aHeader = columnsHeader.getList();
@@ -183,7 +183,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					return formatted;
 				});
 
-			}).setHandler(res -> {
+			}).onComplete(res -> {
 				if (res.succeeded()) {
 					JsonArray result = res.result().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
 					handler.handle(new Either.Right<String, JsonArray>(result));

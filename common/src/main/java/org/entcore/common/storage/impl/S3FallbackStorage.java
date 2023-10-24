@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import io.vertx.core.http.*;
 import org.entcore.common.storage.FallbackStorage;
 
 import fr.wseduc.webutils.security.AWS4Signature;
@@ -14,9 +15,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
 
 public class S3FallbackStorage implements FallbackStorage {
 
@@ -57,43 +55,45 @@ public class S3FallbackStorage implements FallbackStorage {
 
     private void downloadFile(String file, String destination, int storageIdx, Handler<AsyncResult<String>> handler) {
         final String uri = generateUri(file, storageIdx);
-        HttpClientRequest req = httpClient.get(uri);
-        req.setHost(this.host);
-        req.handler(resp -> {
-            if (resp.statusCode() == 200) {
-                resp.pause();
-                FileStorage.mkdirsIfNotExists(fs, file, destination, folderAr -> {
-                    if (folderAr.succeeded()) {
-                        this.fs.open(destination, new OpenOptions(), asyncFile -> {
-                            if (asyncFile.succeeded()) {
-                                resp.pipeTo(asyncFile.result(), h -> {
-                                    handler.handle(Future.succeededFuture(destination));
+        httpClient.request(new RequestOptions()
+            .setMethod(HttpMethod.GET)
+            .setURI(uri)
+            .setHost(this.host)
+        ).onSuccess(req -> {
+            try {
+                AWS4Signature.sign(req, region, accessKey, secretKey, null);
+                req.send().onSuccess(resp -> {
+                    if (resp.statusCode() == 200) {
+                        resp.pause();
+                        FileStorage.mkdirsIfNotExists(fs, file, destination, folderAr -> {
+                            if (folderAr.succeeded()) {
+                                this.fs.open(destination, new OpenOptions(), asyncFile -> {
+                                    if (asyncFile.succeeded()) {
+                                        resp.pipeTo(asyncFile.result(), h -> {
+                                            handler.handle(Future.succeededFuture(destination));
+                                        });
+                                    } else {
+                                        handler.handle(Future.failedFuture(asyncFile.cause()));
+                                    }
+                                    resp.resume();
                                 });
                             } else {
-                                handler.handle(Future.failedFuture(asyncFile.cause()));
+                                handler.handle(Future.failedFuture(folderAr.cause()));
                             }
-                            resp.resume();
                         });
                     } else {
-                        handler.handle(Future.failedFuture(folderAr.cause()));
+                        if (nbStorageFolder > 1 && storageIdx < nbStorageFolder) {
+                            downloadFile(file, destination, storageIdx +1, handler);
+                        } else {
+                            handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file)));
+                        }
                     }
                 });
-            } else {
-                if (nbStorageFolder > 1 && storageIdx < nbStorageFolder) {
-                    downloadFile(file, destination, storageIdx +1, handler);
-                } else {
-                    handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file)));
-                }
+            } catch (InvalidKeyException | NoSuchAlgorithmException | IllegalStateException
+                     | UnsupportedEncodingException e) {
+                handler.handle(Future.failedFuture(e));
             }
         });
-
-        try {
-            AWS4Signature.sign(req, region, accessKey, secretKey, null);
-            req.end();
-        } catch (InvalidKeyException | NoSuchAlgorithmException | IllegalStateException
-                | UnsupportedEncodingException e) {
-            handler.handle(Future.failedFuture(e));
-        }
     }
 
     private String generateUri(String file, int storageIdx) {

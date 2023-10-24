@@ -55,7 +55,7 @@ public class DocumentDao extends GenericDao {
 
 	public Future<JsonObject> findById(String id) {
 		final QueryBuilder builder = QueryBuilder.start("_id").is(id);
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
 			if (res.isLeft()) {
 				future.fail(res.left().getValue());
@@ -67,7 +67,7 @@ public class DocumentDao extends GenericDao {
 	}
 
 	public Future<JsonObject> restaureFromRevision(String docId, JsonObject revision) {
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		String now = MongoDb.formatDate(new Date());
 		String name = revision.getString("name", "");
 		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", now)//

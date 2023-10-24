@@ -19,12 +19,10 @@
 
 package org.entcore.common.neo4j;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.utils.StringUtils;
@@ -45,16 +43,19 @@ public class Neo4jRestClientCheckHealth implements Neo4jRestClientCheck {
 
     @Override
     public Future<Void> check(Neo4jRestClientNodeManager manager) {
-        final List<Future> futures = new ArrayList<>();
+        final List<Future<?>> futures = new ArrayList<>();
         for (final Neo4jRestClientNode node : manager.getClients()) {
-            final Future<Void> futureNode = Future.future();
-            futures.add(futureNode);
+            final Promise<Void> futureNode = Promise.promise();
+            futures.add(futureNode.future());
             if (node.isBanned()) {
-                completeQuiet(futureNode);
+                futureNode.tryComplete();
             } else {
                 //check only if not banned
                 final HttpClient client = node.getHttpClient();
-                final HttpClientRequest req = client.get("/db/manage/server/ha/available", resp -> {
+                client.request(HttpMethod.GET, "/db/manage/server/ha/available")
+                .map(this::prepareRequest)
+                .flatMap(HttpClientRequest::send)
+                .onSuccess(resp -> {
                     try {
                         //if server respond 200 => available and check type
                         if (resp.statusCode() == 200) {
@@ -64,37 +65,36 @@ public class Neo4jRestClientCheckHealth implements Neo4jRestClientCheck {
                                 } else {
                                     node.setSlave();
                                 }
-                                completeQuiet(futureNode);
+                                futureNode.tryComplete();
                             });
                         } else {
                             node.setAvailable(false);
-                            completeQuiet(futureNode);
+                            futureNode.tryComplete();
                         }
                     } catch (Exception e) {
                         logger.error("Neo4j Health check failed with message: " + e.getMessage());
                         node.setAvailable(false);
-                        completeQuiet(futureNode);
+                        futureNode.tryComplete();
                     }
-                });
-                req.exceptionHandler(e -> {
+                })
+                .onFailure(th -> {
                     //log error
-                    if (e instanceof VertxException && "Connection was closed".equals(e.getMessage())) {
+                    if (th instanceof VertxException && "Connection was closed".equals(th.getMessage())) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Neo4j Health check failed", e);
+                            logger.debug("Neo4j Health check failed", th);
                         }
-                    }else if(e instanceof ConnectException){
+                    }else if(th instanceof ConnectException){
                         //cannot connect to remote host
                         node.setAvailable(false);
                     } else {
-                        logger.error("Neo4j Health check failed", e);
+                        logger.error("Neo4j Health check failed", th);
                     }
                     //complete
-                    completeQuiet(futureNode);
+                    futureNode.tryComplete();
                 });
-                prepareRequest(req).end();
             }
         }
-        return CompositeFuture.all(futures).mapEmpty();
+        return Future.all(futures).mapEmpty();
     }
 
     private HttpClientRequest prepareRequest(final HttpClientRequest request) {
@@ -104,9 +104,4 @@ public class Neo4jRestClientCheckHealth implements Neo4jRestClientCheck {
         return request;
     }
 
-    private void completeQuiet(final Future<Void> futureNode) {
-        if (!futureNode.isComplete()) {
-            futureNode.complete();
-        }
-    }
 }

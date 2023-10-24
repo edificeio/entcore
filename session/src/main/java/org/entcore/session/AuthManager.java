@@ -724,11 +724,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			if (ar.succeeded()) {
 				if (getOrElse(config.getBoolean("slo"), false)) {
 					final String userId = ar.result().getString("userId");
-					eb.send("cas", new JsonObject().put("action", "logout").put("userId", userId));
+					eb.request("cas", new JsonObject().put("action", "logout").put("userId", userId));
 				}
 				if (getOrElse(config.getBoolean("slo-saml"), true)) {
 					final String userId = ar.result().getString("userId");
-					eb.send("saml", new JsonObject().put("action", "soap-slo").put("sessionId", sessionId).put("userId", userId));
+					eb.request("saml", new JsonObject().put("action", "soap-slo").put("sessionId", sessionId).put("userId", userId));
 				}
 			} else {
 				logger.error("In doDrop - Error getting object after removing hazelcast session " + sessionId, ar.cause());

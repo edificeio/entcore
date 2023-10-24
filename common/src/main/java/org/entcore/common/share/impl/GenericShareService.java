@@ -77,7 +77,7 @@ public abstract class GenericShareService implements ShareService {
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = groupsIds.stream().map(groupId -> {
-			Future<Set<String>> future = Future.future();
+			Promise<Set<String>> future = Promise.promise();
 			UserUtils.findUsersInProfilsGroups(groupId, eb, currentUserId, false, ev -> {
 				Set<String> ids = new HashSet<>();
 				if (ev != null) {
@@ -91,11 +91,11 @@ public abstract class GenericShareService implements ShareService {
 				}
 				future.complete(ids);
 			});
-			return future;
+			return future.future();
 		}).collect(Collectors.toList());
 		return CompositeFuture.all(futures).map(result -> {
 			List<Set<String>> all = result.list();
-			return all.stream().reduce(new HashSet<String>(), (a1, a2) -> {
+			return all.stream().reduce(new HashSet<>(), (a1, a2) -> {
 				a1.addAll(a2);
 				return a1;
 			});
@@ -153,7 +153,7 @@ public abstract class GenericShareService implements ShareService {
 							JsonObject checked = users.getJsonObject("checked");
 							JsonObject checkedInherited = users.put("checkedInherited", new JsonObject())
 									.getJsonObject("checkedInherited");
-							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
+							Set<String> fieldNames = new HashSet<>(checked.fieldNames());
 							for (String cUserId : fieldNames) {
 								if (userCheckedActions.containsKey(cUserId)) {
 									// if it is in both inherit and not inhertid keep both and has not same actions
@@ -175,7 +175,7 @@ public abstract class GenericShareService implements ShareService {
 							JsonObject checked = groups.getJsonObject("checked");
 							JsonObject checkedInherited = groups.put("checkedInherited", new JsonObject())
 									.getJsonObject("checkedInherited");
-							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
+							Set<String> fieldNames = new HashSet<>(checked.fieldNames());
 							for (String cGroupId : fieldNames) {
 								// if it is in both inherit and not inhertid keep both
 								if (groupCheckedActions.containsKey(cGroupId)) {

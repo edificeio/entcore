@@ -219,7 +219,7 @@ public class SamlController extends AbstractFederateController {
 			return;
 		}
 		final JsonObject event = item.copy().put("action", "generate-authn-request");
-		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (log.isDebugEnabled()) {
@@ -289,7 +289,7 @@ public class SamlController extends AbstractFederateController {
                 .put("host", getHost(request))
                 .put("authNRequestId", authNRequestId)
 				.put("scheme", getScheme(request));
-		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
 
@@ -697,7 +697,7 @@ public class SamlController extends AbstractFederateController {
 				}
 			} else {
 				// normal slo
-				vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						if (log.isDebugEnabled()) {

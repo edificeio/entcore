@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
 import org.entcore.common.folders.FolderManager;
@@ -574,7 +575,7 @@ class QueryHelper {
 				.withProjection(projection)//
 				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
 		JsonObject command = agg.getCommand();
-		Future<List<String>> future = Future.future();
+		Promise<List<String>> future = Promise.promise();
 		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -597,7 +598,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private class FolderSubtreeIds{
@@ -624,7 +625,7 @@ class QueryHelper {
 				.withProjection(projection)//
 				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
 		JsonObject command = agg.getCommand();
-		Future<FolderSubtreeIds> future = Future.future();
+		Promise<FolderSubtreeIds> future = Promise.promise();
 		mongo.aggregateBatched(collection, command, MAX_BATCH, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -645,7 +646,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	protected Future<List<String>> getChildrenIdsRecursively_NEW(DocumentQueryBuilder parentFilter,
@@ -737,7 +738,7 @@ class QueryHelper {
 	@Deprecated
 	protected Future<JsonArray> listHierarchical_OLD(DocumentQueryBuilder query) {
 
-		Future<JsonArray> future = Future.future();
+		Promise<JsonArray> future = Promise.promise();
 		// match all (folders and file)
 		QueryBuilder match = query.build();
 		// first : match only folder regarding criterias
@@ -786,7 +787,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<JsonArray> listHierarchical(DocumentQueryBuilder query) {
@@ -797,7 +798,7 @@ class QueryHelper {
 	}
 
 	Future<JsonObject> findById(String id) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(collection, toJson(QueryBuilder.start("_id").is(id)), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -806,11 +807,11 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<JsonObject> findOne(DocumentQueryBuilder query) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(collection, toJson(query.build()), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -819,7 +820,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<List<JsonObject>> findAllAsList(DocumentQueryBuilder query) {
@@ -827,7 +828,7 @@ class QueryHelper {
 	}
 
 	Future<Integer> countAll(DocumentQueryBuilder query) {
-		Future<Integer> future = Future.future();
+		Promise<Integer> future = Promise.promise();
 		// finally project name and parent
 
 		JsonObject queries = toJson(query.build());
@@ -839,11 +840,11 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<JsonArray> findAll(DocumentQueryBuilder query) {
-		Future<JsonArray> future = Future.future();
+		Promise<JsonArray> future = Promise.promise();
 		// finally project name and parent
 		JsonObject projections = null;
 		if (query.mongoProjections != null) {
@@ -871,11 +872,11 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<JsonObject> insert(JsonObject file) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.insert(collection, file, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -884,11 +885,11 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<JsonObject> upsertFolder(JsonObject folder) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		//findAndModify does not generate _id string
 		String genID = UUID.randomUUID().toString();
 		JsonObject matcher = new JsonObject().put("owner", DocumentHelper.getOwner(folder))
@@ -905,29 +906,26 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<List<JsonObject>> insertAll(List<JsonObject> files) {
 		// TODO bulk insert
-		@SuppressWarnings("rawtypes")
-		List<Future> futures = new ArrayList<>();
+		List<Future<?>> futures = new ArrayList<>();
 		for (JsonObject json : files) {
 			futures.add(insert(json));
 		}
-		return CompositeFuture.all(futures).map(results -> {
-			return results.list();
-		});
+		return Future.all(futures).map(CompositeFuture::list);
 	}
 
 	Future<JsonObject> updateInheritShares(JsonObject file) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		String id = file.getString("_id");
 		String now = MongoDb.formatDate(new Date());
 		JsonArray inheritShared = file.getJsonArray("inheritedShares");
 		JsonArray ancestors = file.getJsonArray("ancestors");
 		JsonObject set = new MongoUpdateBuilder().set("inheritedShares", inheritShared)
-				.set("isShared", inheritShared != null && inheritShared.size() > 0)//
+				.set("isShared", inheritShared != null && !inheritShared.isEmpty())//
 				.set("ancestors", ancestors)//
 				.set("modified", now).build();
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set, message -> {
@@ -938,7 +936,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<Void> updateMove(String sourceId, String destinationFolderId) {
@@ -949,7 +947,7 @@ class QueryHelper {
 	}
 
 	Future<Void> update(String id, JsonObject set) {
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -958,11 +956,11 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<Void> update(String id, MongoUpdateBuilder set) {
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		String now = MongoDb.formatDate(new Date());
 		set.set("modified", now);
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set.build(), message -> {
@@ -973,7 +971,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<Void> updateAll(Set<String> id, MongoUpdateBuilder set) {
@@ -984,7 +982,7 @@ class QueryHelper {
 		if (id.isEmpty()) {
 			return Future.succeededFuture();
 		}
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		String now = MongoDb.formatDate(new Date());
 		if(setModified){
 			set.set("modified", now);
@@ -999,7 +997,7 @@ class QueryHelper {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<Void> bulkUpdateFavorites(Collection<JsonObject> rows) {
@@ -1030,7 +1028,7 @@ class QueryHelper {
 	}
 
 	Future<Void> bulkUpdate(JsonArray operations) {
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		mongo.bulk(collection, operations, bulkEv -> {
 			if (isOk(bulkEv.body())) {
 				future.complete((null));
@@ -1038,14 +1036,14 @@ class QueryHelper {
 				future.fail(toErrorStr(bulkEv.body()));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	Future<Void> deleteByIds(Set<String> ids) {
 		if (ids.isEmpty()) {
 			return Future.succeededFuture();
 		}
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		mongo.delete(collection, toJson(QueryBuilder.start("_id").in(ids)), res -> {
 			if (isOk(res.body())) {
 				future.complete(null);
@@ -1053,7 +1051,7 @@ class QueryHelper {
 				future.fail(toErrorStr(res.body()));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public static enum RestoreParentDirection {

@@ -39,7 +39,6 @@ import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.redis.Redis;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
@@ -47,9 +46,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.redis.RedisClient;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
+import org.entcore.common.redis.RedisClient;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;

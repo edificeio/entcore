@@ -77,7 +77,7 @@ public class DefaultUserService implements UserService {
 				.put("structureId", structureId)
 				.put("profile", user.getString("type"))
 				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class DefaultUserService implements UserService {
 				.put("classId", classId)
 				.put("profile", user.getString("type"))
 				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-update-user")
 				.put("userId", id)
 				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-update-user-login")
 				.put("userId", id)
 				.put("login", newLogin);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -762,7 +762,7 @@ public class DefaultUserService implements UserService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-user")
 				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -770,7 +770,7 @@ public class DefaultUserService implements UserService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-restore-user")
 				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -782,7 +782,7 @@ public class DefaultUserService implements UserService {
 				.put("function", functionCode)
 				.put("inherit", inherit)
 				.put("scope", scope);
-		eb.send(Directory.FEEDER, action, ar -> {
+		eb.request(Directory.FEEDER, action, ar -> {
 			if (ar.succeeded()) {
 				JsonArray res = ((JsonObject) ar.result().body()).getJsonArray("results");
 				JsonObject json = new JsonObject();
@@ -807,7 +807,7 @@ public class DefaultUserService implements UserService {
 				.put("userId", id)
 				.put("classExternalId", classExternalId)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -817,7 +817,7 @@ public class DefaultUserService implements UserService {
 				.put("userId", id)
 				.put("classExternalId", classExternalId)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -826,7 +826,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-add-direction")
 				.put("userId", id)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -835,7 +835,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-direction")
 				.put("userId", id)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -844,7 +844,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-user-function")
 				.put("userId", id)
 				.put("function", functionCode);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
@@ -862,7 +862,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-add-user-group")
 				.put("userId", id)
 				.put("groupId", groupId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -871,7 +871,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-user-group")
 				.put("userId", id)
 				.put("groupId", groupId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -924,7 +924,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-relative-student")
 				.put("relativeId", relativeId)
 				.put("studentId", studentId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, eitherHandler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, eitherHandler)));
 	}
 
 	@Override
@@ -933,7 +933,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-unlink-relative-student")
 				.put("relativeId", relativeId)
 				.put("studentId", studentId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(eitherHandler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(eitherHandler)));
 	}
 
 	@Override
@@ -942,7 +942,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "ignore-duplicate")
 				.put("userId1", userId1)
 				.put("userId2", userId2);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -951,7 +951,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "list-duplicate")
 				.put("structures", structures)
 				.put("inherit", inherit);
-		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(validResultHandler(results)));
+		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(validResultHandler(results)));
 	}
 
 	@Override
@@ -961,7 +961,7 @@ public class DefaultUserService implements UserService {
 				.put("userId1", userId1)
 				.put("userId2", userId2)
 				.put("keepRelations", keepRelations);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
 	}
 
 	@Override
@@ -1057,7 +1057,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "merge-by-keys")
 				.put("originalUserId", userId)
 				.put("mergeKeys", body.getJsonArray("mergeKeys"));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(13, handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(13, handler)));
 	}
 
 	@Override
@@ -1067,7 +1067,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "unmerge-by-logins")
 				.put("originalUserId", body.getString("originalUserId"))
 				.put("mergedLogins", body.getJsonArray("mergedLogins"));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override

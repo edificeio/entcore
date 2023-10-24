@@ -242,7 +242,7 @@ public class ClassController extends BaseController {
 					JsonObject j = new JsonObject()
 							.put("action", "setDefaultCommunicationRules")
 							.put("schoolId", schoolId);
-					eb.send("wse.communication", j);
+					eb.request("wse.communication", j);
 					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					promise.complete(res.right().getValue());
@@ -312,7 +312,7 @@ public class ClassController extends BaseController {
 							JsonObject j = new JsonObject()
 									.put("action", "setDefaultCommunicationRules")
 									.put("schoolId", s.right().getValue().getString("id"));
-							eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+							eb.request("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 								public void handle(Message<JsonObject> event) {
 									if("error".equals(event.body().getString("status", ""))){
 										log.error("[initPostCreate] Set communication rules failed.");

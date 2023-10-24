@@ -78,7 +78,7 @@ public class SessionTest {
             });
         }).compose(res -> {
             return test.directory().enableAppForStruct(ids.get("struct1"));
-        }).setHandler(res -> {
+        }).onComplete(res -> {
             context.assertTrue(res.succeeded());
             async.complete();
         });

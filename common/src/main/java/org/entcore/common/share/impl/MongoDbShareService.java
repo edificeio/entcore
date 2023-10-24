@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.vertx.core.Promise;
 import com.mongodb.ReadPreference;
 import org.entcore.common.share.ShareInfosQuery;
 
@@ -46,7 +47,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
 
 public class MongoDbShareService extends GenericShareService {
 
@@ -77,7 +77,7 @@ public class MongoDbShareService extends GenericShareService {
 			Optional<Set<String>> actions, String field) {
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
 		JsonObject keys = new JsonObject().put(field, 1);
-		Future<Set<String>[]> future = Future.future();
+		Promise<Set<String>[]> future = Promise.promise();
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEvent -> {
 			if ("ok".equals(mongoEvent.body().getString("status"))) {
 				JsonObject body = mongoEvent.body().getJsonObject("result", new JsonObject());
@@ -116,7 +116,7 @@ public class MongoDbShareService extends GenericShareService {
 				future.fail("Error finding shared resource.");
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class MongoDbShareService extends GenericShareService {
 				all.remove(userId);
 				return all;
 			});
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class MongoDbShareService extends GenericShareService {
 				all.remove(userId);
 				return all;
 			});
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	private JsonObject getActionsByIds(String userId, JsonArray shared) {
@@ -428,7 +428,7 @@ public class MongoDbShareService extends GenericShareService {
 
 	@Override
 	public Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
-		final Future<JsonObject> futureValidateShares = Future.future();
+		final Promise<JsonObject> futureValidateShares = Promise.promise();
 		shareValidation(resourceId, userId, share, res -> {
 			if (res.isRight()) {
 				final JsonObject query = new JsonObject().put("_id", resourceId);
@@ -453,7 +453,7 @@ public class MongoDbShareService extends GenericShareService {
 				futureValidateShares.fail(res.left().getValue());
 			}
 		});
-		return futureValidateShares;
+		return futureValidateShares.future();
 	}
 
 	private void removeShare(String resourceId, final String shareId, List<String> removeActions, boolean isGroup,
