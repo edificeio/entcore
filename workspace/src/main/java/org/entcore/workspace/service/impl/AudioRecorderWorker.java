@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -117,7 +118,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 								if ("ok".equals(f.getString("status"))) {
 									workspaceHelper.addDocument(f,
 											UserUtils.sessionToUserInfos(session), name, "mediaLibrary",
-											true, new fr.wseduc.webutils.collections.JsonArray(), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+											true, new JsonArray(), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 												@Override
 												public void handle(Message<JsonObject> event) {
 													if ("ok".equals(event.body().getString("status"))) {

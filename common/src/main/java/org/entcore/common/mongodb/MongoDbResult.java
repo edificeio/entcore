@@ -67,7 +67,7 @@ public class MongoDbResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return new Either.Right<>(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
+			return new Either.Right<>(res.body().getJsonArray("results", new JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}
@@ -75,7 +75,7 @@ public class MongoDbResult {
 
 	public static AsyncResult<JsonArray> validAsyncResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return Future.succeededFuture(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
+			return Future.succeededFuture(res.body().getJsonArray("results", new JsonArray()));
 		} else {
 			return Future.failedFuture(res.body().getString("message", ""));
 		}

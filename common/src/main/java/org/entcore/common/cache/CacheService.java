@@ -14,7 +14,7 @@ public interface CacheService {
 
     static CacheService create(Vertx vertx){
         if(Redis.getClient() !=  null){
-            return new RedisCacheService(Redis.getClient());
+            return new RedisCacheService(Redis.getClient().getClient());
         } else{
             throw new IllegalStateException("CacheService.create : could not create cache because it is not initialized");
         }
@@ -24,9 +24,9 @@ public interface CacheService {
         if(Redis.getClient() !=  null){
             final Integer db = config.getInteger("redis-db");
             if(db != null){
-                return new RedisCacheService(Redis.createClientForDb(vertx, db));
+                return new RedisCacheService(Redis.createClientForDb(vertx, db).getClient());
             }else{
-                return new RedisCacheService(Redis.getClient());
+                return new RedisCacheService(Redis.getClient().getClient());
             }
         } else{
             throw new IllegalStateException("CacheService.create : could not create cache because it is not initialized");

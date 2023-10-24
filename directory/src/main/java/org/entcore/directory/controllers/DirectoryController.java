@@ -143,7 +143,7 @@ public class DirectoryController extends BaseController {
 				.put("charset", request.params().get("charset"))
 				.put("structureExternalId", request.params().get("structureExternalId"));
 
-		eb.send("entcore.feeder", json);
+		eb.request("entcore.feeder", json);
 		request.response().end();
 	}
 
@@ -159,7 +159,7 @@ public class DirectoryController extends BaseController {
 		if (structureId != null) {
 			t.put("structureExternalId", structureId);
 		}
-		eb.send("entcore.feeder", t, new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("transitionTimeout"), 300000l)),
+		eb.request("entcore.feeder", t, new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("transitionTimeout"), 300000l)),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
@@ -179,7 +179,7 @@ public class DirectoryController extends BaseController {
 	@Post("/duplicates/mark")
 	@SecuredAction("directory.duplicates.mark")
 	public void markDuplicates(final HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
+		eb.request("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
 				new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("markDuplicatesTimeout"), 300000l)), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -191,7 +191,7 @@ public class DirectoryController extends BaseController {
 	@Post("/autogroups/link")
 	@SecuredAction("directory.autogroups.link")
 	public void linkAutogroups(final HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				renderJson(request, event.body());
@@ -202,14 +202,14 @@ public class DirectoryController extends BaseController {
 	@Post("/export")
 	@SecuredAction("directory.export")
 	public void launchExport(HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "export"));
+		eb.request("entcore.feeder", new JsonObject().put("action", "export"));
 		request.response().end();
 	}
 
 	@Post("/reinitLogins")
 	@SecuredAction("directory.reinit.login")
 	public void reinitLogins(HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
+		eb.request("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
 		request.response().end();
 	}
 
@@ -244,9 +244,9 @@ public class DirectoryController extends BaseController {
 							if (r.right().getValue() != null && r.right().getValue().size() > 0) {
 								JsonObject j = new JsonObject()
 										.put("action", "initDefaultCommunicationRules")
-										.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(
+										.put("schoolIds", new JsonArray().add(
 												r.right().getValue().getString("id")));
-								eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+								eb.request("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> message) {
 										renderJson(request, r.right().getValue(), 201);
@@ -289,8 +289,8 @@ public class DirectoryController extends BaseController {
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 								JsonObject j = new JsonObject()
 										.put("action", "initDefaultCommunicationRules")
-										.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(schoolId));
-								eb.send("wse.communication", j);
+										.put("schoolIds", new JsonArray().add(schoolId));
+								eb.request("wse.communication", j);
 								String classId = event.right().getValue().getString("id");
 								if (classId != null && !classId.trim().isEmpty() &&
 										request.params().contains("setDefaultRoles") &&
@@ -339,7 +339,7 @@ public class DirectoryController extends BaseController {
 		String types = "";
 		if (expectedTypes != null && !expectedTypes.isEmpty()) {
 			types = "AND p.name IN {expectedTypes} ";
-			params.put("expectedTypes", new fr.wseduc.webutils.collections.JsonArray(expectedTypes));
+			params.put("expectedTypes", new JsonArray(expectedTypes));
 		}
 		neo.send("MATCH (n:Class)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(m:User), "
 				+ "g-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
@@ -356,7 +356,7 @@ public class DirectoryController extends BaseController {
 		String structureId = request.params().get("structureId");
 		String classId = request.params().get("classId");
 		List<String> profiles = request.params().getAll("profile");
-		userService.list(structureId, classId, new fr.wseduc.webutils.collections.JsonArray(profiles), arrayResponseHandler(request));
+		userService.list(structureId, classId, new JsonArray(profiles), arrayResponseHandler(request));
 	}
 
 	@Get("/api/details")
@@ -395,11 +395,11 @@ public class DirectoryController extends BaseController {
 					user.put("birthDate", birthDate);
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
-				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
+				user.put("childrenIds", new JsonArray(childrenIds));
 				// Get UserPosition IDs and remove duplicates.
 				List<String> userPositionIds = request.formAttributes().getAll("positionIds")
 				.stream().distinct().collect(Collectors.toList());
-				
+
 				user.put("userPositionIds", new fr.wseduc.webutils.collections.JsonArray(userPositionIds));
 				if (classId != null && !classId.trim().isEmpty()) {
 					userService.createInClass(classId, user, null, new Handler<Either<String, JsonObject>>() {
@@ -407,7 +407,7 @@ public class DirectoryController extends BaseController {
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
 								JsonObject r = res.right().getValue();
-								JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(r.getString("id"));
+								JsonArray a = new JsonArray().add(r.getString("id"));
 								ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> message) {
@@ -418,7 +418,7 @@ public class DirectoryController extends BaseController {
 													JsonObject j = new JsonObject()
 															.put("action", "setDefaultCommunicationRules")
 															.put("schoolId", s.right().getValue().getString("id"));
-													eb.send("wse.communication", j);
+													eb.request("wse.communication", j);
 												}
 											}
 										});
@@ -442,14 +442,14 @@ public class DirectoryController extends BaseController {
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
 								JsonObject r = res.right().getValue();
-								JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(r.getString("id"));
+								JsonArray a = new JsonArray().add(r.getString("id"));
 								ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> message) {
 										JsonObject j = new JsonObject()
 												.put("action", "setDefaultCommunicationRules")
 												.put("schoolId", structureId);
-										eb.send("wse.communication", j);
+										eb.request("wse.communication", j);
 									}
 								}));
 								renderJson(request, r);
@@ -579,8 +579,8 @@ public class DirectoryController extends BaseController {
 				userService.getMainStructure(userId, structuresToExclude, BusResponseHandler.busResponseHandler(message));
 				break;
 			case "list-users":
-				JsonArray userIds = message.body().getJsonArray("userIds", new fr.wseduc.webutils.collections.JsonArray());
-				JsonArray groupIds = message.body().getJsonArray("groupIds", new fr.wseduc.webutils.collections.JsonArray());
+				JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
+				JsonArray groupIds = message.body().getJsonArray("groupIds", new JsonArray());
 				boolean itSelf = message.body().getBoolean("itself", false);
 				String excludeId = message.body().getString("excludeUserId");
 				userService.list(groupIds, userIds, itSelf, excludeId, busArrayHandler(message));
@@ -652,7 +652,7 @@ public class DirectoryController extends BaseController {
 					j = res.right().getValue();
 				} else {
 					log.warn(res.left().getValue());
-					j = new fr.wseduc.webutils.collections.JsonArray();
+					j = new JsonArray();
 				}
 				message.reply(j);
 			}

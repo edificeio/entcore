@@ -45,7 +45,7 @@ public class MultipleMessageUserFilter implements ResourcesProvider  {
                           UserInfos user, final Handler<Boolean> handler) {
         RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
             public void handle(final JsonObject body) {
-                List<String> messageIds = body.getJsonArray("id", new fr.wseduc.webutils.collections.JsonArray()).getList();
+                List<String> messageIds = body.getJsonArray("id", new JsonArray()).getList();
                 if(messageIds == null || messageIds.isEmpty()){
                     handler.handle(false);
                     return;
@@ -66,7 +66,7 @@ public class MultipleMessageUserFilter implements ResourcesProvider  {
                 "SELECT count(distinct um) AS number FROM conversation.usermessages um " +
                         "WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
 
-        JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId());
+        JsonArray values = new JsonArray().add(user.getUserId());
         messageIds.forEach(id -> values.add(id));
 
         request.pause();

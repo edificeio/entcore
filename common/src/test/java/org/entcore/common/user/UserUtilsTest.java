@@ -1,5 +1,6 @@
 package org.entcore.common.user;
 
+import io.vertx.core.Vertx;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -15,28 +16,40 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.session.SessionRecreationRequest;
 import static org.entcore.common.user.UserUtils.SESSION_ADDRESS;
-import org.entcore.test.TestHelper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.http.response.JsonHttpResponse;
+import fr.wseduc.webutils.http.HttpMethod;
+import java.net.URI;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class UserUtilsTest {
-    protected static final TestHelper test = TestHelper.helper();
     private static final Map<String, JsonObject> sessionStore = new HashMap<>();
     private static final AtomicInteger counterOAuthValid = new AtomicInteger();
     private static final AtomicInteger counterFindSession = new AtomicInteger();
     private static final AtomicInteger counterRecreateSession = new AtomicInteger();
+    private static final Vertx vertx = Vertx.vertx();
 
     @Before
     public void reset() {
@@ -54,7 +67,7 @@ public class UserUtilsTest {
          * - session retrieval
          * - session recreation
          *******************************************/
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         eb.consumer("wse.oauth").handler(message -> {
             counterOAuthValid.incrementAndGet();
             message.reply(new JsonObject()
@@ -100,7 +113,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionCanRecreateSessionForOAuthUserIfSessionIsNotFoundInStore(final TestContext context) {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth
@@ -108,7 +121,7 @@ public class UserUtilsTest {
          * a session.
          *******************************************/
         final String oauthToken = UUID.randomUUID().toString();
-        final HttpServerRequest request = test.http().get("/test").withOAuthToken();
+        final HttpServerRequest request = get("/test").withOAuthToken();
         UserUtils.getSession(eb, request, true, session -> {
             context.assertNotNull(session, "Session should have been recreated");
             final Optional<String> tokenId = getTokenId((SecureHttpServerRequest) request);
@@ -131,7 +144,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnNullIfSessionIsNotFound(final TestContext context) throws Exception {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth
@@ -139,8 +152,8 @@ public class UserUtilsTest {
          * a session.
          *******************************************/
         final String oauthToken = signCookie(new DefaultCookie("oneSessionId", UUID.randomUUID().toString()));
-        final UserInfos user = test.http().sessionUser();
-        final HttpServerRequest request = test.http().get("/test");
+        final UserInfos user = sessionUser();
+        final HttpServerRequest request = get("/test");
         request.headers().add("Cookie", "oneSessionId=" + oauthToken);
         UserUtils.getSession(eb, request, true, session -> {
             context.assertNull(session, "Session should not have been recreated");
@@ -160,7 +173,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnSessionIfWebSessionIsFound(final TestContext context) throws Exception {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         /*******************************************
          * Create a fake http request with an OAuth
          * token and check that getSession retrieves
@@ -168,8 +181,8 @@ public class UserUtilsTest {
          *******************************************/
         final String oneSessionId = UUID.randomUUID().toString();
         final String oauthToken = signCookie(new DefaultCookie("oneSessionId", oneSessionId));
-        final UserInfos user = test.http().sessionUser();
-        final HttpServerRequest request = test.http().get("/test");
+        final UserInfos user = sessionUser();
+        final HttpServerRequest request = get("/test");
         request.headers().add("Cookie", "oneSessionId=" + oauthToken);
         sessionStore.put(oneSessionId, new JsonObject().put("_id", oneSessionId).put("userId", user.getUserId()));
         UserUtils.getSession(eb, request, true, session -> {
@@ -189,14 +202,14 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnSessionIfFoundInStoreForOauthUsers(final TestContext context) {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth
          * token and check that getSession retrieves
          * a session.
          *******************************************/
-        final HttpServerRequest request = test.http().get("/test").withOAuthToken();
+        final HttpServerRequest request = get("/test").withOAuthToken();
         final String tokenId = getTokenId((SecureHttpServerRequest) request).get();
         sessionStore.put(tokenId, new JsonObject().put("_id", tokenId).put("userId", "test"));
         UserUtils.getSession(eb, request, true, session -> {
@@ -217,6 +230,163 @@ public class UserUtilsTest {
                 cookie.getDomain()+cookie.getName()+
                         "/"+cookie.getValue(), "test");
         return cookie.getValue() + ":" + signature;
+    }
+
+    public static UserInfos sessionUser() {
+        return generateUser("a1234");
+    }
+
+    public static UserInfos generateUser(String id, String... groupIds) {
+        final UserInfos user = new UserInfos();
+        user.setChildrenIds(new ArrayList<>());
+        user.setUserId(id);
+        user.setUsername("Test Test");
+        user.setGroupsIds(new ArrayList<>());
+        for (String gr : groupIds) {
+            user.getGroupsIds().add(gr);
+        }
+        return user;
+    }
+
+    public static TestHttpServerRequest get(String url) {
+        final URI uri = URI.create(url);
+        final JsonObject req =  new JsonObject()
+            .put("ssl", "https".equals(uri.getScheme()))
+            .put("scheme", uri.getScheme())
+            .put("path", uri.getPath())
+            .put("query", uri.getQuery())
+            .put("uri", uri.toString());
+        JsonObject json = req
+            .put("method", HttpMethod.GET)
+            .put("params", new JsonObject());
+        return new TestHttpServerRequest(json);
+    }
+
+    public static class TestHttpServerRequest extends JsonHttpServerRequest {
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        JsonObject body = new JsonObject();
+
+        public TestHttpServerRequest(JsonObject object) {
+            super(object, new TestHttpServerResponse());
+        }
+
+        public TestHttpServerRequest(JsonObject object, JsonObject body) {
+            super(object, new TestHttpServerResponse());
+            this.body = body;
+        }
+
+        @Override
+        public TestHttpServerResponse response() {
+            return (TestHttpServerResponse)super.response();
+        }
+
+        @Override
+        public MultiMap headers() {
+            return headers;
+        }
+
+        @Override
+        public TestHttpServerRequest bodyHandler(Handler<Buffer> bufferHandler) {
+            bufferHandler.handle(Buffer.buffer(body.encode()));
+            return this;
+        }
+        
+        public HttpServerRequest withSession(final UserInfos user) throws Exception {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SecureHttpServerRequest req = new SecureHttpServerRequest(this);
+            req.setSession(new JsonObject(mapper.writeValueAsString(user)));
+            return req;
+        }
+
+        public HttpServerRequest withOAuthToken() {
+            final SecureHttpServerRequest req = new SecureHttpServerRequest(this);
+            req.headers().add("Authorization", "Bearer " + UUID.randomUUID().toString());
+            return req;
+        }
+    }
+
+    public static class TestHttpServerResponse extends JsonHttpResponse {
+        Handler<Object> bodyHandler = e -> {};
+
+        public TestHttpServerResponse bodyHandler(Handler<Object> bufferHandler) {
+            bodyHandler = bufferHandler;
+            return this;
+        }
+
+        public TestHttpServerResponse jsonHandler(Handler<JsonObject> bufferHandler) {
+            bodyHandler = e->{
+                bufferHandler.handle(new JsonObject(e.toString()));
+            };
+            return this;
+        }
+
+
+        public TestHttpServerResponse endJsonHandler(Handler<JsonObject> bufferHandler) {
+            final JsonObject res = new JsonObject();
+            jsonHandler(json ->{
+                res.mergeIn(json);
+            });
+            endHandler(e->{
+                bufferHandler.handle(res);
+            });
+            return this;
+        }
+
+        public TestHttpServerResponse jsonArrayHandler(Handler<JsonArray> bufferHandler) {
+            bodyHandler = e->{
+                bufferHandler.handle(new JsonArray(e.toString()));
+            };
+            return this;
+        }
+
+
+        public TestHttpServerResponse endJsonArrayHandler(Handler<JsonArray> bufferHandler) {
+            final JsonArray res = new JsonArray();
+            jsonArrayHandler(json ->{
+                res.addAll(json);
+            });
+            endHandler(e->{
+                bufferHandler.handle(res);
+            });
+            return this;
+        }
+
+        @Override
+        public Future<Void> write(Buffer buffer) {
+            bodyHandler.handle(buffer);
+            return Future.succeededFuture();
+        }
+
+        @Override
+        public Future<Void> write(String s, String s2) {
+            bodyHandler.handle(s);
+            return Future.succeededFuture();
+        }
+
+        @Override
+        public Future<Void> write(String s) {
+            bodyHandler.handle(s);
+            return Future.succeededFuture();
+        }
+
+        @Override
+        public Future<Void> end(String s) {
+            bodyHandler.handle(s);
+            return super.end(s);
+        }
+
+        @Override
+        public Future<Void> end(String s, String s2) {
+            bodyHandler.handle(s);
+            return super.end(s, s2);
+        }
+
+        @Override
+        public Future<Void> end(Buffer buffer) {
+            bodyHandler.handle(buffer);
+            return super.end(buffer);
+        }
+
     }
 
 }

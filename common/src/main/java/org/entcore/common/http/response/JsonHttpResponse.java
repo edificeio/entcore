@@ -19,7 +19,9 @@
 
 package org.entcore.common.http.response;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -27,6 +29,9 @@ import io.vertx.core.http.HttpFrame;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.net.HostAndPort;
+
+import java.util.Set;
 
 public class JsonHttpResponse implements HttpServerResponse {
 
@@ -160,18 +165,43 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse write(Buffer buffer) {
-		return this;
+	public Future<Void> write(Buffer buffer) {
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public HttpServerResponse write(String s, String s2) {
-		return this;
+	public void write(Buffer data, Handler<AsyncResult<Void>> handler) {
+
 	}
 
 	@Override
-	public HttpServerResponse write(String s) {
-		return this;
+	public Future<Void> write(String chunk, String enc) {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public void write(String chunk, String enc, Handler<AsyncResult<Void>> handler) {
+
+	}
+
+	@Override
+	public Future<Void> write(String chunk) {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public void write(String chunk, Handler<AsyncResult<Void>> handler) {
+
+	}
+
+	@Override
+	public Future<Void> writeEarlyHints(MultiMap headers) {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public void writeEarlyHints(MultiMap headers, Handler<AsyncResult<Void>> handler) {
+
 	}
 
 	@Override
@@ -180,38 +210,42 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public void end(String s) {
+	public Future<Void> end(String s) {
 		endHandler.handle(s);
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public void end(String s, String s2) {
+	public Future<Void> end(String s, String s2) {
 		endHandler.handle(s);
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public void end(Buffer buffer) {
+	public Future<Void> end(Buffer buffer) {
 		endHandler.handle(buffer.toString());
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public void end() {
+	public Future<Void> end() {
 		endHandler.handle(null);
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String s) {
-		return this;
+	public Future<Void> sendFile(String s) {
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String filename, long offset) {
-		return this;
+	public Future<Void> sendFile(String filename, long offset) {
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String filename, long offset, long length) {
-		return this;
+	public Future<Void> sendFile(String filename, long offset, long length) {
+		return Future.succeededFuture();
 	}
 
 	@Override
@@ -294,12 +328,23 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse writeCustomFrame(HttpFrame frame) {
-		return this;
+	public Future<HttpServerResponse> push(HttpMethod method, HostAndPort authority, String path, MultiMap headers) {
+		return Future.succeededFuture();
 	}
 
 	@Override
-	public void reset(long code) {
+	public Future<HttpServerResponse> push(HttpMethod method, String host, String path, MultiMap headers) {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public boolean reset(long code) {
+		return true;
+	}
+
+	@Override
+	public HttpServerResponse writeCustomFrame(HttpFrame frame) {
+		return this;
 	}
 
 	@Override
@@ -336,33 +381,26 @@ public class JsonHttpResponse implements HttpServerResponse {
 		return;
 	}
 
-	@Override
-	public HttpServerResponse write(Buffer buff, Handler<AsyncResult<Void>> handler)
-	{
-		return null;
-	}
-
-	@Override
-	public HttpServerResponse write(String str, Handler<AsyncResult<Void>> handler)
-	{
-		return null;
-	}
-
-	@Override
-	public HttpServerResponse write(String str, String str2, Handler<AsyncResult<Void>> handler)
-	{
-		return null;
-	}
 
 	@Override
 	public HttpServerResponse addCookie(Cookie cookie)
 	{
-		return null;
+		return this;
 	}
 
 	@Override
 	public Cookie removeCookie(String str, boolean bool)
 	{
+		return null;
+	}
+
+	@Override
+	public Set<Cookie> removeCookies(String name, boolean invalidate) {
+		return null;
+	}
+
+	@Override
+	public @Nullable Cookie removeCookie(String name, String domain, String path, boolean invalidate) {
 		return null;
 	}
 }

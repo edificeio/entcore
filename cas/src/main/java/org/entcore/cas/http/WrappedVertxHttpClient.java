@@ -23,48 +23,43 @@ import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.http.ClientResponse;
 import fr.wseduc.cas.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 
 public class WrappedVertxHttpClient implements HttpClient {
 
-	private io.vertx.core.http.HttpClient httpClient;
+  private io.vertx.core.http.HttpClient httpClient;
 
-	public WrappedVertxHttpClient(io.vertx.core.http.HttpClient httpClient) {
-		this.httpClient = httpClient;
-	}
+  public WrappedVertxHttpClient(io.vertx.core.http.HttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
 
-	@Override
-	public void get(String uri, final Handler<ClientResponse> handler) {
-		HttpClientRequest req = httpClient.get(uri, new io.vertx.core.Handler<HttpClientResponse>() {
-			@Override
-			public void handle(final HttpClientResponse response) {
-				handler.handle(new ClientResponse() {
-					@Override
-					public int getStatusCode() {
-						return response.statusCode();
-					}
-				});
-				httpClient.close();
-			}
-		});
-		req.end();
-	}
+  @Override
+  public void get(String uri, final Handler<ClientResponse> handler) {
+    httpClient.request(HttpMethod.GET, uri)
+        .flatMap(HttpClientRequest::send)
+        .onSuccess(response -> {
+          handler.handle(response::statusCode);
+          httpClient.close();
+        })
+        .onFailure(th -> {
+          handler.handle(() -> 500);
+          httpClient.close();
+        });
+  }
 
-	@Override
-	public void post(String uri, String body, final  Handler<ClientResponse> handler) {
-		HttpClientRequest req = httpClient.post(uri, new io.vertx.core.Handler<HttpClientResponse>() {
-			@Override
-			public void handle(final HttpClientResponse response) {
-				handler.handle(new ClientResponse() {
-					@Override
-					public int getStatusCode() {
-						return response.statusCode();
-					}
-				});
-				httpClient.close();
-			}
-		});
-		req.end(body);
-	}
+  @Override
+  public void post(String uri, String body, final Handler<ClientResponse> handler) {
+
+    httpClient.request(HttpMethod.POST, uri)
+        .flatMap(r -> r.send(body))
+        .onSuccess(response -> {
+              handler.handle(response::statusCode);
+              httpClient.close();
+            }
+        ).onFailure(th -> {
+          handler.handle(() -> 500);
+          httpClient.close();
+        });
+  }
 
 }

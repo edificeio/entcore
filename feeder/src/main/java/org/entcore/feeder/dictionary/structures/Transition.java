@@ -130,7 +130,7 @@ public class Transition {
 				}
 			};
 		}
-		handlers[0].handle(new ResultMessage().put("result", new fr.wseduc.webutils.collections.JsonArray()));
+		handlers[0].handle(new ResultMessage().put("result", new JsonArray()));
 	}
 
 	private Handler<Message<JsonObject>> commitHandler(final Handler<Message<JsonObject>> resHandler,
@@ -146,7 +146,7 @@ public class Transition {
 							public void handle(Message<JsonObject> event) {
 								JsonArray results = m.body().getJsonArray("results");
 								if ("ok".equals(event.body().getString("status")) && results != null && results.size() == 2) {
-									JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
+									JsonArray r = getOrElse(results.getJsonArray(0), new JsonArray());
 									publishTransition(structure, results.getJsonArray(1));
 									if (r.size() > 0) {
 										if (onlyRemoveShare) {

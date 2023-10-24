@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,12 +16,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import io.vertx.core.Promise;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 
 public class StorageHelper {
@@ -129,7 +128,7 @@ public class StorageHelper {
 		List<Future> copyFutures = new ArrayList<>();
 		Set<String> fileIds = new HashSet<>(StorageHelper.getListOfFileIds(files));
 		for (String fId : fileIds) {
-			Future<Entry<String, String>> future = Future.future();
+			Promise<Entry<String, String>> future = Promise.promise();
 			storage.copyFile(fId, res -> {
 				if (isOk(res)) {
 					future.complete(new AbstractMap.SimpleEntry<String, String>(fId, res.getString("_id")));
@@ -147,7 +146,7 @@ public class StorageHelper {
 					}
 				}
 			});
-			copyFutures.add(future);
+			copyFutures.add(future.future());
 		}
 		return CompositeFuture.all(copyFutures).map(copyStorageEvent -> {
 			@SuppressWarnings("unchecked")
@@ -158,12 +157,12 @@ public class StorageHelper {
 		});
 	}
 
-	/** 
-	 * Copy main file and any thumbnail of a document. 
+	/**
+	 * Copy main file and any thumbnail of a document.
 	 * @param storage where to copy
 	 * @param fileIds a list of file ids
 	 * @return a Map of <ID of original file, ID of copied file>
-	 *		   
+	 *
 	 */
 	static public Future<Map<String, String>> copyFiles(Storage storage, final List<String> fileIds) {
 		@SuppressWarnings("rawtypes")

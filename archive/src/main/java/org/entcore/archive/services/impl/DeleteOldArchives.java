@@ -27,7 +27,6 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.storage.Storage;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.utils.StringUtils;
@@ -37,7 +36,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 public class DeleteOldArchives implements Handler<Long> {
 
@@ -85,14 +85,14 @@ public class DeleteOldArchives implements Handler<Long> {
         c.setTime(new Date());
         c.add(Calendar.HOUR, -delay);
         final JsonObject query = new JsonObject()
-                .put("date", new JsonObject()
-                        .put("$lt", new JsonObject()
-                                .put("$date", c.getTime().getTime())));
+            .put("date", new JsonObject()
+                .put("$lt", new JsonObject()
+                    .put("$date", formatUtcDateTime(c.getTime()))));
         mongo.find(Archive.ARCHIVES, query, event -> {
             JsonArray res = event.body().getJsonArray("results");
             if ("ok".equals(event.body().getString("status"))) {
                 if (res != null && res.size() > 0) {
-                    JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
+                    JsonArray ids = new JsonArray();
                     for (Object object : res) {
                         if (!(object instanceof JsonObject)) continue;
                         JsonObject jo = (JsonObject) object;

@@ -374,7 +374,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					.put("profile", "^.*?" + a[1] + "$");
 			newGroups.add(query, params);
 		}
-		JsonArray communiqueWith = defaultRules.getJsonArray("communiqueWith", new fr.wseduc.webutils.collections.JsonArray());
+		JsonArray communiqueWith = defaultRules.getJsonArray("communiqueWith", new JsonArray());
 		Set<String> classes = new HashSet<>();
 		Set<String> structures = new HashSet<>();
 		StringBuilder groupLabelSB = new StringBuilder("g:ProfileGroup");

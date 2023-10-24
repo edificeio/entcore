@@ -24,6 +24,7 @@ import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -61,10 +62,10 @@ public class SqlShareService extends GenericShareService {
 
 	private Future<Set<String>[]> findUserIdsAndGroups(final String resourceId, final String currentUserId,
 													   final Optional<Set<String>> actions) {
-		Future<Set<String>[]> future = Future.future();
+		Promise<Set<String>[]> future = Promise.promise();
 		final String query = "SELECT s.member_id, s.action, m.user_id, m.group_id FROM " + shareTable + " AS s " + "JOIN " + schema
 				+ "members AS m ON s.member_id = m.id WHERE resource_id = ?";
-		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)), sqlEvent -> {
+		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)), sqlEvent -> {
 			if ("ok".equals(sqlEvent.body().getString("status"))) {
 				JsonArray shared = sqlEvent.body().getJsonArray("results", new JsonArray());
 				Set<String> userIds = new HashSet<>();
@@ -108,7 +109,7 @@ public class SqlShareService extends GenericShareService {
 				future.fail("Error finding shared resource.");
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override
@@ -139,7 +140,7 @@ public class SqlShareService extends GenericShareService {
 				all.remove(userId);
 				return all;
 			});
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	@Override
@@ -209,7 +210,7 @@ public class SqlShareService extends GenericShareService {
 		final JsonArray actions = getResoureActions(securedActions);
 		String query = "SELECT s.member_id, s.action, m.group_id FROM " + shareTable + " AS s " + "JOIN " + schema
 				+ "members AS m ON s.member_id = m.id WHERE resource_id = ?";
-		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)),
+		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)),
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {
@@ -228,7 +229,7 @@ public class SqlShareService extends GenericShareService {
 										: userCheckedActions;
 								JsonArray m = checkedActions.getJsonArray(memberId);
 								if (m == null) {
-									m = new fr.wseduc.webutils.collections.JsonArray();
+									m = new JsonArray();
 									checkedActions.put(memberId, m);
 								}
 								m.add(row.getValue(1));
@@ -264,7 +265,7 @@ public class SqlShareService extends GenericShareService {
 
 	@Override
 	public Future<JsonObject> share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
-		final Future<JsonObject> futureValidateShares = Future.future();
+		final Promise<JsonObject> futureValidateShares = Promise.promise();
 		shareValidation(resourceId, userId, share, res -> {
 			if (res.isRight()) {
 				final SqlStatementsBuilder s = new SqlStatementsBuilder();
@@ -306,7 +307,7 @@ public class SqlShareService extends GenericShareService {
 				futureValidateShares.fail(res.left().getValue());
 			}
 		});
-		return futureValidateShares;
+		return futureValidateShares.future();
 	}
 
 	private void removeShare(String resourceId, String userId, List<String> actions,
@@ -316,10 +317,10 @@ public class SqlShareService extends GenericShareService {
 		if (actions != null && actions.size() > 0) {
 			Object[] a = actions.toArray();
 			actionFilter = "action IN " + Sql.listPrepared(a) + " AND ";
-			values = new fr.wseduc.webutils.collections.JsonArray(actions);
+			values = new JsonArray(actions);
 		} else {
 			actionFilter = "";
-			values = new fr.wseduc.webutils.collections.JsonArray();
+			values = new JsonArray();
 		}
 		String query = "DELETE FROM " + shareTable + " WHERE " + actionFilter + "resource_id = ? AND member_id = ?";
 		values.add(Sql.parseId(resourceId)).add(userId);

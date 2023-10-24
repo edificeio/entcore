@@ -33,7 +33,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.BufferFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;

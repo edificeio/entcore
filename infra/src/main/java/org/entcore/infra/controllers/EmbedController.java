@@ -62,17 +62,17 @@ public class EmbedController extends BaseController {
 		if(exists) {
 			Buffer buff = vertx.fileSystem().readFileBlocking(defaultEmbedLocation);
 			try {
-				this.defaultEmbedProviders = new fr.wseduc.webutils.collections.JsonArray(buff.toString("UTF-8"));
+				this.defaultEmbedProviders = new JsonArray(buff.toString("UTF-8"));
 			} catch (Exception e) {
 				log.error("Default embedded providers file contains invalid json.");
 				log.error(e);
-				this.defaultEmbedProviders = new fr.wseduc.webutils.collections.JsonArray();
+				this.defaultEmbedProviders = new JsonArray();
 				return false;
 			}
 			return true;
 		} else {
 			log.error("Default embedded providers json file not found.");
-			this.defaultEmbedProviders = new fr.wseduc.webutils.collections.JsonArray();
+			this.defaultEmbedProviders = new JsonArray();
 			return false;
 		}
 	}

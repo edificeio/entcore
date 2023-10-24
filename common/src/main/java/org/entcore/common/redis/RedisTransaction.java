@@ -1,10 +1,8 @@
 package org.entcore.common.redis;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.*;
 import io.vertx.redis.client.*;
 
 import java.util.ArrayList;
@@ -33,17 +31,13 @@ public class RedisTransaction implements RedisAPI, IRedisClient {
         this.redisAPI.close();
     }
 
-    private AsyncResult<List<Response>> getResponses(final AsyncResult<Response> result, final boolean clear){
+    private AsyncResult<Response> getResponse(final AsyncResult<Response> result, final boolean clear){
         if(result.succeeded()){
             final Response response = result.result();
-            final List<Response> responses = new ArrayList<>();
-            for (int i = 0; i < response.size(); i++) {
-                responses.add(this.commands.get(i).promise.future().result());
-            }
             if(clear){
                 this.clear();
             }
-            return new DefaultAsyncResult<>(responses);
+            return new DefaultAsyncResult<>(response);
         }else{
             if(clear){
                 this.clear();
@@ -53,28 +47,26 @@ public class RedisTransaction implements RedisAPI, IRedisClient {
     }
 
     private Future<Void> execCommand(){
-        final List<Future> futures = new ArrayList<>();
+        final List<Future<?>> futures = new ArrayList<>();
         for(final PendingCommand cmd : this.commands){
-            final Future<Response> future = cmd.promise.future();
-            futures.add(future);
-            this.redisAPI.send(cmd.command, cmd.args).handle(future);
+            final Promise<Response> future = cmd.promise;
+            futures.add(future.future());
+            this.redisAPI.send(cmd.command, cmd.args).onComplete(future);
         }
-        return CompositeFuture.all(futures).mapEmpty();
+        return Future.all(futures).mapEmpty();
     }
 
     public void clear(){
         this.commands.clear();
     }
 
-    public Future<List<Response>> commit() {
-        final Promise<List<Response>> promise = Promise.promise();
+    public Future<Response> commit() {
+        final Promise<Response> promise = Promise.promise();
         this.redisAPI.multi(multiRes -> {
             if(multiRes.succeeded()){
                 this.execCommand().onComplete(execCommands -> {
                     if(execCommands.succeeded()){
-                        this.redisAPI.exec(execResponses->{
-                            promise.handle(getResponses(execResponses, true));
-                        });
+                        this.redisAPI.exec(execResponses-> promise.handle(getResponse(execResponses, true)));
                     }else{
                         promise.fail(execCommands.cause());
                     }
@@ -86,24 +78,24 @@ public class RedisTransaction implements RedisAPI, IRedisClient {
         return promise.future();
     }
 
-    public Future<List<Response>> discard() {
-        final Promise<List<Response>> promise = Promise.promise();
+    @Override
+    public RedisAPI discard(Handler<AsyncResult<@Nullable Response>> handler) {
         this.redisAPI.multi(multiRes -> {
             if(multiRes.succeeded()){
                 this.execCommand().onComplete(execCommands -> {
                     if(execCommands.succeeded()){
                         this.redisAPI.discard(execResponses->{
-                            promise.handle(getResponses(execResponses, true));
+                            handler.handle(getResponse(execResponses, true));
                         });
                     }else{
-                        promise.fail(execCommands.cause());
+                        handler.handle(new DefaultAsyncResult<>(execCommands.cause()));
                     }
                 });
             }else{
-                promise.fail(multiRes.cause());
+                handler.handle(new DefaultAsyncResult<>(multiRes.cause()));
             }
         });
-        return promise.future();
+        return this;
     }
 
     @Override

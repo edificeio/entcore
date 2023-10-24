@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -55,7 +56,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			// administratives Structures first
 			final List<String> uaiList = new ArrayList<>();
 
-			for (Object o : data.getJsonArray("administratives", new fr.wseduc.webutils.collections.JsonArray())) {
+			for (Object o : data.getJsonArray("administratives", new JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				final String uai = structure.getString("UAI");
 				if (!StringUtils.isEmpty(uai)) {
@@ -64,7 +65,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 				}
 			}
 
-			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray())) {
+			for (Object o : data.getJsonArray("structures", new JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				final String uai = structure.getString("UAI");
 				if (!StringUtils.isEmpty(uai) && !uaiList.contains(uai)) {
@@ -73,7 +74,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// classes
-			for (Object o : data.getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray())) {
+			for (Object o : data.getJsonArray("classes", new JsonArray())) {
 				JsonObject classe = (JsonObject) o;
 				additionnalAttributes.add(createTextElement("classes", classe.getString("name"), doc));
 			}

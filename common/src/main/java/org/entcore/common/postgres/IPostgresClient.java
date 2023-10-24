@@ -1,21 +1,22 @@
 package org.entcore.common.postgres;
 
 import fr.wseduc.webutils.security.Md5;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.pubsub.PgSubscriber;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+
+import java.util.function.Function;
 
 public interface IPostgresClient {
     Future<RowSet<Row>> preparedQuery(String query, Tuple tuple);
 
-    Future<IPostgresTransaction> transaction();
+    <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function);
 
     Future<RowStream<Row>> queryStream(String query, Tuple tuple, int batchSize);
 
@@ -25,23 +26,7 @@ public interface IPostgresClient {
         final JsonObject postgresConfig = getPostgresConfig(vertx, config);
         final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
         final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
-        if(worker){
-            //one consumer per config
-            final String suffix = Md5.hash(postgresConfig.encode());
-            return new PostgresClientBusPublisher(vertx, postgresConfig, suffix);
-        }else{
-            return postgresClient;
-        }
-    }
-
-
-    static IPostgresClient initPostgresConsumer(final Vertx vertx, final JsonObject config, final boolean pool) throws Exception{
-        final JsonObject postgresConfig = getPostgresConfig(vertx, config);
-        final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
-        final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
-        //one consumer per config
-        final String suffix = Md5.hash(postgresConfig.encode());
-        return PostgresClientBusConsumer.initInstance(vertx, postgresClient, suffix);
+        return postgresClient;
     }
 
     static JsonObject getPostgresConfig(final Vertx vertx, final JsonObject config) throws Exception{
@@ -77,5 +62,21 @@ public interface IPostgresClient {
             options.setSslMode(sslMode).setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
         }
         return options;
+    }
+
+
+    static Future<Void> notify(final SqlConnection connection, final String channel, final String message) {
+        final Promise<Void> future = Promise.promise();
+        //prepareQuery not works with notify allow only internal safe message
+        connection.query(
+            "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
+            future.handle(notified.mapEmpty());
+            if (notified.failed()) {
+                future.fail(notified.cause());
+            } else {
+                future.complete();
+            }
+        });
+        return future.future();
     }
 }

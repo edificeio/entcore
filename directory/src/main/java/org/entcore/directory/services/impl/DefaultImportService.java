@@ -66,7 +66,7 @@ public class DefaultImportService implements ImportService {
 			final JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "validate")
 					.put("adml-structures", admlValidate.getAdmlStructures());
-			eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
@@ -86,13 +86,13 @@ public class DefaultImportService implements ImportService {
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
 								new JsonObject().put("global",
-								new fr.wseduc.webutils.collections.JsonArray().add(res.body().getString("message", "")))));
+								new JsonArray().add(res.body().getString("message", "")))));
 					}
 				}
 			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.put("global", new fr.wseduc.webutils.collections.JsonArray().add("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -113,7 +113,7 @@ public class DefaultImportService implements ImportService {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "import");
-			eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request("entcore.feeder", action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
@@ -125,13 +125,13 @@ public class DefaultImportService implements ImportService {
 						}
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().put("global",
-								new fr.wseduc.webutils.collections.JsonArray().add(event.body().getString("message", "")))));
+								new JsonArray().add(event.body().getString("message", "")))));
 					}
 			}
 			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.put("global", new fr.wseduc.webutils.collections.JsonArray().add("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -147,7 +147,7 @@ public class DefaultImportService implements ImportService {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "columnsMapping");
-			eb.send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
@@ -220,7 +220,7 @@ public class DefaultImportService implements ImportService {
 	}
 
 	protected void sendCommand(final Handler<Either<JsonObject, JsonObject>> handler, JsonObject action) {
-		eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(600000L), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request("entcore.feeder", action, new DeliveryOptions().setSendTimeout(600000L), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {

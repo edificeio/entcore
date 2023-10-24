@@ -16,6 +16,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 
 import fr.wseduc.rs.*;
+import io.vertx.core.*;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -49,10 +50,6 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;	
-import io.vertx.core.Vertx;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -157,7 +154,7 @@ public class WorkspaceController extends BaseController {
 					}
 					final Future<FolderImporterZip.FolderImporterZipContext> future = FolderImporterZip.createContext(vertx, userInfos, request);
 					request.resume();
-					future.setHandler(resContext -> {
+					future.onComplete(resContext -> {
 						if(resContext.succeeded()){
 							final FolderImporterZip.FolderImporterZipContext context = resContext.result();
 							if(hasFoundParent){
@@ -363,7 +360,7 @@ public class WorkspaceController extends BaseController {
 							if (recipientIds.isEmpty()) {
 								return Future.succeededFuture(new JsonObject());
 							}
-							Future<JsonObject> futureFindResource = Future.future();
+							Promise<JsonObject> futureFindResource = Promise.promise();
 							String elementId = null;
 							if (addVersion) {
 								// notification about a changed file
@@ -374,7 +371,7 @@ public class WorkspaceController extends BaseController {
 							} else {
 								// neither a folderid of a fileid => bad request
 								futureFindResource.fail("the id of the concerned folder was not specified");
-								return futureFindResource;
+								return futureFindResource.future();
 							}
 							final String elementIdFinal = elementId;
 							final ElementQuery notifiedEltQuery = new ElementQuery(true);
@@ -393,8 +390,8 @@ public class WorkspaceController extends BaseController {
 									futureFindResource.fail("missing name or resource" + elementIdFinal);
 								}
 							});
-							return futureFindResource;
-						}).setHandler(ev -> {
+							return futureFindResource.future();
+						}).onComplete(ev -> {
 							if (ev.succeeded()) {
 								Set<String> recipientId = futureRecipientIds.result();
 								JsonObject result = ev.result();
@@ -1455,7 +1452,7 @@ public class WorkspaceController extends BaseController {
 				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.put("username", user.getUsername()).put("appPrefix", pathPrefix + "/workspace").put("doc", "share");
 		JsonObject keys = new JsonObject().put("name", 1).put("eType", 1).put("eParent", 1).put("isShared", 1);
-		Future<JsonObject> futureFindById = Future.future();
+		Promise<JsonObject> futureFindById = Promise.promise();
 		workspaceService.findById(resource, keys, event -> {
 			if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 				futureFindById.complete(event.getJsonObject("result"));
@@ -1464,7 +1461,7 @@ public class WorkspaceController extends BaseController {
 				futureFindById.fail("Unable to send timeline notification : missing name on resource " + resource);
 			}
 		});
-		futureFindById.compose(result -> {
+		futureFindById.future().compose(result -> {
 			boolean isFolder = DocumentHelper.isFolder(result);
 			String parentId = DocumentHelper.getParent(result);
 			if (isFolder) {
@@ -1472,7 +1469,7 @@ public class WorkspaceController extends BaseController {
 			} else if (parentId == null) {
 				return Future.succeededFuture(new JsonObject());
 			} else {
-				Future<JsonObject> futureParent = Future.future();
+				Promise<JsonObject> futureParent = Promise.promise();
 				workspaceService.findById(parentId, keys, event -> {
 					if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 						futureParent.complete(event.getJsonObject("result"));
@@ -1481,12 +1478,12 @@ public class WorkspaceController extends BaseController {
 						futureParent.complete(new JsonObject());
 					}
 				});
-				return futureParent;
+				return futureParent.future();
 			}
-		}).setHandler(evtParent -> {
+		}).onComplete(evtParent -> {
 			if (evtParent.succeeded()) {
 				JsonObject parent = evtParent.result();
-				JsonObject result = futureFindById.result();
+				JsonObject result = futureFindById.future().result();
 				String resourceName = result.getString("name", "");
 				boolean isFolder = DocumentHelper.isFolder(result);
 				final JsonObject pushNotif = new JsonObject();
@@ -1738,7 +1735,7 @@ public class WorkspaceController extends BaseController {
 			return;
 		}
 		String name = message.body().getString("name");
-		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
+		JsonArray t = message.body().getJsonArray("thumbs", new JsonArray());
 		List<String> thumbs = new ArrayList<>();
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));

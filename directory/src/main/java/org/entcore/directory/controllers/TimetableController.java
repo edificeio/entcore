@@ -67,385 +67,358 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class TimetableController extends BaseController {
 
-	private TimetableService timetableService;
-	private Map<String, Long> importInProgress;
+  private TimetableService timetableService;
+  private Map<String, Long> importInProgress;
 
-	@Override
-	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions)
-	{
-		super.init(vertx, config, rm, securedActions);
+  @Override
+  public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+    super.init(vertx, config, rm, securedActions);
 
-		this.importInProgress = MapFactory.getSyncClusterMap("timetable-imports", vertx);
+    this.importInProgress = MapFactory.getSyncClusterMap("timetable-imports", vertx);
 
-		Long periodicInProgressClear = config.getLong("periodicInProgressClear");
+    Long periodicInProgressClear = config.getLong("periodicInProgressClear");
 
-		if (periodicInProgressClear != null)
-		{
-			vertx.setPeriodic(periodicInProgressClear, new Handler<Long>()
-			{
-				@Override
-				public void handle(Long event)
-				{
-					final long limit = System.currentTimeMillis() - config.getLong("periodicInProgressClear", 3600000l);
-					Set<Map.Entry<String, Long>> entries = new HashSet<>(importInProgress.entrySet());
+    if (periodicInProgressClear != null) {
+      vertx.setPeriodic(periodicInProgressClear, new Handler<Long>() {
+        @Override
+        public void handle(Long event) {
+          final long limit = System.currentTimeMillis() - config.getLong("periodicInProgressClear", 3600000l);
+          Set<Map.Entry<String, Long>> entries = new HashSet<>(importInProgress.entrySet());
 
-					for (Map.Entry<String, Long> e : entries)
-					{
-						if (e.getValue() == null || e.getValue() < limit)
-						{
-							importInProgress.remove(e.getKey());
-						}
-					}
-				}
-			});
-		}
-	}
-
-	@Get("/timetable")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
-	@MfaProtected()
-	public void timetable(HttpServerRequest request) {
-		renderView(request);
-	}
-
-	@Get("/timetable/courses/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
-	@MfaProtected()
-	public void listCourses(HttpServerRequest request) {
-		final String structureId = request.params().get("structureId");
-		long lastDate;
-		try {
-			lastDate = Long.parseLong(getOrElse(request.params().get("lastDate"), "0", false));
-		} catch (NumberFormatException e) {
-			try {
-				lastDate = DateTime.parse(request.params().get("lastDate")).getMillis();
-			} catch (RuntimeException e2) {
-				badRequest(request, "invalid.date");
-				return;
-			}
-		}
-		timetableService.listCourses(structureId, lastDate, arrayResponseHandler(request));
-	}
-
-	@Get("/timetable/courses/:structureId/:begin/:end")
-	@ApiDoc("Get courses for a structure between two dates by optional teacher id and/or optional group name.")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(UserInStructure.class)
-	public void listCoursesBetweenTwoDates(final HttpServerRequest request) {
-		final String structureId = request.params().get("structureId");
-		final String teacherId = request.params().get("teacherId");
-		final List<String> groupNames = request.params().getAll("group");
-		final String beginDate = request.params().get("begin");
-		final String endDate = request.params().get("end");
-
-		if (beginDate!=null && endDate != null &&
-				beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-			timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupNames, beginDate, endDate, arrayResponseHandler(request));
-		} else {
-			badRequest(request, "timetable.invalid.dates");
-		}
-	}
-
-	@Get("/timetable/subjects/:structureId")
-	@ApiDoc("Get subject list of the structure by optional teacher identifiers and with the ability to display associated groups and classes.")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(UserInStructure.class)
-	public void listSubjects(HttpServerRequest request) {
-		final String structureId = request.params().get("structureId");
-		final List<String> teachers = request.params().getAll("teacherId");
-		final boolean classes = request.params().contains("classes");
-		final boolean groups = request.params().contains("groups");
-
-		timetableService.listSubjects(structureId, teachers, classes, groups, arrayResponseHandler(request));
-	}
-
-	@Get("/timetable/subjects/:structureId/group")
-	@ApiDoc("Get subject list of the structure by external group id.")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(UserInStructure.class)
-	public void listSubjectsByGroup(HttpServerRequest request) {
-		final String structureId = request.params().get("structureId");
-		final String externalGroupId = request.params().get("externalGroupId");
-
-		timetableService.listSubjectsByGroup(structureId, externalGroupId, arrayResponseHandler(request));
-	}
-
-	@Put("/timetable/init/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructureWithoutEDTInit.class)
-	@MfaProtected()
-	public void initStructure(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, pathPrefix + "initTimetable", new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject conf) {
-				timetableService.initStructure(request.params().get("structureId"), conf, notEmptyResponseHandler(request));
-			}
-		});
-	}
-
-	@Get("/timetable/classes/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructure.class)
-	@MfaProtected()
-	public void classesMapping(final HttpServerRequest request) {
-		timetableService.classesMapping(request.params().get("structureId"), defaultResponseHandler(request));
-	}
-
-	@Put("/timetable/classes/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructure.class)
-	@MfaProtected()
-	public void updateClassesMapping(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject mapping) {
-				timetableService.updateClassesMapping(request.params().get("structureId"), mapping, defaultResponseHandler(request));
-			}
-		});
-	}
-
-	@Get("/timetable/groups/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructure.class)
-	@MfaProtected()
-	public void groupsMapping(final HttpServerRequest request) {
-		timetableService.groupsMapping(request.params().get("structureId"), defaultResponseHandler(request));
-	}
-
-	@Put("/timetable/groups/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdmlOfStructure.class)
-	@MfaProtected()
-	public void updateGroupsMapping(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject mapping) {
-				timetableService.updateGroupsMapping(request.params().get("structureId"), mapping, defaultResponseHandler(request));
-			}
-		});
-	}
-
-	@Delete("/timetable/import/progress")
-	@ResourceFilter(SuperAdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void clearImportInProgress(final HttpServerRequest request)
-	{
-		this.importInProgress.clear();
-		Renders.ok(request);
-	}
-
-	@Post("/timetable/import/:structureId")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void importTimetable(final HttpServerRequest request) {
-		String structAttr = request.params().get("structAttr");
-		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
-		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, false, false, reportAsAutomatic);
-	}
-
-	@Post("/timetable/import/:timetableType/:structureId")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void importSpecificTimetable(final HttpServerRequest request)
-	{
-		String structAttr = request.params().get("structAttr");
-		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
-		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
-		this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), true, isUAI, false, false, reportAsAutomatic);
-	}
-
-	@Post("/timetable/import/groups/:structureId")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void importTimetableGroupsOnly(final HttpServerRequest request) {
-		String structAttr = request.params().get("structAttr");
-		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
-		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, false, true, reportAsAutomatic);
-	}
-
-	private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean timetableMode,
-										boolean identifierIsUAI, boolean feederImport, boolean groupsOnly, boolean setReportAsAutomatic)
-	{
-		if(importInProgress.containsKey(structureIdentifier) == true)
-		{
-			badRequest(request, "timetable.import.exists");
-			return;
-		}
-		request.setExpectMultipart(true);
-
-		importInProgress.put(structureIdentifier, System.currentTimeMillis());
-		request.pause();
-		final String importId = UUID.randomUUID().toString();
-		final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
-		request.exceptionHandler(new Handler<Throwable>() {
-			@Override
-			public void handle(Throwable event) {
-				importInProgress.remove(structureIdentifier);
-				badRequest(request, event.getMessage());
-				deleteImportPath(vertx, path);
-			}
-		});
-		request.uploadHandler(new Handler<HttpServerFileUpload>() {
-			@Override
-			public void handle(final HttpServerFileUpload upload) {
-				final String filename = path + File.separator + upload.filename();
-				upload.streamToFileSystem(filename).endHandler(new Handler<Void>()
-				{
-					@Override
-					public void handle(Void event)
-					{
-						Handler<Either<JsonObject, JsonObject>> hnd = new Handler<Either<JsonObject, JsonObject>>()
-						{
-							@Override
-							public void handle(Either<JsonObject, JsonObject> result)
-							{
-								importInProgress.remove(structureIdentifier);
-								reportResponseHandler(vertx, path, request).handle(result);
-							}
-						};
-
-						if(feederImport != true)
-						{
-							timetableService.importTimetable(structureIdentifier, filename,
-									getHost(request), I18n.acceptLanguage(request),
-									identifierIsUAI, timetableType, groupsOnly, timetableMode,
-									setReportAsAutomatic, hnd);
-						}
-						else
-						{
-							timetableService.feederPronote(structureIdentifier, filename,
-									getHost(request), I18n.acceptLanguage(request),
-									identifierIsUAI, setReportAsAutomatic,
-									hnd);
-						}
-					}
-				});
-				request.resume();
-			}
-		});
-		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					request.resume();
-				} else {
-					importInProgress.remove(structureIdentifier);
-					badRequest(request, "mkdir.error");
-				}
-			}
-		});
-	}
-
-	@Post("/timetable/feeder/pronote/:structureId")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void launchPronoteImport(final HttpServerRequest request)
-	{
-		String structAttr = request.params().get("structAttr");
-		String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
-		boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
-		boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
-		this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, true, false, reportAsAutomatic);
-	}
-
-	@Get("/timetable/import/:structureId/reports")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void listReports(final HttpServerRequest request) {
-		timetableService.listReports(request.params().get("structureId"), arrayResponseHandler(request));
-	}
-
-	@Get("/timetable/import/:structureId/report/:reportId")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void getReport(final HttpServerRequest request) {
-		timetableService.getReport(request.params().get("structureId"), request.params().get("reportId"), defaultResponseHandler(request));
-	}
-
-	@BusAddress("timetable")
-	@SuppressWarnings("unchecked")
-	public void getTimetable(final Message<JsonObject> message){
-		final String action = message.body().getString("action");
-
-		if (action == null) {
-			log.warn("[@BusAddress](timetable) Invalid action.");
-			message.reply(new JsonObject().put("status", "error")
-					.put("message", "Invalid action."));
-			return;
-		}
-
-		final String structureId = message.body().getString("structureId");
-
-		switch(action){
-			case "get.course":
-				final String teacherId = message.body().getString("teacherId");
-				final List<String> groupNames = message.body().getJsonArray("group", new JsonArray()).getList();
-				final String beginDate = message.body().getString("begin");
-				final String endDate = message.body().getString("end");
-
-				if (beginDate!=null && endDate != null &&
-						beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-
-					timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupNames, beginDate, endDate, getBusResultHandler(message));
-				} else {
-					message.reply(new JsonObject()
-							.put("status", "error")
-							.put("message", "timetable.invalid.dates"));
-				}
-				break;
-			case "get.subjects":
-				final List<String> teachers = message.body().getJsonArray("teacherIds", new fr.wseduc.webutils.collections.JsonArray()).getList();
-				final String externalGroupId = message.body().getString("externalGroupId");
-				final boolean classes = message.body().getBoolean("classes", false);
-				final boolean groups = message.body().getBoolean("groups", false);
-
-				if (StringUtils.isEmpty(externalGroupId)) {
-					timetableService.listSubjects(structureId, teachers, classes, groups, getBusResultHandler(message));
-				} else {
-					timetableService.listSubjectsByGroup(structureId, externalGroupId, getBusResultHandler(message));
-				}
-
-				break;
-			default:
-				message.reply(new JsonObject().put("status", "error")
-						.put("message", "Invalid action."));
-				break;
-		}
-	}
-
-	private Handler<Either<String, JsonArray>> getBusResultHandler(final Message<JsonObject> message) {
-		return new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> result) {
-                if (result.isRight()) {
-                    message.reply(new JsonObject()
-                            .put("status", "ok")
-                            .put("results", result.right().getValue()));
-                } else {
-                    message.reply(new JsonObject()
-                            .put("status", "error")
-                            .put("message", result.left().getValue()));
-                }
+          for (Map.Entry<String, Long> e : entries) {
+            if (e.getValue() == null || e.getValue() < limit) {
+              importInProgress.remove(e.getKey());
             }
-        };
-	}
+          }
+        }
+      });
+    }
+  }
 
-	public void setTimetableService(TimetableService timetableService) {
-		this.timetableService = timetableService;
-	}
+  @Get("/timetable")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdminFilter.class)
+  @MfaProtected()
+  public void timetable(HttpServerRequest request) {
+    renderView(request);
+  }
+
+  @Get("/timetable/courses/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(SuperAdminFilter.class)
+  @MfaProtected()
+  public void listCourses(HttpServerRequest request) {
+    final String structureId = request.params().get("structureId");
+    long lastDate;
+    try {
+      lastDate = Long.parseLong(getOrElse(request.params().get("lastDate"), "0", false));
+    } catch (NumberFormatException e) {
+      try {
+        lastDate = DateTime.parse(request.params().get("lastDate")).getMillis();
+      } catch (RuntimeException e2) {
+        badRequest(request, "invalid.date");
+        return;
+      }
+    }
+    timetableService.listCourses(structureId, lastDate, arrayResponseHandler(request));
+  }
+
+  @Get("/timetable/courses/:structureId/:begin/:end")
+  @ApiDoc("Get courses for a structure between two dates by optional teacher id and/or optional group name.")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(UserInStructure.class)
+  public void listCoursesBetweenTwoDates(final HttpServerRequest request) {
+    final String structureId = request.params().get("structureId");
+    final String teacherId = request.params().get("teacherId");
+    final List<String> groupNames = request.params().getAll("group");
+    final String beginDate = request.params().get("begin");
+    final String endDate = request.params().get("end");
+
+    if (beginDate != null && endDate != null &&
+        beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+      timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupNames, beginDate, endDate, arrayResponseHandler(request));
+    } else {
+      badRequest(request, "timetable.invalid.dates");
+    }
+  }
+
+  @Get("/timetable/subjects/:structureId")
+  @ApiDoc("Get subject list of the structure by optional teacher identifiers and with the ability to display associated groups and classes.")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(UserInStructure.class)
+  public void listSubjects(HttpServerRequest request) {
+    final String structureId = request.params().get("structureId");
+    final List<String> teachers = request.params().getAll("teacherId");
+    final boolean classes = request.params().contains("classes");
+    final boolean groups = request.params().contains("groups");
+
+    timetableService.listSubjects(structureId, teachers, classes, groups, arrayResponseHandler(request));
+  }
+
+  @Get("/timetable/subjects/:structureId/group")
+  @ApiDoc("Get subject list of the structure by external group id.")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(UserInStructure.class)
+  public void listSubjectsByGroup(HttpServerRequest request) {
+    final String structureId = request.params().get("structureId");
+    final String externalGroupId = request.params().get("externalGroupId");
+
+    timetableService.listSubjectsByGroup(structureId, externalGroupId, arrayResponseHandler(request));
+  }
+
+  @Put("/timetable/init/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdmlOfStructureWithoutEDTInit.class)
+  @MfaProtected()
+  public void initStructure(final HttpServerRequest request) {
+    RequestUtils.bodyToJson(request, pathPrefix + "initTimetable", new Handler<JsonObject>() {
+      @Override
+      public void handle(JsonObject conf) {
+        timetableService.initStructure(request.params().get("structureId"), conf, notEmptyResponseHandler(request));
+      }
+    });
+  }
+
+  @Get("/timetable/classes/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdmlOfStructure.class)
+  @MfaProtected()
+  public void classesMapping(final HttpServerRequest request) {
+    timetableService.classesMapping(request.params().get("structureId"), defaultResponseHandler(request));
+  }
+
+  @Put("/timetable/classes/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdmlOfStructure.class)
+  @MfaProtected()
+  public void updateClassesMapping(final HttpServerRequest request) {
+    RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+      @Override
+      public void handle(JsonObject mapping) {
+        timetableService.updateClassesMapping(request.params().get("structureId"), mapping, defaultResponseHandler(request));
+      }
+    });
+  }
+
+  @Get("/timetable/groups/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdmlOfStructure.class)
+  @MfaProtected()
+  public void groupsMapping(final HttpServerRequest request) {
+    timetableService.groupsMapping(request.params().get("structureId"), defaultResponseHandler(request));
+  }
+
+  @Put("/timetable/groups/:structureId")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(AdmlOfStructure.class)
+  @MfaProtected()
+  public void updateGroupsMapping(final HttpServerRequest request) {
+    RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+      @Override
+      public void handle(JsonObject mapping) {
+        timetableService.updateGroupsMapping(request.params().get("structureId"), mapping, defaultResponseHandler(request));
+      }
+    });
+  }
+
+  @Delete("/timetable/import/progress")
+  @ResourceFilter(SuperAdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void clearImportInProgress(final HttpServerRequest request) {
+    this.importInProgress.clear();
+    Renders.ok(request);
+  }
+
+  @Post("/timetable/import/:structureId")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void importTimetable(final HttpServerRequest request) {
+    String structAttr = request.params().get("structAttr");
+    String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
+    boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+    boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+    this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, false, false, reportAsAutomatic);
+  }
+
+  @Post("/timetable/import/:timetableType/:structureId")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void importSpecificTimetable(final HttpServerRequest request) {
+    String structAttr = request.params().get("structAttr");
+    String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
+    boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+    boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+    this.receiveTimetableFile(request, request.params().get("structureId"), request.params().get("timetableType"), true, isUAI, false, false, reportAsAutomatic);
+  }
+
+  @Post("/timetable/import/groups/:structureId")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void importTimetableGroupsOnly(final HttpServerRequest request) {
+    String structAttr = request.params().get("structAttr");
+    String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
+    boolean isUAI = structAttr != null && structAttr.equalsIgnoreCase("uai");
+    boolean reportAsAutomatic = setReportAsAutomatic != null && setReportAsAutomatic.equals("true");
+    this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, false, true, reportAsAutomatic);
+  }
+
+  private void receiveTimetableFile(final HttpServerRequest request, String structureIdentifier, String timetableType, boolean timetableMode,
+                                    boolean identifierIsUAI, boolean feederImport, boolean groupsOnly, boolean setReportAsAutomatic) {
+    if (importInProgress.containsKey(structureIdentifier)) {
+      badRequest(request, "timetable.import.exists");
+      return;
+    }
+    request.setExpectMultipart(true);
+
+    importInProgress.put(structureIdentifier, System.currentTimeMillis());
+    request.pause();
+    final String importId = UUID.randomUUID().toString();
+    final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
+    request.exceptionHandler(new Handler<Throwable>() {
+      @Override
+      public void handle(Throwable event) {
+        importInProgress.remove(structureIdentifier);
+        badRequest(request, event.getMessage());
+        deleteImportPath(vertx, path);
+      }
+    });
+    request.uploadHandler(upload -> {
+      final String filename = path + File.separator + upload.filename();
+      upload.streamToFileSystem(filename).onComplete(event -> {
+        Handler<Either<JsonObject, JsonObject>> hnd = result -> {
+          importInProgress.remove(structureIdentifier);
+          reportResponseHandler(vertx, path, request).handle(result);
+        };
+
+        if (feederImport != true) {
+          timetableService.importTimetable(structureIdentifier, filename,
+              getHost(request), I18n.acceptLanguage(request),
+              identifierIsUAI, timetableType, groupsOnly, timetableMode,
+              setReportAsAutomatic, hnd);
+        } else {
+          timetableService.feederPronote(structureIdentifier, filename,
+              getHost(request), I18n.acceptLanguage(request),
+              identifierIsUAI, setReportAsAutomatic,
+              hnd);
+        }
+      });
+      request.resume();
+    });
+    vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> event) {
+        if (event.succeeded()) {
+          request.resume();
+        } else {
+          importInProgress.remove(structureIdentifier);
+          badRequest(request, "mkdir.error");
+        }
+      }
+    });
+  }
+
+  @Post("/timetable/feeder/pronote/:structureId")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void launchPronoteImport(final HttpServerRequest request) {
+    String structAttr = request.params().get("structAttr");
+    String setReportAsAutomatic = request.params().get("setReportAsAutomatic");
+    boolean isUAI = structAttr == null ? false : structAttr.toLowerCase().equals("uai");
+    boolean reportAsAutomatic = setReportAsAutomatic == null ? false : setReportAsAutomatic.equals("true");
+    this.receiveTimetableFile(request, request.params().get("structureId"), null, false, isUAI, true, false, reportAsAutomatic);
+  }
+
+  @Get("/timetable/import/:structureId/reports")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void listReports(final HttpServerRequest request) {
+    timetableService.listReports(request.params().get("structureId"), arrayResponseHandler(request));
+  }
+
+  @Get("/timetable/import/:structureId/report/:reportId")
+  @ResourceFilter(AdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void getReport(final HttpServerRequest request) {
+    timetableService.getReport(request.params().get("structureId"), request.params().get("reportId"), defaultResponseHandler(request));
+  }
+
+  @BusAddress("timetable")
+  @SuppressWarnings("unchecked")
+  public void getTimetable(final Message<JsonObject> message) {
+    final String action = message.body().getString("action");
+
+    if (action == null) {
+      log.warn("[@BusAddress](timetable) Invalid action.");
+      message.reply(new JsonObject().put("status", "error")
+          .put("message", "Invalid action."));
+      return;
+    }
+
+    final String structureId = message.body().getString("structureId");
+
+    switch (action) {
+      case "get.course":
+        final String teacherId = message.body().getString("teacherId");
+        final List<String> groupNames = message.body().getJsonArray("group", new JsonArray()).getList();
+        final String beginDate = message.body().getString("begin");
+        final String endDate = message.body().getString("end");
+
+        if (beginDate != null && endDate != null &&
+            beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+
+          timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupNames, beginDate, endDate, getBusResultHandler(message));
+        } else {
+          message.reply(new JsonObject()
+              .put("status", "error")
+              .put("message", "timetable.invalid.dates"));
+        }
+        break;
+      case "get.subjects":
+        final List<String> teachers = message.body().getJsonArray("teacherIds", new JsonArray()).getList();
+        final String externalGroupId = message.body().getString("externalGroupId");
+        final boolean classes = message.body().getBoolean("classes", false);
+        final boolean groups = message.body().getBoolean("groups", false);
+
+        if (StringUtils.isEmpty(externalGroupId)) {
+          timetableService.listSubjects(structureId, teachers, classes, groups, getBusResultHandler(message));
+        } else {
+          timetableService.listSubjectsByGroup(structureId, externalGroupId, getBusResultHandler(message));
+        }
+
+        break;
+      default:
+        message.reply(new JsonObject().put("status", "error")
+            .put("message", "Invalid action."));
+        break;
+    }
+  }
+
+  private Handler<Either<String, JsonArray>> getBusResultHandler(final Message<JsonObject> message) {
+    return new Handler<Either<String, JsonArray>>() {
+      @Override
+      public void handle(Either<String, JsonArray> result) {
+        if (result.isRight()) {
+          message.reply(new JsonObject()
+              .put("status", "ok")
+              .put("results", result.right().getValue()));
+        } else {
+          message.reply(new JsonObject()
+              .put("status", "error")
+              .put("message", result.left().getValue()));
+        }
+      }
+    };
+  }
+
+  public void setTimetableService(TimetableService timetableService) {
+    this.timetableService = timetableService;
+  }
 
 }

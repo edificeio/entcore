@@ -81,13 +81,13 @@ public class VisiblesFilter implements ResourcesProvider{
 
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(final JsonObject message) {
-				ids.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
-				ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
-				ids.addAll(message.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
+				ids.addAll(message.getJsonArray("to", new JsonArray()).getList());
+				ids.addAll(message.getJsonArray("cc", new JsonArray()).getList());
+				ids.addAll(message.getJsonArray("cci", new JsonArray()).getList());
 
 				final Handler<Void> checkHandler = new Handler<Void>() {
 					public void handle(Void v) {
-						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+						params.put("ids", new JsonArray(new ArrayList<>(ids)));
 						findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, false, new Handler<JsonArray>() {
 							public void handle(JsonArray visibles) {
 								handler.handle(visibles.size() == ids.size());
@@ -105,7 +105,7 @@ public class VisiblesFilter implements ResourcesProvider{
 					"SELECT m.*  " +
 					"FROM conversation.messages m " +
 					"WHERE m.id = ?",
-					new fr.wseduc.webutils.collections.JsonArray().add(parentMessageId),
+					new JsonArray().add(parentMessageId),
 					SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 						public void handle(Either<String, JsonObject> parentMsgEvent) {
 							if(parentMsgEvent.isLeft()){
@@ -115,8 +115,8 @@ public class VisiblesFilter implements ResourcesProvider{
 
 							JsonObject parentMsg = parentMsgEvent.right().getValue();
 							ids.remove(parentMsg.getString("from"));
-							ids.removeAll(parentMsg.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
-							ids.removeAll(parentMsg.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+							ids.removeAll(parentMsg.getJsonArray("to", new JsonArray()).getList());
+							ids.removeAll(parentMsg.getJsonArray("cc", new JsonArray()).getList());
 
 							checkHandler.handle(null);
 						}

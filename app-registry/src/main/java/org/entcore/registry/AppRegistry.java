@@ -20,6 +20,7 @@
 package org.entcore.registry;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.Promise;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
 import org.entcore.registry.controllers.*;
@@ -29,8 +30,8 @@ import org.entcore.registry.services.impl.NopAppRegistryEventService;
 public class AppRegistry extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		addController(new AppRegistryController());
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
