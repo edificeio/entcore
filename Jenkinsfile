@@ -23,7 +23,11 @@ pipeline {
       stage('Test') {
         steps {
           script {
-            sh 'sleep 3'
+            sh 'sleep 6'
+//            try {
+//              sh 'GIT_BRANCH=develop-b2school ./build.sh $BUILD_SH_EXTRA_PARAM test'
+//            } catch (err) {
+//            }
           }
         }
       }
