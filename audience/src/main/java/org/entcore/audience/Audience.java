@@ -24,8 +24,8 @@ public class Audience extends BaseServer {
   private AudienceController audienceController;
 
   @Override
-  public void start() throws Exception {
-    super.start();
+  public void start(final Promise<Void> startPromise) throws Exception {
+    super.start(startPromise);
     final ISql isql = Sql.getInstance();
     final ReactionDao reactionDao = new ReactionDaoImpl(isql);
     final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
@@ -36,6 +36,7 @@ public class Audience extends BaseServer {
     audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService, validReactionTypes);
     addController(audienceController);
     setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
+    startPromise.tryComplete();
   }
 
   @Override

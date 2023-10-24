@@ -62,7 +62,7 @@ public class LeSiteTvRegisteredService extends AbstractCas20ExtensionRegisteredS
 			}
 
 			// Structures
-			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+			for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
 				if (o == null || !(o instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) o;
 				if (structure.containsKey("UAI")) {

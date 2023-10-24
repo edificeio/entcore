@@ -55,7 +55,8 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
         }
         final Promise promise = Promise.promise();
         pending.add(promise);
-        return pgPool.transaction().compose(transaction -> {
+        return pgPool.transaction(sqlConnection -> {
+            final List<Future<?>> futures = new ArrayList<>();
             final LocalDateTime now = LocalDateTime.now();
             final List<Map<String, Object>> rows = messages.stream().map(e -> {
                 final Map<String, Object> map = new HashMap<>();
@@ -70,7 +71,9 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
             final Tuple values = PostgresClient.insertValuesFromMap(rows, Tuple.tuple(), "id_resource", "created_at", "resource_action", "payload", "priority");
             //TODO dynamic table name?
             final String query = String.format("INSERT INTO explorer.resource_queue (id_resource,created_at, resource_action, payload, priority) VALUES %s", placeholder);
-            transaction.addPreparedQuery(query, values).onComplete(r -> {
+            final Promise<Void> promiseInsertion = Promise.promise();
+            sqlConnection.preparedQuery(query).execute(values).onComplete(r -> {
+                promiseInsertion.complete();
                 if (r.failed()) {
                     this.metricsRecorder.onSendMessageFailure(messages.size());
                     //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
@@ -85,29 +88,29 @@ public class ExplorerPluginCommunicationPostgres implements IExplorerPluginCommu
                     this.metricsRecorder.onSendMessageSuccess(messages.size());
                 }
             });
+            futures.add(promiseInsertion.future());
             //retry failed
             for (final PostgresExplorerFailed failed : pendingFailed) {
-                transaction.addPreparedQuery(failed.query, failed.tuple).onComplete(r -> {
+                final Promise<Void> promiseFailure = Promise.promise();
+                sqlConnection.preparedQuery(failed.query).execute(failed.tuple).onComplete(r -> {
+                    promiseFailure.complete();
                     if (r.succeeded()) {
                         pendingFailed.remove(failed);
                         this.metricsRecorder.onSendMessageSuccess(failed.tuple.size());
                     }
                 });
+                futures.add(promiseFailure.future());
             }
             //
-            transaction.notify(RESOURCE_CHANNEL, "new_resources").onComplete(e -> {
+            final Promise<Void> promiseNotification = Promise.promise();
+            IPostgresClient.notify(sqlConnection, RESOURCE_CHANNEL, "new_resources").onComplete(e -> {
+                promiseNotification.complete();
                 if (e.failed()) {
                     log.error("Failed to notify new ressources: ", e.cause());
                 }
             });
-            final Promise<Void> future = Promise.promise();
-            transaction.commit().onComplete(e -> {
-                future.handle(e);
-                if (e.failed()) {
-                    log.error("Failed to commit resources to queue: ", e.cause());
-                }
-            });
-            return future.future();
+            futures.add(promiseNotification.future());
+            return (Future)Future.join(futures).mapEmpty();
         }).onComplete(e->{
             promise.complete();
             pending.remove(promise);

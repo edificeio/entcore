@@ -19,6 +19,7 @@
 
 package org.entcore.communication;
 
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
@@ -29,9 +30,9 @@ import org.entcore.communication.services.impl.DefaultCommunicationService;
 public class Communication extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
-		TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
+    TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
 		CommunicationController communicationController = new CommunicationController();
 
 		communicationController.setCommunicationService(new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));

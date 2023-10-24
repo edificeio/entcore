@@ -111,7 +111,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 						});
 						continue;
 					}
-					final JsonObject r = new fr.wseduc.webutils.collections.JsonObject();
+					final JsonObject r = new JsonObject();
 					r.put("id", id);
 					r.put("name", value.remove(0));
 					//r.put("membersIds", value);

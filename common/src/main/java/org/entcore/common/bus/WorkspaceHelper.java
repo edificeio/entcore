@@ -74,7 +74,7 @@ public class WorkspaceHelper {
 				.put("name", name)
 				.put("application", application)
 				.put("thumbs", thumbs);
-		eb.send(WORKSPACE_ADDRESS, m, handler);
+		eb.request(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	public void updateDocument(String id, JsonObject uploaded, String name, JsonArray thumbs,
@@ -91,7 +91,7 @@ public class WorkspaceHelper {
 				.put("uploaded", uploaded)
 				.put("name", name)
 				.put("thumbs", thumbs);
-		eb.send(WORKSPACE_ADDRESS, m, handler);
+		eb.request(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	private void uploadDocument(final HttpServerRequest request, final String id,
@@ -157,7 +157,7 @@ public class WorkspaceHelper {
 		JsonObject m = new JsonObject()
 				.put("action", "getDocument")
 				.put("id", id);
-		eb.send(WORKSPACE_ADDRESS, m, handler);
+		eb.request(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	public void readFile(String id, Handler<Buffer> handler) {
@@ -170,7 +170,7 @@ public class WorkspaceHelper {
 			.put("action", "createThumbnails")
 			.put("document", document)
 			.put("thumbnails", thumbnails);
-		eb.send(WORKSPACE_ADDRESS, m, handler);
+		eb.request(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	public void addThumbnails(JsonObject document, JsonObject thumbnails, Handler<AsyncResult<Message<JsonObject>>> handler)
@@ -179,7 +179,7 @@ public class WorkspaceHelper {
 			.put("action", "addThumbnails")
 			.put("document", document)
 			.put("thumbnails", thumbnails);
-		eb.send(WORKSPACE_ADDRESS, m, handler);
+		eb.request(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	public void readDocument(String documentId, final Handler<Document> handler) {
@@ -231,7 +231,7 @@ public class WorkspaceHelper {
                 .put("document", documentId)
                 .put("destination", destination);
 
-        eb.send(WORKSPACE_ADDRESS, m, handler);
+        eb.request(WORKSPACE_ADDRESS, m, handler);
     }
 
 	public static class Document {

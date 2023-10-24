@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderExporter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.Zip;
@@ -34,7 +35,7 @@ class FolderExporterZip extends FolderExporter {
 	}
 
 	private Future<JsonObject> createZip(ZipContext context) {
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 		Zip.getInstance().zipFolder(context.basePath, context.zipFullPath, true, Deflater.NO_COMPRESSION, res -> {
 			if ("ok".equals(res.body().getString("status"))) {
 				future.complete(res.body());
@@ -42,7 +43,7 @@ class FolderExporterZip extends FolderExporter {
 				future.fail(res.body().getString("message"));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public FolderExporterZip(Storage storage, FileSystem fs) {
@@ -66,14 +67,14 @@ class FolderExporterZip extends FolderExporter {
 	}
 
 	public Future<Void> sendZip(HttpServerRequest req, ZipContext context) {
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		final HttpServerResponse resp = req.response();
 		resp.putHeader("Content-Disposition", "attachment; filename=\"" + context.zipName + "\"");
 		resp.putHeader("Content-Type", "application/octet-stream");
 		resp.putHeader("Content-Description", "File Transfer");
 		resp.putHeader("Content-Transfer-Encoding", "binary");
-		resp.sendFile(context.zipFullPath, future.completer());
-		return future;
+		resp.sendFile(context.zipFullPath, future);
+		return future.future();
 	}
 
 	public Future<ZipContext> exportAndSendZip(JsonObject root, List<JsonObject> rows, HttpServerRequest req, boolean clean) {
@@ -101,10 +102,10 @@ class FolderExporterZip extends FolderExporter {
 	}
 
 	public Future<ZipContext> removeZip(ZipContext context){
-		Future<ZipContext> future = Future.future();
+		Promise<ZipContext> future = Promise.promise();
 		this.fs.deleteRecursive(context.rootBase,true, resRmDir->{
 			future.complete();
 		});
-		return future;
+		return future.future();
 	}
 }

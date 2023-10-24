@@ -25,7 +25,7 @@ import io.vertx.core.json.JsonObject;
 public class ExceptionUtils {
 
 	public static JsonObject exceptionToJson(Throwable e) {
-		JsonArray stacktrace = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray stacktrace = new JsonArray();
 		for (StackTraceElement s: e.getStackTrace()) {
 			stacktrace.add(s.toString());
 		}

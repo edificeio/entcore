@@ -59,7 +59,7 @@ public class GroupController extends BaseController {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
-					final JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("type"));
+					final JsonArray types = new JsonArray(request.params().getAll("type"));
 					final Boolean translate= request.params().contains("translate") ?
 							new Boolean(request.params().get("translate")) :
 							Boolean.FALSE;
@@ -217,7 +217,7 @@ public class GroupController extends BaseController {
 								JsonObject j = new JsonObject()
 										.put("action", "setCommunicationRules")
 										.put("groupId", groupId);
-								eb.send("wse.communication", j);
+								eb.request("wse.communication", j);
 								ApplicationUtils.publishModifiedUserGroup(eb, userIds);
 								renderJson(request, res.right().getValue());
 							} else {

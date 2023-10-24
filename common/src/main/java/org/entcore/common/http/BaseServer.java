@@ -33,6 +33,7 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
+import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
@@ -84,12 +85,12 @@ public abstract class BaseServer extends Server {
 	}
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		moduleName = getClass().getSimpleName();
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}
-		super.start();
+		super.start(startPromise);
 
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 

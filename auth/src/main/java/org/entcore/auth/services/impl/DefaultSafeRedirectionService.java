@@ -9,13 +9,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -29,7 +29,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
     private Set<String> defaultDomainsWhiteList = new HashSet<>();
     private Set<String> domainsWhiteList = new HashSet<>();
     private Set<String> internalHosts = new HashSet<>();
-    private Future<Void> onReady = Future.future();
+    private Promise<Void> onReady = Promise.promise();
     private final Neo4j neo = Neo4j.getInstance();
     private boolean inited = false;
 
@@ -107,7 +107,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
                     if (extractedHost.isPresent())
                         domainsWhiteList.add(extractedHost.get().toLowerCase());
                 }
-                if (!onReady.isComplete()) {
+                if (!onReady.future().isComplete()) {
                     onReady.complete();
                 }
             } else {
@@ -119,7 +119,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
 
     public void canRedirectTo(String uriOriginal, Handler<Boolean> handler) {
         ensureInit();
-        if (!onReady.isComplete()) {
+        if (!onReady.future().isComplete()) {
             logger.warn("Trying to checkRedirect but whitelist is not loaded yet : " + uriOriginal);
         }
         try{
@@ -130,7 +130,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
             handler.handle(true);
             return;
         }
-        onReady.setHandler(ready -> {
+        onReady.future().onComplete(ready -> {
             if (ready.succeeded()) {
                 final Optional<String> extractedHost = extractHost(uri);
                 if (!extractedHost.isPresent()) {
@@ -165,10 +165,10 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
 
     public void redirect(HttpServerRequest request, String host, String path, String fallbackPath) {
         ensureInit();
-        if (!onReady.isComplete()) {
+        if (!onReady.future().isComplete()) {
             logger.warn("Trying to redirect but whitelist is not loaded yet : " + host + path);
         }
-        onReady.setHandler(ready -> {
+        onReady.future().onComplete(ready -> {
             if (StringUtils.isEmpty(host)) {
                 // missing host => ent host
                 Renders.redirect(request, path);

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -103,7 +104,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		final String userId = authCas.getUser();
 		JsonObject jo = new JsonObject();
 		jo.put("action", directoryAction).put("userId", userId);
-		eb.send("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
+		eb.request("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				JsonObject res = event.body().getJsonObject("result");
@@ -145,8 +146,8 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	protected Future<Mapping> getMapping(Optional<String> structureId, String pattern, boolean canInherits, Optional<String> statCasType){
-		final Future<Mapping> future = Future.future();
-		mappingService.getMappings().setHandler(r->{
+		final Promise<Mapping> future = Promise.promise();
+		mappingService.getMappings().onComplete(r->{
 			if(r.succeeded()){
 				final Optional<Mapping> found = r.result().find(structureId, getId(), pattern, canInherits, statCasType);
 				if(found.isPresent()){
@@ -160,7 +161,7 @@ public class DefaultRegisteredService implements RegisteredService {
 				log.error("An error occured. Could not any found matching for casType="+getId()+ " and pattern="+pattern, r.cause());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public Optional<Mapping> foundMappingByService(final Set<String> structureIds, final String serviceUri){
@@ -179,7 +180,7 @@ public class DefaultRegisteredService implements RegisteredService {
 				final Mapping mapping = Mapping.unknown(getId(), pattern).setAllStructures(true);
 				this.confCriterias.add(mapping);
 				this.criterias.add(mapping);
-				getMapping(Optional.empty(),pattern, true, Optional.empty()).setHandler(r->{
+				getMapping(Optional.empty(),pattern, true, Optional.empty()).onComplete(r->{
 					if(r.succeeded()){//set type as soon as we know it
 						mapping.setType(r.result().getType());
 					} else{
@@ -198,7 +199,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		for (String pattern : patterns) {
 			try {
 				final String typedPattern = emptyPattern?"":pattern;
-				getMapping(Optional.ofNullable(structureId), typedPattern, canInherits, statCasType).setHandler(r->{
+				getMapping(Optional.ofNullable(structureId), typedPattern, canInherits, statCasType).onComplete(r->{
 					if(r.succeeded()){
 						Mapping mapping = r.result();
 						if(emptyPattern){

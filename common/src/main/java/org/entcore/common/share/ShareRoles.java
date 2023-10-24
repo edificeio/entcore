@@ -87,7 +87,7 @@ public enum ShareRoles {
             if (ShareRoles.isRoleBasedAction(action)) {
                 JsonArray a = rights.getJsonArray(action.getDisplayName());
                 if (a == null) {
-                    a = new fr.wseduc.webutils.collections.JsonArray();
+                    a = new JsonArray();
                     rights.put(action.getDisplayName(), a);
                 }
                 a.add(action.getName().replaceAll("\\.", "-"));

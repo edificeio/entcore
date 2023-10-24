@@ -1,9 +1,13 @@
 package org.entcore.common.http.filter;
 
+import io.netty.handler.codec.DecoderResult;
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.*;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import org.junit.Test;
@@ -11,7 +15,9 @@ import org.junit.Test;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenHeader;
 import static org.junit.Assert.*;
@@ -70,6 +76,21 @@ public class AppOAuthResourceProviderTest {
     }
 
     @Override
+    public Future<Buffer> body() {
+      throw new UnsupportedOperationException("Unimplemented method 'body'");
+    }
+
+    @Override
+    public Future<Void> end() {
+      throw new UnsupportedOperationException("Unimplemented method 'end'");
+    }
+
+    @Override
+    public Future<NetSocket> toNetSocket() {
+      throw new UnsupportedOperationException("Unimplemented method 'toNetSocket'");
+    }
+
+    @Override
     public long bytesRead() {
       throw new UnsupportedOperationException("Unimplemented method 'bytesRead'");
     }
@@ -87,6 +108,16 @@ public class AppOAuthResourceProviderTest {
     @Override
     public Map<String, Cookie> cookieMap() {
       throw new UnsupportedOperationException("Unimplemented method 'cookieMap'");
+    }
+
+    @Override
+    public Set<Cookie> cookies(String s) {
+      throw new UnsupportedOperationException("Unimplemented method 'cookies'");
+    }
+
+    @Override
+    public Set<Cookie> cookies() {
+      throw new UnsupportedOperationException("Unimplemented method 'cookies'");
     }
 
     @Override
@@ -120,8 +151,18 @@ public class AppOAuthResourceProviderTest {
     }
 
     @Override
+    public @Nullable Cookie getCookie(String s, String s1, String s2) {
+      throw new UnsupportedOperationException("Unimplemented method 'getCookies'");
+    }
+
+    @Override
     public String getFormAttribute(String arg0) {
       throw new UnsupportedOperationException("Unimplemented method 'getFormAttribute'");
+    }
+
+    @Override
+    public Future<ServerWebSocket> toWebSocket() {
+      throw new UnsupportedOperationException("Unimplemented method 'toWebSocket'");
     }
 
     @Override
@@ -132,6 +173,16 @@ public class AppOAuthResourceProviderTest {
     @Override
     public String getHeader(CharSequence arg0) {
       return this.headers.get(arg0);
+    }
+
+    @Override
+    public HttpServerRequest setParamsCharset(String s) {
+      throw new UnsupportedOperationException("Unimplemented method 'setParamsCharset'");
+    }
+
+    @Override
+    public String getParamsCharset() {
+      throw new UnsupportedOperationException("Unimplemented method 'getParamsCharset'");
     }
 
     @Override
@@ -180,11 +231,6 @@ public class AppOAuthResourceProviderTest {
     }
 
     @Override
-    public NetSocket netSocket() {
-      throw new UnsupportedOperationException("Unimplemented method 'netSocket'");
-    }
-
-    @Override
     public MultiMap params() {
       throw new UnsupportedOperationException("Unimplemented method 'params'");
     }
@@ -210,8 +256,8 @@ public class AppOAuthResourceProviderTest {
     }
 
     @Override
-    public String rawMethod() {
-      throw new UnsupportedOperationException("Unimplemented method 'rawMethod'");
+    public @Nullable HostAndPort authority() {
+      throw new UnsupportedOperationException("Unimplemented method 'authority'");
     }
 
     @Override
@@ -250,8 +296,8 @@ public class AppOAuthResourceProviderTest {
     }
 
     @Override
-    public ServerWebSocket upgrade() {
-      throw new UnsupportedOperationException("Unimplemented method 'upgrade'");
+    public DecoderResult decoderResult() {
+      throw new UnsupportedOperationException("Unimplemented method 'decoderResult'");
     }
 
     @Override

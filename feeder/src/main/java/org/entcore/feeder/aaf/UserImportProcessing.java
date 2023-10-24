@@ -57,7 +57,7 @@ public class UserImportProcessing extends BaseImportProcessing {
 	{
 		if (resp.contains(object.getString("externalId")))
 		{
-			object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Relative"));
+			object.put("profiles", new JsonArray().add("Relative"));
 
 			String mobile = object.getString("mobile");
 			JsonArray mobilePhone = object.getJsonArray("mobilePhone");

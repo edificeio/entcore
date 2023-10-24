@@ -79,7 +79,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					if("UAI".equals(key)){
 						String value = pair.substring(pair.indexOf('=') + 1);
 						additionalAttributes.add(createTextElement("ENTPersonStructRattachUAI", value, doc));
-						for (Object o : data.getJsonArray("structureNodes", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+						for (Object o : data.getJsonArray("structureNodes", new JsonArray()).getList()) {
 							if (o == null || !(o instanceof JsonObject)) continue;
 							JsonObject structure = (JsonObject) o;
 							if(value.equals(structure.getString("UAI"))){
@@ -113,7 +113,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			Element rootProfiles;
-			String profile = data.getJsonArray("type", new fr.wseduc.webutils.collections.JsonArray()).size() > 0 ? data.getJsonArray("type").getString(0) : "";
+			String profile = data.getJsonArray("type", new JsonArray()).size() > 0 ? data.getJsonArray("type").getString(0) : "";
 			switch(profile) {
 				case "Student" :
 					rootProfiles = createElement("ENTPersonProfils", doc);

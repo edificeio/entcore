@@ -20,6 +20,8 @@
 package org.entcore.timeline.services.impl;
 
 import static org.entcore.common.mongodb.MongoDbResult.*;
+
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.timeline.services.TimelineConfigService;
 import io.vertx.core.Handler;
@@ -45,7 +47,11 @@ public class DefaultTimelineConfigService extends MongoDbCrudService implements 
 			handler.handle(new Either.Left<String, JsonObject>("invalid.key"));
 			return;
 		}
-		mongo.update(collection, new JsonObject().put("key", key), data, true, false, validActionResultHandler(handler));
+		final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+		for (Map.Entry<String, Object> datum : data) {
+			modifier.set(datum.getKey(), datum.getValue());
+		}
+		mongo.update(collection, new JsonObject().put("key", key), modifier.build(), true, false, validActionResultHandler(handler));
 	}
 
 	@Override

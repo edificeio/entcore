@@ -218,7 +218,7 @@ public class WidgetController extends BaseController
 			bodyToJson(request, new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject jo) {
-					eb.send("wse.app.registry.widgets", jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					eb.request("wse.app.registry.widgets", jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> reply) {
 							renderJson(request, reply.body());
@@ -233,7 +233,7 @@ public class WidgetController extends BaseController
 
 	@BusAddress("wse.app.registry.widgets")
 	public void collectWidgets(final Message<JsonObject> message) {
-		final JsonArray widgets = message.body().getJsonArray("widgets", new fr.wseduc.webutils.collections.JsonArray());
+		final JsonArray widgets = message.body().getJsonArray("widgets", new JsonArray());
 		if(widgets.size() == 0 && message.body().containsKey("widget")){
 			widgets.add(message.body().getJsonObject("widget"));
 		} else if(widgets.size() == 0){
@@ -244,7 +244,7 @@ public class WidgetController extends BaseController
 		final AtomicInteger countdown = new AtomicInteger(widgets.size());
 		final JsonObject reply = new JsonObject()
 				.put("status", "ok")
-				.put("errors", new fr.wseduc.webutils.collections.JsonArray());
+				.put("errors", new JsonArray());
 
 		final Handler<JsonObject> replyHandler = new Handler<JsonObject>(){
 			public void handle(JsonObject res) {
