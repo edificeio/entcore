@@ -21,7 +21,6 @@ package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
@@ -177,13 +176,13 @@ public abstract class GenericEventStore implements EventStore {
 				event.put("profil", user.getType());
 			}
 			if (user.getStructures() != null) {
-				event.put("structures", new fr.wseduc.webutils.collections.JsonArray(user.getStructures()));
+				event.put("structures", new JsonArray(user.getStructures()));
 			}
 			if (user.getClasses() != null) {
-				event.put("classes", new fr.wseduc.webutils.collections.JsonArray(user.getClasses()));
+				event.put("classes", new JsonArray(user.getClasses()));
 			}
 			if (user.getGroupsIds() != null) {
-				event.put("groups", new fr.wseduc.webutils.collections.JsonArray(user.getGroupsIds()));
+				event.put("groups", new JsonArray(user.getGroupsIds()));
 			}
 		}
 		if (request != null) {
@@ -204,15 +203,12 @@ public abstract class GenericEventStore implements EventStore {
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
 
 	private void initBlacklist() {
-		eventBus.send("event.blacklist", new JsonObject(), new Handler<AsyncResult<Message<JsonArray>>>() {
-			@Override
-			public void handle(AsyncResult<Message<JsonArray>> message) {
-				if (message.succeeded()) {
-					userBlacklist = message.result().body();
-				} else {
-					userBlacklist = new fr.wseduc.webutils.collections.JsonArray();
-				}
-			}
+		eventBus.request("event.blacklist", new JsonObject(), (Handler<AsyncResult<Message<JsonArray>>>) message -> {
+	      if (message.succeeded()) {
+	        userBlacklist = message.result().body();
+	      } else {
+	        userBlacklist = new JsonArray();
+	      }
 		});
 	}
 

@@ -133,7 +133,7 @@ public class SqlConversationService implements ConversationService{
 			return;
 
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		for (String attr : message.fieldNames()) {
 			if("to".equals(attr) || "cc".equals(attr) || "displayNames".equals(attr)){
@@ -167,7 +167,7 @@ public class SqlConversationService implements ConversationService{
 				"ON um.user_id = uma.user_id AND um.message_id = uma.message_id " +
 			"WHERE um.user_id = ? AND um.message_id = ?";
 
-		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(senderId).add(messageId), SqlResult.validUniqueResultHandler(handler, "attachmentids"));
+		sql.prepared(query, new JsonArray().add(senderId).add(messageId), SqlResult.validUniqueResultHandler(handler, "attachmentids"));
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class SqlConversationService implements ConversationService{
 				JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
 				long totalQuota = event.right().getValue().getLong("totalquota");
 				String unread = "false";
-				final JsonArray ids = message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray());
+				final JsonArray ids = message.getJsonArray("allUsers", new JsonArray());
 				if(ids.contains(user.getUserId()))
 					unread = "true";
 				SqlStatementsBuilder builder = new SqlStatementsBuilder();
@@ -207,8 +207,8 @@ public class SqlConversationService implements ConversationService{
 				String updateUnread = "UPDATE " + userMessageTable + " " +
 						"SET unread = " + unread +
 						" WHERE user_id = ? AND message_id = ? ";
-				builder.prepared(updateMessage, new fr.wseduc.webutils.collections.JsonArray().add("SENT").add(draftId));
-				builder.prepared(updateUnread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(draftId));
+				builder.prepared(updateMessage, new JsonArray().add("SENT").add(draftId));
+				builder.prepared(updateUnread, new JsonArray().add(user.getUserId()).add(draftId));
 
 				final String insertThread =
 						"INSERT INTO conversation.threads as t (" +
@@ -218,14 +218,14 @@ public class SqlConversationService implements ConversationService{
 						"ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
 						"\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
 						"WHERE t.id = EXCLUDED.id ";
-				builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
+				builder.prepared(insertThread, new JsonArray().add(draftId));
 
 				final String insertUserThread =
 						"INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES (?,?,?) " +
 						"ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 " +
 						"WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
 				if (threadId != null) {
-					builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(threadId).add(0));
+					builder.prepared(insertUserThread, new JsonArray().add(user.getUserId()).add(threadId).add(0));
 				}
 
 				for(Object toObj : ids){
@@ -239,7 +239,7 @@ public class SqlConversationService implements ConversationService{
 					);
 
 					if (threadId != null) {
-						builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(toObj.toString()).add(threadId).add(1));
+						builder.prepared(insertUserThread, new JsonArray().add(toObj.toString()).add(threadId).add(1));
 					}
 
 					for(Object attachmentId : attachmentIds){
@@ -266,7 +266,7 @@ public class SqlConversationService implements ConversationService{
 		}
 		int skip = page * LIST_LIMIT;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date ";
 
@@ -312,7 +312,7 @@ public class SqlConversationService implements ConversationService{
 		int nbThread =  10;
 		int skip = page * nbThread;
 		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc, cci ";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		final String query;
 		if (optimizedThreadList) {
@@ -345,7 +345,7 @@ public class SqlConversationService implements ConversationService{
 	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
 		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		values.add(user.getUserId());
 		values.add(threadId);
@@ -371,7 +371,7 @@ public class SqlConversationService implements ConversationService{
 		int maxMessageInThread = 15;
 		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		String condition, limit;
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		if(previous){
 			condition = " m.date < element.date ";
@@ -407,7 +407,7 @@ public class SqlConversationService implements ConversationService{
 		if (validationParamsError(user, result))
 			return;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		StringBuilder query = new StringBuilder(
 			"UPDATE " + userMessageTable + " " +
@@ -442,7 +442,7 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void trashThread(List<String> threadIds, UserInfos user, Handler<Either<String, JsonObject>> result){
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		StringBuilder query = new StringBuilder(
 				"UPDATE " + userMessageTable + " AS um  " +
 					"SET trashed = true " +
@@ -470,7 +470,7 @@ public class SqlConversationService implements ConversationService{
 	public void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if(validationParamsError(user, result)) return;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		StringBuilder query = new StringBuilder(
 			"UPDATE " + userMessageTable + " " +
@@ -500,8 +500,8 @@ public class SqlConversationService implements ConversationService{
 	public void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		JsonArray values2 = new fr.wseduc.webutils.collections.JsonArray();
-		JsonArray values3 = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values2 = new JsonArray();
+		JsonArray values3 = new JsonArray();
 		values2.add(user.getUserId());
 		values3.add(user.getUserId());
 
@@ -560,11 +560,11 @@ public class SqlConversationService implements ConversationService{
 			"WHERE um.user_id = ? AND m.id = ?  " +
 			"GROUP BY m.id";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(user.getUserId())
 			.add(messageId);
 
-		final JsonArray tValues = new fr.wseduc.webutils.collections.JsonArray()
+		final JsonArray tValues = new JsonArray()
 			.add(user.getUserId())
 			.add(user.getUserId())
 			.add(messageId);
@@ -581,7 +581,7 @@ public class SqlConversationService implements ConversationService{
 		if (validationParamsError(user, result, folder))
 			return;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		values.add(user.getUserId());
@@ -595,8 +595,8 @@ public class SqlConversationService implements ConversationService{
 		if(restrain != null && unread){
 			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
 			values.add(user.getUserId());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
+			values.add(new JsonArray().add(user.getUserId()).toString());
+			values.add(new JsonArray().add(user.getUserId()).toString());
 		}
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
@@ -623,7 +623,7 @@ public class SqlConversationService implements ConversationService{
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
 			String getMessageQuery = "SELECT m.* FROM " + messageTable +
 				" WHERE id = ?";
-			sql.prepared(getMessageQuery, new fr.wseduc.webutils.collections.JsonArray().add(parentMessageId),
+			sql.prepared(getMessageQuery, new JsonArray().add(parentMessageId),
 				SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
 				public void handle(Either<String, JsonObject> event) {
 					if(event.isLeft()){
@@ -660,8 +660,8 @@ public class SqlConversationService implements ConversationService{
 		findVisibles(eb, user.getUserId(), customReturn, params, true, true, false, acceptLanguage, preFilter, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibles) {
-				JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
-				JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray users = new JsonArray();
+				JsonArray groups = new JsonArray();
 				visible.put("groups", groups).put("users", users);
 				for (Object o: visibles) {
 					if (!(o instanceof JsonObject)) continue;
@@ -697,7 +697,7 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(getThreadIds, new JsonArray(messagesIds), SqlResult.validResultHandler(either -> {
 			if (either.isRight()) {
 				SqlStatementsBuilder builder = new SqlStatementsBuilder();
-				JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray values = new JsonArray();
 				String query = "UPDATE " + userMessageTable + " " +
 						"SET unread = ? " +
 						"WHERE user_id = ? AND message_id IN "  + Sql.listPrepared(messagesIds.toArray());
@@ -727,7 +727,7 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		StringBuilder query = new StringBuilder(
 				"UPDATE " + userMessageTable + " AS um  " +
 						"SET  unread = ? " +
@@ -789,7 +789,7 @@ public class SqlConversationService implements ConversationService{
 			.put("user_id", user.getUserId());
 
 		if (parentFolderId != null) {
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+			JsonArray values = new JsonArray()
 				.add(user.getUserId())
 				.add(parentFolderId);
 			String depthQuery = "SELECT depth FROM " + folderTable + " WHERE user_id = ? AND id = ?";
@@ -839,7 +839,7 @@ public class SqlConversationService implements ConversationService{
 			"SET name = ?, skip_uniq=FALSE " +
 			"WHERE f.id = ? AND f.user_id = ?";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(data.getString("name"))
 			.add(folderId)
 			.add(user.getUserId());
@@ -856,7 +856,7 @@ public class SqlConversationService implements ConversationService{
 			"SELECT f.* FROM " + folderTable + " AS f " +
 			"WHERE f.user_id = ? AND f.trashed = false ";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(user.getUserId());
 
 		if(parentId == null){
@@ -912,7 +912,7 @@ public class SqlConversationService implements ConversationService{
 			"SELECT f.* FROM " + folderTable + " AS f " +
 			"WHERE f.user_id = ? AND f.trashed = true ";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(user.getUserId());
 
 		sql.prepared(query, values, SqlResult.validResultHandler(result));
@@ -923,7 +923,7 @@ public class SqlConversationService implements ConversationService{
 		if(validationParamsError(user, result, folderId))
 			return;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		String query =
 			"UPDATE " + userMessageTable + " AS um " +
@@ -944,7 +944,7 @@ public class SqlConversationService implements ConversationService{
 		if(validationParamsError(user, result))
 			return;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		String query =
 			"UPDATE " + userMessageTable + " AS um " +
@@ -964,7 +964,7 @@ public class SqlConversationService implements ConversationService{
 			"SET trashed = ? " +
 			"WHERE f.id = ? AND f.user_id = ? AND f.trashed = ?";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(true)
 			.add(folderId)
 			.add(user.getUserId())
@@ -980,7 +980,7 @@ public class SqlConversationService implements ConversationService{
 			"SET trashed = ? " +
 			"WHERE f.id = ? AND f.user_id = ? AND f.trashed = ?";
 
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+			JsonArray values = new JsonArray()
 				.add(false)
 				.add(folderId)
 				.add(user.getUserId())
@@ -1003,7 +1003,7 @@ public class SqlConversationService implements ConversationService{
 		String nonRecursiveTerm =
 			"SELECT DISTINCT f.* FROM " + folderTable + " AS f " +
 			"WHERE ";
-		JsonArray recursiveValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray recursiveValues = new JsonArray();
 		if (!deleteAll) {
 			nonRecursiveTerm += "f.id = ? AND ";
 			recursiveValues.add(folderId);
@@ -1035,7 +1035,7 @@ public class SqlConversationService implements ConversationService{
 		String deleteFolder =
 			"DELETE FROM " + folderTable + " f " +
 			"WHERE ";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		if (!deleteAll) {
 			deleteFolder += "f.id = ? AND ";
 			values.add(folderId);
@@ -1083,7 +1083,7 @@ public class SqlConversationService implements ConversationService{
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET total_quota = total_quota + ? " +
 			"WHERE um.user_id = ? AND um.message_id = ?";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(attachmentSize)
 			.add(user.getUserId())
 			.add(messageId);
@@ -1103,7 +1103,7 @@ public class SqlConversationService implements ConversationService{
 			userMessageAttachmentTable + " uma ON uma.attachment_id = att.id " +
 			"WHERE att.id = ? AND uma.user_id = ? AND uma.message_id = ?";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(attachmentId)
 			.add(user.getUserId())
 			.add(messageId);
@@ -1127,7 +1127,7 @@ public class SqlConversationService implements ConversationService{
 			userMessageAttachmentTable + " uma ON uma.attachment_id = att.id " +
 			"WHERE uma.user_id = ? AND uma.message_id = ?";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(user.getUserId())
 			.add(messageId);
 
@@ -1141,14 +1141,14 @@ public class SqlConversationService implements ConversationService{
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 			.add(messageId)
 			.add(user.getUserId())
 			.add(attachmentId);
 
 		String query1 =
 			"SELECT att.* FROM " + attachmentTable + " att WHERE att.id = ?";
-		builder.prepared(query1, new fr.wseduc.webutils.collections.JsonArray().add(attachmentId));
+		builder.prepared(query1, new JsonArray().add(attachmentId));
 
 		String query3 =
 			"WITH attachment AS (" +
@@ -1157,7 +1157,7 @@ public class SqlConversationService implements ConversationService{
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET total_quota = um.total_quota - (SELECT SUM(DISTINCT attachment.size) FROM attachment) " +
 			"WHERE um.message_id = ? AND um.user_id = ?";
-		JsonArray values3 = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values3 = new JsonArray()
 				.add(attachmentId)
 				.add(messageId)
 				.add(user.getUserId());
@@ -1199,7 +1199,7 @@ public class SqlConversationService implements ConversationService{
 			"INSERT INTO " + userMessageAttachmentTable + " " +
 			"SELECT user_id, ? AS message_id, attachment_id FROM messageAttachments";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+		JsonArray values = new JsonArray()
 				.add(user.getUserId())
 				.add(forwardId)
 				.add(messageId);
@@ -1249,8 +1249,8 @@ public class SqlConversationService implements ConversationService{
 				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
+				values.add(new JsonArray().add(userId).toString());
+				values.add(new JsonArray().add(userId).toString());
 				values.add("SENT");
 				break;
 			case "OUTBOX":

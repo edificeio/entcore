@@ -45,11 +45,11 @@ public class FoldersMessagesFilter extends FoldersFilter {
 				if(event){
 					RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 						public void handle(final JsonObject body) {
-							final List<String> messageIds = body.getJsonArray("id", new fr.wseduc.webutils.collections.JsonArray()).getList();
+							final List<String> messageIds = body.getJsonArray("id", new JsonArray()).getList();
 							String usersQuery =
 									"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
 											"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
-							JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+							JsonArray values = new JsonArray()
 									.add(user.getUserId());
 							for(String id : messageIds){
 								values.add(id);

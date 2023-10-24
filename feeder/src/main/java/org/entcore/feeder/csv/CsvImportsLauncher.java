@@ -206,7 +206,7 @@ public class CsvImportsLauncher implements Handler<Long> {
 					.put("structureExternalId", structureExternalId)
 					.put("postImport", false)
 					.put("preDelete", preDelete);
-			vertx.eventBus().send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(timeout),
+			vertx.eventBus().request("entcore.feeder", action, new DeliveryOptions().setSendTimeout(timeout),
 					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {

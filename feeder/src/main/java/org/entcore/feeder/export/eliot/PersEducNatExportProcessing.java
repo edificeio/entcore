@@ -31,7 +31,7 @@ public class PersEducNatExportProcessing extends UserExportProcessing {
 
 	public PersEducNatExportProcessing(String path, String date, String stdPrefix, boolean concat) {
 		super("dictionary/export/eliot/PersEducNat.json", 5000, path,
-				new fr.wseduc.webutils.collections.JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix, concat);
+				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}

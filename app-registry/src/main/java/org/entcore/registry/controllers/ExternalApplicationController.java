@@ -141,7 +141,7 @@ public class ExternalApplicationController extends BaseController {
 											.put("structureId", structureId)
 											.put("emptyPattern", emptyPattern)
 											.put("inherits", inherits)
-											.put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
+											.put("patterns", new JsonArray().add(pattern)));
 								}
 								Renders.renderJson(request, event.right().getValue(), 201);
 							} else {
