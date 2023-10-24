@@ -58,7 +58,7 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<String>();
 		final List<String[]> groups = new ArrayList<>();
 		createGroups(object.getJsonArray("groups"), c, groups);
-		String[][] classes = createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
+		String[][] classes = createClasses(new JsonArray(c));
 		JsonArray functions = object.getJsonArray("functions");
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {
@@ -67,7 +67,7 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 				if (!(o instanceof String) || !o.toString().contains("$")) continue;
 				s.add(o.toString().substring(0, o.toString().indexOf('$')));
 			}
-			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
+			structuresByFunctions = new JsonArray(new ArrayList<>(s));
 		}
 		createFunctionGroups(object.getJsonArray("functions"), groups);
 		cleanAndCreatePositions(object.getJsonArray("structures"), object.getJsonArray("functions"), object.getString("externalId"));

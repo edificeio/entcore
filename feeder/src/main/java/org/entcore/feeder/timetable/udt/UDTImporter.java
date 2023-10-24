@@ -336,7 +336,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String firstName = currentEntity.getString("prenom");
 			final String lastName = currentEntity.getString("nom");
 			JsonObject p = persEducNat.applyMapping(currentEntity);
-			p.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Teacher"));
+			p.put("profiles", new JsonArray().add("Teacher"));
 			if (isEmpty(externalId)) {
 				externalId = JsonUtil.checksum(p, JsonUtil.HashAlgorithm.MD5);
 			}
@@ -486,7 +486,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 			JsonArray groups = group.getJsonArray("groups");
 			if (groups == null) {
-				groups = new fr.wseduc.webutils.collections.JsonArray();
+				groups = new JsonArray();
 				group.put("groups", groups);
 			}
 			groups.add(name);
@@ -510,7 +510,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 			JsonArray groups = classe.getJsonArray("groups");
 			if (groups == null) {
-				groups = new fr.wseduc.webutils.collections.JsonArray();
+				groups = new JsonArray();
 				classe.put("groups", groups);
 			}
 			groups.add(name);
@@ -919,9 +919,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final Set<String> ce = coens.get(startCode);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {
-			teacherIds = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ce));
+			teacherIds = new JsonArray(new ArrayList<>(ce));
 		} else {
-			teacherIds = new fr.wseduc.webutils.collections.JsonArray();
+			teacherIds = new JsonArray();
 		}
 		final String pId = teachers.get(entity.getString("prof"));
 		if (isNotEmpty(pId)) {
@@ -955,19 +955,19 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 		final String rId = rooms.get(entity.getString("salle"));
 		if (isNotEmpty(rId)) {
-			c.put("roomLabels", new fr.wseduc.webutils.collections.JsonArray().add(rId));
+			c.put("roomLabels", new JsonArray().add(rId));
 		}
 		final JsonObject cId = classes.get(entity.getString("div"));
 		if (cId != null && isNotEmpty(cId.getString("className"))) {
-			c.put("classes", new fr.wseduc.webutils.collections.JsonArray().add(cId.getString("className")));
-			c.put("classesExternalIds", new fr.wseduc.webutils.collections.JsonArray().add(cId.getString("classExternalId")));
+			c.put("classes", new JsonArray().add(cId.getString("className")));
+			c.put("classesExternalIds", new JsonArray().add(cId.getString("classExternalId")));
 		}
 
 		JsonArray groups;
 		JsonArray groupsExternalIds;
 		if (isNotEmpty(entity.getString("rgpmt")) || isNotEmpty(entity.getString("gpe"))) {
-			groups = new fr.wseduc.webutils.collections.JsonArray();
-			groupsExternalIds = new fr.wseduc.webutils.collections.JsonArray();
+			groups = new JsonArray();
+			groupsExternalIds = new JsonArray();
 			c.put("groups", groups);
 			c.put("groupsExternalIds", groupsExternalIds);
 			JsonObject regp = regroup.get(entity.getString("rgpmt"));

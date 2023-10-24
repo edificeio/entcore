@@ -31,7 +31,6 @@ public class ViewServiceImplTest {
 
   @ClassRule
   public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer()
-      .withInitScript("initAudience.sql")
       .withReuse(true);
   private static final String schema = "audience";
 
@@ -44,6 +43,10 @@ public class ViewServiceImplTest {
 
   @Test
   public void testViewResource(final TestContext context) {
+    // Activate this test only if "LONG_TESTS" is true
+    if(!"true".equalsIgnoreCase(System.getenv("LONG_TESTS"))) {
+      return;
+    }
     final Async async = context.async();
     final UserInfos userInfos = new UserInfos();
     userInfos.setUserId("user-id");

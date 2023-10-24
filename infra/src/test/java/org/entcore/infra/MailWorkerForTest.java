@@ -36,12 +36,12 @@ public class MailWorkerForTest extends BusModBase implements Handler<Message<Jso
         final List<PostgresEmailBuilder.AttachmentBuilder> atts = new ArrayList<>();
         final PostgresEmailBuilder.EmailBuilder mail = mail();
         atts.add(PostgresEmailBuilder.attachment(mail).withName("name").withEncodedContent("content"));
-        helper.createWithAttachments(mail, atts).setHandler((r -> {
+        helper.createWithAttachments(mail, atts).onComplete((r -> {
             if (r.failed()) {
                 r.cause().printStackTrace();
                 message.fail(400, r.cause().getMessage());
             }else {
-                helper.setRead((UUID)mail.getMail().get("id"), new JsonObject()).setHandler(r2->{
+                helper.setRead((UUID)mail.getMail().get("id"), new JsonObject()).onComplete(r2->{
                     if (r2.failed()) {
                         r2.cause().printStackTrace();
                         message.fail(400, r2.cause().getMessage());

@@ -26,7 +26,10 @@ import javax.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -198,6 +201,15 @@ public final class DateUtils {
 
     public static String formatIsoDate(Date date) {
         return MongoDb.formatDate(date);
+    }
+
+
+    public static String formatUtcDateTime(final Date date) {
+        return OffsetDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    public static String formatUtcDateTime(final long date) {
+        return OffsetDateTime.ofInstant(Instant.ofEpochMilli(date), ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     public static JsonObject getDateJsonObject(final Date date) {

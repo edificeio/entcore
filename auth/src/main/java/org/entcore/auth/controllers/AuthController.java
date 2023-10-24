@@ -39,10 +39,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -180,11 +177,14 @@ public class AuthController extends BaseController {
 				}
 				sessionLimitConfClient = vertx.createHttpClient(sessionLimitOptions);
 				vertx.setPeriodic(sessionLimitConfig.getLong("delay-refresh-session-limit", 300000L), sessionLimitHandler -> {
-					HttpClientRequest sessionLimitReq = sessionLimitConfClient.get("/session/limit", clientResp -> {
+					sessionLimitConfClient.request(HttpMethod.GET, "/session/limit")
+					.map(req -> req.putHeader("Host", sessionLimitConfigHost))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(clientResp -> {
 						if (clientResp.statusCode() == 200) {
 							clientResp.bodyHandler(sessionLimitBuffer -> {
 								final JsonObject sessionLimitConfJson = new JsonObject(sessionLimitBuffer.toString("UTF-8"));
-								if (sessionLimitConfJson != null && sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform")) != null) {
+								if (sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform")) != null) {
 									final Long sessionsLimitTmp = sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform"));
 									if (sessionsLimitTmp != null && ((long) sessionsLimitTmp) != sessionsLimit) {
 										sessionsLimit = sessionsLimitTmp;
@@ -193,9 +193,8 @@ public class AuthController extends BaseController {
 								}
 							});
 						}
-					});
-					sessionLimitReq.putHeader("Host", sessionLimitConfigHost);
-					sessionLimitReq.end();
+					})
+					.onFailure(th -> log.error("Cannot update session limit", th));
 				});
 			} catch (URISyntaxException e) {
 				log.error("Bad session limit confi URI", e);
@@ -214,7 +213,7 @@ public class AuthController extends BaseController {
 //		} else {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
-				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+				new JsonArray().add("localhost").add("127.0.0.1")).getList();
 		sloServiceImpl = new OpenIdSloServiceImpl(vertx, oauthDataFactory);
 	}
 
@@ -1410,7 +1409,7 @@ public class AuthController extends BaseController {
 									renderJson(request, new JsonObject());
 									return;
 								}
-								JsonArray structures = new fr.wseduc.webutils.collections.JsonArray();
+								JsonArray structures = new JsonArray();
 								if (results.size() > 1) {
 									for (Object ob : results) {
 										JsonObject j = (JsonObject) ob;
@@ -1853,7 +1852,7 @@ public class AuthController extends BaseController {
 				});
 		});
 	}
-	
+
 	@Put("/cgu/revalidate")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void revalidateCgu(final HttpServerRequest request) {

@@ -215,7 +215,7 @@ public class CsvFeeder implements Feed {
 	private void checkNotModifiableExternalId(List<String> files, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
-		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray externalIds = new JsonArray();
 		final AtomicInteger count = new AtomicInteger(files.size());
 		for (final String file: files) {
 			CSVUtil.getCharset(vertx, file, new Handler<String>() {
@@ -339,8 +339,8 @@ public class CsvFeeder implements Feed {
 						strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
 					}
 					JsonObject user = new JsonObject();
-					user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
-					user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
+					user.put("structures", new JsonArray().add(structure.getExternalId()));
+					user.put("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
 					List<String[]> groups = new ArrayList<>();
 
@@ -377,7 +377,7 @@ public class CsvFeeder implements Feed {
 							case "array-string":
 								JsonArray a = user.getJsonArray(c);
 								if (a == null) {
-									a = new fr.wseduc.webutils.collections.JsonArray();
+									a = new JsonArray();
 									user.put(c, a);
 								}
 								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) ||
@@ -403,7 +403,7 @@ public class CsvFeeder implements Feed {
 									if (o instanceof JsonArray) {
 										((JsonArray) o).add(v2);
 									} else {
-										JsonArray array = new fr.wseduc.webutils.collections.JsonArray();
+										JsonArray array = new JsonArray();
 										array.add(o).add(v2);
 										user.put(c, array);
 									}
@@ -452,7 +452,7 @@ public class CsvFeeder implements Feed {
 					if (co != null && co instanceof JsonArray) {
 						classesA = (JsonArray) co;
 					} else if (co instanceof String) {
-						classesA = new fr.wseduc.webutils.collections.JsonArray().add(co);
+						classesA = new JsonArray().add(co);
 					} else {
 						classesA = null;
 					}
@@ -535,7 +535,7 @@ public class CsvFeeder implements Feed {
 											"Adresse Organisme".equals(strings[2]))) {
 								break csvParserWhile;
 							}
-							JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
+							JsonArray linkStudents = new JsonArray();
 							for (String attr : user.fieldNames()) {
 								if ("childExternalId".equals(attr)) {
 									Object o = user.getValue(attr);

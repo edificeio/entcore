@@ -116,7 +116,7 @@ public class User {
 						if ("ok".equals(m.body().getString("status")) && results != null) {
 							final JsonArray r = results.getJsonArray(1);
 							if (r != null && r.size() > 0) {
-								final JsonArray deleteUsers = new fr.wseduc.webutils.collections.JsonArray();
+								final JsonArray deleteUsers = new JsonArray();
 								for (Object o : r) {
 									if (!(o instanceof JsonObject)) continue;
 									deleteUsers.add(((JsonObject) o).getString("id"));
@@ -737,7 +737,7 @@ public class User {
 				.put("functionCode", functionCode);
 		if (s != null) {
 			query += "SET rf.scope = {scope} ";
-			scope = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(new HashSet<String>(s.getList())));
+			scope = new JsonArray(new ArrayList<>(new HashSet<String>(s.getList())));
 			params.put("scope", scope);
 		}
 		transactionHelper.add(query, params);

@@ -76,7 +76,7 @@ public class DefaultSchoolService implements SchoolService {
 	public void create(JsonObject school, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject().put("action", "manual-create-structure")
 				.put("data", school);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class DefaultSchoolService implements SchoolService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "WHERE s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 		String query =
@@ -158,7 +158,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-add-user")
 				.put("structureId", structureId)
 				.put("userId", userId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-remove-user")
 				.put("structureId", structureId)
 				.put("userId", userId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -190,7 +190,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-structure-attachment")
 				.put("structureId", structureId)
 				.put("parentStructureId", parentStructureId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
 	}
 
 	@Override
@@ -199,7 +199,7 @@ public class DefaultSchoolService implements SchoolService {
 			.put("action", "manual-structure-detachment")
 			.put("structureId", structureId)
 			.put("parentStructureId", parentStructureId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override
@@ -220,7 +220,7 @@ public class DefaultSchoolService implements SchoolService {
 	@Override
 	public void list(JsonArray fields, Handler<Either<String, JsonArray>> results) {
 		if (fields == null || fields.size() == 0) {
-			fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("name").add("UAI");
+			fields = new JsonArray().add("id").add("externalId").add("name").add("UAI");
 		}
 		StringBuilder query = new StringBuilder();
 		query.append("MATCH (s:Structure) RETURN ");
@@ -239,7 +239,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("data", body)
 				.put("userId", user.getUserId())
 				.put("userLogin", user.getLogin());
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-update-structure")
 				.put("structureId", structureId)
 				.put("data", body);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -275,14 +275,14 @@ public class DefaultSchoolService implements SchoolService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "AND class.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		}
 
@@ -716,7 +716,7 @@ public class DefaultSchoolService implements SchoolService {
 					.put("action", "manual-create-group")
 					.put("structureId", result.getValue("structureId"))
 					.put("group", group);
-			eventBus.send("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) groupResult -> {
+			eventBus.request("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) groupResult -> {
 				if (groupResult.failed()) {
 					handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to create GAR group : ").put("uai", uai)));
 					return;

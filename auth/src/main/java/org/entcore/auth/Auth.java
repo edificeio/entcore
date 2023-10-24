@@ -24,6 +24,7 @@ import fr.wseduc.webutils.security.JWT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -64,9 +65,9 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Auth extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		final EventBus eb = getEventBus(vertx);
-		super.start();
+		super.start(startPromise);
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
 		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
 		final String JWT_PERIOD = "jwt-bearer-authorization";

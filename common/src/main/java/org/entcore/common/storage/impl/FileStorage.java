@@ -19,7 +19,7 @@
 
 package org.entcore.common.storage.impl;
 
-import fr.wseduc.swift.utils.FileUtils;
+import org.entcore.common.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.ETag;
@@ -161,44 +161,38 @@ public class FileStorage implements Storage {
 			}
 
 			private void doUpload(final HttpServerFileUpload upload, final JsonObject metadata) {
-				upload.endHandler(new Handler<Void>() {
-					@Override
-					public void handle(Void event) {
-						if (metadata.getLong("size") == 0l) {
-							metadata.put("size", upload.size());
-							if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-								handler.handle(res.put("status", "error")
-										.put("message", "file.too.large"));
-								try {
-									fs.delete(getWritePath(id), new Handler<AsyncResult<Void>>() {
-										@Override
-										public void handle(AsyncResult<Void> event) {
-											if (event.failed()) {
-												log.error(event.cause().getMessage(), event.cause());
-											}
+				upload.handler(buffer -> log.info(buffer.toJson().toString()));
+				upload.streamToFileSystem(path).onSuccess(e -> {
+					if (metadata.getLong("size") == 0l) {
+						metadata.put("size", upload.size());
+						if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+							handler.handle(res.put("status", "error")
+									.put("message", "file.too.large"));
+							try {
+								fs.delete(getWritePath(id), new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error(event.cause().getMessage(), event.cause());
 										}
-									});
-								} catch (FileNotFoundException e) {
-									log.error(e.getMessage(), e);
-								}
-								return;
+									}
+								});
+							} catch (FileNotFoundException exc) {
+								log.error("Cannot delete file " + id, exc);
 							}
+							return;
 						}
-						handler.handle(res.put("_id", id)
-								.put("status", "ok")
-								.put("metadata", metadata));
-						sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
-						scanFile(path);
 					}
+					handler.handle(res.put("_id", id)
+							.put("status", "ok")
+							.put("metadata", metadata));
+					sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
+					scanFile(path);
+				})
+				.onFailure(th ->  {
+					handler.handle(res.put("status", "error"));
+					log.error("Cannot write to filesystem", th);
 				});
-				upload.exceptionHandler(new Handler<Throwable>() {
-					@Override
-					public void handle(Throwable event) {
-						handler.handle(res.put("status", "error"));
-						log.error(event.getMessage(), event);
-					}
-				});
-				upload.streamToFileSystem(path);
 				request.resume();
 			}
 		});
@@ -666,7 +660,7 @@ public class FileStorage implements Storage {
 	public void removeFiles(JsonArray ids, final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		final AtomicInteger count = new AtomicInteger(ids.size());
-		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray errors = new JsonArray();
 		for (final Object o: ids) {
 			if (o == null) {
 				decrementRemove(count, errors, handler, res);
@@ -796,7 +790,7 @@ public class FileStorage implements Storage {
 	public void writeToFileSystem(String[] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
 		final AtomicInteger count = new AtomicInteger(ids.length);
-		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray errors = new JsonArray();
 		for (final String id: ids) {
 			if (id == null || id.isEmpty()) {
 				decrementWriteToFS(count, errors, handler);
