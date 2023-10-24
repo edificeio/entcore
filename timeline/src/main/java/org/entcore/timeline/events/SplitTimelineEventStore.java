@@ -18,22 +18,18 @@
  */
 package org.entcore.timeline.events;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.user.UserInfos;
 
-import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SplitTimelineEventStore implements TimelineEventStore {
     private boolean combineResult;
@@ -98,7 +94,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
             if (chunk.size() > 0) {
                 chunks.add(chunk);
             }
-            final List<Future> futures = new ArrayList<>();
+            final List<Future<?>> futures = new ArrayList<>();
             final JsonObject base = event.copy();
             base.remove("recipients");
             base.remove("recipientsIds");
@@ -107,15 +103,13 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                 copy.put("recipients", new JsonArray(part.recipients));
                 copy.put("recipientsIds", new JsonArray(part.recipients));
                 log.info("Save chunk. recipients="+ copy.getJsonArray("recipients").size()+ " | "+copy.fieldNames());
-                final Future<JsonObject> future = Future.future();
-                original.add(copy, res -> {
-                    future.complete(res);
-                });
-                futures.add(future);
+                final Promise<JsonObject> future = Promise.promise();
+                original.add(copy, future::complete);
+                futures.add(future.future());
             }
             if (combineResult) {
-                CompositeFuture.all(futures).setHandler(res -> {
-                    if (res.succeeded()) {
+                Future.all(futures).onComplete(res -> {
+                   if(res.succeeded()) {
                         final JsonObject json = res.result().list().stream().map(JsonObject.class::cast)
                             .reduce(new JsonObject().put("_ids", new JsonArray()), (a, b) -> {
                                 final String idb = b.getString("_id");
@@ -131,10 +125,10 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                     }
                 });
             } else {
-                for (Future<JsonObject> future : futures) {
-                    future.setHandler(res -> {
+                for (Future<?> future : futures) {
+                    future.onComplete(res -> {
                         if (res.succeeded()) {
-                            result.handle(res.result());
+                            result.handle((JsonObject) res.result());
                         } else {
                             result.handle(null);
                         }

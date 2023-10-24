@@ -235,13 +235,9 @@ public class ImportController extends BaseController {
 					return;
 				}
 				final String filename = path + File.separator + upload.name();
-				upload.endHandler(new Handler<Void>() {
-					@Override
-					public void handle(Void event) {
-						log.info("File " + upload.filename() + " uploaded as " + upload.name());
-					}
-				});
-				upload.streamToFileSystem(filename);
+				upload.streamToFileSystem(filename)
+						.onSuccess(event -> log.info("File " + upload.filename() + " uploaded as " + upload.name()))
+						.onFailure(th -> log.error("Cannot import " + upload.filename(), th));
 				request.resume();
 			}
 		});

@@ -89,7 +89,7 @@ public class TimelineHelper {
 	public void notifyTimeline(final HttpServerRequest req, final String notificationName,
 			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood, JsonObject preview){
 		notificationsLoader.getNotification(notificationName, notification -> {
-			JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray r = new JsonArray();
 			for (String userId: recipients) {
 				r.add(new JsonObject().put("userId", userId).put("unread", 1));
 			}
@@ -98,7 +98,7 @@ public class TimelineHelper {
 					.put("type", notification.getString("type"))
 					.put("event-type", notification.getString("event-type"))
 					.put("recipients", r)
-					.put("recipientsIds", new fr.wseduc.webutils.collections.JsonArray(recipients));
+					.put("recipientsIds", new JsonArray(recipients));
 			if (resource != null) {
 				event.put("resource", resource);
 			}
@@ -141,7 +141,7 @@ public class TimelineHelper {
 								.put("X-Forwarded-Proto", Renders.getScheme(request))
 								.put("Accept-Language", request.headers().get("Accept-Language"))
 				));
-			eb.send(TIMELINE_ADDRESS, event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(TIMELINE_ADDRESS, event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				public void handle(Message<JsonObject> event) {
 					JsonObject result = event.body();
 					if("error".equals(result.getString("status", "error"))){
@@ -168,7 +168,7 @@ public class TimelineHelper {
 	@Deprecated
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, final String eventType,
 			List<String> recipients, String resource, String subResource, String template, JsonObject params) {
-		JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray r = new JsonArray();
 		for (String userId: recipients) {
 			r.add(new JsonObject().put("userId", userId).put("unread", 1));
 		}
@@ -196,7 +196,7 @@ public class TimelineHelper {
 			public void handle(String message) {
 				if (message != null) {
 					event.put("message", message);
-					eb.send(TIMELINE_ADDRESS, event);
+					eb.request(TIMELINE_ADDRESS, event);
 				} else {
 					log.error("Unable to send timeline " + eventType + " notification.");
 				}

@@ -872,7 +872,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										report.addError("import.error");
 									}
 								}
-								report.setUsersExternalId(new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(importer.getUserImportedExternalId())));
+								report.setUsersExternalId(new JsonArray(new ArrayList<>(importer.getUserImportedExternalId())));
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);
 								report.setStartTime(start);

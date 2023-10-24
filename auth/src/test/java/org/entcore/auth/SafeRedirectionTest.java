@@ -66,7 +66,7 @@ public class SafeRedirectionTest {
         futures.add(test.registry().createApplicationUser("connecteur3", "/path", new JsonArray()));
         futures.add(test.registry().createApplicationUser("connecteur4", "://badadress", new JsonArray()));
         final Async async = context.async();
-        CompositeFuture.all(futures).setHandler(res -> {
+        CompositeFuture.all(futures).onComplete(res -> {
             context.assertTrue(res.succeeded());
             redirectionService.init(test.vertx(), redirectConfig);
             async.complete();

@@ -19,61 +19,44 @@
 
 package org.entcore.auth.oauth;
 
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.entcore.auth.security.SamlHelper;
-import org.entcore.auth.services.OpenIdConnectService;
-import org.entcore.auth.services.OpenIdDataHandler;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.neo4j.Neo4j;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.security.BCrypt;
-import fr.wseduc.webutils.security.JWT;
-import fr.wseduc.webutils.security.Md5;
-import fr.wseduc.webutils.security.NTLM;
-import fr.wseduc.webutils.security.Sha256;
-import jp.eisbahn.oauth2.server.async.Handler;
-import jp.eisbahn.oauth2.server.data.DataHandler;
-import jp.eisbahn.oauth2.server.exceptions.OAuthError;
-import jp.eisbahn.oauth2.server.exceptions.Try;
-import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
-import jp.eisbahn.oauth2.server.models.AccessToken;
-import jp.eisbahn.oauth2.server.models.AuthInfo;
-import jp.eisbahn.oauth2.server.models.Request;
-import jp.eisbahn.oauth2.server.models.UserData;
-
-import org.apache.commons.httpclient.URIException;
-import org.entcore.auth.services.impl.JwtVerifier;
-
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.webutils.security.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.redis.RedisClient;
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.models.AccessToken;
+import jp.eisbahn.oauth2.server.models.AuthInfo;
+import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
+import org.bson.conversions.Bson;
+import org.entcore.auth.security.SamlHelper;
+import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.OpenIdDataHandler;
+import org.entcore.auth.services.impl.JwtVerifier;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.redis.RedisClient;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.mongodb.client.model.Filters.*;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -172,13 +155,13 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			if (redisClient != null) {
-				redisClient.lindex(LOGIN_BAN_KEY + username, pwMaxRetry - 1, ar -> {
-					if (ar.succeeded() && isNotEmpty(ar.result())) {
+				redisClient.getClient().lindex(LOGIN_BAN_KEY + username, String.valueOf(pwMaxRetry - 1)).onComplete(ar -> {
+					if (ar.succeeded() && ar.result() != null) {
 						try {
-							if (System.currentTimeMillis() > (Long.parseLong(ar.result()) + pwBanDelay)) {
+							if (System.currentTimeMillis() > (ar.result().toLong() + pwBanDelay)) {
 								getUserIdNeo4j(username, password, handler);
 							} else {
-								handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BAN)));
+								handler.handle(new Try<>(new AccessDenied(AUTH_ERROR_BAN)));
 							}
 						} catch (NumberFormatException e) {
 							log.error("Erreur parse ban delay", e);
@@ -229,14 +212,14 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 
 	private void incrBanAuthentication(String username) {
 		if (redisClient != null) {
-			redisClient.lpush(LOGIN_BAN_KEY + username, Long.toString(System.currentTimeMillis()), ar -> {
+			redisClient.getClient().lpush(newArrayList(LOGIN_BAN_KEY + username, Long.toString(System.currentTimeMillis()))).onComplete(ar -> {
 				if (ar.succeeded()) {
-					redisClient.ltrim(LOGIN_BAN_KEY + username, 0, pwMaxRetry, ar2 -> {
+					redisClient.getClient().ltrim(LOGIN_BAN_KEY + username, "0", String.valueOf(pwMaxRetry)).onComplete(ar2 -> {
 						if (ar2.failed()) {
 							log.error("Error when trim ban list : " + username, ar2.cause());
 						}
 					});
-					redisClient.pexpire(LOGIN_BAN_KEY + username, pwBanDelay, ar3 -> {
+					redisClient.getClient().pexpire(newArrayList(LOGIN_BAN_KEY + username, String.valueOf(pwBanDelay))).onComplete(ar3 -> {
 						if (ar3.failed()) {
 							log.error("Error when set expire : " + username, ar3.cause());
 						}
@@ -284,7 +267,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 			final String xAPP = getRequest().getHeader("X-APP");
 			// IF the headers contains X-APP with the value is mobile, this will be the new version of the app then no need to bypass 403 response for mobile
 			final boolean isMobile = (xAPP == null || !xAPP.equals("mobile")) && (userAgent != null && (userAgent.startsWith("appe") || userAgent.startsWith("okhttp")));
-			
+
 			// Handle hijack scenario to return a 403 error when a activation Code is used
 			// as a password in the auth2 flow
 			if (r.containsKey("activationCode") && password.equals(r.getString("activationCode")) && !isMobile) {
@@ -427,8 +410,8 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 										r != null && r.size() == 1) {
 									JsonObject j = r.getJsonObject(0);
 									if (j != null &&
-											j.getJsonArray("scope", new fr.wseduc.webutils.collections.JsonArray())
-													.getList()
+											new HashSet<>(j.getJsonArray("scope", new JsonArray())
+                        .getList())
 													.containsAll(Arrays.asList(scope.split("\\s")))) {
 										createAuthInfo(clientId, userId, scope, redirectUri, nonce,
 												j.getString("logoutUrl"), sessionId, handler);
@@ -472,8 +455,8 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 				if ("ok".equals(res.body().getString("status"))) {
 					auth.put("id", res.body().getString("_id"));
 					auth.remove("createdAt");
-					auth.remove("sessionId");
-					ObjectMapper mapper = new ObjectMapper();
+          auth.remove("sessionId");
+					ObjectMapper mapper = DatabindCodec.mapper();
 					try {
 						handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
 					} catch (IOException e) {
@@ -540,8 +523,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 												AccessToken t = new AccessToken();
 												t.setAuthId(authInfo.getId());
 												t.setToken(token.getString("token"));
-												t.setCreatedOn(
-														new Date(token.getJsonObject("createdOn").getLong("$date")));
+								t.setCreatedOn(MongoDb.parseIsoDate(token.getJsonObject("createdOn")));
 												t.setExpiresIn(3600);
 												if (token.containsKey("id_token")) {
 													t.setIdToken(token.getString("id_token"));
@@ -562,12 +544,8 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	@Override
 	public void getAuthInfoByCode(String code, final Handler<AuthInfo> handler) {
 		if (code != null && !code.trim().isEmpty()) {
-			JsonObject query = new JsonObject()
-					.put("code", code)
-					.put("createdAt", new JsonObject()
-							.put("$gte",
-									new JsonObject().put("$date", System.currentTimeMillis() - CODE_EXPIRES)));
-			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
+			Bson query = and(eq("code", code), gte("createdAt", new Date(System.currentTimeMillis() - CODE_EXPIRES)));
+			mongo.findOne(AUTH_INFO_COLLECTION, MongoQueryBuilder.build(query), new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
@@ -718,7 +696,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	public void getAuthInfoById(String id, final Handler<AuthInfo> handler) {
 		if (id != null && !id.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-					.put("_id", id);
+			.put("_id", id);
 			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override

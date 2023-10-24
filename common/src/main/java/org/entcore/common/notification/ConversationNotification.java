@@ -75,7 +75,7 @@ public class ConversationNotification {
 	public void notify(final HttpServerRequest request, String from, JsonArray to, JsonArray cc, String subject,
 		String message, final Handler<Either<String, JsonObject>> result) {
 		if (cc == null) {
-			cc = new fr.wseduc.webutils.collections.JsonArray();
+			cc = new JsonArray();
 		}
 		if (subject == null || message == null || to == null || from == null) {
 			result.handle(new Either.Left<String, JsonObject>("Conversation notification : invalid parameters"));
@@ -129,7 +129,7 @@ public class ConversationNotification {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
-					eb.send(CONVERSATION_ADDRESS, m, handlerToAsyncHandler(Neo4jResult.validUniqueResultHandler(result)));
+					eb.request(CONVERSATION_ADDRESS, m, handlerToAsyncHandler(Neo4jResult.validUniqueResultHandler(result)));
 				} else {
 					result.handle(new Either.Left<String, JsonObject>(message.body().getString("message")));
 				}

@@ -217,27 +217,29 @@ public class PostImport {
 						public void handle(Void v) {
 							final JsonObject j = endpoints.getJsonObject(ji);
 							logger.info(t -> "endpoint : " + j.encode(), true);
-							final HttpClientRequest req = client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"), new Handler<HttpClientResponse>() {
-								@Override
-								public void handle(HttpClientResponse resp) {
-									if (resp.statusCode() >= 300) {
-										logger.warn(t -> "Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+							client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"))
+							.map(req -> {
+								JsonObject headers = j.getJsonObject("headers");
+								if (headers != null && !headers.isEmpty()) {
+									for (String h : headers.fieldNames()) {
+										req.putHeader(h, headers.getString(h));
 									}
-									handlers[ji + 1].handle(null);
 								}
-							});
-							JsonObject headers = j.getJsonObject("headers");
-							if (headers != null && headers.size() > 0) {
-								for (String h : headers.fieldNames()) {
-									req.putHeader(h, headers.getString(h));
+								return req;
+							})
+							.flatMap(req -> {
+								if (j.getString("body") != null) {
+									return req.send(j.getString("body"));
+								} else {
+									return req.send();
 								}
-							}
-							req.exceptionHandler(e -> logger.error(t ->"Error in ws call post import : " + j.encode(), e));
-							if (j.getString("body") != null) {
-								req.end(j.getString("body"));
-							} else {
-								req.end();
-							}
+							}).onSuccess(resp -> {
+								if (resp.statusCode() >= 300) {
+									logger.warn(t -> "Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+								}
+								handlers[ji + 1].handle(null);
+							})
+							.onFailure(e -> logger.error(t ->"Error in ws call post import : " + j.encode(), e));
 						}
 					};
 				}
@@ -279,16 +281,16 @@ public class PostImport {
 			neo4j.execute(q, new JsonObject().put("externalIds", eIds), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray ids = message.body().getJsonArray("result", new JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						logger.info(e-> "SUCCEED get ids for applyComRules " + ids.getJsonObject(0).getJsonArray("ids"));
 						JsonObject j = new JsonObject()
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
-										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
+										.getJsonArray("ids", new JsonArray()));
 						logger.info(e-> "START apply applyComRules");
-						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
+						eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {

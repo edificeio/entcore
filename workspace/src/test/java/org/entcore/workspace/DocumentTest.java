@@ -22,10 +22,11 @@
 
 package org.entcore.workspace;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -89,13 +90,13 @@ public class DocumentTest {
                 quotaService, folderManager, test.vertx(), shareService, false);
         test.database().initMongo(context, mongoContainer);
         final Async async = context.async();
-        test.directory().createActiveUser("user1", "password", "email").setHandler(res -> {
+        test.directory().createActiveUser("user1", "password", "email").onComplete(res -> {
             context.assertTrue(res.succeeded());
             userid = res.result();
             async.complete();
         });
         final Async async2 = context.async();
-        test.directory().createActiveUser(test.http().sessionUser()).setHandler(r -> {
+        test.directory().createActiveUser(test.http().sessionUser()).onComplete(r -> {
             context.assertTrue(r.succeeded());
             async2.complete();
         });
@@ -126,7 +127,7 @@ public class DocumentTest {
     }
 
     private Future<String> createSharedFolder(TestContext context, String folder, UserInfos user) {
-        Future<String> future = Future.future();
+        Promise<String> future = Promise.promise();
         workspaceService.createFolder(folder(folder), user, res -> {
             context.assertTrue(res.succeeded());
             final String id = res.result().getString("_id");
@@ -136,17 +137,17 @@ public class DocumentTest {
                 future.complete(id);
             });
         });
-        return future;
+        return future.future();
     }
 
     private Future<String> createFolder(TestContext context, String folder, UserInfos user) {
-        Future<String> future = Future.future();
+      Promise<String> future = Promise.promise();
         workspaceService.createFolder(folder(folder), user, res -> {
             context.assertTrue(res.succeeded());
             final String id = res.result().getString("_id");
             future.complete(id);
         });
-        return future;
+        return future.future();
     }
 
     @Test
@@ -188,7 +189,7 @@ public class DocumentTest {
     public void testWorkspaceServiceShouldInheritShareDocument(TestContext context) {
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        createSharedFolder(context, "folder", user).setHandler(res0 -> {
+        createSharedFolder(context, "folder", user).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             workspaceService.addFile(Optional.of(res0.result()), document("document1"), user.getUserId(),
                     user.getUsername(), res1 -> {
@@ -226,7 +227,7 @@ public class DocumentTest {
             message.fail(404, "not.found");
           }
         });
-        createSharedFolder(context, "folder", user).setHandler(res0 -> {
+        createSharedFolder(context, "folder", user).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             workspaceService.addFile(Optional.of(res0.result()), document("document1"), user.getUserId(),
                     user.getUsername(), res1 -> {
@@ -257,7 +258,7 @@ public class DocumentTest {
     public void testWorkspaceServiceShouldShareChildOnly(TestContext context) {
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        createFolder(context, "folder", user).setHandler(res0 -> {
+        createFolder(context, "folder", user).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             workspaceService.addFile(Optional.of(res0.result()), document("document1"), user.getUserId(),
                     user.getUsername(), res1 -> {
@@ -297,7 +298,7 @@ public class DocumentTest {
                     workspaceService.trash(id, user, res2 -> {
                         context.assertTrue(res2.succeeded());
                         test.database().executeMongoWithUniqueResult("documents",
-                                MongoQueryBuilder.build(QueryBuilder.start("_id").is(id))).setHandler(res3 -> {
+                                MongoQueryBuilder.build(Filters.eq("_id", id))).onComplete(res3 -> {
                             context.assertTrue(res3.succeeded());
                             System.out.println(res3.result().encodePrettily());
                             Boolean deleted = res3.result().getBoolean("deleted");
@@ -315,7 +316,7 @@ public class DocumentTest {
         final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        test.userbook().setQuotaForUserId(user.getUserId(), (long) 0).setHandler(r -> {
+        test.userbook().setQuotaForUserId(user.getUserId(), (long) 0).onComplete(r -> {
             workspaceService.importFileZip(zipPath, user,
                     res1 -> {
                         context.assertTrue(res1.failed());
@@ -330,7 +331,7 @@ public class DocumentTest {
         final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        test.userbook().setQuotaForUserId(user.getUserId(), (long) SIZE_3LEVELS).setHandler(r -> {
+        test.userbook().setQuotaForUserId(user.getUserId(), (long) SIZE_3LEVELS).onComplete(r -> {
             context.assertTrue(r.succeeded());
             workspaceService.importFileZip(zipPath, user,
                     res1 -> {
@@ -360,8 +361,8 @@ public class DocumentTest {
         final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        test.userbook().setQuotaForUserId(user.getUserId(), (long)2* SIZE_3LEVELS).setHandler(r -> {
-            createSharedFolder(context, "folder", user).setHandler(res0 -> {
+        test.userbook().setQuotaForUserId(user.getUserId(), (long)2* SIZE_3LEVELS).onComplete(r -> {
+            createSharedFolder(context, "folder", user).onComplete(res0 -> {
                 context.assertTrue(res0.succeeded());
                 workspaceService.info(res0.result(), user, res2 -> {
                     context.assertTrue(res2.succeeded());
@@ -392,8 +393,8 @@ public class DocumentTest {
         final String zipPath = getClass().getResource("/zip-3-levels.zip").getPath();
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
-        test.userbook().setQuotaForUserId(user.getUserId(), (long)3* SIZE_3LEVELS).setHandler(r -> {
-            createFolder(context, "folder", user).setHandler(res0 -> {
+        test.userbook().setQuotaForUserId(user.getUserId(), (long)3* SIZE_3LEVELS).onComplete(r -> {
+            createFolder(context, "folder", user).onComplete(res0 -> {
                 context.assertTrue(res0.succeeded());
                 workspaceService.info(res0.result(), user, res2 -> {
                     context.assertTrue(res2.succeeded());

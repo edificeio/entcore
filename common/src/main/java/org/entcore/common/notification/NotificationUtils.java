@@ -38,7 +38,7 @@ public class NotificationUtils {
 
 
     public static void getUsersPreferences(EventBus eb, JsonArray userIds, String fields, final Handler<JsonArray> handler){
-        eb.send(USERBOOK_ADDRESS, new JsonObject()
+        eb.request(USERBOOK_ADDRESS, new JsonObject()
                 .put("action", "get.userlist")
                 .put("application", "timeline")
                 .put("additionalMatch", ", u-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) ")

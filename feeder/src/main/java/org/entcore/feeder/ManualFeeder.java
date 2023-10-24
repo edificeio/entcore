@@ -235,7 +235,7 @@ public class ManualFeeder extends BusModBase {
 							final JsonArray results = event.body().getJsonArray("results");
 							if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
 								// Notify apps which groups have been deleted.
-								JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
+								JsonArray r = getOrElse(results.getJsonArray(0), new JsonArray());
 								if( r!=null && !r.isEmpty() ) {
 									Transition.publishDeleteGroups(eb, logger, r);
 								}

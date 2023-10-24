@@ -1,17 +1,19 @@
 package org.entcore.test;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.bson.conversions.Bson;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
@@ -59,10 +61,7 @@ public class DatabaseTestHelper {
     }
 
     /**
-     * Initializes PostgreSQL support. 
-     * @param context Test context to extend with PostgreSQL support.
-     * @param postgreSQLContainer PostgreSQL container to initialize, see {@link #createPostgreSQLContainer()}
-     * @param schema Name of the pgsql schema to initialize
+     * Initializes PostgreSQL support.
      */
     public ElasticClientManager createESClient(final ElasticsearchContainer esContainer) throws URISyntaxException {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
@@ -119,7 +118,7 @@ public class DatabaseTestHelper {
                 .put("password", postgreSQLContainer.getPassword());
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1).setMultiThreaded(true);
+                .setInstances(1);
 
         vertx.deployVerticle(fr.wseduc.sql.SqlPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {
@@ -139,13 +138,16 @@ public class DatabaseTestHelper {
                         } else {
                             // Play migration scripts
                             DB migration = new DB(vertx, sql, schema);
-                            migration.loadScripts("sql");
+                            migration.loadScripts("sql")
+                              .onSuccess(e -> async.complete())
+                              .onFailure(context::fail);
                         }
                     });
-                }
-                vertx.setTimer(delay, t -> async.complete());
+                } else {
+                    async.complete();
+                };
             } else {
-                context.fail();
+                context.fail(ar.cause());
             }
         });
         return async;
@@ -169,7 +171,7 @@ public class DatabaseTestHelper {
                 .put("use_mongo_types", true).put("pool_size", 10).put("port", mongoDBContainer.getMappedPort(27017));
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1).setMultiThreaded(true);
+                .setInstances(1);
 
         vertx.deployVerticle(MongoPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {
@@ -177,6 +179,8 @@ public class DatabaseTestHelper {
                 mongo.init(vertx.eventBus(), "wse.mongodb.persistor");
                 async.complete();
             } else {
+                ar.cause().printStackTrace();
+                System.out.println(ar.cause());
                 context.fail();
             }
         });
@@ -225,14 +229,14 @@ public class DatabaseTestHelper {
                 .withNeo4jConfig("cypher.default_language_version", "2.3");
     }
 
-    /** @return a new docker-based MongoDB 3.6 container. */
+    /** @return a new docker-based MongoDB 4.2 container. */
     public MongoDBContainer createMongoContainer() {
-        return new MongoDBContainer("mongo:3.6.17");
+        return new MongoDBContainer("mongo:4.2.24");
     }
 
     /** @return a new docker-based MongoDB 4 container. */
     public MongoDBContainer createMongo4Container() {
-        return new MongoDBContainer("mongo:4.0.0");
+        return createMongoContainer();
     }
 
     /** @return a new docker-based ElasticSearch OSS 7.9 container. */
@@ -256,7 +260,7 @@ public class DatabaseTestHelper {
 
     public Future<JsonObject> executeSqlWithUniqueResult(String query, JsonArray values) {
         Sql sql = Sql.getInstance();
-        Future<JsonObject> future = Future.future();
+        Promise<JsonObject> future = Promise.promise();
         sql.prepared(query, values, SqlResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -264,7 +268,7 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
 
     }
 
@@ -275,9 +279,9 @@ public class DatabaseTestHelper {
 
     /** Look for a single object by its id, in a mongoDB collection. */
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
-        QueryBuilder builder = QueryBuilder.start("_id").is(id);
+        Bson builder = Filters.eq("_id", id);
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Promise<JsonObject> future = Promise.promise();
         mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -285,13 +289,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query a mongoDB collection for a single object. */
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Promise<JsonObject> future = Promise.promise();
         mongo.findOne(collection, query, MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -299,13 +303,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query neo4j for a single object. */
     public Future<JsonObject> executeNeo4jWithUniqueResult(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Promise<JsonObject> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -313,13 +317,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query neo4j for multiple objects. */
     public Future<JsonArray> executeNeo4j(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonArray> future = Future.future();
+        final Promise<JsonArray> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -327,6 +331,6 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 }

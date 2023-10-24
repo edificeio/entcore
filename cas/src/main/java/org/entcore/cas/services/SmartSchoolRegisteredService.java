@@ -209,7 +209,7 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
                 .put("action", directoryAction)
                 .put("userId", authCas.getUser());
 
-        eb.send("directory", action, handlerToAsyncHandler(event -> {
+        eb.request("directory", action, handlerToAsyncHandler(event -> {
             JsonObject res = event.body().getJsonObject("result");
             if ("ok".equals(event.body().getString("status")) && res != null) {
                 promise.complete(res);

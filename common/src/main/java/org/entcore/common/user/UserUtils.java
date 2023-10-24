@@ -73,7 +73,7 @@ public class UserUtils {
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
 	public static final String SESSION_ADDRESS = "wse.session";
-	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
+	private static final JsonArray usersTypes = new JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
@@ -92,7 +92,7 @@ public class UserUtils {
 						&& !session.getString("userId").trim().isEmpty()) {
 					findUsers(eb, session.getString("userId"), query, handler);
 				} else {
-					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+					handler.handle(new JsonArray());
 				}
 			}
 		});
@@ -102,19 +102,19 @@ public class UserUtils {
 						  final JsonObject query, final Handler<JsonArray> handler) {
 		if (userId != null && !userId.trim().isEmpty()) {
 			query.put("userId", userId);
-			eb.send(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
+			eb.request(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 				@Override
 				public void handle(AsyncResult<Message<JsonArray>> res) {
 					if (res.succeeded()) {
 						handler.handle(res.result().body());
 					} else {
-						handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+						handler.handle(new JsonArray());
 					}
 				}
 			});
 		} else {
-			handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+			handler.handle(new JsonArray());
 		}
 	}
 
@@ -218,7 +218,7 @@ public class UserUtils {
 			m.put("additionnalParams", additionnalParams);
 		}
 		m.put("userId", userId);
-		eb.send(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
@@ -230,7 +230,7 @@ public class UserUtils {
 					handler.handle(r);
 				} else {
 					log.error("An error occurred while fetching visible users for user " + userId, res.cause());
-					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+					handler.handle(new JsonArray());
 				}
 			}
 		});
@@ -280,8 +280,8 @@ public class UserUtils {
 
 	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage, boolean returnGroupType) {
 		final JsonObject visible = new JsonObject();
-		final JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
-		final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray users = new JsonArray();
+		final JsonArray groups = new JsonArray();
 		visible.put("groups", groups).put("users", users);
 		for (Object o: visibles) {
 			if (!(o instanceof JsonObject)) continue;
@@ -400,13 +400,13 @@ public class UserUtils {
 				.put("userId", groupId)
 				.put("itself", itSelf)
 				.put("excludeUserId", userId);
-		eb.send(DIRECTORY, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(DIRECTORY, m, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					handler.handle(res.result().body());
 				} else {
-					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+					handler.handle(new JsonArray());
 				}
 			}
 		});
@@ -565,7 +565,7 @@ public class UserUtils {
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession, final boolean paused,
 			final Handler<JsonObject> handler) {
 		final long startSessionTime = System.currentTimeMillis();
-		eb.send(SESSION_ADDRESS, findSession, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, findSession, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> message) {
@@ -710,7 +710,7 @@ public class UserUtils {
 				if (res.succeeded()) {
 					details.complete( res.result().body() ); // body may be null if no session can be created (for an app)
 				} else {
-					details.fail(String.valueOf(res.result().body()));
+					details.fail(res.cause());
 				}
 			}
 		});
@@ -746,7 +746,7 @@ public class UserUtils {
 		if(desiredSessionId != null && !desiredSessionId.isEmpty()) {
 			json.put("sessionId", desiredSessionId);
 		}
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -766,7 +766,7 @@ public class UserUtils {
 		JsonObject json = new JsonObject()
 				.put("action", "drop")
 				.put("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -783,7 +783,7 @@ public class UserUtils {
 				.put("action", "drop")
 				.put("sessionMetadata", true)
 				.put("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -811,7 +811,7 @@ public class UserUtils {
 				.put("currentSessionId", currentSessionId)
 				.put("currentTokenId", currentTokenId)
 				.put("immediate", immediate);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -827,7 +827,7 @@ public class UserUtils {
 				.put("action", "dropCacheSession")
 				.put("currentSessionId", currentSessionId)
 				.put("userId", userId);
-		eb.send(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -886,7 +886,7 @@ public class UserUtils {
 
 	private static void sendSessionAttribute(EventBus eb, final Handler<Boolean> handler, JsonObject json) {
 		final long startAddAttrSessionTime = System.currentTimeMillis();
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -907,7 +907,7 @@ public class UserUtils {
 				.put("action", "removeAttribute")
 				.put("userId", userId)
 				.put("key", key);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -962,36 +962,32 @@ public class UserUtils {
 	}
 
 	public static void getUserIdsForGroupIds(Set<String> groupsIds, String currentUserId, EventBus eb, Handler<AsyncResult<Set<String>>> h) {
-		List<Future> futures = (List)groupsIds.stream().map((groupId) -> {
-			Future<Set<String>> future = Future.future();
+		final List<Future> futures = groupsIds.stream().map((groupId) -> {
+			Promise<Set<String>> future = Promise.promise();
 			UserUtils.findUsersInProfilsGroups(groupId, eb, currentUserId, false, (ev) -> {
-				Set<String> ids = new HashSet();
+				Set<String> ids = new HashSet<>();
 				if (ev != null) {
-					Iterator var3 = ev.iterator();
 
-					while(var3.hasNext()) {
-						Object o = var3.next();
-						if (o instanceof JsonObject) {
-							JsonObject j = (JsonObject)o;
-							String id = j.getString("id");
-							ids.add(id);
-						}
-					}
+          for (Object o : ev) {
+            if (o instanceof JsonObject) {
+              JsonObject j = (JsonObject) o;
+              String id = j.getString("id");
+              ids.add(id);
+            }
+          }
 				}
 
 				future.complete(ids);
 			});
-			return future;
+			return future.future();
 		}).collect(Collectors.toList());
 		CompositeFuture.all(futures).map((result) -> {
 			List<Set<String>> all = result.list();
-			return (Set)all.stream().reduce(new HashSet(), (a1, a2) -> {
+			return all.stream().reduce(new HashSet<>(), (a1, a2) -> {
 				a1.addAll(a2);
 				return a1;
 			});
-		}).map(e->{
-			return (Set<String>)e;
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	public static boolean isSuperAdmin(UserInfos user) {
@@ -1004,7 +1000,7 @@ public class UserUtils {
 
 	public static void getSessionsNumber(EventBus eb, final Handler<AsyncResult<Long>> handler) {
 		final JsonObject json = new JsonObject().put("action", "sessionNumber");
-		eb.send(SESSION_ADDRESS, json, ar -> {
+		eb.request(SESSION_ADDRESS, json, ar -> {
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture(((JsonObject) ar.result().body()).getLong("count")));
 			} else {

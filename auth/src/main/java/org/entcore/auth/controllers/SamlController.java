@@ -148,7 +148,7 @@ public class SamlController extends AbstractFederateController {
 			}
 
 			if (samlWayfMustacheFormat.getJsonObject(host) == null || noCache) {
-				final JsonArray wmf = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray wmf = new JsonArray();
 				//hack to display only the wayf entry corresponding to provider
 				final String providerToDisplay = request.getParam("provider");
 				Boolean providerToDisplayEnabled = false;
@@ -249,7 +249,7 @@ public class SamlController extends AbstractFederateController {
 			return;
 		}
 		final JsonObject event = item.copy().put("action", "generate-authn-request");
-		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (log.isDebugEnabled()) {
@@ -319,7 +319,7 @@ public class SamlController extends AbstractFederateController {
                 .put("host", getHost(request))
                 .put("authNRequestId", authNRequestId)
 				.put("scheme", getScheme(request));
-		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
 
@@ -740,7 +740,7 @@ public class SamlController extends AbstractFederateController {
 				}
 			} else {
 				// normal slo
-				vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						if (log.isDebugEnabled()) {
