@@ -280,7 +280,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Future.future();
+							final Future<Integer> future = Promise.promise();
 							logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -302,7 +302,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Future.future();
+						final Future<Integer> future = Promise.promise();
 						logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -314,7 +314,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						return future;
 					});
 				}
-				futures.setHandler(resAll -> {
+				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbCreation", resAll.result());
 						handler.handle(new Either.Right<String,JsonObject>(payload));
@@ -380,7 +380,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Future.future();
+							final Future<Integer> future = Promise.promise();
 							logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -402,7 +402,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Future.future();
+						final Future<Integer> future = Promise.promise();
 						logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -414,7 +414,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						return future;
 					});
 				}
-				futures.setHandler(resAll -> {
+				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbDeletion", resAll.result());
 						handler.handle(new Either.Right<String,JsonObject>(payload));

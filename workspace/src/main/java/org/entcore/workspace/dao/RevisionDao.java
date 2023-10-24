@@ -52,7 +52,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<Optional<JsonObject>> getLastRevision(String documentId) {
-		Future<Optional<JsonObject>> future = Future.future();
+		Future<Optional<JsonObject>> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, 2,
@@ -71,7 +71,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonArray> getLastRevision(String documentId, int count) {
-		Future<JsonArray> future = Future.future();
+		Future<JsonArray> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, count,
@@ -90,7 +90,7 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonObject> findByDocAndId(String documentId, String revisionId) {
 		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(res -> {
 					if (res.isLeft()) {
@@ -110,7 +110,7 @@ public class RevisionDao extends GenericDao {
 		document.put("documentId", id).put("file", file).put("name", name).put("owner", ownerId).put("userId", userId)
 				.put("userName", userName).put("date", MongoDb.now()).put("metadata", metadata)
 				.put("thumbnails", thumbnails);
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		mongo.save(DOCUMENT_REVISION_COLLECTION, document, MongoDbResult.validResultHandler(res -> {
 			if (res.isLeft()) {
 				future.fail(res.left().getValue());
@@ -122,7 +122,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonObject> deleteByDocAndId(String documentId, String revisionId) {
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
@@ -141,7 +141,7 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonArray> findByDoc(String documentId) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
-		Future<JsonArray> future = Future.future();
+		Future<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -157,7 +157,7 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonArray> findByDocs(Set<String> documentId) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").in(documentId);
-		Future<JsonArray> future = Future.future();
+		Future<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -172,7 +172,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonObject> deleteByDoc(String documentId) {
-		Future<JsonObject> future = Future.future();
+		Future<JsonObject> future = Promise.promise();
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {

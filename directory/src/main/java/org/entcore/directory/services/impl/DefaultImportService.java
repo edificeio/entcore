@@ -69,7 +69,7 @@ public class DefaultImportService implements ImportService {
 			final JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "validate")
 					.put("adml-structures", admlValidate.getAdmlStructures());
-			eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
@@ -116,7 +116,7 @@ public class DefaultImportService implements ImportService {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "import");
-			eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request("entcore.feeder", action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
@@ -150,7 +150,7 @@ public class DefaultImportService implements ImportService {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "columnsMapping");
-			eb.send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
@@ -224,7 +224,7 @@ public class DefaultImportService implements ImportService {
 	}
 
 	protected void sendCommand(final Handler<Either<JsonObject, JsonObject>> handler, JsonObject action) {
-		eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(600000L), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request("entcore.feeder", action, new DeliveryOptions().setSendTimeout(600000L), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {

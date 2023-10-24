@@ -5,10 +5,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.Future;
+import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -64,7 +61,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	}
 
 	protected void createExportDirectory(String exportPath, String locale, final Handler<String> handler) {
-		this.vertx.eventBus().send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json -> {
+		this.vertx.eventBus().request("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json -> {
 			if (json.succeeded()) {
 				final String path = exportPath + File.separator +
 						StringUtils.stripAccents(((JsonObject)json.result().body()).getString(title.toLowerCase()));
@@ -109,7 +106,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 							});
 							String exportPathTmp = exportPath + "_tmp";
 							String exportPathFinal = exportPath + File.separator + "Documents";
-							exporter.export(new FolderExporterContext(exportPathTmp), list).setHandler(res -> {
+							exporter.export(new FolderExporterContext(exportPathTmp), list).onComplete(res -> {
 								if (res.failed()) {
 									log.error(title + " : Failed to export document to " + exportPathTmp + " - "
 											+ res.cause());
@@ -222,9 +219,9 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 				.put("acceptLanguage", locale)
 				.put("label", "duplicate.suffix");
 
-		Future<String> promise = Future.future();
+		Promise<String> promise = Promise.promise();
 
-		this.eb.send("portal", rq, new Handler<AsyncResult<Message<JsonObject>>>()
+		this.eb.request("portal", rq, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> msg)
@@ -241,7 +238,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 			}
 		});
 
-		return promise;
+		return promise.future();
 	}
 
 }

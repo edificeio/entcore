@@ -139,7 +139,7 @@ public class EliotExporter implements Exporter {
 							.put("path", new fr.wseduc.webutils.collections.JsonArray(asyncResult.result()))
 							.put("zipFile", zipPath)
 							.put("deletePath", true);
-					vertx.eventBus().send(node + "entcore.zipper", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					vertx.eventBus().request(node + "entcore.zipper", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
@@ -167,7 +167,7 @@ public class EliotExporter implements Exporter {
 				.put("uri", exportDestination +
 						file.substring(file.lastIndexOf(File.separator) + 1))
 				.put("file", file);
-		eb.send(node + WEBDAV_ADDRESS, j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(node + WEBDAV_ADDRESS, j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {

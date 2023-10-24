@@ -92,7 +92,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             badRequest(request);
             return;
         }
-        getTemplateName(userInfos, request, templatePath, templateNamePrefix, "xhtml").setHandler(templateNameRes -> {
+        getTemplateName(userInfos, request, templatePath, templateNamePrefix, "xhtml").onComplete(templateNameRes -> {
             if (templateNameRes.failed()) {
                 badRequest(request, templateNameRes.cause().getMessage());
                 return;
@@ -118,7 +118,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                             .put("content", processedTemplate.getBytes())
                             .put("baseUrl", baseUrl);
 
-                    eb.send(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
+                    eb.request(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
                             .setSendTimeout(600000l), handlerToAsyncHandler(reply -> {
                         JsonObject pdfResponse = reply.body();
                         if (!"ok".equals(pdfResponse.getString("status"))) {
@@ -138,7 +138,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     public void massMailTypeMail(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final JsonArray users) {
-        getTemplateName(userInfos, request, templatePath, "massmail.mail", "txt").setHandler(templateNameRes -> {
+        getTemplateName(userInfos, request, templatePath, "massmail.mail", "txt").onComplete(templateNameRes -> {
             if (templateNameRes.failed()) {
                 badRequest(request, templateNameRes.cause().getMessage());
                 return;
@@ -518,7 +518,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         Future<String> defaultName = getDefaultFileName(prefix, suffix);
         Future<String> i18Name = getI18FileName(user, request, prefix, suffix);
         return CompositeFuture.all(defaultName, i18Name).compose(all -> {
-            Future<String> fullPath = Future.future();
+            Future<String> fullPath = Promise.promise();
             String i18Path = basePath + i18Name.result();
             String defaultPath = basePath + defaultName.result();
             vertx.fileSystem().exists(i18Path, exists -> {
@@ -543,7 +543,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     private Future<String> getLanguage(UserInfos user, HttpServerRequest request) {
-        Future<String> future = Future.future();
+        Future<String> future = Promise.promise();
         String navLang = getOrElse(I18n.acceptLanguage(request), "fr");
         future.complete(navLang);
         return future;

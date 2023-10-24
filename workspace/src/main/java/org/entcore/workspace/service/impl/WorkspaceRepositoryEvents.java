@@ -264,7 +264,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								.collect(Collectors.toList());
 						if(exportDocuments == false)
 							rows = new ArrayList<JsonObject>();
-						exporter.export(new FolderExporterContext(exportPathFolder), rows).setHandler(res ->
+						exporter.export(new FolderExporterContext(exportPathFolder), rows).onComplete(res ->
 						{
 							if (res.succeeded())
 							{

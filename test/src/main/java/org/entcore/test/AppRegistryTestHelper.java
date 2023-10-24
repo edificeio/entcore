@@ -20,7 +20,7 @@ public class AppRegistryTestHelper {
     }
 
     public Future<Void> createApplicationSystem(String name, JsonArray scopes) {
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         final JsonObject app = new JsonObject().put("displayNameSearchField", name.toLowerCase()).put("name", name)
                 .put("displayName", name).put("appType", "SYSTEM").put("scope", scopes);
         final String query = "CREATE (m:Application {props}) RETURN m.id as id";
@@ -44,7 +44,7 @@ public class AppRegistryTestHelper {
         }
         final String query = "CREATE (m:Role {props}) RETURN m.id as id";
         final StatementsBuilder b = new StatementsBuilder().add(query, new JsonObject().put("props", app));
-        final Future<String> future = Future.future();
+        final Future<String> future = Promise.promise();
         Neo4j.getInstance().executeTransaction(b.build(), null, true, m -> {
             JsonArray results = m.body().getJsonArray("results");
             if ("ok".equals(m.body().getString("status")) && results != null) {
@@ -66,7 +66,7 @@ public class AppRegistryTestHelper {
                 applicationid);
         final String query = "MATCH (app:Application {id:{appId}}) MERGE (a:Action {id:{id},name:{name},type:{type}})<-[:PROVIDE]-(app) RETURN a,app";
         final StatementsBuilder b = new StatementsBuilder().add(query, app);
-        final Future<String> future = Future.future();
+        final Future<String> future = Promise.promise();
         Neo4j.getInstance().executeTransaction(b.build(), null, true, m -> {
             JsonArray results = m.body().getJsonArray("results");
             if ("ok".equals(m.body().getString("status")) && results != null) {
@@ -82,7 +82,7 @@ public class AppRegistryTestHelper {
         final JsonObject app = new JsonObject().put("actionId", actionId).put("roleId", roleId);
         final String query = "MATCH (a:Action {id:{actionId}}),(r:Role {id:{roleId}}) MERGE (a)<-[:AUTHORIZE]-(r) RETURN a,r";
         final StatementsBuilder b = new StatementsBuilder().add(query, app);
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         Neo4j.getInstance().executeTransaction(b.build(), null, true, m -> {
             JsonArray results = m.body().getJsonArray("results");
             if ("ok".equals(m.body().getString("status")) && results != null) {
@@ -100,7 +100,7 @@ public class AppRegistryTestHelper {
 
     public Future<String> createApplicationUser(String name, String address, JsonArray scopes, String structureId) {
         final String id = UUID.randomUUID().toString();
-        final Future<String> future = Future.future();
+        final Future<String> future = Promise.promise();
         final JsonObject app = new JsonObject().put("id", id).put("displayNameSearchField", name.toLowerCase())
                 .put("name", name).put("displayName", name).put("appType", "END_USER").put("scope", scopes)
                 .put("address", address);

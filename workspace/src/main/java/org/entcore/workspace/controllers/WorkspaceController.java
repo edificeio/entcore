@@ -159,7 +159,7 @@ public class WorkspaceController extends BaseController {
 					}
 					final Future<FolderImporterZip.FolderImporterZipContext> future = FolderImporterZip.createContext(vertx, userInfos, request);
 					request.resume();
-					future.setHandler(resContext -> {
+					future.onComplete(resContext -> {
 						if(resContext.succeeded()){
 							final FolderImporterZip.FolderImporterZipContext context = resContext.result();
 							if(hasFoundParent){
@@ -365,7 +365,7 @@ public class WorkspaceController extends BaseController {
 							if (recipientIds.isEmpty()) {
 								return Future.succeededFuture(new JsonObject());
 							}
-							Future<JsonObject> futureFindResource = Future.future();
+							Future<JsonObject> futureFindResource = Promise.promise();
 							String elementId = null;
 							if (addVersion) {
 								// notification about a changed file
@@ -396,7 +396,7 @@ public class WorkspaceController extends BaseController {
 								}
 							});
 							return futureFindResource;
-						}).setHandler(ev -> {
+						}).onComplete(ev -> {
 							if (ev.succeeded()) {
 								Set<String> recipientId = futureRecipientIds.result();
 								JsonObject result = ev.result();
@@ -1436,7 +1436,7 @@ public class WorkspaceController extends BaseController {
 				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.put("username", user.getUsername()).put("appPrefix", pathPrefix + "/workspace").put("doc", "share");
 		JsonObject keys = new JsonObject().put("name", 1).put("eType", 1).put("eParent", 1).put("isShared", 1);
-		Future<JsonObject> futureFindById = Future.future();
+		Future<JsonObject> futureFindById = Promise.promise();
 		workspaceService.findById(resource, keys, event -> {
 			if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 				futureFindById.complete(event.getJsonObject("result"));
@@ -1453,7 +1453,7 @@ public class WorkspaceController extends BaseController {
 			} else if (parentId == null) {
 				return Future.succeededFuture(new JsonObject());
 			} else {
-				Future<JsonObject> futureParent = Future.future();
+				Future<JsonObject> futureParent = Promise.promise();
 				workspaceService.findById(parentId, keys, event -> {
 					if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 						futureParent.complete(event.getJsonObject("result"));
@@ -1464,7 +1464,7 @@ public class WorkspaceController extends BaseController {
 				});
 				return futureParent;
 			}
-		}).setHandler(evtParent -> {
+		}).onComplete(evtParent -> {
 			if (evtParent.succeeded()) {
 				JsonObject parent = evtParent.result();
 				JsonObject result = futureFindById.result();

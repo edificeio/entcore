@@ -23,15 +23,9 @@
 package org.entcore.common.pdf;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -77,14 +71,18 @@ public class NodePdfClient implements PdfGenerator {
 	}
 
 	private void generatePdfFromTemplate(String name, String template, String token, Handler<AsyncResult<Pdf>> handler) {
-		final HttpClientRequest req = client.post("/generate/pdf", responseHandler(handler));
 		final String boundary = UUID.randomUUID().toString();
-		req.putHeader("Authorization", authHeader);
-		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
-		req.exceptionHandler(res->{
-			log.error("[generatePdfFromTemplate] Failed to generatepdf from template: "+template, res);
-		});
-		req.end(multipartBody(name, token, template, boundary));
+		client.request(new RequestOptions()
+				.setURI("/generate/pdf")
+				.setMethod(HttpMethod.POST)
+				.addHeader("Authorization", authHeader)
+				.addHeader("Content-Type","multipart/form-data; boundary=" + boundary)
+		)
+		.flatMap(r -> r.send(multipartBody(name, token, template, boundary)))
+		.onSuccess(e -> responseHandler(handler).handle(e))
+		.onFailure(th ->
+			log.error("[generatePdfFromTemplate] Failed to generatepdf from template: "+template, th)
+		);
 	}
 
 	@Override
@@ -93,17 +91,19 @@ public class NodePdfClient implements PdfGenerator {
 	}
 
 	private void generatePdfFromUrl(String name, String url, String token, Handler<AsyncResult<Pdf>> handler) {
-		final HttpClientRequest req = client.post("/print/pdf", responseHandler(handler));
-		req.exceptionHandler(res->{
-			log.error("[generatePdfFromUrl] Failed to generate pdf from url: " + url, res);
-		});
-		req.putHeader("Authorization", authHeader);
-		req.putHeader("Content-Type", "application/json");
-		JsonObject j = new JsonObject().put("url", url).put("name", name);
+		final JsonObject payload = new JsonObject().put("url", url).put("name", name);
 		if (isNotEmpty(token)) {
-			j.put("token", token);
+			payload.put("token", token);
 		}
-		req.end(j.encode());
+		client.request(new RequestOptions()
+				.setURI("/print/pdf")
+				.setMethod(HttpMethod.POST)
+				.addHeader("Authorization", authHeader)
+				.addHeader("Content-Type", "application/json")
+				)
+		.flatMap(r -> r.send(payload.encode()))
+		.onSuccess(e -> responseHandler(handler).handle(e))
+		.onFailure(th -> log.error("[generatePdfFromUrl] Failed to generate pdf from url: " + url, th));
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class NodePdfClient implements PdfGenerator {
 
 	@Override
 	public Future<Pdf> generatePdfFromTemplate(String name, String template, String token) {
-		Future<Pdf> future = Future.future();
+		Promise<Pdf> future = Promise.promise();
 		generatePdfFromTemplate(name, template, token, ar -> {
 			if (ar.succeeded()) {
 				future.complete(ar.result());
@@ -143,7 +143,7 @@ public class NodePdfClient implements PdfGenerator {
 				future.fail(ar.cause());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override
@@ -153,7 +153,7 @@ public class NodePdfClient implements PdfGenerator {
 
 	@Override
 	public Future<Pdf> generatePdfFromUrl(String name, String url, String token) {
-		Future<Pdf> future = Future.future();
+		Promise<Pdf> future = Promise.promise();
 		generatePdfFromUrl(name, url, token, ar -> {
 			if (ar.succeeded()) {
 				future.complete(ar.result());
@@ -161,7 +161,7 @@ public class NodePdfClient implements PdfGenerator {
 				future.fail(ar.cause());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private Handler<HttpClientResponse> responseHandler(Handler<AsyncResult<Pdf>> handler) {
@@ -227,13 +227,13 @@ public class NodePdfClient implements PdfGenerator {
 		buffer.appendBuffer(file);
 		buffer.appendString("\r\n");
 		buffer.appendString("--" + boundary + "--\r\n");
-		final HttpClientRequest req = client.post("/convert/pdf?kind="+kind.name(), responseHandler(handler));
-		req.putHeader("Authorization", authHeader);
-		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
-		req.exceptionHandler(res->{
-			log.error("[convertToPdfFromBuffer] Http request Failed to convertToPdf: "+kind, res);
-		});
-		req.end(buffer);
+		client.request(new RequestOptions()
+				.setURI("/convert/pdf?kind="+kind.name())
+				.addHeader("Authorization", authHeader)
+				.addHeader("Content-Type","multipart/form-data; boundary=" + boundary))
+		.flatMap(r -> r.send(buffer))
+		.onSuccess(response -> responseHandler(handler).handle(response))
+		.onFailure(th-> log.error("[convertToPdfFromBuffer] Http request Failed to convertToPdf: "+kind, th));
 	}
 
 }

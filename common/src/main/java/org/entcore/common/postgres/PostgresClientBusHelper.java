@@ -7,19 +7,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.impl.RowImpl;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.SqlResultBase;
 
+import java.sql.JDBCType;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PostgresClientBusHelper  {
     private static final String ADDRESS = "local:postgres.client.bus";
@@ -115,10 +112,29 @@ public class PostgresClientBusHelper  {
     }
 
     public static Row jsonToRow(final JsonObject json){
-        final List<String> desc = new ArrayList<>(json.getMap().keySet());
-        final Row row = new RowImpl(new RowDesc(desc));
-        for(final String key : desc){
-            final Object val = json.getValue(key);
+        // TODO vertx4 is it really gonna work ?
+        final ColumnDescriptor[] desc = json.getMap().keySet().stream().map(col -> new ColumnDescriptor() {
+            @Override
+            public String name() {
+                return col;
+            }
+            @Override
+            public boolean isArray() {
+                return false;
+            }
+            @Override
+            public String typeName() {
+                return null;
+            }
+            @Override
+            public JDBCType jdbcType() {
+                return null;
+            }
+        }).collect(Collectors.toList()).toArray(new ColumnDescriptor[0]);
+
+        final Row row = new RowImpl(new RowDesc(desc) {});
+        for(final ColumnDescriptor key : desc){
+            final Object val = json.getValue(key.name());
             row.addValue(val);
         }
         return row;
@@ -145,12 +161,26 @@ public class PostgresClientBusHelper  {
     }
 
     public static RowSet<Row> jsonToRowSet(final JsonArray json){
-        final RowSetImpl<Row> rowset = new RowSetImpl<>();
+        final RowSetImpl<Row> rowset = new RowSetImpl<>(extractColumnNames(json));
         for(int i = 0 ; i < json.size(); i++){
             final JsonObject rowJson = json.getJsonObject(i);
             rowset.list.add(jsonToRow(rowJson));
         }
         return rowset;
+    }
+
+    private static List<String> extractColumnNames(JsonArray json) {
+        final List<String> columnNames ;
+        if(json == null) {
+            columnNames = Collections.emptyList();
+        } else {
+        columnNames = json.stream()
+            .filter(Objects::nonNull)
+            .flatMap(e -> ((JsonObject)e).getMap().keySet().stream())
+            .distinct()
+            .collect(Collectors.toList());
+        }
+        return columnNames;
     }
 
     public static JsonArray rowsetToJson(final RowSet<Row> rowset){
@@ -240,23 +270,26 @@ public class PostgresClientBusHelper  {
         @Override
         public Future<Void> commit() {
             this.commit = true;
-            return onFinish.apply(this);
+            return this.onFinish.apply(this);
         }
 
         @Override
         public Future<Void> rollback() {
             this.commit = false;
-            return onFinish.apply(this);
+            return this.onFinish.apply(this);
         }
     }
 
-    public static class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements RowSet<R> {
+    public static class RowSetImpl<R> implements RowSet<R> {
 
         private final List<R> list = new ArrayList<>();
 
-        @Override
-        public RowSet<R> value() {
-            return this;
+        private final Iterator<R> it = list.iterator();
+
+        private final List<String> columnNames;
+
+        public RowSetImpl(final List<String> columnNames) {
+            this.columnNames = columnNames;
         }
 
         @Override
@@ -273,6 +306,42 @@ public class PostgresClientBusHelper  {
                 }
             };
         }
+
+        @Override
+        public int rowCount() {
+            return list.size();
+        }
+
+        @Override
+        public List<String> columnsNames() {
+            return columnNames;
+        }
+
+        @Override
+        public List<ColumnDescriptor> columnDescriptors() {
+            return null;
+        }
+
+        @Override
+        public int size() {
+            return list.size();
+        }
+
+        @Override
+        public <V> V property(PropertyKind<V> propertyKind) {
+            return null;
+        }
+
+        @Override
+        public RowSet<R> value() {
+            return this;
+        }
+
+        @Override
+        public RowSet<R> next() {
+            return it.next() == null ? null : this;
+        }
+
     }
 
 }

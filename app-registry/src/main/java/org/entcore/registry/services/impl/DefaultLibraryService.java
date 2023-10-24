@@ -55,7 +55,7 @@ public class DefaultLibraryService implements LibraryService {
     }
 
     private Future<Buffer> getArchive(UserInfos user, String locale, String app, String resourceId){
-        Future<JsonObject> archiveInfo = Future.future();
+        Future<JsonObject> archiveInfo = Promise.promise();
         JsonObject message = new JsonObject()
                 .put("action", "start")
                 .put("userId", user.getUserId())
@@ -65,7 +65,7 @@ public class DefaultLibraryService implements LibraryService {
                 .put("force", true)
                 .put("synchroniseReply",true);
         log.info("[getArchive] Start archinving ressource: " + resourceId);
-        eb.send("entcore.export", message, new DeliveryOptions().setSendTimeout(30000l), response -> {
+        eb.request("entcore.export", message, new DeliveryOptions().setSendTimeout(30000l), response -> {
             if (response.succeeded()) {
                 JsonObject body = (JsonObject) response.result().body();
                 if ("ok".equals(body.getString("status"))){
@@ -85,14 +85,14 @@ public class DefaultLibraryService implements LibraryService {
         });
         return archiveInfo.compose(jo -> {
             log.debug("archive.export storage.readFile " + jo.getString("exportPath"));
-            Future<Buffer> archive = Future.future();
+            Future<Buffer> archive = Promise.promise();
             log.info("[getArchive] Start reading archive for ressource: " + resourceId);
             this.storage.readFile(jo.getString("exportPath"), buffer -> archive.complete(buffer));
             return archive;
         }).compose(buffer -> {
-            Future<Buffer> bufferFuture = Future.future();
+            Future<Buffer> bufferFuture = Promise.promise();
             log.info("[getArchive] Start deleting archive for ressource: " + resourceId);
-            eb.send("entcore.export", new JsonObject()
+            eb.request("entcore.export", new JsonObject()
                     .put("action", "delete")
                     .put("exportId", archiveInfo.result().getString("exportId")), new DeliveryOptions().setSendTimeout(5000l), response -> {
                 if (response.succeeded()) {
@@ -132,7 +132,7 @@ public class DefaultLibraryService implements LibraryService {
         }
         Future<Buffer> archive = getArchive(user, locale, form.get("application"), form.get("resourceId"));
         return archive.compose(resArchive -> generatePdf(user, form)).compose(resPdf -> {
-            final Future<JsonObject> future = Future.future();
+            final Future<JsonObject> future = Promise.promise();
             try{
                 log.info("[publish] Post data to library for ressource: " + form.get("resourceId"));
                 final Buffer exportPdf = resPdf.getContent();
@@ -188,14 +188,14 @@ public class DefaultLibraryService implements LibraryService {
         log.info("[generatePdf] Start generating pdf for ressource: " + form.get("resourceId"));
         final String pdfUri = form.get("pdfUri");
         form.remove("pdfUri");
-        Future<Pdf> future = Future.future();
+        Future<Pdf> future = Promise.promise();
         if (StringUtils.isEmpty(pdfUri)) {
             future.fail("Pdf URI should not be empty");
             log.error("[generatePdf] Pdf generation failed for URI: " +pdfUri);
         } else {
             this.pdfGenerator.generatePdfFromUrl(user, "pdfExport.pdf", pdfUri, future.completer());
         }
-        return future.setHandler(res->{
+        return future.onComplete(res->{
             if(res.failed()){
                 log.error("[generatePdf] Pdf generation failed for resource: " +form.get("resourceId"), res.cause());
             }else{

@@ -55,7 +55,7 @@ public class MappingService {
     }
 
     public Future<Void> create(JsonObject data){
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         if(data.containsKey("type")){
             data.put("_id", data.getString("type"));
             data.remove("type");
@@ -72,7 +72,7 @@ public class MappingService {
 
     public Future<Mappings> getMappings() {
         if (cacheMapping == null) {
-            final Future<Mappings> futureMapping = Future.future();
+            final Future<Mappings> futureMapping = Promise.promise();
             //load mappings
             final Map<String, Mapping> rows = new HashMap<>();
             //final String mappingJson = new String(Files.readAllBytes(Paths.get(RegisteredServices.class.getResource(MAPPING_FILE).toURI())));
@@ -94,8 +94,8 @@ public class MappingService {
             //load structures
             cacheMapping = futureMapping.compose(r->{
                 final Mappings tmp = (Mappings)r;
-                final Future<Mappings> future = Future.future();
-                getStructures().setHandler(resStruct -> {
+                final Future<Mappings> future = Promise.promise();
+                getStructures().onComplete(resStruct -> {
                     if(resStruct.succeeded()){
                         for(final Object o : resStruct.result()){
                             final JsonObject json = (JsonObject)o;
@@ -115,7 +115,7 @@ public class MappingService {
                 });
                 return future;
             });
-            cacheMapping.setHandler(r -> {
+            cacheMapping.onComplete(r -> {
                 for(final Future<Mappings> f : cacheMappingPending){
                     if(!f.isComplete()){
                         f.handle(r);
@@ -124,7 +124,7 @@ public class MappingService {
                 cacheMappingPending.clear();
                 cacheMappingDate = new Date();
             });
-            final Future<Mappings> future = Future.future();
+            final Future<Mappings> future = Promise.promise();
             cacheMappingPending.add(future);
             return future;
         } else if(cacheMapping.isComplete()){
@@ -134,7 +134,7 @@ public class MappingService {
                 return Future.failedFuture(cacheMapping.cause());
             }
         }else {//pending
-            final Future<Mappings> future = Future.future();
+            final Future<Mappings> future = Promise.promise();
             cacheMappingPending.add(future);
             return future;
         }
@@ -142,7 +142,7 @@ public class MappingService {
 
     public Future<JsonArray> getStructures(){
         if(cacheStructures==null){//init
-            cacheStructures = Future.future();
+            cacheStructures = Promise.promise();
             final StringBuilder query = new StringBuilder();
             query.append("MATCH (s:Structure) OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) ");
             query.append("WITH s, COLLECT({id: ps.id, name: ps.name}) as parents ");
@@ -154,7 +154,7 @@ public class MappingService {
                     cacheStructures.complete(r.right().getValue());
                 }
             }));
-            cacheStructures.setHandler(r -> {
+            cacheStructures.onComplete(r -> {
                for(final Future<JsonArray> f : cacheStructuresPending){
                    if(!f.isComplete()){
                        f.handle(r);
@@ -163,7 +163,7 @@ public class MappingService {
                cacheStructuresPending.clear();
                cacheStructuresDate = new Date();
             });
-            final Future<JsonArray> future = Future.future();
+            final Future<JsonArray> future = Promise.promise();
             cacheStructuresPending.add(future);
             return future;
         } else if(cacheStructures.isComplete()){
@@ -173,7 +173,7 @@ public class MappingService {
                 return Future.failedFuture(cacheStructures.cause());
             }
         }else {//pending
-            final Future<JsonArray> future = Future.future();
+            final Future<JsonArray> future = Promise.promise();
             cacheStructuresPending.add(future);
             return future;
         }
@@ -181,8 +181,8 @@ public class MappingService {
 
     public Future<JsonObject> getMappingUsage(String mappingId, Optional<String> structureId)
     {
-        final Future<JsonObject> future = Future.future();
-        getMappings().setHandler(new Handler<AsyncResult<Mappings>>()
+        final Future<JsonObject> future = Promise.promise();
+        getMappings().onComplete(new Handler<AsyncResult<Mappings>>()
         {
             @Override
             public void handle(AsyncResult<Mappings> cacheRes)
@@ -240,7 +240,7 @@ public class MappingService {
 
     public Future<Void> delete(String mappingId)
     {
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         final JsonObject deleteData = new JsonObject().put("_id", mappingId);
 
         if(mappingId == null)
@@ -248,7 +248,7 @@ public class MappingService {
             future.fail("cas.mappings.emptyId");
             return future;
         }
-        this.getMappingUsage(mappingId, Optional.empty()).setHandler(new Handler<AsyncResult<JsonObject>>()
+        this.getMappingUsage(mappingId, Optional.empty()).onComplete(new Handler<AsyncResult<JsonObject>>()
         {
             @Override
             public void handle(AsyncResult<JsonObject> res)

@@ -57,7 +57,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<JsonObject> getExternalNotifications() {
-        Future<JsonObject> future = Future.future();
+        Future<JsonObject> future = Promise.promise();
         if (externalNotificationsCache != null) {
             return Future.succeededFuture(externalNotificationsCache);
         }
@@ -107,12 +107,12 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             }
             copy.put("created", copy.getJsonObject("date"));
             copy.put("_id", resOriginal.getString("_id", ""));
-            shouldAddToCache(copy).setHandler(resShouldAdd -> {
+            shouldAddToCache(copy).onComplete(resShouldAdd -> {
                 final List<Future> futures = new ArrayList<>();
                 if(resShouldAdd.succeeded() && resShouldAdd.result()){
                     for (Object recipient : recipients) {
                         final JsonObject recipientJson = (JsonObject) recipient;
-                        final Future<Void> future = Future.future();
+                        final Future<Void> future = Promise.promise();
                         futures.add(future);
                         final String key = getKey(recipientJson.getString("userId"));
                         cacheService.prependToList(key, copy.encode(), res -> {
@@ -135,7 +135,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                     }
                 }
                 //call original store
-                CompositeFuture.all(futures).setHandler(res -> {
+                CompositeFuture.all(futures).onComplete(res -> {
                     if (!res.succeeded()) {
                         logger.error("Failed to add event:", res.cause());
                     }
@@ -150,7 +150,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<List<JsonObject>> getListFiltered(String userId, List<String> types){
-        Future<List<JsonObject>> future = Future.future();
+        Future<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -183,7 +183,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<List<JsonObject>> getListUnfiltered(String userId){
-        Future<List<JsonObject>> future = Future.future();
+        Future<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -204,7 +204,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
         if (fromCache) {
             final String userId = recipient.getUserId();
             if(offset == 0){
-                getListFiltered(userId, types).setHandler(resJson ->{
+                getListFiltered(userId, types).onComplete(resJson ->{
                     if(resJson.succeeded()){
                         final List<JsonObject> allJson = resJson.result();
                         final JsonObject payload = new JsonObject();
@@ -218,7 +218,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                     }
                 });
             } else if(offset <= this.pageSize){
-                getListFiltered(userId, types).setHandler(resJson ->{
+                getListFiltered(userId, types).onComplete(resJson ->{
                     if(resJson.succeeded()){
                         final int length = resJson.result().size();
                         int newOffset = offset;
@@ -276,7 +276,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     protected void removeFromCache(String recipient, String id){
-        getListUnfiltered(recipient).setHandler(res->{
+        getListUnfiltered(recipient).onComplete(res->{
             if(res.succeeded()){
                 final List<JsonObject> jsons = res.result();
                 for(int i = 0 ; i < jsons.size(); i ++){

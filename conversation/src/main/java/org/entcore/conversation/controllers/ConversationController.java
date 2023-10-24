@@ -1762,7 +1762,7 @@ public class ConversationController extends BaseController {
 		message.put("action", "getUserQuota");
 		message.put("userId", userId);
 
-		eb.send(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> reply) {
 				handler.handle(reply.body());
 			}
@@ -1780,7 +1780,7 @@ public class ConversationController extends BaseController {
 		message.put("size", size);
 		message.put("threshold", threshold);
 
-		eb.send(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> reply) {
 				JsonObject obj = reply.body();
 				UserUtils.addSessionAttribute(eb, userId, "storage", obj.getLong("storage"), null);

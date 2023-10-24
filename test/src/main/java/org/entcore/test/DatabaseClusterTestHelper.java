@@ -176,7 +176,7 @@ public class DatabaseClusterTestHelper {
         public Future<AsyncResult<Object>> start(Vertx vertx, String urlO) {
             final String url = urlO.replaceAll("/db/data", "");
             if (this.containerByUrl.containsKey(url)) {
-                final Future<AsyncResult<Object>> future = Future.future();
+                final Future<AsyncResult<Object>> future = Promise.promise();
                 vertx.executeBlocking(e -> {
                     Neo4jContainer container = this.containerByUrl.get(url);
                     container.start();
@@ -192,7 +192,7 @@ public class DatabaseClusterTestHelper {
             if(count == 0){
                 return Future.succeededFuture();
             }
-            final Future<AsyncResult<Object>> future = Future.future();
+            final Future<AsyncResult<Object>> future = Promise.promise();
             vertx.executeBlocking(res->{
                 getAll().parallelStream().forEach(e->{
                     if(e.isRunning()){

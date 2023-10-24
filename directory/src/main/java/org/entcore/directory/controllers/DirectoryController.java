@@ -142,7 +142,7 @@ public class DirectoryController extends BaseController {
 				.put("charset", request.params().get("charset"))
 				.put("structureExternalId", request.params().get("structureExternalId"));
 
-		eb.send("entcore.feeder", json);
+		eb.request("entcore.feeder", json);
 		request.response().end();
 	}
 
@@ -159,7 +159,7 @@ public class DirectoryController extends BaseController {
 		if (structureId != null) {
 			t.put("structureExternalId", structureId);
 		}
-		eb.send("entcore.feeder", t, new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("transitionTimeout"), 300000l)),
+		eb.request("entcore.feeder", t, new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("transitionTimeout"), 300000l)),
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
@@ -181,7 +181,7 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("directory.duplicates.mark")
 	@IgnoreCsrf
 	public void markDuplicates(final HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
+		eb.request("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
 				new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("markDuplicatesTimeout"), 300000l)), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -194,7 +194,7 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("directory.autogroups.link")
 	@IgnoreCsrf
 	public void linkAutogroups(final HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				renderJson(request, event.body());
@@ -206,7 +206,7 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("directory.export")
 	@IgnoreCsrf
 	public void launchExport(HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "export"));
+		eb.request("entcore.feeder", new JsonObject().put("action", "export"));
 		request.response().end();
 	}
 
@@ -214,7 +214,7 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("directory.reinit.login")
 	@IgnoreCsrf
 	public void reinitLogins(HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
+		eb.request("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
 		request.response().end();
 	}
 
@@ -252,7 +252,7 @@ public class DirectoryController extends BaseController {
 										.put("action", "initDefaultCommunicationRules")
 										.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(
 												r.right().getValue().getString("id")));
-								eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+								eb.request("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> message) {
 										renderJson(request, r.right().getValue(), 201);
@@ -297,7 +297,7 @@ public class DirectoryController extends BaseController {
 								JsonObject j = new JsonObject()
 										.put("action", "initDefaultCommunicationRules")
 										.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(schoolId));
-								eb.send("wse.communication", j);
+								eb.request("wse.communication", j);
 								String classId = event.right().getValue().getString("id");
 								if (classId != null && !classId.trim().isEmpty() &&
 										request.params().contains("setDefaultRoles") &&
@@ -421,7 +421,7 @@ public class DirectoryController extends BaseController {
 													JsonObject j = new JsonObject()
 															.put("action", "setDefaultCommunicationRules")
 															.put("schoolId", s.right().getValue().getString("id"));
-													eb.send("wse.communication", j);
+													eb.request("wse.communication", j);
 												}
 											}
 										});
@@ -446,7 +446,7 @@ public class DirectoryController extends BaseController {
 										JsonObject j = new JsonObject()
 												.put("action", "setDefaultCommunicationRules")
 												.put("schoolId", structureId);
-										eb.send("wse.communication", j);
+										eb.request("wse.communication", j);
 									}
 								}));
 								renderJson(request, r);

@@ -1,5 +1,6 @@
 package org.entcore.common.postgres;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -13,6 +14,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 import org.apache.commons.lang3.NotImplementedException;
+
+import java.util.function.Function;
 
 import static org.entcore.common.postgres.PostgresClientBusHelper.*;
 
@@ -47,9 +50,9 @@ public class PostgresClientBusPublisher implements IPostgresClient {
     }
 
     @Override
-    public Future<IPostgresTransaction> transaction() {
-        final IPostgresTransaction transa =new PostgresClientBusHelper.PostgresTransactionBus(transaction -> {
-            final Promise<Void> promise = Promise.promise();
+    public <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function) {
+        final Promise<T> resultPromise = Promise.promise();
+        new PostgresClientBusHelper.PostgresTransactionBus(transaction -> {
             if(transaction.isCommit()) {
                 final DeliveryOptions options = new DeliveryOptions().setLocalOnly(true);
                 this.bus.request(getAddress(suffix), transactionToJson(transaction.getParams()), options, resBus -> {
@@ -68,17 +71,17 @@ public class PostgresClientBusPublisher implements IPostgresClient {
                                 transaction.getPromises().get(i).fail("Could not parse");
                             }
                         }
-                        promise.complete(null);
+                        resultPromise.complete(null);
                     }else{
-                        promise.fail(resBus.cause());
+                        resultPromise.fail(resBus.cause());
                     }
                 });
             } else {
-                promise.fail("rollback");
+                resultPromise.fail("rollback");
             }
-            return promise.future().mapEmpty();
+            return resultPromise.future().mapEmpty();
         });
-        return Future.succeededFuture(transa);
+        return resultPromise.future();
     }
 
     @Override

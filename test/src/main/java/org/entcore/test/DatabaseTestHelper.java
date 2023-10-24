@@ -256,7 +256,7 @@ public class DatabaseTestHelper {
 
     public Future<JsonObject> executeSqlWithUniqueResult(String query, JsonArray values) {
         Sql sql = Sql.getInstance();
-        Future<JsonObject> future = Future.future();
+        Future<JsonObject> future = Promise.promise();
         sql.prepared(query, values, SqlResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -277,7 +277,7 @@ public class DatabaseTestHelper {
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
         QueryBuilder builder = QueryBuilder.start("_id").is(id);
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Future<JsonObject> future = Promise.promise();
         mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -291,7 +291,7 @@ public class DatabaseTestHelper {
     /** Query a mongoDB collection for a single object. */
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Future<JsonObject> future = Promise.promise();
         mongo.findOne(collection, query, MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -305,7 +305,7 @@ public class DatabaseTestHelper {
     /** Query neo4j for a single object. */
     public Future<JsonObject> executeNeo4jWithUniqueResult(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonObject> future = Future.future();
+        final Future<JsonObject> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -319,7 +319,7 @@ public class DatabaseTestHelper {
     /** Query neo4j for multiple objects. */
     public Future<JsonArray> executeNeo4j(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonArray> future = Future.future();
+        final Future<JsonArray> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());

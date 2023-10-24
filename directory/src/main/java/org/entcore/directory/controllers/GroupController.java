@@ -218,7 +218,7 @@ public class GroupController extends BaseController {
 								JsonObject j = new JsonObject()
 										.put("action", "setCommunicationRules")
 										.put("groupId", groupId);
-								eb.send("wse.communication", j);
+								eb.request("wse.communication", j);
 								ApplicationUtils.publishModifiedUserGroup(eb, userIds);
 								renderJson(request, res.right().getValue());
 							} else {

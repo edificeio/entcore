@@ -199,7 +199,7 @@ public class CanopeCasClient extends CasClientController
                 .put("classId", classId)
                 .put("userId", user.account.id);
 
-        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
         {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result)
@@ -227,7 +227,7 @@ public class CanopeCasClient extends CasClientController
                 .put("structureId", userCreationStructureId)
                 .put("data", user.getClasse(suffix));
 
-        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
         {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result)
@@ -330,7 +330,7 @@ public class CanopeCasClient extends CasClientController
                                 .put("profile", user.profile)
                                 .put("data", user.toJson());
 
-                        eb.send("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
+                        eb.request("entcore.feeder", action, new Handler<AsyncResult<Message<JsonObject>>>()
                         {
                             @Override
                             public void handle(AsyncResult<Message<JsonObject>> result)

@@ -682,7 +682,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			final JsonObject baseQuery = new JsonObject().put("structureId", structureId);
 			if (txSuccess) {
 				CompositeFuture.all(updateMongoCourses(baseQuery), subjectAutoMapping())
-						.setHandler(ar -> endHandler.handle(new DefaultAsyncResult<>(report)));
+						.onComplete(ar -> endHandler.handle(new DefaultAsyncResult<>(report)));
 			} else {
 				mongoDb.delete(COURSES, baseQuery.copy()
 						.put("pending", importTimestamp)
@@ -728,7 +728,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> updateMongoCourses(JsonObject baseQuery) {
-		Future<Void> future = Future.future();
+		Future<Void> future = Promise.promise();
 		mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
 				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")).put("$unset", new JsonObject().put("deleted", "")),
 				false, true, new Handler<Message<JsonObject>>() {
@@ -844,7 +844,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> subjectAutoMapping() {
-		final Future<Void> future = Future.future();
+		final Future<Void> future = Promise.promise();
 		final JsonObject params = new JsonObject().put("UAI", UAI);
 		final TransactionHelper tx1;
 		try {

@@ -149,7 +149,7 @@ public class ElmsRegisteredService extends AbstractCas20ExtensionRegisteredServi
                 .put(STRUCTUREIDS, new JsonArray(structureIds))
                 .put(USERID, userId);
 
-        eb.send(GAR_ADDRESS, action, handlerToAsyncHandler(event -> {
+        eb.request(GAR_ADDRESS, action, handlerToAsyncHandler(event -> {
 
             if (OK.equals(event.body().getString(STATUS))) {
                 promise.complete(event.body().getJsonObject(MESSAGE));

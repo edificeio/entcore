@@ -280,7 +280,7 @@ public class PostImport {
 								.put("schoolIds", (ids.getJsonObject(0))
 										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
 						logger.info(e-> "START apply applyComRules");
-						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
+						eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {

@@ -29,7 +29,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
     private Set<String> defaultDomainsWhiteList = new HashSet<>();
     private Set<String> domainsWhiteList = new HashSet<>();
     private Set<String> internalHosts = new HashSet<>();
-    private Future<Void> onReady = Future.future();
+    private Future<Void> onReady = Promise.promise();
     private final Neo4j neo = Neo4j.getInstance();
     private boolean inited = false;
 
@@ -130,7 +130,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
             handler.handle(true);
             return;
         }
-        onReady.setHandler(ready -> {
+        onReady.onComplete(ready -> {
             if (ready.succeeded()) {
                 final Optional<String> extractedHost = extractHost(uri);
                 if (!extractedHost.isPresent()) {
@@ -168,7 +168,7 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
         if (!onReady.isComplete()) {
             logger.warn("Trying to redirect but whitelist is not loaded yet : " + host + path);
         }
-        onReady.setHandler(ready -> {
+        onReady.onComplete(ready -> {
             if (StringUtils.isEmpty(host)) {
                 // missing host => ent host
                 Renders.redirect(request, path);

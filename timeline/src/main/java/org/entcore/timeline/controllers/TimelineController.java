@@ -583,7 +583,7 @@ public class TimelineController extends BaseController {
 								.put("action", "list-adml")
 								.put("structureId", structureId);
 
-							eb.send("directory", message, result -> {
+							eb.request("directory", message, result -> {
 								if (result.succeeded()) {
 									JsonArray users = (JsonArray) result.result().body();
 									for (Object userObj : users) {

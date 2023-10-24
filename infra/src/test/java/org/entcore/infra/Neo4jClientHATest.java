@@ -77,7 +77,7 @@ public class Neo4jClientHATest {
             eventReceived = 0;
             mailReceived = 0;
             final Async async = context.async();
-            cluster.start(test.vertx()).compose(r -> waitPending()).setHandler(context.asyncAssertSuccess(r -> {
+            cluster.start(test.vertx()).compose(r -> waitPending()).onComplete(context.asyncAssertSuccess(r -> {
                 pending.clear();
                 pendingMails.clear();
                 async.complete();
@@ -160,7 +160,7 @@ public class Neo4jClientHATest {
             assertEventReceived(context, 2);
             assertMailReceived(context, 0);
             return waitPending();
-        }).setHandler(context.asyncAssertSuccess(r -> {
+        }).onComplete(context.asyncAssertSuccess(r -> {
             async.complete();
         }));
     }
@@ -241,7 +241,7 @@ public class Neo4jClientHATest {
             assertEventReceived(context, 2);
             assertMailReceived(context, 0);
             return waitPending();
-        }).setHandler(context.asyncAssertSuccess(r -> {
+        }).onComplete(context.asyncAssertSuccess(r -> {
             async.complete();
         }));
     }
@@ -344,7 +344,7 @@ public class Neo4jClientHATest {
             assertEventReceived(context, 2 * 2);
             assertMailReceived(context, 0);
             return waitPending();
-        }).setHandler(context.asyncAssertSuccess(r -> {
+        }).onComplete(context.asyncAssertSuccess(r -> {
             async.complete();
         }));
     }
@@ -432,7 +432,7 @@ public class Neo4jClientHATest {
             assertQuery(context, true, manager);
             assertQuery(context, false, manager);
             return waitPending();
-        }).setHandler(context.asyncAssertSuccess(r -> {
+        }).onComplete(context.asyncAssertSuccess(r -> {
             async.complete();
         }));
     }
@@ -490,7 +490,7 @@ public class Neo4jClientHATest {
         final Long countRead = group.getChecks().stream().filter(e -> e instanceof Neo4jRestClientCheckRead).count();
         final Long countNotifier = group.getChecks().stream().filter(e -> e instanceof Neo4jRestClientCheckNotifier).map(e -> {
             ((Neo4jRestClientCheckNotifier) e).setBeforeSendMail(ee -> {
-                final Future future = Future.future();
+                final Future future = Promise.promise();
                 this.pendingMails.add(future);
             });
             ((Neo4jRestClientCheckNotifier) e).setOnSendMail(ee -> {
@@ -596,8 +596,8 @@ public class Neo4jClientHATest {
     }
 
     private Future<Void> assertEventReceived(final TestContext context, final Optional<Integer> expectedOpt, Optional<Integer> nbUp, Optional<Integer> nbDown) {
-        final Future<Void> future = Future.future();
-        pgReactive.execute("SELECT * FROM events.neo4j_change_events ORDER BY date ASC ", new JsonArray()).setHandler(context.asyncAssertSuccess(r -> {
+        final Future<Void> future = Promise.promise();
+        pgReactive.execute("SELECT * FROM events.neo4j_change_events ORDER BY date ASC ", new JsonArray()).onComplete(context.asyncAssertSuccess(r -> {
             final int count = r.size() - eventReceived;
             eventReceived = r.size();
             if (expectedOpt.isPresent()) {
@@ -637,8 +637,8 @@ public class Neo4jClientHATest {
 
     private Future<Void> assertMailReceived(final TestContext context, final Optional<Integer> expectedOpt) {
         return CompositeFuture.all(new ArrayList<>(this.pendingMails)).compose(ro -> {
-            final Future<Void> future = Future.future();
-            pgReactive.execute("SELECT * FROM mail.mail_events ORDER BY date ASC ", new JsonArray()).setHandler(context.asyncAssertSuccess(r -> {
+            final Future<Void> future = Promise.promise();
+            pgReactive.execute("SELECT * FROM mail.mail_events ORDER BY date ASC ", new JsonArray()).onComplete(context.asyncAssertSuccess(r -> {
                 final int count = r.size() - mailReceived;
                 mailReceived = r.size();
                 if (expectedOpt.isPresent()) {
@@ -654,7 +654,7 @@ public class Neo4jClientHATest {
     }
 
     private Future<Void> waitMS(int time) {
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         test.vertx().setTimer(time, r -> {
             future.complete();
         });
@@ -662,7 +662,7 @@ public class Neo4jClientHATest {
     }
 
     private Future<Void> waitSwitch() {
-        final Future<Void> future = Future.future();
+        final Future<Void> future = Promise.promise();
         test.vertx().setTimer(DatabaseClusterTestHelper.NEO4J_SWITCH_TIMEOUT_MS * 2, r -> {
             future.complete();
         });
@@ -718,7 +718,7 @@ public class Neo4jClientHATest {
 
     private void assertQuery(final TestContext context, final boolean write, final Neo4jRestClientNodeManager manager) {
         try {
-            final Future<Void> future = Future.future();
+            final Future<Void> future = Promise.promise();
             pending.add(future);
             if (write) {
                 final Neo4jRestClientNode master = manager.getMasterNode();
@@ -758,7 +758,7 @@ public class Neo4jClientHATest {
 
     private void assertFailQuery(final TestContext context, final boolean write, final Neo4jRestClientNodeManager manager) {
         try {
-            final Future<Void> future = Future.future();
+            final Future<Void> future = Promise.promise();
             pending.add(future);
             if (write) {
                 final Neo4jRestClientNode master = manager.getMasterNode();

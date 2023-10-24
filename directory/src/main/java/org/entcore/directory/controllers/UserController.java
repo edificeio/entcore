@@ -538,7 +538,7 @@ public class UserController extends BaseController {
 									JsonObject j = new JsonObject()
 											.put("action", "setCommunicationRules")
 											.put("groupId", groupId);
-									eb.send("wse.communication", j);
+									eb.request("wse.communication", j);
 								}
 								recreateSession(userId, request, eb, () -> renderJson(request, r.right().getValue()));
 							} else {
@@ -654,7 +654,7 @@ public class UserController extends BaseController {
 					JsonObject j = new JsonObject()
 							.put("action", "setCommunicationRules")
 							.put("groupId", groupId);
-					eb.send("wse.communication", j);
+					eb.request("wse.communication", j);
 					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					recreateSession(userId, request, eb, () -> renderJson(request, res.right().getValue()));
@@ -756,7 +756,7 @@ public class UserController extends BaseController {
 					JsonObject j = new JsonObject()
 							.put("action", "setMultipleDefaultCommunicationRules")
 							.put("schoolIds", structures);
-					eb.send("wse.communication", j);
+					eb.request("wse.communication", j);
 					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(relativeId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					if (structures == null || structures.size() == 0) {

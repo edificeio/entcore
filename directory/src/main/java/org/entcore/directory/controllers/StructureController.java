@@ -132,7 +132,7 @@ public class StructureController extends BaseController {
 								JsonObject j = new JsonObject()
 										.put("action", "setDefaultCommunicationRules")
 										.put("schoolId", structureId);
-								eb.send("wse.communication", j);
+								eb.request("wse.communication", j);
 							}
 						}));
 						renderJson(request, r.right().getValue(), 200);
@@ -758,7 +758,7 @@ public class StructureController extends BaseController {
 	}
 
 	private void getSkin(HttpServerRequest request, Handler<Either<String,String>> handler) {
-		eb.send("userbook.preferences", new JsonObject().put("action", "get.currentuser")
+		eb.request("userbook.preferences", new JsonObject().put("action", "get.currentuser")
 				.put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
 				.put("application", "theme"), result -> {
 			if (result.succeeded()) {

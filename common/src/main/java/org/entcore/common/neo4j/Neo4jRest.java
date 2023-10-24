@@ -102,10 +102,15 @@ public class Neo4jRest implements GraphDatabase {
 
 	private void createIndex(final JsonObject j) {
 		try {
-			final HttpClientRequest req = nodeManager.getMasterClient()
-					.post("/db/data/index/" + j.getString("for"), new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(HttpClientResponse event) {
+			final JsonObject body = new JsonObject().put("name", j.getString("name"));
+			body.put("config", new JsonObject()
+					.put("type", j.getString("type", "exact"))
+					.put("provider", "lucene"));
+			nodeManager.getMasterClient().request(HttpMethod.POST, "/db/data/index/" + j.getString("for"))
+					.map(this::prepareRequest)
+					.flatMap(request -> request.send(body.encode()))
+					.onFailure(th -> logger.error("Error creating index : " + j.encode(), th))
+					.onSuccess(event -> {
 					if (event.statusCode() != 201) {
 						event.bodyHandler(new Handler<Buffer>() {
 							@Override
@@ -114,15 +119,7 @@ public class Neo4jRest implements GraphDatabase {
 							}
 						});
 					}
-				}
 			});
-			prepareRequest(req);
-			JsonObject body = new JsonObject().put("name", j.getString("name"));
-			body.put("config", new JsonObject()
-					.put("type", j.getString("type", "exact"))
-					.put("provider", "lucene"));
-			req.exceptionHandler(e -> logger.error("Error creating index : " + j.encode(), e));
-			req.end(body.encode());
 		} catch (Neo4jConnectionException e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -313,18 +310,17 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void rollbackTransaction(int transactionId, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getMasterClient().delete(
-					basePath + "/transaction/" + transactionId, new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(final HttpClientResponse resp) {
-					resp.bodyHandler(new Handler<Buffer>() {
-
-						@Override
-						public void handle(Buffer b) {
+			nodeManager.getMasterClient()
+					.request(HttpMethod.DELETE, basePath + "/transaction/" + transactionId)
+					.map(this::prepareRequest)
+					.map(r -> r.putHeader("Accept", "application/json; charset=UTF-8"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(resp -> {
+						resp.bodyHandler(b -> {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
-								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).size() == 0) {
+								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).isEmpty()) {
 									json.remove("errors");
 									handler.handle(json);
 								} else {
@@ -334,14 +330,9 @@ public class Neo4jRest implements GraphDatabase {
 							} else {
 								handler.handle(new JsonObject().put("message", resp.statusMessage()));
 							}
-						}
-					});
-				}
-			});
-			prepareRequest(req);
-			req.headers().add("Accept", "application/json; charset=UTF-8");
-			req.exceptionHandler(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
-			req.end();
+						});
+					})
+					.onFailure(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
 		}
@@ -350,30 +341,20 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void unmanagedExtension(String method, String uri, String body, final Handler<JsonObject> handler) {
 		try {
-			HttpClientRequest req = nodeManager.getMasterClient().request(HttpMethod.valueOf(method.toUpperCase()), uri,
-					new Handler<HttpClientResponse>() {
-				@Override
-				public void handle(final HttpClientResponse response) {
-					response.bodyHandler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer buffer) {
+			nodeManager.getMasterClient().request(HttpMethod.valueOf(method.toUpperCase()), uri)
+					.map(this::prepareRequest)
+					.flatMap(r -> body == null ? r.send() : r.send(body))
+					.onSuccess(response ->  {
+						response.bodyHandler(buffer -> {
 							if (response.statusCode() <= 200 && response.statusCode() < 300) {
 								handler.handle(new JsonObject().put("result", buffer.toString()));
 							} else {
 								handler.handle((new JsonObject().put("message",
 										response.statusMessage()  + " : " + buffer.toString())));
 							}
-						}
-					});
-				}
-			});
-			prepareRequest(req);
-			req.exceptionHandler(e -> logger.error("Neo4j unmanaged extension error.", e));
-			if (body != null) {
-				req.end(body);
-			} else {
-				req.end();
-			}
+						});
+					})
+					.onFailure(e -> logger.error("Neo4j unmanaged extension error.", e));
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
 		}
@@ -456,26 +437,25 @@ public class Neo4jRest implements GraphDatabase {
 		if (client == null) {
 			client = nodeManager.getMasterClient();
 		}
-		HttpClientRequest req = client.post(basePath + path, handler);
-		req.headers()
-				.add("Content-Type", "application/json")
-				.add("Accept", "application/json; charset=UTF-8");
-		prepareRequest(req);
 		final String b = Json.encode(body);
+		client.request(HttpMethod.POST, basePath + path)
+				.map(req -> req.putHeader("Content-Type", "application/json")
+						.putHeader("Accept", "application/json; charset=UTF-8"))
+				.map(this::prepareRequest)
+				.flatMap(r -> r.send(b))
+				.onSuccess(handler)
+				.onFailure(event -> {
+					logger.error("Neo4j error in request : " + path + " - " + b + ": " + event.getMessage(), event);
+					if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
+						logger.warn("Retry sendRequest with empty statements.");
+						try {
+							sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
+						} catch (Neo4jConnectionException e) {
+							logger.error("Error when try retry sendRequest call.", e);
+						}
+					}
+				});
 
-		req.exceptionHandler(event -> {
-			logger.error("Neo4j error in request : " + path + " - " + b + ": " + event.getMessage(), event);
-			if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
-				logger.warn("Retry sendRequest with empty statements.");
-				try {
-					sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
-				} catch (Neo4jConnectionException e) {
-					logger.error("Error when try retry sendRequest call.", e);
-				}
-			}
-		});
-
-		req.end(b);
 	}
 
 }

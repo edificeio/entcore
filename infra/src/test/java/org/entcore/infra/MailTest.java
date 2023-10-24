@@ -75,11 +75,11 @@ public class MailTest {
         final EventStore store = fac.getEventStore("test");
         final Async async = context.async();
         final PostgresEmailBuilder.EmailBuilder mail = mail();
-        helper.createWithAttachments(mail, new ArrayList<>()).setHandler((r -> {
+        helper.createWithAttachments(mail, new ArrayList<>()).onComplete((r -> {
             if (r.failed()) {
                 r.cause().printStackTrace();
             }else {
-                helper.setRead((UUID)mail.getMail().get("id"),new JsonObject()).setHandler(r2->{
+                helper.setRead((UUID)mail.getMail().get("id"),new JsonObject()).onComplete(r2->{
                     if (r2.failed()) {
                         r2.cause().printStackTrace();
                     }
@@ -101,7 +101,7 @@ public class MailTest {
         test.vertx().deployVerticle("org.entcore.infra.MailWorkerForTest", new DeploymentOptions().setWorker(true).setInstances(1).setMultiThreaded(false).setConfig(new JsonObject().put("postgres", postgresql))
                 .setIsolationGroup("mail_worker_group")
                 .setIsolatedClasses(Arrays.asList("org.entcore.infra.*")), rDep -> {
-            test.vertx().eventBus().send(MailWorkerForTest.class.getSimpleName(),
+            test.vertx().eventBus().request(MailWorkerForTest.class.getSimpleName(),
                     new JsonObject().put("action", "send"), r -> {
                         if (r.failed()) {
                             r.cause().printStackTrace();

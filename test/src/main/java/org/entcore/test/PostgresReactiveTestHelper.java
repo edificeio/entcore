@@ -23,7 +23,7 @@ public class PostgresReactiveTestHelper {
 
     public PostgresReactiveTestHelper(Vertx v, PostgreSQLContainer<?> postgres) {
         this.vertx = v;
-        this.pgConnection = Future.future();
+        this.pgConnection = Promise.promise();
         final PgConnectOptions options = new PgConnectOptions();
         options.setDatabase(postgres.getDatabaseName());
         options.setHost(postgres.getHost());
@@ -40,7 +40,7 @@ public class PostgresReactiveTestHelper {
             tuple.addValue(o);
         }
         return this.pgConnection.compose(conn -> {
-            final Future<List<JsonObject>> future = Future.future();
+            final Future<List<JsonObject>> future = Promise.promise();
             conn.preparedQuery(query).execute(tuple, event -> {
                 try {
                     if (event.succeeded()) {

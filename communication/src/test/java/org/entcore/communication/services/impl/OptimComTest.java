@@ -108,7 +108,7 @@ public class OptimComTest {
 					final String userProfile = ((JsonObject) o).getString("profile");
 					futures.add(getComRules(communicationService, userId, userProfile, i++));
 				}
-				CompositeFuture.all(futures).setHandler(ar -> {
+				CompositeFuture.all(futures).onComplete(ar -> {
 					if (ar.succeeded()) {
 						int mean = 0;
 						List<Integer> times = new ArrayList<>();
@@ -157,7 +157,7 @@ public class OptimComTest {
 	}
 
 	private Future<Void> getComRules(CommunicationService communicationService, String userId, String userProfile, long i) {
-		final Future<Void> future = Future.future();
+		final Future<Void> future = Promise.promise();
 		vertx.setTimer(i * 50L, h -> {
 			final long start = System.currentTimeMillis();
 			communicationService.visibleUsers(userId, null, null, true, true,

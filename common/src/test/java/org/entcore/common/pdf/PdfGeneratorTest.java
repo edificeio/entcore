@@ -88,7 +88,7 @@ public class PdfGeneratorTest {
 		//futures.add(pdfGenerator.generatePdfFromUrl("ONE","https://one1d.fr"));
 		futures.add(pdfGenerator.generatePdfFromUrl("ONE","https://one.opendigitaleducation.com"));
 		AtomicInteger count = new AtomicInteger(futures.size());
-		CompositeFuture.all(futures).setHandler(ar -> {
+		CompositeFuture.all(futures).onComplete(ar -> {
 			if (ar.succeeded()) {
 				ar.result().list().forEach(pdf -> vertx.fileSystem().writeFile(
 						"/tmp/test-pdf/" + ((Pdf) pdf).getName(), ((Pdf) pdf).getContent(), r -> {

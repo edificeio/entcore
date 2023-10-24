@@ -2,7 +2,6 @@ package org.entcore.common.folders.impl;
 
 import static org.entcore.common.folders.impl.QueryHelper.isOk;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -155,7 +154,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			return renameFileOnDuplicate(parentId, doc);
 		}).compose(aDoc->{ 
 			return queryHelper.insert(aDoc);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -170,7 +169,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			return renameFileOnDuplicate(parentOpt.map(e -> DocumentHelper.getId(e)), doc).compose(aDoc->{
 				return queryHelper.insert(aDoc);
 			});
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -182,7 +181,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					.compose(docs -> {
 						return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, false);
 					});
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	private Future<Void> assertDestinationOnMoveOrCopy(String sourceId, Optional<String> destinationFolderId) {
@@ -231,7 +230,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					.withExcludeDeleted().withId(sourceIds)).compose(docs -> {
 						return copyRecursivelyFromParentId(Optional.of(user), docs, destinationFolderId, false);
 					});
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	private Future<JsonArray> copyFile(Optional<UserInfos> userOpt, Collection<JsonObject> originals,
@@ -457,20 +456,20 @@ public class FolderManagerMongoImpl implements FolderManager {
 					.compose(docs -> {
 						return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, true);
 					});
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
 	public void countByQuery(ElementQuery query, UserInfos user, Handler<AsyncResult<Integer>> handler) {
 		queryHelper.countAll(DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user)))
-				.setHandler(handler);
+				.onComplete(handler);
 	}
 
 	@Override
 	public void createExternalFolder(JsonObject folder, UserInfos user, String externalId, Handler<AsyncResult<JsonObject>> handler) {
 			DocumentHelper.initFolder(folder, user.getUserId(), user.getUsername());
 			folder.put("externalId", externalId);
-			queryHelper.upsertFolder(folder).setHandler(handler);
+			queryHelper.upsertFolder(folder).onComplete(handler);
 	}
 
 	@Override
@@ -478,7 +477,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.inheritShareComputer.compute(folder, false).compose(res -> {
 			DocumentHelper.initFolder(folder, user.getUserId(), user.getUsername());
 			return queryHelper.insert(folder);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -486,14 +485,14 @@ public class FolderManagerMongoImpl implements FolderManager {
 			Handler<AsyncResult<JsonObject>> handler) {
 		folder.put("eParent", destinationFolderId);
 		isDuplicate(Optional.ofNullable(destinationFolderId), folder, FOLDER_TYPE).compose(isDuplicate->{
-			final Future<JsonObject> future = Future.future();
+			final Promise<JsonObject> future = Promise.promise();
 			if(isDuplicate){
 				future.fail("folders.errors.duplicate.folder");
 			}else{
-				this.createFolder(folder, user, future.completer());
+				this.createFolder(folder, user, future);
 			}
-			return future;
-		}).setHandler(handler);
+			return future.future();
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -501,13 +500,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 		List<String> idFolders = new ArrayList<>();
 		idFolders.add(id);
 		deleteFolderRecursively(idFolders, Optional.ofNullable(user))
-				.map(v -> v.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll)).setHandler(handler);
+				.map(v -> v.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll)).onComplete(handler);
 	}
 
 	@Override
 	public void deleteAll(Set<String> ids, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
 		deleteFolderRecursively(ids, Optional.ofNullable(user))
-				.map(v -> v.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll)).setHandler(handler);
+				.map(v -> v.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll)).onComplete(handler);
 	}
 
 	@Override
@@ -536,7 +535,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			JsonArray all = v.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
 			all.addAll(futureDelFolder.result());
 			return all;
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	private Future<List<JsonObject>> deleteFiles(List<JsonObject> files) {
@@ -546,7 +545,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		// Set to avoid duplicate
 		Set<String> ids = files.stream().map(o -> o.getString("_id")).collect(Collectors.toSet());
 		return queryHelper.deleteByIds((ids)).compose(res -> {
-			Future<List<JsonObject>> future = Future.future();
+			Promise<List<JsonObject>> future = Promise.promise();
 			List<String> listOfFilesIds = StorageHelper.getListOfFileIds(files);
 			final StopWatch timeToDel = new StopWatch();
 			this.storage.removeFiles(new JsonArray(listOfFilesIds), resDelete -> {
@@ -568,7 +567,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					future.complete(files);
 				}
 			});
-			return future;
+			return future.future();
 		});
 	}
 
@@ -622,11 +621,11 @@ public class FolderManagerMongoImpl implements FolderManager {
 					Future<List<JsonObject>> future = queryHelper.getChildrenRecursively(parentFilter,
 							Optional.ofNullable(childFilter), true);
 
-					future.setHandler(result -> {
+					future.onComplete(result -> {
 						if (result.succeeded()) {
 							List<JsonObject> rows = result.result();
 							FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
-							zipBuilder.exportAndSendZip(bodyRoot, rows, request, true).setHandler(zipEvent -> {
+							zipBuilder.exportAndSendZip(bodyRoot, rows, request, true).onComplete(zipEvent -> {
 								if (zipEvent.failed()) {
 									request.response().setStatusCode(500).end();
 								}
@@ -659,7 +658,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			parentFilter = queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withIds(ids);
 			childFilter = queryHelper.queryBuilder();
 		}
-		queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childFilter), true).setHandler(msg -> {
+		queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childFilter), true).onComplete(msg -> {
 			if (msg.succeeded() && msg.result().size() > 0) {
 				// download ONE file
 				List<JsonObject> all = msg.result();
@@ -670,7 +669,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 				}
 				// download multiple files
 				FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
-				zipBuilder.exportAndSendZip(all, request, true).setHandler(zipEvent -> {
+				zipBuilder.exportAndSendZip(all, request, true).onComplete(zipEvent -> {
 					if (zipEvent.failed()) {
 						request.response().setStatusCode(500).end();
 					}
@@ -700,7 +699,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		final DocumentQueryBuilder builder = DocumentQueryBuilder.fromElementQuery(query, Optional.ofNullable(user));
 		// query
 		if (query.getHierarchical() != null && query.getHierarchical()) {
-			queryHelper.listHierarchical(builder).setHandler(handler);
+			queryHelper.listHierarchical(builder).onComplete(handler);
 		} else {
 			if(query.isDirectShared()){
 				queryHelper.findAllAsList(builder).compose(elementShared->{
@@ -721,9 +720,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 						}
 						return rootShared;
 					});
-				}).setHandler(handler);
+				}).onComplete(handler);
 			}else{
-				queryHelper.findAll(builder).setHandler(handler);
+				queryHelper.findAll(builder).onComplete(handler);
 			}
 		}
 	}
@@ -733,21 +732,21 @@ public class FolderManagerMongoImpl implements FolderManager {
 		// find only non deleted file/folder that i can see
 		Future<JsonObject> future = queryHelper
 				.findOne(queryHelper.queryBuilder().withId(id).filterByInheritShareAndOwner(user).withExcludeDeleted());
-		future.setHandler(handler);
+		future.onComplete(handler);
 	}
 
 	@Override
 	public void list(String idFolder, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
 		Future<JsonArray> future = queryHelper.findAll(queryHelper.queryBuilder().filterByInheritShareAndOwner(user)
 				.withParent(idFolder).withExcludeDeleted());
-		future.setHandler(handler);
+		future.onComplete(handler);
 	}
 
 	@Override
 	public void listFoldersRecursively(UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
 		Future<JsonArray> future = queryHelper.listHierarchical(//
 				queryHelper.queryBuilder().filterBySharedAndOwner(user).withExcludeDeleted());
-		future.setHandler(handler);
+		future.onComplete(handler);
 	}
 
 	@Override
@@ -757,7 +756,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 				queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(idFolder), //
 				Optional.ofNullable(queryHelper.queryBuilder().withExcludeDeleted().withId(idFolder)), //
 				true).map(f -> new JsonArray(f));
-		future.setHandler(handler);
+		future.onComplete(handler);
 	}
 
 	@Override
@@ -796,7 +795,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 						return false;
 					}).collect(Collectors.toList());
 					return queryHelper.bulkUpdateFavorites(updated).map((Collection<JsonObject>) all);
-				}).setHandler(h);
+				}).onComplete(h);
 	}
 
 	@Override
@@ -812,7 +811,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 							return this.inheritShareComputer.compute(previous, true)
 									.compose(res -> queryHelper.bulkUpdateShares(res));
 						}).map(previous);
-					}).setHandler(handler);
+					}).onComplete(handler);
 				} else {
 					handler.handle(toError("not.found"));
 				}
@@ -827,17 +826,16 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void moveAll(Collection<String> sourceIds, String destinationFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
 		assertDestinationOnMoveOrCopy(sourceIds, Optional.ofNullable(destinationFolderId)).compose(ok -> {
-			@SuppressWarnings("rawtypes")
-			List<Future> futures = sourceIds.stream().map(sourceId -> {
-				Future<JsonObject> future = Future.future();
-				this.move(sourceId, destinationFolderId, user, future.completer());
-				return future;
+			final List<Future<?>> futures = sourceIds.stream().map(sourceId -> {
+				Promise<JsonObject> future = Promise.promise();
+				this.move(sourceId, destinationFolderId, user, future);
+				return future.future();
 			}).collect(Collectors.toList());
-			return CompositeFuture.all(futures).map(results -> {
+			return Future.all(futures).map(results -> {
 				return results.list().stream().map(o -> (JsonObject) o).collect(JsonArray::new, JsonArray::add,
 						JsonArray::addAll);
 			});
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -856,7 +854,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					doc.put("nameSearch", nameSearch);
 					MongoUpdateBuilder set = new MongoUpdateBuilder().set("name", newName).set("nameSearch", nameSearch);
 					return queryHelper.update(id, set).map(doc);
-				}).setHandler(handler);
+				}).onComplete(handler);
 			} else {
 				handler.handle(toError(msg.cause()));
 			}
@@ -883,7 +881,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			}
 			List<JsonObject> all = rows.stream().map(o -> (JsonObject) o).collect(Collectors.toList());
 			return setDeleteFlag(user, roots, all, deleted);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	private Future<JsonArray> setDeleteFlag(UserInfos user, Set<String> roots, List<JsonObject> files,
@@ -914,8 +912,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 		queryHelper.findOne(queryHelper.queryBuilder().withId(id).filterByInheritShareAndOwnerWithAction(user,
 				shareOperations.getShareAction())).compose(founded -> {
 					final List<Future> futures = new ArrayList<Future>();
-					final Future<JsonObject> futureShared = Future.future();
-					futures.add(futureShared);
+					final Promise<JsonObject> futureShared = Promise.promise();
+					futures.add(futureShared.future());
 					// compute shared after sharing
 					final Handler<Either<String, JsonObject>> handler = (event) -> {
 						if (event.isRight()) {
@@ -963,7 +961,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 						return futureInheritCompute.compose(res -> queryHelper.bulkUpdateShares(res).map(res))
 								// break parent link if needed
 								.compose(res -> {
-									Future<Void> future = Future.future();
+									Promise<Void> future = Promise.promise();
 									if (res.parentRoot.isPresent()) {
 										JsonObject parentRoot = res.parentRoot.get();
 										Boolean isShared = DocumentHelper.isShared(res.root);
@@ -976,25 +974,24 @@ public class FolderManagerMongoImpl implements FolderManager {
 										}
 									}
 									future.complete(null);
-									return future;
+									return future.future();
 								}).map(resultShare);
 					});
-				}).setHandler(hh);
+				}).onComplete(hh);
 	}
 
 	@Override
 	public void shareAll(Collection<String> ids, ElementShareOperations shareOperations,
 			Handler<AsyncResult<Collection<JsonObject>>> h) {
-		@SuppressWarnings("rawtypes")
-		List<Future> futures = ids.stream().map(id -> {
-			Future<JsonObject> future = Future.future();
-			share(id, shareOperations, future.completer());
-			return future;
+		List<Future<?>> futures = ids.stream().map(id -> {
+			Promise<JsonObject> future = Promise.promise();
+			share(id, shareOperations, future);
+			return future.future();
 		}).collect(Collectors.toList());
-		CompositeFuture.all(futures).map(res -> {
+		Future.all(futures).map(res -> {
 			Collection<JsonObject> temp = res.list();
 			return temp;
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	@Override
@@ -1025,7 +1022,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			doc.put("modified", now);
 			//
 			return queryHelper.update(id, doc).map(doc);
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
@@ -1068,18 +1065,18 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void importFileZip(FolderImporterZip.FolderImporterZipContext context, Handler<AsyncResult<JsonObject>> handler) {
 		zipImporter.doFinalize(context).map(r->{
 			return context.getResult();
-		}).setHandler(handler);
+		}).onComplete(handler);
 	}
 
 	@Override
 	public void createThumbnailIfNeeded(JsonObject document, JsonObject thumbs, Handler<AsyncResult<JsonObject>> handler)
 	{
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> future = Promise.promise();
 
-		if(this.imageResizerAddress == null || this.imageResizerAddress.trim().equals("") == true)
+		if(this.imageResizerAddress == null || this.imageResizerAddress.trim().isEmpty())
 		{
 			future.fail(new RuntimeException("No image resizer"));
-			handler.handle(future);
+			handler.handle(future.future());
 
 			return;
 		}
@@ -1087,7 +1084,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		String fileId = DocumentHelper.getFileId(document);
 		String documentId = DocumentHelper.getId(document);
 
-		if (fileId != null && thumbs != null && !fileId.trim().isEmpty() && !thumbs.isEmpty() && DocumentHelper.isImage(document) == true)
+		if (fileId != null && thumbs != null && !fileId.trim().isEmpty() && !thumbs.isEmpty() && DocumentHelper.isImage(document))
 		{
 			Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
 			JsonArray outputs = new JsonArray();
@@ -1128,12 +1125,12 @@ public class FolderManagerMongoImpl implements FolderManager {
 					.put("src", this.storage.getProtocol() + "://" + this.storage.getBucket() + ":" + fileId)
 					.put("destinations", outputs);
 
-				this.eb.send(this.imageResizerAddress, json, new Handler<AsyncResult<Message<JsonObject>>>()
+				this.eb.request(this.imageResizerAddress, json, new Handler<AsyncResult<Message<JsonObject>>>()
 				{
 					@Override
 					public void handle(AsyncResult<Message<JsonObject>> result)
 					{
-						if(result.succeeded() ==  true)
+						if(result.succeeded())
 						{
 							Message<JsonObject> event = result.result();
 							JsonObject thumbnails = event.body().getJsonObject("outputs");
@@ -1146,20 +1143,20 @@ public class FolderManagerMongoImpl implements FolderManager {
 						}
 
 						future.fail(new RuntimeException("Failed to send a request to the image resizer"));
-						handler.handle(future);
+						handler.handle(future.future());
 					}
 				});
 			}
 			else
 			{
 				future.complete(null);
-				handler.handle(future);
+				handler.handle(future.future());
 			}
 		}
 		else
 		{
 			future.complete(document);
-			handler.handle(future);
+			handler.handle(future.future());
 		}
 	}
 
@@ -1198,7 +1195,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 			if (msg.succeeded()) {
 				Future<Void> future = this.inheritShareComputer.compute(msg.result(), true)
 						.compose(res -> queryHelper.bulkUpdateShares(res)).map(e -> null);
-				future.setHandler(handler);
+				future.onComplete(handler);
 			} else {
 				handler.handle(toError(msg.cause()));
 			}
