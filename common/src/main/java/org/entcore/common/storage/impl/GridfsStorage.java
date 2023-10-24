@@ -19,7 +19,7 @@
 
 package org.entcore.common.storage.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
@@ -45,11 +45,13 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import org.apache.commons.lang3.NotImplementedException;
+import org.bson.conversions.Bson;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageException;
+import org.entcore.common.utils.FileUtils;
 import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
@@ -201,7 +203,7 @@ public class GridfsStorage implements Storage {
 		}
 		if (header != null) {
 			buff.appendBytes(header).appendInt(header.length);
-			eb.send(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					handler.handle(message.body()
@@ -325,7 +327,7 @@ public class GridfsStorage implements Storage {
 		}
 		if (header != null) {
 			buff.appendBytes(header).appendInt(header.length);
-			eb.send(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					handler.handle(event.body());
@@ -348,7 +350,7 @@ public class GridfsStorage implements Storage {
 		if (header != null) {
 			Buffer buf = Buffer.buffer(header);
 			buf.appendInt(header.length);
-			eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
+			eb.request(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
 			@Override
 			public void handle(AsyncResult<Message<Buffer>> res) {
 				if (res.succeeded()) {
@@ -392,7 +394,7 @@ public class GridfsStorage implements Storage {
 		if (header != null) {
 			Buffer buf = Buffer.buffer(header);
 			buf.appendInt(header.length);
-			eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Object>>>() {
+			eb.request(gridfsAddress, buf, new Handler<AsyncResult<Message<Object>>>() {
 				@Override
 				public void handle(AsyncResult<Message<Object>> res) {
 					if (res.succeeded() && res.result().body() instanceof Long) {
@@ -463,7 +465,7 @@ public class GridfsStorage implements Storage {
 		}
 		Buffer buf = Buffer.buffer(header);
 		buf.appendInt(header.length);
-		eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
+		eb.request(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
 			@Override
 			public void handle(AsyncResult<Message<Buffer>> res) {
 				if (res.succeeded()) {
@@ -505,7 +507,7 @@ public class GridfsStorage implements Storage {
 				}
 				if (chunk.n == 0) {
 					if (!inline) {
-						String name = fr.wseduc.swift.utils.FileUtils.getNameWithExtension(downloadName, metadata);
+						String name = FileUtils.getNameWithExtension(downloadName, metadata);
 						response.putHeader("Content-Disposition",
 								"attachment; filename=\"" + name + "\"");
 					} else {
@@ -523,7 +525,7 @@ public class GridfsStorage implements Storage {
 
 	@Override
 	public void removeFile(String id, Handler<JsonObject> handler) {
-		JsonArray ids = new fr.wseduc.webutils.collections.JsonArray().add(id);
+		JsonArray ids = new JsonArray().add(id);
 		JsonObject find = new JsonObject();
 		find.put("action", "remove");
 		JsonObject query = new JsonObject();
@@ -542,7 +544,7 @@ public class GridfsStorage implements Storage {
 		if (header != null) {
 			Buffer buf = Buffer.buffer(header);
 			buf.appendInt(header.length);
-			eb.send(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
+			eb.request(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if (handler != null) {
@@ -593,7 +595,7 @@ public class GridfsStorage implements Storage {
 		if (header != null) {
 			Buffer buf = Buffer.buffer(header);
 			buf.appendInt(header.length);
-			eb.send(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
+			eb.request(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					handler.handle(res.body());
@@ -605,13 +607,13 @@ public class GridfsStorage implements Storage {
 	@Override
 	public void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
-		QueryBuilder q = QueryBuilder.start("_id").in(ids);
+		Bson q = Filters.eq("_id", ids);
 		JsonObject e = new JsonObject()
 				.put("action", "write")
 				.put("path", destinationPath)
 				.put("alias", alias)
 				.put("query", MongoQueryBuilder.build(q));
-		eb.send(gridfsAddress + ".json", e, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(gridfsAddress + ".json", e, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle(event.body());

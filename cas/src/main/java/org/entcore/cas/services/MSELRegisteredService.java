@@ -56,7 +56,7 @@ public class MSELRegisteredService extends AbstractCas20ExtensionRegisteredServi
                 additionnalAttributes.add(createTextElement(MSEL_ID, data.getString("externalId"), doc));
             }
             // Structures
-            for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+            for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
                 if (o == null || !(o instanceof JsonObject)) continue;
                 JsonObject structure = (JsonObject) o;
                 if (structure.containsKey("UAI")) {

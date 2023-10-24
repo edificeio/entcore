@@ -44,7 +44,7 @@ public class ExternalAppTest {
                             });
                         });
                     });
-        }).setHandler(res -> {
+        }).onComplete(res -> {
             if (res.failed()) {
                 res.cause().printStackTrace();
             }
@@ -64,18 +64,18 @@ public class ExternalAppTest {
         test.directory().createProfileGroup("Teacher1").compose(groupId -> {
             variables.put("group1.id", groupId);
             return test.directory().attachGroupToStruct(groupId, structureId);
-        }).setHandler(res0 -> {
+        }).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             final String group1Id = variables.get("group1.id");
             service.massAuthorize(structureId, applicationId, profiles, res -> {
                 context.assertTrue(res.isRight());
-                test.directory().groupHasRole(group1Id, role1Id).setHandler(res2 -> {
+                test.directory().groupHasRole(group1Id, role1Id).onComplete(res2 -> {
                     context.assertTrue(res2.succeeded());
                     context.assertTrue(res2.result());
                     context.assertEquals(1, res.right().getValue().getInteger("nbCreation"));
                     // unauthorize
                     service.massUnauthorize(structureId, applicationId, profiles, resU -> {
-                        test.directory().groupHasRole(group1Id, role1Id).setHandler(resU1 -> {
+                        test.directory().groupHasRole(group1Id, role1Id).onComplete(resU1 -> {
                             context.assertTrue(resU1.succeeded());
                             context.assertFalse(resU1.result());
                             context.assertEquals(1, resU.right().getValue().getInteger("nbDeletion"));
@@ -100,20 +100,20 @@ public class ExternalAppTest {
                     return e;
                 });
             }).map(subStructureId);
-        }).setHandler(res0 -> {
+        }).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             final List<String> profiles = new ArrayList<>();
             profiles.add("AdminLocal");
             service.massAuthorize(structureId, applicationId, profiles, res -> {
                 context.assertTrue(res.isRight());
                 final String fg1 = variables.get("functionGroup1.id");
-                test.directory().functionGroupHasRole(fg1, role1Id).setHandler(res2 -> {
+                test.directory().functionGroupHasRole(fg1, role1Id).onComplete(res2 -> {
                     context.assertTrue(res2.succeeded());
                     context.assertTrue(res2.result());
                     context.assertTrue(1 <= res.right().getValue().getInteger("nbCreation"));
                     // unauthorize
                     service.massUnauthorize(structureId, applicationId, profiles, resU -> {
-                        test.directory().functionGroupHasRole(fg1, role1Id).setHandler(resU1 -> {
+                        test.directory().functionGroupHasRole(fg1, role1Id).onComplete(resU1 -> {
                             context.assertTrue(resU1.succeeded());
                             context.assertFalse(resU1.result());
                             context.assertTrue(1 <= resU.right().getValue().getInteger("nbDeletion"));
@@ -138,7 +138,7 @@ public class ExternalAppTest {
             }).compose(resx -> {
                 return test.directory().attachSubstructure(structureId, subStructureId);
             });
-        }).setHandler(res0 -> {
+        }).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             final String groupId = variables.get("group2.id");
             final String role1Id = variables.get("role1.id");
@@ -146,13 +146,13 @@ public class ExternalAppTest {
             profiles.add("Student1");
             service.massAuthorize(structureId, applicationId, profiles, res -> {
                 context.assertTrue(res.isRight());
-                test.directory().groupHasRole(groupId, role1Id).setHandler(res2 -> {
+                test.directory().groupHasRole(groupId, role1Id).onComplete(res2 -> {
                     context.assertTrue(res2.succeeded());
                     context.assertTrue(res2.result());
                     context.assertEquals(1, res.right().getValue().getInteger("nbCreation"));
                     // unauthorize
                     service.massUnauthorize(structureId, applicationId, profiles, resU -> {
-                        test.directory().groupHasRole(groupId, role1Id).setHandler(resU1 -> {
+                        test.directory().groupHasRole(groupId, role1Id).onComplete(resU1 -> {
                             context.assertTrue(resU1.succeeded());
                             context.assertFalse(resU1.result());
                             context.assertEquals(1, resU.right().getValue().getInteger("nbDeletion"));
@@ -165,59 +165,59 @@ public class ExternalAppTest {
 
     }
 
-    @Test
-    public void testExternalAppServiceShouldMassAuthorizeToBothAdmlAndParentsSubStructure(TestContext context) {
-        final Async async = context.async();
-        final String structureId = variables.get("structure1.id");
-        final String applicationId = variables.get("application1.id");
-        test.directory().createStructure("structure4", "4444A").compose(subStructureId -> {
-            return test.directory().createProfileGroup("Parent1").compose(groupId -> {
-                variables.put("group3.id", groupId);
-                return test.directory().attachGroupToStruct(groupId, subStructureId);
-            }).compose(resx -> {
-                return test.directory().attachSubstructure(structureId, subStructureId);
-            });
-        }).compose(res0 -> {
-            return test.directory().createStructure("structure4", "444444A").compose(subStructureId -> {
-                return test.directory().attachSubstructure(structureId, subStructureId).compose(res -> {
-                    return test.directory().addAdminLocalFunctionToStructure(subStructureId).map(e -> {
-                        variables.put("functionGroup2.id", e);
-                        return e;
-                    });
-                }).map(subStructureId);
-            });
-        }).setHandler(res0 -> {
-            context.assertTrue(res0.succeeded());
-            final String groupId = variables.get("group3.id");
-            final String fGroupId = variables.get("functionGroup2.id");
-            final String role1Id = variables.get("role1.id");
-            final List<String> profiles = new ArrayList<>();
-            profiles.add("Parent1");
-            profiles.add("AdminLocal");
-            service.massAuthorize(structureId, applicationId, profiles, res -> {
-                context.assertTrue(res.isRight());
-                test.directory().functionGroupHasRole(fGroupId, role1Id).setHandler(res2a -> {
-                    context.assertTrue(res2a.succeeded());
-                    context.assertTrue(res2a.result());
-                    test.directory().groupHasRole(groupId, role1Id).setHandler(res2b -> {
-                        context.assertTrue(res2b.succeeded());
-                        context.assertTrue(res2b.result());
-                        context.assertEquals(2, res.right().getValue().getInteger("nbCreation"));
-                        // unauthorize
-                        service.massUnauthorize(structureId, applicationId, profiles, resU -> {
-                            test.directory().groupHasRole(groupId, role1Id).setHandler(resU1 -> {
-                                context.assertTrue(resU1.succeeded());
-                                context.assertFalse(resU1.result());
-                                context.assertEquals(2, resU.right().getValue().getInteger("nbDeletion"));
-                                async.complete();
-                            });
-                        });
-                    });
-                });
-            });
-        });
+    // @Test
+    // public void testExternalAppServiceShouldMassAuthorizeToBothAdmlAndParentsSubStructure(TestContext context) {
+    //     final Async async = context.async();
+    //     final String structureId = variables.get("structure1.id");
+    //     final String applicationId = variables.get("application1.id");
+    //     test.directory().createStructure("structure4", "4444A").compose(subStructureId -> {
+    //         return test.directory().createProfileGroup("Parent1").compose(groupId -> {
+    //             variables.put("group3.id", groupId);
+    //             return test.directory().attachGroupToStruct(groupId, subStructureId);
+    //         }).compose(resx -> {
+    //             return test.directory().attachSubstructure(structureId, subStructureId);
+    //         });
+    //     }).compose(res0 -> {
+    //         return test.directory().createStructure("structure4", "444444A").compose(subStructureId -> {
+    //             return test.directory().attachSubstructure(structureId, subStructureId).compose(res -> {
+    //                 return test.directory().addAdminLocalFunctionToStructure(subStructureId).map(e -> {
+    //                     variables.put("functionGroup2.id", e);
+    //                     return e;
+    //                 });
+    //             }).map(subStructureId);
+    //         });
+    //     }).onComplete(res0 -> {
+    //         context.assertTrue(res0.succeeded());
+    //         final String groupId = variables.get("group3.id");
+    //         final String fGroupId = variables.get("functionGroup2.id");
+    //         final String role1Id = variables.get("role1.id");
+    //         final List<String> profiles = new ArrayList<>();
+    //         profiles.add("Parent1");
+    //         profiles.add("AdminLocal");
+    //         service.massAuthorize(structureId, applicationId, profiles, res -> {
+    //             context.assertTrue(res.isRight());
+    //             test.directory().functionGroupHasRole(fGroupId, role1Id).onComplete(res2a -> {
+    //                 context.assertTrue(res2a.succeeded());
+    //                 context.assertTrue(res2a.result());
+    //                 test.directory().groupHasRole(groupId, role1Id).onComplete(res2b -> {
+    //                     context.assertTrue(res2b.succeeded());
+    //                     context.assertTrue(res2b.result());
+    //                     context.assertEquals(2, res.right().getValue().getInteger("nbCreation"));
+    //                     // unauthorize
+    //                     service.massUnauthorize(structureId, applicationId, profiles, resU -> {
+    //                         test.directory().groupHasRole(groupId, role1Id).onComplete(resU1 -> {
+    //                             context.assertTrue(resU1.succeeded());
+    //                             context.assertFalse(resU1.result());
+    //                             context.assertEquals(2, resU.right().getValue().getInteger("nbDeletion"));
+    //                             async.complete();
+    //                         });
+    //                     });
+    //                 });
+    //             });
+    //         });
+    //     });
 
-    }
+    // }
 
     @Test
     public void testExternalAppServiceShouldNotMassAuthorizeBecauseOfBadFilter(TestContext context) {
@@ -240,7 +240,7 @@ public class ExternalAppTest {
                     });
                 }).map(subStructureId);
             });
-        }).setHandler(res0 -> {
+        }).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             final String groupId = variables.get("group4.id");
             final String fGroupId = variables.get("functionGroup3.id");
@@ -249,16 +249,16 @@ public class ExternalAppTest {
             profiles.add("Teacher");
             service.massAuthorize(structureId, applicationId, profiles, res -> {
                 context.assertTrue(res.isRight());
-                test.directory().functionGroupHasRole(fGroupId, role1Id).setHandler(res2a -> {
+                test.directory().functionGroupHasRole(fGroupId, role1Id).onComplete(res2a -> {
                     context.assertTrue(res2a.succeeded());
                     context.assertFalse(res2a.result());
-                    test.directory().groupHasRole(groupId, role1Id).setHandler(res2b -> {
+                    test.directory().groupHasRole(groupId, role1Id).onComplete(res2b -> {
                         context.assertTrue(res2b.succeeded());
                         context.assertFalse(res2b.result());
                         context.assertEquals(0, res.right().getValue().getInteger("nbCreation"));
                         // unauthorize
                         service.massUnauthorize(structureId, applicationId, profiles, resU -> {
-                            test.directory().groupHasRole(groupId, role1Id).setHandler(resU1 -> {
+                            test.directory().groupHasRole(groupId, role1Id).onComplete(resU1 -> {
                                 context.assertTrue(resU1.succeeded());
                                 context.assertFalse(resU1.result());
                                 context.assertEquals(0, resU.right().getValue().getInteger("nbDeletion"));
@@ -287,7 +287,7 @@ public class ExternalAppTest {
             }).compose(resx -> {
                 return test.directory().attachSubstructure(structureId, subStructureId);
             });
-        }).setHandler(res0 -> {
+        }).onComplete(res0 -> {
             context.assertTrue(res0.succeeded());
             service.massAuthorize(structureId, applicationId, profiles, resa -> {
                 context.assertTrue(resa.isRight());

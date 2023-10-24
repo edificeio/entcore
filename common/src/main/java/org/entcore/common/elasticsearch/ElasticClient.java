@@ -6,6 +6,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -51,27 +52,35 @@ public class ElasticClient {
     }
 
     public Future<Void> createMapping(final String index, final Buffer payload) {
-        final Promise<Void> future = Promise.promise();
-        authorize(httpClient.put("/" + index).handler(res -> {
-            if (res.statusCode() == 200 || res.statusCode() == 201) {
-                future.complete();
-            } else {
-                res.bodyHandler(resBody -> {
-                    if(resBody.toString().contains("resource_already_exists_exception")){
-                        future.complete();
-                    }else{
-                        future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
-                    }
-                });
-            }
-        })).putHeader("content-type", "application/json")
-                .exceptionHandler(getOnErrorHandler(future)).end(payload);
-        return future.future();
+        final Promise<Void> promise = Promise.promise();
+        httpClient.request(HttpMethod.PUT, "/" + index)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload))
+            .onSuccess(res -> {
+                if (res.statusCode() == 200 || res.statusCode() == 201) {
+                    promise.complete();
+                } else {
+                    res.bodyHandler(resBody -> {
+                        if(resBody.toString().contains("resource_already_exists_exception")){
+                            promise.complete();
+                        }else{
+                            promise.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                        }
+                    });
+                }
+            })
+            .onFailure(getOnErrorHandler(promise));
+        return promise.future();
     }
 
     public Future<Void> deleteMapping(final String index) {
         final Promise<Void> future = Promise.promise();
-        authorize(httpClient.delete("/" + index).handler(res -> {
+        httpClient.request(HttpMethod.DELETE, "/" + index)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(HttpClientRequest::send)
+            .onSuccess(res -> {
                     if (res.statusCode() == 200 || res.statusCode() == 201) {
                         future.complete();
                     } else {
@@ -79,31 +88,40 @@ public class ElasticClient {
                             future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                         });
                     }
-                })).putHeader("content-type", "application/json")
-                .exceptionHandler(getOnErrorHandler(future)).end();
+                })
+            .onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<String> createDocument(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_doc" + queryParams).handler(res -> {
-            res.bodyHandler(resBody -> {
-                if (res.statusCode() == 200 || res.statusCode() == 201) {
-                    final JsonObject body = new JsonObject(resBody.toString());
-                    future.complete(body.getString("_id"));
-                } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
-                }
-            });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        httpClient.request(HttpMethod.POST, "/" + index + "/_doc" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
+                res.bodyHandler(resBody -> {
+                    if (res.statusCode() == 200 || res.statusCode() == 201) {
+                        final JsonObject body = new JsonObject(resBody.toString());
+                        future.complete(body.getString("_id"));
+                    } else {
+                        future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                    }
+                });
+            })
+            .onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<String> updateDocument(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.POST, "/" + index + "/_update/" + id + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(new JsonObject().put("doc",payload).toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -112,14 +130,18 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(new JsonObject().put("doc",payload).toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<Void> deleteDocument(final String index, final String id, final ElasticOptions options) {
         final Promise<Void> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.delete("/" + index + "/_doc/" + id + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.DELETE, "/" + index + "/_doc/" + id + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(new JsonObject().toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     future.complete();
@@ -127,16 +149,19 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json")
-                .exceptionHandler(getOnErrorHandler(future))
-                .end(new JsonObject().toString());
+        })
+        .onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<JsonObject> getDocument(final String index, final String id, final ElasticOptions options) {
         final Promise<JsonObject> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.get("/" + index + "/" + id + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.GET, "/" + index + "/" + id + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(HttpClientRequest::send)
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -145,14 +170,18 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end();
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<String> scriptedUpsert(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
         final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.POST, "/" + index + "/_update/" + id + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -161,7 +190,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
@@ -175,7 +204,12 @@ public class ElasticClient {
         final Promise<Void> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         payload.put("query", new JsonObject("terms").put("_id", new JsonArray(new ArrayList(id))));
-        authorize(httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
+
+        httpClient.request(HttpMethod.POST, "/" + index + "/_update_by_query" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
             if (res.statusCode() == 200 || res.statusCode() == 201) {
                 future.complete();
             } else {
@@ -183,14 +217,18 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 });
             }
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<JsonArray> search(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<JsonArray> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.POST, "/" + index + "/_search" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -204,14 +242,18 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<SearchResult> searchWithMeta(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<SearchResult> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.POST, "/" + index + "/_search" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -227,14 +269,18 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<Integer> count(final String index, final JsonObject payload, final ElasticOptions options) {
         final Promise<Integer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        authorize(httpClient.post("/" + index + "/_count" + queryParams).handler(res -> {
+        httpClient.request(HttpMethod.POST, "/" + index + "/_count" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(payload.toString()))
+            .onSuccess(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200) {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -243,58 +289,51 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        })).putHeader("content-type", "application/json").exceptionHandler(getOnErrorHandler(future)).end(payload.toString());
+        }).onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
     public Future<Void> storeScript(final String scriptId, final Buffer script) {
         final Promise<Void> future = Promise.promise();
-        authorize(httpClient.put("/_scripts/" + scriptId).handler(res -> {
-            res.bodyHandler(resBody -> {
-                if (res.statusCode() >= 200 && res.statusCode() < 300) {
-                    future.complete();
-                } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
-                }
-            });
-        }))
-        .putHeader("content-type", "application/json")
-        .exceptionHandler(getOnErrorHandler(future)).end(script.toString());
+        httpClient.request(HttpMethod.PUT, "/_scripts/" + scriptId)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/json"))
+            .flatMap(r -> r.send(script.toString()))
+            .onSuccess(res -> {
+                res.bodyHandler(resBody -> {
+                    if (res.statusCode() >= 200 && res.statusCode() < 300) {
+                        future.complete();
+                    } else {
+                        future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                    }
+                });
+            })
+            .onFailure(getOnErrorHandler(future));
         return future.future();
     }
 
-    public ElasticBulkBuilder bulk(final String index, final ElasticOptions options) {
+    public Future<ElasticBulkBuilder> bulk(final String index, final ElasticOptions options) {
         final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        final HttpClientRequest req = authorize(httpClient.post("/" + index + "/_bulk" + queryParams).handler(res -> {
-            res.bodyHandler(resBody -> {
-                if (res.statusCode() == 200 || res.statusCode() == 201) {
-                    future.complete(resBody);
-                } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
-                }
-            });
-        })).putHeader("Content-Type", "application/x-ndjson")
+        return httpClient.request(HttpMethod.POST, "/" + index + "/_bulk" + queryParams)
+            .map(this::authorize)
+            .map(r -> r.putHeader("content-type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(getOnErrorHandler(future));
-        return new ElasticBulkBuilder(req, future.future());
+                .setChunked(true))
+            .onFailure(getOnErrorHandler(future))
+            .map(ElasticBulkBuilder::new);
     }
 
-    public ElasticBulkBuilder bulk(final ElasticOptions options) {
+    public Future<ElasticBulkBuilder> bulk(final ElasticOptions options) {
         final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
-        final HttpClientRequest req = authorize(httpClient.post( "/_bulk" + queryParams).handler(res -> {
-            res.bodyHandler(resBody -> {
-                if (res.statusCode() == 200 || res.statusCode() == 201) {
-                    future.complete(resBody);
-                } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
-                }
-            });
-        })).putHeader("Content-Type", "application/x-ndjson")
+        return httpClient.request(HttpMethod.POST, "/_bulk" + queryParams)
+            .map(this::authorize)
+            .map(req -> req.putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
-                .setChunked(true).exceptionHandler(getOnErrorHandler(future));
-        return new ElasticBulkBuilder(req, future.future());
+                .setChunked(true)
+                .exceptionHandler(getOnErrorHandler(future)))
+            .map(ElasticBulkBuilder::new);
     }
 
     public static class SearchResult{

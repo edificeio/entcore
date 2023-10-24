@@ -21,6 +21,7 @@ package org.entcore.workspace;
 
 import java.util.HashMap;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
@@ -48,10 +49,10 @@ public class Workspace extends BaseServer {
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setResourceProvider(resourceProvider);
-		super.start();
+		super.start(startPromise);
 
 		Storage storage = new StorageFactory(vertx, config,
 				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();
@@ -114,8 +115,8 @@ public class Workspace extends BaseServer {
 
 		if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
-			HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1024 * 1024);
-			vertx.createHttpServer(options).websocketHandler(new AudioRecorderHandler(vertx))
+			HttpServerOptions options = new HttpServerOptions().setMaxWebSocketFrameSize(1024 * 1024);
+			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
 					.listen(config.getInteger("wsPort"));
 		}
 

@@ -21,6 +21,7 @@ package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
@@ -49,9 +50,9 @@ public class Archive extends BaseServer {
 	public static final String ARCHIVES = "archives";
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		setResourceProvider(new ArchiveFilter());
-		super.start();
+		super.start(startPromise);
 
 		Storage storage = new StorageFactory(vertx, config).getStorage();
 

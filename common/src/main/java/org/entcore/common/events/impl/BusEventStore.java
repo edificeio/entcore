@@ -29,22 +29,19 @@ public class BusEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
-		eventBus.send("event.store", event, new Handler<AsyncResult<Message<JsonObject>>>(){
-			@Override
-			public void handle(AsyncResult<Message<JsonObject>> res) {
-				if (res.succeeded()) {
-					handler.handle(new Either.Right<String, Void>(null));
-				} else {
-					handler.handle(new Either.Left<String, Void>(
-							"Error : " + res.cause().getMessage() + ", Event : " + event.encode()));
-				}
-			}
-		});
+		eventBus.request("event.store", event, (Handler<AsyncResult<Message<JsonObject>>>) res -> {
+      if (res.succeeded()) {
+        handler.handle(new Either.Right<>(null));
+      } else {
+        handler.handle(new Either.Left<>(
+            "Error : " + res.cause().getMessage() + ", Event : " + event.encode()));
+      }
+    });
 	}
 
 	@Override
 	public void storeCustomEvent(String baseEventType, JsonObject payload) {
-		eventBus.send("event.store.custom", new JsonObject()
+		eventBus.request("event.store.custom", new JsonObject()
 				.put("base-event-type", baseEventType).put("payload", payload));
 	}
 

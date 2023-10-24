@@ -377,7 +377,7 @@ public class ConversationController extends BaseController {
 						}
 
 						JsonObject msg = event.right().getValue();
-						JsonArray attachments = msg.getJsonArray("attachments", new fr.wseduc.webutils.collections.JsonArray());
+						JsonArray attachments = msg.getJsonArray("attachments", new JsonArray());
 						final AtomicLong size = new AtomicLong(0l);
 
 						for(Object att : attachments){
@@ -391,7 +391,7 @@ public class ConversationController extends BaseController {
 								conversationService.send(parentMessageId, id, message, user, new Handler<Either<String,JsonObject>>() {
 									public void handle(Either<String, JsonObject> event) {
 										if(event.isRight()){
-											for(Object recipient : message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray())){
+											for(Object recipient : message.getJsonArray("allUsers", new JsonArray())){
 												if(recipient.toString().equals(user.getUserId()))
 													continue;
 												updateUserQuota(recipient.toString(), size.get());
@@ -448,12 +448,12 @@ public class ConversationController extends BaseController {
 															.put("body", StringUtils.stripHtmlTag(result.getString("body")))
 															.put("id", result.getString("id"))
 															.put("thread_id", result.getString("thread_id"))
-															.put("sentIds", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
+															.put("sentIds", message.getJsonArray("allUsers", new JsonArray()));
 														timelineNotification(request, timelineParams, user);
 														renderJson(request, result
-															.put("inactive", message.getJsonArray("inactives", new fr.wseduc.webutils.collections.JsonArray()))
-															.put("undelivered", message.getJsonArray("undelivered", new fr.wseduc.webutils.collections.JsonArray()))
-															.put("sent", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()).size()));
+															.put("inactive", message.getJsonArray("inactives", new JsonArray()))
+															.put("undelivered", message.getJsonArray("undelivered", new JsonArray()))
+															.put("sent", message.getJsonArray("allUsers", new JsonArray()).size()));
 													} else {
 														JsonObject error = new JsonObject().put("error", event.left().getValue());
 														renderJson(request, error, 400);
@@ -571,15 +571,15 @@ public class ConversationController extends BaseController {
 	}
 
 	private void translateGroupsNames(JsonObject message, UserInfos userInfos, HttpServerRequest request) {
-		final JsonArray cci = getOrElse(message.getJsonArray("cci"), new fr.wseduc.webutils.collections.JsonArray());
-		final JsonArray cc = getOrElse(message.getJsonArray("cc"), new fr.wseduc.webutils.collections.JsonArray());
-		final JsonArray to = getOrElse(message.getJsonArray("to"), new fr.wseduc.webutils.collections.JsonArray());
+		final JsonArray cci = getOrElse(message.getJsonArray("cci"), new JsonArray());
+		final JsonArray cc = getOrElse(message.getJsonArray("cc"), new JsonArray());
+		final JsonArray to = getOrElse(message.getJsonArray("to"), new JsonArray());
 		final String from = message.getString("from");
 		final Boolean notIsSender = (!userInfos.getUserId().equals(from));
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
 
-		JsonArray d3 = new fr.wseduc.webutils.collections.JsonArray();
-		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new fr.wseduc.webutils.collections.JsonArray())) {
+		JsonArray d3 = new JsonArray();
+		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new JsonArray())) {
 			if (!(o2 instanceof String)) {
 				continue;
 			}
@@ -589,7 +589,7 @@ public class ConversationController extends BaseController {
 			}
 
 			if (notIsSender && cci.contains(a[0]) && !cc.contains(a[0]) && !to.contains(a[0]) && !from.equals(a[0])) continue;
-			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(a[0]);
+			JsonArray d2 = new JsonArray().add(a[0]);
 			if (a[2] != null && !a[2].trim().isEmpty()) {
 				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
 				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
@@ -604,7 +604,7 @@ public class ConversationController extends BaseController {
 		message.put("displayNames", d3);
 		JsonArray toName = message.getJsonArray("toName");
 		if (toName != null) {
-			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray d2 = new JsonArray();
 			message.put("toName", d2);
 			for (Object o : toName) {
 				if (!(o instanceof String)) {
@@ -615,7 +615,7 @@ public class ConversationController extends BaseController {
 		}
 		JsonArray ccName = message.getJsonArray("ccName");
 		if (ccName != null) {
-			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray d2 = new JsonArray();
 			message.put("ccName", d2);
 			for (Object o : ccName) {
 				if (!(o instanceof String)) {
@@ -626,7 +626,7 @@ public class ConversationController extends BaseController {
 		}
 		JsonArray cciName = message.getJsonArray("cciName");
 		if (cciName != null) {
-			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray d2 = new JsonArray();
 			message.put("cciName", d2);
 			for (Object o : cciName) {
 				if (!(o instanceof String)) {
@@ -638,7 +638,7 @@ public class ConversationController extends BaseController {
 
 		if (notIsSender) {
 			//keep cci for user recipient only
-			final JsonArray newCci = new fr.wseduc.webutils.collections.JsonArray();
+			final JsonArray newCci = new JsonArray();
 			if (cci.contains(userInfos.getUserId())) {
 				newCci.add(userInfos.getUserId());
 			} else if (!userGroups.isEmpty()) {
@@ -652,14 +652,14 @@ public class ConversationController extends BaseController {
 
 			//add user display name for recipient
 			if (!newCci.isEmpty()) {
-				JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(userInfos.getUserId());
+				JsonArray d2 = new JsonArray().add(userInfos.getUserId());
 				d2.add(userInfos.getUsername());
 				d2.add(false);
 				d3.add(d2);
 			}
 
 			message.put("cci", newCci);
-			message.put("cciName", new fr.wseduc.webutils.collections.JsonArray());
+			message.put("cciName", new JsonArray());
 		}
 	}
 
@@ -904,8 +904,8 @@ public class ConversationController extends BaseController {
 		final Set<String> ids = new HashSet<>();
 
 		RequestUtils.bodyToJson(request, message -> {
-			ids.addAll(message.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()).getList());
-			params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+			ids.addAll(message.getJsonArray("ids", new JsonArray()).getList());
+			params.put("ids", new JsonArray(new ArrayList<>(ids)));
 			getUserInfos(eb, request, user -> {
 				if (user != null) {
 					UserUtils.findVisibles(eb, user.getUserId(), customReturn, params, true, true, false, visibles -> {
@@ -1740,10 +1740,10 @@ public class ConversationController extends BaseController {
 									.put("subject", result.getString("subject"))
 									.put("id", result.getString("id"))
 									.put("thread_id", result.getString("thread_id"))
-									.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
+									.put("sentIds", m.getJsonArray("allUsers", new JsonArray()));
 								timelineNotification(request, timelineParams, user);
 								JsonObject s = new JsonObject().put("status", "ok")
-										.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
+										.put("result", new JsonArray().add(new JsonObject()));
 								message.reply(s);
 							} else {
 								JsonObject error = new JsonObject()
@@ -1762,7 +1762,7 @@ public class ConversationController extends BaseController {
 		message.put("action", "getUserQuota");
 		message.put("userId", userId);
 
-		eb.send(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> reply) {
 				handler.handle(reply.body());
 			}
@@ -1780,7 +1780,7 @@ public class ConversationController extends BaseController {
 		message.put("size", size);
 		message.put("threshold", threshold);
 
-		eb.send(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> reply) {
 				JsonObject obj = reply.body();
 				UserUtils.addSessionAttribute(eb, userId, "storage", obj.getLong("storage"), null);

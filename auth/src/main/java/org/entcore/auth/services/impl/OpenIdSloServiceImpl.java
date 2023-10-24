@@ -1,32 +1,31 @@
 package org.entcore.auth.services.impl;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import org.entcore.auth.oauth.JsonRequestAdapter;
-import org.entcore.auth.oauth.OAuthDataHandler;
-import org.entcore.auth.services.OpenIdServiceProviderFactory;
-import org.entcore.common.neo4j.Neo4j;
-
+import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import org.entcore.auth.oauth.JsonRequestAdapter;
+import org.entcore.auth.oauth.OAuthDataHandler;
+import org.entcore.auth.services.OpenIdServiceProviderFactory;
+import org.entcore.common.neo4j.Neo4j;
 
-import static fr.wseduc.webutils.Utils.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class OpenIdSloServiceImpl {
     private final HttpClient httpClient;
@@ -95,18 +94,21 @@ public class OpenIdSloServiceImpl {
 
     @SuppressWarnings("deprecation")
     private void sendRequest(JsonObject data) {
-        HttpClientRequest request = this.httpClient
-                .postAbs(data.getString(LOGOUT_URL), response -> {
-                    log.debug("Response received with status code " + response.statusCode());
-                    response.bodyHandler(body -> log.debug("Body: " + body.toString()));
-                })
-                .putHeader("content-type", "application/json")
-                .putHeader("content-length",
-                        String.valueOf(
-                                new JsonObject().put("logout_token", data.getString("logout_token")).toString()
-                                        .length()))
-                .write(new JsonObject().put("logout_token", data.getString("logout_token")).toString());
-        request.end();
+        final String payload = new JsonObject()
+          .put("logout_token", data.getString("logout_token"))
+          .encode();
+        final String logoutUrl = data.getString(LOGOUT_URL);
+        httpClient.request(new RequestOptions()
+          .setAbsoluteURI(logoutUrl)
+          .setMethod(HttpMethod.POST)
+          .addHeader("content-type", "application/json")
+          .addHeader("content-length", String.valueOf(payload.length())))
+          .flatMap(request -> request.send(payload))
+          .onSuccess(response -> {
+              log.debug("Response received with status code " + response.statusCode());
+              response.bodyHandler(body -> log.debug("Body: " + body.toString()));
+          })
+          .onFailure(th -> log.error("An error occurred while calling logout url " + logoutUrl, th));
     }
 
     @SuppressWarnings("deprecation")
@@ -116,26 +118,20 @@ public class OpenIdSloServiceImpl {
                 final String QUERY_SUB_CC = "MATCH (u:User {subCC : {sub}}) " + AbstractSSOProvider.RETURN_QUERY;
                 final String subject = payload.getString("sub");
                 neo4j.execute(QUERY_SUB_CC, new JsonObject().put("sub", subject),
-                        validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-                            @Override
-                            public void handle(final Either<String, JsonObject> event) {
-                                if (event.isRight() && event.right().getValue().size() > 0) {
-                                    String userId = event.right().getValue().getString("id");
+                        validUniqueResultHandler(event -> {
+                            if (event.isRight() && event.right().getValue().size() > 0) {
+                                String userId = event.right().getValue().getString("id");
 
-                                    JsonObject sessionMessage = new JsonObject().put("action", "dropAllByUserId")
-                                            .put("userId", userId);
-                                    eb.send(SESSION_ADDRESS, sessionMessage,
-                                            new Handler<AsyncResult<Message<JsonObject>>>() {
-                                                @Override
-                                                public void handle(AsyncResult<Message<JsonObject>> message) {
-                                                    if (message.succeeded() == false)
-                                                        log.error("Unable to remove session for CC user " + userId);
-                                                }
-                                            });
-                                } else
-                                    log.error("Unable to find CC user (subject " + subject + ")");
-                                request.response().setStatusCode(200).end();
-                            }
+                                JsonObject sessionMessage = new JsonObject().put("action", "dropAllByUserId")
+                                        .put("userId", userId);
+                                eb.request(SESSION_ADDRESS, sessionMessage,
+                                  (Handler<AsyncResult<Message<JsonObject>>>) message -> {
+                                      if (!message.succeeded())
+                                          log.error("Unable to remove session for CC user " + userId, message.cause());
+                                  });
+                            } else
+                                log.error("Unable to find CC user (subject " + subject + ")");
+                            request.response().setStatusCode(200).end();
                         }));
             } else {
                 request.response().setStatusCode(401).end();

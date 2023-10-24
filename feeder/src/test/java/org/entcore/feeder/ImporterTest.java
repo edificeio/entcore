@@ -49,13 +49,13 @@ public class ImporterTest {
                     context.assertEquals("ok", res.body().getString("status"));
                     final Async async1 = context.async();
                     final Async async2 = context.async();
-                    test.database().executeNeo4j("MATCH (s:Structure) RETURN s", new JsonObject()).setHandler(s->{
+                    test.database().executeNeo4j("MATCH (s:Structure) RETURN s", new JsonObject()).onComplete(s->{
                         context.assertTrue(s.succeeded());
                         context.assertEquals(1, s.result().size());
                         System.out.println(s.result().encodePrettily());
                         async1.complete();
                     });
-                    test.database().executeNeo4j("MATCH (u:User) RETURN u", new JsonObject()).setHandler(u -> {
+                    test.database().executeNeo4j("MATCH (u:User) RETURN u", new JsonObject()).onComplete(u -> {
                         context.assertTrue(u.succeeded());
                         context.assertEquals(1, u.result().size());
                         System.out.println(u.result().encodePrettily());

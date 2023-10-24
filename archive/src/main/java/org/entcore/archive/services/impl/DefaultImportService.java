@@ -280,7 +280,7 @@ public class DefaultImportService implements ImportService {
                JsonObject reply = new JsonObject().put("importId", importId);
                JsonObject foundApps = new JsonObject();
                JsonObject apps = res.result().toJsonObject();
-               eb.send("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), map -> {
+               eb.request("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), map -> {
                    if (map.succeeded()) {
 
                        JsonObject i18n = (JsonObject)(map.result().body());
@@ -335,7 +335,7 @@ public class DefaultImportService implements ImportService {
                        });
 
                        final JsonObject foundAppsWithSize = new JsonObject();
-                       final List<Future> getFoldersSize = new ArrayList<>();
+                       final List<Future<?>> getFoldersSize = new ArrayList<>();
 
                        foundApps.fieldNames().forEach(app -> {
 
@@ -347,7 +347,7 @@ public class DefaultImportService implements ImportService {
                            } else {
                                folderPath = folderBase + File.separator + "Documents";
                            }
-                           Future<Long> size = Future.future();
+                         Promise<Long> size = Promise.promise();
                            fs.readDir(folderBase, files ->
                            {
                                if(files.result().size() > 0) // Ignore empty folders
@@ -355,25 +355,25 @@ public class DefaultImportService implements ImportService {
                                 fs.exists(folderPath, exist -> {
                                     if (exist.result()) {
                                         Future<Long> promise = recursiveSize(folderPath);
-                                        promise.setHandler(result -> {
+                                        promise.onComplete(result -> {
                                             foundAppsWithSize.put(app, new JsonObject()
                                                     .put("folder", folder).put("size", result.result()));
                                             size.complete(result.result());
                                         });
                                     } else {
                                         foundAppsWithSize.put(app, new JsonObject()
-                                                .put("folder", folder).put("size", 0l));
-                                        size.complete(0l);
+                                                .put("folder", folder).put("size", 0L));
+                                        size.complete(0L);
                                     }
                                 });
                                }
                                else
-                                size.complete(0l);
+                                size.complete(0L);
                            });
-                           getFoldersSize.add(size);
+                           getFoldersSize.add(size.future());
 
                        });
-                       CompositeFuture.join(getFoldersSize).setHandler(completed -> {
+                       Future.join(getFoldersSize).onComplete(completed -> {
                            reply.put("apps", foundAppsWithSize);
                            if(user != null)
                                getQuota(user, reply, replyWithQuota -> {
@@ -459,7 +459,7 @@ public class DefaultImportService implements ImportService {
                         JsonObject jo = new JsonObject()
                                 .put("status", "ok")
                                 .put("result", new JsonObject());
-                        eb.send(address, jo);
+                        eb.request(address, jo);
                     } else {
                         launchImport(userId, userLogin, userName, importId, locale, host, apps);
                     }
@@ -478,7 +478,7 @@ public class DefaultImportService implements ImportService {
         if (userImport == null) {
             JsonObject jo = new JsonObject()
                     .put("status", "error");
-            eb.send(getImportBusAddress(importId), jo);
+            eb.request(getImportBusAddress(importId), jo);
             deleteArchive(importId);
         } else {
             final boolean finished = userImport.addAppResult(app, importRapport);
@@ -486,7 +486,7 @@ public class DefaultImportService implements ImportService {
                 JsonObject jo = new JsonObject()
                         .put("status", "ok")
                         .put("result", userImport.getResults());
-                eb.send(getImportBusAddress(importId), jo);
+                eb.request(getImportBusAddress(importId), jo);
                 deleteArchive(importId);
             }
         }
@@ -499,7 +499,7 @@ public class DefaultImportService implements ImportService {
   }
 
   private Future<Long> recursiveSize(String path) {
-        Future<Long> size = Future.future();
+    Promise<Long> size = Promise.promise();
         fs.props(path, handler -> {
             if (handler.succeeded()) {
                 FileProps props = handler.result();
@@ -509,7 +509,7 @@ public class DefaultImportService implements ImportService {
                            size.complete(props.size());
                        } else {
                            List<Future> childrenSize = res.result().stream().map(this::recursiveSize).collect(Collectors.toList());
-                           CompositeFuture.join(childrenSize).setHandler(compositeFutureAsyncResult -> {
+                           CompositeFuture.join(childrenSize).onComplete(compositeFutureAsyncResult -> {
                                if (compositeFutureAsyncResult.succeeded()) {
                                    Long l = compositeFutureAsyncResult.result().list().stream().mapToLong(lo -> (Long)lo).sum();
                                    size.complete(l + props.size());
@@ -527,7 +527,7 @@ public class DefaultImportService implements ImportService {
             }
         });
 
-        return size;
+        return size.future();
   }
 
 }

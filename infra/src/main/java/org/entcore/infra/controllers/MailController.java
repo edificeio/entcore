@@ -65,7 +65,7 @@ public class MailController extends BaseController implements Handler<Message<Js
                     copy.remove("action");
                     copy.remove("mailId");
                     copy.remove("read");
-                    this.helper.setRead(UUID.fromString(mailId), copy).setHandler(r->{
+                    this.helper.setRead(UUID.fromString(mailId), copy).onComplete(r->{
                         if (r.succeeded()) {
                             message.reply(new JsonObject().put("success", true));
                         } else {
@@ -85,7 +85,7 @@ public class MailController extends BaseController implements Handler<Message<Js
                             attachments.add(PostgresEmailBuilder.attachment(mail).fromJson(json));
                         }
                     }
-                    this.helper.createWithAttachments(mail, attachments).setHandler(r -> {
+                    this.helper.createWithAttachments(mail, attachments).onComplete(r -> {
                         if (r.succeeded()) {
                             message.reply(new JsonObject().put("success", true));
                         } else {

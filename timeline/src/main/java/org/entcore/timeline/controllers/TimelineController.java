@@ -246,7 +246,7 @@ public class TimelineController extends BaseController {
 	@Get("/registeredNotifications")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void registeredNotifications(HttpServerRequest request) {
-		JsonArray reply = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray reply = new JsonArray();
 		for (String key : registeredNotifications.keySet()) {
 			JsonObject notif = new JsonObject(registeredNotifications.get(key))
 					.put("key", key);
@@ -299,8 +299,8 @@ public class TimelineController extends BaseController {
 											renderJson(request, res);
 											return;
 										}
-										JsonArray results = res.getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray());
-										final JsonArray compiledResults = new fr.wseduc.webutils.collections.JsonArray();
+										JsonArray results = res.getJsonArray("results", new JsonArray());
+										final JsonArray compiledResults = new JsonArray();
 
 										final AtomicInteger countdown = new AtomicInteger(results.size());
 										final Handler<Void> endHandler = new Handler<Void>() {
@@ -442,7 +442,7 @@ public class TimelineController extends BaseController {
 					return;
 				}
 				JsonArray admcDefaults = event.right().getValue();
-				JsonArray reply = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray reply = new JsonArray();
 
 				for (String key : registeredNotifications.keySet()) {
 					JsonObject notif = new JsonObject(registeredNotifications.get(key)).put("key", key);
@@ -582,7 +582,7 @@ public class TimelineController extends BaseController {
 								.put("action", "list-adml")
 								.put("structureId", structureId);
 
-							eb.send("directory", message, result -> {
+							eb.request("directory", message, result -> {
 								if (result.succeeded()) {
 									JsonArray users = (JsonArray) result.result().body();
 									for (Object userObj : users) {
@@ -626,7 +626,7 @@ public class TimelineController extends BaseController {
 				}
 
 				final JsonArray results = event.right().getValue();
-				final JsonArray compiledResults = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray compiledResults = new JsonArray();
 
 				final AtomicInteger countdown = new AtomicInteger(results.size());
 				final Handler<Void> endHandler = new Handler<Void>() {
@@ -971,7 +971,7 @@ public class TimelineController extends BaseController {
 							restriction.equals(TimelineNotificationsLoader.Restrictions.HIDDEN.name())) {
 						String notifType = notif.getString("type");
 						if (!restricted.containsKey(notifType)) {
-							restricted.put(notifType, new fr.wseduc.webutils.collections.JsonArray());
+							restricted.put(notifType, new JsonArray());
 						}
 						restricted.getJsonArray(notifType).add(notif.getString("event-type"));
 					}

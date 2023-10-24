@@ -95,7 +95,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		} else {
 			profile = detectProfile(object);
 		}
-		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
+		object.put("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
 		if (email != null && !email.trim().isEmpty()) {
@@ -119,7 +119,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 					structures2d.forEach(x -> s.add(x.toString()));
 				}
 			}
-			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
+			structuresByFunctions = new JsonArray(new ArrayList<>(s));
 		}
 		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, groups.toArray(new String[][]{}), true, true);
 	}

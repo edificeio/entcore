@@ -172,7 +172,7 @@ public class FolderTest {
             final String id = res1.right().getValue().getString("id");
             context.assertNotNull(id);
             test.database().executeSqlWithUniqueResult("UPDATE conversation.folders SET skip_uniq=NULL WHERE id = ?",
-                    new JsonArray().add(id)).setHandler(resSql -> {
+                    new JsonArray().add(id)).onComplete(resSql -> {
                         context.assertTrue(resSql.succeeded());
                         conversationService.createFolder("duplicate5", null, user, res2 -> {
                             context.assertTrue(res2.isRight());
@@ -201,7 +201,7 @@ public class FolderTest {
                 test.database()
                         .executeSqlWithUniqueResult("UPDATE conversation.folders SET skip_uniq=NULL WHERE id = ?",
                                 new JsonArray().add(idChild))
-                        .setHandler(resSql -> {
+                        .onComplete(resSql -> {
                             context.assertTrue(resSql.succeeded());
                             conversationService.createFolder("duplicate6", idParent, user, res2 -> {
                                 context.assertTrue(res2.isRight());
@@ -225,7 +225,7 @@ public class FolderTest {
             final String id = res1.right().getValue().getString("id");
             context.assertNotNull(id);
             test.database().executeSqlWithUniqueResult("UPDATE conversation.folders SET skip_uniq=NULL WHERE id = ?",
-                    new JsonArray().add(id)).setHandler(resSql -> {
+                    new JsonArray().add(id)).onComplete(resSql -> {
                         context.assertTrue(resSql.succeeded());
                         conversationService.createFolder("duplicate7", null, user, res2 -> {
                             context.assertTrue(res2.isRight());

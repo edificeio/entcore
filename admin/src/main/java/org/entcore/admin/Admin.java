@@ -18,6 +18,7 @@
 
 package org.entcore.admin;
 
+import io.vertx.core.Promise;
 import org.entcore.admin.controllers.AdminController;
 import org.entcore.admin.controllers.BlockProfileTraceController;
 import org.entcore.admin.controllers.PlatformInfoController;
@@ -35,8 +36,8 @@ import io.vertx.core.eventbus.DeliveryOptions;
 public class Admin extends BaseServer {
 
 	 @Override
-	 public void start() throws Exception {
-		 super.start();
+	 public void start(final Promise<Void> startPromise) throws Exception {
+		 super.start(startPromise);
 		 
 		 addController(new AdminController());
 
@@ -64,7 +65,7 @@ public class Admin extends BaseServer {
 				 .put("provider", smsProvider)
 				 .put("action", "ping");
 
-		 vertx.eventBus().send(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
+		 vertx.eventBus().request(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
 				 new Handler<AsyncResult<Message<JsonObject>>>() {
 					 @Override
 					 public void handle(AsyncResult<Message<JsonObject>> res) {

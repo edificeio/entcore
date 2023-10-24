@@ -26,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.user.UserInfos;
@@ -34,7 +36,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -51,7 +52,7 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	@Override
 	public void create(JsonObject data, Handler<Either<String, JsonObject>> handler) {
 		JsonObject now = MongoDb.now();
-		data.put("created", now).put("modified", now).put("readCount", 0).put("markedAsRead", new fr.wseduc.webutils.collections.JsonArray());
+		data.put("created", now).put("modified", now).put("readCount", 0).put("markedAsRead", new JsonArray());
 		mongo.save(collection, data,
 				MongoDbResult.validActionResultHandler(handler));
 	}
@@ -74,7 +75,7 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 
 	// Legacy
 	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder q = QueryBuilder.start("_id").in(new fr.wseduc.webutils.collections.JsonArray(ids));
+		Bson q = Filters.in("_id", new JsonArray(ids));
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
 	}
 
@@ -92,13 +93,15 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 		String profile = user.getType();
 		String now = mongoFormat.format(new Date());
 
-		QueryBuilder query = QueryBuilder.start("contents."+lang).exists(true);
-		query.put("contents."+lang).notEquals("");
-		query.put("profiles").is(profile);
-		query.put("markedAsRead").notEquals(user.getUserId());
-		query.put("startDate").lessThanEquals(now);
-		query.put("endDate").greaterThan(now);
-		query.put("domain").is(domain);
+		Bson query = Filters.and(
+				Filters.exists("contents."+lang, true),
+				Filters.ne("contents."+lang, ""),
+				Filters.eq("profiles", profile),
+				Filters.ne("markedAsRead", user.getUserId()),
+				Filters.lte("startDate", now),
+				Filters.gt("endDate", now),
+				Filters.eq("domain", domain)
+				);
 
 		JsonObject sort = new JsonObject().put("modified", -1);
 		JsonObject keys = new JsonObject()

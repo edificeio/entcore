@@ -79,7 +79,7 @@ public abstract class AbstractUser {
 
 	public static JsonArray getUserMappingStructures(JsonArray structures, Map<String, String> externalIdMapping) {
 		if (structures != null) {
-			JsonArray ms = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray ms = new JsonArray();
 			for (Object s: structures) {
 				String externalId = externalIdMapping.get(s.toString());
 				ms.add(((externalId != null && !externalId.trim().isEmpty()) ? externalId : s));
