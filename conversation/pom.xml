@@ -10,7 +10,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>portal</artifactId>
+    <artifactId>conversation</artifactId>
 
     <dependencies>
         <dependency>
@@ -21,9 +21,15 @@
         </dependency>
         <dependency>
             <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
+            <artifactId>vertx-cron-timer</artifactId>
+            <version>${vertxCronTimerVersion}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>test</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

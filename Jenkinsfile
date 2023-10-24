@@ -17,7 +17,7 @@ pipeline {
       stage('Build') {
         steps {
           checkout scm
-          sh './build.sh $BUILD_SH_EXTRA_PARAM init clean install'
+          sh 'GIT_BRANCH=develop-b2school ./build.sh $BUILD_SH_EXTRA_PARAM init clean install'
         }
       }
       stage('Test') {

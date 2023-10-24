@@ -318,7 +318,7 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
-		list(folder, 
+		list(folder,
 			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
 			unread, user, page, pageSize, searchText, results
 		);
@@ -1226,8 +1226,8 @@ public class SqlConversationService implements ConversationService{
 	private Future<JsonObject> getFolder(final String folderId) {
 		Promise<JsonObject> promise = Promise.promise();
 		sql.prepared(
-			"SELECT f.* FROM " + folderTable + " AS f WHERE f.id = ?", 
-			new JsonArray().add(folderId), 
+			"SELECT f.* FROM " + folderTable + " AS f WHERE f.id = ?",
+			new JsonArray().add(folderId),
 			SqlResult.validUniqueResultHandler(either -> {
 				if( either.isLeft() ) {
 					promise.fail(either.left().getValue());
