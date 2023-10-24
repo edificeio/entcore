@@ -137,7 +137,7 @@ public class OssFcm {
                             public void handle(HttpClientResponse response) {
                                 if(response.statusCode() != 200) {
                                     sendMessageKoCounter.increment();
-                                    log.error("[OssFcm.sendNotifications] request failed : status=" + response.statusCode()+ "/ message="+response.statusMessage()+"/ url="+url+"/ token="+token);
+                                    log.error("[OssFcm.sendNotifications] request failed : status=" + response.statusCode()+ "/ message="+response.statusMessage()+"/ url="+response.request().absoluteURI()+"/ token="+token);
                                     if (removeTokenIf404 && (response.statusCode() == 404 || response.statusCode() == 403)) {
                                         removeInvalidToken(userId, message);
                                     }
