@@ -77,7 +77,7 @@ public class DirectoryTestHelper {
 
     /** Create a user in the Neo4J container. */
     public Future<Void> createActiveUser(UserInfos infos) {
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final JsonObject props = new JsonObject().put("id", infos.getUserId());
         if(infos.getLogin() != null){
             props.put("login", infos.getLogin());
@@ -91,7 +91,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Create a manual group with a random ID. */
@@ -127,7 +127,7 @@ public class DirectoryTestHelper {
         final String id = UUID.randomUUID().toString();
         final JsonObject props = new JsonObject().put("pgId", profileGroup).put("name", name).put("id", id);
         final String query = "MATCH (pg:ProfileGroup {id:{pgId}}) MERGE (p:Profile {id:{id},name:{name}}) MERGE (pg)-[:HAS_PROFILE]->(p)";
-        final Future<String> future = Future.future();
+        final Promise<String> future = Promise.promise();
         Neo4j.getInstance().execute(query, props, message -> {
             if ("ok".equals(message.body().getString("status"))) {
                 future.complete(id);
@@ -135,7 +135,7 @@ public class DirectoryTestHelper {
                 future.fail(message.body().getString("message"));
             }
         });
-        return future;
+        return future.future();
     }
 
     /**
@@ -169,7 +169,7 @@ public class DirectoryTestHelper {
      */
     public Future<String> createStructure(String name, String UAI, String externalId, String source) {
         final String id = UUID.randomUUID().toString();
-        final Future<String> async = Future.future();
+        final Promise<String> async = Promise.promise();
         final JsonObject props = new JsonObject().put("name", name).put("UAI", UAI).put("externalId", externalId)
                 .put("id", id).put("source", source);
         final JsonObject params = new JsonObject().put("props", props);
@@ -182,12 +182,12 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Attach a user to a group. */
     public Future<Void> attachUserToGroup(String userId, String groupId) {
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final String query = "MATCH (u:User{id:{userId}}) WITH u MATCH (g:Group {id:{groupId}}) MERGE (u)-[i:IN]->(g) RETURN u,i,g";
         final JsonObject params = new JsonObject().put("userId", userId).put("groupId", groupId);
         Neo4j.getInstance().execute(query, params, message -> {
@@ -197,12 +197,12 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Enable apps for a structure. */
     public Future<Void> enableAppForStruct(String id) {
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final String query = "MATCH (s:Structure {id:{structureId}}) SET s.hasApp=TRUE RETURN s";
         final JsonObject params = new JsonObject().put("structureId", id);
         Neo4j.getInstance().execute(query, params, message -> {
@@ -212,12 +212,12 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Attach a group to a structure. */
     public Future<Void> attachGroupToStruct(String groupId, String structureId) {
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final String query = "MATCH (g:Group{id:{groupId}}), (s:Structure {id:{structureId}}) MERGE (g)-[d:DEPENDS]->(s) RETURN g,d,s";
         final JsonObject params = new JsonObject().put("groupId", groupId).put("structureId", structureId);
         Neo4j.getInstance().execute(query, params, message -> {
@@ -227,7 +227,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /**
@@ -244,7 +244,7 @@ public class DirectoryTestHelper {
      */
     public Future<String> createActiveUser(String login, String loginAlias, String password, String email) {
         final String id = UUID.randomUUID().toString();
-        final Future<String> async = Future.future();
+        final Promise<String> async = Promise.promise();
         final JsonObject props = new JsonObject().put("login", login)
                 .put("password", BCrypt.hashpw(password, BCrypt.gensalt())).put("email", email).put("id", id);
         if (loginAlias != null) {
@@ -259,7 +259,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /**
@@ -274,7 +274,7 @@ public class DirectoryTestHelper {
      * @return ID of the new user
      */
     public Future<String> createInactiveUser(String login, String loginAlias, String activationCode, String email) {
-        final Future<String> async = Future.future();
+        final Promise<String> async = Promise.promise();
         final String id = UUID.randomUUID().toString();
         final JsonObject props = new JsonObject().put("login", login).put("activationCode", activationCode)
                 .put("email", email).put("id", id);
@@ -290,7 +290,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /**
@@ -309,7 +309,7 @@ public class DirectoryTestHelper {
      * @param type of the group
      */
     public Future<Void> createGroup(String id, String name, String type) {
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final String safeType = type == null ? "" : ":" + type;
         final JsonObject params = new JsonObject().put("id", id).put("name", name).put("filter", name)
                 .put("displayNameSearchField", name.toLowerCase()).put("users", "BOTH");
@@ -321,13 +321,13 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Add the AdminLocal function group to a structure. */
     public Future<String> addAdminLocalFunctionToStructure(String structureId) {
         final String query = "MATCH (s:Structure {id:{structureId}}) MERGE (s)<-[:DEPENDS]-(fg:FunctionGroup {name:'AdminLocal', id: {id}}) ";
-        final Future<String> async = Future.future();
+        final Promise<String> async = Promise.promise();
         final String id = UUID.randomUUID().toString();
         final JsonObject params = new JsonObject().put("structureId", structureId).put("id", id);
         Neo4j.getInstance().execute(query, params, message -> {
@@ -337,12 +337,12 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     public Future<Void> attachSubstructure(String structureId, String subStructureId) {
         final String query = "MATCH (s:Structure {id:{structureId}}),(subStructure:Structure {id:{subStructureId}}) MERGE (s)<-[:HAS_ATTACHMENT]-(subStructure) ";
-        final Future<Void> async = Future.future();
+        final Promise<Void> async = Promise.promise();
         final JsonObject params = new JsonObject().put("structureId", structureId).put("subStructureId",
                 subStructureId);
         Neo4j.getInstance().execute(query, params, message -> {
@@ -352,7 +352,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /**
@@ -360,7 +360,7 @@ public class DirectoryTestHelper {
      * @param id of the user
      */
     public Future<JsonObject> fetchOneUser(String id) {
-        final Future<JsonObject> async = Future.future();
+        final Promise<JsonObject> async = Promise.promise();
         final JsonObject params = new JsonObject().put("userid", id);
         final String query = "MATCH (u:User {id : {userid} }) RETURN u";
         Neo4j.getInstance().execute(query, params, message -> {
@@ -371,7 +371,7 @@ public class DirectoryTestHelper {
                 async.fail(message.body().getString("message"));
             }
         });
-        return async;
+        return async.future();
     }
 
     /** Set the resetCode of a user */
@@ -394,17 +394,17 @@ public class DirectoryTestHelper {
     }
 
     public Future<Boolean> groupHasRole(String groupId, String roleId) {
-        Future<Boolean> future = Future.future();
+        Promise<Boolean> future = Promise.promise();
         test.database().executeNeo4jWithUniqueResult(
                 "MATCH (pg:ProfileGroup)-[rel:AUTHORIZED]->(r:Role) WHERE pg.id={groupId} AND r.id={roleId} RETURN COUNT(rel) as nb",
-                new JsonObject().put("roleId", roleId).put("groupId", groupId)).setHandler(resCount -> {
+                new JsonObject().put("roleId", roleId).put("groupId", groupId)).onComplete(resCount -> {
                     if (resCount.succeeded()) {
                         future.complete(resCount.result().getInteger("nb").intValue() > 0);
                     } else {
                         future.fail(resCount.cause());
                     }
                 });
-        return future;
+        return future.future();
     }
 
     public Future<Boolean> groupHasRoles(String groupId, String groupType, List<String> roleIds) {
@@ -425,17 +425,17 @@ public class DirectoryTestHelper {
     }
 
     public Future<Boolean> functionGroupHasRole(String groupId, String roleId) {
-        Future<Boolean> future = Future.future();
+        Promise<Boolean> future = Promise.promise();
         test.database().executeNeo4jWithUniqueResult(
                 "MATCH (pg:FunctionGroup)-[rel:AUTHORIZED]->(r:Role) WHERE pg.id={groupId} AND r.id={roleId} RETURN COUNT(rel) as nb",
-                new JsonObject().put("roleId", roleId).put("groupId", groupId)).setHandler(resCount -> {
+                new JsonObject().put("roleId", roleId).put("groupId", groupId)).onComplete(resCount -> {
                     if (resCount.succeeded()) {
                         future.complete(resCount.result().getInteger("nb").intValue() > 0);
                     } else {
                         future.fail(resCount.cause());
                     }
                 });
-        return future;
+        return future.future();
     }
 
     public Future<String> createRole(String name, String nodeType) {

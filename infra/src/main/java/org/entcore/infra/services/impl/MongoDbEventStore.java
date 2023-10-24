@@ -99,13 +99,13 @@ public class MongoDbEventStore implements EventStoreService {
 				event.put("profil", user.getType());
 			}
 			if (user.getStructures() != null) {
-				event.put("structures", new fr.wseduc.webutils.collections.JsonArray(user.getStructures()));
+				event.put("structures", new JsonArray(user.getStructures()));
 			}
 			if (user.getClasses() != null) {
-				event.put("classes", new fr.wseduc.webutils.collections.JsonArray(user.getClasses()));
+				event.put("classes", new JsonArray(user.getClasses()));
 			}
 			if (user.getGroupsIds() != null) {
-				event.put("groups", new fr.wseduc.webutils.collections.JsonArray(user.getGroupsIds()));
+				event.put("groups", new JsonArray(user.getGroupsIds()));
 			}
 			if (request.headers().get("User-Agent") != null) {
 				event.put("ua", request.headers().get("User-Agent"));

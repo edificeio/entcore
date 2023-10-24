@@ -327,7 +327,7 @@ public interface IRedisClient {
             case ERROR:
                 json.put(key, value.toString());
                 break;
-            case INTEGER:
+            case NUMBER:
                 json.put(key, value.toInteger());
                 break;
             case MULTI:

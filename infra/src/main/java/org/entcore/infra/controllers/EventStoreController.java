@@ -55,8 +55,8 @@ public class EventStoreController extends BaseController {
 	private final JsonObject eventModuleReference;
 
 	public EventStoreController (JsonObject eventConfig) {
-		this.userBlackList = eventConfig.getJsonArray("user-blacklist", new fr.wseduc.webutils.collections.JsonArray());
-		this.eventWhiteList = eventConfig.getJsonArray("event-whitelist", new fr.wseduc.webutils.collections.JsonArray());
+		this.userBlackList = eventConfig.getJsonArray("user-blacklist", new JsonArray());
+		this.eventWhiteList = eventConfig.getJsonArray("event-whitelist", new JsonArray());
 		this.eventModuleReference = eventConfig.getJsonObject("module-reference", new JsonObject());
 
 	}

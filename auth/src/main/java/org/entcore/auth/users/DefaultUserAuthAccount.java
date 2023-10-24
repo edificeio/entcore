@@ -192,7 +192,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
-					vertx.eventBus().send("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
+					vertx.eventBus().request("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
 					{
 						@Override
 						public void handle(Message<JsonObject> message)
