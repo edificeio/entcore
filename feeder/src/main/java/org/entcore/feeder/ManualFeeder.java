@@ -276,7 +276,9 @@ public class ManualFeeder extends BusModBase {
 			sendError(message, error);
 			return;
 		}
-		user.put("source", SOURCE);
+		if (!"SSO".equals(user.getString("source"))) {
+			user.put("source", SOURCE);
+		}
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			createUserInStructure(message, user, profile, structureId, childrenIds);
@@ -935,7 +937,7 @@ public class ManualFeeder extends BusModBase {
 		}
 		String query =
 				"MATCH (u:User)" +
-				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
+				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D', 'SSO'] OR HAS(u.disappearanceDate)) " +
 				"return u.id as id, u.externalId AS externalId, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
 		neo4j.execute(query, new JsonObject().put("users", users), new Handler<Message<JsonObject>>() {
 			@Override
