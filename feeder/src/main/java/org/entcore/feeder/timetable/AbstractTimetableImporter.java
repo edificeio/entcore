@@ -21,9 +21,7 @@ package org.entcore.feeder.timetable;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
+import io.vertx.core.*;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.storage.Storage;
@@ -35,8 +33,6 @@ import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -728,7 +724,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> updateMongoCourses(JsonObject baseQuery) {
-		Future<Void> future = Promise.promise();
+		Promise<Void> future = Promise.promise();
 		mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
 				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")).put("$unset", new JsonObject().put("deleted", "")),
 				false, true, new Handler<Message<JsonObject>>() {
@@ -757,7 +753,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						}
 					}
 				});
-		return future;
+		return future.future();
 	}
 
 	protected void removeUselessGroups(JsonObject baseParams)
@@ -844,7 +840,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> subjectAutoMapping() {
-		final Future<Void> future = Promise.promise();
+		final Promise<Void> future = Promise.promise();
 		final JsonObject params = new JsonObject().put("UAI", UAI);
 		final TransactionHelper tx1;
 		try {
@@ -862,7 +858,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			log.error("Transaction1 error on subject auto mapping", e);
 			report.addError("error.tx1.subject.auto.mapping");
 			future.complete();
-			return future;
+			return future.future();
 		}
 		tx1.commit(r -> {
 			JsonArray a = r.body().getJsonArray("results");
@@ -915,7 +911,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				future.complete();
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private void createSubject(String code, boolean bcnSubject, TransactionHelper tx) {
