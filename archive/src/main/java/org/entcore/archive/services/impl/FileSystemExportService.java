@@ -418,7 +418,7 @@ public class FileSystemExportService implements ExportService {
 			});
 
 			String path = exportDirectory + File.separator + "Manifest.json";
-			fs.writeFile(path, Buffer.factory.buffer(manifest.encodePrettily()), handler);
+			fs.writeFile(path, Buffer.buffer(manifest.encodePrettily()), handler);
 		});
 	}
 
