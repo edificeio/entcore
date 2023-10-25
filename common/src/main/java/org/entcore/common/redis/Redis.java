@@ -21,18 +21,18 @@ package org.entcore.common.redis;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.redis.client.RedisOptions;
 
 public class Redis {
 
     private RedisClient redisClient;
-    private RedisOptions redisOptions;
+
 
     private Redis() {
     }
 
     private static class RedisHolder {
         private static final Redis instance = new Redis();
+        private static JsonObject redisConfig;
     }
 
     public static Redis getInstance() {
@@ -41,23 +41,24 @@ public class Redis {
 
     public void init(Vertx vertx, JsonObject redisConfig) {
         this.redisClient = RedisClient.create(vertx, redisConfig);
+        RedisHolder.redisConfig = redisConfig;
     }
 
     public RedisClient getRedisClient() {
         return this.redisClient;
     }
 
-    public RedisOptions getRedisOptions() {
-        return this.redisOptions;
-    }
-
     public static RedisClient getClient() {
         return getInstance().getRedisClient();
     }
 
-    // TODO vertx4 select removed
     public static RedisClient createClientForDb(Vertx vertx, Integer db) {
-        return getInstance().getRedisClient();
+        if(RedisHolder.redisConfig.getInteger("select", 0).equals(db)) {
+            return getInstance().getRedisClient();
+        }
+        final JsonObject newRedisConfig = RedisHolder.redisConfig.copy();
+        newRedisConfig.put("select", db);
+        return RedisClient.create(vertx, newRedisConfig);
     }
 
 }
