@@ -20,13 +20,9 @@
 package org.entcore.registry.services.impl;
 
 import io.vertx.core.Handler;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.buffer.Buffer;
 
 import org.entcore.registry.services.WidgetExternalCacheService;
 import org.entcore.common.user.UserInfos;
@@ -123,35 +119,29 @@ public class DefaultWidgetExternalCacheService implements WidgetExternalCacheSer
 
     private void populateCache(WidgetExternalCacheConf cache, Handler<Either<String, JsonObject>> handler)
     {
-        HttpClientRequest externalRequest = this.httpClient.getAbs(cache.url, new Handler<HttpClientResponse>()
-        {
-            @Override
-            public void handle(final HttpClientResponse response)
-            {
-                if (response.statusCode() == 200)
-                {
-                    response.bodyHandler(new Handler<Buffer>()
-                    {
-                        @Override
-                        public void handle(Buffer bodyBuffer)
-                        {
-                            JsonObject cacheEntry =
-                                new JsonObject()
-                                    .put("_id", cache.id)
-                                    .put("cache", bodyBuffer.toString())
-                                    .put("created", MongoDb.now())
-                                    .put("expire", MongoDb.offsetFromNow(cache.ttl));
+        this.httpClient.request(new RequestOptions()
+            .setMethod(HttpMethod.GET)
+            .setAbsoluteURI(cache.url)
+        )
+        .flatMap(HttpClientRequest::send)
+        .onSuccess(response -> {
+            if (response.statusCode() == 200) {
+                response.bodyHandler(bodyBuffer -> {
+                    JsonObject cacheEntry =
+                        new JsonObject()
+                            .put("_id", cache.id)
+                            .put("cache", bodyBuffer.toString())
+                            .put("created", MongoDb.now())
+                            .put("expire", MongoDb.offsetFromNow(cache.ttl));
 
-                            mongo.save(EXTERNAL_CACHE_COLLECTION, cacheEntry);
+                    mongo.save(EXTERNAL_CACHE_COLLECTION, cacheEntry);
 
-                            handler.handle(new Either.Right<String, JsonObject>(cacheEntry));
-                        }
-                    });
-                }
-                else
-                    handler.handle(new Either.Left<String, JsonObject>("widget.external.cache.failure"));
+                    handler.handle(new Either.Right<>(cacheEntry));
+                });
+            } else {
+                handler.handle(new Either.Left<>("widget.external.cache.failure"));
             }
-        });
-        externalRequest.end();
+        })
+        .onFailure(th -> handler.handle(new Either.Left<>("widget.external.cache.failure")));
     }
 }

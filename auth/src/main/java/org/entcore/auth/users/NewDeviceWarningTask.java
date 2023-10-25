@@ -49,15 +49,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.http.Renders;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -304,13 +297,13 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                                         " INNER JOIN " + DEVICES_INFO_TABLE + " d USING (" + USER_AGENT_FIELD + ")" +
                                         " WHERE e." + PLATFORM_ID_FIELD + " = $1 AND " + USER_ID_FIELD + " = ANY($2)";
         Tuple userIdsTuple = Tuple.of(platformId);
-        userIdsTuple.addStringArray(users.keySet().toArray(new String[users.keySet().size()]));
+        userIdsTuple.addArrayOfString(users.keySet().toArray(new String[0]));
         this.slaveClient.preparedQuery(getKnownConnections).execute(userIdsTuple, new Handler<AsyncResult<RowSet<Row>>>()
         {
             @Override
             public void handle(AsyncResult<RowSet<Row>> pgRes)
             {
-                if(pgRes.succeeded() == false)
+                if(!pgRes.succeeded())
                 {
                     log.error("Failed to get old connections " + pgRes.cause());
                     locked.set(false);
@@ -501,7 +494,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         String removeKnownDevices = "DELETE FROM " + DEVICE_CHECK_TABLE + " WHERE " + PLATFORM_ID_FIELD + " = $1 AND "+ USER_ID_FIELD + " = ANY($2)";
 
         Tuple removeUsersTuple = Tuple.of(this.platformId);
-        removeUsersTuple.addStringArray(userIds);
+        removeUsersTuple.addArrayOfString(userIds);
 
         this.masterClient.preparedQuery(removeKnownDevices).execute(removeUsersTuple, new Handler<AsyncResult<RowSet<Row>>>()
         {

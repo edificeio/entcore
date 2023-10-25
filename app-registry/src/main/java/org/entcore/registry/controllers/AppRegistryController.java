@@ -450,16 +450,14 @@ public class AppRegistryController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void listCasTypes(final HttpServerRequest request) {
-		Server.getEventBus(vertx).send("cas.configuration", new JsonObject().put("action", "list-services"),
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					renderJson(request, event.body().getJsonArray("result"));
-				} else {
-					log.error(event.body().getString("message"));
-				}
-			}
-		}));
+		Server.getEventBus(vertx).request("cas.configuration", new JsonObject().put("action", "list-services"),
+				handlerToAsyncHandler(event -> {
+          if ("ok".equals(event.body().getString("status"))) {
+            renderJson(request, event.body().getJsonArray("result"));
+          } else {
+            log.error(event.body().getString("message"));
+          }
+        }));
 	}
 
 	@BusAddress("wse.app.registry")

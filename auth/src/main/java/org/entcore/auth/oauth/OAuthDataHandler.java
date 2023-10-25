@@ -19,12 +19,12 @@
 
 package org.entcore.auth.oauth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.NTLM;
 import fr.wseduc.webutils.security.Sha256;
+import io.vertx.core.json.jackson.DatabindCodec;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
@@ -39,6 +39,7 @@ import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -143,13 +145,13 @@ public class OAuthDataHandler extends DataHandler {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			if (redisClient != null) {
-				redisClient.lindex(LOGIN_BAN_KEY + username, pwMaxRetry - 1, ar -> {
-					if (ar.succeeded() && isNotEmpty(ar.result())) {
+				redisClient.getClient().lindex(LOGIN_BAN_KEY + username, String.valueOf(pwMaxRetry - 1)).onComplete(ar -> {
+					if (ar.succeeded() && ar.result() != null) {
 						try {
-							if (System.currentTimeMillis() > (Long.parseLong(ar.result()) + pwBanDelay)) {
+							if (System.currentTimeMillis() > (ar.result().toLong() + pwBanDelay)) {
 								getUserIdNeo4j(username, password, handler);
 							} else {
-								handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_BAN)));
+								handler.handle(new Try<>(new AccessDenied(AUTH_ERROR_BAN)));
 							}
 						} catch (NumberFormatException e) {
 							log.error("Erreur parse ban delay", e);
@@ -201,14 +203,14 @@ public class OAuthDataHandler extends DataHandler {
 
 	private void incrBanAuthentication(String username) {
 		if (redisClient != null) {
-			redisClient.lpush(LOGIN_BAN_KEY + username, Long.toString(System.currentTimeMillis()), ar -> {
+			redisClient.getClient().lpush(newArrayList(LOGIN_BAN_KEY + username, Long.toString(System.currentTimeMillis()))).onComplete(ar -> {
 				if (ar.succeeded()) {
-					redisClient.ltrim(LOGIN_BAN_KEY + username, 0, pwMaxRetry, ar2 -> {
+					redisClient.getClient().ltrim(LOGIN_BAN_KEY + username, "0", String.valueOf(pwMaxRetry)).onComplete(ar2 -> {
 						if (ar2.failed()) {
 							log.error("Error when trim ban list : " + username, ar2.cause());
 						}
 					});
-					redisClient.pexpire(LOGIN_BAN_KEY + username, pwBanDelay, ar3 -> {
+					redisClient.getClient().pexpire(newArrayList(LOGIN_BAN_KEY + username, String.valueOf(pwBanDelay))).onComplete(ar3 -> {
 						if (ar3.failed()) {
 							log.error("Error when set expire : " + username, ar3.cause());
 						}
@@ -413,7 +415,7 @@ public class OAuthDataHandler extends DataHandler {
 				if ("ok".equals(res.body().getString("status"))) {
 					auth.put("id", res.body().getString("_id"));
 					auth.remove("createdAt");
-					ObjectMapper mapper = new ObjectMapper();
+					ObjectMapper mapper = DatabindCodec.mapper();
 					try {
 						handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
 					} catch (IOException e) {

@@ -38,10 +38,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -174,11 +171,14 @@ public class AuthController extends BaseController {
 				}
 				sessionLimitConfClient = vertx.createHttpClient(sessionLimitOptions);
 				vertx.setPeriodic(sessionLimitConfig.getLong("delay-refresh-session-limit", 300000L), sessionLimitHandler -> {
-					HttpClientRequest sessionLimitReq = sessionLimitConfClient.get("/session/limit", clientResp -> {
+					sessionLimitConfClient.request(HttpMethod.GET, "/session/limit")
+					.map(req -> req.putHeader("Host", sessionLimitConfigHost))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(clientResp -> {
 						if (clientResp.statusCode() == 200) {
 							clientResp.bodyHandler(sessionLimitBuffer -> {
 								final JsonObject sessionLimitConfJson = new JsonObject(sessionLimitBuffer.toString("UTF-8"));
-								if (sessionLimitConfJson != null && sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform")) != null) {
+								if (sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform")) != null) {
 									final Long sessionsLimitTmp = sessionLimitConfJson.getLong(sessionLimitConfig.getString("platform"));
 									if (sessionsLimitTmp != null && ((long) sessionsLimitTmp) != sessionsLimit) {
 										sessionsLimit = sessionsLimitTmp;
@@ -187,9 +187,8 @@ public class AuthController extends BaseController {
 								}
 							});
 						}
-					});
-					sessionLimitReq.putHeader("Host", sessionLimitConfigHost);
-					sessionLimitReq.end();
+					})
+					.onFailure(th -> log.error("Cannot update session limit", th));
 				});
 			} catch (URISyntaxException e) {
 				log.error("Bad session limit confi URI", e);
