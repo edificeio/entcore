@@ -6,6 +6,7 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -57,7 +58,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<JsonObject> getExternalNotifications() {
-        Future<JsonObject> future = Promise.promise();
+        Promise<JsonObject> future = Promise.promise();
         if (externalNotificationsCache != null) {
             return Future.succeededFuture(externalNotificationsCache);
         }
@@ -89,7 +90,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             externalNotificationsCache = restricted;
             future.complete((restricted));
         });
-        return future;
+        return future.future();
     }
 
     @Override
@@ -108,12 +109,12 @@ public class CachedTimelineEventStore implements TimelineEventStore {
             copy.put("created", copy.getJsonObject("date"));
             copy.put("_id", resOriginal.getString("_id", ""));
             shouldAddToCache(copy).onComplete(resShouldAdd -> {
-                final List<Future> futures = new ArrayList<>();
+                final List<Future<?>> futures = new ArrayList<>();
                 if(resShouldAdd.succeeded() && resShouldAdd.result()){
                     for (Object recipient : recipients) {
                         final JsonObject recipientJson = (JsonObject) recipient;
-                        final Future<Void> future = Promise.promise();
-                        futures.add(future);
+                        final Promise<Void> future = Promise.promise();
+                        futures.add(future.future());
                         final String key = getKey(recipientJson.getString("userId"));
                         cacheService.prependToList(key, copy.encode(), res -> {
                             if (res.succeeded()) {
@@ -135,7 +136,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                     }
                 }
                 //call original store
-                CompositeFuture.all(futures).onComplete(res -> {
+                Future.all(futures).onComplete(res -> {
                     if (!res.succeeded()) {
                         logger.error("Failed to add event:", res.cause());
                     }
@@ -150,7 +151,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     private Future<List<JsonObject>> getListFiltered(String userId, List<String> types){
-        Future<List<JsonObject>> future = Promise.promise();
+        Promise<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -167,7 +168,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         return false;
                     }
                     //
-                    if (types != null && types.size() > 0) {
+                    if (types != null && !types.isEmpty()) {
                         final String type = json.getString("type", "");
                         return types.contains(type);
                     } else {
@@ -179,11 +180,11 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                 future.fail(res.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     private Future<List<JsonObject>> getListUnfiltered(String userId){
-        Future<List<JsonObject>> future = Promise.promise();
+        Promise<List<JsonObject>> future = Promise.promise();
         cacheService.getList(getKey(userId), res -> {
             if (res.succeeded()) {
                 final List<String> all = res.result();
@@ -194,7 +195,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                 future.fail(res.cause());
             }
         });
-        return future;
+        return future.future();
     }
 
     @Override
