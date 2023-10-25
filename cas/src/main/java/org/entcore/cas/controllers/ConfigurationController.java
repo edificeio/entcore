@@ -34,6 +34,7 @@ import java.util.*;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.entcore.cas.mapping.Mapping;
 import org.entcore.cas.mapping.MappingService;
 import org.entcore.cas.services.RegisteredService;
@@ -231,7 +232,7 @@ public class ConfigurationController extends BaseController {
 		final String splitByStructureStr = request.params().get("splitByStructure");
 		final List<String> structures = request.params().getAll("structures");
 		final boolean splitByStructure;
-		final Future<List<String>> futureStructures = Promise.promise();
+		final Promise<List<String>> futureStructures = Promise.promise();
 		//compute split flag if not exists
 		if(splitByStructureStr == null){
 			splitByStructure = mappingService.isSplitByStructure();
@@ -261,7 +262,7 @@ public class ConfigurationController extends BaseController {
 		}else{
 			futureStructures.complete(structures != null? structures : new ArrayList<>());
 		}
-		futureStructures.onComplete(r->{
+		futureStructures.future().onComplete(r->{
 			if(r.failed()){
 				renderJson(request, new JsonObject().put("error", r.cause().getMessage()));
 				return;
