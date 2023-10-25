@@ -19,6 +19,7 @@ import java.util.function.Function;
 
 import static org.entcore.common.postgres.PostgresClientBusHelper.*;
 
+@Deprecated
 public class PostgresClientBusPublisher implements IPostgresClient {
 
     private static final Logger log = LoggerFactory.getLogger(PostgresClientBusPublisher.class);
@@ -49,6 +50,7 @@ public class PostgresClientBusPublisher implements IPostgresClient {
         return promise.future();
     }
 
+    // TODO vertx4 call function
     @Override
     public <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function) {
         final Promise<T> resultPromise = Promise.promise();
