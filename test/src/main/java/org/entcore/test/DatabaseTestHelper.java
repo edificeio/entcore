@@ -60,10 +60,7 @@ public class DatabaseTestHelper {
     }
 
     /**
-     * Initializes PostgreSQL support. 
-     * @param context Test context to extend with PostgreSQL support.
-     * @param postgreSQLContainer PostgreSQL container to initialize, see {@link #createPostgreSQLContainer()}
-     * @param schema Name of the pgsql schema to initialize
+     * Initializes PostgreSQL support.
      */
     public ElasticClientManager createESClient(final ElasticsearchContainer esContainer) throws URISyntaxException {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};

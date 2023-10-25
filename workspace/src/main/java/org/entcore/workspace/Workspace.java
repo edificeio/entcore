@@ -114,8 +114,8 @@ public class Workspace extends BaseServer {
 
 		if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
-			HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1024 * 1024);
-			vertx.createHttpServer(options).websocketHandler(new AudioRecorderHandler(vertx))
+			HttpServerOptions options = new HttpServerOptions().setMaxWebSocketFrameSize(1024 * 1024);
+			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
 					.listen(config.getInteger("wsPort"));
 		}
 

@@ -26,6 +26,7 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -126,7 +127,7 @@ public class DocumentTest {
     }
 
     private Future<String> createSharedFolder(TestContext context, String folder, UserInfos user) {
-        Future<String> future = Promise.promise();
+        Promise<String> future = Promise.promise();
         workspaceService.createFolder(folder(folder), user, res -> {
             context.assertTrue(res.succeeded());
             final String id = res.result().getString("_id");
@@ -136,17 +137,17 @@ public class DocumentTest {
                 future.complete(id);
             });
         });
-        return future;
+        return future.future();
     }
 
     private Future<String> createFolder(TestContext context, String folder, UserInfos user) {
-        Future<String> future = Promise.promise();
+      Promise<String> future = Promise.promise();
         workspaceService.createFolder(folder(folder), user, res -> {
             context.assertTrue(res.succeeded());
             final String id = res.result().getString("_id");
             future.complete(id);
         });
-        return future;
+        return future.future();
     }
 
     @Test

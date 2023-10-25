@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
 import org.entcore.common.folders.FolderManager;
@@ -92,9 +93,9 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 			//
 			// start fetch
 			//
-			Future<JsonArray> futureQuery = Promise.promise();
-			folderManager.findByQuery(queryFiles, user, futureQuery.completer());
-			futureQuery.map(files -> {
+			Promise<JsonArray> futureQuery = Promise.promise();
+			folderManager.findByQuery(queryFiles, user, futureQuery);
+			futureQuery.future().map(files -> {
 				final List<String> aHeader = columnsHeader.getList();
 				return files.stream().map(o -> (JsonObject) o).map(file -> {
 					//
