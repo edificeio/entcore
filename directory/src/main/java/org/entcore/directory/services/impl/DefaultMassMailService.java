@@ -5,10 +5,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -517,10 +514,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     private Future<String> getTemplateName(UserInfos user, HttpServerRequest request, String basePath, String prefix, String suffix) {
         Future<String> defaultName = getDefaultFileName(prefix, suffix);
         Future<String> i18Name = getI18FileName(user, request, prefix, suffix);
-        return CompositeFuture.all(defaultName, i18Name).compose(all -> {
-            Future<String> fullPath = Promise.promise();
+        return Future.all(defaultName, i18Name).compose(all -> {
+            Promise<String> fullPath = Promise.promise();
             String i18Path = basePath + i18Name.result();
-            String defaultPath = basePath + defaultName.result();
             vertx.fileSystem().exists(i18Path, exists -> {
                 if (exists.succeeded() && exists.result()) {
                     fullPath.complete(i18Name.result());
@@ -528,7 +524,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                     fullPath.complete(defaultName.result());
                 }
             });
-            return fullPath;
+            return fullPath.future();
         });
     }
 
@@ -543,10 +539,10 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     private Future<String> getLanguage(UserInfos user, HttpServerRequest request) {
-        Future<String> future = Promise.promise();
+        Promise<String> future = Promise.promise();
         String navLang = getOrElse(I18n.acceptLanguage(request), "fr");
         future.complete(navLang);
-        return future;
+        return future.future();
     }
 
 }

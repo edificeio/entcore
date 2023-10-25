@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -100,17 +101,17 @@ public class DefaultUserBookService implements UserBookService {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
 		for (String u : usersId) {
-			Future<Boolean> future = Promise.promise();
-			futures.add(future);
+			Promise<Boolean> future = Promise.promise();
+			futures.add(future.future());
 			futures.add(cleanAvatarCache(u));
 		}
 		CompositeFuture.all(futures).onComplete(finishRes -> handler.handle(finishRes.succeeded()));
 	}
 
 	private Future<Boolean> cleanAvatarCache(String userId) {
-		Future<Boolean> future = Promise.promise();
+		Promise<Boolean> future = Promise.promise();
 		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
-			if (res.succeeded() && res.result().size() > 0) {
+			if (res.succeeded() && !res.result().isEmpty()) {
 				this.avatarStorage.removeFiles(res.result(), removeRes -> {
 					future.complete(true);
 				});
@@ -118,7 +119,7 @@ public class DefaultUserBookService implements UserBookService {
 				future.complete(false);
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private Future<Boolean> cacheAvatarFromUserBook(String userId, Optional<String> pictureId, Boolean remove) {
@@ -129,7 +130,7 @@ public class DefaultUserBookService implements UserBookService {
 			if (!pictureId.isPresent()) {
 				return Future.succeededFuture();
 			}
-			Future<Boolean> futureCopy = Promise.promise();
+			Promise<Boolean> futureCopy = Promise.promise();
 			this.wsHelper.getDocument(pictureId.get(), resDoc -> {
 				if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status")))
 				{
@@ -151,30 +152,28 @@ public class DefaultUserBookService implements UserBookService {
 										avatarFileNameFromUserId(userId, Optional.of(size)));
 							}
 							// TODO avoid buffer to improve performances and avoid cache every time
-							List<Future> futures = new ArrayList<>();
+							List<Future<?>> futures = new ArrayList<>();
 							for (Entry<String, String> entry : filenamesByIds.entrySet()) {
 								String cFileId = entry.getKey();
 								String cFilename = entry.getValue();
-								Future<JsonObject> future = Promise.promise();
-								futures.add(future);
+								Promise<JsonObject> future = Promise.promise();
+								futures.add(future.future());
 								this.wsHelper.readFile(cFileId, buffer -> {
 									if (buffer != null) {
 										this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
-												cFilename, wRes -> {
-													future.complete(wRes);
-												});
+												cFilename, future::complete);
 									} else {
 										future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
 									}
 								});
 							}
 							//
-							CompositeFuture.all(futures).onComplete(finishRes -> futureCopy.complete(finishRes.succeeded()));
+							Future.all(futures).onComplete(finishRes -> futureCopy.complete(finishRes.succeeded()));
 						}
 					});
 				}
 			});
-			return futureCopy;
+			return futureCopy.future();
 		});
 
 	}
@@ -246,7 +245,7 @@ public class DefaultUserBookService implements UserBookService {
 	}
 
 	private Future<Boolean> sendAvatar(HttpServerRequest request, String fileId) {
-		Future<Boolean> future = Promise.promise();
+		Promise<Boolean> future = Promise.promise();
 		// file storage doesnt keep extension
 		JsonObject meta = new JsonObject().put("content-type", "image/*");
 		this.avatarStorage.fileStats(fileId, stats -> {
@@ -268,7 +267,7 @@ public class DefaultUserBookService implements UserBookService {
 				future.complete(false);
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	@Override

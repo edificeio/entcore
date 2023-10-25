@@ -41,7 +41,7 @@ public class BusEventStore extends GenericEventStore {
 
 	@Override
 	public void storeCustomEvent(String baseEventType, JsonObject payload) {
-		eventBus.send("event.store.custom", new JsonObject()
+		eventBus.request("event.store.custom", new JsonObject()
 				.put("base-event-type", baseEventType).put("payload", payload));
 	}
 

@@ -76,7 +76,7 @@ public class DefaultSchoolService implements SchoolService {
 	public void create(JsonObject school, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject().put("action", "manual-create-structure")
 				.put("data", school);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-add-user")
 				.put("structureId", structureId)
 				.put("userId", userId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-remove-user")
 				.put("structureId", structureId)
 				.put("userId", userId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -190,7 +190,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-structure-attachment")
 				.put("structureId", structureId)
 				.put("parentStructureId", parentStructureId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
 	}
 
 	@Override
@@ -199,7 +199,7 @@ public class DefaultSchoolService implements SchoolService {
 			.put("action", "manual-structure-detachment")
 			.put("structureId", structureId)
 			.put("parentStructureId", parentStructureId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override
@@ -239,7 +239,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("data", body)
 				.put("userId", user.getUserId())
 				.put("userLogin", user.getLogin());
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class DefaultSchoolService implements SchoolService {
 				.put("action", "manual-update-structure")
 				.put("structureId", structureId)
 				.put("data", body);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override

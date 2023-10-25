@@ -28,6 +28,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -115,7 +116,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 	}
 
 	private Future<Void> importOldPlateformsUsers(JsonArray buffer) {
-		Future<Void> future = Promise.promise();
+		Promise<Void> future = Promise.promise();
 		mongo.bulk("oldplatformusers", buffer, event -> {
 			if ("ok".equals(event.body().getString("status"))) {
 				future.complete();
@@ -123,7 +124,7 @@ public class DefaultRemoteUserService implements RemoteUserService {
 				future.fail(new RuntimeException(event.body().getString("message")));
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public void setRemoteClientCluster(RemoteClientCluster remoteClientCluster) {
