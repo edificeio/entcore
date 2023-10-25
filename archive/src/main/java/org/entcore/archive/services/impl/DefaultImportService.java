@@ -335,7 +335,7 @@ public class DefaultImportService implements ImportService {
                        });
 
                        final JsonObject foundAppsWithSize = new JsonObject();
-                       final List<Future> getFoldersSize = new ArrayList<>();
+                       final List<Future<?>> getFoldersSize = new ArrayList<>();
 
                        foundApps.fieldNames().forEach(app -> {
 
@@ -347,7 +347,7 @@ public class DefaultImportService implements ImportService {
                            } else {
                                folderPath = folderBase + File.separator + "Documents";
                            }
-                           Future<Long> size = Promise.promise();
+                         Promise<Long> size = Promise.promise();
                            fs.readDir(folderBase, files ->
                            {
                                if(files.result().size() > 0) // Ignore empty folders
@@ -362,18 +362,18 @@ public class DefaultImportService implements ImportService {
                                         });
                                     } else {
                                         foundAppsWithSize.put(app, new JsonObject()
-                                                .put("folder", folder).put("size", 0l));
-                                        size.complete(0l);
+                                                .put("folder", folder).put("size", 0L));
+                                        size.complete(0L);
                                     }
                                 });
                                }
                                else
-                                size.complete(0l);
+                                size.complete(0L);
                            });
-                           getFoldersSize.add(size);
+                           getFoldersSize.add(size.future());
 
                        });
-                       CompositeFuture.join(getFoldersSize).onComplete(completed -> {
+                       Future.join(getFoldersSize).onComplete(completed -> {
                            reply.put("apps", foundAppsWithSize);
                            if(user != null)
                                getQuota(user, reply, replyWithQuota -> {
@@ -499,7 +499,7 @@ public class DefaultImportService implements ImportService {
   }
 
   private Future<Long> recursiveSize(String path) {
-        Future<Long> size = Promise.promise();
+    Promise<Long> size = Promise.promise();
         fs.props(path, handler -> {
             if (handler.succeeded()) {
                 FileProps props = handler.result();
@@ -527,7 +527,7 @@ public class DefaultImportService implements ImportService {
             }
         });
 
-        return size;
+        return size.future();
   }
 
 }
