@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -145,7 +146,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	protected Future<Mapping> getMapping(Optional<String> structureId, String pattern, boolean canInherits, Optional<String> statCasType){
-		final Future<Mapping> future = Promise.promise();
+		final Promise<Mapping> future = Promise.promise();
 		mappingService.getMappings().onComplete(r->{
 			if(r.succeeded()){
 				final Optional<Mapping> found = r.result().find(structureId, getId(), pattern, canInherits, statCasType);
@@ -160,7 +161,7 @@ public class DefaultRegisteredService implements RegisteredService {
 				log.error("An error occured. Could not any found matching for casType="+getId()+ " and pattern="+pattern, r.cause());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public Optional<Mapping> foundMappingByService(final Set<String> structureIds, final String serviceUri){
