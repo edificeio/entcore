@@ -21,6 +21,7 @@ package org.entcore.workspace.dao;
 
 import java.util.Date;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.utils.StringUtils;
@@ -55,7 +56,7 @@ public class DocumentDao extends GenericDao {
 
 	public Future<JsonObject> findById(String id) {
 		final QueryBuilder builder = QueryBuilder.start("_id").is(id);
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
 			if (res.isLeft()) {
 				future.fail(res.left().getValue());
@@ -63,11 +64,11 @@ public class DocumentDao extends GenericDao {
 				future.complete(res.right().getValue());
 			}
 		}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonObject> restaureFromRevision(String docId, JsonObject revision) {
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		String now = MongoDb.formatDate(new Date());
 		String name = revision.getString("name", "");
 		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", now)//
@@ -95,6 +96,6 @@ public class DocumentDao extends GenericDao {
 				future.fail(toErrorStr(body));
 			}
 		});
-		return future;
+		return future.future();
 	}
 }

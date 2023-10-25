@@ -108,9 +108,13 @@ public class EventStoreTest {
         fac.setVertx(test.vertx());
         final EventStore store = fac.getEventStore("test");
         final Async async = testCtx.async();
-        test.vertx().deployVerticle("org.entcore.infra.EventWorkerForTest", new DeploymentOptions().setWorker(true).setInstances(1).setMultiThreaded(false).setConfig(new JsonObject().put("postgres", postgresql))
-                .setIsolationGroup("event_worker_group")
-                .setIsolatedClasses(Arrays.asList("org.entcore.infra.*")), rDep -> {
+        final DeploymentOptions deploymentOptions = new DeploymentOptions().setWorker(true).setInstances(1)
+            // TODO vertx 4 .setMultiThreaded(false)
+            .setConfig(new JsonObject().put("postgres", postgresql))
+            .setIsolationGroup("event_worker_group")
+            .setIsolatedClasses(Arrays.asList("org.entcore.infra.*"));
+        test.vertx().deployVerticle("org.entcore.infra.EventWorkerForTest", deploymentOptions)
+        .onSuccess(rDep -> {
             test.vertx().eventBus().request(EventWorkerForTest.class.getSimpleName(),
                     new JsonObject().put("action", "send"), r -> {
                         if (r.failed()) {

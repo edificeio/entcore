@@ -22,6 +22,7 @@ package org.entcore.workspace.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import io.vertx.core.Promise;
 import org.entcore.common.mongodb.MongoDbResult;
 
 import com.mongodb.QueryBuilder;
@@ -52,7 +53,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<Optional<JsonObject>> getLastRevision(String documentId) {
-		Future<Optional<JsonObject>> future = Promise.promise();
+		Promise<Optional<JsonObject>> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, 2,
@@ -63,15 +64,15 @@ public class RevisionDao extends GenericDao {
 						future.fail(res.left().getValue());
 					} else {
 						JsonArray all = res.right().getValue();
-						JsonObject first = all.size() > 0 ? all.getJsonObject(0) : null;
+						JsonObject first = !all.isEmpty() ? all.getJsonObject(0) : null;
 						future.complete(Optional.ofNullable(first));
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonArray> getLastRevision(String documentId, int count) {
-		Future<JsonArray> future = Promise.promise();
+		Promise<JsonArray> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, count,
@@ -85,12 +86,12 @@ public class RevisionDao extends GenericDao {
 						future.complete(all);
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonObject> findByDocAndId(String documentId, String revisionId) {
 		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(res -> {
 					if (res.isLeft()) {
@@ -101,7 +102,7 @@ public class RevisionDao extends GenericDao {
 						future.complete(res.right().getValue());
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonObject> create(final String id, final String file, final String name, String ownerId,
@@ -110,7 +111,7 @@ public class RevisionDao extends GenericDao {
 		document.put("documentId", id).put("file", file).put("name", name).put("owner", ownerId).put("userId", userId)
 				.put("userName", userName).put("date", MongoDb.now()).put("metadata", metadata)
 				.put("thumbnails", thumbnails);
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		mongo.save(DOCUMENT_REVISION_COLLECTION, document, MongoDbResult.validResultHandler(res -> {
 			if (res.isLeft()) {
 				future.fail(res.left().getValue());
@@ -118,11 +119,11 @@ public class RevisionDao extends GenericDao {
 				future.complete(res.right().getValue());
 			}
 		}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonObject> deleteByDocAndId(String documentId, String revisionId) {
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
@@ -136,12 +137,12 @@ public class RevisionDao extends GenericDao {
 						}
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonArray> findByDoc(String documentId) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
-		Future<JsonArray> future = Promise.promise();
+		Promise<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -152,12 +153,12 @@ public class RevisionDao extends GenericDao {
 						future.complete(res.right().getValue());
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonArray> findByDocs(Set<String> documentId) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").in(documentId);
-		Future<JsonArray> future = Promise.promise();
+		Promise<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -168,11 +169,11 @@ public class RevisionDao extends GenericDao {
 						future.complete(res.right().getValue());
 					}
 				}));
-		return future;
+		return future.future();
 	}
 
 	public Future<JsonObject> deleteByDoc(String documentId) {
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
@@ -186,6 +187,6 @@ public class RevisionDao extends GenericDao {
 						}
 					}
 				}));
-		return future;
+		return future.future();
 	}
 }

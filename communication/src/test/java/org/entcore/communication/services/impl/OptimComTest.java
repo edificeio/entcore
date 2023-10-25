@@ -24,6 +24,7 @@ package org.entcore.communication.services.impl;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -157,7 +158,7 @@ public class OptimComTest {
 	}
 
 	private Future<Void> getComRules(CommunicationService communicationService, String userId, String userProfile, long i) {
-		final Future<Void> future = Promise.promise();
+		final Promise<Void> future = Promise.promise();
 		vertx.setTimer(i * 50L, h -> {
 			final long start = System.currentTimeMillis();
 			communicationService.visibleUsers(userId, null, null, true, true,
@@ -178,7 +179,7 @@ public class OptimComTest {
 						}
 					});
 		});
-		return future;
+		return future.future();
 	}
 
 }

@@ -6,12 +6,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -278,7 +273,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	@Override
 	public Future<JsonObject> getRevision(String revisionId) {
-		Future<JsonObject> future = Promise.promise();
+		Promise<JsonObject> future = Promise.promise();
 		revisionDao.findById(revisionId, ev -> {
 			if ("ok".equals(ev.getString("status"))) {
 				future.complete(ev.getJsonObject("result", new JsonObject()));
@@ -286,7 +281,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				future.fail("COuld not found revision : " + revisionId);
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded,
@@ -399,12 +394,12 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		@SuppressWarnings("unchecked")
 		List<JsonObject> revisionsList = revisions.getList();
 		Set<String> fileIds = new HashSet<String>(StorageHelper.getListOfFileIds(revisionsList));
-		Future<JsonArray> future = Promise.promise();
+		Promise<JsonArray> future = Promise.promise();
 		JsonArray fileIdsJson = new JsonArray(new ArrayList<String>(fileIds));
 		storage.removeFiles(fileIdsJson, event -> {
 			future.complete(revisions);
 		});
-		return future;
+		return future.future();
 	}
 
 	private Future<JsonArray> deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
@@ -649,7 +644,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		Set<String> actions = new HashSet<>();
 		actions.add(WorkspaceController.SHARED_ACTION);
 		final Set<String> recipientId = new HashSet<>();
-		Future<Void> futureSHared = Promise.promise();
+		Promise<Void> futureSHared = Promise.promise();
 		if(id.isPresent()) {
 			shareService.findUserIdsForInheritShare(id.get(), user.getUserId(), Optional.of(actions), ev -> {
 				// get list of managers
@@ -664,7 +659,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			//no folder => no need to get folder's contributors
 			futureSHared.complete();
 		}
-		return futureSHared.compose(resShared -> {
+		return futureSHared.future().compose(resShared -> {
 			// get list of historic owner
 			return revisionDao.findByDocs(docIds).compose(versions -> {
 				for (Object version : versions) {
@@ -713,9 +708,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	@Override
 	public Future<JsonArray> transferAll(
-			final List<String> sourceIds, 
-			Optional<String> application, 
-			Visibility visibility, 
+			final List<String> sourceIds,
+			Optional<String> application,
+			Visibility visibility,
 			final UserInfos user
 		) {
 		if (sourceIds.isEmpty()) {
@@ -751,7 +746,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					} else {
 						DocumentHelper.setProtected(doc, true);
 					}
-				} else if( (isProtected && visibility==Visibility.PUBLIC) 
+				} else if( (isProtected && visibility==Visibility.PUBLIC)
 						|| (isPublic && visibility==Visibility.PROTECTED)) {
 					// We must change its visibility => set a temporary action.
 					doc.put("visibility_action", "change");
@@ -818,8 +813,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 						final JsonObject copy = copies.get(i);
 						for( int j=0; j<docs.size(); j++) {
 							final JsonObject original = docs.get(j);
-							if( original!=null 
-								&& source!=null 
+							if( original!=null
+								&& source!=null
 								&& DocumentHelper.getId(original).equals(DocumentHelper.getId(source))
 								) {
 									docs.set(j, copy);
