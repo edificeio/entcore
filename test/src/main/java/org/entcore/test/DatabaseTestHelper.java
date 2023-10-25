@@ -6,6 +6,7 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -119,7 +120,7 @@ public class DatabaseTestHelper {
                 .put("password", postgreSQLContainer.getPassword());
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1).setMultiThreaded(true);
+                .setInstances(1);// TODO vertx4 .setMultiThreaded(true);
 
         vertx.deployVerticle(fr.wseduc.sql.SqlPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {
@@ -169,7 +170,7 @@ public class DatabaseTestHelper {
                 .put("use_mongo_types", true).put("pool_size", 10).put("port", mongoDBContainer.getMappedPort(27017));
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1).setMultiThreaded(true);
+                .setInstances(1);// TODO vertx4 .setMultiThreaded(true);.setMultiThreaded(true);
 
         vertx.deployVerticle(MongoPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {
@@ -256,7 +257,7 @@ public class DatabaseTestHelper {
 
     public Future<JsonObject> executeSqlWithUniqueResult(String query, JsonArray values) {
         Sql sql = Sql.getInstance();
-        Future<JsonObject> future = Promise.promise();
+        Promise<JsonObject> future = Promise.promise();
         sql.prepared(query, values, SqlResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -264,7 +265,7 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
 
     }
 
@@ -277,7 +278,7 @@ public class DatabaseTestHelper {
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
         QueryBuilder builder = QueryBuilder.start("_id").is(id);
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Promise.promise();
+        final Promise<JsonObject> future = Promise.promise();
         mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -285,13 +286,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query a mongoDB collection for a single object. */
     public Future<JsonObject> executeMongoWithUniqueResult(String collection, JsonObject query) {
         final MongoDb mongo = MongoDb.getInstance();
-        final Future<JsonObject> future = Promise.promise();
+        final Promise<JsonObject> future = Promise.promise();
         mongo.findOne(collection, query, MongoDbResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -299,13 +300,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query neo4j for a single object. */
     public Future<JsonObject> executeNeo4jWithUniqueResult(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonObject> future = Promise.promise();
+        final Promise<JsonObject> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -313,13 +314,13 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 
     /** Query neo4j for multiple objects. */
     public Future<JsonArray> executeNeo4j(String query, JsonObject params) {
         final Neo4j neo4j = Neo4j.getInstance();
-        final Future<JsonArray> future = Promise.promise();
+        final Promise<JsonArray> future = Promise.promise();
         neo4j.execute(query, params, Neo4jResult.validResultHandler(res -> {
             if (res.isRight()) {
                 future.complete(res.right().getValue());
@@ -327,6 +328,6 @@ public class DatabaseTestHelper {
                 future.fail(res.left().getValue());
             }
         }));
-        return future;
+        return future.future();
     }
 }
