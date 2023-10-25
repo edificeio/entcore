@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+// TODO vertx4 to remove if PostgresClientBus* is removed
+@Deprecated
 public class PostgresClientBusHelper  {
     private static final String ADDRESS = "local:postgres.client.bus";
 

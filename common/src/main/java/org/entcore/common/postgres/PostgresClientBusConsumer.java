@@ -17,6 +17,8 @@ import java.util.function.Function;
 
 import static org.entcore.common.postgres.PostgresClientBusHelper.*;
 
+// TODO vertx4 to remove if PostgresClientBus* is removed
+@Deprecated
 public class PostgresClientBusConsumer implements IPostgresClient {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientBusConsumer.class);
     private final IPostgresClient pgClient;
