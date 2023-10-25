@@ -124,7 +124,7 @@ public class DefaultGroupService implements GroupService {
 				.put("structureId", structureId)
 				.put("classId", classId)
 				.put("group", group);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class DefaultGroupService implements GroupService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-group")
 				.put("groupId", groupId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-add-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 	
 	@Override
@@ -174,7 +174,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-remove-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
