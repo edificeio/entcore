@@ -25,10 +25,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -86,7 +83,7 @@ public class LibraryController extends BaseController {
     }
 
     private Future<List<Buffer>> getCoverAndTeacherAvatar(HttpServerRequest request) {
-        Future<List<Buffer>> bufferListFuture = Promise.promise();
+        Promise<List<Buffer>> bufferListFuture = Promise.promise();
         List<Buffer> bufferList = new ArrayList<Buffer>();
         request.uploadHandler(upload -> {
             final Buffer buffer = Buffer.buffer();
@@ -101,11 +98,11 @@ public class LibraryController extends BaseController {
             });
             upload.exceptionHandler(v -> bufferListFuture.fail(v));
         });
-        return bufferListFuture;
+        return bufferListFuture.future();
     }
 
     private Future<UserInfos> getUser(HttpServerRequest request) {
-        Future<UserInfos> futureUser = Promise.promise();
+        Promise<UserInfos> futureUser = Promise.promise();
         UserUtils.getUserInfos(eb, request, res -> {
             if (res == null) {
                 futureUser.fail("Could not found user info");
@@ -113,14 +110,14 @@ public class LibraryController extends BaseController {
                 futureUser.complete(res);
             }
         });
-        return futureUser;
+        return futureUser.future();
     }
 
     private Future<MultiMap> getAttributes(HttpServerRequest request, Future<UserInfos> futureUser) {
         MultiMap form = request.formAttributes();
         form.add("platformURL", Renders.getHost(request));
 
-        Future<MultiMap> future = Promise.promise();
+        Promise<MultiMap> future = Promise.promise();
         request.endHandler(res -> {
             futureUser.onComplete(resuser -> {
                 if (resuser.succeeded()) {
@@ -133,6 +130,6 @@ public class LibraryController extends BaseController {
                 }
             });
         });
-        return future;
+        return future.future();
     }
 }

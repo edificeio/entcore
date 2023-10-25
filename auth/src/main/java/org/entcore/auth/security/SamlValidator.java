@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.ZLib;
 
+import io.vertx.core.http.*;
 import org.entcore.auth.services.IDPAssertionStore;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
@@ -77,9 +78,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
@@ -1128,22 +1126,25 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 		final String envlop = SamlUtils.marshallEnvelope(envelope);
 
-		HttpClientRequest req = httpClient.postAbs(sloUri, resp -> {
-			if (resp.statusCode() != 200 && resp.statusCode() != 302) {
-				resp.bodyHandler(buff -> {
-					logger.error("Slo error : " + envlop + " - " + buff.toString());
-				});
-			} else {
-				idpAssertionsStore.delete(responseAssertionInfos.getString("_id"), ar -> {
-					if (ar.failed()) {
-						logger.error("Error deleting old idp assertion.", ar.cause());
+		httpClient.request(new RequestOptions()
+				.setMethod(HttpMethod.POST)
+				.setAbsoluteURI(sloUri)
+				.putHeader("Content-Type", "text/xml"))
+				.flatMap(r -> r.send(envlop))
+				.onSuccess(resp -> {
+					if (resp.statusCode() != 200 && resp.statusCode() != 302) {
+						resp.bodyHandler(buff -> {
+							logger.error("Slo error : " + envlop + " - " + buff.toString());
+						});
+					} else {
+						idpAssertionsStore.delete(responseAssertionInfos.getString("_id"), ar -> {
+							if (ar.failed()) {
+								logger.error("Error deleting old idp assertion.", ar.cause());
+							}
+						});
 					}
-				});
-			}
-		});
-
-		req.putHeader("Content-Type", "text/xml");
-		req.end(envlop);
+				})
+				.onFailure(th -> logger.error("An error occurred while posting content to " + sloUri, envlop));
 	}
 
 }

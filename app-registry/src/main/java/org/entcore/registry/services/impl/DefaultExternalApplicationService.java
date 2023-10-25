@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.registry.services.ExternalApplicationService;
@@ -280,7 +281,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Promise.promise();
+							final Promise<Integer> future = Promise.promise();
 							logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -289,7 +290,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 									future.complete(total + previous);
 								}
 							});
-							return future;
+							return future.future();
 						});
 					}
 				}
@@ -302,7 +303,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Promise.promise();
+						final Promise<Integer> future = Promise.promise();
 						logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -311,19 +312,19 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 								future.complete(previous + total);
 							}
 						});
-						return future;
+						return future.future();
 					});
 				}
 				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbCreation", resAll.result());
-						handler.handle(new Either.Right<String,JsonObject>(payload));
+						handler.handle(new Either.Right<>(payload));
 					}else{
-						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+						handler.handle(new Either.Left<>(resAll.cause().getMessage()));
 					}
 				});
 			} else {
-				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+				handler.handle(new Either.Left<>(res.left().getValue()));
 			}
 		}));
 	}
@@ -380,7 +381,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Promise.promise();
+							final Promise<Integer> future = Promise.promise();
 							logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -389,7 +390,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 									future.complete(total + previous);
 								}
 							});
-							return future;
+							return future.future();
 						});
 					}
 				}
@@ -402,7 +403,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Promise.promise();
+						final Promise<Integer> future = Promise.promise();
 						logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -411,19 +412,19 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 								future.complete(previous + total);
 							}
 						});
-						return future;
+						return future.future();
 					});
 				}
 				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbDeletion", resAll.result());
-						handler.handle(new Either.Right<String,JsonObject>(payload));
+						handler.handle(new Either.Right<>(payload));
 					}else{
-						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+						handler.handle(new Either.Left<>(resAll.cause().getMessage()));
 					}
 				});
 			} else {
-				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+				handler.handle(new Either.Left<>(res.left().getValue()));
 			}
 		}));
 	}
