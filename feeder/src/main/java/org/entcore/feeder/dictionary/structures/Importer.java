@@ -246,7 +246,7 @@ public class Importer {
 	}
 
 	private Future<Void> loadFieldOfStudy() {
-		final Future<Void> f = Promise.promise();
+		final Promise<Void> f = Promise.promise();
 		final String query = "MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
 			final JsonArray res = event.body().getJsonArray("result");
@@ -259,11 +259,11 @@ public class Importer {
 			}
 			f.complete();
 		});
-		return f;
+		return f.future();
 	}
 
 	private Future<Void> loadUsedIne() {
-		final Future<Void> f = Promise.promise();
+		final Promise<Void> f = Promise.promise();
 		final String query =
 				"MATCH (u:User) " +
 				"WHERE u.source IN {sources} AND HAS(u.ine) AND NOT(HAS(u.disappearanceDate)) AND NOT(HAS(u.deleteDate)) " +
@@ -275,7 +275,7 @@ public class Importer {
 		}
 		if (sources.isEmpty()) {
 			f.complete();
-			return f;
+			return f.future();
 		}
 		final JsonObject params = new JsonObject().put("sources", sources);
 		Neo4j.getInstance().execute(query, params, event -> {
@@ -286,7 +286,7 @@ public class Importer {
 			}
 			f.complete();
 		});
-		return f;
+		return f.future();
 	}
 
 	public TransactionHelper getTransaction() {
