@@ -25,6 +25,7 @@ package org.entcore.infra;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -33,8 +34,6 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.events.impl.BusEventStoreFactory;
 import org.entcore.common.events.impl.PostgresqlEventStoreFactory;
-import org.entcore.infra.controllers.EventStoreController;
-import org.entcore.infra.controllers.MailController;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -43,9 +42,7 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.UUID;
 
 @RunWith(VertxUnitRunner.class)
 public class EventStoreTest {
@@ -78,6 +75,9 @@ public class EventStoreTest {
                 json.remove("groups");
                 eventStore.storeCustomEvent(eventType, json);
             }
+        });
+        test.vertx().eventBus().localConsumer("event.blacklist", ar -> {
+            ar.reply(new JsonArray());
         });
     }
 
