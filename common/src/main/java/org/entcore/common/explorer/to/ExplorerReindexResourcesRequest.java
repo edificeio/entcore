@@ -22,6 +22,8 @@ public class ExplorerReindexResourcesRequest {
     private final boolean includeFolders;
     /** Ids of the resources to reindex.*/
     private final Set<String> ids;
+    /** Ingest state of resources to reindex.*/
+    private final Set<String> states;
 
 
     @JsonCreator
@@ -29,18 +31,20 @@ public class ExplorerReindexResourcesRequest {
                                            @JsonProperty("to") final Date to,
                                            @JsonProperty("apps") final Set<String> apps,
                                            @JsonProperty("includeFolders") final boolean includeFolders,
-                                           @JsonProperty("ids") final Set<String> ids) {
+                                           @JsonProperty("ids") final Set<String> ids,
+                                           @JsonProperty("states") final Set<String> states) {
         this.from = from;
         this.to = to;
         this.apps = apps;
         this.includeFolders = includeFolders;
         this.ids = ids;
+        this.states = states;
     }
     public ExplorerReindexResourcesRequest(final Set<String> ids) {
-        this(null, null, null, false, ids);
+        this(null, null, null, false, ids, null);
     }
     public ExplorerReindexResourcesRequest() {
-        this(null, null, null, false, null);
+        this(null, null, null, false, null, null);
     }
 
     public Date getFrom() {
@@ -63,14 +67,19 @@ public class ExplorerReindexResourcesRequest {
         return ids;
     }
 
+    public Set<String> getStates() {
+        return states;
+    }
+
     @Override
     public String toString() {
-        return "ExplorerReindexRequest{" +
-                "from=" + from +
-                ", to=" + to +
-                ", apps=" + apps +
-                ", includeFolders=" + includeFolders +
-                ", ids=" + ids +
-                '}';
+        return "ExplorerReindexResourcesRequest{" +
+            "from=" + from +
+            ", to=" + to +
+            ", apps=" + apps +
+            ", includeFolders=" + includeFolders +
+            ", ids=" + ids +
+            ", states=" + states +
+            '}';
     }
 }
