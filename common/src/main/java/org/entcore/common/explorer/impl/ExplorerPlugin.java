@@ -17,6 +17,9 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerFolderTree;
@@ -46,6 +49,7 @@ import java.util.stream.Collectors;
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
     public static final String FOLDERS_ADDRESS = "explorer.folders";
+    public static final String INGEST_JOB_STATE = "ingest_job_state";
     public enum ResourceActions{
         GetShares,
     }
@@ -267,7 +271,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected void onReindexAction(final Message<JsonObject> message, final ExplorerReindexResourcesRequest request){
         final long now = currentTimeMillis();
         final Set<String> apps = request.getApps();
-        if(apps !=  null && !apps.isEmpty() && !apps.contains(getApplication())){
+        if(isNotEmpty(apps) && !(apps.contains(getApplication()) || apps.contains("all"))){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
             reply(message, new ExplorerReindexResourcesResponse(0, 0, emptyMap()));
             return;
