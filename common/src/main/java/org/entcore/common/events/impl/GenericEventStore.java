@@ -21,7 +21,6 @@ package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
