@@ -22,7 +22,6 @@
 
 package org.entcore.infra;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -599,11 +598,11 @@ public class Neo4jClientNHATest {
     }
 
     private Future<Void> checkAll(final List<Neo4jRestClientNodeManager> managers) {
-        List<Future<Void>> futures = new ArrayList<>();
+        Future<Void> future = Future.succeededFuture();
         for (final Neo4jRestClientNodeManager manager : managers) {
-            futures.add(manager.getChecker().check(manager));
+            future = future.compose(r -> manager.getChecker().check(manager));
         }
-        return Future.all(futures).mapEmpty();
+        return future;
     }
 
     private void assertQuery(final TestContext context, final boolean write, final Neo4jRestClientNodeManager manager) {

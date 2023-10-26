@@ -143,7 +143,7 @@ public class DatabaseTestHelper {
                 }
                 vertx.setTimer(delay, t -> async.complete());
             } else {
-                context.fail();
+                context.fail(ar.cause());
             }
         });
         return async;
