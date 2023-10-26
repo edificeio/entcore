@@ -13,6 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
@@ -26,6 +27,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 /**
  * Assuming that {@code T} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
@@ -182,7 +185,8 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         final QueryBuilder query = QueryBuilder.start();
         final Date from = request.getFrom();
         final Date to = request.getTo();
-        if(request.getIds() != null && !request.getIds().isEmpty()) {
+        final Set<String> states = request.getStates();
+        if(isNotEmpty(request.getIds())) {
             query.and(getIdColumn()).in(request.getIds());
         }
         if (from != null || to != null) {
@@ -198,6 +202,9 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
                         .toLocalDateTime();
                 query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
             }
+        }
+        if(isNotEmpty(states)) {
+            query.and(INGEST_JOB_STATE).in(states);
         }
         final JsonObject queryJson = MongoQueryBuilder.build(query);
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
@@ -215,7 +222,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             final String id = UUID.randomUUID().toString();
             ids.add(id);
             json.put(getIdColumn(), id);
-            json.put("ingest_job_state", IngestJobState.TO_BE_SENT);
+            json.put(INGEST_JOB_STATE, IngestJobState.TO_BE_SENT);
             setCreatorForModel(user, json);
             setCreatedAtForModel(user, json);
             final Promise<String> promise = Promise.promise();
@@ -298,7 +305,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
                     .put("version", new JsonObject().put("$lte", message.getVersion()));
             final JsonObject update = new JsonObject()
                     .put("$set", new JsonObject()
-                            .put("ingest_job_state", message.getState().name())
+                            .put(INGEST_JOB_STATE, message.getState().name())
                             .put("version", message.getVersion())
                     );
             return BulkOperation.createUpdate(filter, update);
@@ -316,7 +323,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         return promise.future();
     }
     public void setIngestJobStateAndVersion(final MongoUpdateBuilder modifier, IngestJobState state, long version) {
-        modifier.set("ingest_job_state", state.name());
+        modifier.set(INGEST_JOB_STATE, state.name());
         modifier.set("version", version);
     }
 }
