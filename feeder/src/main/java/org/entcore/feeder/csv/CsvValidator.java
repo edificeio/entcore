@@ -433,7 +433,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			List<String> admlStructures, final Handler<JsonObject> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
-		final Set<String> externalIds = new HashSet<>();
+		final Map<String, Integer> externalIds = new HashMap<String,Integer>();
 		CSVReader csvParser = null;
 		try {
 			csvParser = getCsvReader(path, charset);
@@ -470,9 +470,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					}
 				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
-						if (!externalIds.add(strings[filterExternalId.get()])) {
+						if (externalIds.putIfAbsent(strings[filterExternalId.get()], (i + 1)) != null) {
 							addErrorByFile(profile, "duplicate.externalId.in.file",
-									"" + (i+1), strings[filterExternalId.get()]);
+									"" + (i+1), strings[columns.indexOf("firstName")] + ' ' +  strings[columns.indexOf("lastName")] + ", " + strings[filterExternalId.get()], "" + externalIds.get(strings[filterExternalId.get()]) );
 						}
 					} else if (findUsersEnabled) {
 						findUsersEnabled = false;
@@ -498,7 +498,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			}
 		}
 		if (filterExternalId.get() >= 0) {
-			filterExternalIdExists(admlStructures, profile, externalIds, ar -> {
+			filterExternalIdExists(admlStructures, profile, externalIds.keySet(), ar -> {
 				if (ar.succeeded()) {
 					final JsonArray externalIdsLogins = ar.result();
 					if (externalIdsLogins != null) {
