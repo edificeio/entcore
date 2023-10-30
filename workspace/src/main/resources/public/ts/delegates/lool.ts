@@ -21,7 +21,7 @@ export function LoolDelegate($scope: LoolDelegateScope, $route) {
         Behaviours.load('lool').then(() => {
             Behaviours.applicationsBehaviours.lool.init(() => $scope.safeApply());
             Behaviours.applicationsBehaviours.lool.initPostMessage((event) => {
-               const data = JSON.parse(event.data);
+               const data = typeof event.data !== 'object' ? JSON.parse(event.data) : event.data;
                switch (data.id) {
                    case 'lool@getFolder': {
                        const response: any = {id: 'lool@getFolderResponse'};
