@@ -61,6 +61,8 @@ public class PostgresqlEventStore extends GenericEventStore {
 	private final AtomicInteger retryInitKnownEvents = new AtomicInteger(MAX_RETRY);
 	private final Set<String> allowedEvents = new HashSet<>();
 	private boolean enablePersistTimer = false;
+	private final AtomicInteger countNoAckReceive = new AtomicInteger(0);
+	private int maxNumberNoAck = 5;
 
 	public void init() {
 		init(ar -> {
@@ -71,7 +73,11 @@ public class PostgresqlEventStore extends GenericEventStore {
 	}
 
 	public void init(Handler<AsyncResult<Void>> handler) {
-		if (pgClient != null && knownEvents != null) {
+		init(false, handler);
+	}
+
+	public void init(boolean reinit, Handler<AsyncResult<Void>> handler) {
+		if (pgClient != null && knownEvents != null && !reinit) {
 			handler.handle(Future.succeededFuture());
 			return;
 		}
@@ -96,11 +102,19 @@ public class PostgresqlEventStore extends GenericEventStore {
 						.setSslMode(sslMode)
 						.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
 				}
+				if (reinit && pgClient != null) {
+					pgClient.close();
+				}
 				pgClient = PgPool.pool(vertx, options, poolOptions);
+				countNoAckReceive.set(0);
 
 				final JsonArray allowedEventsConf =  eventStorePGConfig.getJsonArray("allowed-events");
 				if (allowedEventsConf != null && !allowedEventsConf.isEmpty()) {
 					allowedEventsConf.stream().forEach(x -> allowedEvents.add(x.toString()));
+				}
+				final Integer limitNumberNoAck = eventStorePGConfig.getInteger("limit-number-no-ack");
+				if (limitNumberNoAck != null) { // set 0 to disable
+					maxNumberNoAck = limitNumberNoAck;
 				}
 				listKnownEvents(ar -> {
 					if (ar.succeeded()) {
@@ -245,12 +259,12 @@ public class PostgresqlEventStore extends GenericEventStore {
 			final long tId = vertx.setTimer(PERSIST_DELAY, r -> {
 				if (!ack.get()) {
 					logger.warn("Ack not receive after 10s. Retry persist payload id : " + payload.getString("id"));
-					insertEvent(payload, tableName, either2 -> {
-						logger.info("Receive return of retry insert payload id : " + payload.getString("id"));
-						if (either2.isLeft()) {
-							logger.error("Error adding custom event : " + payload.encode() + " - " + either2.left().getValue());
-						}
-					});
+					final int nbNoAck = countNoAckReceive.incrementAndGet();
+					if (maxNumberNoAck > 0 && nbNoAck > maxNumberNoAck) {
+						init(true, res -> retryInsert(payload, tableName, false));
+					} else {
+						retryInsert(payload, tableName, true);
+					}
 				}
 			});
 			timerId.set(tId);
@@ -262,6 +276,18 @@ public class PostgresqlEventStore extends GenericEventStore {
 			}
 			if (either.isLeft()) {
 				logger.error("Error adding custom event : " + payload.encode() + " - " + either.left().getValue());
+			}
+		});
+	}
+
+	private void retryInsert(JsonObject payload, final String tableName, boolean decrement) {
+		insertEvent(payload, tableName, either2 -> {
+			logger.info("Receive return of retry insert payload id : " + payload.getString("id"));
+			if (decrement) {
+				countNoAckReceive.decrementAndGet();
+			}
+			if (either2.isLeft()) {
+				logger.error("Error adding custom event : " + payload.encode() + " - " + either2.left().getValue());
 			}
 		});
 	}
