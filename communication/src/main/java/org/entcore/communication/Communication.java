@@ -19,6 +19,7 @@
 
 package org.entcore.communication;
 
+import io.vertx.core.Promise;
 import org.entcore.common.http.BaseServer;
 import org.entcore.communication.controllers.CommunicationController;
 import org.entcore.communication.filters.CommunicationFilter;
@@ -28,8 +29,8 @@ import org.entcore.communication.services.impl.XpCommunicationService;
 public class Communication extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		CommunicationController communicationController = new CommunicationController();
 		if (config.getBoolean("xp-com-rules", false)) {
 			communicationController.setCommunicationService(new XpCommunicationService());
