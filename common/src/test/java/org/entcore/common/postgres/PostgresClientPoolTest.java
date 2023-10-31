@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 public class PostgresClientPoolTest {
 
   @ClassRule
-  public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer("postgres:9.5");
+  public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer("postgres:14.3");
 
   public static PostgresClientPool postgresClientPool;
 
