@@ -21,6 +21,7 @@ package org.entcore.workspace;
 
 import java.util.HashMap;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
@@ -48,10 +49,10 @@ public class Workspace extends BaseServer {
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setResourceProvider(resourceProvider);
-		super.start();
+		super.start(startPromise);
 
 		Storage storage = new StorageFactory(vertx, config,
 				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();

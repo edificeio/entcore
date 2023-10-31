@@ -25,6 +25,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.shareddata.AsyncMap;
@@ -57,9 +58,9 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Starter extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start(Promise<Void> startPromise) {
 		try {
-			super.start();
+			super.start(startPromise);
 			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
