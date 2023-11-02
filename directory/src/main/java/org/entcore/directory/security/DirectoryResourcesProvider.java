@@ -22,6 +22,7 @@ package org.entcore.directory.security;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
 
+import io.vertx.core.http.HttpMethod;
 import org.entcore.common.http.filter.AdminUpdateFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
@@ -36,6 +37,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.*;
 
+import static io.vertx.core.http.HttpMethod.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DirectoryResourcesProvider implements ResourcesProvider {
@@ -166,6 +168,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					isAdmin(user, false, handler);
 					break;
 				case "create" :
+				case "getFuncGroups":
 					isAdminOfStructureOrClass(request, user, handler);
 					break;
 				case "update" :
@@ -300,30 +303,40 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject event) {
-				String classId = event.getString("classId");
-				String structureId = event.getString("structureId");
-				if ((adminLocal != null && adminLocal.getScope() != null &&
-						adminLocal.getScope().contains(structureId)) ||
-						(classAdmin != null && classAdmin.getScope() != null &&
-								classAdmin.getScope().contains(classId))) {
-					handler.handle(true);
-				} else if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
-					String query =
-							"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
-							"WHERE s.id IN {ids} " +
-							"RETURN count(*) > 0 as exists";
-					JsonObject params = new JsonObject()
-							.put("classId", classId)
-							.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
-					validateQuery(request, handler, query, params);
-				} else {
-					handler.handle(false);
-				}
-			}
-		});
+		final HttpMethod requestMethod = request.method();
+		if (POST.equals(requestMethod) || PUT.equals(requestMethod) || PATCH.equals(requestMethod)) {
+			RequestUtils.bodyToJson(request, event -> {
+				final String classId = event.getString("classId");
+				final String structureId = event.getString("structureId");
+				isAdminOfStructureOrClass(classId, structureId, adminLocal, classAdmin, request, handler);
+			});
+		} else {
+			final String classId = request.getParam("classId");
+			final String structureId = request.getParam("structureId");
+			isAdminOfStructureOrClass(classId, structureId, adminLocal, classAdmin, request, handler);
+		}
+	}
+	private void isAdminOfStructureOrClass(final String classId, final String structureId,
+																				 final UserInfos.Function adminLocal, final UserInfos.Function classAdmin,
+																				 final HttpServerRequest request,
+																				 final Handler<Boolean> handler) {
+		if ((adminLocal != null && adminLocal.getScope() != null &&
+				adminLocal.getScope().contains(structureId)) ||
+				(classAdmin != null && classAdmin.getScope() != null &&
+						classAdmin.getScope().contains(classId))) {
+			handler.handle(true);
+		} else if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
+			String query =
+					"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
+					"WHERE s.id IN {ids} " +
+					"RETURN count(*) > 0 as exists";
+			JsonObject params = new JsonObject()
+					.put("classId", classId)
+					.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+			validateQuery(request, handler, query, params);
+		} else {
+			handler.handle(false);
+		}
 	}
 
 	private void isAdminOfStructureOrClass2(final HttpServerRequest request, UserInfos user,
