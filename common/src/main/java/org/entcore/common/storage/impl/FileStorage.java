@@ -161,44 +161,38 @@ public class FileStorage implements Storage {
 			}
 
 			private void doUpload(final HttpServerFileUpload upload, final JsonObject metadata) {
-				upload.endHandler(new Handler<Void>() {
-					@Override
-					public void handle(Void event) {
-						if (metadata.getLong("size") == 0l) {
-							metadata.put("size", upload.size());
-							if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-								handler.handle(res.put("status", "error")
-										.put("message", "file.too.large"));
-								try {
-									fs.delete(getWritePath(id), new Handler<AsyncResult<Void>>() {
-										@Override
-										public void handle(AsyncResult<Void> event) {
-											if (event.failed()) {
-												log.error(event.cause().getMessage(), event.cause());
-											}
+				upload.handler(buffer -> log.info(buffer.toJson().toString()));
+				upload.streamToFileSystem(path).onSuccess(e -> {
+					if (metadata.getLong("size") == 0l) {
+						metadata.put("size", upload.size());
+						if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+							handler.handle(res.put("status", "error")
+									.put("message", "file.too.large"));
+							try {
+								fs.delete(getWritePath(id), new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error(event.cause().getMessage(), event.cause());
 										}
-									});
-								} catch (FileNotFoundException e) {
-									log.error(e.getMessage(), e);
-								}
-								return;
+									}
+								});
+							} catch (FileNotFoundException exc) {
+								log.error("Cannot delete file " + id, exc);
 							}
+							return;
 						}
-						handler.handle(res.put("_id", id)
-								.put("status", "ok")
-								.put("metadata", metadata));
-						sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
-						scanFile(path);
 					}
+					handler.handle(res.put("_id", id)
+							.put("status", "ok")
+							.put("metadata", metadata));
+					sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
+					scanFile(path);
+				})
+				.onFailure(th ->  {
+					handler.handle(res.put("status", "error"));
+					log.error("Cannot write to filesystem", th);
 				});
-				upload.exceptionHandler(new Handler<Throwable>() {
-					@Override
-					public void handle(Throwable event) {
-						handler.handle(res.put("status", "error"));
-						log.error(event.getMessage(), event);
-					}
-				});
-				upload.streamToFileSystem(path);
 				request.resume();
 			}
 		});
