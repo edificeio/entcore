@@ -694,7 +694,7 @@ public class UserUtils {
 				if (res.succeeded()) {
 					details.complete( res.result().body() ); // body may be null if no session can be created (for an app)
 				} else {
-					details.fail(String.valueOf(res.result().body()));
+					details.fail(res.cause());
 				}
 			}
 		});
