@@ -84,4 +84,3 @@ infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
 admin/src/main/ts/.angular
 *.lock
-pnpm-lock.yaml
