@@ -24,16 +24,15 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
   // Subscribers
   private structureSubscriber: Subscription;
   isADMC: boolean = false;
-  isADML: boolean = false;
 
   // Tabs
   tabs = [
-    //  { label: "Classes", view: "classes" },  // admin only
+//  { label: "Classes", view: "classes" },  // admin only
     { label: "ManualGroup", view: "manualGroup" },
     { label: "ProfileGroup", view: "profileGroup" },
     { label: "FunctionalGroup", view: "functionalGroup" },
     { label: "FunctionGroup", view: "functionGroup" },
-    //  { label: "BroadcastGroup", view: "broadcastGroup" }    // admin only
+//  { label: "BroadcastGroup", view: "broadcastGroup" }    // admin only
   ];
 
   groupsError: any;
@@ -55,7 +54,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.add(
-      this.router.events.subscribe((e) => {
+      this.router.events.subscribe(e => {
         if (e instanceof NavigationEnd) {
           this.changeDetector.markForCheck();
         }
@@ -71,17 +70,9 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
   }
 
   createButtonHidden(keyword) {
-    if (keyword === "classes") {
-      return (
-        !this.router.isActive(
-          `/admin/${this.groupsStore.structure.id}/groups/${keyword}`,
-          false
-        ) ||
-        this.router.isActive(
-          `/admin/${this.groupsStore.structure.id}/groups/${keyword}/create`,
-          true
-        )
-      );
+    if( keyword==='classes' ) {
+      return !this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${keyword}`, false)
+        || this.router.isActive(`/admin/${this.groupsStore.structure.id}/groups/${keyword}/create`, true)
     } else {
       return (
         !this.router.isActive(
@@ -99,12 +90,12 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
   async showAdminTabs() {
     const session: Session = await SessionModel.getSession();
     this.isADMC = session.isADMC();
-    this.isADML = session.isADML();
+    const isADML = session.isADML();
 
     if (this.isADMC) {
       this.tabs.unshift({ label: "Classes", view: "classes" });
     }
-    if (this.isADML || this.isADMC) {
+    if (isADML || this.isADMC) {
       this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup" });
     }
     this.changeDetector.markForCheck();
