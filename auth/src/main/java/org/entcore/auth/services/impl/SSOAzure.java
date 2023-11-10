@@ -49,13 +49,13 @@ public class SSOAzure extends AbstractSSOProvider {
 
 	protected static final String EMAIL_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
 	protected static final String ENTPERSONJOINTURE_ATTTRIBUTE = "ENTPersonJointure";
-	protected static final String ID_ATTTRIBUTE = "";
-	protected static final String LASTNAME_ATTTRIBUTE = "";
-	protected static final String FIRSTNAME_ATTTRIBUTE = "";
-	protected static final String PROFILE_ATTTRIBUTE = "";
-	protected static final String BIRTHDATE_ATTTRIBUTE = "";
-	protected static final String UAI_ATTTRIBUTE = "";
-	protected static final String CLASSES_ATTTRIBUTE = "";
+	protected static final String ID_ATTTRIBUTE = "ID";
+	protected static final String LASTNAME_ATTTRIBUTE = "Surname";
+	protected static final String FIRSTNAME_ATTTRIBUTE = "givenname";
+	protected static final String PROFILE_ATTTRIBUTE = "ENTProfil";
+	protected static final String BIRTHDATE_ATTTRIBUTE = "DateDeNaissance";
+	protected static final String UAI_ATTTRIBUTE = "UAI";
+	protected static final String CLASSES_ATTTRIBUTE = "Classes";
 
 	private static final int TX_AAF_QUERY_NB = 3;
 	private static final int TX_NOAAF_QUERY_NB = 2;
