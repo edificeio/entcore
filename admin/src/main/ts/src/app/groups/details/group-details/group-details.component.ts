@@ -11,6 +11,8 @@ import { CommunicationRulesService } from '../../../communication/communication-
 import { GroupsService } from '../../groups.service';
 import { GroupsStore } from '../../groups.store';
 import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
+import { Session } from "src/app/core/store/mappings/session";
+import { SessionModel } from "src/app/core/store/models/session.model";
 
 @Component({
     selector: 'ode-group-detail',
@@ -38,6 +40,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
     public autolinkFunctionOptions: Array<string> = [];
     public autolinkDisciplineOptions: Array<string> = [];
 
+    public showActions: boolean;
+    
     constructor(public groupsStore: GroupsStore,
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
@@ -118,6 +122,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                 })
             );
         }
+
+    this.setCanShowActions();
     }
 
     showLightBox() {
@@ -212,4 +218,12 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
     public onGroupNameBlur(name: string): void {
         this.groupNewName = trim(name);
     }
+
+  async setCanShowActions() {
+    const group = this.groupsStore.group;
+    const session: Session = await SessionModel.getSession();
+    this.showActions =
+      !group.subType ||
+      (group.subType === "BroadcastGroup" && session.isADMC());
+  }
 }

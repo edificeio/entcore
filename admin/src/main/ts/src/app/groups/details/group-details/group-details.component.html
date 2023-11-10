@@ -8,14 +8,14 @@
   </div>
   <div>
     <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true"
+            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true && showActions"
             (click)="$renameButtonClicked.next()"
             class="lct-group-update-button">
       <s5l>group.rename.button</s5l>
       <i class="fa fa-pencil is-size-5"></i>
     </button>
     <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true"
+            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete != true && showActions"
             (click)="$deleteButtonClicked.next(groupsStore.group)"
             class="lct-group-delete-button">
       <s5l>group.delete.button</s5l>
@@ -69,6 +69,7 @@
   [structure]="groupsStore.structure"
   [disciplineOptions]="autolinkDisciplineOptions"
   [functionOptions]="autolinkFunctionOptions"
+  [showActions]="showActions"
 >
 </ode-group-autolink>
 
