@@ -3,9 +3,13 @@
   section-title="group.details.broadcast.autoLink.mainSection.title"
   [folded]="true"
 >
-  <form (ngSubmit)="onAutolinkSubmit()" #autoLinkForm="ngForm">
+  <form
+    (ngSubmit)="onAutolinkSubmit()"
+    #autoLinkForm="ngForm"
+    [className]="!showActions ? 'readonly-form' : ''"
+  >
     <!-- Autolink form submit button -->
-    <section class="is-display-flex has-flex-end">
+    <section class="is-display-flex has-flex-end" *ngIf="showActions">
       <button type="submit">
         <s5l>save</s5l>
         <i class="fa fa-save"></i>
@@ -56,7 +60,12 @@
         </label>
       </div>
       <!-- Substructures opening button -->
-      <div *ngIf="showSubStructutresPickerButton || form.subStructuresIds?.length > 0">
+      <div
+        *ngIf="
+          showActions &&
+          (showSubStructutresPickerButton || form.subStructuresIds?.length > 0)
+        "
+      >
         <button
           (click)="openSubStructuresLightbox()"
           type="button"
@@ -69,6 +78,18 @@
           <s5l>group.details.broadcast.autoLink.structuresSection.subStructuresPicker.selected</s5l>
         </span>
       </div>
+
+      <ode-item-tree
+        [items]="structureTreeItems"
+        order="name"
+        display="name"
+        *ngIf="
+          !showActions &&
+          (showSubStructutresPickerButton || form.subStructuresIds?.length > 0)
+        "
+        [checkboxMode]="true"
+      >
+      </ode-item-tree>
       <!-- Substructures lightbox -->
       <ode-lightbox
         [show]="showSubStructuresLightbox"
@@ -188,6 +209,7 @@
             [comboModel]="disciplineOptions"
             [(outputModel)]="form.selectedDisciplines"
             [title]="'disciplines.multi.combo.title' | translate"
+            *ngIf="showActions"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
@@ -196,7 +218,7 @@
               (click)="unselectDiscipline(item)"
             >
               <s5l>{{ item }}</s5l>
-              <i class="fa fa-trash is-size-5"></i>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
             </div>
           </div>
         </div>
@@ -240,6 +262,7 @@
             [comboModel]="functionOptions"
             [(outputModel)]="form.selectedFunctions"
             [title]="'functionsgroup.multi.combo.title' | translate"
+            *ngIf="showActions"
           >
           </ode-multi-combo>
           <div class="multi-combo-companion">
@@ -248,7 +271,7 @@
               (click)="unselectFunction(item)"
             >
               <s5l>{{ item }}</s5l>
-              <i class="fa fa-trash is-size-5"></i>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
             </div>
           </div>
         </div>
