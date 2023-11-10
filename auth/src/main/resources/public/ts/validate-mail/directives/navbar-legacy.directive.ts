@@ -24,8 +24,8 @@ export class Controller implements IController {
 
 	refreshAvatar() {
 		this.avatar = session().avatarUrl;
-		this.username = session().description.displayName;
-	};
+		this.username = session().user.firstName;
+	}
 
 	openApps(event:any){
 		const width = $(window).width()
