@@ -50,8 +50,8 @@ public class SSOAzure extends AbstractSSOProvider {
 	protected static final String EMAIL_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
 	protected static final String ENTPERSONJOINTURE_ATTTRIBUTE = "ENTPersonJointure";
 	protected static final String ID_ATTTRIBUTE = "ID";
-	protected static final String LASTNAME_ATTTRIBUTE = "Surname";
-	protected static final String FIRSTNAME_ATTTRIBUTE = "givenname";
+	protected static final String LASTNAME_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
+	protected static final String FIRSTNAME_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
 	protected static final String PROFILE_ATTTRIBUTE = "ENTProfil";
 	protected static final String BIRTHDATE_ATTTRIBUTE = "DateDeNaissance";
 	protected static final String UAI_ATTTRIBUTE = "UAI";
@@ -118,7 +118,7 @@ public class SSOAzure extends AbstractSSOProvider {
 
 	private void createOrMergeUserIfNeeded(Assertion assertion, Handler<AsyncResult<Void>> handler) {
 		final String queryStructure =
-				"MATCH (s:Structure {UAI: {uai}) " +
+				"MATCH (s:Structure {UAI: {uai}}) " +
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
 				"RETURN DISTINCT s.id as structureId, COLLECT(DISTINCT [c.id, c.name]) as classes ";
 		final String queryUserAAF =
