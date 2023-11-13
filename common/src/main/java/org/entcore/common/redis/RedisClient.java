@@ -26,6 +26,13 @@ public class RedisClient implements IRedisClient {
         this.redisOptions = redisOptions;
     }
 
+
+    /**
+     * Creates a Redis client object from the supplied configuration or from the shared configuration.
+     * @param vertx Vertx instance
+     * @param config An object <b><u>containing a field redisConfig</u></b> which holds redis configuration
+     * @return A client to call Redis
+     */
     public static RedisClient create(final Vertx vertx, final JsonObject config) {
         if (config.getJsonObject("redisConfig") != null) {
             final JsonObject redisConfig = config.getJsonObject("redisConfig");

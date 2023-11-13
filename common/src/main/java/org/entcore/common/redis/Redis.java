@@ -40,7 +40,7 @@ public class Redis {
     }
 
     public void init(Vertx vertx, JsonObject redisConfig) {
-        this.redisClient = RedisClient.create(vertx, redisConfig);
+        this.redisClient = RedisClient.create(vertx, new JsonObject().put("redisConfig", redisConfig));
         RedisHolder.redisConfig = redisConfig;
     }
 
