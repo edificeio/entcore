@@ -31,7 +31,7 @@ import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import fr.wseduc.swift.storage.DefaultAsyncResult;
+import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.ETag;
 import io.vertx.core.AsyncResult;

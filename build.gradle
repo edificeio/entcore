@@ -239,7 +239,6 @@ project(':common') {
   dependencies {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-    compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
     compile "io.vertx:vertx-redis-client:$vertxVersion"
     compile "io.vertx:vertx-pg-client:$vertxVersion"
