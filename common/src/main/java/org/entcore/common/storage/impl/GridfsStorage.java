@@ -50,6 +50,7 @@ import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageException;
+import org.entcore.common.utils.FileUtils;
 import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
@@ -505,7 +506,7 @@ public class GridfsStorage implements Storage {
 				}
 				if (chunk.n == 0) {
 					if (!inline) {
-						String name = fr.wseduc.swift.utils.FileUtils.getNameWithExtension(downloadName, metadata);
+						String name = FileUtils.getNameWithExtension(downloadName, metadata);
 						response.putHeader("Content-Disposition",
 								"attachment; filename=\"" + name + "\"");
 					} else {

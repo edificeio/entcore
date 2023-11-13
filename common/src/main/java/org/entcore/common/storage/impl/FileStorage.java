@@ -19,7 +19,7 @@
 
 package org.entcore.common.storage.impl;
 
-import fr.wseduc.swift.utils.FileUtils;
+import org.entcore.common.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.ETag;
