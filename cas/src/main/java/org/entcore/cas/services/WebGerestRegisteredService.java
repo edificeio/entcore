@@ -245,6 +245,7 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 	}
 
 	private void formatNeoFunctions(List<String> functions) {
+		neoFunctions = new ArrayList<>();
 		for (String function : functions) {
 			int first$pos = function.indexOf(DOLLAR);
 			neoFunctions.add(function.substring(first$pos + 1));
