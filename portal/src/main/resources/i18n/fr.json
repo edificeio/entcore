@@ -819,7 +819,7 @@
   "explorer.emptyScreen.label": "Ce dossier est vide pour le moment. Vous pouvez organiser vos blogs dedans, dès maintenant !",
   "explorer.emptyScreen.trash.alt": "Illustration de la corbeille",
   "explorer.emptyScreen.folder.empty.alt": "Illustration d'un dossier vide",
-  "explorer.modal.onboarding.trash.title": "Du nouveau sur le Blog !",
+  "explorer.modal.onboarding.trash.title": "Du nouveau dans vos applications !",
   "explorer.modal.onboarding.trash.screen1.title": "Le fonctionnement de la vignette évolue. Un seul clic suffit pour accéder au contenu. Le menu d'action s’affiche en cliquant sur les 3 petits points.",
   "explorer.modal.onboarding.trash.screen1.alt": "Illustration simplification de la navigation",
   "explorer.modal.onboarding.trash.screen2.title": "Les contenus placés dans la corbeille ne génèrent plus de notifications et n’apparaissent plus dans votre fil d’actualité.",
