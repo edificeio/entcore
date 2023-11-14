@@ -809,6 +809,7 @@
   "explorer.actions.restore": "Restaurer",
   "explorer.actions.share": "Partager",
   "explorer.tree.trash": "Corbeille",
+  "explorer.tree.search": "Résultats de la recherche",
   "explorer.create.folder": "Créer un dossier",
   "explorer.create.folder.name": "Nom du dossier",
   "explorer.rename.folder": "Renommer un dossier",
