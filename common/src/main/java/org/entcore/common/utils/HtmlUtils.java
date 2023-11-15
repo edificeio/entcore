@@ -79,6 +79,7 @@ public class HtmlUtils {
             + "(on[a-zA-Z]+\\s*=\\s*\"[^\"]*\")|"
             + "(href\\s*=\\s*\"javascript:[^\"]*\")");
 
+
     public static JsonArray getAllImagesSrc(String htmlContent) {
         JsonArray images = new JsonArray();
         Matcher matcher = imageSrcPattern.matcher(htmlContent);
