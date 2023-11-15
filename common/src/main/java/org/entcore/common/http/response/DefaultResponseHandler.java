@@ -43,6 +43,20 @@ public class DefaultResponseHandler {
 	private DefaultResponseHandler() {
 	}
 
+	public static <T> Handler<AsyncResult<T>> defaultAsyncResultResponseHandler(final HttpServerRequest request) {
+		return defaultAsyncResultResponseHandler(request, 200);
+	}
+	public static <T> Handler<AsyncResult<T>> defaultAsyncResultResponseHandler(final HttpServerRequest request, final int successCode) {
+		return event -> {
+			if (event.succeeded()) {
+				Renders.render(request, event.result(), successCode);
+			} else {
+				JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+				Renders.renderJson(request, error, 400);
+			}
+		};
+	}
+
 	public static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request) {
 		return defaultResponseHandler(request, 200);
 	}
