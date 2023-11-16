@@ -56,6 +56,8 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 	protected static final String ID = "id";
 	protected static final String STRUCTURES = "structures";
 	protected static final String UAI = "UAI";
+	protected static final String STRUCTURE_NODES = "structureNodes";
+	protected static final String EXTERNAL_ID = "externalId";
 	protected static final String TYPE = "type";
 	private static final String FIRSTNAME = "firstName";
 	private static final String LASTNAME = "lastName";
@@ -149,8 +151,14 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 						}
 					}
 					else if (o instanceof String) {
-						String structure = (String) o;
-						structures.add(structure);
+						String uai = data.getJsonArray(STRUCTURE_NODES).stream()
+								.map(JsonObject.class::cast)
+								.filter(structNode -> structNode.getString(EXTERNAL_ID).equals((String) o))
+								.findFirst()
+								.orElse(null)
+								.getString(UAI, null);
+
+						structures.add(uai);
 					}
 				}
 				attributes.put(WG_STRUCTURE_UAI, structures.size() == 1 ? structures.get(0) : structures.toString());
@@ -237,6 +245,7 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 	}
 
 	private void formatNeoFunctions(List<String> functions) {
+		neoFunctions = new ArrayList<>();
 		for (String function : functions) {
 			int first$pos = function.indexOf(DOLLAR);
 			neoFunctions.add(function.substring(first$pos + 1));

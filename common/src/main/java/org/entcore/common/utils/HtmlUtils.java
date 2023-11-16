@@ -2,8 +2,6 @@ package org.entcore.common.utils;
 
 import fr.wseduc.webutils.collections.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +76,7 @@ public class HtmlUtils {
     private static final Pattern unsafeAttributePattern = Pattern.compile("(ng-[a-zA-Z0-9-]+\\s*=\\s*\"[^\"]*\")|"
             + "(on[a-zA-Z]+\\s*=\\s*\"[^\"]*\")|"
             + "(href\\s*=\\s*\"javascript:[^\"]*\")");
+
 
     public static JsonArray getAllImagesSrc(String htmlContent) {
         JsonArray images = new JsonArray();

@@ -21,6 +21,7 @@ package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
 
+import io.vertx.core.Future;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -45,6 +46,8 @@ public interface UserService {
 	void getForExternalService(String id, Handler<Either<String, JsonObject>> result);
 
 	void getForETude(String id, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonObject> getForSaooti(String id);
 
 	void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result);
 
