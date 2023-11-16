@@ -2,8 +2,6 @@ package org.entcore.common.utils;
 
 import fr.wseduc.webutils.collections.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
