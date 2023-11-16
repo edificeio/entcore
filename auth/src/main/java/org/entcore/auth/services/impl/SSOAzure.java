@@ -267,16 +267,25 @@ public class SSOAzure extends AbstractSSOProvider {
 				.put("action", "manual-create-user")
 				.put("structureId", structure.getString("structureId"))
 				.put("profile", profile)
+				.put("classesNames", getClassesNames(assertion))
 				.put("data", user);
 		eb.request(FEEDER, action, res2 -> {
 			if (res2.succeeded() && "ok".equals(((JsonObject) res2.result().body()).getString("status"))) {
 				handler.handle(Future.succeededFuture());
-				// TODO add classes attachement when assertion will include classes informations
 			} else {
 				handler.handle(Future.failedFuture("Error when manual-delete-user sso : " +
 						((JsonObject) res2.result().body()).getString("message")));
 			}
 		});
+	}
+
+	private JsonArray getClassesNames(Assertion assertion) {
+		final String classes = getAttribute(assertion, CLASSES_ATTTRIBUTE);
+		if (isNotEmpty(classes)) {
+			final JsonArray classesNames = new JsonArray(Arrays.asList(classes.split(",")));
+			return classesNames;
+		}
+		return null;
 	}
 
 }

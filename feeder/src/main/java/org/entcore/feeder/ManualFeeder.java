@@ -281,7 +281,8 @@ public class ManualFeeder extends BusModBase {
 		}
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
-			createUserInStructure(message, user, profile, structureId, childrenIds);
+			final JsonArray classesNames = message.body().getJsonArray("classesNames");
+			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames);
 			return;
 		}
 		final String classId = message.body().getString("classId");
@@ -293,7 +294,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds) {
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds, JsonArray classesNames) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
@@ -319,6 +320,20 @@ public class ManualFeeder extends BusModBase {
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
+		if (classesNames != null && !classesNames.isEmpty()) {
+			final String classesQuery =
+					"MATCH (s:Structure {id:{structureId}})<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup {filter: {profile}}), " +
+					"s<-[:DEPENDS]-(:ProfileGroup {filter: {profile}})<-[:IN]-(u:User {id: {userId}})" +
+					"WHERE c.name IN {classesNames} " +
+					"MERGE cpg<-[:IN {source: {source}}]-u ";
+			final JsonObject classesParams = new JsonObject()
+					.put("structureId", structureId)
+					.put("profile", profile)
+					.put("userId", user.getString("id"))
+					.put("classesNames", classesNames)
+					.put("source", user.getString("source"));
+			statementsBuilder.add(classesQuery, classesParams);
+		}
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
