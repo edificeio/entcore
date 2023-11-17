@@ -20,18 +20,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodbHelperVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>com.sun.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jnaVersion}</version>

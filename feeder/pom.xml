@@ -44,12 +44,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${jodaTimeVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>test</artifactId>
             <version>${project.parent.version}</version>

@@ -74,7 +74,7 @@
         <opencsvVersion>3.9</opencsvVersion>
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
-	<gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
+	<gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
 	<vertxVersion>4.4.5</vertxVersion>
     </properties>
 
@@ -85,7 +85,19 @@
   <version>2.3.2</version>
   <type>pom</type>
 </dependency>
-    <dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>web-utils</artifactId>
+            <version>${webUtilsVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mongodb-helper</artifactId>
+            <version>${mongodbHelperVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jacksonVersion}</version>
@@ -95,7 +107,7 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
             <version>${vertxVersion}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
