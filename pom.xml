@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.edifice</groupId>
+        <artifactId>app-parent</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <groupId>org.entcore</groupId>
+    <artifactId>ent-core</artifactId>
+    <version>5.0-b2school-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <repositories>
+        <repository>
+            <id>ode</id>
+            <name>ODE Repository</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>m2</id>
+            <name>m2 Repository</name>
+            <url>https://plugins.gradle.org/m2/</url>
+        </repository>
+    </repositories>
+
+    <scm>
+        <connection>scm:git:https://github.com/opendigitaleducation/entcore.git</connection>
+        <developerConnection>scm:git:https://github.com/opendigitaleducation/entcore.git</developerConnection>
+        <url>https://github.com/opendigitaleducation/entcore</url>
+    </scm>
+
+    <modules>
+        <module>admin</module>
+        <module>app-registry</module>
+        <module>archive</module>
+        <module>auth</module>
+        <module>cas</module>
+        <module>common</module>
+        <module>communication</module>
+        <module>conversation</module>
+        <module>directory</module>
+        <module>feeder</module>
+        <module>infra</module>
+        <module>portal</module>
+        <module>session</module>
+        <module>test</module>
+        <module>tests</module>
+        <module>timeline</module>
+        <module>workspace</module>
+    </modules>
+
+    <properties>
+        <junitVersion>4.10</junitVersion>
+        <testContainerVersion>1.17.1</testContainerVersion>
+        <modPostgresVersion>2.0-b2school-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.0-b2school-SNAPSHOT</modMongoVersion>
+        <webUtilsVersion>3.0-b2school-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.0-b2school-SNAPSHOT</mongodbHelperVersion>
+        <jodaTimeVersion>2.9.4</jodaTimeVersion>
+        <scramVersion>2.1</scramVersion>
+        <mongoVersion>3.12.8</mongoVersion>
+        <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
+        <owaspVersion>20220608.1</owaspVersion>
+        <jacksonVersion>2.11.3</jacksonVersion>
+        <casVersion>0.2.2</casVersion>
+        <vertxCronTimerVersion>2.0.0</vertxCronTimerVersion>
+        <jnaVersion>3.0.2</jnaVersion>
+        <lamejbVersion>0.2.0</lamejbVersion>
+        <opencsvVersion>3.9</opencsvVersion>
+        <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
+        <commonsLangVersion>3.13.0</commonsLangVersion>
+        <gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testContainerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>${testContainerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testContainerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${testContainerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-postgresql</artifactId>
+            <version>${modPostgresVersion}</version>
+            <classifier>fat</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>mod-mongo-persistor</artifactId>
+            <version>${modMongoVersion}</version>
+            <classifier>fat</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
