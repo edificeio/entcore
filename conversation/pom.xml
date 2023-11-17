@@ -21,18 +21,6 @@
         </dependency>
         <dependency>
             <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodbHelperVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
             <artifactId>vertx-cron-timer</artifactId>
             <version>${vertxCronTimerVersion}</version>
             <scope>compile</scope>

@@ -20,12 +20,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodbHelperVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>test</artifactId>
             <version>${project.parent.version}</version>

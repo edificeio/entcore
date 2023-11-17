@@ -14,24 +14,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodbHelperVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${jodaTimeVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-redis-client</artifactId>
             <version>${vertxVersion}</version>
@@ -49,17 +31,17 @@
             <version>${scramVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-async</artifactId>
             <version>${mongoVersion}</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mongo-client</artifactId>
             <version>${vertxVersion}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.mongodb</groupId>
@@ -85,24 +67,18 @@
             <version>${owaspVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jacksonVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-</dependencies>
-<build>
-<plugins>
-	      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-          <compilerArgument>-proc:none</compilerArgument>
-        </configuration>
-</plugin>
-</plugins>
-</build>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                <source>${java.version}</source>
+                <target>${java.version}</target>
+                <compilerArgument>-proc:none</compilerArgument>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
