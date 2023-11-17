@@ -15,7 +15,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.session.SessionRecreationRequest;
 import static org.entcore.common.user.UserUtils.SESSION_ADDRESS;
-import org.entcore.test.TestHelper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,11 +31,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class UserUtilsTest {
-    protected static final TestHelper test = TestHelper.helper();
     private static final Map<String, JsonObject> sessionStore = new HashMap<>();
     private static final AtomicInteger counterOAuthValid = new AtomicInteger();
     private static final AtomicInteger counterFindSession = new AtomicInteger();
     private static final AtomicInteger counterRecreateSession = new AtomicInteger();
+    private static final Vertx vertx = Vertx.vertx();
 
     @Before
     public void reset() {
@@ -54,7 +53,7 @@ public class UserUtilsTest {
          * - session retrieval
          * - session recreation
          *******************************************/
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         eb.consumer("wse.oauth").handler(message -> {
             counterOAuthValid.incrementAndGet();
             message.reply(new JsonObject()
@@ -100,7 +99,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionCanRecreateSessionForOAuthUserIfSessionIsNotFoundInStore(final TestContext context) {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth
@@ -131,7 +130,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnNullIfSessionIsNotFound(final TestContext context) throws Exception {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth
@@ -160,7 +159,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnSessionIfWebSessionIsFound(final TestContext context) throws Exception {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         /*******************************************
          * Create a fake http request with an OAuth
          * token and check that getSession retrieves
@@ -189,7 +188,7 @@ public class UserUtilsTest {
     @Test
     public void testGetSessionReturnSessionIfFoundInStoreForOauthUsers(final TestContext context) {
         final Async async = context.async();
-        final EventBus eb = test.vertx().eventBus();
+        final EventBus eb = vertx.eventBus();
         sessionStore.clear();
         /*******************************************
          * Create a fake http request with an OAuth

@@ -152,6 +152,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>${testContainerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fr.wseduc</groupId>
             <artifactId>mod-postgresql</artifactId>
             <version>${modPostgresVersion}</version>
