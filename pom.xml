@@ -74,10 +74,23 @@
         <opencsvVersion>3.9</opencsvVersion>
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
-        <gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
+	<gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
+	<vertxVersion>4.4.5</vertxVersion>
     </properties>
 
     <dependencies>
+    <dependency>
+  <groupId>com.sun.xml.ws</groupId>
+  <artifactId>jaxws-ri</artifactId>
+  <version>2.3.2</version>
+  <type>pom</type>
+</dependency>
+    <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jacksonVersion}</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
