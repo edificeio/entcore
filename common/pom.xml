@@ -91,5 +91,18 @@
             <version>${jacksonVersion}</version>
             <scope>compile</scope>
         </dependency>
-    </dependencies>
+</dependencies>
+<build>
+<plugins>
+	      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerArgument>-proc:none</compilerArgument>
+        </configuration>
+</plugin>
+</plugins>
+</build>
 </project>
