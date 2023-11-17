@@ -1,5 +1,6 @@
 package org.entcore.common.service.impl;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -10,33 +11,55 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @RunWith(VertxUnitRunner.class)
 public class BasicQuotaServiceTest {
-    private static final TestHelper test = TestHelper.helper();
+    // private static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
+    public static Neo4jContainer<?> neo4jContainer = createNeo4jContainer();
     private static Neo4j neo4j;
     private static BasicQuotaService basicQuotaService;
+    private static final Vertx vertx = Vertx.vertx();
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
-        EventStoreFactory.getFactory().setVertx(test.vertx());
+        Vertx vertx = Vertx.vertx();
+        EventStoreFactory.getFactory().setVertx(vertx);
         basicQuotaService = new BasicQuotaService();
-        test.database().initNeo4j(context, neo4jContainer);
+        initNeo4j(context, neo4jContainer);
         final String base = neo4jContainer.getHttpUrl() + "/db/data/";
         final JsonObject neo4jConfig = new JsonObject()
                 .put("server-uri", base).put("poolSize", 1);
         neo4j = Neo4j.getInstance();
-        neo4j.init(test.vertx(), neo4jConfig
+        neo4j.init(vertx, neo4jConfig
                 .put("server-uri", base)
                 .put("ignore-empty-statements-error", false));
+    }
+
+    public static void initNeo4j(TestContext context, Neo4jContainer<?> neo4jContainer) {
+        final String base = neo4jContainer.getHttpUrl() + "/db/data/";
+        final JsonObject config = new JsonObject().put("server-uri", base).put("poolSize", 1);
+        final Neo4j neo4j = Neo4j.getInstance();
+        neo4j.init(vertx, config);
+        vertx.sharedData().getLocalMap("server").put("neo4jConfig", config.encode());
+    }
+
+    public static Neo4jContainer<?> createNeo4jContainer() {
+        final DockerImageName imageName;
+        if("true".equalsIgnoreCase(System.getenv("IS_M1")) || "aarch64".equalsIgnoreCase(System.getProperty("os.arch"))) {
+            imageName = DockerImageName.parse("opendigitaleducation/neo4j:3.1.9-arm").asCompatibleSubstituteFor("neo4j");
+        } else {
+            imageName = DockerImageName.parse("neo4j:3.1");
+        }
+        final Neo4jContainer container = new Neo4jContainer(imageName);
+        return container.withoutAuthentication()//
+                .withNeo4jConfig("cypher.default_language_version", "2.3");
     }
 
     /**
@@ -51,7 +74,7 @@ public class BasicQuotaServiceTest {
         final Async async = testContext.async(3);
         prepareData(userId, null).onComplete(testContext.asyncAssertSuccess(h -> {
             basicQuotaService.init(userId);
-            test.vertx().setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
+            vertx.setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
         }));
     }
 
@@ -68,7 +91,7 @@ public class BasicQuotaServiceTest {
         final Async async = testContext.async(3);
         prepareData(userId, userId).onComplete(testContext.asyncAssertSuccess(h -> {
             basicQuotaService.init(userId);
-            test.vertx().setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
+            vertx.setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
         }));
     }
 
@@ -85,7 +108,7 @@ public class BasicQuotaServiceTest {
         final Async async = testContext.async(3);
         prepareData(userId, "badId").onComplete(testContext.asyncAssertSuccess(h -> {
             basicQuotaService.init(userId);
-            test.vertx().setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
+            vertx.setTimer(1000L, e -> assertUserHasOnlyOneUserBook(userId, testContext, async));
         }));
     }
 
