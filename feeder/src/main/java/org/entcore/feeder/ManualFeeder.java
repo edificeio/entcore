@@ -256,6 +256,8 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	public void createUser(final Message<JsonObject> message) {
+		logger.info("enter create user");
+		logger.info(((JsonObject) message.body()).encode());
 		final JsonObject user = getMandatoryObject("data", message);
 		if (user == null) return;
 		if (user.getString("externalId") == null) {
