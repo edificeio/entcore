@@ -213,6 +213,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             );
         }).onFailure(e->{
             log.error("Failed to create sqlCursor resources "+getTableName()+ "for reindex : ", e);
+            stream.end();
         });
     }
 
