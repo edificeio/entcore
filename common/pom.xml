@@ -70,7 +70,7 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
+            <plugin> <!-- Overrides inherited compiler to avoid compilation issue on Processor -->
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
