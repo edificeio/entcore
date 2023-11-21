@@ -252,7 +252,7 @@ public class SSOAzure extends AbstractSSOProvider {
 			return;
 		}
 
-		final JsonObject structure = results.getJsonObject(0);
+		final JsonObject structure = structures.getJsonObject(0);
 		final JsonObject user = new JsonObject()
 				.put("externalId", getAttribute(assertion, ID_ATTTRIBUTE))
 				.put("email", getAttribute(assertion, EMAIL_ATTTRIBUTE))
