@@ -86,3 +86,4 @@ admin/src/main/ts/.angular
 *.lock
 .env
 dependency-reduced-pom.xml
+.flattened-pom.xml
