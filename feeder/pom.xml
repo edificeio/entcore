@@ -16,7 +16,7 @@
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${revision}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>test</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
