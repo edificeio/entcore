@@ -64,7 +64,7 @@
         <mongodbHelperVersion>3.0-b2school-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
-        <mongoVersion>3.12.8</mongoVersion>
+        <mongoVersion>3.12.14</mongoVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.11.3</jacksonVersion>
@@ -133,6 +133,12 @@
             <artifactId>mongodb</artifactId>
             <version>${testContainerVersion}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github</groupId>
+                    <artifactId>docker-java</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -167,5 +173,34 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin> <!-- Plugin enabling parent pom version to be resolved when building any submodule alone -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -86,3 +86,4 @@ admin/src/main/ts/.angular
 tests/src/test/resources/data/thumbnails/image.jpg
 .env
 dependency-reduced-pom.xml
+.flattened-pom.xml
