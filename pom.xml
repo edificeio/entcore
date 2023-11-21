@@ -135,11 +135,7 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>com.github</groupId>
-                    <artifactId>docker-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github</groupId>
+                    <groupId>com.github.docker-java</groupId>
                     <artifactId>docker-java-api</artifactId>
                 </exclusion>
             </exclusions>
