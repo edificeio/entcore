@@ -274,6 +274,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         }
         log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
         final JsonObject metrics = new JsonObject();
+        // each missing id in DB should be deleted from opensearch
+        final Set<String> toDelete = request.getIds() == null? Collections.emptySet() : new HashSet<>();
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             // TODO JBE missing saving state and version here
             for (JsonObject entry : bulk) {
@@ -281,6 +283,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             }
             return toMessage(bulk, e -> {
                 final String id = getIdForModel(e);
+                // id is in DB => should not delete it from OpenSearch
+                toDelete.remove(id);
                 final UserInfos user = getCreatorForModel(e).orElseGet(() -> {
                     log.error("Could not found creator for "+getApplication()+ " with id : "+id);
                     return new UserInfos();
@@ -298,6 +302,15 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         doFetchForIndex(stream, request);
         stream.getEndFuture().onComplete(root->{
             if(root.succeeded()){
+                // each id not in DB should be deleted from OpenSearch
+                log.warn(String.format("Cleaning %s id missing in DB for app=%s type=%s", toDelete.size(), getApplication(), getResourceType()));
+                for(final String id : toDelete){
+                    final UserInfos user = new UserInfos();
+                    user.setUserId("explorer-plugin-cleaner");
+                    user.setUsername("explorer-plugin-cleaner");
+                    final ExplorerMessage mess = ExplorerMessage.delete(new IdAndVersion(id, now), user, isForSearch());
+                    mess.withVersion(now);
+                }
                 //reindex subresources
                 final List<Future> futures = new ArrayList<>();
                 for(final IExplorerSubResource sub : this.subResources){
