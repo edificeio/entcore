@@ -39,7 +39,10 @@ import io.vertx.core.logging.LoggerFactory;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
@@ -56,6 +59,10 @@ public class SSOAzure extends AbstractSSOProvider {
 	protected static final String BIRTHDATE_ATTTRIBUTE = "DateDeNaissance";
 	protected static final String UAI_ATTTRIBUTE = "UAI";
 	protected static final String CLASSES_ATTTRIBUTE = "Classes";
+	private static final Map<String, String> profilesMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
+		put("Enseignant","Teacher");
+		put("Eleve","Student");
+	}});
 
 	private static final int TX_AAF_QUERY_NB = 3;
 	private static final int TX_NOAAF_QUERY_NB = 2;
@@ -240,7 +247,7 @@ public class SSOAzure extends AbstractSSOProvider {
 			return;
 		}
 
-		final String profile = getAttribute(assertion, PROFILE_ATTTRIBUTE);
+		final String profile = getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE));
 		if (!PROFILES.contains(profile)) {
 			handler.handle(Future.failedFuture("invalid profile to create sso user."));
 			return;
@@ -277,6 +284,13 @@ public class SSOAzure extends AbstractSSOProvider {
 						((JsonObject) res2.result().body()).getString("message")));
 			}
 		});
+	}
+
+	private static String getProfile(String attribute) {
+		if (profilesMapping.containsKey(attribute)) {
+			return profilesMapping.get(attribute);
+		}
+		return attribute;
 	}
 
 	private JsonArray getClassesNames(Assertion assertion) {
