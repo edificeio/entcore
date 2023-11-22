@@ -272,15 +272,16 @@ public class ManualFeeder extends BusModBase {
 		if ("Relative".equals(profile)) {
 			childrenIds = user.getJsonArray("childrenIds");
 		}
+		final String userSource = "SSO".equals(user.getString("source")) ? "SSO": SOURCE;
 		final String error = profiles.get(profile).validate(user);
 		if (error != null) {
 			logger.error(error);
 			sendError(message, error);
 			return;
 		}
-		if (!"SSO".equals(user.getString("source"))) {
-			user.put("source", SOURCE);
-		}
+
+		user.put("source", userSource);
+
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			final JsonArray classesNames = message.body().getJsonArray("classesNames");
