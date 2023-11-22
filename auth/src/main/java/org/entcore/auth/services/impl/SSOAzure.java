@@ -96,7 +96,7 @@ public class SSOAzure extends AbstractSSOProvider {
 					final String externalId = getExternalId(assertion, entPersonJointure);
 					executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
 								assertion, handler);
-				} else if ("Student".equals(getAttribute(assertion, PROFILE_ATTTRIBUTE))) {
+				} else if ("Student".equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE)))) {
 					final String externalId = getAttribute(assertion, ID_ATTTRIBUTE);
 					if (isEmpty(externalId)) {
 						handler.handle(new Either.Left<>("invalid.externalId"));
