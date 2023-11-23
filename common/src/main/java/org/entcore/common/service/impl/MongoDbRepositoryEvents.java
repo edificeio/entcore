@@ -215,7 +215,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					} else {
 						log.error("[deleteUsers] Could not found updated resources:"+ eventFind.body());
 					}
-					// delete objects
+					// If the app as a manager right, we will delete objects that do not have
+					// - managers
+					// - owner
 					if (managerRight != null && !managerRight.trim().isEmpty()) {
 						removeObjects(collection, toDelete -> {
 							toDelete.forEach(toDel -> {
@@ -239,6 +241,15 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		this.removeObjects(collection, e -> {});
 	}
 
+	/**
+	 * Remove all the objects of the specified collection that :
+	 * <ul>
+	 *   <li>do not have managers</li>
+	 *   <li>do not have an owner</li>
+	 * </ul>
+	 * @param collection The name of the collection of the resources to delete
+	 * @param handler List of all the objects that were deleted
+	 */
 	protected void removeObjects(final String collection, final Handler<List<ResourceChanges>> handler) {
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder.start("shared." + managerRight).notEquals(true).put("owner.deleted").is(true));
