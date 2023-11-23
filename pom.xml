@@ -49,9 +49,9 @@
         <module>portal</module>
         <module>session</module>
         <module>test</module>
-        <module>tests</module>
-        <module>timeline</module>
         <module>workspace</module>
+        <module>timeline</module>
+        <module>tests</module>
     </modules>
 
     <properties>
