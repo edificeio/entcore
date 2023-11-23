@@ -275,7 +275,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
         final JsonObject metrics = new JsonObject();
         // each missing id in DB should be deleted from opensearch
-        final Set<String> toDelete = request.getIds() == null? Collections.emptySet() : new HashSet<>(request.getIds());
+        final Set<String> toDelete = request.getIds() == null? new HashSet<>() : new HashSet<>(request.getIds());
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             // TODO JBE missing saving state and version here
             for (JsonObject entry : bulk) {
