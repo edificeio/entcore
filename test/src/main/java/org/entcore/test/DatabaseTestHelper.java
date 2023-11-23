@@ -175,6 +175,8 @@ public class DatabaseTestHelper {
                 mongo.init(vertx.eventBus(), "wse.mongodb.persistor");
                 async.complete();
             } else {
+                ar.cause().printStackTrace();
+                System.out.println(ar.cause());
                 context.fail();
             }
         });
@@ -223,14 +225,14 @@ public class DatabaseTestHelper {
                 .withNeo4jConfig("cypher.default_language_version", "2.3");
     }
 
-    /** @return a new docker-based MongoDB 3.6 container. */
+    /** @return a new docker-based MongoDB 4.2 container. */
     public MongoDBContainer createMongoContainer() {
-        return new MongoDBContainer("mongo:3.6.17");
+        return new MongoDBContainer("mongo:4.2.24");
     }
 
     /** @return a new docker-based MongoDB 4 container. */
     public MongoDBContainer createMongo4Container() {
-        return new MongoDBContainer("mongo:4.0.0");
+        return createMongoContainer();
     }
 
     /** @return a new docker-based ElasticSearch OSS 7.9 container. */

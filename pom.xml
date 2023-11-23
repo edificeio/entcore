@@ -49,15 +49,15 @@
         <module>portal</module>
         <module>session</module>
         <module>test</module>
-        <module>workspace</module>
         <module>timeline</module>
+        <module>workspace</module>
         <module>tests</module>
     </modules>
 
     <properties>
         <revision>5.0-b2school-SNAPSHOT</revision>
         <junitVersion>4.10</junitVersion>
-        <testContainerVersion>1.17.1</testContainerVersion>
+        <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-b2school-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.0-b2school-SNAPSHOT</webUtilsVersion>
@@ -75,8 +75,8 @@
         <opencsvVersion>3.9</opencsvVersion>
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
-	<gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
-	<vertxVersion>4.4.5</vertxVersion>
+        <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
+        <vertxVersion>4.4.5</vertxVersion>
     </properties>
 
     <dependencies>
@@ -84,12 +84,6 @@
             <groupId>fr.wseduc</groupId>
             <artifactId>web-utils</artifactId>
             <version>${webUtilsVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodbHelperVersion}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -165,6 +159,12 @@
             <version>${modMongoVersion}</version>
             <classifier>fat</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mongodb</groupId>
+                    <artifactId>mongodb-driver-async</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
