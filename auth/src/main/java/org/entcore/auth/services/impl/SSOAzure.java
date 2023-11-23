@@ -182,7 +182,7 @@ public class SSOAzure extends AbstractSSOProvider {
 			if (aafUser != null && isNotEmpty(aafUser.getString("activationCode"))) {
 				mergeUser(aafUser.getString("id"), ssoUser.getString("id"), handler);
 			} else if (aafUser != null && isEmpty(aafUser.getString("activationCode"))) {
-				predeleteUser(aafUser.getString("id"), handler);
+				predeleteUser(ssoUser.getString("id"), handler);
 			} else {
 				handler.handle(Future.succeededFuture());
 			}
@@ -290,7 +290,7 @@ public class SSOAzure extends AbstractSSOProvider {
 			if (res2.succeeded() && "ok".equals(((JsonObject) res2.result().body()).getString("status"))) {
 				handler.handle(Future.succeededFuture());
 			} else {
-				handler.handle(Future.failedFuture("Error when manual-delete-user sso : " +
+				handler.handle(Future.failedFuture("Error when manual-create-user sso : " +
 						((JsonObject) res2.result().body()).getString("message")));
 			}
 		});
