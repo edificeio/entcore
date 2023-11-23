@@ -202,7 +202,8 @@ public class SSOAzure extends AbstractSSOProvider {
 				"MERGE u-[:DUPLICATE {score:{score}}]-d";
 		final JsonObject params = new JsonObject()
 				.put("aafUserId", aafUserId)
-				.put("ssoUserId", ssoUserId);
+				.put("ssoUserId", ssoUserId)
+				.put("score", 4);
 		Neo4j.getInstance().execute(markDuplicates, params, Neo4jResult.validEmptyHandler(res -> {
 			if (res.isRight()) {
 				final JsonObject action = new JsonObject()
