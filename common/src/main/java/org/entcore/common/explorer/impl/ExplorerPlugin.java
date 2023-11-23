@@ -275,7 +275,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
         final JsonObject metrics = new JsonObject();
         // each missing id in DB should be deleted from opensearch
-        final Set<String> toDelete = request.getIds() == null? Collections.emptySet() : new HashSet<>();
+        final Set<String> toDelete = request.getIds() == null? Collections.emptySet() : new HashSet<>(request.getIds());
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             // TODO JBE missing saving state and version here
             for (JsonObject entry : bulk) {
@@ -303,7 +303,9 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         stream.getEndFuture().onComplete(root->{
             if(root.succeeded()){
                 // each id not in DB should be deleted from OpenSearch
-                log.warn(String.format("Cleaning %s id missing in DB for app=%s type=%s", toDelete.size(), getApplication(), getResourceType()));
+                if(!toDelete.isEmpty()){
+                    log.warn(String.format("Cleaning %s id missing in DB for app=%s type=%s", toDelete.size(), getApplication(), getResourceType()));
+                }
                 for(final String id : toDelete){
                     final UserInfos user = new UserInfos();
                     user.setUserId("explorer-plugin-cleaner");
