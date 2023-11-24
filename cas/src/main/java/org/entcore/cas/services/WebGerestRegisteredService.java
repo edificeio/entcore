@@ -208,10 +208,9 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 	}
 
 	private void fillAttributesFunctions(Map<String, String> attributes) {
+		List<String> rightFunctions = filterRightFunctions();
 
-		neoFunctions.retainAll(this.getFunctionsToCheck());
-
-		if (neoFunctions.isEmpty()) {
+		if (rightFunctions.isEmpty()) {
 			attributes.put(WG_FUNCTIONS, "");
 			attributes.put(WG_SUBFUNCTIONS, "");
 		}
@@ -219,7 +218,7 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 		JsonArray functions = new JsonArray();
 		JsonArray subFunctions = new JsonArray();
 
-		neoFunctions.forEach(function -> {
+		rightFunctions.forEach(function -> {
 			int first$pos = function.indexOf(DOLLAR);
 			int second$pos = function.indexOf(DOLLAR, first$pos + 1);
 			String formatedFunction = function.substring(first$pos + 1, second$pos);
@@ -236,7 +235,13 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 		attributes.put(WG_SUBFUNCTIONS, subFunctions.size() == 1 ? subFunctions.getString(0) : subFunctions.toString());
 	}
 
-	private List<String> getFunctionsToCheck() {
+	private List<String> filterRightFunctions() {
+		return getModelFunctions().stream()
+				.filter(modelFunction -> neoFunctions.contains(modelFunction.toLowerCase()))
+				.collect(Collectors.toList());
+	}
+
+	private List<String> getModelFunctions() {
 		List<String> functions = new ArrayList<>();
 		functions.add("AGT$ATTE$1$Administrateur WebGrest");
 		functions.add("AGT$ATTE$2$Approvisionneur WebGrest");
@@ -248,7 +253,7 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 		neoFunctions = new ArrayList<>();
 		for (String function : functions) {
 			int first$pos = function.indexOf(DOLLAR);
-			neoFunctions.add(function.substring(first$pos + 1));
+			neoFunctions.add(function.substring(first$pos + 1).toLowerCase());
 		}
 	}
 }
