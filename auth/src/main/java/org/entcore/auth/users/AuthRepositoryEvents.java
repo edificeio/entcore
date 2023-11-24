@@ -62,6 +62,7 @@ public class AuthRepositoryEvents implements RepositoryEvents {
 	public void transition(JsonObject structure) {
 		final String query =
 				"MATCH (s:Structure {id: {id}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User {source: {source}}) " +
+				"WHERE not(has(u.deleteDate)) " +
 				"SET u.disappearanceDate = {disappearanceDate} ";
 		final JsonObject params = new JsonObject()
 				.put("id", structure.getString("id"))
