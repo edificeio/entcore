@@ -141,7 +141,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "unlinkUser" :
 				case "linkUser" :
-					adminUpdateFilter.checkADMCUpdate(request, user, false, hr -> {
+					adminUpdateFilter.checkADMCUpdate(request, user, false, true, hr -> {
 						if (Boolean.FALSE.equals(hr)) {
 							handler.handle(false);
 							return;
