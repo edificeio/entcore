@@ -95,7 +95,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     if (this.isADMC) {
       this.tabs.unshift({ label: "Classes", view: "classes" });
     }
-    if (isADML || this.isADMC) {
+    if ((isADML || this.isADMC) && this.groupsStore.structure.children.length) {
       this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup" });
     }
     this.changeDetector.markForCheck();
