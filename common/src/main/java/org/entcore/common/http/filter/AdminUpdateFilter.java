@@ -18,12 +18,16 @@ public class AdminUpdateFilter {
     }
 
     public void checkADMCUpdate(final HttpServerRequest request, UserInfos user, boolean pauseresume, final Handler<Boolean> handler) {
+        checkADMCUpdate(request, user, pauseresume, false, handler);
+    }
+
+    public void checkADMCUpdate(final HttpServerRequest request, UserInfos user, boolean pauseresume, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
         final String id = request.params().get("userId");
 		if (id == null || id.trim().isEmpty()) {
 			handler.handle(false);
 			return;
         }
-        checkADMCUpdate(request, user, new JsonArray().add(id), pauseresume, handler);
+        checkADMCUpdate(request, user, new JsonArray().add(id), pauseresume, false, admlCanUpdateADML, handler);
     }
 
     public void checkADMCUpdate(final HttpServerRequest request, UserInfos user, JsonArray userIds,
@@ -43,6 +47,11 @@ public class AdminUpdateFilter {
    */
     public void checkADMCUpdate(final HttpServerRequest request, UserInfos user, JsonArray userIds,
             final boolean pauseresume, boolean login, final Handler<Boolean> handler) {
+        checkADMCUpdate(request, user, userIds, pauseresume, login, false, handler);
+    }
+
+    public void checkADMCUpdate(final HttpServerRequest request, UserInfos user, JsonArray userIds,
+            final boolean pauseresume, boolean login, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
 		if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN)) {
 			handler.handle(true);
 			return;
@@ -52,8 +61,13 @@ public class AdminUpdateFilter {
             request.pause();
         }
 		final JsonObject params = new JsonObject().put("userIds", userIds);
-		params.put("functions", new JsonArray().add(DefaultFunctions.SUPER_ADMIN).add(DefaultFunctions.ADMIN_LOCAL));
-    final String userAttr = login ? "login" : "id";
+        if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) && admlCanUpdateADML) {
+            params.put("functions", new JsonArray().add(DefaultFunctions.SUPER_ADMIN));
+        } else {
+            params.put("functions", new JsonArray().add(DefaultFunctions.SUPER_ADMIN).add(DefaultFunctions.ADMIN_LOCAL));
+        }
+
+        final String userAttr = login ? "login" : "id";
 		final String query =
 			"MATCH (u:User)-[:HAS_FUNCTION]->(f:Function) " +
 			"WHERE u." + userAttr + " IN {userIds} AND f.externalId IN {functions} " +
