@@ -57,6 +57,7 @@ public class DefaultSchoolService implements SchoolService {
 	private String listUserMode = "multi";
 
 	static final String EXCLUDE_ADMC_QUERY_FILTER = " NOT((u)-[:HAS_FUNCTION]->(:Function {externalId:'SUPER_ADMIN'})) ";
+	static final String EXCLUDE_ADML_QUERY_FILTER = " NOT((u)-[:HAS_FUNCTION]->(:Function {externalId:'ADMIN_LOCAL'})) ";
 
 	public DefaultSchoolService(EventBus eventBus) {
 		this.eventBus = eventBus;
@@ -439,7 +440,7 @@ public class DefaultSchoolService implements SchoolService {
 	public void blockUsers(String structureId, String profile, boolean block, boolean isAdmc, Handler<JsonObject> handler) {
 		String filter = "";
 		if (!isAdmc) {
-			filter = "AND " + EXCLUDE_ADMC_QUERY_FILTER;
+			filter = "AND " + EXCLUDE_ADMC_QUERY_FILTER + " AND " + EXCLUDE_ADML_QUERY_FILTER;
 		}
 		String query =
 			"MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) " +
