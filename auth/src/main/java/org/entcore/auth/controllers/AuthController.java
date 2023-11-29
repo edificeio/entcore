@@ -1029,11 +1029,16 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	/**
+	 * API endpoint to verify that a reset code matches with a login or an alias login
+	 * @param request the request with the reset code (password) and the login (or alias login)
+	 */
 	@Post("/reset/match")
 	public void resetPasswordMatch(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, data -> {
 			if (data == null) {
 				badRequest(request);
+				log.warn("Request body with password and login is expected");
 				return;
 			}
 			final String login = data.getString("login");
