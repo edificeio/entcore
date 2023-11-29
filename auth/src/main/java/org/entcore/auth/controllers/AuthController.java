@@ -1029,6 +1029,27 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/reset/match")
+	public void resetPasswordMatch(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, data -> {
+			if (data == null) {
+				badRequest(request);
+				return;
+			}
+			final String login = data.getString("login");
+			final String password = data.getString("password");
+			userAuthAccount.matchResetCode(login, password, matchReset -> {
+				if (matchReset) {
+					renderJson(request, new JsonObject().put("match", matchReset));
+				} else {
+					userAuthAccount.matchResetCodeByLoginAlias(login, password, matchResetAlias -> {
+						renderJson(request, new JsonObject().put("match", matchResetAlias));
+					});
+				}
+			});
+		});
+	}
+
 	@Post("/activation")
 	public void activeAccountSubmit(final HttpServerRequest request) {
 		activeAccountSubmit(request, true);
