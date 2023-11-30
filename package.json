@@ -44,7 +44,6 @@
     "@types/jasmine": "~2.5.53",
     "@types/jasminewd2": "~2.0.2",
     "@types/jquery.noty": "2.4.0",
-    "@types/jquery": "3.5.5",
     "@types/node": "~6.0.60",
     "angular-router-loader": "0.5.0",
     "angular2-template-loader": "^0.6.2",
