@@ -20,6 +20,10 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -36,10 +40,49 @@ public class AddFunctionFilter extends AdmlOfUser {
 			@Override
 			public void handle(JsonObject event) {
 				String function = event.getString("functionCode", "").trim();
-				handler.handle(!function.isEmpty() && !"SUPER_ADMIN".equals(function));
+				if(!function.isEmpty() && !"SUPER_ADMIN".equals(function)) {
+					checkScope(event, user, adminLocal, resourceRequest)
+							.onSuccess(handler)
+							.onFailure(th -> handler.handle(false));
+				} else {
+					handler.handle(false);
+				}
 			}
 		});
 		resourceRequest.resume();
+	}
+
+	private Future<Boolean> checkScope(JsonObject requestBody, UserInfos user, UserInfos.Function adminLocal, HttpServerRequest request) {
+		final Promise<Boolean> promise = Promise.promise();
+		final JsonArray scope = requestBody.getJsonArray("scope");
+		final JsonArray filteredStructures = new JsonArray();
+		scope.stream()
+				.filter(s -> adminLocal.getScope().contains((String)s))
+				.forEach(filteredStructures::add);
+		final String query =
+				"MATCH (u:User {id: {userId}})-[:IN]->(:Group)-[:DEPENDS]->(s:Structure) " +
+						"WHERE s.id IN {structures} " +
+						"RETURN count(s) == {nbStructures}";
+		final JsonObject params = new JsonObject()
+				.put("structures", filteredStructures)
+				.put("nbStructures", scope.size())
+				.put("userId", user.getUserId());
+		request.pause();
+		validateQuery(request, e -> {
+
+		}, query, params);
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				request.resume();
+				JsonArray res = r.body().getJsonArray("result");
+				handler.handle(
+						"ok".equals(r.body().getString("status")) &&
+								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+				);
+			}
+		});
+		return promise.future();
 	}
 
 }
