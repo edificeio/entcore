@@ -53,13 +53,17 @@ public class AddFunctionFilter extends AdmlOfUser {
 	/**
 	 * Method checking that current user is local admin on requested structures scope
 	 * @param requestBody the request body
-	 * @param adminLocal the local admin function (bearing structures scope information)
+	 * @param adminLocal the local admin function (bearing structures scope of local admin)
 	 * @return True if the requested structures scope matches the local admin structures scope, false otherwise
 	 */
 	private Future<Boolean> checkScope(JsonObject requestBody, UserInfos.Function adminLocal) {
 		final Promise<Boolean> promise = Promise.promise();
-		promise.complete(requestBody.getJsonArray("scope").stream()
-				.allMatch(requestedStructure -> adminLocal.getScope().contains((String)requestedStructure)));
+		if ("SUPER_ADMIN".equals(requestBody.getString("functionCode", ""))) {
+			promise.complete(true);
+		} else {
+			promise.complete(requestBody.getJsonArray("scope").stream()
+					.allMatch(requestedStructure -> adminLocal.getScope().contains((String)requestedStructure)));
+		}
 		return promise.future();
 	}
 
