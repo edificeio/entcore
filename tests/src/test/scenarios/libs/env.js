@@ -1,0 +1,9 @@
+const ROOT_URL = process.env.ROOT_URL;
+const ADMC_EMAIL = process.env.ADMC_EMAIL;
+const ADMC_PASSWORD = process.env.ADMC_PASSWORD;
+const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || 'EasyTesting';
+
+exports.ROOT_URL = ROOT_URL
+exports.ADMC_EMAIL = ADMC_EMAIL
+exports.ADMC_PASSWORD = ADMC_PASSWORD
+exports.DEFAULT_PASSWORD = DEFAULT_PASSWORD
