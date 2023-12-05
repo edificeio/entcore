@@ -1,6 +1,12 @@
 const {get, post, postForm, getCurrentOneSessionId, getCookieByName} = require('./api.js')
 const {ADMC_EMAIL, ADMC_PASSWORD, DEFAULT_PASSWORD} = require('./env.js')
 
+/**
+ * Return user's information fetched by a call to /auth/oauth2/userinfo
+ * @param {string} idt Login of the user
+ * @param {*} world The current scenario object
+ * @returns User's detailed information
+ */
 async function getUserInfo(idt, world) {
     const oldSession = getCurrentOneSessionId(world)
     try {
@@ -11,7 +17,13 @@ async function getUserInfo(idt, world) {
     }
 }
 
-
+/**
+ * 
+ * @param {string} id Login of the user
+ * @param {string} password Password of the user or null if we want to use the value of the default password
+ * @param {*} world The current scenario object
+ * @returns the logged in user's sessions
+ */
 async function login(id, password, world) {
     const passwordToUSe = password || DEFAULT_PASSWORD
     world.sessions = world.sessions || {}
@@ -27,10 +39,18 @@ async function login(id, password, world) {
     world.sessions['current'] = id
     return world.sessions[id]
 }
+/**
+ * Logout the currently connected user
+ * @param {*} world The current scenario object
+ */
 async function logout(world) {
     delete world.sessions.current;
 }
-
+/**
+ * Logs the ADMC.
+ * @param {*} world The current scenario object
+ * @returns ADMC's information
+ */
 async function admcLogin(world) {
     const data = await login(ADMC_EMAIL, ADMC_PASSWORD, world)
     world.users = world.users || {}
@@ -39,18 +59,31 @@ async function admcLogin(world) {
     }
     return data
 }
-
+/**
+ * 
+ * @param {string} idt User login
+ * @param {*} world The current scenario object
+ * @returns true if the user exists and false otherwose
+ */
 async function userExists(idt, world) {
     const oldSession = getCurrentOneSessionId(world)
     try {
-        await login(idt, DEFAULT_PASSWORD, world)
-        return true
+        await logout(world)
+        const loginResponse = await login(idt, DEFAULT_PASSWORD, world)
+        return loginResponse.status === 302 && !!getCookieByName('oneSessionId', loginResponse)
+    } catch(e) {
+        return false
     } finally {
         await login(oldSession, '', world)
     }
-    return false
 }
-
+/**
+ * Create a user and add their information in the state of the scenario.
+ * @param {string} testAlias The alias of the user in the scenario
+ * @param {*} userInfo Information to create the user
+ * @param {*} world The current scenario object
+ * @returns Created user information or raise "user.cannot.be.created"
+ */
 async function createUser(testAlias, userInfo, world) {
     const response = await postForm(`/directory/api/user`, userInfo, null, world)
     if(response.status === 200) {
@@ -64,6 +97,13 @@ async function createUser(testAlias, userInfo, world) {
     }
 }
 
+/**
+ * Create a user, activate them and add their information in the state of the scenario.
+ * @param {string} testAlias The alias of the user in the scenario
+ * @param {*} userInfo Information to create the user
+ * @param {*} world The current scenario object
+ * @returns Created user information or raise "user.cannot.be.created"
+ */
 async function createAndActivateUser(testAlias, userInfo, world) {
     const {id, login} = await createUser(testAlias, userInfo, world)
     const activateResponse = await get(`/directory/user/${id}`, world)
@@ -78,23 +118,33 @@ async function createAndActivateUser(testAlias, userInfo, world) {
         activationCode,
         callBack: '',
         mail: `junior.bernard+${testAlias}@edifice.io`,
-        phone: '0632421927'
+        phone: '0601010101'
     }
     try {
         await postForm('/auth/activation', request, true, world)
-    } catch(e) {
-        console.error(e)
     } finally {
         await admcLogin(world)
     }
 
 }
-
+/**
+ * 
+ * @param {string} testAlias The way the user is called in the scenario (e.g. "user1", "userAdml")
+ * @param {*} world The current scenario object
+ * @returns Detailed information about the user (login, id, etc.)
+ */
 function getUserFromTestAlias(testAlias, world) {
     world.users = world.users || {}
     return world.users[testAlias]
 }
 
+/**
+ * Tries to replace the current user's functions scope by the supplied structures
+ * @param {string} userTestAlias The way the user is called in the scenario (e.g. "user1", "userAdml")
+ * @param {*} structureIds Ids of the structure who should be administered by the user
+ * @param {*} world The current scenario object
+ * @returns 
+ */
 async function setAdmlOnStructures(userTestAlias, structureIds, world) {
     world.users = world.users || {}
     const user = world.users[userTestAlias]
