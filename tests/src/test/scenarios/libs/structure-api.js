@@ -43,3 +43,4 @@ function getStructureInfo(name, world) {
 exports.createStructure = createStructure
 exports.getStructureInfo = getStructureInfo
 exports.linkUserToStructure = linkUserToStructure
+exports.fetchStructureUsers = fetchStructureUsers
