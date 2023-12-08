@@ -50,7 +50,9 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 public class DefaultCommunicationService implements CommunicationService {
 
 	protected final Neo4j neo4j = Neo4j.getInstance();
-	protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
+    private static final String CAN_COMMUNICATE_VERIFY = "canCommunicate";
+
+    protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
 
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
@@ -1093,4 +1095,49 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		return false;
 	}
+
+    @Override
+    public void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler) {
+
+        String query = "MATCH (s:User), (r:User) "
+                + "where s.id = {senderId} and r.id = {recipientId} "
+                + "return exists((r)<-[:COMMUNIQUE*1..2]-()<-[:COMMUNIQUE]-(s)) OR "
+                + "exists((r)<-[:COMMUNIQUE_DIRECT]-(s)) as " + CAN_COMMUNICATE_VERIFY;
+
+        JsonObject params = new JsonObject()
+                .put("senderId", senderId)
+                .put("recipientId", recipientId);
+
+        neo4j.execute(query, params, validUniqueResultHandler(result -> {
+
+            if (result.isRight() && !result.right().getValue().isEmpty()) {
+                handler.handle(new Either.Right<>(result.right().getValue()));
+            } else {
+
+                String queryGroup = "MATCH (s:User), (r:Group) "
+                        + "where s.id = {senderId} and r.id = {recipientId} "
+                        + "return exists((s)-[:COMMUNIQUE*1..2]->()<-[:DEPENDS]-(r)) OR "
+                        + "exists((r)<-[:COMMUNIQUE]-()<-[:COMMUNIQUE]-(s)) OR "
+                        + "(exists((r)<-[:COMMUNIQUE]-(s)) AND r.users <> 'INCOMING') as " + CAN_COMMUNICATE_VERIFY;
+
+                JsonObject paramsGroup = new JsonObject()
+                        .put("senderId", senderId)
+                        .put("recipientId", recipientId);
+
+                neo4j.execute(queryGroup, paramsGroup, validUniqueResultHandler(resultGroup -> {
+
+                    if (resultGroup.isRight() && !resultGroup.right().getValue().isEmpty()) {
+                        handler.handle(new Either.Right<>(resultGroup.right().getValue()));
+                    } else {
+                        if (resultGroup.isLeft()) {
+                            log.error("Error when checking communication rights : " + resultGroup.left().getValue());
+                        }
+                        handler.handle(new Either.Right<>(new JsonObject().put(CAN_COMMUNICATE_VERIFY, false)));
+                    }
+                }));
+            }
+
+        }));
+
+    }
 }
