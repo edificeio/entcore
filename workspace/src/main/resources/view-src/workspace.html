@@ -84,12 +84,10 @@
 					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
 					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>
-				<div class="right-magnet zero-mobile  centered-bloc-text vertical-spacing-twice-1d" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-					<button class="primary-button" ng-click="openLightbox()" ng-if="buttonType === ButtonType.PRIMARY">
-						<i18n>lool.sniplet.create-document.title</i18n>
-					</button>
-				</div>
 				<div class="right-magnet zero-mobile vertical-spacing-twice-1d  horizontal-spacing" ng-if="openedFolder.all.length || reloadingContent">
+					<div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+						<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
+					</div>
 					<div ng-repeat="button in currentTree.buttons">
 						<button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="primary-button">
 							 [[button.text]]
