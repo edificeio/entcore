@@ -619,4 +619,29 @@ public class CommunicationController extends BaseController {
 		if (params.isInvalid()) return;
 		communicationService.removeRelations(params.getStartGroupId(), params.getEndGroupId(), notEmptyResponseHandler(request));
 	}
+
+	/**
+	 * Indicates if a sender (user) can communicate to a receiver (user, group)
+	 * Returns JsonObject :
+	 * {
+	 * canCommunicate : true/false
+	 * } Check if communication is allowed between two user Id
+	 *
+	 * @param request from : id for the sender
+	 *                to : id for the recipient
+	 */
+	// Check if MfaProtected annotation is still needed
+	@Get("/verify/:from/:to")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void verify(HttpServerRequest request) {
+		String from = request.params().get("from");
+		String to = request.params().get("to");
+
+		if(from == null || from.trim().isEmpty() || to == null || to.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+		communicationService.verify(from, to, notEmptyResponseHandler(request));
+	}
 }
