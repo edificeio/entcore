@@ -342,7 +342,7 @@
                   target="[[app.target]]"
                   href="#"
                   title="[[translatedDisplayName(app)]]"
-                  ng-repeat="app in me.bookmarkedApps"
+                  ng-repeat="app in me.bookmarkedApps | limitTo:6"
                 >
                   <i
                     class="application"
