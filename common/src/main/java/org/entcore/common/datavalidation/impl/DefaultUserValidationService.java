@@ -55,9 +55,9 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<String> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams ) {
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams, final String module ) {
             final SmsSender sms = SmsSenderFactory.getInstance().newInstance( this, eventStore );
-            return sms.sendUnique(request, mobile, "phone/mobileVerification.txt", templateParams);
+            return sms.sendUnique(request, mobile, "phone/mobileVerification.txt", templateParams, module);
         }
     }
 
@@ -73,7 +73,7 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<String> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams ) {
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams, final String module) {
             Promise<String> promise = Promise.promise();
             if( emailSender == null ) {
                 promise.complete(null);
@@ -395,7 +395,7 @@ public class DefaultUserValidationService implements UserValidationService {
         .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
         .put("code", DataStateUtils.getKey(mobileState));
 
-        return mobileSvc.sendValidationMessage( request, DataStateUtils.getPending(mobileState), templateParams )
+        return mobileSvc.sendValidationMessage( request, DataStateUtils.getPending(mobileState), templateParams, "VALIDATION" )
         .map( id -> {
             // Code was sent => this is a metric to follow
             DataValidationMetricsFactory.getRecorder().onMobileCodeGenerated();
@@ -487,7 +487,7 @@ public class DefaultUserValidationService implements UserValidationService {
         .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
         .put("code", DataStateUtils.getKey(emailState));
 
-        return emailSvc.sendValidationMessage( request, DataStateUtils.getPending(emailState), templateParams )
+        return emailSvc.sendValidationMessage( request, DataStateUtils.getPending(emailState), templateParams, "VALIDATION")
         .map( id -> {
             // Code was sent => this is a metric to follow
             DataValidationMetricsFactory.getRecorder().onEmailCodeGenerated();

@@ -8,6 +8,10 @@ import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * Delegate class of {@link fr.wseduc.sms.Sms Sms} which stores new event for every successfully sent SMS.
@@ -57,7 +61,7 @@ public class SmsSender {
 
     public Future<SmsSendingReport> send(HttpServerRequest request, final String phone, String template, JsonObject params, final String module) {
         return sms.send(request, phone, template, params, module)
-                .onSuccess(report -> storeEvent(report, request, module));
+                .onSuccess(report -> storeEvent(phone, report, request, module));
     }
 
     public Future<SmsSendingReport> send(HttpServerRequest request, final String phone, String message, final String module) {
@@ -72,13 +76,15 @@ public class SmsSender {
      * @param request HTTP request that triggered the SMS sending
      * @param module Name of the module which triggered the SMS
      */
-    private void storeEvent(final SmsSendingReport report,
+    private void storeEvent(final String phone,
+                            final SmsSendingReport report,
                            final HttpServerRequest request,
                            final String module){
         if(eventStore != null) {
             for (String sentSmdId : report.getIds()) {
                 final JsonObject customAttributes = new JsonObject()
-                        .put("sms_id", sentSmdId);
+                    .put("sms_id", sentSmdId)
+                    .put("phone", phone);
                 if (StringUtils.isNotBlank(module)) {
                     customAttributes.put("override-module", module);
                 }
