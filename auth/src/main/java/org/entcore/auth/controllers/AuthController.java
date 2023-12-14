@@ -380,6 +380,7 @@ public class AuthController extends BaseController {
 							final Promise<String> futureUserId = Promise.promise();
 							if ("password".equals(grantType)) {
 								final String login = req.getParameter("username");
+								trace.info("Connexion de l'utilisateur " + login);
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getUserId(login, req.getParameter("password"), getUserIdResult -> {
 									try {
@@ -404,11 +405,15 @@ public class AuthController extends BaseController {
 										futureUserId.fail("auth.info.not.found");
 									} else {
 										final String id = authInfo.getUserId();
+										trace.info("Reconnexion de l'utilisateur " + id);
 										futureUserId.complete(id);
 										storeLoginEventAndDomain(request, clientCredential, id);
 									}
 								});
 							} else if ("saml2".equals(grantType) || "custom_token".equals(grantType)) {
+								if(userData != null) {
+									trace.info("Connexion de l'utilisateur fédéré " + userData.getLogin());
+								}
 								storeLoginEventAndDomain(request, clientCredential, userData.getId());
 								futureUserId.complete(userData.getId());
 								if (isNotEmpty(userData.getActivationCode())) {
