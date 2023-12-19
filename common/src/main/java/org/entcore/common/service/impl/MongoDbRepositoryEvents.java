@@ -215,11 +215,22 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					} else {
 						log.error("[deleteUsers] Could not found updated resources:"+ eventFind.body());
 					}
-					// trigger update
-					handler.handle(list);
-					// delete objects
+					// If the app as a manager right, we will delete objects that do not have
+					// - managers
+					// - owner
 					if (managerRight != null && !managerRight.trim().isEmpty()) {
-						removeObjects(collection);
+						removeObjects(collection, toDelete -> {
+							toDelete.forEach(toDel -> {
+								// do not trigger an update and a delete for the same ID
+								list.removeIf(element -> element.id.equals(toDel.id));
+								list.add(toDel);
+							});
+							// trigger update and delete
+							handler.handle(list);
+						});
+					}else{
+						// trigger update
+						handler.handle(list);
 					}
 				});
 			});
@@ -230,6 +241,15 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		this.removeObjects(collection, e -> {});
 	}
 
+	/**
+	 * Remove all the objects of the specified collection that :
+	 * <ul>
+	 *   <li>do not have managers</li>
+	 *   <li>do not have an owner</li>
+	 * </ul>
+	 * @param collection The name of the collection of the resources to delete
+	 * @param handler List of all the objects that were deleted
+	 */
 	protected void removeObjects(final String collection, final Handler<List<ResourceChanges>> handler) {
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder.start("shared." + managerRight).notEquals(true).put("owner.deleted").is(true));
@@ -244,8 +264,12 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error when finding objects who have no manager and no owner : " +
 							event.body().getString("message"));
+					// call handler
+					handler.handle(new ArrayList<>());
 				} else if (res == null || res.size() == 0) {
 					log.info("There are no objects without manager and without owner : no objects to delete");
+					// call handler
+					handler.handle(new ArrayList<>());
 				} else {
 					final String[] objectIds = new String[res.size()];
 					for (int i = 0; i < res.size(); i++) {
@@ -277,7 +301,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							final List<ResourceChanges> list = new ArrayList<>();
 							log.info("[deleteUsers] resource to delete count="+objectIds.length);
 							for(final String id : objectIds){
-								list.add(new ResourceChanges(id, false));
+								list.add(new ResourceChanges(id, true));
 							}
 							handler.handle(list);
 						}

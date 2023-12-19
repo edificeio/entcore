@@ -5,7 +5,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import static java.lang.Long.parseLong;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+
 import io.vertx.core.CompositeFuture;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
@@ -97,7 +100,7 @@ import java.util.stream.Collectors;
  */
 public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected final IPostgresClient pgPool;
-    protected List<String> defaultColumns = Arrays.asList("version", "ingest_job_state");
+    protected List<String> defaultColumns = Arrays.asList("version", INGEST_JOB_STATE);
 
     protected ExplorerPluginResourceSql(final IExplorerPluginCommunication communication,
                                         final IPostgresClient pool) {
@@ -183,8 +186,11 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             tuple.addValue(localTo);
             filters.add(String.format(" %s < $1 ",getCreatedAtColumn()));
         }
-        if(request.getIds() != null && !request.getIds().isEmpty()) {
+        if(isNotEmpty(request.getIds())) {
             filters.add("t." + getIdColumn() + " IN (" + String.join(",", request.getIds()) + ") ");
+        }
+        if(isNotEmpty(request.getStates())) {
+            filters.add("t." + INGEST_JOB_STATE + " IN (" + String.join(",", request.getStates()) + ") ");
         }
         if(!filters.isEmpty()) {
             query.append(" WHERE ");
@@ -207,6 +213,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
             );
         }).onFailure(e->{
             log.error("Failed to create sqlCursor resources "+getTableName()+ "for reindex : ", e);
+            stream.end();
         });
     }
 
@@ -216,7 +223,7 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
         for(final JsonObject source : sources){
             setCreatorForModel(user, source);
             setCreatedAtForModel(user, source);
-            source.put("ingest_job_state", IngestJobState.TO_BE_SENT);
+            source.put(INGEST_JOB_STATE, IngestJobState.TO_BE_SENT);
         }
         final List<String> columnNames = new ArrayList<>(getColumns());
         columnNames.addAll(defaultColumns);
