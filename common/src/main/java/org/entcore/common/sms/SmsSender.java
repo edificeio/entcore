@@ -10,7 +10,7 @@ import org.entcore.common.events.EventStore;
 
 /**
  *
- * Delegage class of {@link fr.wseduc.sms.Sms Sms} which stores new event for every successfully sent SMS.
+ * Delegate class of {@link fr.wseduc.sms.Sms Sms} which stores new event for every successfully sent SMS.
  */
 public class SmsSender {
     public static final String EVENT = "SMS";
@@ -55,10 +55,16 @@ public class SmsSender {
         return send(request, phone, template, params, null);
     }
 
-    public Future<SmsSendingReport> send(HttpServerRequest request, final String phone, String template, JsonObject params, final String module){
+    public Future<SmsSendingReport> send(HttpServerRequest request, final String phone, String template, JsonObject params, final String module) {
         return sms.send(request, phone, template, params, module)
                 .onSuccess(report -> storeEvent(report, request, module));
     }
+
+    public Future<SmsSendingReport> send(HttpServerRequest request, final String phone, String message, final String module) {
+        return sms.send(phone, message)
+                .onSuccess(report -> storeEvent(phone, report, request, module));
+    }
+
 
     /**
      * Stores in event module all the SMS that were successfully sent.
