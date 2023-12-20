@@ -462,12 +462,15 @@ public class UserUtils {
 				if(oneSessionId != null && !oneSessionId.trim().isEmpty()) {
 					sessionId = oneSessionId;
 					oAuthIdentified = false;
-				} else if(request instanceof SecureHttpServerRequest){
-					sessionId = getTokenId((SecureHttpServerRequest) request).orElse(null);
-					oAuthIdentified = true;
 				} else {
-					sessionId = null;
-					oAuthIdentified = false;
+					final Optional<String> maybeTokenId = getTokenId(request);
+					if(maybeTokenId.isPresent()) {
+						sessionId = maybeTokenId.get();
+						oAuthIdentified = true;
+					} else {
+						sessionId = null;
+						oAuthIdentified = false;
+					}
 				}
 				if (sessionId == null && isEmpty(remoteUserId)) {
 					log.debug("A request came for user " + remoteUserId + " with no way to get its session");
