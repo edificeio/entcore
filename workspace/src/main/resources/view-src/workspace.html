@@ -139,9 +139,7 @@
 							</button>
 						</div>
 						<div class="zero-desktop  centered-bloc-text vertical-spacing-twice-1d" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-							<button class="primary-button" ng-click="openLightbox()" ng-if="buttonType === ButtonType.PRIMARY">
-								<i18n>lool.sniplet.create-document.title</i18n>
-							</button>
+							<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
 						</div>
 						<!--SEARCH DESKTOP-->
 						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.all.length">
