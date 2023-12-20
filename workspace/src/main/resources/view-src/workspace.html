@@ -98,9 +98,7 @@
 						</button>
 					</div>
 					<div workflow="lool.createDocument" class="aligned" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-						<button class="primary-button" ng-click="openLightbox()" ng-if="buttonType === ButtonType.PRIMARY">
-							<i18n>lool.sniplet.create-document.title</i18n>
-						</button>
+						<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
 					</div>
 				</div>
 			</app-title>
