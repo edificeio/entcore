@@ -136,7 +136,7 @@
 								 [[translate(button.text)]]
 							</button>
 						</div>
-						<div class="zero-desktop  centered-bloc-text vertical-spacing-twice-1d" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+						<div class="zero-desktop six-mobile" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && (openedFolder.all.length || reloadingContent)">
 							<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
 						</div>
 						<!--SEARCH DESKTOP-->
