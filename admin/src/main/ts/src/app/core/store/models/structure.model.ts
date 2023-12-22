@@ -34,6 +34,7 @@ export class StructureModel extends Model<StructureModel> {
     manualName?: boolean;
     feederName?: string;
     ignoreMFA?: boolean;
+    joinKey?: string[];
 
     constructor() {
         super({});

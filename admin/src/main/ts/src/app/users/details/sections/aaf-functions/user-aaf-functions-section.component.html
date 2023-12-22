@@ -3,10 +3,10 @@
   [folded]="true" *ngIf="!user.deleteDate">
   <ul>
     <li *ngFor="let f of user?.aafFunctions">
-      <span *ngIf="f[0] == structure.externalId && f.length > 2 && f[2] && f[4]">{{ f[2] }} / {{ f[4] }}</span>
-      <span *ngIf="f[0] == structure.externalId && f.length > 2 && f[2] && !f[4]">{{ f[2] }}</span>
-      <span *ngIf="f[0] == structure.externalId && f.length > 2 && !f[2] && f[4]">{{ f[4] }}</span>
-      <span *ngIf="f[0] == structure.externalId && f.length == 2">{{ f[1] }}</span>
+      <span *ngIf="(f[0] == structure.externalId || (structure.joinKey != null && f[0] == structure.joinKey[0])) && f.length > 2 && f[2] && f[4]">{{ f[2] }} / {{ f[4] }}</span>
+      <span *ngIf="(f[0] == structure.externalId || (structure.joinKey != null && f[0] == structure.joinKey[0])) && f.length > 2 && f[2] && !f[4]">{{ f[2] }}</span>
+      <span *ngIf="(f[0] == structure.externalId || (structure.joinKey != null && f[0] == structure.joinKey[0])) && f.length > 2 && !f[2] && f[4]">{{ f[4] }}</span>
+      <span *ngIf="(f[0] == structure.externalId || (structure.joinKey != null && f[0] == structure.joinKey[0])) && f.length == 2">{{ f[1] }}</span>
     </li>
   </ul>
 </ode-panel-section>
