@@ -177,6 +177,17 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	protected boolean customValidation(SecureHttpServerRequest request) {
 		final String scope = request.getAttribute("scope");
 		// createStatsEvent(request);
+	
+		// Check if user it's on pre-delete state, if the case return false
+		// Problem with getSession, the getSession is the session of the user when the token was created, if any changes are made to the user, the session is not updated
+		// Check if a change made here will impact the access to the mobile app
+		if(request.getSession() != null && !request.getSession().isEmpty() 
+		&& ((!request.getSession().containsKey("structures") || (request.getSession().containsKey("structures") && request.getSession().getJsonArray("structures").isEmpty()))
+		|| request.getSession().containsKey("deletePending") && request.getSession().getBoolean("deletePending"))
+		){
+			return false;
+		}
+
 		return isNotEmpty(scope) &&
 				(prefixPattern.matcher(scope).find() ||
 						request.path().contains("/auth/internal/userinfo") ||
