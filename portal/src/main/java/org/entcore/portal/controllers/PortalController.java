@@ -521,4 +521,60 @@ public class PortalController extends BaseController {
 		
 	}
 
+	//TODO IMPLIMENTATION OF THE ZIMBRA METHODE FOR REDIRECT TO THERE EMAIL SYSTEM USING THE writeTOEmailProvider AND Adding writeTOEmailProviderZimbra WORFLOW
+	/**
+	 * REDIRECTION TO WORDLINE Mail application
+	 * 
+	 * @param request id, login (for user), type of profile(user, group)
+	 * @return url to redirect
+	 * @workflow optionalFeatureWriteToEmailProviderWordline
+	 */
+	@Get("optionalFeature/writeToEmailProvider/wordline")
+	@SecuredAction("optionalFeature.writeToEmailProviderWordline")
+	public void optionalFeatureWriteToEmailProviderWordline(final HttpServerRequest request) {
+		optionalFeatureWriteToEmailProvider(request, "wordline");
+	}
+
+	private void optionalFeatureWriteToEmailProvider(final HttpServerRequest request, String providerId) {
+		
+		final String id = request.params().get("id");
+		final String login = request.params().get("login");
+		final String type = request.params().get("type");
+
+		if(type == null || type.isEmpty() || (id == null && login == null)) {
+			badRequest(request);
+			return;
+		}
+		
+		JsonArray emailProvider = config.getJsonArray("emailProvider",  new JsonArray());
+
+		if(emailProvider != null && !emailProvider.isEmpty()) {
+			JsonObject provider = (JsonObject) emailProvider.stream().filter(o -> ((JsonObject) o).getString("id").equals(providerId)).findFirst().orElse(null);
+			if(provider != null && !provider.getString("url", "").isEmpty()) {
+				UserUtils.getUserInfos(eb, request, user -> {
+					if (user != null) {
+
+						JsonObject result = new JsonObject();
+						// get url from config
+						String url = provider.getString("url", "");
+
+						result.put("url", url + "?id=" + id + "&login=" + login + "&type=" + type);
+
+						request.response().putHeader("content-type", "application/json");
+						request.response().putHeader("Cache-Control", "no-cache, must-revalidate");
+						request.response().putHeader("Expires", "-1");
+						//return url to redirect
+						request.response().end(result.encode());
+					} else {
+						unauthorized(request);
+					}
+				});
+			} else {
+				badRequest(request);
+			}
+		} else {
+			badRequest(request);
+		}
+	}
+
 }
