@@ -193,7 +193,7 @@ public class SamlController extends AbstractFederateController {
 				swmf.put("childTheme", (skin != null && !skin.trim().isEmpty()) ? skin : "raw");
 			}
 
-			final String userAgent = request.getHeader("User-Agent:");
+			final String userAgent = request.getHeader("User-Agent");
 			final String xRequestedWith = request.getHeader("X-Requested-With");
 			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
