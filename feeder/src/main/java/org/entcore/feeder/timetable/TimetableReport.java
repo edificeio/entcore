@@ -38,7 +38,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.template.TemplateProcessor;
+import fr.wseduc.webutils.template.FileTemplateProcessor;
 import fr.wseduc.webutils.template.lambdas.I18nLambda;
 import fr.wseduc.webutils.template.lambdas.LocaleDateLambda;
 
@@ -202,8 +202,8 @@ public class TimetableReport
   private long nbUsersFound = 0;
   private List<User> missingUsers = new LinkedList<User>();
 
-  private static final Map<Vertx, TemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, TemplateProcessor>();
-  private TemplateProcessor templator;
+  private static final Map<Vertx, FileTemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, FileTemplateProcessor>();
+  private FileTemplateProcessor templator;
   private String waitFileID = null;
   private Handler<String> waitFileHandler = null;
 
@@ -218,7 +218,8 @@ public class TimetableReport
 
     if(this.templator == null)
     {
-      this.templator = new TemplateProcessor(vertx, "template").escapeHTML(false);
+      this.templator = new FileTemplateProcessor(vertx, "template");
+      this.templator.escapeHTML(false);
 
       this.templator.setLambda("i18n", new I18nLambda(locale));
       this.templator.setLambda("datetime", new LocaleDateLambda(locale));
