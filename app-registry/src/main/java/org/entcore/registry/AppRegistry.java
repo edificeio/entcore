@@ -22,10 +22,7 @@ package org.entcore.registry;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
-import org.entcore.registry.controllers.AppRegistryController;
-import org.entcore.registry.controllers.ExternalApplicationController;
-import org.entcore.registry.controllers.LibraryController;
-import org.entcore.registry.controllers.WidgetController;
+import org.entcore.registry.controllers.*;
 import org.entcore.registry.filters.AppRegistryFilter;
 import org.entcore.registry.services.impl.NopAppRegistryEventService;
 
