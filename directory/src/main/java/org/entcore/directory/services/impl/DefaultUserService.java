@@ -49,6 +49,7 @@ import org.entcore.directory.services.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -252,45 +253,29 @@ public class DefaultUserService implements UserService {
 				.map(JsonObject.class::cast)
 				.forEach(structureNode -> mapExternalIdWithUai.put(structureNode.getString("externalId"), structureNode.getString("UAI")));
 
-			// Format structures
-			JsonArray structures = new JsonArray();
-			userInfos.getJsonObject("functions").getMap().values().stream()
-				.filter(Objects::nonNull)
-				.map(JsonObject.class::cast)
-				.forEach(function -> function.getJsonArray("structureExternalIds").stream()
-					.distinct()
-					.forEach(externalId -> {
-						String uai = mapExternalIdWithUai.get(externalId);
-						JsonObject matchingStructure = structures.stream()
-							.map(JsonObject.class::cast)
-							.filter(structure -> structure.getString("UAI").equals(uai))
-							.findFirst()
-							.orElse(null);
+            JsonArray structures = new JsonArray();
 
-						// If structure already exist we only add new function
-						if (matchingStructure != null) {
-							JsonArray functions = matchingStructure.getJsonArray("functions").add(function.getString("functionName"));
-							matchingStructure.put("functions", functions);
-						}
-						// Else we create it
-						else {
-							JsonObject structure = new JsonObject()
-								.put("UAI", uai)
-								.put("functions", new JsonArray().add(function.getString("functionName")));
-							structures.add(structure);
-						}
-					})
-				);
+            mapExternalIdWithUai.forEach( (externalId,uai) -> {
+                JsonObject structure = new JsonObject()
+                        .put("UAI", uai)
+                        .put("functions", new JsonArray());
+				//iterate over all user functions
+				userInfos.getJsonObject("functions").getMap().values().stream()
+						.filter(Objects::nonNull)
+						.map(JsonObject.class::cast)
+						.filter(function -> function.getJsonArray("structureExternalIds").contains(externalId)) //Filter functions on externalIds
+						.forEach(function -> function.getJsonObject("subjects").getMap().values().stream()
+                            .map(JsonObject.class::cast)
+                            .forEach(subject -> {
+                                String functionName = function.getString("functionName");
+                                String subjectName = subject.getString("subjectName");
+                                structure.getJsonArray("functions").add(functionName + " / " + subjectName);
+                            }));
+				structures.add(structure);
+            });
 
-			// Format functions
-			for (Object oStruct : structures) {
-				JsonObject structure = (JsonObject)oStruct;
-				JsonArray functions = structure.getJsonArray("functions");
-				if (functions.size() == 0) structure.put("functions", "");
-				else if (functions.size() == 1) structure.put("functions", functions.getString(0));
-			}
 
-			// Fill finalResult with expected data
+            // Fill finalResult with expected data
 			finalResult.put("id", userInfos.getString("id"));
 			finalResult.put("lastName", userInfos.getString("lastName"));
 			finalResult.put("firstName", userInfos.getString("firstName"));
