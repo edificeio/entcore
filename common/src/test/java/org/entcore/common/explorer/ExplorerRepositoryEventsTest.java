@@ -106,6 +106,13 @@ public class ExplorerRepositoryEventsTest {
 
     public static class RecordingReindexPluginClient extends DummyPluginClient {
         private final List<ExplorerReindexResourcesRequest> requests = new ArrayList<>();
+
+        @Override
+        public Future<IndexResponse> tryReindex(UserInfos user, ExplorerReindexResourcesRequest request, int times, int delay) {
+            requests.add(request);
+            return super.tryReindex(user, request, times, delay);
+        }
+
         @Override
         public Future<IndexResponse> reindex(final UserInfos user, final ExplorerReindexResourcesRequest request) {
             requests.add(request);
