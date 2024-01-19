@@ -401,6 +401,7 @@
   "dropzone.text": "Glissez-déposez un/des fichier(s) depuis votre appareil ou cliquez sur parcourir",
   "dropzone.import": "Importer des fichiers",
   "dropzone.drop": "Déposez ici vos fichiers, images, vidéos ou audios",
+  "dropzone.add.more": "Ajouter des fichiers",
   "edt": "Emploi du temps",
   "edumedia.choose": "Choisissez une matière...",
   "edumedia.fullscreen": "Afficher en plein écran",
