@@ -388,6 +388,8 @@
   "bbm.video.record.stop": "Arrêter l'enregistrement",
   "bbm.video.record.reset": "Réinitialiser l'enregistrement",
   "bbm.video.record.save": "Enregistrer la vidéo",
+  "bbm.video.record.select.devices.label": "Choix de la caméra",
+  "bbm.video.record.select.devices.placeholder": "Sélectionner une caméra",
   "bbm.video.play.start": "Lire la vidéo",
   "bbm.video.play.pause": "Pause",
   "workspace.tree.owner": "Mes documents",
