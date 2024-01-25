@@ -20,18 +20,12 @@
 package org.entcore.auth.users;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.RepositoryEvents;
 
-public class AuthRepositoryEvents implements RepositoryEvents {
-
-	private static final Logger log = LoggerFactory.getLogger(AuthRepositoryEvents.class);
-
+public class AuthRepositoryEvents implements RepositoryEvents
+{
 	private NewDeviceWarningTask NDWTask;
 
 	public AuthRepositoryEvents(NewDeviceWarningTask NDWTask)
@@ -56,23 +50,6 @@ public class AuthRepositoryEvents implements RepositoryEvents {
 
 			this.NDWTask.clearUsersDevices(userIds);
 		}
-	}
-
-	@Override
-	public void transition(JsonObject structure) {
-		final String query =
-				"MATCH (s:Structure {id: {id}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User {source: {source}}) " +
-				"WHERE not(has(u.deleteDate)) " +
-				"SET u.disappearanceDate = {disappearanceDate} ";
-		final JsonObject params = new JsonObject()
-				.put("id", structure.getString("id"))
-				.put("source", "SSO")
-				.put("disappearanceDate", 1342);
-		Neo4j.getInstance().execute(query, params, Neo4jResult.validEmptyHandler(res -> {
-			if (res.isLeft()) {
-				log.error("Error when set disappearanceDate to SSO users : " + res.left().getValue());
-			}
-		}));
 	}
 
 }
