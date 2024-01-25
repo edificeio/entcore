@@ -193,7 +193,15 @@ public class SamlController extends AbstractFederateController {
 				swmf.put("childTheme", (skin != null && !skin.trim().isEmpty()) ? skin : "raw");
 			}
 
-			renderView(request, swmf, "wayf.html", null);
+			final String userAgent = request.getHeader("User-Agent");
+			final String xRequestedWith = request.getHeader("X-Requested-With");
+			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android"))) ||
+					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
+					("true".equals(request.params().get("mobile")))) {
+				renderView(request, swmf, "wayf-mobile.html", null);
+			} else {
+				renderView(request, swmf, "wayf.html", null);
+			}
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());

@@ -41,6 +41,9 @@ export class GroupAutolinkComponent extends OdeComponent {
     @Input()
     functionOptions: Array<string>;
 
+    @Input()
+    showActions: boolean;
+
     public form: AutolinkFormModel;
 
     public lightboxSubStructureIds: Array<string> = [];
@@ -117,6 +120,9 @@ export class GroupAutolinkComponent extends OdeComponent {
     }
 
     public onAutolinkSubmit() {
+        if (!this.showActions) {
+          return;
+        }
         const groupUpdatePayload: GroupUpdatePayload = {
             name: this.group.name,
             autolinkTargetAllStructs: false,
@@ -214,11 +220,15 @@ export class GroupAutolinkComponent extends OdeComponent {
     }
 
     public unselectDiscipline(item: string): void {
+      if (this.showActions) {
         this.form.selectedDisciplines.splice(this.form.selectedDisciplines.indexOf(item), 1);
+      }
     }
 
     public unselectFunction(item: string): void {
+      if (this.showActions) {
         this.form.selectedFunctions.splice(this.form.selectedFunctions.indexOf(item), 1);
+      }
     }
 
     public handleFunctionsClick($event): void {
