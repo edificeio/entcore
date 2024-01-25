@@ -104,7 +104,7 @@ public class DuplicateUsers {
 	private final EventBus eb;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final JsonArray defaultSourcesOrder = new JsonArray()
-			.add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("SSO").add("MANUAL");
+			.add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 
 	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure, EventBus eb) {
 		this(null, updateCourses, autoMergeOnlyInSameStructure, eb);
