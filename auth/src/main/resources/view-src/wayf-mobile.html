@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>{{name}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<script type="text/javascript">var notLoggedIn = true;</script>
+	<style> .loader-hide.loader-hide { display: none; } </style>
+	<link rel="stylesheet" type="text/css" href="/current/assets/skins/default/theme.css" id="theme" crossorigin="anonymous">
+</head>
+
+<body class="wayf">
+<default-styles>
+	<header>
+		<i class="cell horizontal-spacing-twice"></i>
+	</header>
+	<div>
+		<section id="credentials-content">
+			<img class="logo" style="object-position: center;" src="/assets/themes/{{childTheme}}/img/logo.png" alt="Logo de l'ENT">
+
+			<h2 class="row vertical-spacing" style="display:none" id="message">
+				{{#i18n}}wayf.message{{/i18n}}
+			</h2>
+			<h2 class="row vertical-spacing">
+				{{#i18n}}wayf.select.profile{{/i18n}}
+			</h2>
+			<section class="dominos">
+				{{#providers}}
+				<div class="item">
+					<a class="centered-text domino {{name}}" href="{{uri}}">
+						<div style="margin: 20px;">{{#i18n}}{{name}}{{/i18n}}<i class="loader-hide loading"></i></div>
+					</a>
+				</div>
+				{{/providers}}
+			</section>
+			<div style="float:right">
+				<div id="insert" style="margin-bottom:45px;font-size: 14px;display:none" >
+					{{#i18n}}wayf.insert.title{{/i18n}}<br>
+					<a href="{{#i18n}}wayf.insert.link{{/i18n}}" target="_blank"><span class="no-style ng-scope">{{#i18n}}wayf.insert.link.content{{/i18n}}</span></a>
+				</div>
+
+				<a href="{{#i18n}}auth.charter{{/i18n}}" target="_blank" style="font-size: 14px;"><span class="no-style ng-scope">{{#i18n}}wayf.label.cgu{{/i18n}}</span></a>
+			</div>
+		</section>
+	</div>
+</default-styles>
+</body>
+
+</html>

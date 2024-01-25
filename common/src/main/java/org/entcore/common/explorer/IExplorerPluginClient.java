@@ -35,6 +35,16 @@ public interface IExplorerPluginClient {
         return reindex(null, request);
     }
 
+    /**
+     * Try reindexing resources multiple times until it succeed
+     * @param user User requesting the reindexation
+     * @param request Filter for the resources to reindex
+     * @param times Number of times we should try
+     * @param delay Delay (in ms) between each tentatives
+     * @return A swift report of the indexation process
+     */
+    Future<IndexResponse> tryReindex(UserInfos user, ExplorerReindexResourcesRequest request, int times, int delay);
+
     Future<List<String>> createAll(UserInfos user, List<JsonObject> json, boolean isCopy);
 
     Future<DeleteResponse> deleteById(UserInfos user, Set<String> ids);

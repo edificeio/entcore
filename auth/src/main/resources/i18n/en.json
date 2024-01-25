@@ -9,6 +9,7 @@
     "auth.activation.password": "Password",
     "auth.activation.title": "Account activation",
     "auth.cancel": "Cancel",
+    "auth.charter": "/assets/cgu/Edifice_User_Charter.pdf",
     "auth.close": "Close",
     "auth.email": "Login",
     "auth.error.authenticationFailed": "Invalid login or password",

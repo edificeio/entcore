@@ -96,10 +96,10 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			switch (method) {
 				case "delete" :
 				case "removeFunction" :
-					adminOrTeacher(request, user, handler);
+					adminOrTeacher(request, user, true, handler);
 					break;
 				case "listFunctions" :
-					adminOrTeacher(request, user, handler);
+					adminOrTeacher(request, user, true, handler);
 					break;
 				case "updateAvatar" :
 				case "getUserBook" :
@@ -141,7 +141,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "unlinkUser" :
 				case "linkUser" :
-					adminUpdateFilter.checkADMCUpdate(request, user, false, hr -> {
+					adminUpdateFilter.checkADMCUpdate(request, user, false, true, hr -> {
 						if (Boolean.FALSE.equals(hr)) {
 							handler.handle(false);
 							return;
@@ -425,11 +425,11 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(true);
 			return;
 		}
-		adminOrTeacher(request, user, handler);
+		adminOrTeacher(request, user, false, handler);
 	}
 
-	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, final Handler<Boolean> handler) {
-		adminUpdateFilter.checkADMCUpdate(request, user, false, hr -> {
+	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
+		adminUpdateFilter.checkADMCUpdate(request, user, false, admlCanUpdateADML, hr -> {
 			if (Boolean.FALSE.equals(hr)) {
 				handler.handle(false);
 				return;

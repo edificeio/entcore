@@ -20,10 +20,7 @@
 package org.entcore.auth.controllers;
 
 import fr.wseduc.bus.BusAddress;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
+import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
@@ -101,6 +98,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.*;
+import static fr.wseduc.webutils.request.RequestUtils.getTokenHeader;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.*;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -382,6 +380,7 @@ public class AuthController extends BaseController {
 							final Promise<String> futureUserId = Promise.promise();
 							if ("password".equals(grantType)) {
 								final String login = req.getParameter("username");
+								trace.info("Connexion de l'utilisateur " + login);
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getUserId(login, req.getParameter("password"), getUserIdResult -> {
 									try {
@@ -406,11 +405,15 @@ public class AuthController extends BaseController {
 										futureUserId.fail("auth.info.not.found");
 									} else {
 										final String id = authInfo.getUserId();
+										trace.info("Reconnexion de l'utilisateur " + id);
 										futureUserId.complete(id);
 										storeLoginEventAndDomain(request, clientCredential, id);
 									}
 								});
 							} else if ("saml2".equals(grantType) || "custom_token".equals(grantType)) {
+								if(userData != null) {
+									trace.info("Connexion de l'utilisateur fédéré " + userData.getLogin());
+								}
 								storeLoginEventAndDomain(request, clientCredential, userData.getId());
 								futureUserId.complete(userData.getId());
 								if (isNotEmpty(userData.getActivationCode())) {
@@ -458,6 +461,33 @@ public class AuthController extends BaseController {
 					}
 
 				});
+			}
+		});
+	}
+
+	@Post("/oauth2/token-as-cookie")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@ApiDoc("Gives back a cookie to the user corresponding to its jwtToken")
+	public void tokenAsCookie(final HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(user -> {
+			final Optional<String> jwtToken = getTokenHeader(request);
+			if(jwtToken.isPresent()) {
+				final String oneSessionId = UUID.randomUUID().toString();
+				UserUtils.createSessionWithId(eb, user.getUserId(), oneSessionId, false)
+				.onSuccess(e -> {
+					log.debug("[AuthController@tokenAsCookie] Session created for user");
+					final long timeout = config.getLong("cookie_timeout", Long.MIN_VALUE);
+					CookieHelper.getInstance().setSigned("oneSessionId", oneSessionId, timeout, request);
+					CookieHelper.set("authenticated", "true", timeout, request);
+					Renders.render(request, new JsonObject().put("succces", true));
+				})
+				.onFailure(th -> {
+					log.warn("[AuthController@tokenAsCookie] Error while creating session", th);
+					Renders.renderError(request);
+				});
+			} else {
+				log.warn("[AuthController@tokenAsCookie] Called without a jwt token");
+				Renders.badRequest(request);
 			}
 		});
 	}
@@ -1023,6 +1053,32 @@ public class AuthController extends BaseController {
 					// try activation with loginAlias
 					userAuthAccount.matchActivationCodeByLoginAlias(login, password, matchAlias -> {
 						renderJson(request, new JsonObject().put("match", matchAlias));
+					});
+				}
+			});
+		});
+	}
+
+	/**
+	 * API endpoint to verify that a reset code matches with a login or an alias login
+	 * @param request the request with the reset code (password) and the login (or alias login)
+	 */
+	@Post("/reset/match")
+	public void resetPasswordMatch(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, data -> {
+			if (data == null) {
+				badRequest(request);
+				log.warn("Request body with password and login is expected");
+				return;
+			}
+			final String login = data.getString("login");
+			final String password = data.getString("password");
+			userAuthAccount.matchResetCode(login, password, matchReset -> {
+				if (matchReset) {
+					renderJson(request, new JsonObject().put("match", matchReset));
+				} else {
+					userAuthAccount.matchResetCodeByLoginAlias(login, password, matchResetAlias -> {
+						renderJson(request, new JsonObject().put("match", matchResetAlias));
 					});
 				}
 			});
