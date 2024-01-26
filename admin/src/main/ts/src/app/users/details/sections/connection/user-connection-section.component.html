@@ -15,6 +15,7 @@
             [pattern]="loginAliasPattern"
             #loginInput="ngModel"
             (ngModelChange)="isUpdateLoginSaved = false"
+            maxlength="64"
           />
           <button
             type="button"
@@ -95,6 +96,7 @@
             [pattern]="loginAliasPattern"
             #loginAliasInput="ngModel"
             [disabled]="isForbidden"
+            maxlength="64"
           />
           <button
             type="button"
