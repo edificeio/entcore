@@ -81,6 +81,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final long resetCodeExpireDelay;
 
 	private final boolean ignoreSendResetPasswordMailError;
+	private final boolean ignoreSendResetPasswordSmsError;
 	private final int passwordHistoryLength;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
@@ -105,6 +106,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
 		this.ignoreSendResetPasswordMailError = config.getBoolean("reset-pwd-mail-ignore-error", false);
+		this.ignoreSendResetPasswordSmsError = config.getBoolean("reset-pwd-sms-ignore-error", false);
+		
 		SmsSenderFactory.getInstance().init(vertx, config);
 		this.smsSender = SmsSenderFactory.getInstance().newInstance(eventStore);
 		this.passwordHistoryLength = config.getInteger("password-history-length", 10);
@@ -585,14 +588,22 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		smsSender.send(request, phone, template, params, module)
 		.onSuccess(e -> {
 			final boolean succeeded = e.getValidReceivers() != null && e.getValidReceivers().length == 1;
-			if(succeeded) {
-				handler.handle(new Either.Right<>(new JsonObject().put("success", true)));
+			if(!ignoreSendResetPasswordSmsError) {
+				if(succeeded) {
+					handler.handle(new Either.Right<>(new JsonObject().put("success", true)));
+				} else {
+					handler.handle(new Either.Left<>("ko"));
+				}
 			} else {
-				handler.handle(new Either.Left<>("ko"));
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
 			}
 		})
 		.onFailure(th -> {
-			handler.handle(new Either.Left<>(th.getMessage()));
+			if(!ignoreSendResetPasswordSmsError) {
+				handler.handle(new Either.Left<>(th.getMessage()));
+			} else {
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
+			}
 		});
 	}
 

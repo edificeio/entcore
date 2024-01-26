@@ -15,6 +15,8 @@
     "auth.error.authenticationFailed": "Invalid login or password",
     "auth.forgot.header": "MISSING PASSWORD",
     "auth.forgot.send": "Send",
+    "auth.forgot.send.mail": "Send an email",
+    "auth.forgot.send.sms": "Send a SMS",
     "auth.forgot.title": "Missing password",
     "auth.header": "CONNECTION",
     "auth.login": "Login",
