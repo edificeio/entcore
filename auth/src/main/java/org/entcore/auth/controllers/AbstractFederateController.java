@@ -67,10 +67,10 @@ public abstract class AbstractFederateController extends BaseController {
 			});
 		}
 		if (activationCode != null && login != null) {
-			trace.info("Code d'activation entré pour l'utilisateur fédéré " + login);
+			trace.info(Renders.getIp(request) + " - Code d'activation entré pour l'utilisateur fédéré " + login);
 			activateUser(activationCode, login, email, mobile, theme, sessionIndex, nameId, request);
 		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
-			trace.info("Connexion de l'utilisateur fédéré " + login);
+			trace.info(Renders.getIp(request) + " - Connexion de l'utilisateur fédéré " + login);
 			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login, request);
 			createSession(userId, sessionIndex, nameId, request);
 		} else {
@@ -113,11 +113,11 @@ public abstract class AbstractFederateController extends BaseController {
 			@Override
 			public void handle(Either<String, String> activated) {
 				if (activated.isRight() && activated.right().getValue() != null) {
-					trace.info("Activation du compte utilisateur " + login);
+					trace.info(Renders.getIp(request) + " - Activation du compte utilisateur " + login);
 					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login, request);
 					createSession(activated.right().getValue(), sessionIndex, nameId, request);
 				} else {
-					trace.info("Echec de l'activation : compte utilisateur " + login +
+					trace.info(Renders.getIp(request) + " - Echec de l'activation : compte utilisateur " + login +
 							" introuvable ou déjà activé.");
 					JsonObject error = new JsonObject()
 							.put("error", new JsonObject()
