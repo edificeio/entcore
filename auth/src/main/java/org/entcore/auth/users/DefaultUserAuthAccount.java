@@ -76,6 +76,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final long resetCodeExpireDelay;
 
 	private final boolean ignoreSendResetPasswordMailError;
+	private final boolean ignoreSendResetPasswordSmsError;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		this.eb = Server.getEventBus(vertx);
@@ -99,6 +100,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
 		this.ignoreSendResetPasswordMailError = config.getBoolean("reset-pwd-mail-ignore-error", false);
+		this.ignoreSendResetPasswordSmsError = config.getBoolean("reset-pwd-sms-ignore-error", false);
 	}
 
 	@Override
@@ -588,15 +590,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 					vertx.eventBus().send(smsAddress, smsObject, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						public void handle(Message<JsonObject> event) {
-							if("error".equals(event.body().getString("status"))){
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+							if(!ignoreSendResetPasswordSmsError) {
+								if("error".equals(event.body().getString("status"))){
+									handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+								} else {
+									handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+								}
 							}
 						}
 					}));
 				} else {
-					handler.handle(new Either.Left<String, JsonObject>("template.error"));
+					if(!ignoreSendResetPasswordSmsError) {
+						handler.handle(new Either.Left<String, JsonObject>("template.error"));
+					}
+				}
+
+				if(ignoreSendResetPasswordSmsError) {
+					handler.handle(new Either.Right<>(new ResultMessage().body()));
 				}
 			}
 		});
