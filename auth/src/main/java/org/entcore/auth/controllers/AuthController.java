@@ -1260,6 +1260,12 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	/**
+	 * Send a mail or a sms to reset forgot id
+	 * @param request the request with the mail
+	 * @response 200 if the reset code has been sent or even if the mail does not exist to avoid telling if the mail exists in database or not
+	 * @response 400 if the mail is empty or if the service is invalid
+	 */
 	@Post("/forgot-id")
 	public void forgetId(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
@@ -1278,7 +1284,7 @@ public class AuthController extends BaseController {
 							public void handle(Either<String, JsonArray> event) {
 								// No user with that email, or more than one found.
 								if (event.isLeft()) {
-									badRequest(request, event.left().getValue());
+									renderJson(request, new JsonObject());
 									return;
 								}
 								JsonArray results = event.right().getValue();
@@ -1297,7 +1303,7 @@ public class AuthController extends BaseController {
 											structures.add(j);
 									}
 									if (firstName != null && structures.size() == 1)
-										badRequest(request, "non.unique.result");
+										renderJson(request, new JsonObject());
 									else
 										renderJson(request, new JsonObject().put("structures", structures));
 									return;
@@ -1307,7 +1313,7 @@ public class AuthController extends BaseController {
 
 								if(match.getString("activationCode") != null)
 								{
-									badRequest(request, "not.activated");
+									renderJson(request, new JsonObject());
 									return;
 								}
 
@@ -1320,7 +1326,7 @@ public class AuthController extends BaseController {
 											new io.vertx.core.Handler<Either<String, JsonObject>>() {
 												public void handle(Either<String, JsonObject> event) {
 													if (event.isLeft()) {
-														badRequest(request, event.left().getValue());
+														renderJson(request, new JsonObject());
 														return;
 													}
 													if (smsProvider != null && !smsProvider.isEmpty()) {
@@ -1347,49 +1353,20 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	/**
+	 * API endpoint to verify if sms provider is configured
+	 */
 	@Get("/password-channels")
 	public void getForgotPasswordService(final HttpServerRequest request) {
-		userAuthAccount.findByLogin(request.params().get("login"), null, checkFederatedLogin,
-				new io.vertx.core.Handler<Either<String, JsonObject>>() {
-					public void handle(Either<String, JsonObject> result) {
-						if (result.isLeft()) {
-							badRequest(request, result.left().getValue());
-							return;
-						}
-						if (result.right().getValue().size() == 0) {
-							badRequest(request, "no.match");
-							return;
-						}
-						if(result.right().getValue().getString("activationCode") != null)
-						{
-							badRequest(request, "not.activated");
-							return;
-						}
-
-
-						final String mail = result.right().getValue().getString("email", "");
-						final String mobile = result.right().getValue().getString("mobile", "");
-
-						boolean mailCheck = mail != null && !mail.trim().isEmpty();
-						boolean mobileCheck = mobile != null && !mobile.trim().isEmpty();
-
-						if (!mailCheck && !mobileCheck) {
-							badRequest(request, "no.match");
-							return;
-						}
-
-						final String obfuscatedMail = StringValidation.obfuscateMail(mail);
-						final String obfuscatedMobile = fr.wseduc.webutils.StringValidation.obfuscateMobile(mobile);
-
-						if (smsProvider != null && !smsProvider.isEmpty())
-							renderJson(request,
-									new JsonObject().put("mobile", obfuscatedMobile).put("mail", obfuscatedMail));
-						else
-							renderJson(request, new JsonObject().put("mail", obfuscatedMail));
-					}
-				});
+		renderJson(request, new JsonObject().put("mobile", smsProvider != null && !smsProvider.isEmpty()));
 	}
 
+	/**
+	 * Send a mail or a sms with a reset code to the user
+	 * @param request the request with the login and the service (mail or mobile)
+	 * @response 200 if the reset code has been sent or even if the login does not exist to avoid telling if the login exists in database or not
+	 * @response 400 if the login is empty or if the service is invalid
+	 */
 	@Post("/forgot-password")
 	public void forgotPasswordSubmit(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
@@ -1406,16 +1383,16 @@ public class AuthController extends BaseController {
 						new io.vertx.core.Handler<Either<String, JsonObject>>() {
 							public void handle(Either<String, JsonObject> result) {
 								if (result.isLeft()) {
-									badRequest(request, result.left().getValue());
+									renderJson(request, new JsonObject());
 									return;
 								}
 								if (result.right().getValue().size() == 0) {
-									badRequest(request, "no.match");
+									renderJson(request, new JsonObject());
 									return;
 								}
 								if(result.right().getValue().getString("activationCode") != null)
 								{
-									badRequest(request, "not.activated");
+									renderJson(request, new JsonObject());
 									return;
 								}
 
