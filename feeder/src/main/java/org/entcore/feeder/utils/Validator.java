@@ -62,7 +62,7 @@ public class Validator {
 		patterns.put("siren", Pattern.compile("^[0-9]{3} ?[0-9]{3} ?[0-9]{3}$"));
 		patterns.put("siret", Pattern.compile("^[0-9]{3} ?[0-9]{3} ?[0-9]{3} ?[0-9]{5}$"));
 		patterns.put("uri", Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
-		patterns.put("loginAlias", Pattern.compile("^([0-9a-z\\-\\.]+)$"));
+		patterns.put("loginAlias", Pattern.compile("^([0-9a-z\\.]+)$"));
 	}
 
 	public static final String SEARCH_FIELD = "SearchField";
@@ -411,9 +411,9 @@ public class Validator {
 			String firstName = in[0];
 			String lastName = in[1];
 			if (firstName != null && lastName != null) {
-				String login = (removeAccents(firstName).replaceAll("\\s+", "").toLowerCase()
-						+ "." + removeAccents(lastName).replaceAll("\\s+", "").toLowerCase())
-						.replaceAll("'", "");
+
+				String login = generateFormattedLogin(firstName, lastName);
+
 				int i = 2;
 				String l = login + "";
 				if (!notStoreLogins) {
@@ -427,6 +427,33 @@ public class Validator {
 	}
 
 
+	/** 
+	 * Generate a login from a first name and a last name
+	 * Respect the following rules :
+	 * - Remove accents
+	 * - Remove special characters, if we want to accept them, we can replace \\W by [^a-zA-Z0-9!#$%&]
+	 * - Lowercase
+	 * - Truncate to 30 characters to have maximum length of 64 characters for the login in take on consideration the character '.'
+	 * 		between first name and last name and number that can be added at the end of the login if login already exists
+	 * login = (formattedFirstName + "." + formattedLastName)
+	 * 
+	 */
+	public static String generateFormattedLogin (String firstName, String lastName) {
+
+		String formattedFirstName = removeAccents(firstName).replaceAll("\\W+", "").toLowerCase();
+
+		if(formattedFirstName.length() > 30) {
+			formattedFirstName = formattedFirstName.substring(0, Math.min(formattedFirstName.length(), 30));
+		}
+
+		String formattedLastName = removeAccents(lastName).replaceAll("\\W+", "").toLowerCase();
+
+		if(formattedLastName.length() > 30) {
+			formattedLastName = formattedLastName.substring(0, Math.min(formattedLastName.length(), 30));
+		} 
+
+		return (formattedFirstName + "." + formattedLastName);
+	}
 
 	private void lowerGenerator(String attr, JsonObject object, String... in) {
 		if (in != null && in.length == 1) {
@@ -549,6 +576,10 @@ public class Validator {
 
 		if (logins.putIfAbsent(value, "") != null) {
 			return i18n.translate("invalid.duplicate", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
+		}
+
+		if (value.toString().length() > 64) {
+			return i18n.translate("invalid.maxSize", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
 		}
 		return null;
 	}

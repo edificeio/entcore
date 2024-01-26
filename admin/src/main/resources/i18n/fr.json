@@ -422,7 +422,7 @@
   "form.error.minlength": "{{requiredLength}} caractères minimum",
   "form.error.maxlength": "{{requiredLength}} caractères maximum",
   "form.error.pattern": "Saisie invalide",
-  "form.user.alias.pattern": " - Seuls les lettres minuscules, chiffres, point (.) et tiret (-) sont autorisés",
+  "form.user.alias.pattern": " - Seuls les lettres minuscules, chiffres et point (.) sont autorisés",
   "form.optional": "Optionnel",
   "firstName": "Prénom",
   "lastName": "Nom de famille",

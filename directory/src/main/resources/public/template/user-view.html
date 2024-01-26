@@ -21,9 +21,10 @@
           <input
             type="text"
             class="ten cell twelve-mobile"
-            ng-pattern="/^[0-9a-z\-\.]+$/"
+            ng-pattern="/^[0-9a-z\.]+$/"
             name="newLoginAlias"
             ng-model="account.newLoginAlias"
+            maxlength="64"
           />
         </p>
       </div>

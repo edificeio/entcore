@@ -14,6 +14,7 @@
   "invalid.bounce.email": "L'attribut {0} contient l'adresse email {1} qui n'est pas utilisable.",
   "invalid.value" : "Ligne {0} : L'attribut {1} contient une valeur invalide {2}.",
   "invalid.duplicate": "L'attribut {0} contient une valeur {1} qui existe déjà.",
+  "invalid.maxSize": "Ligne {0} : L'attribut {1} a dépassé la longueur maximale acceptée de 64 caractères.",
   "Relative" : "Parent",
   "Teacher" : "Enseignant",
   "Student" : "Élève",
