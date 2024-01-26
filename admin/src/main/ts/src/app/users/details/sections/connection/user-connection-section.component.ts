@@ -46,7 +46,7 @@ export class UserConnectionSectionComponent
 
   userInfoSubscriber: Subscription;
 
-  loginAliasPattern = /^[0-9a-z\-\.]+$/;
+  loginAliasPattern = /^[0-9a-z\.]+$/;
 
   isAdmc: boolean = false;
   isAdml: boolean = false;
