@@ -272,6 +272,12 @@ project(':app-registry') {
   }
 }
 
+project(':audience') {
+  dependencies {
+    compile project(':common')
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
+  }
+}
 
 project(':auth') {
   dependencies {
