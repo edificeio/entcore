@@ -8,27 +8,24 @@ import java.util.Set;
 
 @JsonIgnoreProperties
 public class AudienceCheckRightRequestMessage {
-  private final String module;
+  private final String appName;
   private final String resourceType;
   private final String userId;
-  private final Set<String> userGroups;
   private final Set<String> resourceIds;
 
   @JsonCreator
-  public AudienceCheckRightRequestMessage(@JsonProperty("module") final String module,
+  public AudienceCheckRightRequestMessage(@JsonProperty("appName") final String appName,
                                           @JsonProperty("resourceType") final String resourceType,
                                           @JsonProperty("userId") final String userId,
-                                          @JsonProperty("userGroups") final Set<String> userGroups,
                                           @JsonProperty("resourceIds") final Set<String> resourceIds) {
-    this.module = module;
+    this.appName = appName;
     this.resourceType = resourceType;
     this.userId = userId;
-    this.userGroups = userGroups;
     this.resourceIds = resourceIds;
   }
 
-  public String getModule() {
-    return module;
+  public String getAppName() {
+    return appName;
   }
 
   public String getResourceType() {
@@ -37,10 +34,6 @@ public class AudienceCheckRightRequestMessage {
 
   public String getUserId() {
     return userId;
-  }
-
-  public Set<String> getUserGroups() {
-    return userGroups;
   }
 
   public Set<String> getResourceIds() {
