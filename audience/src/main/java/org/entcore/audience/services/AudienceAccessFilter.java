@@ -14,7 +14,7 @@ public interface AudienceAccessFilter {
     /**
      * Checks whether the user has access to <b>all</b> the specified resources.
      *
-     * @param module Name of the application which owns the resources to check
+     * @param appName Name of the application which owns the resources to check
      * @param resourceType Type of the resources to check
      * @param user        The user desiring to access the resources
      * @param resourceIds Ids of the resources to access
@@ -25,7 +25,7 @@ public interface AudienceAccessFilter {
      *         the user can access <b>all</b> the resources, otherwise, <b>at least
      *         one</b> of the resources cannot be accessed.
      */
-    Future<Boolean> canAccess(final String module,
+    Future<Boolean> canAccess(final String appName,
                               final String resourceType,
                               final UserInfos user,
                               final Set<String> resourceIds);

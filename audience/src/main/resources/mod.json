@@ -5,11 +5,5 @@
 	"auto-redeploy": false,
     "host" : "http://localhost:8091",
     "app-name" : "Admin",
-    "app-address" : "http://localhost:8091/audience",
-	"sql": true,
-	"db-schema": "audience",
-	"publicConf": {
-		"reaction-types" : ["REACTION_1","REACTION_2","REACTION_3","REACTION_4"]
-	}
-
+    "app-address" : "http://localhost:8091/audience"
 }
