@@ -73,6 +73,9 @@
 		.workspace-app .icons-view explorer i.close-2x{
 			cursor: pointer !important;
 		}
+		.lool-sniplet-secondary .classic-link{
+			display: none;
+		}
 		</style>
 </head>
 
@@ -84,16 +87,18 @@
 					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
 					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>
-				<div class="right-magnet zero-mobile  centered-bloc-text vertical-spacing-twice-1d" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-					<button class="primary-button" ng-click="openLightbox()" ng-if="buttonType === ButtonType.PRIMARY">
-						<i18n>lool.sniplet.create-document.title</i18n>
-					</button>
+				<div class="lool-sniplet-secondary">
+					<!-- Need to have button type secondary loaded to enable LooL modal (openLightbox) -->
+					<sniplet application="lool" template="create" source="{type: 'secondary'}"></sniplet>
 				</div>
-				<div class="right-magnet zero-mobile vertical-spacing-twice-1d  horizontal-spacing" ng-if="openedFolder.all.length || reloadingContent">
-					<div ng-repeat="button in currentTree.buttons">
+				<div class="right-magnet zero-mobile vertical-spacing-twice-1d " ng-if="openedFolder.all.length || reloadingContent">
+					<div ng-repeat="button in currentTree.buttons" class="aligned">
 						<button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="primary-button">
-							 [[button.text]]
+							[[button.text]]
 						</button>
+					</div>
+					<div workflow="lool.createDocument" class="aligned" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+						<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
 					</div>
 				</div>
 			</app-title>
@@ -135,6 +140,9 @@
 							<button class="primary-button" ng-click="openLightbox()" ng-if="buttonType === ButtonType.PRIMARY">
 								<i18n>lool.sniplet.create-document.title</i18n>
 							</button>
+						</div>
+						<div class="zero-desktop six-mobile" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && (openedFolder.all.length || reloadingContent)">
+							<sniplet application="lool" template="create" source="{type: 'primary'}"></sniplet>
 						</div>
 						<!--SEARCH DESKTOP-->
 						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.all.length">
