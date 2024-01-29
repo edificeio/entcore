@@ -1,0 +1,9 @@
+{
+	"main":"org.entcore.audience.Audience",
+	"port": 8091,
+	"mode": "dev",
+	"auto-redeploy": false,
+    "host" : "http://localhost:8091",
+    "app-name" : "Admin",
+    "app-address" : "http://localhost:8091/audience"
+}
