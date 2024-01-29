@@ -22,6 +22,7 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -39,7 +40,8 @@ import java.util.stream.Collectors;
  * Any app using BaseServer.setRepositoryEvents() and the explorer feature should use it.
  */
 public class ExplorerRepositoryEvents implements RepositoryEvents {
-
+    private static final int RETRY_TIMES = 5;
+    private static final int RETRY_DELAY = 1000;
     private static final Logger log = LoggerFactory.getLogger(ExplorerRepositoryEvents.class);
 
     /**
@@ -171,7 +173,7 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
                         userInfos.setUserId(userId);
                         userInfos.setLogin(userLogin);
                         userInfos.setFirstName(userName);
-                        pluginClient.reindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex)).onComplete(this.onReindex);
+                        pluginClient.tryReindex(userInfos, new ExplorerReindexResourcesRequest(idsToReindex), RETRY_TIMES, RETRY_DELAY).onComplete(this.onReindex);
                     }
                 });
             } else {
