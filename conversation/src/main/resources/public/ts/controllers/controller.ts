@@ -461,7 +461,7 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.saveDraft(temp);
                     }
                     $scope.draftSavingFlag = false;
-                }, 60000)
+                }, 30000)
             }
         };
 
