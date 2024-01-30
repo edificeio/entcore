@@ -398,6 +398,7 @@
   "bbm.video.record.select.devices.placeholder": "Sélectionner une caméra",
   "bbm.video.play.start": "Lire la vidéo",
   "bbm.video.play.pause": "Pause",
+  "bbm.video.save.loader.caption": "Enregistrement de la vidéo...",
   "workspace.tree.owner": "Mes documents",
   "workspace.tree.shared": "Partagés avec moi",
   "workspace.tree.protected": "Ajoutés dans les applications",
