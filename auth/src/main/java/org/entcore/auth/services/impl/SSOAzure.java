@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
 
 public class SSOAzure extends AbstractSSOProvider {
@@ -72,15 +73,21 @@ public class SSOAzure extends AbstractSSOProvider {
 	private final Neo4j neo4j;
 	private final EventBus eb;
 	private final JsonObject issuerAcademiePrefix;
+	private final String defaultStructureId;
+	private final JsonArray profilesAllowedToDefaultStructure;
 
 	public SSOAzure() {
 		this(
-			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject())
+			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject()),
+			Vertx.currentContext().config().getString("azure-default-structure-id"),
+			Vertx.currentContext().config().getJsonArray("azure-profiles-allowed-to-default-structure", new JsonArray().add("Personnel"))
 		);
 	}
 
-	public SSOAzure(JsonObject issuerAcademiePrefix) {
+	public SSOAzure(JsonObject issuerAcademiePrefix, String defaultStructureId, JsonArray profilesAllowedToDefaultStructure) {
 		this.issuerAcademiePrefix = issuerAcademiePrefix;
+		this.defaultStructureId = defaultStructureId;
+		this.profilesAllowedToDefaultStructure = profilesAllowedToDefaultStructure;
 		this.neo4j = Neo4j.getInstance();
 		this.eb = this.neo4j.getEventBus();
 	}
@@ -146,8 +153,8 @@ public class SSOAzure extends AbstractSSOProvider {
 
 		final StatementsBuilder statements = new StatementsBuilder();
 		statements
-			.add(queryStructure, new JsonObject().put("uai", getAttribute(assertion, UAI_ATTTRIBUTE)))
-			.add(queryUser, new JsonObject().put("externalId", getAttribute(assertion, ID_ATTTRIBUTE)));
+			.add(queryStructure, new JsonObject().put("uai", getOrElse(getAttribute(assertion, UAI_ATTTRIBUTE), "")))
+			.add(queryUser, new JsonObject().put("externalId", getOrElse(getAttribute(assertion, ID_ATTTRIBUTE), "")));
 
 		final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
 		if (isNotEmpty(entPersonJointure)) {
@@ -187,7 +194,7 @@ public class SSOAzure extends AbstractSSOProvider {
 				handler.handle(Future.succeededFuture());
 			}
 		} else {
-			log.debug("No user to merge.");
+			log.info("No user to merge.");
 			handler.handle(Future.succeededFuture());
 		}
 	}
@@ -251,16 +258,20 @@ public class SSOAzure extends AbstractSSOProvider {
 			return;
 		}
 
-		final JsonArray structures = results.getJsonArray(0);
-		if (structures == null || structures.size() == 0) {
-			handler.handle(Future.failedFuture("no structure found to create sso user."));
-			return;
-		}
-
 		final String profile = getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE));
 		if (!PROFILES.contains(profile)) {
 			handler.handle(Future.failedFuture("invalid profile to create sso user."));
 			return;
+		}
+
+		JsonArray structures = results.getJsonArray(0);
+		if (structures == null || structures.size() == 0) {
+			if (isNotEmpty(defaultStructureId) && profilesAllowedToDefaultStructure.contains(profile)) {
+				structures = new JsonArray().add(defaultStructureId);
+			} else {
+				handler.handle(Future.failedFuture("no structure found to create sso user."));
+				return;
+			}
 		}
 
 		final String birthDate = getAttribute(assertion, BIRTHDATE_ATTTRIBUTE);
