@@ -73,18 +73,18 @@ public class SSOAzure extends AbstractSSOProvider {
 	private final Neo4j neo4j;
 	private final EventBus eb;
 	private final JsonObject issuerAcademiePrefix;
-	private final String defaultStructureId;
-	private final JsonArray profilesAllowedToDefaultStructure;
+	private final JsonObject defaultStructureId;
+	private final JsonObject profilesAllowedToDefaultStructure;
 
 	public SSOAzure() {
 		this(
 			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject()),
-			Vertx.currentContext().config().getString("azure-default-structure-id"),
-			Vertx.currentContext().config().getJsonArray("azure-profiles-allowed-to-default-structure", new JsonArray().add("Personnel"))
+			Vertx.currentContext().config().getJsonObject("azure-default-structure-id"),
+			Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure")
 		);
 	}
 
-	public SSOAzure(JsonObject issuerAcademiePrefix, String defaultStructureId, JsonArray profilesAllowedToDefaultStructure) {
+	public SSOAzure(JsonObject issuerAcademiePrefix, JsonObject defaultStructureId, JsonObject profilesAllowedToDefaultStructure) {
 		this.issuerAcademiePrefix = issuerAcademiePrefix;
 		this.defaultStructureId = defaultStructureId;
 		this.profilesAllowedToDefaultStructure = profilesAllowedToDefaultStructure;
@@ -251,6 +251,22 @@ public class SSOAzure extends AbstractSSOProvider {
 		});
 	}
 
+	protected String getDefaultStructureId(Assertion assertion) {
+		if (defaultStructureId != null) {
+			return defaultStructureId.getString(assertion.getIssuer().getValue());
+		} else {
+			return null;
+		}
+	}
+
+	protected JsonArray getProfilesAllowedToDefaultStructure(Assertion assertion) {
+		if (profilesAllowedToDefaultStructure != null) {
+			return profilesAllowedToDefaultStructure.getJsonArray(assertion.getIssuer().getValue(), new JsonArray());
+		} else {
+			return new JsonArray();
+		}
+	}
+
 	private void createUserIfNeeded(Assertion assertion, JsonArray results, Handler<AsyncResult<Void>> handler) {
 		final JsonArray ssoUsers = results.getJsonArray(1);
 		if (ssoUsers != null && ssoUsers.size() == 1) {
@@ -266,8 +282,9 @@ public class SSOAzure extends AbstractSSOProvider {
 
 		JsonArray structures = results.getJsonArray(0);
 		if (structures == null || structures.size() == 0) {
-			if (isNotEmpty(defaultStructureId) && profilesAllowedToDefaultStructure.contains(profile)) {
-				structures = new JsonArray().add(defaultStructureId);
+			final String defaultSId = getDefaultStructureId(assertion);
+			if (isNotEmpty(defaultSId) && getProfilesAllowedToDefaultStructure(assertion).contains(profile)) {
+				structures = new JsonArray().add(defaultSId);
 			} else {
 				handler.handle(Future.failedFuture("no structure found to create sso user."));
 				return;
