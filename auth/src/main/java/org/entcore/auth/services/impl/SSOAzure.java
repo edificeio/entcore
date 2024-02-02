@@ -284,7 +284,7 @@ public class SSOAzure extends AbstractSSOProvider {
 		if (structures == null || structures.size() == 0) {
 			final String defaultSId = getDefaultStructureId(assertion);
 			if (isNotEmpty(defaultSId) && getProfilesAllowedToDefaultStructure(assertion).contains(profile)) {
-				structures = new JsonArray().add(defaultSId);
+				structures = new JsonArray().add(new JsonObject().put("structureId", defaultSId));
 			} else {
 				handler.handle(Future.failedFuture("no structure found to create sso user."));
 				return;
