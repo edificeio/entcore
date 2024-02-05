@@ -1,10 +1,19 @@
 package org.entcore.common.audience;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.entcore.common.audience.to.ReactionCreationRequest;
+import org.entcore.common.audience.to.ReactionDetailsResponse;
+import org.entcore.common.audience.to.ReactionsSummary;
+import org.entcore.common.audience.to.ViewDetailsResponse;
+import org.entcore.common.audience.to.ViewIncrementationRequest;
+import org.entcore.common.audience.to.ViewIncrementationResponse;
+import org.entcore.common.audience.to.ViewsResponse;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.rest.IRestClient;
@@ -12,8 +21,10 @@ import fr.wseduc.rest.RestClientProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 
+/**
+ * Helper class to interact with audience service.
+ */
 public class AudienceHelper {
     private final IRestClient restClient;
     private final String platformId;
@@ -27,16 +38,17 @@ public class AudienceHelper {
         headersToForward.add("user-agent");
     }
 
-    public AudienceHelper(final String appName, final Vertx vertx, final JsonObject config) {
-        final JsonObject audienceConfig = config.getJsonObject("audience", new JsonObject());
+    public AudienceHelper(final String appName, final String resourceType,
+            final Vertx vertx) {
         this.platformId = (String) vertx.sharedData().getLocalMap("server").get("platformId");
-        this.module = audienceConfig.getString("module", "na");
-        this.resourceType = audienceConfig.getString("resource-type", "na");
+        this.module = appName;
+        this.resourceType = resourceType;
         restClient = RestClientProvider.getClient(appName, "audience", vertx);
     }
 
     public Future<ViewIncrementationResponse> incrementView(
             final ViewIncrementationRequest request,
+            final String resourceType,
             final HttpServerRequest httpRequest,
             final UserInfos user) {
         final Map<String, String> params = createCommonParameters();
@@ -61,12 +73,20 @@ public class AudienceHelper {
                 getHeadersToForward(httpRequest), ViewDetailsResponse.class);
     }
 
-    public Future<ViewDetailsResponse> getReactionsSummary(final Set<String> resourceIds,
+    public Future<ReactionsSummary> getReactionsSummary(final Set<String> resourceIds,
             final HttpServerRequest httpRequest, final UserInfos user) {
         final Map<String, String> params = createCommonParameters();
-        params.put("resourceId", String.join(",", resourceIds);
+        params.put("resourceId", String.join(",", resourceIds));
         return restClient.get("/view/details/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest), ViewDetailsResponse.class);
+                getHeadersToForward(httpRequest), ReactionsSummary.class);
+    }
+
+    public Future<ReactionDetailsResponse> getReactionsDetails(final Set<String> resourceIds,
+            final HttpServerRequest httpRequest, final UserInfos user) {
+        final Map<String, String> params = createCommonParameters();
+        params.put("resourceId", String.join(",", resourceIds));
+        return restClient.get("/view/details/{platformId}/{module}/{resourceType}/{resourceId}", params,
+                getHeadersToForward(httpRequest), ReactionDetailsResponse.class);
     }
 
     public Future<ReactionDetailsResponse> upsertReaction(final String reactionType, final String resourceId,
@@ -111,7 +131,9 @@ public class AudienceHelper {
         final Map<String, String> params = new HashMap<>();
         params.put("platformId", platformId);
         params.put("module", module);
-        params.put("resourceType", resourceType);
+        if (isNotEmpty(resourceType)) {
+            params.put("resourceType", resourceType);
+        }
         return params;
     }
 
@@ -124,5 +146,10 @@ public class AudienceHelper {
             }
         });
         return headersToFroward;
+    }
+
+    public Future<Void> deleteReactionForUserAndResource(String resourceId, HttpServerRequest request, UserInfos user) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteReactionForUserAndResource'");
     }
 }
