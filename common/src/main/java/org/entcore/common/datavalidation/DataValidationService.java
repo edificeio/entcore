@@ -65,7 +65,8 @@ public interface DataValidationService {
 	 * @param request required to translate things...
 	 * @param target address where to send
 	 * @param templateParams for the "email/emailValidationCode.html" template
+	 * @param module name of the module which is sending a SMS for validation
 	 * @return the message ID
 	 */
-	Future<String> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams);
+	Future<String> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams, String module);
 }
