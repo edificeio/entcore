@@ -87,7 +87,10 @@ public class Archive extends BaseServer {
 								new StorageFactory(vertx, config).getStorage(),
 								config.getInteger("deleteDelay", 24),
 								exportPath,
-								importService
+								importService,
+								importPath,
+								config.getBoolean("enablePurgeByFileAge", true),
+								config.getInteger("maxFileAge", 24)
 						));
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);

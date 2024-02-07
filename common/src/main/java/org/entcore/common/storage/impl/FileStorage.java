@@ -24,11 +24,7 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
@@ -59,8 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class FileStorage implements Storage {
 
@@ -914,6 +912,52 @@ public class FileStorage implements Storage {
 				handler.handle(Future.failedFuture(new FileNotFoundException("Not found file : " + file)));
 			}
 		});
+	}
+
+	@Override
+	public Future<List<FileInfo>> deleteByFilter(final String directory, final Function<FileInfo, Boolean> filter) {
+		final Promise<List<FileInfo>> rootPromise = Promise.promise();
+		fs.readDir(directory, result -> {
+			if (result.succeeded()) {
+				final List<Future> futures = new ArrayList<>();
+				for (final String file : result.result()) {
+					final Promise<FileInfo> promise = Promise.promise();
+					futures.add(promise.future());
+					fs.props(file, propsResult -> {
+						if (propsResult.succeeded()) {
+							final FileInfo stats = new FileInfo(file, propsResult.result(), false);
+							if (filter.apply(stats)) {
+								// deleting...
+								fs.deleteRecursive(file, true, deleteResult -> {
+									if (deleteResult.succeeded()) {
+										log.info("File deleted successfully:" + file);
+										promise.complete(new FileInfo(file, propsResult.result(), true));
+									} else {
+										log.error("Could not delete file: "+ file, deleteResult.cause());
+										promise.fail(deleteResult.cause());
+									}
+								});
+							} else {
+								promise.complete(stats);
+							}
+						} else {
+							log.error("Could not get props of file: "+ file, propsResult.cause());
+							promise.fail(propsResult.cause());
+						}
+					});
+				}
+				CompositeFuture.all(futures).onComplete(e -> {
+					if(e.succeeded()){
+						rootPromise.complete(e.result().list());
+					}else{
+						rootPromise.fail(e.cause());
+					}
+				});
+			}else{
+				rootPromise.fail(result.cause());
+			}
+		});
+		return rootPromise.future();
 	}
 
 	public void setAntivirus(AntivirusClient antivirus) {
