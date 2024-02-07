@@ -262,6 +262,7 @@
   "tiptap.toolbar.audio": "Ajout audio",
   "tiptap.toolbar.attachment": "Ajout pièce jointe",
   "tiptap.toolbar.stt": "Reconnaissance vocale",
+  "tiptap.toolbar.tts": "Synthèse vocale",
   "tiptap.toolbar.bold": "Gras",
   "tiptap.toolbar.italic": "Italique",
   "tiptap.toolbar.underline": "Souligner",
