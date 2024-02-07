@@ -23,12 +23,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.validation.FileValidator;
+
+import java.util.List;
+import java.util.function.Function;
 
 public interface Storage {
 
@@ -125,4 +129,26 @@ public interface Storage {
 	 * @return The raw content of the file
 	 */
     Future<byte[]> readFileToMemory(UploadedFileMessage uploadedFileMessage);
+
+	/**
+	 * Delete all children matching filter
+	 * @param parent directory
+	 * @param filter returning true if child should be deleted
+	 * @return list of deleted file
+	 */
+	default Future<List<FileInfo>> deleteByFilter(final String parent, final Function<FileInfo, Boolean> filter) {
+		throw new UnsupportedOperationException("Not supported yet");
+	}
+
+	class FileInfo{
+		public final String path;
+		public final FileProps props;
+		public final boolean deleted;
+
+		public FileInfo(String path, FileProps props, boolean deleted) {
+			this.path = path;
+			this.props = props;
+			this.deleted = deleted;
+		}
+	}
 }
