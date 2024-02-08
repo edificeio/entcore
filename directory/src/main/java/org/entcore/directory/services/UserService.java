@@ -157,4 +157,6 @@ public interface UserService {
 	void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
+	
+	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
 }
