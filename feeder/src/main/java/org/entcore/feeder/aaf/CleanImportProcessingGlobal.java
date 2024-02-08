@@ -50,11 +50,11 @@ public class CleanImportProcessingGlobal extends BaseImportProcessing {
 
 		if (importPrefixList == null || importPrefixList.isEmpty()) {
 			log.info(e-> "Global method calls in clean import process", true);
+			importer.restorePreDeletedUsers();
+			importer.deleteOldProfileAttachments();
+			importer.countUsersInGroups();
 			importer.removeOldFunctionalGroup();
 			importer.removeEmptyClasses();
-			importer.restorePreDeletedUsers();
-			importer.countUsersInGroups();
-			importer.deleteOldProfileAttachments();
 		}
 	}
 
