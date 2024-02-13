@@ -1,0 +1,20 @@
+{
+    "name": "{{ entcoreAudienceVersion }}",
+    "priority": 200,
+    "config": {
+        "main":"org.entcore.audience.Audience",
+        "port": 8091,
+        "csrf-token" : false,
+        "ssl": {{ enableSsl|default(true) }},
+        "mode": "{{ envMode|default('prod') }}",
+        "auto-redeploy": false,
+        "app-type" : "END_USER",
+        "host": "https://{{ host }}",
+        {% if hotjarId is defined %}
+        "publicConf": {
+        },
+        {% endif %}
+        "app-name" : "Audience",
+        "app-address" : "/audience"
+    }
+}
