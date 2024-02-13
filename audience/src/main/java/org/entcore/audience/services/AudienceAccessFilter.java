@@ -1,9 +1,9 @@
-package org.entcore.common.audience;
-
-import java.util.Set;
+package org.entcore.audience.services;
 
 import io.vertx.core.Future;
 import org.entcore.common.user.UserInfos;
+
+import java.util.Set;
 
 /**
  * A service that checks whether a user has access to a set of resources
@@ -13,7 +13,9 @@ public interface AudienceAccessFilter {
 
     /**
      * Checks whether the user has access to <b>all</b> the specified resources.
-     * 
+     *
+     * @param appName Name of the application which owns the resources to check
+     * @param resourceType Type of the resources to check
      * @param user        The user desiring to access the resources
      * @param resourceIds Ids of the resources to access
      * @return A {@code Future} that succeeds if the check was successful and can be
@@ -23,6 +25,9 @@ public interface AudienceAccessFilter {
      *         the user can access <b>all</b> the resources, otherwise, <b>at least
      *         one</b> of the resources cannot be accessed.
      */
-    Future<Boolean> canAccess(final UserInfos user, Set<String> resourceIds);
+    Future<Boolean> canAccess(final String appName,
+                              final String resourceType,
+                              final UserInfos user,
+                              final Set<String> resourceIds);
 
 }
