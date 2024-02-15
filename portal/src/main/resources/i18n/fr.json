@@ -798,6 +798,7 @@
   "explorer.move.subtitle": "Sélectionner le dossier vers lequel déplacer les éléments",
   "explorer.folder.new": "Nouveau dossier",
   "explorer.actions.open": "Ouvrir",
+  "explorer.actions.copy": "Dupliquer",
   "explorer.actions.move": "Déplacer",
   "explorer.actions.delete": "Supprimer",
   "explorer.actions.publish": "Publier dans la bibliothèque",
