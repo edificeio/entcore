@@ -1,24 +1,9 @@
 package org.entcore.audience.controllers;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.entcore.audience.reaction.model.ReactionType;
-import org.entcore.audience.reaction.service.ReactionService;
-import org.entcore.audience.services.AudienceAccessFilter;
-import org.entcore.audience.services.AudienceService;
-import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
-import org.entcore.common.audience.AudienceHelper;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
-import fr.wseduc.rs.Delete;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
@@ -29,20 +14,31 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.audience.reaction.model.ReactionType;
+import org.entcore.audience.reaction.service.ReactionService;
+import org.entcore.audience.services.AudienceAccessFilter;
+import org.entcore.audience.view.service.ViewService;
+import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AudienceController extends BaseController {
-
-  private final AudienceHelper audienceHelper;
 
   private final AudienceAccessFilter audienceAccessFilter;
 
   private final ReactionService reactionService;
 
-  public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService) {
-    // todo implement access filter creation
-    this.audienceHelper = new AudienceHelper(vertx);
+  private final ViewService viewService;
+
+  public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService,
+                            final ViewService viewService) {
     this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
     this.reactionService = reactionService;
+    this.viewService = viewService;
   }
 
 
@@ -88,6 +84,48 @@ public class AudienceController extends BaseController {
             .onFailure(th -> {
               Renders.log.error("Error while deleting reaction for user and resource", th);
             }));
+  }
+
+  @Post("/views/:module/:resourceType/:resourceId")
+  @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+  public void registerView(final HttpServerRequest request) {
+    final String resourceId = request.getParam("resourceId");
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+        .onSuccess(user -> viewService.registerView(module, resourceType, resourceId, user)
+            .onSuccess(e -> Renders.ok(request))
+            .onFailure(th -> {
+              Renders.log.error("Error while registering resource view for resource " + module + "@" + resourceType + "@" + resourceId, th);
+            }));
+  }
+
+  @Get("/views/count/:module/:resourceType/:resourceType")
+  @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+  public void getResourcesViewCounts(final HttpServerRequest request) {
+    final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceIds", request);
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
+    verify(module, resourceType, resourceIds, request)
+    .onSuccess(user -> viewService.getViewCounts(module, resourceType, resourceIds, user)
+        .onSuccess(e -> Renders.render(request, e))
+        .onFailure(th -> {
+          Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th);
+        }));
+  }
+
+  @Get("/views/details/:module/:resourceType/:resourceType/:resourceId")
+  @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+  public void getResourcesViewDetails(final HttpServerRequest request) {
+    final String resourceId = request.getParam("resourceId");
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+    .onSuccess(user -> viewService.getViewDetails(module, resourceType, resourceId, user)
+        .onSuccess(e -> Renders.render(request, e))
+        .onFailure(th -> {
+          Renders.log.error("Error while getting views details of resource " + module + "@" + resourceType + "@" + resourceId, th);
+        }));
   }
 
 
