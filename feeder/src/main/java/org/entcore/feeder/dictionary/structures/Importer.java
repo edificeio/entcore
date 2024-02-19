@@ -932,9 +932,11 @@ public class Importer {
 	}
 
 	public void removeOldFunctionalGroup() {
-		transactionHelper.add("MATCH (g:Group) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup set g.notEmptyGroup = false;", null);
-		transactionHelper.add("MATCH (g:Group)<-[:IN]-(:User) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup with distinct g set g.notEmptyGroup = true;", null);
-		transactionHelper.add("MATCH (g:Group {notEmptyGroup:false}) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup detach delete g;", null);
+		// transactionHelper.add("MATCH (g:Group) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup set g.notEmptyGroup = false;", null);
+		// transactionHelper.add("MATCH (g:Group)<-[:IN]-(:User) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup with distinct g set g.notEmptyGroup = true;", null);
+		// transactionHelper.add("MATCH (g:Group {notEmptyGroup:false}) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup detach delete g;", null);
+
+		transactionHelper.add("MATCH (g:Group {nbUsers:0}) WHERE g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup OR g:DirectionGroup detach delete g;", null);
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User) " +
@@ -951,9 +953,13 @@ public class Importer {
 	}
 
 	public void removeEmptyClasses() {
-		transactionHelper.add("MATCH (c:Class) set c.notEmptyClass = false;", null);
-		transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) with distinct c set c.notEmptyClass = true;", null);
-		transactionHelper.add("MATCH (c:Class {notEmptyClass : false})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
+		// transactionHelper.add("MATCH (c:Class) set c.notEmptyClass = false;", null);
+		// transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) with distinct c set c.notEmptyClass = true;", null);
+		// transactionHelper.add("MATCH (c:Class {notEmptyClass : false})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
+
+		transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(g:Group) with distinct c, sum(COALESCE(g.nbUsers, 4200)) as cNbUsers set c.cNbUsers = cNbUsers;", null);
+		transactionHelper.add("MATCH (c:Class {cNbUsers:0})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
+
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User) " +

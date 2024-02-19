@@ -488,4 +488,37 @@ public class PortalController extends BaseController {
 		}
 	}
 
+	/**
+	 * Get the configured scriptPath for cantoo script.
+	 * @param request nothing to do
+	 * @return { "scriptPath": "https://cantoo.com/script.js" }
+	 * 
+	 * @security optionalFeature.cantoo
+	 * @workflow optionalFeatureCantoo
+	 */
+	@Get("optionalFeature/cantoo")
+	@SecuredAction("optionalFeature.cantoo")
+	public void optionalFeatureCantoo(HttpServerRequest request) {
+
+		// get scriptPath from config
+		String scriptPath = config.getString("optionalFeature-cantoo-scriptPath", "");
+
+		if(!scriptPath.isEmpty()) {
+			
+			JsonObject result = new JsonObject();
+			result.put("scriptPath", scriptPath);
+
+			request.response().putHeader("content-type", "application/json");
+			request.response().putHeader("Cache-Control", "no-cache, must-revalidate");
+			request.response().putHeader("Expires", "-1");
+			
+			//return scriptPath of script
+			request.response().end(result.encode());
+			
+		} else {
+			unauthorized(request);
+		}
+		
+	}
+
 }
