@@ -1,9 +1,15 @@
 package org.entcore.audience.controllers;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.entcore.audience.reaction.model.ReactionType;
+import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.audience.services.AudienceAccessFilter;
+import org.entcore.audience.services.AudienceService;
 import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
 import org.entcore.common.audience.AudienceHelper;
 import org.entcore.common.user.UserInfos;
@@ -30,50 +36,54 @@ public class AudienceController extends BaseController {
 
   private final AudienceAccessFilter audienceAccessFilter;
 
-  public AudienceController(final Vertx vertx, final JsonObject config) {
+  private final ReactionService reactionService;
+
+  public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService) {
     // todo implement access filter creation
     this.audienceHelper = new AudienceHelper(vertx);
     this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
+    this.reactionService = reactionService;
   }
 
 
-  @Get("/reactions/:appName/:resourceType")
+  @Get("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getReactionsSummary(final HttpServerRequest request) {
-    final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceId", request);
-    verify(request.getParam("appName"), request.getParam("resourceType"), resourceIds, request)
-        .onSuccess(user -> audienceHelper.getReactionsSummary(resourceIds, request, user));
+    String module = request.getParam("module");
+    String resourceType = request.getParam("resourceType");
+    final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceIds", request);
+
+    verify(module, resourceType, resourceIds, request)
+        .onSuccess(user -> reactionService.getReactionsSummary(module, resourceType, resourceIds, user)
+                .onSuccess(reactionsSummary -> Renders.renderJson(request, JsonObject.mapFrom(reactionsSummary))));
   }
 
-  @Get("/reactions/:appName/:resourceType/:resourceId")
+  @Get("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-  public void getReactionsDetails(final HttpServerRequest request) {
-    final Set<String> resourceIds = new HashSet<>();
-    resourceIds.add(request.getParam("resourceId"));
-    verify(request.getParam("appName"), request.getParam("resourceType"), resourceIds, request)
-        .onSuccess(user -> audienceHelper.getReactionsDetails(resourceIds, request, user));
+  public void getReactionDetails(final HttpServerRequest request) {
+    final String resourceId = request.getParam("resourceId");
+    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.getReactionDetails(resourceId, request, user));
   }
 
-  @Post("/reactions/:appName/:resourceType")
+  @Post("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void createReaction(final HttpServerRequest request) {
     doUpsertReaction(request);
   }
 
-  @Put("/reactions/:appName/:resourceType")
+  @Put("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void updateReaction(final HttpServerRequest request) {
     doUpsertReaction(request);
   }
 
-  @Delete("/reactions/:appName/:resourceType/:resourceId")
+  @Delete("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void deleteReaction(final HttpServerRequest request) {
     final String resourceId = request.getParam("resourceId");
-    final Set<String> resourceIds = new HashSet<>();
-    resourceIds.add(resourceId);
-    verify(request.getParam("appName"), request.getParam("resourceType"), resourceIds, request)
-        .onSuccess(user -> audienceHelper.deleteReactionForUserAndResource(resourceId, request, user)
+    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.deleteReaction(resourceId, request, user)
             .onSuccess(e -> Renders.ok(request))
             .onFailure(th -> {
               Renders.log.error("Error while deleting reaction for user and resource", th);
@@ -82,18 +92,22 @@ public class AudienceController extends BaseController {
 
 
   public void doUpsertReaction(final HttpServerRequest request) {
-    RequestUtils.bodyToJson(request, data -> {
-      final String resourceId = data.getString("id", "");
-      final String reactionType = data.getString("reactionType", "");
+    RequestUtils.bodyToJson(request, jsonBody -> {
+      final String module = request.getParam("module");
+      final String resourceType = request.getParam("resourceType");
+      final String resourceId = jsonBody.getString("resourceId", "");
+      final ReactionType reactionType = ReactionType.valueOf(jsonBody.getString("reactionType", ""));
       final Set<String> resourceIds = new HashSet<>();
       resourceIds.add(resourceId);
-      verify(request.getParam("appName"), request.getParam("resourceType"), resourceIds, request)
-          .onSuccess(user -> audienceHelper.upsertReaction(reactionType, resourceId, request, user));
+      verify(module, resourceType, resourceIds, request)
+          .onSuccess(user -> reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
+                  .onSuccess(upsertedReaction -> Renders.ok(request))
+                  .onFailure(th -> Renders.renderError(request)));
     });
   }
 
   /**
-   * @param appName Name of the application which owns the resources to check
+   * @param module Name of the application which owns the resources to check
    * @param resourceType Type of the resources to check
    * @param resourceIds Ids of the resources whose access by the user should be
    *                    checked
@@ -102,26 +116,21 @@ public class AudienceController extends BaseController {
    *         resources, <b>does not complete otherwise</b> but send a response to
    *         the user.
    */
-  private Future<UserInfos> verify(
-      final String appName,
-      final String resourceType,
-      final Set<String> resourceIds,
-      final HttpServerRequest request) {
+  private Future<UserInfos> verify(final String module, final String resourceType, final Set<String> resourceIds, final HttpServerRequest request) {
     final Promise<UserInfos> promise = Promise.promise();
-    UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(user -> {
-      audienceAccessFilter.canAccess( appName, resourceType, user, resourceIds).onSuccess(canAccess -> {
-        if (canAccess) {
-          promise.complete(user);
-        } else {
-          promise.fail("user.cannot.access");
-          Renders.forbidden(request);
-        }
-      }).onFailure(th -> {
-        Renders.log.error("Error while fetching the user credentials to access the resources", th);
-        promise.fail(th);
-        Renders.renderError(request);
-      });
-    });
+    UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(user -> audienceAccessFilter.canAccess(module, resourceType, user, resourceIds)
+            .onSuccess(canAccess -> {
+              if (canAccess) {
+                promise.complete(user);
+              } else {
+                promise.fail("user.cannot.access");
+                Renders.forbidden(request);
+              }})
+            .onFailure(th -> {
+              Renders.log.error("Error while fetching the user credentials to access the resources", th);
+              promise.fail(th);
+              Renders.renderError(request);
+            }));
     return promise.future();
   }
 }
