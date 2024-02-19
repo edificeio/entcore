@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonArray;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.model.ReactionType;
 import org.entcore.audience.reaction.model.ReactionsSummary;
-import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
@@ -16,10 +16,10 @@ import java.util.Set;
 
 public class ReactionDaoImpl implements ReactionDao {
 
-    private final Sql sql;
+    private final ISql sql;
 
-    public ReactionDaoImpl() {
-        this.sql = Sql.getInstance();
+    public ReactionDaoImpl(final ISql sql) {
+        this.sql = sql;
     }
 
     @Override
