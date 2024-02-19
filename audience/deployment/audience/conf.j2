@@ -10,6 +10,8 @@
         "auto-redeploy": false,
         "app-type" : "END_USER",
         "host": "https://{{ host }}",
+        "sql": true,
+        "db-schema": "audience",
         {% if hotjarId is defined %}
         "publicConf": {
         },

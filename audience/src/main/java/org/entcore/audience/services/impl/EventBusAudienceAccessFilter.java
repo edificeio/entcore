@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.Json;
 import org.entcore.audience.services.AudienceAccessFilter;
+import org.entcore.common.audience.to.AudienceCheckRightResponseMessage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.audience.to.AudienceCheckRightRequestMessage;
 import java.util.Set;
@@ -27,8 +28,12 @@ public class EventBusAudienceAccessFilter implements AudienceAccessFilter {
         getMessage(user, appName, resourceType, resourceIds),
         messageAsyncResult -> {
           if(messageAsyncResult.succeeded()) {
-            final Boolean response = (Boolean) messageAsyncResult.result().body();
-            promise.complete(response);
+            final AudienceCheckRightResponseMessage response = Json.decodeValue((String) messageAsyncResult.result().body(), AudienceCheckRightResponseMessage.class);
+            if(response.isSuccess()) {
+              promise.complete(response.isAccess());
+            } else {
+              promise.fail(response.getErrorMsg());
+            }
           } else {
             promise.fail(messageAsyncResult.cause());
           }
