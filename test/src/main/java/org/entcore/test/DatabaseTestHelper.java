@@ -110,7 +110,7 @@ public class DatabaseTestHelper {
      * @param loadScripts truthy to play migration scripts from the app "sql" folder
      * @param delay delay to wait after having started the container, in milliseconds.
      */
-    public Async initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
+    public Async  initPostgreSQL(TestContext context, PostgreSQLContainer<?> postgreSQLContainer, String schema,
                                 boolean loadScripts, long delay) {
         final Async async = context.async();
         final JsonObject postgresConfig = new JsonObject().put("address", "sql.persistor")
