@@ -13,11 +13,9 @@ import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ReactionDaoImpl implements ReactionDao {
 

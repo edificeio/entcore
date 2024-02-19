@@ -23,7 +23,7 @@ CREATE TABLE audience.views (
     "module" VARCHAR(36) NOT NULL,
     "resource_type" VARCHAR(64) NOT NULL,
     "resource_id" VARCHAR(36) NOT NULL,
-    "profile" VARCHAR(9) NOT NULL,
+    "profile" VARCHAR(12 ) NOT NULL,
     "user_id" VARCHAR(36) NOT NULL,
     "last_view" TIMESTAMP NOT NULL,
     "counter" INT DEFAULT 0 NOT NULL
