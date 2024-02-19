@@ -11,8 +11,6 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.audience.to.*;
 import org.entcore.common.user.UserInfos;
 
-import java.util.Set;
-
 /**
  * Helper class to interact with audience service.
  */
@@ -48,49 +46,16 @@ public class AudienceHelper {
                 getHeadersToForward(httpRequest), ViewDetailsResponse.class);*/
     }
 
-    public Future<ReactionsSummary> getReactionsSummary(final Set<String> resourceIds,
-            final HttpServerRequest httpRequest, final UserInfos user) {
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.get("/view/details/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest), ReactionsSummary.class);*/
-    }
 
-    public Future<ReactionDetailsResponse> getReactionsDetails(final Set<String> resourceIds,
+    public void onDeletedResource(final String resourceId,
             final HttpServerRequest httpRequest, final UserInfos user) {
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.get("/view/details/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest), ReactionDetailsResponse.class);*/
-    }
-
-    public Future<ReactionDetailsResponse> upsertReaction(final String reactionType, final String resourceId,
-            final HttpServerRequest httpRequest, final UserInfos user) {
-        final ReactionCreationRequest request = new ReactionCreationRequest();
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.post("/reactions/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest),
-                ReactionDetailsResponse.class);*/
-    }
-
-    public Future<ReactionDetailsResponse> deleteReaction(final String resourceId,
-            final HttpServerRequest httpRequest, final UserInfos user) {
-        final ReactionCreationRequest request = new ReactionCreationRequest();
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.delete("/reactions/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest),
-                ReactionDetailsResponse.class);*/
-    }
-
-    public Future<ReactionDetailsResponse> onDeletedResource(final String resourceId,
-            final HttpServerRequest httpRequest, final UserInfos user) {
-        final ReactionCreationRequest request = new ReactionCreationRequest();
         throw new UnsupportedOperationException("not.yet.implemented");
         /*return restClient.delete("/reactions/{platformId}/{module}/{resourceType}/{resourceId}", params,
                 getHeadersToForward(httpRequest), ReactionDetailsResponse.class);*/
     }
 
-    public Future<ReactionDetailsResponse> onDeletedUser(final String userId,
+    public void onDeletedUser(final String userId,
             final HttpServerRequest httpRequest) {
-        final ReactionCreationRequest request = new ReactionCreationRequest();
         throw new UnsupportedOperationException("not.yet.implemented");
         /*return restClient.delete("/reactions/{platformId}/{module}/{resourceType}/{resourceId}", params,
                 getHeadersToForward(httpRequest), ReactionDetailsResponse.class);*/

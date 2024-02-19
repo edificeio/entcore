@@ -462,6 +462,13 @@ task integrationTest(dependsOn: [subprojects.copyMod, project(':tests').compileT
     project(':tests').tasks.gatling.execute()
 }
 
+project(':audience') {
+  dependencies {
+    compile project(':common')
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
+    testCompile project(':test')
+  }
+}
 
 integrationTest.doFirst {
     tasks.runEnt.execute()
