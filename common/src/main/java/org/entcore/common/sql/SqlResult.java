@@ -95,6 +95,27 @@ public class SqlResult {
 		}
 	}
 
+	public static Either<String, JsonArray> validGroupedResults(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			JsonArray results = res.body().getJsonArray("results");
+			JsonArray fields = res.body().getJsonArray("fields");
+			JsonArray transformedResults = new JsonArray();
+			for (Object raw : results) {
+				if (!(raw instanceof JsonArray)) continue;
+				final JsonArray result = (JsonArray) raw;
+				final JsonObject transformed = new JsonObject();
+				for(int i = 0; i < fields.size(); i++) {
+					final String fieldName = fields.getString(i);
+					transformed.put(fieldName, result.getValue(i));
+				}
+				transformedResults.add(transformed);
+			}
+			return new Either.Right<>(transformedResults);
+		} else {
+			return new Either.Left<>(res.body().getString("message", ""));
+		}
+	}
+
 	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
 		return jsonToEither(res.body());
 	}
