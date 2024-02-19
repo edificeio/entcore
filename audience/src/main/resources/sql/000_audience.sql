@@ -7,7 +7,7 @@ CREATE TABLE audience.reactions (
     "resource_id" VARCHAR(36) NOT NULL,
     "profile" VARCHAR(12) NOT NULL,
     "user_id" VARCHAR(36) NOT NULL,
-    "reaction_date" TIMESTAMP NOT NULL,
+    "reaction_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "reaction_type" VARCHAR(36) NOT NULL
 )
 

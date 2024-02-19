@@ -192,16 +192,20 @@ public class ReactionServiceImplTest {
     userInfos.setUserId("user-id");
     userInfos.setFirstName("first-name");
     userInfos.setFirstName("last-name");
+    userInfos.setType("PERSRELELEVE");
 
     final UserInfos userInfos2 = new UserInfos();
     userInfos2.setUserId("user-id2");
     userInfos2.setFirstName("first-name-2");
     userInfos2.setFirstName("last-name-2");
+    userInfos2.setType("ENSEIGNANT");
 
     final UserInfos userInfos3 = new UserInfos();
     userInfos3.setUserId("user-id3");
     userInfos3.setFirstName("first-name-3");
     userInfos3.setFirstName("last-name-3");
+    userInfos3.setType("PERSEDUCNAT");
+
     // User 1 saves their first reaction
     reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, ReactionType.REACTION_TYPE_1)
     .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
@@ -219,7 +223,7 @@ public class ReactionServiceImplTest {
       context.assertEquals(1, count, "Should have a count of one because we just registered a reaction of this type for this resource");
     })
     // Another user registers a reaction for the same resource
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos3, ReactionType.REACTION_TYPE_3))
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos2, ReactionType.REACTION_TYPE_3))
     .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
     .onSuccess(e -> {
       final Map<String, Integer> counts = e.getReactionsByResource().get("r-id-upsert-0").getCountByType();
@@ -234,7 +238,8 @@ public class ReactionServiceImplTest {
       final Map<String, Integer> counts = e.getReactionsByResource().get("r-id-upsert-0").getCountByType();
       context.assertEquals(2, counts.size(), "Should have 2 entries, one per type of reaction");
       context.assertEquals(1, counts.get(ReactionType.REACTION_TYPE_2.name()), "User 1 previously registered that reaction so it should appear");
-      context.assertEquals(2, counts.get(ReactionType.REACTION_TYPE_3.name()), "User 2 and 2 previously registered that reaction so it should appear");
+      context.assertEquals(2, counts.get(ReactionType.REACTION_TYPE_3.name()), "User 2 and 3 previously registered that reaction so it should appear");
+      async.complete();
     })
     .onFailure(context::fail);
   }

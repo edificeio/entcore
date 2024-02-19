@@ -90,15 +90,14 @@ public class ReactionDaoImpl implements ReactionDao {
         params.add(resourceId);
         params.add(userInfos.getType());
         params.add(userInfos.getUserId());
-        params.add(LocalDateTime.now());
         params.add(reactionType);
 
-        String query = "" +
-                "insert into audience.reactions(module, resource_type, resource_id, profile, user_id, reaction_date, reaction_type) " +
-                "values (?, ?, ?, ?, ?, ?, ?) " +
+        String query =
+                "insert into audience.reactions(module, resource_type, resource_id, profile, user_id, reaction_type) " +
+                "values (?, ?, ?, ?, ?, ?) " +
                 "on conflict on constraint reactions_unique_constraint do update " +
                 "set reaction_date = excluded.reaction_date, " +
-                "reaction_type = excluded.reaction_type;";
+                "reaction_type = excluded.reaction_type";
 
         sql.prepared(query, params, results -> {
             Either<String, JsonArray> validatedResult = SqlResult.validResults(results);
