@@ -198,14 +198,16 @@ public class DefaultMfaService implements MfaService {
         }
 
         @Override
-        public Future<String> sendValidationMessage( final HttpServerRequest request, String target, JsonObject templateParams ) {
+        public Future<String> sendValidationMessage( final HttpServerRequest request, String target,
+                                                     final JsonObject templateParams,
+                                                     final String module) {
             if( StringUtils.isEmpty(target) ) {
                 logger.info("[2FA] Cannot send a code through sms or email, since target is empty !");
                 return Future.failedFuture("empty.target");
             }
 
             if( Mfa.withSms() ) {
-                return sms.sendUnique(request, target, "phone/mfaCode.txt", templateParams, "MFA");
+                return sms.sendUnique(request, target, "phone/mfaCode.txt", templateParams, module);
             }
             
             // if( Mfa.withEmail() ) {
@@ -274,7 +276,7 @@ public class DefaultMfaService implements MfaService {
                     .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
                     .put("code", DataStateUtils.getKey(mfaState));
 
-                    return mfaField.sendValidationMessage(request, fullState.getString("target"), templateParams)
+                    return mfaField.sendValidationMessage(request, fullState.getString("target"), templateParams, "MFA")
                     .onFailure( t -> {
                         // Code was not sent => consider it is outdated
                         logger.error(t);

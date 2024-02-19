@@ -150,29 +150,27 @@ public class Group {
 		{
 			tx = TransactionManager.getInstance().begin();
 
-			String removeQuery =
-				"MATCH " +
-				"	(g:ManualGroup)<-[old:IN]-(:User) " +
-				"WHERE " +
-				"	NOT EXISTS(old.source) OR old.source <> 'MANUAL' " +
-				"DELETE old; ";
-			String linkQuery =
-				"MATCH " +
-				"	(g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
-				"WHERE " +
-				"	EXISTS(g.autolinkUsersFromGroups) " +
+			final String linkQuery =
+				"MATCH (g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
 				"WITH g, struct " +
 				"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
 				"WHERE " +
-				"	(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-				"	AND target.filter IN g.autolinkUsersFromGroups " +
+				"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
+				"AND target.filter IN g.autolinkUsersFromGroups " +
 				"WITH g, u " +
-				"MERGE (u)-[new:IN]->(g); ";
+				"MERGE (u)-[new:IN]->(g) " +
+				"SET new.updated = {now} ";
 
-			JsonObject params = new JsonObject();
+			final String removeQuery =
+				"MATCH (g:ManualGroup)<-[old:IN]-(:User) " +
+				"WHERE (NOT EXISTS(old.source) OR old.source <> 'MANUAL') AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+				"DELETE old ";
 
-			tx.add(removeQuery, params);
+			final JsonObject params = new JsonObject().put("now", System.currentTimeMillis());
+
 			tx.add(linkQuery, params);
+			tx.add(removeQuery, params);
 			User.countUsersInGroups(null, "ManualGroup", tx);
 
 			tx.commit(null);
