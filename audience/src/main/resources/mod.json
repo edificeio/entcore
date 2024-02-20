@@ -5,5 +5,7 @@
 	"auto-redeploy": false,
     "host" : "http://localhost:8091",
     "app-name" : "Admin",
-    "app-address" : "http://localhost:8091/audience"
+    "app-address" : "http://localhost:8091/audience",
+	"sql": true,
+	"db-schema": "audience"
 }
