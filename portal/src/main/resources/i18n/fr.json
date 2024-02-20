@@ -937,6 +937,7 @@
   "helpbox.next": "Suivant",
   "helpbox.finish": "J'ai compris",
   "workspace.add.document.success": "Le fichier a été importé et est disponible dans votre espace documentaire",
+  "explorer.filters": "Filtres",
   "explorer.see.more": "Voir plus",
   "explorer.trash.title": "Mise en corbeille",
   "explorer.trash.toast": "Ressource(s) restaurée(s) avec succès à la racine des dossiers",
