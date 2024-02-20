@@ -100,7 +100,7 @@ public class AudienceController extends BaseController {
             }));
   }
 
-  @Get("/views/count/:module/:resourceType/:resourceType")
+  @Get("/views/count/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getResourcesViewCounts(final HttpServerRequest request) {
     final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceIds", request);
@@ -114,7 +114,7 @@ public class AudienceController extends BaseController {
         }));
   }
 
-  @Get("/views/details/:module/:resourceType/:resourceType/:resourceId")
+  @Get("/views/details/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getResourcesViewDetails(final HttpServerRequest request) {
     final String resourceId = request.getParam("resourceId");
