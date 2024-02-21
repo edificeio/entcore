@@ -8,9 +8,6 @@ export class Session {
         this.mode = mode;
         this.cookies = cookies;
         this.expiresAt = Date.now() + (expiresIn * 1000) - 3000;
-        console.log("Expires in = ", expiresIn)
-        console.log("Now is ", new Date())
-        console.log("Expires at", new Date(this.expiresAt));
     }
     isExpired() {
         return this.expiresAt <= Date.now();

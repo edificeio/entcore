@@ -76,3 +76,4 @@ export const authenticateOAuth2 = function(login, pwd, clientId, clientSecret){
   const accessToken = response.json("access_token");
   return new Session(accessToken, SessionMode.OAUTH2, response.json("expires_in"));
 }
+
