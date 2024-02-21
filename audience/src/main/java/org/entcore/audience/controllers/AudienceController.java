@@ -14,7 +14,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import org.entcore.audience.reaction.model.ReactionType;
 import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.audience.services.AudienceAccessFilter;
 import org.entcore.audience.view.service.ViewService;
@@ -45,8 +44,8 @@ public class AudienceController extends BaseController {
   @Get("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getReactionsSummary(final HttpServerRequest request) {
-    String module = request.getParam("module");
-    String resourceType = request.getParam("resourceType");
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceIds", request);
 
     verify(module, resourceType, resourceIds, request)
@@ -57,9 +56,14 @@ public class AudienceController extends BaseController {
   @Get("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getReactionDetails(final HttpServerRequest request) {
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final String resourceId = request.getParam("resourceId");
-    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
-        .onSuccess(user -> reactionService.getReactionDetails(resourceId, request, user));
+    final int page = Integer.parseInt(request.getParam("page"));
+    final int size = Integer.parseInt(request.getParam("size"));
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size)
+                .onSuccess(reactionDetailsResponse -> Renders.renderJson(request, JsonObject.mapFrom(reactionDetailsResponse))));
   }
 
   @Post("/reactions/:module/:resourceType")
@@ -77,9 +81,11 @@ public class AudienceController extends BaseController {
   @Delete("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void deleteReaction(final HttpServerRequest request) {
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final String resourceId = request.getParam("resourceId");
-    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
-        .onSuccess(user -> reactionService.deleteReaction(resourceId, request, user)
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.deleteReaction(module, resourceType, resourceId, user)
             .onSuccess(e -> Renders.ok(request))
             .onFailure(th -> {
               Renders.log.error("Error while deleting reaction for user and resource", th);
@@ -134,11 +140,12 @@ public class AudienceController extends BaseController {
       final String module = request.getParam("module");
       final String resourceType = request.getParam("resourceType");
       final String resourceId = jsonBody.getString("resourceId", "");
-      final ReactionType reactionType = ReactionType.valueOf(jsonBody.getString("reactionType", ""));
+      final String reactionType = jsonBody.getString("reactionType", "");
       final Set<String> resourceIds = new HashSet<>();
       resourceIds.add(resourceId);
       verify(module, resourceType, resourceIds, request)
-          .onSuccess(user -> reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
+          .onSuccess(user ->
+                  reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
                   .onSuccess(upsertedReaction -> Renders.ok(request))
                   .onFailure(th -> Renders.renderError(request)));
     });

@@ -8,8 +8,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.audience.reaction.dao.impl.ReactionDaoImpl;
-import org.entcore.audience.reaction.model.ReactionType;
-import org.entcore.audience.reaction.model.ReactionsSummary;
+import org.entcore.audience.reaction.model.ReactionCounters;
+import org.entcore.audience.reaction.model.ReactionsSummaryForResource;
+import org.entcore.audience.reaction.model.UserReaction;
 import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
@@ -20,7 +21,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
@@ -56,7 +59,7 @@ public class ReactionServiceImplTest {
     final UserInfos userInfos = new UserInfos();
     userInfos.setUserId("user-id");
     userInfos.setFirstName("first-name");
-    userInfos.setFirstName("last-name");
+    userInfos.setLastName("last-name");
     final Async async = context.async();
     reactionService.getReactionsSummary("module", "resource-type", Sets.newHashSet("id-1"), userInfos)
     .onFailure(context::fail)
@@ -73,7 +76,7 @@ public class ReactionServiceImplTest {
     final UserInfos userInfos = new UserInfos();
     userInfos.setUserId("user-id");
     userInfos.setFirstName("first-name");
-    userInfos.setFirstName("last-name");
+    userInfos.setLastName("last-name");
     final Async async = context.async();
     reactionService.getReactionsSummary("module", "resource-type", Sets.newHashSet(), userInfos)
         .onFailure(context::fail)
@@ -108,28 +111,53 @@ public class ReactionServiceImplTest {
     final UserInfos userInfos = new UserInfos();
     userInfos.setUserId("user-id");
     userInfos.setFirstName("first-name");
-    userInfos.setFirstName("last-name");
+    userInfos.setLastName("last-name");
     reactionService.getReactionsSummary("mod0", "rt0", Sets.newHashSet("r-id-0"), userInfos)
         .onFailure(context::fail)
         .onSuccess(summary -> {
           context.assertNotNull(summary, "getReactionsSummary should never return null");
           context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
-          context.assertEquals(1, summary.getReactionsByResource().size(), "getReactionsSummary should return a counter for an existing resource");
-          final ReactionsSummary.ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
+          context.assertEquals(1, summary.getReactionsByResource().size(), "getReactionsSummary should return a summary for an existing resource");
+          final ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
           context.assertNotNull(resSummary, "The summary of an existing resource should not be null");
-          final Map<String, Integer> counts = resSummary.getCountByType();
-          context.assertEquals(2, counts.size(), "There should be two types of reactions for this resource");
-          context.assertEquals(1, counts.get("thumb-up"), "There should be only one thumb up (cf. prepareData method)");
-          context.assertEquals(2, counts.get("thumb-down"), "There should be 3 thumbs down (cf. prepareData method)");
+          context.assertEquals(3, resSummary.getTotalReactionsCounter(), "There should be a total of 3 reactions for this resource");
+          context.assertEquals(null, resSummary.getUserReaction(),"The user reaction for this resource should be NONE." );
+          final Set<String> reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(2, reactionTypes.size(), "There should be two types of reactions for this resource");
+          context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("thumb-up", "thumb-down")));
           async.complete();
         });
   }
+
+    @Test
+    public void testGetReactionsSummaryWithOneExistingResourceAndUserReaction(final TestContext context) {
+        final Async async = context.async();
+        final UserInfos userInfos = new UserInfos();
+        userInfos.setUserId("user-id-0");
+        userInfos.setFirstName("first-name");
+        userInfos.setLastName("last-name");
+        reactionService.getReactionsSummary("mod0", "rt0", Sets.newHashSet("r-id-0"), userInfos)
+                .onFailure(context::fail)
+                .onSuccess(summary -> {
+                    context.assertNotNull(summary, "getReactionsSummary should never return null");
+                    context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
+                    context.assertEquals(1, summary.getReactionsByResource().size(), "getReactionsSummary should return a counter for an existing resource");
+                    final ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
+                    context.assertNotNull(resSummary, "The summary of an existing resource should not be null");
+                    context.assertEquals(3, resSummary.getTotalReactionsCounter(), "There should be a total of 3 reactions for this resource");
+                    context.assertEquals("thumb-up", resSummary.getUserReaction(),"The user reaction for this resource should be thumb-up." );
+                    final Set<String> reactionTypes = resSummary.getReactionTypes();
+                    context.assertEquals(2, reactionTypes.size(), "There should be two types of reactions for this resource");
+                    context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("thumb-up", "thumb-down")));
+                    async.complete();
+                });
+    }
 
   @Test
   public void testGetReactionsSummaryWithMultipleExistingResources(final TestContext context) {
     final Async async = context.async();
     final UserInfos userInfos = new UserInfos();
-    userInfos.setUserId("user-id");
+    userInfos.setUserId("user-id-0");
     userInfos.setFirstName("first-name");
     userInfos.setFirstName("last-name");
     reactionService.getReactionsSummary("mod0", "rt0", Sets.newHashSet("r-id-0", "r-id-1"), userInfos)
@@ -139,16 +167,20 @@ public class ReactionServiceImplTest {
           context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
           context.assertEquals(2, summary.getReactionsByResource().size(), "getReactionsSummary should return counters for existing resources");
 
-          ReactionsSummary.ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
-          Map<String, Integer> counts = resSummary.getCountByType();
-          context.assertEquals(2, counts.size(), "There should be two types of reactions for this resource");
-          context.assertEquals(1, counts.get("thumb-up"), "There should be only one thumb up (cf. prepareData method)");
-          context.assertEquals(2, counts.get("thumb-down"), "There should be 3 thumbs down (cf. prepareData method)");
+          ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
+          context.assertEquals("thumb-up", resSummary.getUserReaction(), "The user reaction for this resource should be thumb up");
+          context.assertEquals(3, resSummary.getTotalReactionsCounter(), "There should be a total of 3 reactions for this resource");
+          Set<String> reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(2, reactionTypes.size(), "There should be two types of reactions for this resource");
+          context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("thumb-up", "thumb-down")));
 
-          resSummary = summary.getReactionsByResource().get("r-id-1");
-          counts = resSummary.getCountByType();
-          context.assertEquals(1, counts.size(), "There should be two types of reactions for this resource");
-          context.assertEquals(1, counts.get("love"), "There should be only one love (cf. prepareData method)");
+
+            resSummary = summary.getReactionsByResource().get("r-id-1");
+          context.assertEquals("love", resSummary.getUserReaction(), "The user reaction for this resource should be love");
+          context.assertEquals(1, resSummary.getTotalReactionsCounter(), "There should be a total of 1 reaction for this resource");
+          reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(1, reactionTypes.size(), "There should be one type of reactions for this resource");
+          context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("love")));
 
           async.complete();
         });
@@ -168,22 +200,41 @@ public class ReactionServiceImplTest {
           context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
           context.assertEquals(2, summary.getReactionsByResource().size(), "getReactionsSummary should return counters for existing resources");
 
-          ReactionsSummary.ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
-          Map<String, Integer> counts = resSummary.getCountByType();
-          context.assertEquals(2, counts.size(), "There should be two types of reactions for this resource");
-          context.assertEquals(1, counts.get("thumb-up"), "There should be only one thumb up (cf. prepareData method)");
-          context.assertEquals(2, counts.get("thumb-down"), "There should be 3 thumbs down (cf. prepareData method)");
+          ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
+          context.assertEquals(3, resSummary.getTotalReactionsCounter(), "There should be a total of 3 reactions for this resource");
+          Set<String> reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(2, reactionTypes.size(), "There should be two types of reactions for this resource");
+          context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("thumb-up", "thumb-down")));
 
           resSummary = summary.getReactionsByResource().get("r-id-1");
-          counts = resSummary.getCountByType();
-          context.assertEquals(1, counts.size(), "There should be two types of reactions for this resource");
-          context.assertEquals(1, counts.get("love"), "There should be only one love (cf. prepareData method)");
+          reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(1, resSummary.getTotalReactionsCounter(), "There should be a total of 1 reaction for this resource");
+          context.assertEquals(1, reactionTypes.size(), "There should be one types of reactions for this resource");
+          context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("love")));
 
           async.complete();
         });
   }
 
+  @Test
+  public void testGetReactionDetails(final TestContext context) {
+      final Async async = context.async();
 
+      reactionService.getReactionDetails("mod0", "rt0", "r-id-0", 1, 100)
+              .onFailure(context::fail)
+              .onSuccess(reactionDetails -> {
+                  context.assertNotNull(reactionDetails, "");
+                  final Map<String, Integer> reactionCounterByType = reactionDetails.getReactionCounters().getCountByType();
+                  context.assertEquals(2, reactionCounterByType.size(), "");
+                  context.assertEquals(1, reactionCounterByType.get("thumb-up"), "");
+                  context.assertEquals(2, reactionCounterByType.get("thumb-down"), "");
+                  final List<UserReaction> userReactions = reactionDetails.getUserReactions();
+                  context.assertNotNull(userReactions, "");
+                  context.assertEquals(3, userReactions.size(), "");
+
+                  async.complete();
+              });
+  }
 
   @Test
   public void testUpsertReaction(final TestContext context) {
@@ -191,58 +242,62 @@ public class ReactionServiceImplTest {
     final UserInfos userInfos = new UserInfos();
     userInfos.setUserId("user-id");
     userInfos.setFirstName("first-name");
-    userInfos.setFirstName("last-name");
+    userInfos.setLastName("last-name");
     userInfos.setType("PERSRELELEVE");
 
     final UserInfos userInfos2 = new UserInfos();
     userInfos2.setUserId("user-id2");
     userInfos2.setFirstName("first-name-2");
-    userInfos2.setFirstName("last-name-2");
+    userInfos2.setLastName("last-name-2");
     userInfos2.setType("ENSEIGNANT");
 
     final UserInfos userInfos3 = new UserInfos();
     userInfos3.setUserId("user-id3");
     userInfos3.setFirstName("first-name-3");
-    userInfos3.setFirstName("last-name-3");
+    userInfos3.setLastName("last-name-3");
     userInfos3.setType("PERSEDUCNAT");
 
+    final int page = 1;
+    final int size = 100;
+
     // User 1 saves their first reaction
-    reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, ReactionType.REACTION_TYPE_1)
-    .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
-    .onSuccess(e -> {
-      final int count = e.getReactionsByResource().get("r-id-upsert-0").getCountByType().get(ReactionType.REACTION_TYPE_1.name());
+    reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, "reaction-type-1")
+    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
+    .onSuccess(reactionDetails -> {
+      final int count = reactionDetails.getReactionCounters().getCountByType().get("reaction-type-1");
       context.assertEquals(1, count, "Should have a count of one because we just registered a reaction of this type for this resource");
     })
-    // User 1 savec another reaction for the same resource
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, ReactionType.REACTION_TYPE_2))
-    .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
+    // User 1 saves another reaction for the same resource
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, "reaction-type-2"))
+    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
     .onSuccess(e -> {
-      final Map<String, Integer> counts = e.getReactionsByResource().get("r-id-upsert-0").getCountByType();
+      final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
       context.assertEquals(1, counts.size(), "Should have only one entry for this resource because the only two reactions come from the same user so the latest should replace the other one");
-      final int count = counts.get(ReactionType.REACTION_TYPE_2.name());
+      final int count = counts.get("reaction-type-2");
       context.assertEquals(1, count, "Should have a count of one because we just registered a reaction of this type for this resource");
     })
     // Another user registers a reaction for the same resource
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos2, ReactionType.REACTION_TYPE_3))
-    .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos2, "reaction-type-3"))
+    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
     .onSuccess(e -> {
-      final Map<String, Integer> counts = e.getReactionsByResource().get("r-id-upsert-0").getCountByType();
+      final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
       context.assertEquals(2, counts.size(), "Should have 2 entries, one per user who saved a reaction");
-      context.assertEquals(1, counts.get(ReactionType.REACTION_TYPE_2.name()), "User 1 previously registered that reaction so it should appear");
-      context.assertEquals(1, counts.get(ReactionType.REACTION_TYPE_3.name()), "User 1 previously registered that reaction so it should appear");
+      context.assertEquals(1, counts.get("reaction-type-2"), "User 1 previously registered that reaction so it should appear");
+      context.assertEquals(1, counts.get("reaction-type-3"), "User 1 previously registered that reaction so it should appear");
     })
     // Yet another user registers a reaction for this resource but of a type which has already been registered
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos3, ReactionType.REACTION_TYPE_3))
-    .compose(e -> reactionService.getReactionsSummary("mod-upsert", "rt-upsert", Sets.newHashSet("r-id-upsert-0"), userInfos))
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos3, "reaction-type-3"))
+    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
     .onSuccess(e -> {
-      final Map<String, Integer> counts = e.getReactionsByResource().get("r-id-upsert-0").getCountByType();
+      final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
       context.assertEquals(2, counts.size(), "Should have 2 entries, one per type of reaction");
-      context.assertEquals(1, counts.get(ReactionType.REACTION_TYPE_2.name()), "User 1 previously registered that reaction so it should appear");
-      context.assertEquals(2, counts.get(ReactionType.REACTION_TYPE_3.name()), "User 2 and 3 previously registered that reaction so it should appear");
+      context.assertEquals(1, counts.get("reaction-type-2"), "User 1 previously registered that reaction so it should appear");
+      context.assertEquals(2, counts.get("reaction-type-3"), "User 2 and 3 previously registered that reaction so it should appear");
       async.complete();
     })
     .onFailure(context::fail);
   }
+
   /**
    * Insert fake reaction data.
    * @return when preparation is done

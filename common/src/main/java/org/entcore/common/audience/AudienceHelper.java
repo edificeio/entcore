@@ -21,32 +21,6 @@ public class AudienceHelper {
     public AudienceHelper(final Vertx vertx) {
     }
 
-    public Future<ViewIncrementationResponse> incrementView(
-            final ViewIncrementationRequest request,
-            final String resourceType,
-            final HttpServerRequest httpRequest,
-            final UserInfos user) {
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.post("/view/counters/{platformId}/{module}/{resourceType}", request, params,
-                getHeadersToForward(httpRequest),
-                ViewIncrementationResponse.class);*/
-    }
-
-    public Future<ViewsResponse> getViews(final UserInfos user,
-            final HttpServerRequest httpRequest, final String... resources) {
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.get("/view/counters/{platformId}/{module}/{resourceType}?resourceIds={resourceIds}", params,
-                getHeadersToForward(httpRequest), ViewsResponse.class);*/
-    }
-
-    public Future<ViewDetailsResponse> getViewDetails(final String resourceId,
-            final HttpServerRequest httpRequest, final UserInfos user) {
-        throw new UnsupportedOperationException("not.yet.implemented");
-        /*return restClient.get("/view/details/{platformId}/{module}/{resourceType}/{resourceId}", params,
-                getHeadersToForward(httpRequest), ViewDetailsResponse.class);*/
-    }
-
-
     public void onDeletedResource(final String resourceId,
             final HttpServerRequest httpRequest, final UserInfos user) {
         throw new UnsupportedOperationException("not.yet.implemented");

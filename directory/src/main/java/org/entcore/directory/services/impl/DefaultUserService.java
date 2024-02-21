@@ -1246,4 +1246,26 @@ public class DefaultUserService implements UserService {
 			}
 		}));
 	}
+
+	public Future<Map<String, String>> getUsersDisplayNames(Set<String> userIds) {
+		Promise<Map<String, String>> promise = Promise.promise();
+		String query =
+				"MATCH (u:User) WHERE u.id IN {userIds} " +
+				"RETURN u.id AS userId, u.displayName AS displayName";
+		JsonObject params = new JsonObject();
+		params.put("userIds", userIds);
+
+		neo.execute(query, params, validResultHandler(results -> {
+			if (results.isRight()) {
+				Map<String, String> displayNamesByUserId = new HashMap<>();
+				results.right().getValue().forEach(r -> {
+					JsonObject result = (JsonObject) r;
+					displayNamesByUserId.put(result.getString("userId"), result.getString("displayName"));
+				});
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
 }
