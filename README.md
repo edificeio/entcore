@@ -81,3 +81,26 @@ Lancer depuis le projet racine :
 Ajouter la variable d'environement suivante pour debugger sur le port 5000
 
 	export VERTX_OPTS='-Xdebug Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5000'
+
+## Tests de charge
+
+### Description
+
+Les tests de charge sont exécutés par un container k6 qui est paramétré via les variables d'environnement passées au container `load-tester`.
+
+- `ROOT_URL`, URL de l'ENT à appeler
+- `DURATION`, duration of the test
+- `VUS`, nombre d'utilisateurs concurrents
+- `NB_USERS`, nombre d'utilisateurs dont les posts seront utilisés pour le jeu de test
+- `DATA_SCHOOL_NAME`, nom de l'école à créer
+- `DATA_ROOT_PATH`, chemin absolu vers les jeux de test (ne devrait pas être changé)
+
+### Ajouter un test
+
+Ajouter un fichier js de test dans `tests/src/test/js/stresstest/scenarios/impacted-module/my-scenario.js`
+
+### Lancement
+
+```shell
+docker-compose run --rm load-tester run file:///home/k6/src/scenarios/impacted-module/my-scenario.js
+```
