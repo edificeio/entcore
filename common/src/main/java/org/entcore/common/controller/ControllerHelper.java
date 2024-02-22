@@ -57,12 +57,6 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 	protected TimelineHelper notification;
 	protected CrudService crudService;
 
-	protected Function<JsonObject, Optional<String>> jsonToOwnerId(){
-		return json -> {
-			return Optional.empty();
-		};
-	}
-
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -106,6 +100,13 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 		});
 	}
 
+	/**
+	 * Add normalized rights to JsonObject
+	 *
+	 * @param json a JsonObject containings "shared" or detailed shared {users:{checked:{}}, groups:{checked:{}}}
+	 * @param getOwner a function extracting the ownerId of the current json object (or return Optional.empty if missing)
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
 	protected JsonObject addNormalizedRights(final JsonObject json, final Function<JsonObject, Optional<String>> getOwner) {
 		if(!shouldNormalizedRights()){
 			return json;
@@ -113,6 +114,13 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 		return new ShareNormalizer(this.securedActions).addNormalizedRights(json, getOwner);
 	}
 
+	/**
+	 * Add normalized rights to JsonArray
+	 *
+	 * @param jsonArray an array of JsonObject
+	 * @param getOwner a function extracting the ownerId of the current json object (or return Optional.empty if missing)
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
 	protected JsonArray addNormalizedRights(final JsonArray jsonArray, final Function<JsonObject, Optional<String>> getOwner){
 		if(!shouldNormalizedRights()){
 			return jsonArray;
@@ -120,13 +128,26 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 		return new ShareNormalizer(this.securedActions).addNormalizedRights(jsonArray, getOwner);
 	}
 
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param handler Handler<Either<String,JsonArray | JsonObject>> OR Handler<AsyncResult<JsonArray | JsonObject>>
+	 * @param getOwner a function extracting the ownerId of the current json object (or return Optional.empty if missing)
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
 	protected <T> Handler<T>addNormalizedRights(final Handler<T> handler, final Function<JsonObject, Optional<String>> getOwner){
 		if(!shouldNormalizedRights()){
 			return handler;
 		}
 		return new ShareNormalizer(this.securedActions).addNormalizedRights(handler, getOwner);
 	}
-
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param either Either of a JsonArray OR JsonObject
+	 * @param getOwner a function extracting the ownerId of the current json object (or return Optional.empty if missing)
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
 	protected <T> Either<String, T> addNormalizedRights(final Either<String, T> either, final Function<JsonObject, Optional<String>> getOwner){
 		if(!shouldNormalizedRights()){
 			return either;
@@ -134,6 +155,13 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 		return new ShareNormalizer(this.securedActions).addNormalizedRights(either, getOwner);
 	}
 
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param asyncResult AsyncResult of a JsonArray OR JsonObject
+	 * @param getOwner a function extracting the ownerId of the current json object (or return Optional.empty if missing)
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
 	protected <T> AsyncResult<T> addNormalizedRights(final AsyncResult<T> asyncResult, final Function<JsonObject, Optional<String>> getOwner){
 		if(!shouldNormalizedRights()){
 			return asyncResult;
@@ -141,8 +169,27 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 		return new ShareNormalizer(this.securedActions).addNormalizedRights(asyncResult, getOwner);
 	}
 
+	/**
+	 * Wether to enable or not normalized rights. If enabled, the controller will add a field "rights" containing normalized rights into json responses
+	 *
+	 * @return true if normalized rights is enabled
+	 */
 	protected boolean shouldNormalizedRights(){
 		return false;
+	}
+
+	/**
+	 * This method is used by ShareNormalizer to extract the ownerId of a JsonObject.
+	 * Normalized rights contains the special rights: "creator:USER_ID"
+	 *
+	 * <b>If the controller enable normalized rights, this method should be overriden!</b>
+	 *
+	 * @return a Function that take the jsonObject model and return the ownerId as Optional. If the ownerId could not be extracted it returns Optional.empty
+	 */
+	protected Function<JsonObject, Optional<String>> jsonToOwnerId(){
+		return json -> {
+			return Optional.empty();
+		};
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName) {
