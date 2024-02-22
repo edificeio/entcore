@@ -1,8 +1,9 @@
-import {ServicesService} from './services.service';
-import {TestBed} from '@angular/core/testing';
-import {ConnectorModel} from '../core/store/models/connector.model';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {Profile} from './_shared/services-types';
+import { ServicesService } from './services.service';
+import { TestBed } from '@angular/core/testing';
+import { ConnectorModel } from '../core/store/models/connector.model';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { Profile } from './_shared/services-types';
+import { log } from 'console';
 
 describe('ServicesService', () => {
     let servicesService: ServicesService;
@@ -43,6 +44,7 @@ describe('ServicesService', () => {
                 inherits: connector.inherits || false,
                 casType: connector.casTypeId || '',
                 pattern: connector.casPattern || '',
+                logoutUrl: connector.logoutUrl || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
                 grantType: connector.oauthGrantType || ''
@@ -65,6 +67,7 @@ describe('ServicesService', () => {
                 inherits: connector.inherits || false,
                 casType: connector.casTypeId || '',
                 pattern: connector.casPattern || '',
+                logoutUrl: connector.logoutUrl || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
                 grantType: connector.oauthGrantType || ''
