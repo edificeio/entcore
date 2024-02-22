@@ -243,6 +243,10 @@
         <input type="text" [(ngModel)]="connector.oauthSecret" name="secret">
       </ode-form-field>
 
+      <ode-form-field label="services.connector.oauth.logoutUrl">
+        <input type="text" [(ngModel)]="connector.logoutUrl" name="logoutUrl">
+      </ode-form-field>
+
       <ode-form-field label="services.connector.oauth.grantType">
         <ode-mono-select [(ngModel)]="connector.oauthGrantType"
                      name="grantType"

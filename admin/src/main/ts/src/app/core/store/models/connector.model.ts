@@ -1,7 +1,7 @@
-import {Mix, Model} from 'entcore-toolkit';
+import { Mix, Model } from 'entcore-toolkit';
 import { RoleModel } from './role.model';
 
-export interface IConnector{
+export interface IConnector {
     id: string;
     name: string;
     displayName: string;
@@ -15,6 +15,7 @@ export interface IConnector{
     casPattern: string;
     oauthScope: string;
     oauthSecret: string;
+    logoutUrl: string;
     oauthGrantType: string;
     oauthCertUri: string;
     structureId: string;
@@ -28,16 +29,16 @@ export class MappingModel {
     xitiOutil: string;
     xitiService: string;
     connectorsInStruct?: string[] = [];
-    connectorsOutsideStruct?:number;
-    get id(){
+    connectorsOutsideStruct?: number;
+    get id() {
         return this.type;
     }
-    get name(){
+    get name() {
         return this.type;
     }
 }
 
-export class ConnectorModel extends Model<ConnectorModel> implements IConnector{
+export class ConnectorModel extends Model<ConnectorModel> implements IConnector {
     private _id: string;
     public get id() {
         return this._id;
@@ -83,12 +84,13 @@ export class ConnectorModel extends Model<ConnectorModel> implements IConnector{
         this.roles = [];
     }
     oauthCertUri: string;
+    logoutUrl: string;
 
     syncRoles = (structureId: string, connectorId: string): Promise<void> => {
         return this.http.get(`/appregistry/application/external/${connectorId}/groups/roles?structureId=${structureId}`)
             .then(res => {
                 this.roles = Mix.castArrayAs(RoleModel, res.data);
             }
-        );
+            );
     }
 }
