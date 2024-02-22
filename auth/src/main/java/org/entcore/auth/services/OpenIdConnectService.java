@@ -27,8 +27,12 @@ public interface OpenIdConnectService {
 
 	long EXPIRATION_TIME = 3600;
 
+	String EVENTS_SLO = "http://schemas.openid.net/event/backchannel-logout";
+
 	String getIss();
 
 	void generateIdToken(String userId, String clientId, String nonce, Handler<AsyncResult<String>> handler);
+
+	void generateLogoutToken(String userId, String clientId, Handler<AsyncResult<String>> handler);
 
 }
