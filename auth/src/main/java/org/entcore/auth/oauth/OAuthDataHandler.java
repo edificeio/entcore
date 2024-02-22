@@ -19,28 +19,33 @@
 
 package org.entcore.auth.oauth;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.entcore.auth.security.SamlHelper;
+import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.OpenIdDataHandler;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.neo4j.Neo4j;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.NTLM;
 import fr.wseduc.webutils.security.Sha256;
-import jp.eisbahn.oauth2.server.async.Handler;
-import jp.eisbahn.oauth2.server.data.DataHandler;
-import jp.eisbahn.oauth2.server.exceptions.OAuthError;
-import jp.eisbahn.oauth2.server.exceptions.Try;
-import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
-import jp.eisbahn.oauth2.server.models.AccessToken;
-import jp.eisbahn.oauth2.server.models.AuthInfo;
-import jp.eisbahn.oauth2.server.models.Request;
-import jp.eisbahn.oauth2.server.models.UserData;
-
-import org.entcore.auth.security.SamlHelper;
-import org.entcore.auth.services.OpenIdConnectService;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.redis.Redis;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -48,17 +53,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.RedisClient;
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.models.AccessToken;
+import jp.eisbahn.oauth2.server.models.AuthInfo;
+import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-public class OAuthDataHandler extends DataHandler {
+@SuppressWarnings("deprecation")
+public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
 	public static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	public static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
@@ -105,6 +111,8 @@ public class OAuthDataHandler extends DataHandler {
 		this.samlHelper = samlHelper;
 	}
 
+
+
 	@Override
 	public void validateClient(String clientId, String clientSecret,
 			String grantType, final Handler<Boolean> handler) {
@@ -140,6 +148,7 @@ public class OAuthDataHandler extends DataHandler {
 			});
 
 	}
+
 
 	@Override
 	public void getUserId(final String username, final String password, final Handler<Try<AccessDenied, String>> handler) {
@@ -356,15 +365,16 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void createOrUpdateAuthInfo(String clientId, String userId,
 			String scope, Handler<AuthInfo> handler) {
-		createOrUpdateAuthInfo(clientId, userId, scope, null, null, handler);
+		createOrUpdateAuthInfo(clientId, userId, scope, null, null, null, handler);
 	}
 
 	public void createOrUpdateAuthInfo(final String clientId, final String userId,
-			final String scope, final String redirectUri, String nonce, final Handler<AuthInfo> handler) {
+			final String scope, final String redirectUri, String nonce, final String sessionId,
+			final Handler<AuthInfo> handler) {
 		if (clientId != null && userId != null &&
 				!clientId.trim().isEmpty() && !userId.trim().isEmpty()) {
 			if (scope != null && !scope.trim().isEmpty()) {
-				String query = "MATCH (app:`Application` {name:{clientId}}) RETURN app.scope as scope";
+				String query = "MATCH (app:`Application` {name:{clientId}}) RETURN app.scope as scope , app.logoutUrl as logoutUrl";
 				neo.execute(query, new JsonObject().put("clientId", clientId),
 						new io.vertx.core.Handler<Message<JsonObject>>() {
 					@Override
@@ -377,7 +387,8 @@ public class OAuthDataHandler extends DataHandler {
 							if (j != null &&
 								j.getJsonArray("scope", new fr.wseduc.webutils.collections.JsonArray()).getList()
 										.containsAll(Arrays.asList(scope.split("\\s")))) {
-								createAuthInfo(clientId, userId, scope, redirectUri, nonce, handler);
+										createAuthInfo(clientId, userId, scope, redirectUri, nonce,
+												j.getString("logoutUrl"), sessionId, handler);
 							} else {
 								handler.handle(null);
 							}
@@ -387,7 +398,7 @@ public class OAuthDataHandler extends DataHandler {
 					}
 				});
 			} else {
-				createAuthInfo(clientId, userId, scope, redirectUri, nonce, handler);
+				createAuthInfo(clientId, userId, scope, redirectUri, nonce, null, sessionId, handler);
 			}
 		} else {
 			handler.handle(null);
@@ -395,11 +406,13 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	private void createAuthInfo(String clientId, String userId, String scope,
-			String redirectUri, String nonce, final Handler<AuthInfo> handler) {
+			String redirectUri, String nonce, String logoutUrl, String sessionId, final Handler<AuthInfo> handler) {
 		final JsonObject auth = new JsonObject()
 				.put("clientId", clientId)
 				.put("userId", userId)
 				.put("scope", scope)
+				.put("logoutUrl", logoutUrl)
+				.put("sessionId", sessionId)
 				.put("createdAt", MongoDb.now())
                 .put("refreshToken", UUID.randomUUID().toString());
 		if (redirectUri != null) {
@@ -416,6 +429,7 @@ public class OAuthDataHandler extends DataHandler {
 				if ("ok".equals(res.body().getString("status"))) {
 					auth.put("id", res.body().getString("_id"));
 					auth.remove("createdAt");
+					auth.remove("sessionId");
 					ObjectMapper mapper = new ObjectMapper();
 					try {
 						handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
@@ -457,7 +471,7 @@ public class OAuthDataHandler extends DataHandler {
 										handler.handle(null);
 									}
 								}
-							});
+									});
 						} else {
 							persistToken(token);
 						}
@@ -513,6 +527,7 @@ public class OAuthDataHandler extends DataHandler {
 					if ("ok".equals(res.body().getString("status")) && r != null && r.size() > 0) {
 						r.put("id", r.getString("_id"));
 						r.remove("_id");
+						r.remove("sessionId");
 						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -547,6 +562,7 @@ public class OAuthDataHandler extends DataHandler {
 						}
 						r.put("id", r.getString("_id"));
 						r.remove("_id");
+						r.remove("sessionId");
 						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -665,6 +681,7 @@ public class OAuthDataHandler extends DataHandler {
 						JsonObject r = res.body().getJsonObject("result");
 						r.put("id", r.getString("_id"));
 						r.remove("_id");
+						r.remove("sessionId");
 						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -721,6 +738,97 @@ public class OAuthDataHandler extends DataHandler {
 			samlHelper.processCustomToken(customToken, handler);
 		} else {
 			handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+		}
+	}
+
+	@Override
+	public void getAuthorizationsBySessionId(String sessionId, Handler<List<JsonObject>> handler) {
+		if (sessionId != null) {
+			JsonObject queryData = new JsonObject()
+					.put("sessionId", sessionId)
+					.put("scope", new JsonObject().put("$regex", "openid"));
+			mongo.find(AUTH_INFO_COLLECTION, queryData, res -> {
+				if (res.body() != null && "ok".equals(res.body().getString("status"))) {
+					JsonArray results = res.body().getJsonArray("results");
+					if (results == null || results.isEmpty()) {
+						handler.handle(Collections.emptyList());
+						return;
+					}
+					handler.handle(filterList(results));
+				} else {
+					handler.handle(null);
+				}
+			});
+		} else {
+			handler.handle(null);
+		}
+	}
+
+	private List<JsonObject> filterList(JsonArray data) {
+		List<JsonObject> array = new ArrayList<>();
+		for (int i = 0; i < data.size(); i++) {
+			JsonObject res = data.getJsonObject(i);
+			res.put("id", res.getString("_id"));
+			res.remove("_id");
+			res.remove("createdAt");
+			array.add(res);
+		}
+		return array;
+	}
+
+	@Override
+	public void getTokensByAuthId(String authId, Handler<List<JsonObject>> handler) {
+		if (authId != null) {
+			JsonObject query = new JsonObject().put("authId", authId);
+			mongo.find(ACCESS_TOKEN_COLLECTION, query, res -> {
+				if (res.body() != null && "ok".equals(res.body().getString("status"))) {
+					JsonArray results = res.body().getJsonArray("results");
+					if (results == null || results.isEmpty()) {
+						handler.handle(Collections.emptyList());
+						return;
+					}
+					handler.handle(filterList(results));
+				} else {
+					handler.handle(null);
+				}
+			});
+		}
+
+	}
+
+	@Override
+	public void deleteTokensByAuthId(String authId) {
+		if (authId != null) {
+			JsonObject query = new JsonObject().put("authId", authId);
+			mongo.delete(ACCESS_TOKEN_COLLECTION, query);
+		} else {
+			log.error("Id Token not removed");
+		}
+	}
+
+	@Override
+	public void getLogoutToken(String userId, String clientId, Handler<String> handler) {
+		if (userId != null && clientId != null) {
+			openIdConnectService.generateLogoutToken(userId, clientId, event -> {
+				if (event.result() != null && !event.result().trim().isEmpty()) {
+					log.debug("Token generated successfully");
+					handler.handle(event.result());
+				} else {
+					log.error("Error generating token");
+					handler.handle(null);
+				}
+			});
+		} else {
+			log.warn("UserId or ClientId is null");
+		}
+	}
+
+	@Override
+	public void deleteAuthorization(JsonObject auth, Handler<Message<JsonObject>> callback) {
+		if (auth != null) {
+			mongo.delete(AUTH_INFO_COLLECTION, auth, callback::handle);
+		} else {
+			log.error("Authorization cannot be removed");
 		}
 	}
 

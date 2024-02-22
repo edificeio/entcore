@@ -54,6 +54,20 @@ public class OpenIdConnectController extends AbstractFederateController {
 		renderJson(request, certificates);
 	}
 
+	// Just endpoint for testing oidc slo back-channel
+
+	@Post("/openid/test")
+	public void test(HttpServerRequest request) {
+		eb.send("openid", new JsonObject()
+				.put("action", "oidc-slo")
+				.put("userId", request.getParam("userId"))
+				.put("sessionId", request.getParam("sessionId")));
+		renderJson(request, new JsonObject()
+				.put("action", "oidc-slo")
+				.put("sessionId", request.getParam("sessionId")));
+	}
+
+
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
