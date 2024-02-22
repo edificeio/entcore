@@ -1080,6 +1080,7 @@
   "services.connector.oauth.scope": "Scope",
   "services.connector.oauth.secret": "Code secret",
   "services.connector.oauth.certUri": "URL du certificat",
+  "services.connector.oauth.logoutUrl" : "URL de déconnexion",
   "services.connector.oauth.grantType": "Mode d'identification",
   "services.connector.oauth.grantType.authorizationCode": "Code",
   "services.connector.oauth.grantType.jwtBearer": "JWT Bearer",

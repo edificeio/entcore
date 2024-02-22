@@ -1,10 +1,10 @@
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
-import {ConnectorModel} from '../core/store/models/connector.model';
-import {CasType} from './connectors/connector/CasType';
-import {Profile} from './_shared/services-types';
-import {ExportFormat} from './connectors/connector/export/connector-export.component';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ConnectorModel } from '../core/store/models/connector.model';
+import { CasType } from './connectors/connector/CasType';
+import { Profile } from './_shared/services-types';
+import { ExportFormat } from './connectors/connector/export/connector-export.component';
 
 
 @Injectable()
@@ -13,7 +13,7 @@ export class ServicesService {
     constructor(private httpClient: HttpClient) {
     }
 
-    public createConnector(connector: ConnectorModel, structureId: string): Observable<{id: string, roleId: string}> {
+    public createConnector(connector: ConnectorModel, structureId: string): Observable<{ id: string, roleId: string }> {
         if (connector.target === 'adapter' && connector.url.indexOf('/adapter#') === -1) {
             connector.target = '';
             connector.url = '/adapter#' + connector.url;
@@ -31,6 +31,7 @@ export class ServicesService {
                 inherits: connector.inherits || false,
                 casType: connector.casTypeId || '',
                 pattern: connector.casPattern || '',
+                logoutUrl: connector.logoutUrl || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
                 grantType: connector.oauthGrantType || '',
@@ -38,8 +39,8 @@ export class ServicesService {
             });
     }
 
-    public saveConnector(connector: ConnectorModel, structureId: string): Observable<{id: string}> {
-        return this.httpClient.put<{id: string}>(
+    public saveConnector(connector: ConnectorModel, structureId: string): Observable<{ id: string }> {
+        return this.httpClient.put<{ id: string }>(
             `/appregistry/application/conf/${connector.id}?structureId=${structureId}`
             , {
                 name: connector.name,
@@ -51,6 +52,7 @@ export class ServicesService {
                 inherits: connector.inherits || false,
                 casType: connector.casTypeId || '',
                 pattern: connector.casPattern || '',
+                logoutUrl: connector.logoutUrl || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
                 grantType: connector.oauthGrantType || '',

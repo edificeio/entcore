@@ -61,6 +61,7 @@ Application.prototype.createApplication = function(){
 		icon: this.icon || '',
 		target: this.target || '',
 		scope: this.scope || '',
+		logoutUrl: this.logoutUrl || '',
         casType: this.casType || '',
         pattern: this.pattern || '',
 		name: this.name
@@ -83,6 +84,7 @@ Application.prototype.saveChanges = function(){
 		icon: this.icon || '',
 		target: this.target || '',
 		scope: this.scope || '',
+		logoutUrl: this.logoutUrl || '',
         casType: this.casType || '',
         pattern: this.pattern || '',
 		name: this.name
@@ -134,6 +136,7 @@ ExternalApplication.prototype.createApplication = function(structureId){
 		target: this.data.target || '',
 		scope: this.data.scope || '',
         casType: this.data.casType || '',
+		logoutUrl: this.data.logoutUrl || '',
         pattern: this.data.pattern || '',
 		name: this.data.name,
 		inherits: this.data.inherits
@@ -149,6 +152,7 @@ ExternalApplication.prototype.saveChanges = function(){
 		target: this.data.target || '',
 		scope: this.data.scope || '',
         casType: this.data.casType || '',
+		logoutUrl: this.data.logoutUrl || '',
         pattern: this.data.pattern || '',
 		name: this.data.name,
 		inherits: this.data.inherits

@@ -75,6 +75,12 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 				jwtVerifier, otpDisabled);
 	}
 
+	public DataHandler create(JsonRequestAdapter request) {
+		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
+				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore,
+				samlHelper, jwtVerifier, otpDisabled);
+	}
+
 	public void setSamlHelper(SamlHelper samlHelper) {
 		this.samlHelper = samlHelper;
 	}

@@ -27,10 +27,15 @@ import io.vertx.core.Handler;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.common.neo4j.Neo4j;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -39,7 +44,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 	private final String iss;
 	private final JWT jwt;
 	private boolean setFederated = true;
-
+	private static final Logger log = LoggerFactory.getLogger(DefaultOpendIdConnectService.class);
 	public DefaultOpendIdConnectService(String iss, Vertx vertx, String keysPath) {
 		this.iss = iss;
 		this.jwt = isNotEmpty(keysPath) ? new JWT(vertx, keysPath) : null;
@@ -107,6 +112,48 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 
 	public void setSetFederated(boolean setFederated) {
 		this.setFederated = setFederated;
+	}
+
+	@Override
+	public void generateLogoutToken(String userId, String clientId, Handler<AsyncResult<String>> handler) {
+		final String query = "MATCH (u:User {id: {id}}) return u.externalId as sub";
+		Neo4j.getInstance().execute(query, new JsonObject().put("id", userId), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonArray res = event.body().getJsonArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
+					generateLogoutPayload(res.getJsonObject(0), clientId, handler);
+				} else {
+					handler.handle(new DefaultAsyncResult<String>(new RuntimeException("invalid.userId")));
+				}
+			}
+		});
+	}
+
+	private String generateJti() {
+		UUID uuid = UUID.randomUUID();
+		return uuid.toString();
+	}
+
+	private void generateLogoutPayload(JsonObject payload, String clientId,
+			Handler<AsyncResult<String>> handler) {
+		if (payload != null) {
+			final long iat = System.currentTimeMillis() / 1000;
+			payload.put("iss", getIss())
+					.put("aud", clientId)
+					.put("iat", iat)
+					.put("jti", generateJti())
+					.put("exp", iat + EXPIRATION_TIME)
+					.put("event", new JsonObject().put(EVENTS_SLO, new JsonObject()));
+			try {
+				handler.handle(new DefaultAsyncResult<>(jwt != null ? jwt.encodeAndSign(payload) : payload.toString()));
+			} catch (Exception e) {
+				log.error("Error generating logout token", e);
+				handler.handle(new DefaultAsyncResult<>(new RuntimeException("Error generating logout token")));
+			}
+		} else {
+			handler.handle(new DefaultAsyncResult<>(new RuntimeException("undefined.payload")));
+		}
 	}
 
 }
