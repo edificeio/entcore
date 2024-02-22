@@ -73,6 +73,7 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
@@ -121,6 +122,7 @@ public class AuthController extends BaseController {
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 	private MfaService mfaSvc;
+	private OpenIdSloServiceImpl sloServiceImpl;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -132,14 +134,12 @@ public class AuthController extends BaseController {
 	private boolean slo;
 	private List<String> internalAddress;
 	private boolean checkFederatedLogin = false;
-
 	private long jwtTtlSeconds;
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -211,6 +211,26 @@ public class AuthController extends BaseController {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
 				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+		sloServiceImpl = new OpenIdSloServiceImpl(vertx, oauthDataFactory);
+	}
+
+	/**
+	 * This method listens for
+	 * messages on the"openid"
+	 * address to
+	 * process Single Log-Out (SLO) for OpenID Connect clients. It initializes a
+	 * logout token and a list of client objects. For each message, it extracts the
+	 * user ID, fetches authorizations for that user, and deletes associated tokens.
+	 * It then constructs a client object for each authorization, ensuring
+	 * uniqueness in the client list. For each unique client, it requests a logout
+	 * token and, upon receiving it, triggers logout requests for each client. This
+	 * process ensures the user is logged out from all registered clients.
+	 **/
+	@BusAddress("openid")
+	public void sloOpenId(final Message<JsonObject> message) {
+		if (message != null && message.body().getString("action").equals("oidc-slo")) {
+			sloServiceImpl.sloOpenId(message);
+		}
 	}
 
 	@Get("/oauth2/auth")
@@ -221,6 +241,7 @@ public class AuthController extends BaseController {
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
 		final String nonce = request.params().get("nonce");
+		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
 			if (isNotEmpty(scope)) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
@@ -235,7 +256,7 @@ public class AuthController extends BaseController {
 								public void handle(UserInfos user) {
 									if (user != null && user.getUserId() != null) {
 										((OAuthDataHandler) data).createOrUpdateAuthInfo(clientId, user.getUserId(),
-												scope, redirectUri, nonce, new Handler<AuthInfo>() {
+												scope, redirectUri, nonce, sessionId, new Handler<AuthInfo>() {
 
 													@Override
 													public void handle(AuthInfo auth) {
