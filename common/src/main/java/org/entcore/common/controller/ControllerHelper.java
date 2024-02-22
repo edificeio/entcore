@@ -27,9 +27,12 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
+import org.entcore.common.share.ShareModel;
+import org.entcore.common.share.ShareNormalizer;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.Shareable;
 import org.entcore.common.user.UserInfos;
@@ -42,6 +45,8 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
@@ -51,6 +56,12 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 	protected ShareService shareService;
 	protected TimelineHelper notification;
 	protected CrudService crudService;
+
+	protected Function<JsonObject, Optional<String>> jsonToOwnerId(){
+		return json -> {
+			return Optional.empty();
+		};
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
@@ -78,7 +89,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 							public void handle(Boolean event) {
 								if (Boolean.TRUE.equals(event)) {
 									shareService.shareInfos(user.getUserId(), id,
-											I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
+											I18n.acceptLanguage(request), request.params().get("search"), addNormalizedRights(defaultResponseHandler(request), jsonToOwnerId()));
 								} else {
 									unauthorized(request);
 								}
@@ -86,13 +97,52 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						});
 					} else {
 						shareService.shareInfos(user.getUserId(), id,
-								I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
+								I18n.acceptLanguage(request), request.params().get("search"), addNormalizedRights(defaultResponseHandler(request),jsonToOwnerId()));
 					}
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	protected JsonObject addNormalizedRights(final JsonObject json, final Function<JsonObject, Optional<String>> getOwner) {
+		if(!shouldNormalizedRights()){
+			return json;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(json, getOwner);
+	}
+
+	protected JsonArray addNormalizedRights(final JsonArray jsonArray, final Function<JsonObject, Optional<String>> getOwner){
+		if(!shouldNormalizedRights()){
+			return jsonArray;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(jsonArray, getOwner);
+	}
+
+	protected <T> Handler<T>addNormalizedRights(final Handler<T> handler, final Function<JsonObject, Optional<String>> getOwner){
+		if(!shouldNormalizedRights()){
+			return handler;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(handler, getOwner);
+	}
+
+	protected <T> Either<String, T> addNormalizedRights(final Either<String, T> either, final Function<JsonObject, Optional<String>> getOwner){
+		if(!shouldNormalizedRights()){
+			return either;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(either, getOwner);
+	}
+
+	protected <T> AsyncResult<T> addNormalizedRights(final AsyncResult<T> asyncResult, final Function<JsonObject, Optional<String>> getOwner){
+		if(!shouldNormalizedRights()){
+			return asyncResult;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(asyncResult, getOwner);
+	}
+
+	protected boolean shouldNormalizedRights(){
+		return false;
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName) {
@@ -158,7 +208,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 								notifyShare(request, eb, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
 							}
-							renderJson(request, event.right().getValue());
+							renderJson(request, addNormalizedRights(event.right().getValue(), jsonToOwnerId()));
 						} else {
 							JsonObject error = new JsonObject()
 									.put("error", event.left().getValue());
@@ -305,7 +355,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						@Override
 						public void handle(JsonObject object) {
 							crudService.create(object, user, r -> {
-								notEmptyResponseHandler(request).handle(r);
+								notEmptyResponseHandler(request).handle(addNormalizedRights(r, jsonToOwnerId()));
 								if (r.isLeft()) {
 									handler.handle(new DefaultAsyncResult<>(new Exception(r.left().getValue())));
 								} else {
@@ -328,7 +378,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 			@Override
 			public void handle(final UserInfos user) {
 				String id = request.params().get("id");
-				crudService.retrieve(id, user, notEmptyResponseHandler(request));
+				crudService.retrieve(id, user, addNormalizedRights(notEmptyResponseHandler(request), jsonToOwnerId()));
 			}
 		});
 	}
@@ -342,7 +392,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						@Override
 						public void handle(JsonObject object) {
 							String id = request.params().get("id");
-							crudService.update(id, object, user, notEmptyResponseHandler(request));
+							crudService.update(id, object, user, addNormalizedRights(notEmptyResponseHandler(request), jsonToOwnerId()));
 						}
 					});
 				} else {
@@ -384,7 +434,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						}
 					}
 				}
-				crudService.list(v, user, arrayResponseHandler(request));
+				crudService.list(v, user, addNormalizedRights(arrayResponseHandler(request), jsonToOwnerId()));
 			}
 		});
 	}
