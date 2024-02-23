@@ -2,11 +2,9 @@ package org.entcore.audience.reaction.service;
 
 import io.vertx.core.Future;
 import org.entcore.audience.reaction.model.ReactionDetailsResponse;
-import org.entcore.audience.reaction.model.ReactionsSummaryForResource;
 import org.entcore.audience.reaction.model.ReactionsSummaryResponse;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
 import java.util.Set;
 
 public interface ReactionService {

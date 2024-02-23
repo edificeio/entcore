@@ -16,7 +16,7 @@ import org.entcore.common.user.UserInfos;
  */
 public class AudienceHelper {
 
-    private final Logger log = LoggerFactory.getLogger(AudienceHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(AudienceHelper.class);
 
     public AudienceHelper(final Vertx vertx) {
     }
@@ -51,7 +51,7 @@ public class AudienceHelper {
      * @param checker The function to be called when a new message that matches the appName and resourceType arrives
      * @return The listener (that can be unregistered when the verticle is undeployed)
      */
-    public MessageConsumer<Object> listenForRightsCheck(final String appName, final String resourceType,
+    public static MessageConsumer<Object> listenForRightsCheck(final String appName, final String resourceType,
                                      final Vertx vertx, final AudienceRightChecker checker) {
         final EventBus eb = vertx.eventBus();
         final MessageConsumer<Object> consumer = eb.consumer(getCheckRightsBusAddress(appName, resourceType));
@@ -64,14 +64,14 @@ public class AudienceHelper {
                 try {
                     final AudienceCheckRightRequestMessage checkRightMessage = Json.decodeValue((String) body, AudienceCheckRightRequestMessage.class);
                     checker.apply(checkRightMessage)
-                        .onSuccess(access -> message.reply(new AudienceCheckRightResponseMessage(access)))
+                        .onSuccess(access -> message.reply(Json.encode(new AudienceCheckRightResponseMessage(access))))
                         .onFailure(th -> {
                             log.warn("An error occurred while checking " + AudienceCheckRightRequestMessage.class.getCanonicalName() + " for message " + body, th);
-                            message.reply(new AudienceCheckRightResponseMessage("check.error"));
+                            message.reply(Json.encode(new AudienceCheckRightResponseMessage("check.error")));
                         });
                 } catch (Exception e) {
                     log.warn("Received a message from " + message.replyAddress() + " that could not be converted to " + AudienceCheckRightRequestMessage.class.getCanonicalName() + " : " + body);
-                    message.reply(new AudienceCheckRightResponseMessage("message.bad.format"));
+                    message.reply(Json.encode(new AudienceCheckRightResponseMessage("message.bad.format")));
                 }
             }
         })
