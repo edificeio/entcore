@@ -47,7 +47,6 @@ public class ReactionServiceImpl implements ReactionService {
 
     @Override
     public Future<ReactionDetailsResponse> getReactionDetails(String module, String resourceType, String resourceId, int page, int size) {
-        Promise<ReactionDetailsResponse> promise = Promise.promise();
         Future<Map<String, ReactionCounters>> reactionCountersByResource = reactionDao.getReactionsCountersByResource(module, resourceType, Collections.singleton(resourceId));
         Future<List<UserReaction>> userReactionsFuture = reactionDao.getUsersReactions(module, resourceType, resourceId, page, size);
 
@@ -57,19 +56,16 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     private Future<List<UserReaction>> enrichUserReactionsWithDisplayName(List<UserReaction> userReactions) {
-        Promise<List<UserReaction>> promise = Promise.promise();
-        List<UserReaction> userReactionsWithName = new ArrayList<>();
-        getUserDisplayNames(userReactions.stream().map(UserReaction::getUserId).collect(Collectors.toSet()))
-                .onSuccess(displayNamesByUser -> {
+        return getUserDisplayNames(userReactions.stream().map(UserReaction::getUserId).collect(Collectors.toSet()))
+                .map(displayNamesByUser -> {
+                    List<UserReaction> userReactionsWithName = new ArrayList<>();
                     userReactions.forEach(userReaction -> userReactionsWithName.add(new UserReaction(
                             userReaction.getUserId(),
                             userReaction.getProfile(),
                             userReaction.getReactionType(),
                             displayNamesByUser.get(userReaction.getUserId()))));
-                    promise.complete(userReactionsWithName);
-                })
-                .onFailure(promise::fail);
-        return promise.future();
+                    return userReactionsWithName;
+                });
     }
 
     private Future<Map<String, String>> getUserDisplayNames(Set<String> userIds) {
