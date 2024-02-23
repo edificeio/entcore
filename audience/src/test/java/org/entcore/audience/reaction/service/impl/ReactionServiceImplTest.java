@@ -4,11 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.audience.reaction.dao.impl.ReactionDaoImpl;
-import org.entcore.audience.reaction.model.ReactionCounters;
 import org.entcore.audience.reaction.model.ReactionsSummaryForResource;
 import org.entcore.audience.reaction.model.UserReaction;
 import org.entcore.audience.reaction.service.ReactionService;
@@ -41,17 +42,34 @@ public class ReactionServiceImplTest {
 
 
   @BeforeClass
-  public static void setUp(TestContext context) throws Exception {
+  public static void setUp(TestContext context) {
     final Async async = context.async();
     test.database().initPostgreSQL(context, pgContainer, schema).handler(e -> {
       if(e.succeeded()) {
-        insertMockData().onFailure(th -> context.fail(th)).onSuccess(s -> async.complete());
+        insertMockData().onFailure(context::fail).onSuccess(s -> async.complete());
       } else {
         context.fail(e.cause());
       }
     });
     final ReactionDaoImpl reactionDao = new ReactionDaoImpl(Sql.getInstance());
-    reactionService = new ReactionServiceImpl(reactionDao);
+
+    // Mock directory consumer
+    MessageConsumer<JsonObject> consumer = test.vertx().eventBus().consumer("entcore.directory");
+    consumer.handler(message -> {
+        String action = message.body().getString("action", "action.not.specified");
+        if (action.equals("get-users-displayNames")) {
+            JsonObject displayNamesByUserId = new JsonObject()
+                    .put("user-id", "User Id")
+                    .put("user-id-0", "User Id 0")
+                    .put("user-id-1", "User Id 1")
+                    .put("user-id-2", "User Id 2");
+            message.reply(displayNamesByUserId);
+        } else {
+            message.fail(500, "[Directory] " + action);
+        }
+    });
+
+    reactionService = new ReactionServiceImpl(test.vertx().eventBus(), reactionDao);
   }
 
   @Test
@@ -216,25 +234,76 @@ public class ReactionServiceImplTest {
         });
   }
 
+    @Test
+    public void testGetReactionDetailsWhenNoData(final TestContext context) {
+        final Async async = context.async();
+        reactionService.getReactionDetails("module", "resource-type", "id-1", 1, 100)
+                .onFailure(context::fail)
+                .onSuccess(reactionDetails -> {
+                    context.assertNotNull(reactionDetails, "getReactionDetails should never return null");
+                    context.assertNull(reactionDetails.getReactionCounters(), "getReactionCounters should return null when the filter matches no data");
+                    context.assertTrue(reactionDetails.getUserReactions().isEmpty(), "getUserReactions should return no data when the filter matches no data");
+                    async.complete();
+                });
+    }
+
   @Test
   public void testGetReactionDetails(final TestContext context) {
       final Async async = context.async();
-
       reactionService.getReactionDetails("mod0", "rt0", "r-id-0", 1, 100)
               .onFailure(context::fail)
               .onSuccess(reactionDetails -> {
-                  context.assertNotNull(reactionDetails, "");
+                  context.assertNotNull(reactionDetails, "getReactionDetails should never return null");
+                  context.assertNotNull(reactionDetails.getReactionCounters(), "reaction counters should never return null");
                   final Map<String, Integer> reactionCounterByType = reactionDetails.getReactionCounters().getCountByType();
-                  context.assertEquals(2, reactionCounterByType.size(), "");
-                  context.assertEquals(1, reactionCounterByType.get("thumb-up"), "");
-                  context.assertEquals(2, reactionCounterByType.get("thumb-down"), "");
+                  context.assertEquals(2, reactionCounterByType.size(), "there should be 2 types of reactions for this resource");
+                  context.assertEquals(1, reactionCounterByType.get("thumb-up"), "there should be 1 reaction of type thumb-up");
+                  context.assertEquals(2, reactionCounterByType.get("thumb-down"), "there should be 2 reactions of type thumb-down");
                   final List<UserReaction> userReactions = reactionDetails.getUserReactions();
-                  context.assertNotNull(userReactions, "");
-                  context.assertEquals(3, userReactions.size(), "");
-
+                  context.assertNotNull(userReactions, "list of user reactions should never return null");
+                  context.assertEquals(3, userReactions.size(), "there should be 3 reactions for this resource");
+                  UserReaction userReaction = userReactions.get(0);
+                  context.assertEquals("user-id-1", userReaction.getUserId(), "reaction of user-id-1 should be in first position because most recent");
+                  context.assertEquals("PERSRELELEVE", userReaction.getProfile(), "reaction profile should be PERSRELELEVE");
+                  context.assertEquals("thumb-down", userReaction.getReactionType(), "reaction type should be thumb-down");
+                  context.assertEquals("User Id 1", userReaction.getDisplayName(), "Display Name should be User Id 1");
+                  userReaction = userReactions.get(1);
+                  context.assertEquals("user-id-0", userReaction.getUserId(), "reaction of user-id-0 should be in second position");
+                  context.assertEquals("ENSEIGNANT", userReaction.getProfile(), "reaction profile should be ENSEIGNANT");
+                  context.assertEquals("thumb-up", userReaction.getReactionType(), "reaction type should be thumb-up");
+                  context.assertEquals("User Id 0", userReaction.getDisplayName(), "Display Name should be User Id 0");
+                  userReaction = userReactions.get(2);
+                  context.assertEquals("user-id-2", userReaction.getUserId(), "reaction of user-id-2 should be in");
+                  context.assertEquals("PERSRELELEVE", userReaction.getProfile(), "reaction profile should be PERSRELELEVE");
+                  context.assertEquals("thumb-down", userReaction.getReactionType(), "reaction type should be thumb-down");
+                  context.assertEquals("User Id 2", userReaction.getDisplayName(), "Display Name should be User Id 2");
                   async.complete();
               });
   }
+
+    @Test
+    public void testGetReactionDetailsWithPagination(final TestContext context) {
+        final Async async = context.async();
+        reactionService.getReactionDetails("mod0", "rt0", "r-id-0", 3, 1)
+                .onFailure(context::fail)
+                .onSuccess(reactionDetails -> {
+                    context.assertNotNull(reactionDetails, "getReactionDetails should never return null");
+                    context.assertNotNull(reactionDetails.getReactionCounters(), "reaction counters should never return null");
+                    final Map<String, Integer> reactionCounterByType = reactionDetails.getReactionCounters().getCountByType();
+                    context.assertEquals(2, reactionCounterByType.size(), "there should be 2 types of reactions for this resource");
+                    context.assertEquals(1, reactionCounterByType.get("thumb-up"), "there should be 1 reaction of type thumb-up");
+                    context.assertEquals(2, reactionCounterByType.get("thumb-down"), "there should be 2 reactions of type thumb-down");
+                    final List<UserReaction> userReactions = reactionDetails.getUserReactions();
+                    context.assertNotNull(userReactions, "list of user reactions should never return null");
+                    context.assertEquals(1, userReactions.size(), "there should be 1 reactions with this pagination parameters");
+                    UserReaction userReaction = userReactions.get(0);
+                    context.assertEquals("user-id-2", userReaction.getUserId(), "reaction of user-id-2 should be in");
+                    context.assertEquals("PERSRELELEVE", userReaction.getProfile(), "reaction profile should be PERSRELELEVE");
+                    context.assertEquals("thumb-down", userReaction.getReactionType(), "reaction type should be thumb-down");
+                    context.assertEquals("User Id 2", userReaction.getDisplayName(), "Display Name should be User Id 2");
+                    async.complete();
+                });
+    }
 
   @Test
   public void testUpsertReaction(final TestContext context) {
@@ -298,6 +367,54 @@ public class ReactionServiceImplTest {
     .onFailure(context::fail);
   }
 
+  @Test
+  public void testDeleteReaction(final TestContext context) {
+
+      final Async async = context.async();
+      final UserInfos userInfos = new UserInfos();
+      userInfos.setUserId("user-id");
+      userInfos.setFirstName("first-name");
+      userInfos.setLastName("last-name");
+      userInfos.setType("PERSRELELEVE");
+
+      final UserInfos userInfos2 = new UserInfos();
+      userInfos2.setUserId("user-id2");
+      userInfos2.setFirstName("first-name-2");
+      userInfos2.setLastName("last-name-2");
+      userInfos2.setType("ENSEIGNANT");
+
+      final int page = 1;
+      final int size = 100;
+
+      // User saves their first reaction
+      reactionService.upsertReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos, "reaction-type-1")
+              .compose(e -> reactionService.upsertReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos2, "reaction-type-1"))
+              .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
+              .onSuccess(reactionDetails -> {
+                  context.assertEquals(2, reactionDetails.getReactionCounters().getAllReactionsCounter(), "Should be a total of two reactions for this resource");
+                  context.assertEquals(1, reactionDetails.getReactionCounters().getCountByType().size(), "Should be only one type of reaction");
+                  context.assertEquals(2, reactionDetails.getReactionCounters().getCountByType().get("reaction-type-1"), "Should have a count of two for reaction-type-1");
+                  context.assertEquals(2, reactionDetails.getUserReactions().size(), "Users' reaction list should contain two reactions");
+                  context.assertTrue(reactionDetails.getUserReactions().stream().map(UserReaction::getUserId).collect(Collectors.toSet()).containsAll(Sets.newHashSet("user-id", "user-id2")), "Users' reaction list should contain user-id and user-id2");
+              })
+              .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos))
+              .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
+              .onSuccess(reactionDetails -> {
+                  context.assertEquals(1, reactionDetails.getReactionCounters().getAllReactionsCounter(), "Should be a total of one reaction for this resource, after deleting one reaction");
+                  context.assertEquals(1, reactionDetails.getReactionCounters().getCountByType().size(), "Should be only one type of reaction");
+                  context.assertEquals(1, reactionDetails.getReactionCounters().getCountByType().get("reaction-type-1"), "One reaction of type reaction-type-1 should have been deleted");
+                  context.assertEquals(1, reactionDetails.getUserReactions().size(), "List of users' reactions should contain 1 reaction after deletion");
+                  context.assertTrue(reactionDetails.getUserReactions().stream().noneMatch(userReaction -> userReaction.getUserId().equals("user-id")), "Reaction of user-id should have been removed from users' reaction list.");
+              })
+              .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos2))
+              .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
+              .onSuccess(reactionDetails -> {
+                  context.assertNull(reactionDetails.getReactionCounters(), "Reaction counters should be null, after deleting last reaction");
+                  context.assertTrue(reactionDetails.getUserReactions().isEmpty(), "List of users' reactions should be empty after deleting last reaction");
+                  async.complete();
+              });
+  }
+
   /**
    * Insert fake reaction data.
    * @return when preparation is done
@@ -305,13 +422,13 @@ public class ReactionServiceImplTest {
   private static Future<Void> insertMockData() {
     final Promise<Void> promise = Promise.promise();
     final Sql sql = Sql.getInstance();
-    final String values = Lists.newArrayList(
-      "('mod0', 'rt0', 'r-id-0', 'ENSEIGNANT', 'user-id-0', '2024-01-01', 'thumb-up')",
-                "('mod0', 'rt0', 'r-id-0', 'PERSRELELEVE',      'user-id-1', '2024-01-02', 'thumb-down')",
-                "('mod0', 'rt0', 'r-id-0', 'PERSRELELEVE',      'user-id-2', '2023-01-02', 'thumb-down')",
-                "('mod0', 'rt0', 'r-id-1', 'ENSEIGNANT', 'user-id-0', '2024-02-01', 'love')",
-                "('mod1', 'rt1', 'r-id-2', 'PERSRELELEVE', 'user-id-1', '2024-02-02', 'heart')"
-    ).stream().collect(Collectors.joining(","));
+    final String values = String.join(",", Lists.newArrayList(
+            "('mod0', 'rt0', 'r-id-0', 'ENSEIGNANT', 'user-id-0', '2024-01-01', 'thumb-up')",
+            "('mod0', 'rt0', 'r-id-0', 'PERSRELELEVE',      'user-id-1', '2024-01-02', 'thumb-down')",
+            "('mod0', 'rt0', 'r-id-0', 'PERSRELELEVE',      'user-id-2', '2023-01-02', 'thumb-down')",
+            "('mod0', 'rt0', 'r-id-1', 'ENSEIGNANT', 'user-id-0', '2024-02-01', 'love')",
+            "('mod1', 'rt1', 'r-id-2', 'PERSRELELEVE', 'user-id-1', '2024-02-02', 'heart')"
+    ));
     sql.raw("INSERT into audience.reactions (module, resource_type, resource_id, profile, user_id, reaction_date, reaction_type) VALUES " + values, e -> {
       if ("ok".equals(e.body().getString("status"))) {
         promise.complete();

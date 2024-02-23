@@ -3,18 +3,25 @@ package org.entcore.audience.reaction.service.impl;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.model.*;
 import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class ReactionServiceImpl implements ReactionService {
-
+    private final EventBus eventBus;
     private final ReactionDao reactionDao;
 
-    public ReactionServiceImpl(ReactionDao reactionDao) {
+    public ReactionServiceImpl(EventBus eventBus, ReactionDao reactionDao) {
+        this.eventBus =eventBus;
         this.reactionDao = reactionDao;
     }
 
@@ -26,13 +33,11 @@ public class ReactionServiceImpl implements ReactionService {
 
         CompositeFuture.all(reactionsCountersByResourceFuture, userReactionByResourceFuture).compose(result -> {
             final Map<String, ReactionsSummaryForResource> reactionsSummary = new HashMap<>();
-            reactionsCountersByResourceFuture.result().forEach((resourceId, reactionsCounters) -> {
-                reactionsSummary.put(resourceId, new ReactionsSummaryForResource(
-                        reactionsCounters.getCountByType().keySet(),
-                        userReactionByResourceFuture.result().get(resourceId),
-                        reactionsCounters.getAllReactionsCounter()
-                ));
-            });
+            reactionsCountersByResourceFuture.result().forEach((resourceId, reactionsCounters) -> reactionsSummary.put(resourceId, new ReactionsSummaryForResource(
+                    reactionsCounters.getCountByType().keySet(),
+                    userReactionByResourceFuture.result().get(resourceId),
+                    reactionsCounters.getAllReactionsCounter()
+            )));
             reactionsSummaryPromise.complete(new ReactionsSummaryResponse(reactionsSummary));
             return Future.succeededFuture();
         }).onFailure(reactionsSummaryPromise::fail);
@@ -43,16 +48,43 @@ public class ReactionServiceImpl implements ReactionService {
     public Future<ReactionDetailsResponse> getReactionDetails(String module, String resourceType, String resourceId, int page, int size) {
         Promise<ReactionDetailsResponse> promise = Promise.promise();
         Future<Map<String, ReactionCounters>> reactionCountersByResource = reactionDao.getReactionsCountersByResource(module, resourceType, Collections.singleton(resourceId));
-        Future<List<UserReaction>> userReactionsFuture = reactionDao.getUserReactions(module, resourceType, resourceId, page, size);
+        Future<List<UserReaction>> userReactionsFuture = reactionDao.getUsersReactions(module, resourceType, resourceId, page, size);
 
         CompositeFuture.all(reactionCountersByResource, userReactionsFuture).compose(result -> {
-            ReactionDetailsResponse reactionDetailsResponse = new ReactionDetailsResponse(
-                    reactionCountersByResource.result().get(resourceId),
-                    userReactionsFuture.result()
-            );
-            promise.complete(reactionDetailsResponse);
+            enrichUserReactionsWithDisplayName(userReactionsFuture.result())
+                    .onSuccess(usersReactionWithName -> promise.complete(new ReactionDetailsResponse(reactionCountersByResource.result().get(resourceId), usersReactionWithName)))
+                    .onFailure(promise::fail);
             return Future.succeededFuture();
         }).onFailure(promise::fail);
+        return promise.future();
+    }
+
+    private Future<List<UserReaction>> enrichUserReactionsWithDisplayName(List<UserReaction> userReactions) {
+        Promise<List<UserReaction>> promise = Promise.promise();
+        List<UserReaction> userReactionsWithName = new ArrayList<>();
+        getUserDisplayNames(userReactions.stream().map(UserReaction::getUserId).collect(Collectors.toSet()))
+                .onSuccess(displayNamesByUser -> {
+                    userReactions.forEach(userReaction -> userReactionsWithName.add(new UserReaction(
+                            userReaction.getUserId(),
+                            userReaction.getProfile(),
+                            userReaction.getReactionType(),
+                            displayNamesByUser.get(userReaction.getUserId()))));
+                    promise.complete(userReactionsWithName);
+                })
+                .onFailure(promise::fail);
+        return promise.future();
+    }
+
+    private Future<Map<String, String>> getUserDisplayNames(Set<String> userIds) {
+        Promise<Map<String, String>> promise = Promise.promise();
+        JsonObject messageBody = new JsonObject()
+                .put("action", "get-users-displayNames")
+                .put("userIds", new JsonArray(new ArrayList<>(userIds)));
+        eventBus.request("entcore.directory", messageBody, handlerToAsyncHandler(response -> {
+            Map<String, String> displayNameByUserId = new HashMap<>();
+            response.body().forEach(entry -> displayNameByUserId.put(entry.getKey(), entry.getValue().toString()));
+            promise.complete(displayNameByUserId);
+        }));
         return promise.future();
     }
 

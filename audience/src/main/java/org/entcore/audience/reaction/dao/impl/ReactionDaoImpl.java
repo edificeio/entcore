@@ -121,7 +121,7 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<List<UserReaction>> getUserReactions(String module, String resourceType, String resourceId, int page, int size) {
+    public Future<List<UserReaction>> getUsersReactions(String module, String resourceType, String resourceId, int page, int size) {
         Promise<List<UserReaction>> promise = Promise.promise();
 
         JsonArray params = new JsonArray();
@@ -131,24 +131,24 @@ public class ReactionDaoImpl implements ReactionDao {
         params.add(size);
         params.add((page-1)*size);
 
-        String query = "" +
+        String query =
                 "select user_id, profile, reaction_type " +
                 "from audience.reactions " +
                 "where module = ? " +
                 "and resource_type = ? " +
                 "and resource_id = ? " +
-                "order by reaction_date " +
+                "order by reaction_date desc " +
                 "limit ? " +
                 "offset ?";
 
         sql.prepared(query, params, results -> {
-            Either<String, JsonArray> validatedResults = SqlResult.validResults(results);
+            Either<String, JsonArray> validatedResults = SqlResult.validGroupedResults(results);
             if (validatedResults.isRight()) {
                 final List<UserReaction> userReactions = new ArrayList<>();
                 final JsonArray queryResults = validatedResults.right().getValue();
                 queryResults.forEach(r -> {
                     JsonObject result = (JsonObject) r;
-                    userReactions.add(new UserReaction(result.getString("user_id"), result.getString("profile"), result.getString("reaction_type")));
+                    userReactions.add(new UserReaction(result.getString("user_id"), result.getString("profile"), result.getString("reaction_type"), ""));
                 });
                 promise.complete(userReactions);
             } else {

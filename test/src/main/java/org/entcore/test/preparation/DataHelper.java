@@ -128,12 +128,13 @@ public class DataHelper {
      * @return This helper
      */
     public DataHelper withUser(final UserTest user) {
-        sb.add("CREATE (u:User{id: {id}, login: {login}, lastName:{lastName}, firstName: {firstName}, profiles: {profiles}})",
+        sb.add("CREATE (u:User{id: {id}, login: {login}, lastName:{lastName}, firstName: {firstName}, displayName: {displayName}, profiles: {profiles}})",
                 new JsonObject()
                         .put("id", user.getId())
                         .put("login", user.getLogin())
                         .put("firstName", user.getFirstName())
                         .put("lastName", user.getLastName())
+                        .put("displayName", user.getDisplayName())
                         .put("profiles", user.getProfile() == null ? null : new JsonArray().add(user.getProfile().name)));
         if(user.getUserBook() != null) {
             final UserBookTest ub = user.getUserBook();

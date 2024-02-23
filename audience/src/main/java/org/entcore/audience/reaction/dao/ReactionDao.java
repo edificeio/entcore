@@ -15,7 +15,7 @@ public interface ReactionDao {
 
     Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos);
 
-    Future<List<UserReaction>> getUserReactions(String module, String resourceType, String resourceId, int page, int size);
+    Future<List<UserReaction>> getUsersReactions(String module, String resourceType, String resourceId, int page, int size);
 
     Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType);
 

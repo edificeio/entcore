@@ -4,11 +4,13 @@ public class UserReaction {
     private final String userId;
     private final  String profile;
     private final String reactionType;
+    private final String displayName;
 
-    public UserReaction(String userId, String profile, String reactionType) {
+    public UserReaction(String userId, String profile, String reactionType, String displayName) {
         this.userId = userId;
         this.profile = profile;
         this.reactionType = reactionType;
+        this.displayName = displayName;
     }
 
     public String getUserId() {
@@ -21,5 +23,9 @@ public class UserReaction {
 
     public String getReactionType() {
         return reactionType;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }
