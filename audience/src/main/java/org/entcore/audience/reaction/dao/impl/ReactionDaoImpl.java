@@ -77,7 +77,7 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos) {
+    public Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, String userId) {
         Promise<Map<String, String>> promise = Promise.promise();
 
         if (CollectionUtils.isEmpty(resourceIds)) {
@@ -93,7 +93,7 @@ public class ReactionDaoImpl implements ReactionDao {
                 params.add(resourceId);
             }
             resourceIdsPlaceholder.deleteCharAt(resourceIdsPlaceholder.length() - 1);
-            params.add(userInfos.getUserId());
+            params.add(userId);
 
             String userReactionQuery = "select resource_id, reaction_type as user_reaction " +
                     "from audience.reactions " +
@@ -160,15 +160,15 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType) {
+    public Future<Void> upsertReaction(String module, String resourceType, String resourceId, String userId, String userProfile, String reactionType) {
         Promise<Void> promise = Promise.promise();
 
         JsonArray params = new JsonArray();
         params.add(module);
         params.add(resourceType);
         params.add(resourceId);
-        params.add(userInfos.getType());
-        params.add(userInfos.getUserId());
+        params.add(userProfile);
+        params.add(userId);
         params.add(reactionType);
 
         String query =
@@ -190,14 +190,14 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos) {
+    public Future<Void> deleteReaction(String module, String resourceType, String resourceId, String userId) {
         Promise<Void> promise = Promise.promise();
 
         JsonArray params = new JsonArray();
         params.add(module);
         params.add(resourceType);
         params.add(resourceId);
-        params.add(userInfos.getUserId());
+        params.add(userId);
 
         String query = "delete from audience.reactions " +
                 "where module = ? " +

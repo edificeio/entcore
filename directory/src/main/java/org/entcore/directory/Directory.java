@@ -171,9 +171,12 @@ public class Directory extends BaseServer {
 				JsonArray userIds = message.body().getJsonArray("userIds");
 				userService.getUsersDisplayNames(userIds)
 						.onSuccess(message::reply)
-						.onFailure(th -> message.fail(500, th.getCause().getMessage()));
+						.onFailure(th -> {
+							log.error("[Directory] unable to retrieve users' display names", th.getCause());
+							message.fail(500, th.getCause().getMessage());
+						});
 			} else {
-				message.fail(500, "[Directory] " + action);
+				message.fail(404, "[Directory] " + action);
 			}
 		});
 

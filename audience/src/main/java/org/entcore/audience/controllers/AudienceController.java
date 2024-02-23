@@ -51,7 +51,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, resourceIds, request)
         .onSuccess(user -> reactionService.getReactionsSummary(module, resourceType, resourceIds, user)
                 .onSuccess(reactionsSummary -> Renders.render(request, reactionsSummary))
-                .onFailure(th -> Renders.log.error("Error while getting reactions summary on resource " + module + "@" + resourceType + "@" + resourceIds, th)));
+                .onFailure(th -> {
+                  Renders.log.error("Error while getting reactions summary on resource " + module + "@" + resourceType + "@" + resourceIds, th);
+                  Renders.renderError(request);
+                }));
   }
 
   @Get("/reactions/:module/:resourceType/:resourceId")
@@ -65,7 +68,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, Collections.singleton(resourceId), request)
         .onSuccess(user -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size)
                 .onSuccess(reactionDetailsResponse -> Renders.render(request, reactionDetailsResponse))
-                .onFailure(th -> Renders.log.error("Error while getting reaction details on resource " + module + "@" + resourceType + "@" + resourceId, th)));
+                .onFailure(th -> {
+                  Renders.log.error("Error while getting reaction details on resource " + module + "@" + resourceType + "@" + resourceId, th);
+                  Renders.renderError(request);
+                }));
   }
 
   @Post("/reactions/:module/:resourceType")
@@ -89,7 +95,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, Collections.singleton(resourceId), request)
         .onSuccess(user -> reactionService.deleteReaction(module, resourceType, resourceId, user)
             .onSuccess(e -> Renders.ok(request))
-            .onFailure(th -> Renders.log.error("Error while deleting reaction for user and resource " + module + "@" + resourceType + "@" + resourceId, th)));
+            .onFailure(th -> {
+              Renders.log.error("Error while deleting reaction for user and resource " + module + "@" + resourceType + "@" + resourceId, th);
+              Renders.renderError(request);
+            }));
   }
 
   @Post("/views/:module/:resourceType/:resourceId")
@@ -101,7 +110,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, Collections.singleton(resourceId), request)
         .onSuccess(user -> viewService.registerView(module, resourceType, resourceId, user)
             .onSuccess(e -> Renders.ok(request))
-            .onFailure(th -> Renders.log.error("Error while registering resource view for resource " + module + "@" + resourceType + "@" + resourceId, th)));
+            .onFailure(th -> {
+              Renders.log.error("Error while registering resource view for resource " + module + "@" + resourceType + "@" + resourceId, th);
+              Renders.renderError(request);
+            }));
   }
 
   @Get("/views/count/:module/:resourceType")
@@ -113,7 +125,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, resourceIds, request)
     .onSuccess(user -> viewService.getViewCounts(module, resourceType, resourceIds, user)
         .onSuccess(e -> Renders.render(request, e))
-        .onFailure(th -> Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th)));
+        .onFailure(th -> {
+          Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th);
+          Renders.renderError(request);
+        }));
   }
 
   @Get("/views/details/:module/:resourceType/:resourceId")
@@ -125,7 +140,10 @@ public class AudienceController extends BaseController {
     verify(module, resourceType, Collections.singleton(resourceId), request)
     .onSuccess(user -> viewService.getViewDetails(module, resourceType, resourceId, user)
         .onSuccess(e -> Renders.render(request, e))
-        .onFailure(th -> Renders.log.error("Error while getting views details of resource " + module + "@" + resourceType + "@" + resourceId, th)));
+        .onFailure(th -> {
+          Renders.log.error("Error while getting views details of resource " + module + "@" + resourceType + "@" + resourceId, th);
+          Renders.renderError(request);
+        }));
   }
 
 
@@ -141,7 +159,10 @@ public class AudienceController extends BaseController {
           .onSuccess(user ->
                   reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
                   .onSuccess(upsertedReaction -> Renders.ok(request))
-                          .onFailure(th -> Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th)));
+                          .onFailure(th -> {
+                              Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th);
+                              Renders.renderError(request);
+                          }));
     });
   }
 

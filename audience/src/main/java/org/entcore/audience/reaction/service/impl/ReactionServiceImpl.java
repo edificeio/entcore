@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class ReactionServiceImpl implements ReactionService {
+    public static final String DIRECTORY_ADDRESS = "entcore.directory";
     private final EventBus eventBus;
     private final ReactionDao reactionDao;
 
@@ -29,7 +30,7 @@ public class ReactionServiceImpl implements ReactionService {
     public Future<ReactionsSummaryResponse> getReactionsSummary(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos) {
         Promise<ReactionsSummaryResponse> reactionsSummaryPromise = Promise.promise();
         Future<Map<String, ReactionCounters>> reactionsCountersByResourceFuture = reactionDao.getReactionsCountersByResource(module, resourceType, resourceIds);
-        Future<Map<String, String>> userReactionByResourceFuture = reactionDao.getUserReactionByResource(module, resourceType, resourceIds, userInfos);
+        Future<Map<String, String>> userReactionByResourceFuture = reactionDao.getUserReactionByResource(module, resourceType, resourceIds, userInfos.getUserId());
 
         CompositeFuture.all(reactionsCountersByResourceFuture, userReactionByResourceFuture).compose(result -> {
             final Map<String, ReactionsSummaryForResource> reactionsSummary = new HashMap<>();
@@ -50,13 +51,9 @@ public class ReactionServiceImpl implements ReactionService {
         Future<Map<String, ReactionCounters>> reactionCountersByResource = reactionDao.getReactionsCountersByResource(module, resourceType, Collections.singleton(resourceId));
         Future<List<UserReaction>> userReactionsFuture = reactionDao.getUsersReactions(module, resourceType, resourceId, page, size);
 
-        CompositeFuture.all(reactionCountersByResource, userReactionsFuture).compose(result -> {
-            enrichUserReactionsWithDisplayName(userReactionsFuture.result())
-                    .onSuccess(usersReactionWithName -> promise.complete(new ReactionDetailsResponse(reactionCountersByResource.result().get(resourceId), usersReactionWithName)))
-                    .onFailure(promise::fail);
-            return Future.succeededFuture();
-        }).onFailure(promise::fail);
-        return promise.future();
+        return CompositeFuture.all(reactionCountersByResource, userReactionsFuture)
+                .compose(result -> enrichUserReactionsWithDisplayName(userReactionsFuture.result()))
+                .map(enrichedUserReaction -> new ReactionDetailsResponse(reactionCountersByResource.result().get(resourceId), enrichedUserReaction));
     }
 
     private Future<List<UserReaction>> enrichUserReactionsWithDisplayName(List<UserReaction> userReactions) {
@@ -80,21 +77,26 @@ public class ReactionServiceImpl implements ReactionService {
         JsonObject messageBody = new JsonObject()
                 .put("action", "get-users-displayNames")
                 .put("userIds", new JsonArray(new ArrayList<>(userIds)));
-        eventBus.request("entcore.directory", messageBody, handlerToAsyncHandler(response -> {
-            Map<String, String> displayNameByUserId = new HashMap<>();
-            response.body().forEach(entry -> displayNameByUserId.put(entry.getKey(), entry.getValue().toString()));
-            promise.complete(displayNameByUserId);
-        }));
+        eventBus.request(DIRECTORY_ADDRESS, messageBody, response -> {
+            if (response.succeeded()) {
+                Map<String, String> displayNameByUserId = new HashMap<>();
+                JsonObject responseBody = (JsonObject) response.result().body();
+                responseBody.forEach(entry -> displayNameByUserId.put(entry.getKey(), entry.getValue().toString()));
+                promise.complete(displayNameByUserId);
+            } else {
+                promise.fail(response.cause());
+            }
+        });
         return promise.future();
     }
 
     @Override
     public Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType) {
-        return reactionDao.upsertReaction(module, resourceType, resourceId, userInfos, reactionType);
+        return reactionDao.upsertReaction(module, resourceType, resourceId, userInfos.getUserId(), userInfos.getType(), reactionType);
     }
 
     @Override
     public Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos) {
-        return reactionDao.deleteReaction(module, resourceType, resourceId, userInfos);
+        return reactionDao.deleteReaction(module, resourceType, resourceId, userInfos.getUserId());
     }
 }

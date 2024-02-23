@@ -13,12 +13,12 @@ public interface ReactionDao {
 
     Future<Map<String, ReactionCounters>> getReactionsCountersByResource(String module, String resourceType, Set<String> resourceIds);
 
-    Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos);
+    Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, String userId);
 
     Future<List<UserReaction>> getUsersReactions(String module, String resourceType, String resourceId, int page, int size);
 
-    Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType);
+    Future<Void> upsertReaction(String module, String resourceType, String resourceId, String userId, String userProfile, String reactionType);
 
-    Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos);
+    Future<Void> deleteReaction(String module, String resourceType, String resourceId, String userId);
 
 }
