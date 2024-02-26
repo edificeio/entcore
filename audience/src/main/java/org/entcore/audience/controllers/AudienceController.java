@@ -14,7 +14,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import org.entcore.audience.reaction.model.ReactionType;
 import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.audience.services.AudienceAccessFilter;
 import org.entcore.audience.view.service.ViewService;
@@ -45,21 +44,34 @@ public class AudienceController extends BaseController {
   @Get("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getReactionsSummary(final HttpServerRequest request) {
-    String module = request.getParam("module");
-    String resourceType = request.getParam("resourceType");
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final Set<String> resourceIds = RequestUtils.getParamAsSet("resourceIds", request);
 
     verify(module, resourceType, resourceIds, request)
         .onSuccess(user -> reactionService.getReactionsSummary(module, resourceType, resourceIds, user)
-                .onSuccess(reactionsSummary -> Renders.renderJson(request, JsonObject.mapFrom(reactionsSummary))));
+                .onSuccess(reactionsSummary -> Renders.render(request, reactionsSummary))
+                .onFailure(th -> {
+                  Renders.log.error("Error while getting reactions summary on resource " + module + "@" + resourceType + "@" + resourceIds, th);
+                  Renders.renderError(request);
+                }));
   }
 
   @Get("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void getReactionDetails(final HttpServerRequest request) {
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final String resourceId = request.getParam("resourceId");
-    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
-        .onSuccess(user -> reactionService.getReactionDetails(resourceId, request, user));
+    final int page = Integer.parseInt(request.getParam("page"));
+    final int size = Integer.parseInt(request.getParam("size"));
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size)
+                .onSuccess(reactionDetailsResponse -> Renders.render(request, reactionDetailsResponse))
+                .onFailure(th -> {
+                  Renders.log.error("Error while getting reaction details on resource " + module + "@" + resourceType + "@" + resourceId, th);
+                  Renders.renderError(request);
+                }));
   }
 
   @Post("/reactions/:module/:resourceType")
@@ -77,12 +89,15 @@ public class AudienceController extends BaseController {
   @Delete("/reactions/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void deleteReaction(final HttpServerRequest request) {
+    final String module = request.getParam("module");
+    final String resourceType = request.getParam("resourceType");
     final String resourceId = request.getParam("resourceId");
-    verify(request.getParam("module"), request.getParam("resourceType"), Collections.singleton(resourceId), request)
-        .onSuccess(user -> reactionService.deleteReaction(resourceId, request, user)
+    verify(module, resourceType, Collections.singleton(resourceId), request)
+        .onSuccess(user -> reactionService.deleteReaction(module, resourceType, resourceId, user)
             .onSuccess(e -> Renders.ok(request))
             .onFailure(th -> {
-              Renders.log.error("Error while deleting reaction for user and resource", th);
+              Renders.log.error("Error while deleting reaction for user and resource " + module + "@" + resourceType + "@" + resourceId, th);
+              Renders.renderError(request);
             }));
   }
 
@@ -97,6 +112,7 @@ public class AudienceController extends BaseController {
             .onSuccess(e -> Renders.ok(request))
             .onFailure(th -> {
               Renders.log.error("Error while registering resource view for resource " + module + "@" + resourceType + "@" + resourceId, th);
+              Renders.renderError(request);
             }));
   }
 
@@ -111,6 +127,7 @@ public class AudienceController extends BaseController {
         .onSuccess(e -> Renders.render(request, e))
         .onFailure(th -> {
           Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th);
+          Renders.renderError(request);
         }));
   }
 
@@ -125,6 +142,7 @@ public class AudienceController extends BaseController {
         .onSuccess(e -> Renders.render(request, e))
         .onFailure(th -> {
           Renders.log.error("Error while getting views details of resource " + module + "@" + resourceType + "@" + resourceId, th);
+          Renders.renderError(request);
         }));
   }
 
@@ -134,13 +152,17 @@ public class AudienceController extends BaseController {
       final String module = request.getParam("module");
       final String resourceType = request.getParam("resourceType");
       final String resourceId = jsonBody.getString("resourceId", "");
-      final ReactionType reactionType = ReactionType.valueOf(jsonBody.getString("reactionType", ""));
+      final String reactionType = jsonBody.getString("reactionType", "");
       final Set<String> resourceIds = new HashSet<>();
       resourceIds.add(resourceId);
       verify(module, resourceType, resourceIds, request)
-          .onSuccess(user -> reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
+          .onSuccess(user ->
+                  reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
                   .onSuccess(upsertedReaction -> Renders.ok(request))
-                  .onFailure(th -> Renders.renderError(request)));
+                          .onFailure(th -> {
+                              Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th);
+                              Renders.renderError(request);
+                          }));
     });
   }
 
