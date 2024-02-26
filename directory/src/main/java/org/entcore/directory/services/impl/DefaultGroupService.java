@@ -224,4 +224,45 @@ public class DefaultGroupService implements GroupService {
 				"RETURN g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels";
 		neo.execute(query, params, validResultHandler(results));
 	}
+
+	/**
+	 * @param structureId : the structure id
+	 * @param results : the result handler
+	 * This method is used to get the community group
+	 * if the structureId is not null, it will get the community group of the structure
+	 * else it will get the community group of all the structures
+	 * The community group is not a group dependant of a structure, it is a group that can be used to communicate with all the users of the platform
+	 * for this reason, it is not dependant of a structure
+	 * 			
+	 * */
+	@Override
+	public void getCommunityGroup(String structureId, Handler<Either<String, JsonArray>> results) {
+
+		String condition = "";
+		if(structureId != null && !structureId.trim().isEmpty()) {
+			condition = " WHERE s.id = {structureId} ";
+		}
+
+		String query = "MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User), u-[:IN]->(g:CommunityGroup)" +
+						condition +
+						"WITH g, collect( distinct {name: s.name, id: s.id}) as structures, " +
+						"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
+						"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
+						"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
+						"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
+						"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
+						"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
+						"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
+						" WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' " +
+						" WHEN HAS(g.subType) THEN g.subType " +
+						" WHEN (g: ManualGroup) AND (" +
+						" g.autolinkTargetAllStructs = true " +
+						" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+						" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
+						") THEN 'BroadcastGroup' " +
+						"END as subType";
+
+		JsonObject params = new JsonObject().put("structureId", structureId);
+		neo.execute(query, params, validResultHandler(results));
+	}
 }
