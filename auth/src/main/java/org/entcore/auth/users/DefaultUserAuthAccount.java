@@ -1046,4 +1046,34 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		return updatedList;
 	}
 
+
+	/**
+	 * @param  userId
+	 * 			handler,
+	 * 				Handler<Either<String, JsonObject>> handler
+	 * 				- String : error message
+	 * 				- JsonObject : success message
+	 * Using this method will not force the user to change his password, userId it's use to match user and force changPw to true
+	 * if user is found and force change password is successful, the handler will be called with a right value
+	 * 
+	 */
+	@Override
+	public void forceChangePassword(String userId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (u:User) WHERE u.id = {userId} SET u.changePw = true return count(*) = 1 as exists;";
+		JsonObject params = new JsonObject().put("userId", userId);
+
+		neo.execute(query, params, res -> {
+			if ("ok".equals(res.body().getString("status"))) {
+				JsonArray result = res.body().getJsonArray("result");
+				if(result != null && result.size() == 1) {
+					JsonObject result_data = result.getJsonObject(0);
+					if(result_data != null) {
+						handler.handle(new Either.Right<>(new JsonObject()));
+						return;
+					}
+				}
+			}
+			handler.handle(new Either.Left<>("Failed to force change password"));
+		});
+	}
 }
