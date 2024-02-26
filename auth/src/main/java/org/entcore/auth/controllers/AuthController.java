@@ -1882,4 +1882,39 @@ public class AuthController extends BaseController {
 		this.mfaSvc = mfaSvc;
 	}
 
+
+	/**
+	 *
+	 * This method is used to force the password change for a user
+	 * @param request
+	 * 				- the request with the userId, the userId to force the password change
+	 *
+	 * @response 200 if the force change password has been sent
+	 * @response 400 if the userId is empty
+	 *
+	 *
+	 */
+	@Post("/forceChangePassword")
+	public void forceChangePassword(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject data) {
+				
+				final String userId = data.getString("userId");
+
+				if (userId == null || userId.trim().isEmpty()) {
+					badRequest(request);
+					return;
+				}
+
+				userAuthAccount.forceChangePassword(userId, either -> {
+					if (either.isRight()) {
+						renderJson(request, either.right().getValue());
+					} else {
+						renderError(request);
+					}
+				});
+			}
+		});
+	}
 }
