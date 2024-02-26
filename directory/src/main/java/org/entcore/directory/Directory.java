@@ -22,13 +22,13 @@ package org.entcore.directory;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.messaging.IMessagingClient;
-import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
@@ -39,47 +39,15 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
-import org.entcore.directory.controllers.CalendarController;
-import org.entcore.directory.controllers.ClassController;
-import org.entcore.directory.controllers.DirectoryController;
-import org.entcore.directory.controllers.GroupController;
-import org.entcore.directory.controllers.ImportController;
-import org.entcore.directory.controllers.ProfileController;
-import org.entcore.directory.controllers.RemoteUserController;
-import org.entcore.directory.controllers.ShareBookmarkController;
-import org.entcore.directory.controllers.SlotProfileController;
-import org.entcore.directory.controllers.StructureController;
-import org.entcore.directory.controllers.SubjectController;
-import org.entcore.directory.controllers.TenantController;
-import org.entcore.directory.controllers.TimetableController;
-import org.entcore.directory.controllers.UserBookController;
-import org.entcore.directory.controllers.UserController;
+import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
-import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.RemoteUserService;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.SubjectService;
-import org.entcore.directory.services.UserBookService;
-import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.impl.DefaultClassService;
-import org.entcore.directory.services.impl.DefaultGroupService;
-import org.entcore.directory.services.impl.DefaultImportService;
-import org.entcore.directory.services.impl.DefaultMassMailService;
-import org.entcore.directory.services.impl.DefaultProfileService;
-import org.entcore.directory.services.impl.DefaultRemoteUserService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
-import org.entcore.directory.services.impl.DefaultShareBookmarkService;
-import org.entcore.directory.services.impl.DefaultSlotProfileService;
-import org.entcore.directory.services.impl.DefaultSubjectService;
-import org.entcore.directory.services.impl.DefaultTenantService;
-import org.entcore.directory.services.impl.DefaultTimetableService;
-import org.entcore.directory.services.impl.DefaultUserBookService;
-import org.entcore.directory.services.impl.DefaultUserService;
-import org.entcore.directory.services.impl.UserbookRepositoryEvents;
+import org.entcore.directory.services.*;
+import org.entcore.directory.services.impl.*;
 
 public class Directory extends BaseServer {
+
+	public static final String DIRECTORY_ADDRESS = "entcore.directory";
 
 	public static final String FEEDER = "entcore.feeder";
 	public static final String SLOTPROFILE_COLLECTION = "slotprofile";
@@ -195,6 +163,22 @@ public class Directory extends BaseServer {
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+
+		MessageConsumer<JsonObject> consumer = eb.consumer(DIRECTORY_ADDRESS);
+		consumer.handler(message -> {
+			String action = message.body().getString("action", "action.not.specified");
+			if (action.equals("get-users-displayNames")) {
+				JsonArray userIds = message.body().getJsonArray("userIds");
+				userService.getUsersDisplayNames(userIds)
+						.onSuccess(message::reply)
+						.onFailure(th -> {
+							log.error("[Directory] unable to retrieve users' display names", th.getCause());
+							message.fail(500, th.getCause().getMessage());
+						});
+			} else {
+				message.fail(404, "[Directory] " + action);
+			}
+		});
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {

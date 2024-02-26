@@ -20,13 +20,12 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
-
 import io.vertx.core.Future;
-import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 
 import java.util.List;
@@ -133,7 +132,7 @@ public interface UserService {
 	/**
 	 * Merge two duplicated user.
 	 * @param userId1 Id of one of the duplicated user
-	 * @param userId2Id of the other duplicated user
+	 * @param userId2 Id of the other duplicated user
 	 * @param keepRelations {@code true} if the relationships of the disappearing user should be copied to the remaining user
 	 * @param handler Downstream action after merger
 	 */
@@ -157,4 +156,6 @@ public interface UserService {
 	void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
 }

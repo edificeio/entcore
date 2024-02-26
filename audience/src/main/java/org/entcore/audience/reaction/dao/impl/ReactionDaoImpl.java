@@ -7,15 +7,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.audience.reaction.dao.ReactionDao;
-import org.entcore.audience.reaction.model.ReactionType;
-import org.entcore.audience.reaction.model.ReactionsSummary;
+import org.entcore.audience.reaction.model.ReactionCounters;
+import org.entcore.audience.reaction.model.UserReaction;
 import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ReactionDaoImpl implements ReactionDao {
 
@@ -26,10 +24,10 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<ReactionsSummary> getReactionsSummary(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos) {
-        Promise<ReactionsSummary> promise = Promise.promise();
+    public Future<Map<String, ReactionCounters>> getReactionsCountersByResource(String module, String resourceType, Set<String> resourceIds) {
+        Promise<Map<String, ReactionCounters>> promise = Promise.promise();
         if(CollectionUtils.isEmpty(resourceIds)) {
-            promise.complete(new ReactionsSummary(new HashMap<>()));
+            promise.complete(new HashMap<>());
         } else {
             JsonArray params = new JsonArray();
             params.add(module);
@@ -54,11 +52,11 @@ public class ReactionDaoImpl implements ReactionDao {
                 Either<String, JsonArray> validatedResult = SqlResult.validGroupedResults(results);
                 if (validatedResult.isRight()) {
                     final JsonArray queryResults = validatedResult.right().getValue();
-                    final Map<String, ReactionsSummary.ReactionsSummaryForResource> reactions = new HashMap<>();
+                    final Map<String, ReactionCounters> reactions = new HashMap<>();
                     queryResults.forEach(r -> {
                         final JsonObject result = (JsonObject) r;
                         final String resourceId = result.getString("resource_id");
-                        final ReactionsSummary.ReactionsSummaryForResource reactionsForResource = reactions.computeIfAbsent(resourceId, (k) -> new ReactionsSummary.ReactionsSummaryForResource(new HashMap<>()));
+                        final ReactionCounters reactionsForResource = reactions.computeIfAbsent(resourceId, (k) -> new ReactionCounters(new HashMap<>()));
                         final String type = result.getString("reaction_type");
                         final Integer count = result.getInteger("reaction_counter", 0);
                         reactionsForResource.getCountByType().compute(type, (k, v) -> {
@@ -69,7 +67,7 @@ public class ReactionDaoImpl implements ReactionDao {
                             }
                         });
                     });
-                    promise.complete(new ReactionsSummary(reactions));
+                    promise.complete(reactions);
                 } else {
                     promise.fail(validatedResult.left().getValue());
                 }
@@ -79,15 +77,98 @@ public class ReactionDaoImpl implements ReactionDao {
     }
 
     @Override
-    public Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, ReactionType reactionType) {
+    public Future<Map<String, String>> getUserReactionByResource(String module, String resourceType, Set<String> resourceIds, String userId) {
+        Promise<Map<String, String>> promise = Promise.promise();
+
+        if (CollectionUtils.isEmpty(resourceIds)) {
+            promise.complete(new HashMap<>());
+        } else {
+            JsonArray params = new JsonArray();
+            params.add(module);
+            params.add(resourceType);
+
+            StringBuilder resourceIdsPlaceholder = new StringBuilder();
+            for (String resourceId : resourceIds) {
+                resourceIdsPlaceholder.append("?,");
+                params.add(resourceId);
+            }
+            resourceIdsPlaceholder.deleteCharAt(resourceIdsPlaceholder.length() - 1);
+            params.add(userId);
+
+            String userReactionQuery = "select resource_id, reaction_type as user_reaction " +
+                    "from audience.reactions " +
+                    "where module = ? " +
+                    "and resource_type = ? " +
+                    "and resource_id in (" + resourceIdsPlaceholder + ") " +
+                    "and user_id = ?";
+
+            sql.prepared(userReactionQuery, params, results -> {
+                Either<String, JsonArray> validatedResults = SqlResult.validGroupedResults(results);
+                if (validatedResults.isRight()) {
+                    final Map<String, String> userReactionByResource = new HashMap<>();
+                    final JsonArray queryResults = validatedResults.right().getValue();
+                    queryResults.forEach(r -> {
+                        final JsonObject result = (JsonObject) r;
+                        userReactionByResource.put(result.getString("resource_id"), result.getString("user_reaction"));
+                    });
+                    promise.complete(userReactionByResource);
+                } else {
+                    promise.fail(validatedResults.left().getValue());
+                }
+            });
+        }
+        return promise.future();
+    }
+
+    @Override
+    public Future<List<UserReaction>> getUsersReactions(String module, String resourceType, String resourceId, int page, int size) {
+        Promise<List<UserReaction>> promise = Promise.promise();
+
+        JsonArray params = new JsonArray();
+        params.add(module);
+        params.add(resourceType);
+        params.add(resourceId);
+        params.add(size);
+        params.add((page-1)*size);
+
+        String query =
+                "select user_id, profile, reaction_type " +
+                "from audience.reactions " +
+                "where module = ? " +
+                "and resource_type = ? " +
+                "and resource_id = ? " +
+                "order by reaction_date desc " +
+                "limit ? " +
+                "offset ?";
+
+        sql.prepared(query, params, results -> {
+            Either<String, JsonArray> validatedResults = SqlResult.validGroupedResults(results);
+            if (validatedResults.isRight()) {
+                final List<UserReaction> userReactions = new ArrayList<>();
+                final JsonArray queryResults = validatedResults.right().getValue();
+                queryResults.forEach(r -> {
+                    JsonObject result = (JsonObject) r;
+                    userReactions.add(new UserReaction(result.getString("user_id"), result.getString("profile"), result.getString("reaction_type"), ""));
+                });
+                promise.complete(userReactions);
+            } else {
+                promise.fail(validatedResults.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
+
+    @Override
+    public Future<Void> upsertReaction(String module, String resourceType, String resourceId, String userId, String userProfile, String reactionType) {
         Promise<Void> promise = Promise.promise();
 
         JsonArray params = new JsonArray();
         params.add(module);
         params.add(resourceType);
         params.add(resourceId);
-        params.add(userInfos.getType());
-        params.add(userInfos.getUserId());
+        params.add(userProfile);
+        params.add(userId);
         params.add(reactionType);
 
         String query =
@@ -107,5 +188,33 @@ public class ReactionDaoImpl implements ReactionDao {
         });
         return promise.future();
     }
+
+    @Override
+    public Future<Void> deleteReaction(String module, String resourceType, String resourceId, String userId) {
+        Promise<Void> promise = Promise.promise();
+
+        JsonArray params = new JsonArray();
+        params.add(module);
+        params.add(resourceType);
+        params.add(resourceId);
+        params.add(userId);
+
+        String query = "delete from audience.reactions " +
+                "where module = ? " +
+                "and resource_type = ? " +
+                "and resource_id = ? " +
+                "and user_id = ?";
+
+        sql.prepared(query, params, results -> {
+            Either<String, JsonArray> validatedResult = SqlResult.validResults(results);
+            if (validatedResult.isRight()) {
+                promise.complete();
+            } else {
+                promise.fail(validatedResult.left().getValue());
+            }
+        });
+        return promise.future();
+    }
+
 
 }

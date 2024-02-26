@@ -20,12 +20,12 @@ public class EventBusAudienceAccessFilter implements AudienceAccessFilter {
     this.eventBus = vertx.eventBus();
   }
   @Override
-  public Future<Boolean> canAccess(final String appName, final String resourceType,
+  public Future<Boolean> canAccess(final String module, final String resourceType,
                                    final UserInfos user, final Set<String> resourceIds) {
     final Promise<Boolean> promise = Promise.promise();
     eventBus.request(
-        getCheckRightsBusAddress(appName, resourceType),
-        getMessage(user, appName, resourceType, resourceIds),
+        getCheckRightsBusAddress(module, resourceType),
+        getMessage(user, module, resourceType, resourceIds),
         messageAsyncResult -> {
           if(messageAsyncResult.succeeded()) {
             final AudienceCheckRightResponseMessage response = Json.decodeValue((String) messageAsyncResult.result().body(), AudienceCheckRightResponseMessage.class);

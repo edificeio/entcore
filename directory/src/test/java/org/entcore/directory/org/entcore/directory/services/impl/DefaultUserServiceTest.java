@@ -39,14 +39,17 @@ public class DefaultUserServiceTest {
     static final UserTest user0 = UserTestBuilder.anUserTest().id("simple-user")
             .login("simple.user")
             .firstName("prenom").lastName("NdF")
+            .displayName("Prenom NdF")
             .build();
     static final UserTest child1 = UserTestBuilder.anUserTest().id("child")
             .login("child")
             .firstName("Enfant").lastName("Child")
+            .displayName("Enfant Child")
             .build();
     static final UserTest teacher = UserTestBuilder.anUserTest().id("user.two")
             .login("user-two")
             .firstName("User").lastName("Two")
+            .displayName("User Two")
             .profile(Profile.Teacher)
             .userBook(new UserBookTest("user.two", "ine.user.two", 1000, 0))
             .build();
@@ -63,7 +66,7 @@ public class DefaultUserServiceTest {
             .userBook(new UserBookTest("user.adml", "ine.user.adml", 1000, 0)).build();
 
     @BeforeClass
-    public static void setUp(TestContext context) throws Exception {
+    public static void setUp(TestContext context) {
         final Vertx vertx = test.vertx();
         EventStoreFactory.getFactory().setVertx(vertx);
         defaultUserService = new DefaultUserService(
@@ -214,6 +217,44 @@ public class DefaultUserServiceTest {
             testContext.assertTrue(userInfos.getBoolean("lockedEmail"), "As an ADML, lockedEmail should be true");
             async.complete();
         });
+    }
+
+    @Test
+    public void testGetUsersDisplayNamesWithEmptyUserId(final TestContext testContext) {
+        final Async async = testContext.async();
+        defaultUserService.getUsersDisplayNames(new JsonArray())
+                .onFailure(testContext::fail)
+                .onSuccess(usersDisplayName -> {
+                    testContext.assertNotNull(usersDisplayName, "getUsersDisplayNames should not return null");
+                    testContext.assertTrue(usersDisplayName.isEmpty(), "should return no display name");
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testGetUsersDisplayNamesWithNonExistingUser(final TestContext testContext) {
+        final Async async = testContext.async();
+        defaultUserService.getUsersDisplayNames(new JsonArray().add("unknown-user"))
+                .onFailure(testContext::fail)
+                .onSuccess(usersDisplayName -> {
+                    testContext.assertNotNull(usersDisplayName, "getUsersDisplayNames should not return null");
+                    testContext.assertTrue(usersDisplayName.isEmpty(), "No display name for unknown-user");
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testGetUsersDisplayNames(final TestContext testContext) {
+        final Async async = testContext.async();
+        defaultUserService.getUsersDisplayNames(new JsonArray().add("simple-user").add("child").add("user.two"))
+                .onFailure(testContext::fail)
+                .onSuccess(usersDisplayName -> {
+                    testContext.assertNotNull(usersDisplayName, "usersDisplayName should not be null");
+                    testContext.assertEquals("Prenom NdF", usersDisplayName.getString("simple-user"), "simple-user display name should be Prenom NdF");
+                    testContext.assertEquals("Enfant Child", usersDisplayName.getString("child"), "child display name should be Enfant Child");
+                    testContext.assertEquals("User Two", usersDisplayName.getString("user.two"), "user.two display name should be User Two");
+                    async.complete();
+                });
     }
 
     public static Future<Void> prepareData() {

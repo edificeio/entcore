@@ -24,7 +24,7 @@ public class Audience extends BaseServer {
     final AudienceService audienceService = new AudienceServiceImpl();
     final ISql isql = Sql.getInstance();
     final ReactionDao reactionDao = new ReactionDaoImpl(isql);
-    final ReactionService reactionService = new ReactionServiceImpl(reactionDao);
+    final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
     final ViewDao viewDao = new ViewDaoImpl(isql);
     final ViewService viewService = new ViewServiceImpl(viewDao);
     addController(new AudienceController(vertx, config(), reactionService, viewService));
