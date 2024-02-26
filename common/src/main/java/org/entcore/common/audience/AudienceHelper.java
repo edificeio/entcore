@@ -21,7 +21,6 @@ public class AudienceHelper {
     public AudienceHelper(final Vertx vertx) {
     }
 
-
     public void onDeletedResource(final String resourceId,
             final HttpServerRequest httpRequest, final UserInfos user) {
         throw new UnsupportedOperationException("not.yet.implemented");

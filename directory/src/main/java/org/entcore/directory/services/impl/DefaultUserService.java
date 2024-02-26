@@ -49,7 +49,6 @@ import org.entcore.directory.services.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -1245,5 +1244,26 @@ public class DefaultUserService implements UserService {
 				handler.handle(res);
 			}
 		}));
+	}
+
+	@Override
+	public Future<JsonObject> getUsersDisplayNames(JsonArray userIds) {
+		Promise<JsonObject> promise = Promise.promise();
+		String query =
+				"MATCH (u:User) WHERE u.id IN {userIds} " +
+				"RETURN u.id AS userId, u.displayName AS displayName";
+		JsonObject params = new JsonObject();
+		params.put("userIds", userIds);
+
+		neo.execute(query, params, validResultHandler(results -> {
+			if (results.isRight()) {
+				promise.complete(new JsonObject(results.right().getValue().stream()
+						.map(r -> (JsonObject) r)
+						.collect(Collectors.toMap(result -> result.getString("userId"), result -> result.getString("displayName")))));
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
 	}
 }

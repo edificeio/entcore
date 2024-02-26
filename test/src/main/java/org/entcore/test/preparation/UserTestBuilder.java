@@ -5,6 +5,7 @@ public final class UserTestBuilder {
     private String login;
     private String firstName;
     private String lastName;
+    private String displayName;
     private Profile profile;
     private UserBookTest userBook;
 
@@ -35,6 +36,11 @@ public final class UserTestBuilder {
         return this;
     }
 
+    public UserTestBuilder displayName(String displayName) {
+        this.displayName = displayName;
+        return this;
+    }
+
     public UserTestBuilder profile(Profile profile) {
         this.profile = profile;
         return this;
@@ -46,6 +52,6 @@ public final class UserTestBuilder {
     }
 
     public UserTest build() {
-        return new UserTest(id, login, firstName, lastName, profile, userBook);
+        return new UserTest(id, login, firstName, lastName, displayName, profile, userBook);
     }
 }
