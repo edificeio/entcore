@@ -1009,5 +1009,7 @@
   "optional": "Optionnel",
   "defaultPalette": "Palette par défaut",
   "accessiblePalette": "Palette accessible",
-  "show": "Voir"
+  "show": "Voir",
+  "yes": "Oui",
+  "no": "Non"
 }
