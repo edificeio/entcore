@@ -70,15 +70,18 @@ public class ShareNormalizer {
      * @return the same <json> with a new field "rights" wich contains normalized rights
      */
     public JsonObject addNormalizedRights(final JsonObject json, final Function<JsonObject, Optional<String>> getOwner) {
-        if(json.containsKey("shared")){
+        if (json.containsKey("shared")) {
             final JsonArray previousShared = json.getJsonArray("shared", new JsonArray());
             final ShareModel model = new ShareModel(previousShared, this.securedActions, (getOwner.apply(json)));
             json.put("rights", new JsonArray(model.getSerializedRights()));
-        }
-        if(json.containsKey("actions") && json.containsKey("users") && json.containsKey("groups")){
+        } else if (json.containsKey("actions") && json.containsKey("users") && json.containsKey("groups")) {
             // normalize
             final JsonArray shared = toSharedArray(json);
             final ShareModel model = new ShareModel(shared, this.securedActions, (getOwner.apply(json)));
+            json.put("rights", new JsonArray(model.getSerializedRights()));
+        } else {
+            // default shared
+            final ShareModel model = new ShareModel(new JsonArray(), this.securedActions, (getOwner.apply(json)));
             json.put("rights", new JsonArray(model.getSerializedRights()));
         }
         return json;
