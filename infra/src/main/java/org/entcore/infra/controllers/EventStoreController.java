@@ -20,7 +20,9 @@
 package org.entcore.infra.controllers;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
@@ -36,7 +38,13 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.voidResponseHandler;
+
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
+
 import static org.entcore.common.aggregation.MongoConstants.*;
 
 public class EventStoreController extends BaseController {
@@ -104,6 +112,46 @@ public class EventStoreController extends BaseController {
 				Renders.unauthorized(request);
 			}
 		});
+	}
+
+	@Get("/event/list/:type/:epoch")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void listEvents(final HttpServerRequest request) {
+		final String type = request.params().get("type");
+		if (!EventStoreService.EVENT_STORE_TYPES.contains(type)) {
+			badRequest(request, "invalid.type");
+			return;
+		}
+		try {
+			final long epoch = Long.parseLong(request.params().get("epoch"));
+			final long duration = request.params().contains("duration") ?
+					Long.parseLong(request.params().get("duration")) : EventStoreService.ONE_DAY_DURATION;
+			final boolean skipSynced =
+					("true".equals(request.params().get("skip-synced")) || !request.params().contains("skip-synced"));
+			eventStoreService.listEvents(type, epoch, duration, skipSynced, asyncArrayResponseHandler(request));
+		} catch (RuntimeException e) {
+			badRequest(request, "invalid.input.format");
+		}
+	}
+
+	@Put("/event/mark/:type/:epoch")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void markSyncedEvents(final HttpServerRequest request) {
+		final String type = request.params().get("type");
+		if (!EventStoreService.EVENT_STORE_TYPES.contains(type)) {
+			badRequest(request, "invalid.type");
+			return;
+		}
+		try {
+			final long epoch = Long.parseLong(request.params().get("epoch"));
+			final long duration = request.params().contains("duration") ?
+					Long.parseLong(request.params().get("duration")) : EventStoreService.ONE_DAY_DURATION;
+			eventStoreService.markSyncedEvents(type, epoch, duration, asyncDefaultResponseHandler(request));
+		} catch (RuntimeException e) {
+			badRequest(request, "invalid.input.format");
+		}
 	}
 
 	@Post("/event/localhost/store")
