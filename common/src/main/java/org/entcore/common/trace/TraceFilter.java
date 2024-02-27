@@ -2,6 +2,7 @@ package org.entcore.common.trace;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.XSSUtils;
@@ -29,6 +30,8 @@ import java.util.regex.Matcher;
 
 public class TraceFilter implements Filter {
 
+    private static final String RETENTION_DAYS = "retention-days";
+    private static final int DEFAULT_RETENTION_DAYS = 365;
     private static final Logger log = LoggerFactory.getLogger(TraceFilter.class);
     private final EventBus eb;
     private final Set<Binding> bindings;
@@ -58,7 +61,8 @@ public class TraceFilter implements Filter {
                             tracedBinding.add(binding);
                             JsonObject action = new JsonObject()
                                     .put("value", trace.getString("value"))
-                                    .put("body", trace.getBoolean("body"));
+                                    .put("body", trace.getBoolean("body"))
+                                    .put(RETENTION_DAYS, trace.getInteger(RETENTION_DAYS, DEFAULT_RETENTION_DAYS));
                             actions.put(binding.getServiceMethod(), action);
                             break;
                         }
@@ -87,12 +91,14 @@ public class TraceFilter implements Filter {
         }
 
         if (request instanceof SecureHttpServerRequest && trace(request)) {
+            final long epoch = System.currentTimeMillis();
             request.response().endHandler(event -> {
                 List<Future> futures = new ArrayList<>();
                 Future<UserInfos> userFuture = Future.future();
                 Future<Object> bodyFuture = Future.future();
                 futures.add(userFuture);
-                if (bodyMethods.contains(request.method().name()) && actions.get(getRequestServiceMethod(request)).getBoolean("body")) {
+                final JsonObject action = actions.get(getRequestServiceMethod(request));
+                if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
                     futures.add(bodyFuture);
                     getBody(request, bodyFuture);
                 }
@@ -108,11 +114,13 @@ public class TraceFilter implements Filter {
                             .put("user", getUserObject(user))
                             .put("request", getActionObject(request))
                             .put("entry", entry)
+                            .put("date", epoch)
+                            .put(RETENTION_DAYS, action.getInteger(RETENTION_DAYS, DEFAULT_RETENTION_DAYS))
                             .put("response", MongoDb.now())
-                            .put("action", actions.get(getRequestServiceMethod(request)).getString("value"))
+                            .put("action", action.getString("value"))
                             .put("status", request.response().getStatusCode());
 
-                    if (bodyMethods.contains(request.method().name()) && actions.get(getRequestServiceMethod(request)).getBoolean("body")) {
+                    if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
                         trace.put("resource", bodyFuture.result());
                     }
 
@@ -137,10 +145,23 @@ public class TraceFilter implements Filter {
             Map.Entry<String, String> param = iterator.next();
             parameters.put(param.getKey(), param.getValue());
         }
-        return new JsonObject()
+        final JsonObject event = new JsonObject()
                 .put("method", request.method().name())
                 .put("uri", request.uri())
                 .put("params", parameters);
+        final String ua = request.headers().get("User-Agent");
+        if (ua != null) {
+            event.put("ua", ua);
+        }
+        final String ip = Renders.getIp(request);
+        if (ip != null) {
+            event.put("ip", ip);
+        }
+        final String xapp = request.headers().get("X-APP");
+        if (xapp != null) {
+            event.put("xapp", xapp);
+        }
+        return event;
     }
 
     private void getUser(HttpServerRequest request, Future<UserInfos> future) {
