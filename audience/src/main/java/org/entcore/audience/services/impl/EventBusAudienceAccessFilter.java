@@ -9,7 +9,10 @@ import org.entcore.audience.services.AudienceAccessFilter;
 import org.entcore.common.audience.to.AudienceCheckRightResponseMessage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.audience.to.AudienceCheckRightRequestMessage;
+
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.entcore.common.audience.AudienceHelper.getCheckRightsBusAddress;
 
@@ -43,6 +46,6 @@ public class EventBusAudienceAccessFilter implements AudienceAccessFilter {
   }
   public static String getMessage(final UserInfos user, final String appName, final String resourceType,
                                   final Set<String> resourceIds) {
-    return Json.encode(new AudienceCheckRightRequestMessage(appName, resourceType, user.getUserId(), resourceIds));
+    return Json.encode(new AudienceCheckRightRequestMessage(appName, resourceType, user.getUserId(), new HashSet<>(user.getGroupsIds()), resourceIds));
   }
 }
