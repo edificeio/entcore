@@ -6,13 +6,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.Json;
 import org.entcore.audience.services.AudienceAccessFilter;
+import org.entcore.common.audience.to.AudienceCheckRightRequestMessage;
 import org.entcore.common.audience.to.AudienceCheckRightResponseMessage;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.audience.to.AudienceCheckRightRequestMessage;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.entcore.common.audience.AudienceHelper.getCheckRightsBusAddress;
 
