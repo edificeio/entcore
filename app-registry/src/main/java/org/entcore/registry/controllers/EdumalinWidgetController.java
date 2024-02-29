@@ -13,6 +13,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.omg.CORBA.SystemException;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
@@ -24,6 +25,7 @@ public class EdumalinWidgetController extends BaseController {
     private String edumalinUrl;    // url of edumalin domain
     private String usernameEdumalin;    // username for edumalin
     private String passwordEdumalin;    // password for edumalin
+    private String referrerEdumalin;    // referrer for edumalin creation token
 
     @Override
     public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -35,6 +37,7 @@ public class EdumalinWidgetController extends BaseController {
         this.edumalinUrl = edumalinConfig.getString("url", ""); // url of edumalin domain get from config
         this.usernameEdumalin = edumalinConfig.getString("username", "");    // username for edumalin get from config
         this.passwordEdumalin = edumalinConfig.getString("password", "");    // password for edumalin get from config
+        this.referrerEdumalin = edumalinConfig.getString("referrer", "");   // referrer for edumalin creation token get from config
     }
 
 
@@ -102,15 +105,22 @@ public class EdumalinWidgetController extends BaseController {
      *                return response json with edumalin token if success or error if not
      *                when response status code 200 then add token and then get edumalin widget
      */
+    @SuppressWarnings("deprecation")
     private void authLoginEdumalin(final HttpServerRequest request) {
 
+        System.out.println("Edumalin widget controller initialized");
+        System.out.println("Edumalin url: " + edumalinUrl);
+        System.out.println("Edumalin username: " + usernameEdumalin);
+        System.out.println("Edumalin password: " + passwordEdumalin);
+        System.out.println("Edumalin referrer: " + referrerEdumalin);
+
         String requestBody = new JsonObject().put("username", usernameEdumalin).put("password", passwordEdumalin).toString();
-        httpClient.postAbs(edumalinUrl + "/auth/login", response -> {
+        httpClient.postAbs(referrerEdumalin + "/auth/login", response -> {
                     if (response.statusCode() == 200) {
                         response.bodyHandler(body -> {
                             JsonObject json = body.toJsonObject();
-                            if (json.containsKey("success") && json.getBoolean("success") && json.containsKey("data") && json.getJsonObject("data").containsKey("token")) {
-                                edumalinToken = json.getJsonObject("data").getString("token");
+                            if (json.containsKey("data") && !json.getString("data").isEmpty()) {
+                                edumalinToken = json.getString("data");
                                 displayWidgetEdumalin(request, false);
                             } else {
                                 JsonObject error = new JsonObject().put("error", "edumalin.widget.unauthorized");
