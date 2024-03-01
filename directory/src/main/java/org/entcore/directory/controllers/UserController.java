@@ -35,6 +35,10 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.*;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -69,6 +73,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -91,6 +96,7 @@ public class UserController extends BaseController {
 	private final EventHelper eventHelper;
 	private JsonObject userBookData;
 	private JsonArray userBookMoods;
+	private Vertx vertx;
 
 	public UserController(){
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Directory.class.getSimpleName());
@@ -101,6 +107,7 @@ public class UserController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
+		this.vertx = vertx;
 		this.userBookData = config.getJsonObject("user-book-data");
 		if(this.userBookData == null)
 			this.userBookData = new JsonObject();
