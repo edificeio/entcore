@@ -88,6 +88,10 @@ public class Starter extends BaseServer {
 			if (swift != null) {
 				serverMap.put("swift", swift.encode());
 			}
+			JsonObject s3 = config.getJsonObject("s3");
+			if (s3 != null) {
+				serverMap.put("s3", s3.encode());
+			}
 			JsonObject emailConfig = config.getJsonObject("emailConfig");
 			if (emailConfig != null) {
 				serverMap.put("emailConfig", emailConfig.encode());

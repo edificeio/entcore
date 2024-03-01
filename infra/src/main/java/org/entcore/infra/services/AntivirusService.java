@@ -19,6 +19,10 @@
 
 package org.entcore.infra.services;
 
+import java.util.List;
+
+import org.entcore.infra.services.impl.InfectedFile;
+
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -27,6 +31,8 @@ import io.vertx.core.json.JsonObject;
 public interface AntivirusService {
 
 	void replaceInfectedFiles(String path, Handler<Either<String, JsonObject>> handler);
+
+	JsonObject launchReplace(List<InfectedFile> infectedFiles);
 
 	void scan(String file);
 

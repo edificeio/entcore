@@ -33,6 +33,7 @@ public class DefaultUserBookServiceTest {
         final Vertx vertx = test.vertx();
         EventStoreFactory.getFactory().setVertx(vertx);
         defaultUserBookService = new DefaultUserBookService(
+                vertx,
                 vertx.eventBus(),
                 null,
                 null,

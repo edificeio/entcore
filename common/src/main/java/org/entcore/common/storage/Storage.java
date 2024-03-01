@@ -31,6 +31,10 @@ import io.vertx.core.streams.ReadStream;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.validation.FileValidator;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.function.Function;
 
@@ -39,8 +43,6 @@ public interface Storage {
 	void writeUploadFile(HttpServerRequest request, Handler<JsonObject> handler);
 
 	void writeUploadFile(HttpServerRequest request, Long maxSize, Handler<JsonObject> handler);
-
-    default void writeUploadToFileSystem(HttpServerRequest request, String path, Handler<JsonObject> handler){};
 
 	void writeBuffer(Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
@@ -91,16 +93,6 @@ public interface Storage {
 
 	void copyFile(String id, final Handler<JsonObject> handler);
 
-	default void copyFileId(String id, String to, final Handler<JsonObject> handler)
-	{
-		throw new java.lang.UnsupportedOperationException("Not supported yet.");
-	};
-
-	default void copyFilePath(String path, String to, final Handler<JsonObject> handler)
-	{
-		throw new java.lang.UnsupportedOperationException("Not supported yet.");
-	};
-
 	void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias, Handler<JsonObject> handler);
 
 	String getProtocol();
@@ -138,6 +130,27 @@ public interface Storage {
 	 */
 	default Future<List<FileInfo>> deleteByFilter(final String parent, final Function<FileInfo, Boolean> filter) {
 		throw new UnsupportedOperationException("Not supported yet");
+	}
+
+	static String getFilePath(String file, final String bucket, boolean flat) throws FileNotFoundException {
+		if (isNotEmpty(file)) {
+			if (flat) {
+				return bucket + file;
+			} else {
+				final int startIdx = file.lastIndexOf(File.separatorChar) + 1;
+				final int extIdx = file.lastIndexOf('.');
+				String filename = (extIdx > 0) ? file.substring(startIdx, extIdx) : file.substring(startIdx);
+				if (isNotEmpty(filename)) {
+					final int l = filename.length();
+					if (l < 4) {
+						filename = "0000".substring(0, 4 - l) + filename;
+					}
+					return bucket + filename.substring(l - 2) + File.separator + filename.substring(l - 4, l - 2) +
+							File.separator + filename;
+				}
+			}
+		}
+		throw new FileNotFoundException("Invalid file : " + file);
 	}
 
 	class FileInfo{
