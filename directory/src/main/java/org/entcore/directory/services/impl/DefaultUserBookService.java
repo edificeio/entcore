@@ -24,6 +24,7 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -56,12 +57,18 @@ import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class DefaultUserBookService implements UserBookService {
+	private final Vertx vertx;
 	private final EventBus eb;
 	private final Storage avatarStorage;
 	private final JsonObject userBookData;
@@ -69,8 +76,9 @@ public class DefaultUserBookService implements UserBookService {
 	private final Neo4j neo = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserBookService.class);
 
-	public DefaultUserBookService(EventBus eb, Storage avatarStorage, WorkspaceHelper wsHelper, JsonObject userBookData) {
+	public DefaultUserBookService(Vertx vertx, EventBus eb, Storage avatarStorage, WorkspaceHelper wsHelper, JsonObject userBookData) {
 		super();
+		this.vertx = vertx;
 		this.eb = eb;
 		this.wsHelper = wsHelper;
 		this.avatarStorage = avatarStorage;
@@ -96,6 +104,70 @@ public class DefaultUserBookService implements UserBookService {
 		return size.isPresent() ? String.format("%s-%s", size.get(), fileId) : fileId;
 	}
 
+	public void banAvatarCache(String userId) {
+		JsonObject cloudflare = userBookData.getJsonObject("cloudflare");
+		JsonObject varnish = userBookData.getJsonObject("varnish");
+
+		final URI uri;
+		final String token;
+		if (cloudflare != null) {
+			uri = URI.create(cloudflare.getString("url"));
+			token = cloudflare.getString("token");
+
+			if (token == null) return;
+		}
+		else {
+			if (varnish != null) {
+				uri = URI.create(varnish.getString("url"));
+				token = null;
+
+				if (uri == null) return;
+			}
+			else {
+				return;
+			}
+		}
+
+		final int port = (uri.getPort() > 0) ? uri.getPort() : ("https".equals(uri.getScheme()) ? 443 : 80);
+		final HttpClientOptions options = new HttpClientOptions()
+			.setDefaultHost(uri.getHost())
+			.setDefaultPort(port)
+			.setSsl("https".equals(uri.getScheme()));
+		final HttpClient httpClient = vertx.createHttpClient(options);
+
+		if (cloudflare != null) {
+			final JsonArray tags = new JsonArray();
+			tags.add(userId);
+			final JsonObject payload = new JsonObject();
+			payload.put("tags", tags);
+
+			final HttpClientRequest req = httpClient.post(uri.getPath(), response -> {
+				if (response.statusCode() == 200) {
+					log.info("PURGE succefull !");
+				}
+				else {
+					log.warn("PURGE failed !");
+				}
+			});
+			req.putHeader("Authorization", "Bearer " + token);
+			req.putHeader("Content-Type", "application/json");
+			req.end(payload.encode());
+		}
+		else if (varnish != null) {
+			final HttpClientRequest req = httpClient.request(HttpMethod.OTHER, uri.getPath(), response -> {
+				if (response.statusCode() == 200) {
+					log.info("BAN succefull !");
+				}
+				else {
+					log.warn("BAN failed !");
+				}
+			});
+			req.setRawMethod("BAN");
+			req.putHeader("Ban-Tag", userId);
+			req.end();
+		}
+	}
+
 	public void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
@@ -109,6 +181,7 @@ public class DefaultUserBookService implements UserBookService {
 
 	private Future<Boolean> cleanAvatarCache(String userId) {
 		Future<Boolean> future = Future.future();
+		banAvatarCache(userId);
 		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
 			if (res.succeeded() && res.result().size() > 0) {
 				this.avatarStorage.removeFiles(res.result(), removeRes -> {
@@ -123,8 +196,7 @@ public class DefaultUserBookService implements UserBookService {
 
 	private Future<Boolean> cacheAvatarFromUserBook(String userId, Optional<String> pictureId, Boolean remove) {
 		// clean avatar when changing or when removing
-		Future<Boolean> futureClean = (pictureId.isPresent() || remove) ? cleanAvatarCache(userId)
-				: Future.succeededFuture();
+		Future<Boolean> futureClean = Future.succeededFuture();
 		return futureClean.compose(res -> {
 			if (!pictureId.isPresent()) {
 				return Future.succeededFuture();
@@ -274,6 +346,7 @@ public class DefaultUserBookService implements UserBookService {
 	@Override
 	public void getAvatar(String userId, Optional<String> size, String defaultAvatarDirty, HttpServerRequest request) {
 		String fileIdSized = avatarFileNameFromUserId(userId, size);
+		request.response().putHeader("Cache-Tag", userId);
 		sendAvatar(request, fileIdSized)// try with size
 				.compose(success -> {// try without size
 					if (success) {

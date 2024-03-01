@@ -47,6 +47,8 @@ public interface UserBookService {
 
 	void getAvatar(String fileId, Optional<String> size, String defaultAVatar, HttpServerRequest request);
 
+	void banAvatarCache(String userId);
+
 	void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler);
 
 	void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result);
