@@ -48,9 +48,7 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void mergeUsers(String keepedUserId, String deletedUserId) {
-		userBookService.cleanAvatarCache(Arrays.asList(deletedUserId), res -> {
-
-		});
+		userBookService.cleanAvatarCache(Arrays.asList(deletedUserId));
 	}
 
 	@Override
@@ -98,7 +96,7 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 		}
 		List<String> userIds = users.stream().filter(u -> u instanceof JsonObject)
 				.map(u -> ((JsonObject) u).getString("id")).collect(Collectors.toList());
-		userBookService.cleanAvatarCache(userIds, res -> {
+		userBookService.cleanAvatarCache(userIds).onSuccess(res -> {
 			if (!res) {
 				log.error("Error cleaning avatars for ids : " + StringUtils.join(userIds, " "));
 			}

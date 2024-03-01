@@ -26,7 +26,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 
 import java.util.Optional;
@@ -38,6 +37,10 @@ public interface AntivirusClient {
 	void scan(String path);
 
 	void scan(String path, Handler<AsyncResult<Void>> handler);
+
+	void scanS3(String id, String bucket);
+
+	void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler);
 
 	static Optional<AntivirusClient> create(Vertx vertx){
 		try{

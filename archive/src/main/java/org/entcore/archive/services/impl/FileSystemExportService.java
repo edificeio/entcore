@@ -27,9 +27,6 @@ import fr.wseduc.webutils.security.RSA;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 import org.entcore.archive.Archive;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.services.ExportService;
@@ -236,7 +233,11 @@ public class FileSystemExportService implements ExportService {
 		final UserExport export = userExport.get(userId);
 		final int counter = export.incrementAndGetCounter();
 		final boolean isFinished = counter == export.getExpectedExport().size();
-
+		if(isFinished) {
+			log.debug("Export " + exportId + " finished for user " + userId);
+		} else {
+			log.debug("Received " + counter + " parts out of " + export.getExpectedExport().size() + " for export " + exportId + " of user " + userId);
+		}
 		if (!"ok".equals(status)) {
 			export.setProgress(EXPORT_ERROR);
 		}
@@ -261,101 +262,107 @@ public class FileSystemExportService implements ExportService {
 			return;
 		}
 		if (isFinished) {
-			addManifestToExport(exportId, exportDirectory, locale, new Handler<AsyncResult<Void>>() {
-				@Override
-				public void handle(AsyncResult<Void> event)
-				{
-					signExport(exportId, exportDirectory, new Handler<AsyncResult<Void>>()
-					{
-						@Override
-						public void handle(AsyncResult<Void> signed)
-						{
-							Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
-							Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>()
-							{
-								@Override
-								public void handle(final Message<JsonObject> event)
-								{
-									if (!"ok".equals(event.body().getString("status")) || signed.failed() == true)
-									{
-										log.error("Zip export " + exportId + " error : "
-												+ (signed.failed() == true ? "Could not sign the archive" : event.body().getString("message")));
-										event.body().put("message", "zip.export.error");
-										userExportInProgress.remove(userId);
-										fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
-											@Override
-											public void handle(AsyncResult<Void> event) {
-												if (event.failed()) {
-													log.error("Error deleting directory : " + exportDirectory,
-															event.cause());
-												}
-											}
-										});
-										publish(event);
-									} else {
-										storeZip(event);
-									}
-								}
+			log.debug("Export " + exportId + " is finished and OK", exportId);
+			addManifestToExport(exportId, exportDirectory, locale, event -> {
+        log.debug("Manifest added for export " + exportId);
+        signExport(exportId, exportDirectory, new Handler<AsyncResult<Void>>()
+        {
+          @Override
+          public void handle(AsyncResult<Void> signed)
+          {
+						log.debug("Zipping export " + exportId);
+            Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
+            Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>()
+            {
+              @Override
+              public void handle(final Message<JsonObject> event)
+              {
+                if (!"ok".equals(event.body().getString("status")) || signed.failed() == true)
+                {
+                  log.error("Zip export " + exportId + " error : "
+                      + (signed.failed() == true ? "Could not sign the archive" : event.body().getString("message")));
+                  event.body().put("message", "zip.export.error");
+                  userExportInProgress.remove(userId);
+                  fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> event) {
+                      if (event.failed()) {
+                        log.error("Error deleting directory : " + exportDirectory,
+                            event.cause());
+                      }
+                    }
+                  });
+                  publish(event);
+                } else {
+									log.debug("Storing export zip in file storage");
+                  storeZip(event);
+                }
+              }
 
-								private void storeZip(final Message<JsonObject> event)
-								{
-									storage.writeFsFile(exportId, exportDirectory + ".zip", new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject res) {
-											if (!"ok".equals(res.getString("status"))) {
-												log.error("Zip storage " + exportId + " error : "
-														+ res.getString("message"));
-												event.body().put("message", "zip.saving.error");
-												userExportInProgress.remove(userId);
-												publish(event);
-											} else {
-												userExportInProgress.put(userId,DOWNLOAD_READY);
-												publish(event);
-											}
-											deleteTempZip(exportId);
+              private void storeZip(final Message<JsonObject> event)
+              {
+								log.debug("Starting to upload exported archive " + exportId + " to fs.....");
+                storage.writeFsFile(exportId, exportDirectory + ".zip", new Handler<JsonObject>() {
+                  @Override
+                  public void handle(JsonObject res) {
+                    if (!"ok".equals(res.getString("status"))) {
+                      log.error("Zip storage " + exportId + " error : "
+                          + res.getString("message"));
+                      event.body().put("message", "zip.saving.error");
+                      userExportInProgress.remove(userId);
+                      publish(event);
+                    } else {
+											log.debug("Exported archive " + exportId + " uploaded");
+                      userExportInProgress.put(userId,DOWNLOAD_READY);
+                      publish(event);
+                    }
+                    deleteTempZip(exportId);
+                  }
+                });
+              }
+
+              public void deleteTempZip(final String exportId1) {
+                final String path = exportPath + File.separator + exportId1 + ".zip";
+								log.debug("Deleting temp exported archive " + path);
+                fs.delete(path, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> event) {
+                    if (event.failed()) {
+                      log.error("Error deleting temp zip export " + exportId1, event.cause());
+                    } else {
+											log.debug("Temp archive " + path + " deleted");
 										}
-									});
-								}
+                  }
+                });
+              }
 
-								public void deleteTempZip(final String exportId) {
-									final String path = exportPath + File.separator + exportId + ".zip";
-									fs.delete(path, new Handler<AsyncResult<Void>>() {
-										@Override
-										public void handle(AsyncResult<Void> event) {
-											if (event.failed()) {
-												log.error("Error deleting temp zip export " + exportId, event.cause());
-											}
-										}
-									});
-								}
-
-								private void publish(final Message<JsonObject> event) {
-									final String address = getExportBusAddress(exportId);
-									eb.request(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
-											new Handler<AsyncResult<Message<JsonObject>>>() {
-												@Override
-												public void handle(AsyncResult<Message<JsonObject>> res) {
-													if ((!res.succeeded() && userExportExists(exportId)
-															&& !downloadIsInProgress(exportId))
-															|| (res.succeeded()
-															&& res.result().body().getBoolean("sendNotifications", false)
-															.booleanValue())) {
-														if (notification != null) {
-															sendExportEmail(exportId, locale,
-																	event.body().getString("status"), host);
-														} else {
-															notifyOnTimeline(exportId, locale,
-																	event.body().getString("status"));
-														}
-													}
-												}
-											});
-								}
-							});
-						}
-					});
-				}
-			});
+              private void publish(final Message<JsonObject> event) {
+                final String address = getExportBusAddress(exportId);
+								log.debug("Notifying that export " + exportId + " is done with body " +event.body().encodePrettily());
+                eb.request(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
+                    new Handler<AsyncResult<Message<JsonObject>>>() {
+                      @Override
+                      public void handle(AsyncResult<Message<JsonObject>> res) {
+                        if ((!res.succeeded() && userExportExists(exportId)
+                            && !downloadIsInProgress(exportId))
+                            || (res.succeeded()
+                            && res.result().body().getBoolean("sendNotifications", false)
+                            .booleanValue())) {
+                          if (notification != null) {
+                            sendExportEmail(exportId, locale,
+                                event.body().getString("status"), host);
+                          } else {
+                            notifyOnTimeline(exportId, locale,
+                                event.body().getString("status"));
+                          }
+                        }
+                      }
+                    });
+              }
+            });
+          }
+        });
+      });
 		}
 	}
 
@@ -443,22 +450,20 @@ public class FileSystemExportService implements ExportService {
 
 		File[] files = directory.listFiles();
 
-		for (File file : files)
-		{
-			String name = file.getName();
-			try
-			{
-				signContents.put(name, RSA.signFile(exportDirectory + File.separator + name, signKey));
+		vertx.executeBlocking(() -> {
+		for (File file : files) {
+			  String name = file.getName();
+				try {
+					signContents.put(name, RSA.signFile(exportDirectory + File.separator + name, signKey));
+				} catch(Exception e) {
+					log.error("Error signing folder " + name + " files for export " + exportId);
+					return Future.failedFuture(e);
+				}
 			}
-			catch(Exception e)
-			{
-				log.error("Error signing folder " + name + " files for export " + exportId);
-				handler.handle(Future.failedFuture(e));
-				return;
-			}
-		}
-		
-		fs.writeFile(exportDirectory + File.separator + ArchiveController.SIGNATURE_NAME, signContents.toBuffer(), handler);
+			return Future.succeededFuture();
+		}, false)
+		.onSuccess(e -> fs.writeFile(exportDirectory + File.separator + ArchiveController.SIGNATURE_NAME, signContents.toBuffer(), handler))
+		.onFailure(th -> handler.handle(Future.failedFuture(th)));
 	}
 
 	private String getUserId(String exportId) {

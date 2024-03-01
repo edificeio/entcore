@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -47,7 +48,15 @@ public interface UserBookService {
 
 	void getAvatar(String fileId, Optional<String> size, String defaultAVatar, HttpServerRequest request);
 
-	void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler);
+	/**
+	 * Invalidate the cache of the user's avatar files (Cloudflare Varnish, etc...) but does not remove the files from the
+	 * cache.
+	 * @param userId Id of the user whise avatar has to be removed from the cache
+	 * @return
+	 */
+	Future<Void> banAvatarCache(String userId);
+
+	Future<Boolean> cleanAvatarCache(List<String> usersId);
 
 	void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result);
 

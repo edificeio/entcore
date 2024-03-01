@@ -80,7 +80,8 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 		});
 	}
 
-	protected JsonObject launchReplace(List<InfectedFile> infectedFiles) {
+	@Override
+	public JsonObject launchReplace(List<InfectedFile> infectedFiles) {
 		final JsonObject j = new JsonObject();
 		for (final InfectedFile i : infectedFiles) {
 			final JsonObject message = new JsonObject()

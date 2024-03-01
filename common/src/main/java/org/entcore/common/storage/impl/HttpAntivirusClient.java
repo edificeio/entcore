@@ -31,20 +31,34 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class HttpAntivirusClient implements AntivirusClient {
 
-  private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
-  private HttpClient httpClient;
-  private String credential;
+	private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
+	private HttpClient httpClient;
+	private String credential;
+	private String platformId;
 
-  public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
-    HttpClientOptions options = new HttpClientOptions()
-        .setDefaultHost(host)
-        .setDefaultPort(8001)
-        .setMaxPoolSize(16)
-        .setConnectTimeout(10000)
-        .setKeepAlive(true);
-    this.httpClient = vertx.createHttpClient(options);
-    this.credential = cretential;
-  }
+	public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
+		this(vertx, host, cretential, 8001);
+	}
+
+	public HttpAntivirusClient(Vertx vertx, String host, String cretential, int port) {
+		HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost(host)
+				.setDefaultPort(port)
+				.setSsl(port == 443)
+				.setMaxPoolSize(16)
+				.setConnectTimeout(10000)
+				.setKeepAlive(true);
+		this.httpClient = vertx.createHttpClient(options);
+		this.credential = cretential;
+
+		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
+        if (eventStoreConf != null) {
+            final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+            this.platformId = eventStoreConfig.getString("platform");
+        } else {
+            this.platformId = null;
+        }
+	}
 
   @Override
   public void scan(final String path) {
@@ -72,4 +86,46 @@ public class HttpAntivirusClient implements AntivirusClient {
           }
         });
   }
+
+	@Override
+	public void scanS3(String id, String bucket) {
+		this.scanS3(id, bucket, e -> {});
+	}
+
+	@Override
+	public void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler) {
+		RequestOptions requestOptions = new RequestOptions()
+			.setMethod(HttpMethod.POST)
+			.setURI("/scan/file/" + platformId);
+
+		httpClient.request(requestOptions)
+			.flatMap(req -> {
+				req.putHeader("Content-Type", "application/json");
+				req.putHeader("Accept", "application/json");
+				req.putHeader("Authorization", "Basic " + credential);
+
+			req.exceptionHandler(e -> {
+				log.error("Exception when call scan file : " + id, e);
+				handler.handle(new DefaultAsyncResult<>(e));
+			});
+
+				JsonObject jsonObject = new JsonObject()
+						.put("id", id)
+						.put("bucket", bucket);
+
+				return req.send(jsonObject.encode());
+			})
+			.onSuccess(response -> {
+				if (response.statusCode() != 200) {
+					log.error("Error when call scan file : " + id);
+					final Exception exc = new Exception("Error when call scan file (" + response.statusCode() + "): " + id);
+					handler.handle(new DefaultAsyncResult<>(exc));
+				} else {
+					handler.handle(new DefaultAsyncResult<>((Void) null));
+				}
+			})
+			.onFailure(exception -> {
+				handler.handle(new DefaultAsyncResult<>((Void) null));
+			});
+	}
 }
