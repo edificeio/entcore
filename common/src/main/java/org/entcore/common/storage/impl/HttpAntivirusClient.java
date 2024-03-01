@@ -37,16 +37,29 @@ public class HttpAntivirusClient implements AntivirusClient {
 	private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
 	private HttpClient httpClient;
 	private String credential;
+	private String platformId;
 
 	public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
+		this(vertx, host, cretential, 8001);
+	}
+
+	public HttpAntivirusClient(Vertx vertx, String host, String cretential, int port) {
 		HttpClientOptions options = new HttpClientOptions()
 				.setDefaultHost(host)
-				.setDefaultPort(8001)
+				.setDefaultPort(port)
 				.setMaxPoolSize(16)
 				.setConnectTimeout(10000)
 				.setKeepAlive(true);
 		this.httpClient = vertx.createHttpClient(options);
 		this.credential = cretential;
+
+		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
+        if (eventStoreConf != null) {
+            final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+            this.platformId = eventStoreConfig.getString("platform");
+        } else {
+            this.platformId = null;
+        }
 	}
 
 	@Override
@@ -75,5 +88,39 @@ public class HttpAntivirusClient implements AntivirusClient {
 			handler.handle(new DefaultAsyncResult<>(e));
 		});
 		req.end(new JsonObject().put("file", path).encode());
+	}
+
+	@Override
+	public void scanS3(String id, String bucket) {
+		this.scanS3(id, bucket, e -> {});
+	}
+
+	@Override
+	public void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler) {
+		HttpClientRequest req = httpClient.post("/scan/file/" + platformId, response -> {
+			if (response.statusCode() != 200) {
+				log.error("Error when call scan file : " + id);
+				final Exception exc = new Exception("Error when call scan file (" + response.statusCode() + "): " + id);
+				handler.handle(new DefaultAsyncResult<>(exc));
+			} else {
+				handler.handle(new DefaultAsyncResult<>((Void)null));
+			}
+		});
+
+		req.putHeader("Content-Type", "application/json");
+		req.putHeader("Accept", "application/json");
+		req.putHeader("Authorization", "Basic " + credential);
+
+		req.exceptionHandler(e -> {
+			log.error("Exception when call scan file : " + id, e);
+			handler.handle(new DefaultAsyncResult<>(e));
+		});
+
+		req.end(
+			new JsonObject()
+				.put("id", id)
+				.put("bucket", bucket)
+				.encode()
+		);
 	}
 }

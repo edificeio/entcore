@@ -26,6 +26,10 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
@@ -38,6 +42,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
+import org.entcore.common.storage.impl.S3Storage;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
@@ -73,8 +78,33 @@ public class Directory extends BaseServer {
 		});
 		final StorageFactory storageFactory = new StorageFactory(vertx, config,
 				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()));
-		final Storage storageAvatar = new FileStorage(vertx, config.getString("avatar-path"),
+
+		Storage storageAvatar = null;
+		if (config != null && config.getJsonObject("s3avatars") != null) {
+			JsonObject s3 = config.getJsonObject("s3avatars");
+			try {
+				storageAvatar = new S3Storage(
+					vertx,
+					new URI(s3.getString("uri")),
+					s3.getString("accessKey"),
+					s3.getString("secretKey"),
+					s3.getString("region"),
+					s3.getString("bucket"),
+					s3.getString("ssec"),
+					s3.getBoolean("keepAlive", false),
+					s3.getInteger("timeout", 10000),
+					s3.getInteger("threshold", 100),
+					s3.getLong("openDelay", 10000l)
+				);
+			} catch (URISyntaxException e) {
+				log.error("S3avatar URI error", e);
+			}
+		}
+		else {
+			storageAvatar = new FileStorage(vertx, config.getString("avatar-path"),
 				config.getBoolean("avatar-flat", false), storageFactory.getMessagingClient());
+		}
+
 		final Storage defaulStorage = storageFactory.getStorage();
 		WorkspaceHelper wsHelper = new WorkspaceHelper(vertx.eventBus(), defaulStorage);
 
