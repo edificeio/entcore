@@ -7,6 +7,7 @@ import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -14,7 +15,6 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
 import org.entcore.archive.controllers.ArchiveController;
 
-import io.vertx.core.buffer.Buffer;
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.storage.Storage;
@@ -23,10 +23,6 @@ import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,14 +90,23 @@ public class DefaultImportService implements ImportService {
     public void uploadArchive(HttpServerRequest request, UserInfos user, Handler<Either<String, String>> handler) {
         final String importId = System.currentTimeMillis() + "_" + user.getUserId();
         final String filePath = getImportPath(importId);
-        storage.writeUploadToFileSystem(request, filePath, written -> {
-            if ("ok".equals(written.getString("status"))) {
-                MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId)
-                        .put("date", MongoDb.now()));
-                handler.handle(new Either.Right<>(importId));
+
+        request.pause();
+        request.setExpectMultipart(true);
+
+        vertx.fileSystem().open(filePath, new OpenOptions(), tmpFile -> {
+            if (tmpFile.succeeded()) {
+                request.uploadHandler(upload -> {
+                    upload.pipeTo(tmpFile.result());
+                });
+                request.endHandler(v -> {
+                    MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId).put("date", MongoDb.now()));
+                    handler.handle(new Either.Right<>(importId));
+                });
+                request.resume();
             } else {
                 deleteArchive(importId);
-                handler.handle(new Either.Left<>(written.getString("message")));
+                handler.handle(new Either.Left<>(tmpFile.cause().getMessage()));
             }
         });
     }
@@ -109,18 +114,13 @@ public class DefaultImportService implements ImportService {
     @Override
     public void copyArchive(String archiveId, Handler<Either<String, String>> handler)
     {
-      storage.copyFileId(archiveId, getImportPath(archiveId), new Handler<JsonObject>()
-      {
-        @Override
-        public void handle(JsonObject obj)
-        {
-          if(obj.getString("status").equals("ok") == true)
-            handler.handle(new Either.Right<>(archiveId));
+      storage.writeToFileSystem(new String[] {archiveId}, importPath, new JsonObject().put("id", archiveId), result -> {
+          if(result.getString("status").equals("ok"))
+              handler.handle(new Either.Right<>(archiveId));
           else {
               deleteArchive(archiveId);
-              handler.handle(new Either.Left<>(obj.getString("message")));
+              handler.handle(new Either.Left<>(result.getString("message")));
           }
-        }
       });
     }
 
