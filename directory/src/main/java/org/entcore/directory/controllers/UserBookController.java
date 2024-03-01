@@ -564,9 +564,12 @@ public class UserBookController extends BaseController {
 	}
 
 	@Get("/avatar/:id")
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
-		final String id = request.params().get("id"); 
+		String id = request.params().get("id");
+		// Ugly fix for query string parameters starting by '&' and not '?' from mobile app
+		if (id.indexOf('&') > 0) {
+			id = id.substring(0, id.indexOf('&'));
+		}
 		String thumbnail = request.params().get("thumbnail");
 		String defAVatar = userBookData.getString("default-avatar");
 		this.userBookService.getAvatar(id, Optional.ofNullable(thumbnail), defAVatar, request);

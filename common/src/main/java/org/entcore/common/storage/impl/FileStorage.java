@@ -115,11 +115,6 @@ public class FileStorage implements Storage {
 		writeUploadFile(request, null, maxSize, handler);
 	}
 
-	@Override
-	public void writeUploadToFileSystem(HttpServerRequest request, String path, Handler<JsonObject> handler) {
-		writeUploadFile(request, path, null, handler);
-	}
-
 	private void writeUploadFile(final HttpServerRequest request, final String uploadPath, final Long maxSize,
 								final Handler<JsonObject> handler) {
 		request.pause();
@@ -733,7 +728,6 @@ public class FileStorage implements Storage {
 		}
 	}
 
-	@Override
 	public void copyFileId(String id, final String to, final Handler<JsonObject> handler) {
 		getReadPath(id, ar -> {
 			if (ar.succeeded()) {
@@ -745,7 +739,6 @@ public class FileStorage implements Storage {
 		});
 	}
 
-	@Override
 	public void copyFilePath(String path, final String to, final Handler<JsonObject> handler) {
 		copyFilePath(path, to, null, handler);
 	}
@@ -864,24 +857,7 @@ public class FileStorage implements Storage {
 	}
 
 	private String getFilePath(String file, final String bucket) throws FileNotFoundException {
-		if (isNotEmpty(file)) {
-			if (flat) {
-				return bucket + file;
-			} else {
-				final int startIdx = file.lastIndexOf(File.separatorChar) + 1;
-				final int extIdx = file.lastIndexOf('.');
-				String filename = (extIdx > 0) ? file.substring(startIdx, extIdx) : file.substring(startIdx);
-				if (isNotEmpty(filename)) {
-					final int l = filename.length();
-					if (l < 4) {
-						filename = "0000".substring(0, 4 - l) + filename;
-					}
-					return bucket + filename.substring(l - 2) + File.separator + filename.substring(l - 4, l - 2) +
-							File.separator + filename;
-				}
-			}
-		}
-		throw new FileNotFoundException("Invalid file : " + file);
+		return Storage.getFilePath(file, bucket, flat);
 	}
 
 	private void getReadPath(String file, Handler<AsyncResult<String>> handler) {

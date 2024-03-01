@@ -24,6 +24,7 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +36,7 @@ import java.util.Optional;
 
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -57,12 +59,13 @@ import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class DefaultUserBookService implements UserBookService {
+	private final Vertx vertx;
 	private final EventBus eb;
 	private final Storage avatarStorage;
 	private final JsonObject userBookData;
@@ -70,8 +73,9 @@ public class DefaultUserBookService implements UserBookService {
 	private final Neo4j neo = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserBookService.class);
 
-	public DefaultUserBookService(EventBus eb, Storage avatarStorage, WorkspaceHelper wsHelper, JsonObject userBookData) {
+	public DefaultUserBookService(Vertx vertx, EventBus eb, Storage avatarStorage, WorkspaceHelper wsHelper, JsonObject userBookData) {
 		super();
+		this.vertx = vertx;
 		this.eb = eb;
 		this.wsHelper = wsHelper;
 		this.avatarStorage = avatarStorage;
@@ -97,17 +101,137 @@ public class DefaultUserBookService implements UserBookService {
 		return size.isPresent() ? String.format("%s-%s", size.get(), fileId) : fileId;
 	}
 
-	public void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler) {
+	@Override
+	public Future<Void> banAvatarCache(String userId) {
+		Promise<Void> future = Promise.promise();
+
+		JsonObject cloudflare = userBookData.getJsonObject("cloudflare");
+		JsonObject varnish = userBookData.getJsonObject("varnish");
+
+		final URI uri;
+		final String token;
+		if (cloudflare != null) {
+			uri = URI.create(cloudflare.getString("url"));
+			token = cloudflare.getString("token");
+
+			if (token == null) {
+				String message = "Cloudflare token is null !";
+				log.error(message);
+				future.fail(message);
+				return future.future();
+			}
+		}
+		else {
+			if (varnish != null) {
+				final String varnishUrl = varnish.getString("url");
+				if (varnishUrl == null) {
+					String message = "Varnir url is null !";
+					log.error(message);
+					future.fail(message);
+					return future.future();
+				}
+
+				uri = URI.create(varnishUrl);
+				token = null;
+			}
+			else {
+				future.complete();
+				return future.future();
+			}
+		}
+
+		final int port = (uri.getPort() > 0) ? uri.getPort() : ("https".equals(uri.getScheme()) ? 443 : 80);
+		final HttpClientOptions options = new HttpClientOptions()
+			.setDefaultHost(uri.getHost())
+			.setDefaultPort(port)
+			.setSsl("https".equals(uri.getScheme()));
+		final HttpClient httpClient = vertx.createHttpClient(options);
+
+		if (cloudflare != null) {
+			final JsonArray tags = new JsonArray();
+			tags.add(userId);
+			final JsonObject payload = new JsonObject();
+			payload.put("tags", tags);
+
+			RequestOptions requestOptions = new RequestOptions()
+				.setMethod(HttpMethod.POST)
+				.setURI(uri.getPath());
+
+			httpClient.request(requestOptions)
+				.flatMap(req -> {
+					req.putHeader("Authorization", "Bearer " + token);
+					req.putHeader("Content-Type", "application/json");
+
+					return req.send(payload.encode());
+				})
+				.onSuccess(response -> {
+					if (response.statusCode() == 200) {
+						log.info("PURGE successfully !");
+						future.complete();
+					}
+					else {
+						String message = "PURGE failed !";
+						log.warn(message);
+						future.fail(message);
+					}
+				})
+				.onFailure(exception -> {
+					String message = "PURGE failed !";
+					log.warn(message);
+					future.fail(message);
+				});
+		}
+		else {
+			RequestOptions requestOptions = new RequestOptions()
+				.setMethod(HttpMethod.DELETE)
+				.setURI(uri.getPath());
+
+			httpClient.request(requestOptions)
+				.flatMap(req -> {
+					req.putHeader("Ban-Tag", userId);
+
+					return req.send();
+				})
+				.onSuccess(response -> {
+					if (response.statusCode() == 200) {
+						log.info("BAN succefull !");
+						future.complete();
+					}
+					else {
+						String message = "BAN failed !";
+						log.warn(message);
+						future.fail(message);
+					}
+				})
+				.onFailure(exception -> {
+					String message = "BAN failed !";
+					log.warn(message);
+					future.fail(message);
+				});
+		}
+
+		return future.future();
+	}
+
+	@Override
+	public Future<Boolean> cleanAvatarCache(List<String> usersId) {
+		Promise<Boolean> future = Promise.promise();
+
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
 		for (String u : usersId) {
-			Promise<Boolean> future = Promise.promise();
-			futures.add(future.future());
 			futures.add(cleanAvatarCache(u));
 		}
-		CompositeFuture.all(futures).onComplete(finishRes -> handler.handle(finishRes.succeeded()));
+		CompositeFuture.all(futures).onComplete(finishRes -> future.complete(finishRes.succeeded()));
+
+		return future.future();
 	}
 
+	/**
+	 * Remove from the storage user's avatar and the corresponding thumbnails.
+	 * @param userId Id of the user whose avatar has to be discarded
+	 * @return {@code true} if the removal was successful
+	 */
 	private Future<Boolean> cleanAvatarCache(String userId) {
 		Promise<Boolean> future = Promise.promise();
 		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
@@ -124,58 +248,53 @@ public class DefaultUserBookService implements UserBookService {
 
 	private Future<Boolean> cacheAvatarFromUserBook(String userId, Optional<String> pictureId, Boolean remove) {
 		// clean avatar when changing or when removing
-		Future<Boolean> futureClean = (pictureId.isPresent() || remove) ? cleanAvatarCache(userId)
-				: Future.succeededFuture();
-		return futureClean.compose(res -> {
-			if (!pictureId.isPresent()) {
-				return Future.succeededFuture();
-			}
-			Promise<Boolean> futureCopy = Promise.promise();
-			this.wsHelper.getDocument(pictureId.get(), resDoc -> {
-				if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status")))
-				{
-					JsonObject baseDocument = resDoc.result().body().getJsonObject("result");
-					this.wsHelper.createThumbnails(baseDocument, UserBookService.AVATAR_THUMBNAILS, resDocWithThumbs -> {
-						if (resDocWithThumbs.succeeded() && "ok".equals(resDocWithThumbs.result().body().getString("status")))
-						{
-							JsonObject document = resDocWithThumbs.result().body().getJsonObject("result");
-							String fileId = document.getString("file");
-							// Extensions are not used by storage
-							String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
-							//
-							JsonObject thumbnails = document.getJsonObject("thumbnails", new JsonObject());
-							Map<String, String> filenamesByIds = new HashMap<>();
-							filenamesByIds.put(fileId, defaultFilename);
+		if (!pictureId.isPresent()) {
+			return Future.succeededFuture();
+		}
+		Promise<Boolean> futureCopy = Promise.promise();
+		this.wsHelper.getDocument(pictureId.get(), resDoc -> {
+			if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status")))
+			{
+				JsonObject baseDocument = resDoc.result().body().getJsonObject("result");
+				this.wsHelper.createThumbnails(baseDocument, UserBookService.AVATAR_THUMBNAILS, resDocWithThumbs -> {
+					if (resDocWithThumbs.succeeded() && "ok".equals(resDocWithThumbs.result().body().getString("status")))
+					{
+						JsonObject document = resDocWithThumbs.result().body().getJsonObject("result");
+						String fileId = document.getString("file");
+						// Extensions are not used by storage
+						String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
+						//
+						JsonObject thumbnails = document.getJsonObject("thumbnails", new JsonObject());
+						Map<String, String> filenamesByIds = new HashMap<>();
+						filenamesByIds.put(fileId, defaultFilename);
 
-							for (String size : thumbnails.fieldNames()) {
-								filenamesByIds.put(thumbnails.getString(size),
-										avatarFileNameFromUserId(userId, Optional.of(size)));
-							}
-							// TODO avoid buffer to improve performances and avoid cache every time
-							List<Future<?>> futures = new ArrayList<>();
-							for (Entry<String, String> entry : filenamesByIds.entrySet()) {
-								String cFileId = entry.getKey();
-								String cFilename = entry.getValue();
-								Promise<JsonObject> future = Promise.promise();
-								futures.add(future.future());
-								this.wsHelper.readFile(cFileId, buffer -> {
-									if (buffer != null) {
-										this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
-												cFilename, future::complete);
-									} else {
-										future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
-									}
-								});
-							}
-							//
-							Future.all(futures).onComplete(finishRes -> futureCopy.complete(finishRes.succeeded()));
+						for (String size : thumbnails.fieldNames()) {
+							filenamesByIds.put(thumbnails.getString(size),
+									avatarFileNameFromUserId(userId, Optional.of(size)));
 						}
-					});
-				}
-			});
-			return futureCopy.future();
+						// TODO avoid buffer to improve performances and avoid cache every time
+						List<Future<?>> futures = new ArrayList<>();
+						for (Entry<String, String> entry : filenamesByIds.entrySet()) {
+							String cFileId = entry.getKey();
+							String cFilename = entry.getValue();
+							Promise<JsonObject> future = Promise.promise();
+							futures.add(future.future());
+							this.wsHelper.readFile(cFileId, buffer -> {
+								if (buffer != null) {
+									this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
+											cFilename, future::complete);
+								} else {
+									future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
+								}
+							});
+						}
+						//
+						Future.all(futures).onComplete(finishRes -> futureCopy.complete(finishRes.succeeded()));
+					}
+				});
+			}
 		});
-
+		return futureCopy.future();
 	}
 
 	@Override
@@ -227,13 +346,29 @@ public class DefaultUserBookService implements UserBookService {
 					if (firstStatement != null && firstStatement.size() > 0) {
 						final JsonObject object = firstStatement.getJsonObject(0);
 						final String picture = object.getString("picture", "");
-						cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).onComplete(e -> {
-							if (e.succeeded()) {
+						final List<String> usersList = new ArrayList<>();
+						usersList.add(userId);
+
+						if (!userBookData.containsKey("picture")) {
+							result.handle(new Either.Right<>(new JsonObject()));
+						}
+						else {
+							cleanAvatarCache(usersList).onSuccess(cleanResult -> {
 								result.handle(new Either.Right<>(new JsonObject()));
-							} else {
-								result.handle(new Either.Left<>(r.body().getString("message", "update.error")));
-							}
-						});
+								if (cleanResult) {
+									cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).onComplete(e -> {
+										if (e.succeeded()) {
+											banAvatarCache(userId);
+											log.info("Thumbnails created");
+										} else {
+											log.warn("Could not create thumbnails", e.cause());
+										}
+									});
+								} else {
+									result.handle(new Either.Left<>(r.body().getString("message", "update.error")));
+								}
+							});
+						}
 					}
 				} else {
 					result.handle(new Either.Right<>(new JsonObject()));
@@ -250,19 +385,8 @@ public class DefaultUserBookService implements UserBookService {
 		JsonObject meta = new JsonObject().put("content-type", "image/*");
 		this.avatarStorage.fileStats(fileId, stats -> {
 			if (stats.succeeded()) {
-				Date modified = stats.result().getLastModified();
-				boolean hasBeenModified = HttpHeaderUtils.checkIfModifiedSince(request.headers(), modified);
-				boolean hasChangedEtag = !ETag.check(request, fileId);
-				HttpHeaderUtils.addHeaderLastModified(request.response().headers(), modified);
-				// check if file is modified or fileid has changed
-				if (hasBeenModified || hasChangedEtag) {
-					// TODO send file renvoie tout le chemin de fichier dans l ETAG?
-					this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
-					future.complete(true);
-				} else {
-					Renders.notModified(request);
-					future.complete(true);
-				}
+				this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
+				future.complete(true);
 			} else {
 				future.complete(false);
 			}
@@ -273,6 +397,7 @@ public class DefaultUserBookService implements UserBookService {
 	@Override
 	public void getAvatar(String userId, Optional<String> size, String defaultAvatarDirty, HttpServerRequest request) {
 		String fileIdSized = avatarFileNameFromUserId(userId, size);
+		request.response().putHeader("Cache-Tag", userId);
 		sendAvatar(request, fileIdSized)// try with size
 				.compose(success -> {// try without size
 					if (success) {

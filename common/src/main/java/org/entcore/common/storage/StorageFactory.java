@@ -32,18 +32,25 @@ import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
+import org.entcore.common.storage.impl.S3FallbackS3FSStorage;
+import org.entcore.common.storage.impl.S3FallbackS3S3Storage;
 import org.entcore.common.storage.impl.StorageFileAnalyzer;
+
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
+import org.entcore.common.storage.impl.S3Storage;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
 import org.entcore.common.validation.QuotaFileSizeValidation;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class StorageFactory {
 
 	private final Vertx vertx;
 	private final IMessagingClient messagingClient;
 	private JsonObject fs;
+	private JsonObject s3;
 	private String gridfsAddress;
 	private final StorageFileAnalyzer.Configuration storageFileAnalyzerConfiguration;
 
@@ -58,12 +65,18 @@ public class StorageFactory {
 	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
 		this.vertx = vertx;
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		String s = (String) server.get("file-system");
+		String s = (String) server.get("s3");
+		if (s != null) {
+			this.s3 = new JsonObject(s);
+		}
+		s = (String) server.get("file-system");
 		if (s != null) {
 			this.fs = new JsonObject(s);
 		}
 		this.gridfsAddress = (String) server.get("gridfsAddress");
-		if (config != null && config.getJsonObject("file-system") != null) {
+		if (config != null && config.getJsonObject("s3") != null) {
+			this.s3 = config.getJsonObject("s3");
+		} else if (config != null && config.getJsonObject("file-system") != null) {
 			this.fs = config.getJsonObject("file-system");
 		} else if (config != null && config.getString("gridfs-address") != null) {
 			this.gridfsAddress = config.getString("gridfs-address");
@@ -101,7 +114,47 @@ public class StorageFactory {
 
 	public Storage getStorage() {
 		Storage storage = null;
-		if (fs != null) {
+		if (s3 != null) {
+			String uri = s3.getString("uri");
+			String accessKey = s3.getString("accessKey");
+			String secretKey = s3.getString("secretKey");
+			String region = s3.getString("region");
+			String bucket = s3.getString("bucket");
+			String ssec = s3.getString("ssec");
+			boolean keepAlive = s3.getBoolean("keepAlive", false);
+			int timeout = s3.getInteger("timeout", 10000);
+			int threshold = s3.getInteger("threshold", 100);
+			long openDelay = s3.getLong("openDelay", 10000l);
+			try {
+				storage = new S3Storage(vertx, new URI(uri), accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay);
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+
+			JsonObject antivirus = s3.getJsonObject("antivirus");
+			if (antivirus != null) {
+				final String host = antivirus.getString("host");
+				final int port = antivirus.getInteger("port", 8080);
+				final String credential = antivirus.getString("credential");
+				if (isNotEmpty(host) && isNotEmpty(credential)) {
+					AntivirusClient av = new HttpAntivirusClient(vertx, host, credential, port);
+					((S3Storage) storage).setAntivirus(av);
+				}
+			}
+
+			FileValidator fileValidator = new QuotaFileSizeValidation();
+			JsonArray blockedExtensions = s3.getJsonArray("blockedExtensions");
+			if (blockedExtensions != null && blockedExtensions.size() > 0) {
+				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
+			}
+			((S3Storage) storage).setValidator(fileValidator);
+
+			JsonObject s3fallbacks3s3 = s3.getJsonObject("s3fallbacks3s3");
+			if (s3fallbacks3s3 != null) {
+					S3FallbackS3S3Storage s3FallbackS3FSStorage = new S3FallbackS3S3Storage(vertx, s3, s3fallbacks3s3);
+					((S3Storage) storage).setFallbackStorage(s3FallbackS3FSStorage);
+			}
+		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
 				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);
 			} else {
@@ -124,6 +177,7 @@ public class StorageFactory {
 			((FileStorage) storage).setValidator(fileValidator);
 
 			JsonObject s3fallback = fs.getJsonObject("s3fallback");
+			JsonObject s3fallbacks3fs = fs.getJsonObject("s3fallbacks3fs");
 			if (s3fallback != null) {
 				final String host = s3fallback.getString("host");
 				final String name = s3fallback.getString("name");
@@ -136,6 +190,21 @@ public class StorageFactory {
 					S3FallbackStorage s3FallbackStorage = new S3FallbackStorage(
 							vertx, host, name, multiBuckets, nbStorageFolder, region, accessKey, secretKey);
 					((FileStorage) storage).setFallbackStorage(s3FallbackStorage);
+				}
+			}
+			else if (s3fallbacks3fs != null) {
+				final String uri = s3fallbacks3fs.getString("uri");
+				final String bucket = s3fallbacks3fs.getString("bucket");
+				final String region = s3fallbacks3fs.getString("region");
+				final String accessKey = s3fallbacks3fs.getString("accessKey");
+				final String secretKey = s3fallbacks3fs.getString("secretKey");
+				final String ssecKey = s3fallbacks3fs.getString("ssec");
+				final int bucketMaxAge = s3fallbacks3fs.getInteger("bucketMaxAge", 2);
+
+				if (isNotEmpty(uri) && isNotEmpty(bucket) && isNotEmpty(region) && isNotEmpty(accessKey) && isNotEmpty(secretKey)) {
+					S3FallbackS3FSStorage s3FallbackS3FSStorage = new S3FallbackS3FSStorage(
+							vertx, uri, bucket, region, accessKey, secretKey, ssecKey, bucketMaxAge);
+					((FileStorage) storage).setFallbackStorage(s3FallbackS3FSStorage);
 				}
 			}
 		} else {
