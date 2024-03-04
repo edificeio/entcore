@@ -46,8 +46,10 @@ public class AwsUtils {
     }
 
     public static void sign(HttpClientRequest request, String accessKey, String secretKey, String region, String hash) throws SignatureException {
+        if (hash.equals("")) hash = null;
+
         try {
-            AWS4Signature.sign(request, region, accessKey, secretKey, hash != null ? hash : null);
+            AWS4Signature.sign(request, region, accessKey, secretKey, hash);
         } catch (InvalidKeyException | NoSuchAlgorithmException | IllegalStateException | UnsupportedEncodingException e) {
             throw new SignatureException(e.getMessage());
         }
