@@ -12,12 +12,18 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.audience.services.AudienceAccessFilter;
+import org.entcore.audience.services.AudienceService;
 import org.entcore.audience.view.service.ViewService;
 import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
+import org.entcore.common.audience.AudienceHelper;
+import org.entcore.common.audience.to.NotifyResourceDeletionMessage;
+import org.entcore.common.audience.to.NotifyResourceDeletionResponseMessage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -33,11 +39,14 @@ public class AudienceController extends BaseController {
 
   private final ViewService viewService;
 
+  private final AudienceService audienceService;
+
   public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService,
-                            final ViewService viewService) {
+                            final ViewService viewService, final AudienceService audienceService) {
     this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
     this.reactionService = reactionService;
     this.viewService = viewService;
+    this.audienceService = audienceService;
   }
 
 
@@ -123,7 +132,7 @@ public class AudienceController extends BaseController {
     final String module = request.getParam("module");
     final String resourceType = request.getParam("resourceType");
     verify(module, resourceType, resourceIds, request)
-    .onSuccess(user -> viewService.getViewCounts(module, resourceType, resourceIds, user)
+    .onSuccess(user -> viewService.getViewCounts(module, resourceType, resourceIds)
         .onSuccess(e -> Renders.render(request, e))
         .onFailure(th -> {
           Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th);
@@ -138,7 +147,7 @@ public class AudienceController extends BaseController {
     final String module = request.getParam("module");
     final String resourceType = request.getParam("resourceType");
     verify(module, resourceType, Collections.singleton(resourceId), request)
-    .onSuccess(user -> viewService.getViewDetails(module, resourceType, resourceId, user)
+    .onSuccess(user -> viewService.getViewDetails(module, resourceType, resourceId)
         .onSuccess(e -> Renders.render(request, e))
         .onFailure(th -> {
           Renders.log.error("Error while getting views details of resource " + module + "@" + resourceType + "@" + resourceId, th);
@@ -164,6 +173,31 @@ public class AudienceController extends BaseController {
                               Renders.renderError(request);
                           }));
     });
+  }
+
+  public MessageConsumer<Object> listenForResourceDeletionNotification() {
+      final MessageConsumer<Object> consumer = vertx.eventBus().consumer(AudienceHelper.AUDIENCE_ADDRESS);
+      consumer.handler(message -> {
+          Object body = message.body();
+          if (body == null) {
+              log.warn("Received a null message from " + message.replyAddress());
+              message.reply(Json.encode(new NotifyResourceDeletionResponseMessage("message.mandatory")));
+          } else {
+              try {
+                  final NotifyResourceDeletionMessage resourceDeletionMessage = Json.decodeValue((String) body, NotifyResourceDeletionMessage.class);
+                  audienceService.purgeDeletedResources(resourceDeletionMessage.getModule(), resourceDeletionMessage.getResourceType(), resourceDeletionMessage.getResourceIds())
+                          .onSuccess(event -> message.reply(Json.encode(new NotifyResourceDeletionResponseMessage(true))))
+                          .onFailure(th -> {
+                              log.warn("An error occurred while purging audience on deleted resources " + body, th);
+                              message.reply(Json.encode(new NotifyResourceDeletionResponseMessage("purge.error")));
+                          });
+              } catch (Exception e) {
+                  log.warn("Received a message from " + message.replyAddress() + "that could not be converted to " + NotifyResourceDeletionMessage.class.getCanonicalName() + " : " + body);
+                  message.reply(Json.encode(new NotifyResourceDeletionResponseMessage("message.bad.format")));
+              }
+          }
+      }).exceptionHandler(th -> log.warn("An error occurred in the purge handler during deleted resources notification", th));
+      return consumer;
   }
 
   /**

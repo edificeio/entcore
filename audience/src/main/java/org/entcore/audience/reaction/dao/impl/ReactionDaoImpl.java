@@ -10,6 +10,7 @@ import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.model.ReactionCounters;
 import org.entcore.audience.reaction.model.UserReaction;
 import org.entcore.common.sql.ISql;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
@@ -33,19 +34,14 @@ public class ReactionDaoImpl implements ReactionDao {
             params.add(module);
             params.add(resourceType);
 
-            StringBuilder resourceIdsPlaceholder = new StringBuilder();
-            for (String resourceId : resourceIds) {
-                resourceIdsPlaceholder.append("?,");
-                params.add(resourceId);
-            }
-            resourceIdsPlaceholder.deleteCharAt(resourceIdsPlaceholder.length() - 1);
+            String resourceIdsPlaceholder = Sql.preparePlaceholderAndParamsForInClause(resourceIds, params);
 
             String query =
                 "select resource_id, reaction_type, count(*) as reaction_counter " +
                     "from audience.reactions " +
                     "where module = ? " +
                     "and resource_type = ? " +
-                    "and resource_id in (" + resourceIdsPlaceholder + ") " +
+                    "and resource_id in " + resourceIdsPlaceholder + " " +
                     "group by resource_id, reaction_type;";
 
             sql.prepared(query, params, results -> {
@@ -87,19 +83,14 @@ public class ReactionDaoImpl implements ReactionDao {
             params.add(module);
             params.add(resourceType);
 
-            StringBuilder resourceIdsPlaceholder = new StringBuilder();
-            for (String resourceId : resourceIds) {
-                resourceIdsPlaceholder.append("?,");
-                params.add(resourceId);
-            }
-            resourceIdsPlaceholder.deleteCharAt(resourceIdsPlaceholder.length() - 1);
+            String resourceIdsPlaceholder = Sql.preparePlaceholderAndParamsForInClause(resourceIds, params);
             params.add(userId);
 
             String userReactionQuery = "select resource_id, reaction_type as user_reaction " +
                     "from audience.reactions " +
                     "where module = ? " +
                     "and resource_type = ? " +
-                    "and resource_id in (" + resourceIdsPlaceholder + ") " +
+                    "and resource_id in " + resourceIdsPlaceholder + " " +
                     "and user_id = ?";
 
             sql.prepared(userReactionQuery, params, results -> {
@@ -213,6 +204,50 @@ public class ReactionDaoImpl implements ReactionDao {
                 promise.fail(validatedResult.left().getValue());
             }
         });
+        return promise.future();
+    }
+
+    @Override
+    public Future<Void> deleteAllReactionsOfUsers(Set<String> userIds) {
+        Promise<Void> promise = Promise.promise();
+
+        JsonArray params = new JsonArray();
+        String userIdsPlaceholder = Sql.preparePlaceholderAndParamsForInClause(userIds, params);
+
+        String query = "delete from audience.reactions " +
+                "where user_id in " + userIdsPlaceholder;
+
+        sql.prepared(query, params, results -> {
+            Either<String, JsonArray> validatedResult = SqlResult.validResults(results);
+            if (validatedResult.isRight()) {
+                promise.complete();
+            } else {
+                promise.fail(validatedResult.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
+
+    @Override
+    public Future<Void> deleteAllReactionsOfResources(Set<String> resourceIds) {
+        Promise<Void> promise = Promise.promise();
+
+        JsonArray params = new JsonArray();
+        String resourceIdsPlaceholder = Sql.preparePlaceholderAndParamsForInClause(resourceIds, params);
+
+        String query = "delete from audience.reactions " +
+                "where resource_id in " + resourceIdsPlaceholder;
+
+        sql.prepared(query, params, results -> {
+            Either<String, JsonArray> validatedResults = SqlResult.validResults(results);
+            if (validatedResults.isRight()) {
+                promise.complete();
+            } else {
+                promise.fail(validatedResults.left().getValue());
+            }
+        });
+
         return promise.future();
     }
 
