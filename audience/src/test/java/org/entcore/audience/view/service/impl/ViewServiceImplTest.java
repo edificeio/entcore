@@ -51,6 +51,11 @@ public class ViewServiceImplTest {
     userInfos.setFirstName("first-name");
     userInfos.setLastName("last-name");
     userInfos.setType("PERSRELELEVE");
+    final UserInfos userInfos2 = new UserInfos();
+    userInfos2.setUserId("user-id-2");
+    userInfos2.setFirstName("first-name-2");
+    userInfos2.setLastName("last-name-2");
+    userInfos2.setType("PERSRELELEVE");
     // Register a view for a user
     viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos)
     .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
@@ -83,6 +88,15 @@ public class ViewServiceImplTest {
       final ResourceViewCounter count = counts.get(0);
       context.assertEquals("r-id-0", count.getResourceId());
       context.assertEquals(2, count.getViewCounter(), "should have been incremented because it has been more than a minute between the 2 views");
+    })
+    // Register a new view, for the same resource, but for another user
+    .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos2))
+    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .onSuccess(counts -> {
+      context.assertEquals(1, counts.size());
+      final ResourceViewCounter count = counts.get(0);
+      context.assertEquals("r-id-0", count.getResourceId());
+      context.assertEquals(3, count.getViewCounter(), "should have been incremented because another user viewed the resource");
       async.complete();
     })
     .onFailure(context::fail);

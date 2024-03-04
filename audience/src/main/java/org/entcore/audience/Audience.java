@@ -1,7 +1,6 @@
 package org.entcore.audience;
 
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.MessageConsumer;
 import org.entcore.audience.controllers.AudienceController;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.dao.impl.ReactionDaoImpl;
@@ -19,8 +18,7 @@ import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.Sql;
 
 public class Audience extends BaseServer {
-
-  private MessageConsumer<Object> resourceDeletionListener;
+  private AudienceController audienceController;
 
   @Override
   public void start() throws Exception {
@@ -31,17 +29,14 @@ public class Audience extends BaseServer {
     final ViewDao viewDao = new ViewDaoImpl(isql);
     final ViewService viewService = new ViewServiceImpl(viewDao);
     final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
-    final AudienceController audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService);
+    audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService);
     addController(audienceController);
     setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
-    resourceDeletionListener = audienceController.listenForResourceDeletionNotification();
   }
 
   @Override
   public void stop(Promise<Void> stopPromise) throws Exception {
     super.stop(stopPromise);
-    if (resourceDeletionListener != null) {
-      resourceDeletionListener.unregister();
-    }
+    audienceController.stopResourceDeletionListener();
   }
 }

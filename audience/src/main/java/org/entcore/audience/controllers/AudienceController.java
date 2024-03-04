@@ -31,9 +31,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AudienceController extends BaseController {
-
-  private final AudienceAccessFilter audienceAccessFilter;
+public class AudienceController extends BaseController { private final AudienceAccessFilter audienceAccessFilter;
 
   private final ReactionService reactionService;
 
@@ -41,12 +39,15 @@ public class AudienceController extends BaseController {
 
   private final AudienceService audienceService;
 
+  private final MessageConsumer<Object> resourceDeletionListener;
+
   public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService,
                             final ViewService viewService, final AudienceService audienceService) {
     this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
     this.reactionService = reactionService;
     this.viewService = viewService;
     this.audienceService = audienceService;
+    resourceDeletionListener = listenForResourceDeletionNotification();
   }
 
 
@@ -198,6 +199,12 @@ public class AudienceController extends BaseController {
           }
       }).exceptionHandler(th -> log.warn("An error occurred in the purge handler during deleted resources notification", th));
       return consumer;
+  }
+
+  public void stopResourceDeletionListener() {
+      if (resourceDeletionListener != null) {
+          resourceDeletionListener.unregister();
+      }
   }
 
   /**
