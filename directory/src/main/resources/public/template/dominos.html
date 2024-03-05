@@ -102,7 +102,7 @@
 					<div class="left-text">
 						<h4>[[ currentFavorite.name ]]</h4>
 						<!-- <div class="top-spacing-twice left-text italic-text indication">Créée le...</div> -->
-						<div class="flex-row">
+						<div ng-if="hasWorkflowMessagerie()" class="flex-row">
 							<div class="action-item small-text">
 								<a class="flex-row twelve" ng-href="/conversation/conversation#/write-mail/[[currentFavorite.id]]/Favorite">
 									<i class="block cell no-margin icon-force-size send-mail"></i>

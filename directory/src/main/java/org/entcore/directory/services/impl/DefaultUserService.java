@@ -288,12 +288,31 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
-		get(id, getManualGroups, new JsonArray(), filterNullReturn, result);
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, filterAttributes, filterNullReturn, false, result);
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn,
+	public void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), filterNullReturn, false, result);
+	}
+
+	@Override
+	public void get(String id, boolean getManualGroups, boolean filterNullReturn, boolean withClasses, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), filterNullReturn, withClasses, result);
+	}
+
+	/**
+	 * This method is used to get user 
+	 * @param id : user id
+	 * @param getManualGroups : if true, add manualGroups to result
+	 * @param filterAttributes : attributes to filter in result
+	 * @param filterNullReturn : if true, filter null attributes in result
+	 * @param withClasses : if true, add classes2D to result, else not, classes2D is a re-construction of classes with subject to make all classes uniform using a precise format : structure.externalId$class.name 
+	 * 
+	*/
+	@Override
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, boolean withClasses,
 					Handler<Either<String, JsonObject>> result) {
 
 		String getMgroups = "";
@@ -312,6 +331,11 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				getMgroups;
+
+		if(withClasses) {
+			query += "OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) WHERE u.classes IS NOT NULL ";
+		}
+		
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
 					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) as functions, u.functions as aafFunctions," +
@@ -329,8 +353,13 @@ public class DefaultUserService implements UserService {
 					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
 		}
 
+		if(withClasses) {
+			query += "CASE WHEN c IS NULL THEN [] ELSE COLLECT(s.externalId + '$' + c.name) END as classes2D, ";
+		}
+
 		query += resultMgroups +
 				"u";
+
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
 			if (event.isRight()) {
 				final JsonObject r = event.right().getValue();

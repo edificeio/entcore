@@ -92,7 +92,8 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
             }
 	        filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" + element.getSimpleName().toString() +
                     "\", \"value\" : \"" + annotation.value() +
-                    "\", \"body\" : " + annotation.body() + " }");
+                    "\", \"body\" : " + annotation.body() +
+					", \"retention-days\" : " + annotation.retentionDays() + " }");
         }
 
         if (filters.size() > 0) {

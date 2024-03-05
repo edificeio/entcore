@@ -53,6 +53,10 @@ public interface UserService {
 
 	void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, Handler<Either<String, JsonObject>> result);
 
+	void get(String id, boolean getManualGroups, boolean filterNullReturn, boolean withClasses, Handler<Either<String, JsonObject>> result);
+
+	void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, boolean withClasses, Handler<Either<String, JsonObject>> result);
+
 	void getClasses(String id, Handler<Either<String, JsonObject>> result);
 
 	void getGroups(String id, Handler<Either<String, JsonArray>> results);

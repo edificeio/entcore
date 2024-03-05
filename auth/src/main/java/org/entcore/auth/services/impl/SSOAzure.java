@@ -79,9 +79,9 @@ public class SSOAzure extends AbstractSSOProvider {
 
 	public SSOAzure() {
 		this(
-				Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject()),
-				Vertx.currentContext().config().getJsonObject("azure-default-structure-id"),
-				Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure")
+			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject()),
+			Vertx.currentContext().config().getJsonObject("azure-default-structure-id"),
+			Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure")
 		);
 	}
 
@@ -103,7 +103,7 @@ public class SSOAzure extends AbstractSSOProvider {
 				if (isNotEmpty(entPersonJointure)) {
 					final String externalId = getExternalId(assertion, entPersonJointure);
 					executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
-							assertion, handler);
+								assertion, handler);
 				} else if ("Student".equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE)))) {
 					final String externalId = getAttribute(assertion, ID_ATTTRIBUTE);
 					if (isEmpty(externalId)) {
@@ -143,19 +143,19 @@ public class SSOAzure extends AbstractSSOProvider {
 	private void createOrMergeUserIfNeeded(Assertion assertion, Handler<AsyncResult<Void>> handler) {
 		final String queryStructure =
 				"MATCH (s:Structure {UAI: {uai}}) " +
-						"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
-						"RETURN DISTINCT s.id as structureId, COLLECT(DISTINCT [c.id, c.name]) as classes ";
+				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
+				"RETURN DISTINCT s.id as structureId, COLLECT(DISTINCT [c.id, c.name]) as classes ";
 		final String queryUserAAF =
 				"MATCH (u:User {externalId:{joinKey}}) " +
-						"RETURN u.id as id, u.source as source, u.activationCode as activationCode ";
+				"RETURN u.id as id, u.source as source, u.activationCode as activationCode ";
 		final String queryUser =
 				"MATCH (u:User {externalId:{externalId}}) " +
-						"RETURN u.id as id, u.externalId as externalId, u.source as source ";
+				"RETURN u.id as id, u.externalId as externalId, u.source as source ";
 
 		final StatementsBuilder statements = new StatementsBuilder();
 		statements
-				.add(queryStructure, new JsonObject().put("uai", getOrElse(getAttribute(assertion, UAI_ATTTRIBUTE), DEFAULT_NOT_EXISTS)))
-				.add(queryUser, new JsonObject().put("externalId", getOrElse(getAttribute(assertion, ID_ATTTRIBUTE), DEFAULT_NOT_EXISTS)));
+			.add(queryStructure, new JsonObject().put("uai", getOrElse(getAttribute(assertion, UAI_ATTTRIBUTE), DEFAULT_NOT_EXISTS)))
+			.add(queryUser, new JsonObject().put("externalId", getOrElse(getAttribute(assertion, ID_ATTTRIBUTE), DEFAULT_NOT_EXISTS)));
 
 		final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
 		if (isNotEmpty(entPersonJointure)) {
@@ -207,7 +207,7 @@ public class SSOAzure extends AbstractSSOProvider {
 		}
 		final String markDuplicates =
 				"MATCH (u:User {id:{aafUserId}}), (d:User {id:{ssoUserId}}) " +
-						"MERGE u-[:DUPLICATE {score:{score}}]-d";
+				"MERGE u-[:DUPLICATE {score:{score}}]-d";
 		final JsonObject params = new JsonObject()
 				.put("aafUserId", aafUserId)
 				.put("ssoUserId", ssoUserId)
@@ -215,10 +215,10 @@ public class SSOAzure extends AbstractSSOProvider {
 		Neo4j.getInstance().execute(markDuplicates, params, Neo4jResult.validEmptyHandler(res -> {
 			if (res.isRight()) {
 				final JsonObject action = new JsonObject()
-						.put("action", "merge-duplicate")
-						.put("userId1", aafUserId)
-						.put("userId2", ssoUserId)
-						.put("keepRelations", false);
+					.put("action", "merge-duplicate")
+					.put("userId1", aafUserId)
+					.put("userId2", ssoUserId)
+					.put("keepRelations", false);
 				eb.request(FEEDER, action, res2 -> {
 					if (res2.succeeded() && "ok".equals(((JsonObject) res2.result().body()).getString("status"))) {
 						handler.handle(Future.succeededFuture());

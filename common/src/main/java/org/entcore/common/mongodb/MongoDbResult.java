@@ -20,6 +20,8 @@
 package org.entcore.common.mongodb;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -37,6 +39,15 @@ public class MongoDbResult {
 		}
 	}
 
+	public static AsyncResult<JsonObject> validAsyncActionResult(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			res.body().remove("status");
+			return Future.succeededFuture(res.body());
+		} else {
+			return Future.failedFuture(res.body().getString("message", ""));
+		}
+	}
+
 	public static Either<String, JsonObject> validResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
 			JsonObject r = res.body().getJsonObject("result", new JsonObject());
@@ -46,11 +57,27 @@ public class MongoDbResult {
 		}
 	}
 
+	public static AsyncResult<JsonObject> validAsyncResult(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			return Future.succeededFuture(res.body().getJsonObject("result", new JsonObject()));
+		} else {
+			return Future.failedFuture(res.body().getString("message", ""));
+		}
+	}
+
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
 			return new Either.Right<>(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
+		}
+	}
+
+	public static AsyncResult<JsonArray> validAsyncResults(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			return Future.succeededFuture(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
+		} else {
+			return Future.failedFuture(res.body().getString("message", ""));
 		}
 	}
 
@@ -64,6 +91,11 @@ public class MongoDbResult {
 		};
 	}
 
+	public static Handler<Message<JsonObject>> validAsyncActionResultHandler(
+		final Handler<AsyncResult<JsonObject>> handler) {
+		return event -> handler.handle(validAsyncActionResult(event));
+	}
+
 	public static Handler<Message<JsonObject>> validResultHandler(
 			final Handler<Either<String, JsonObject>> handler) {
 		return new Handler<Message<JsonObject>>() {
@@ -74,6 +106,11 @@ public class MongoDbResult {
 		};
 	}
 
+	public static Handler<Message<JsonObject>> validAsyncResultHandler(
+		final Handler<AsyncResult<JsonObject>> handler) {
+		return event -> handler.handle(validAsyncResult(event));
+	}
+
 	public static Handler<Message<JsonObject>> validResultsHandler(
 			final Handler<Either<String, JsonArray>> handler) {
 		return new Handler<Message<JsonObject>>() {
@@ -82,6 +119,11 @@ public class MongoDbResult {
 				handler.handle(validResults(event));
 			}
 		};
+	}
+
+	public static Handler<Message<JsonObject>> validAsyncResultsHandler(
+			final Handler<AsyncResult<JsonArray>> handler) {
+		return event -> handler.handle(validAsyncResults(event));
 	}
 
 }

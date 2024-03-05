@@ -19,13 +19,10 @@
 
 package org.entcore.registry;
 
-import fr.wseduc.webutils.collections.JsonObject;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
-import org.entcore.registry.controllers.AppRegistryController;
-import org.entcore.registry.controllers.ExternalApplicationController;
-import org.entcore.registry.controllers.LibraryController;
-import org.entcore.registry.controllers.WidgetController;
+import org.entcore.registry.controllers.*;
 import org.entcore.registry.filters.AppRegistryFilter;
 import org.entcore.registry.services.impl.NopAppRegistryEventService;
 
@@ -38,6 +35,9 @@ public class AppRegistry extends BaseServer {
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
 		addController(new LibraryController(vertx, config()));
+		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
+		if(eduMalinConf != null)
+			addController(new EdumalinWidgetController());
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
