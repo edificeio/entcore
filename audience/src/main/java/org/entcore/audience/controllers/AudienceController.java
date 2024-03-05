@@ -24,6 +24,7 @@ import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
 import org.entcore.common.audience.AudienceHelper;
 import org.entcore.common.audience.to.NotifyResourceDeletionMessage;
 import org.entcore.common.audience.to.NotifyResourceDeletionResponseMessage;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -31,7 +32,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AudienceController extends BaseController { private final AudienceAccessFilter audienceAccessFilter;
+public class AudienceController extends BaseController {
+  public static final String CREATE_REACTION_ACTION = "AUDIENCE_CREATE_REACTION";
+  public static final String REGISTER_VIEW_ACTION = "AUDIENCE_REGISTER_VIEW";
+  private final AudienceAccessFilter audienceAccessFilter;
 
   private final ReactionService reactionService;
 
@@ -41,13 +45,16 @@ public class AudienceController extends BaseController { private final AudienceA
 
   private final MessageConsumer<Object> resourceDeletionListener;
 
+  private final Set<String> validReactionTypes;
+
   public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService,
-                            final ViewService viewService, final AudienceService audienceService) {
+                            final ViewService viewService, final AudienceService audienceService, Set<String> validReactionTypes) {
     this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
     this.reactionService = reactionService;
     this.viewService = viewService;
     this.audienceService = audienceService;
-    resourceDeletionListener = listenForResourceDeletionNotification();
+    resourceDeletionListener = listenForResourceDeletionNotification(vertx);
+    this.validReactionTypes = validReactionTypes;
   }
 
 
@@ -84,6 +91,7 @@ public class AudienceController extends BaseController { private final AudienceA
                 }));
   }
 
+  @Trace(value = CREATE_REACTION_ACTION, retentionDays = 5)
   @Post("/reactions/:module/:resourceType")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void createReaction(final HttpServerRequest request) {
@@ -110,7 +118,7 @@ public class AudienceController extends BaseController { private final AudienceA
               Renders.renderError(request);
             }));
   }
-
+  @Trace(value = REGISTER_VIEW_ACTION, retentionDays = 5)
   @Post("/views/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void registerView(final HttpServerRequest request) {
@@ -163,20 +171,24 @@ public class AudienceController extends BaseController { private final AudienceA
       final String resourceType = request.getParam("resourceType");
       final String resourceId = jsonBody.getString("resourceId", "");
       final String reactionType = jsonBody.getString("reactionType", "");
-      final Set<String> resourceIds = new HashSet<>();
-      resourceIds.add(resourceId);
-      verify(module, resourceType, resourceIds, request)
-          .onSuccess(user ->
-                  reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
-                  .onSuccess(upsertedReaction -> Renders.ok(request))
-                          .onFailure(th -> {
-                              Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th);
-                              Renders.renderError(request);
-                          }));
+      if (validReactionTypes.contains(reactionType)) {
+          final Set<String> resourceIds = new HashSet<>();
+          resourceIds.add(resourceId);
+          verify(module, resourceType, resourceIds, request)
+                  .onSuccess(user ->
+                          reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
+                                  .onSuccess(upsertedReaction -> Renders.ok(request))
+                                  .onFailure(th -> {
+                                      Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th);
+                                      Renders.renderError(request);
+                                  }));
+      } else {
+          Renders.badRequest(request, "Specified reaction type is not valid : " + reactionType);
+      }
     });
   }
 
-  public MessageConsumer<Object> listenForResourceDeletionNotification() {
+  public MessageConsumer<Object> listenForResourceDeletionNotification(Vertx vertx) {
       final MessageConsumer<Object> consumer = vertx.eventBus().consumer(AudienceHelper.AUDIENCE_ADDRESS);
       consumer.handler(message -> {
           Object body = message.body();
