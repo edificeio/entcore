@@ -276,22 +276,17 @@ public class GroupController extends BaseController {
 	 * @param request: HttpServerRequest
 	 *               - structureId: String
 	 * Response: JsonArray:
-	 * [{		- id: String
+	 * [{			- id: String
 	 * 				- name: String
 	 * 				- displayName: String
 	 * 				- filter: String
 	 * 				- labels: JsonArray
-	 * 				- autolinkTargetAllStructs: String
-	 * 				- autolinkTargetStructs: JsonArray
-	 * 				- autolinkUsersFromGroups: JsonArray
 	 * 				- type: String
-	 * 				- internalCommunicationRules: JsonArray
 	 * 				- lockDelete: Boolean
 	 * 			    - nbUsers: Integer
 	 * 			    - structures: JsonArray
 	 * 			      - id: String
 	 * 			      - name: String
-	 * 			    - subType: JsonArray
 	 * }]
 	 *
 	 * */
