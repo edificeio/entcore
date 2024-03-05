@@ -380,7 +380,7 @@ public class AuthController extends BaseController {
 							final Promise<String> futureUserId = Promise.promise();
 							if ("password".equals(grantType)) {
 								final String login = req.getParameter("username");
-								trace.info("Connexion de l'utilisateur " + login);
+								trace.info(getIp(request) + " - Connexion de l'utilisateur " + login);
 								final DataHandler data = oauthDataFactory.create(req);
 								data.getUserId(login, req.getParameter("password"), getUserIdResult -> {
 									try {
@@ -405,14 +405,14 @@ public class AuthController extends BaseController {
 										futureUserId.fail("auth.info.not.found");
 									} else {
 										final String id = authInfo.getUserId();
-										trace.info("Reconnexion de l'utilisateur " + id);
+										trace.info(getIp(request) + " - Reconnexion de l'utilisateur " + id);
 										futureUserId.complete(id);
 										storeLoginEventAndDomain(request, clientCredential, id);
 									}
 								});
 							} else if ("saml2".equals(grantType) || "custom_token".equals(grantType)) {
 								if(userData != null) {
-									trace.info("Connexion de l'utilisateur fédéré " + userData.getLogin());
+									trace.info(getIp(request) + " - Connexion de l'utilisateur fédéré " + userData.getLogin());
 								}
 								storeLoginEventAndDomain(request, clientCredential, userData.getId());
 								futureUserId.complete(userData.getId());
@@ -452,10 +452,10 @@ public class AuthController extends BaseController {
 						userAuthAccount.activateAccountWithRevalidateTerms(login, activationCode, UUID.randomUUID().toString(),
 								email, mobile, theme, request, activated -> {
 								if (activated.isRight() && activated.right().getValue() != null) {
-									trace.info("Activation fédérée mobile du compte utilisateur " + login);
+									trace.info(getIp(request) + " - Activation fédérée mobile du compte utilisateur " + login);
 									eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login, request);
 								} else {
-									trace.info("Echec de l'activation fédérée mobile : compte utilisateur " + login + " introuvable ou déjà activé.");
+									trace.info(getIp(request) + " - Echec de l'activation fédérée mobile : compte utilisateur " + login + " introuvable ou déjà activé.");
 								}
 						});
 					}
@@ -715,7 +715,7 @@ public class AuthController extends BaseController {
 																													request);
 																										} else {
 																											trace.info(
-																													"Erreur de connexion pour l'utilisateur "
+																												getIp(request) + " - Erreur de connexion pour l'utilisateur "
 																															+ login);
 																											loginResult(
 																													request,
@@ -760,7 +760,7 @@ public class AuthController extends BaseController {
 	}
 
 	private void handleGetUserId(String login, String userId, HttpServerRequest request, String callback) {
-		trace.info("Connexion de l'utilisateur " + login);
+		trace.info(getIp(request) + " - Connexion de l'utilisateur " + login);
 		userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
 				new io.vertx.core.Handler<Boolean>() {
 					public void handle(Boolean ok) {
@@ -774,7 +774,7 @@ public class AuthController extends BaseController {
 	}
 
 	private void handleMatchActivationCode(String login, String password, HttpServerRequest request) {
-		trace.info("Code d'activation entré pour l'utilisateur " + login);
+		trace.info(getIp(request) + " - Code d'activation entré pour l'utilisateur " + login);
 		final JsonObject json = new JsonObject();
 		json.put("activationCode", password);
 		json.put("login", login);
@@ -1109,7 +1109,7 @@ public class AuthController extends BaseController {
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				if (config.getBoolean("cgu", true) && !"true".equals(request.formAttributes().get("acceptCGU"))) {
-					trace.info("Invalid cgu " + login);
+					trace.info(getIp(request) + " - Invalid cgu " + login);
 					JsonObject error = new JsonObject().put("error", new JsonObject().put("message", "invalid.cgu"))
 							.put("cgu", true);
 					if (activationCode != null) {
@@ -1128,7 +1128,7 @@ public class AuthController extends BaseController {
 								&& (phone == null || phone.trim().isEmpty()))
 						|| (email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email))
 						|| (phone != null && !phone.trim().isEmpty() && !StringValidation.isPhone(phone))) {
-					trace.info("Echec de l'activation du compte utilisateur " + login);
+					trace.info(getIp(request) + " - Echec de l'activation du compte utilisateur " + login);
 					JsonObject error = new JsonObject().put("error",
 							new JsonObject().put("message",
 									I18n.getInstance().translate("auth.activation.invalid.argument", getHost(request),
@@ -1155,7 +1155,7 @@ public class AuthController extends BaseController {
 										// if failed because duplicated user
 										if (activated.isLeft()
 												&& "activation.error.duplicated".equals(activated.left().getValue())) {
-											trace.info("Echec de l'activation : utilisateur " + login + " en doublon.");
+											trace.info(getIp(request) + " - Echec de l'activation : utilisateur " + login + " en doublon.");
 											JsonObject error = new JsonObject().put("error",
 													new JsonObject().put("message",
 															I18n.getInstance().translate(activated.left().getValue(),
@@ -1173,7 +1173,7 @@ public class AuthController extends BaseController {
 																	&& activated.right().getValue() != null) {
 																handleActivation(login, request, activated, autoLogin);
 															} else {
-																trace.info("Echec de l'activation : compte utilisateur "
+																trace.info(getIp(request) + " - Echec de l'activation : compte utilisateur "
 																		+ login + " introuvable ou déjà activé.");
 																JsonObject error = new JsonObject().put("error",
 																		new JsonObject().put("message",
@@ -1198,10 +1198,10 @@ public class AuthController extends BaseController {
 	private void handleActivation(String login, HttpServerRequest request, Either<String, String> activated,
 								  boolean autoLogin) {
 		final String userId = activated.right().getValue();
-		trace.info("Activation du compte utilisateur " + login);
+		trace.info(getIp(request) + " - Activation du compte utilisateur " + login);
 		eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login, request);
 		if (config.getBoolean("activationAutoLogin", false) && autoLogin) {
-			trace.info("Connexion de l'utilisateur " + login);
+			trace.info(getIp(request) + " - Connexion de l'utilisateur " + login);
 			userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
 					new io.vertx.core.Handler<Boolean>() {
 						public void handle(Boolean ok) {
@@ -1623,7 +1623,7 @@ public class AuthController extends BaseController {
 								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
-					trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
+					trace.info(getIp(request) + " - Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
 					JsonObject error = new JsonObject().put("error", new JsonObject().put("message", I18n.getInstance()
 							.translate("auth.reset.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
 					if (resetCode != null) {
@@ -1655,7 +1655,7 @@ public class AuthController extends BaseController {
 									@Override
 									public void handle(String resetedUserId) {
 										if (resetedUserId != null) {
-											trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
+											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login);
 											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, deleted -> {
 												if (deleted != null)
 												{
@@ -1674,7 +1674,7 @@ public class AuthController extends BaseController {
 											});
 											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
 										} else {
-											trace.info("Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
+											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
 											error(request, resetCode);
 										}
 									}

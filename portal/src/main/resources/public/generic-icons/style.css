@@ -1,17 +1,18 @@
 @font-face {
   font-family: 'generic-icons';
   src:
-    url('fonts/generic-icons.ttf?2kocgr') format('truetype'),
-    url('fonts/generic-icons.woff?2kocgr') format('woff'),
-    url('fonts/generic-icons.svg?2kocgr#generic-icons') format('svg');
+    url('fonts/generic-icons.ttf?sm0rh9') format('truetype'),
+    url('fonts/generic-icons.woff?sm0rh9') format('woff'),
+    url('fonts/generic-icons.svg?sm0rh9#generic-icons') format('svg');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 i {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: 'generic-icons' !important;
-  speak: none;
+  speak: never;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
@@ -23,110 +24,128 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.blur:before {
-  content: "\e92e";
+.edumalin:before {
+  content: "\e967";
+  color: #4a4a4a;
 }
-.cloud-upload:before {
-  content: "\e9c3";
+.edt:before {
+  content: "\e964";
+  color: #4a4a4a;
 }
-.crop:before {
-  content: "\ea57";
+.diary:before {
+  content: "\e965";
+  color: #4a4a4a;
 }
-.droplet:before {
-  content: "\e92c";
+.agenda:before {
+  content: "\e966";
+  color: #4a4a4a;
 }
-.parametrages:before {
-  content: "\e92f";
+.lool:before {
+  content: "\e962";
+  color: #4a4a4a;
 }
-.pearltrees:before {
-  content: "\e933";
+.magneto:before {
+  content: "\e961";
+  color: #4a4a4a;
 }
-.photo_size_select_large:before {
-  content: "\e929";
+.minibadge:before {
+  content: "\e960";
+  color: #4a4a4a;
 }
-.Qwant_Logo:before {
-  content: "\e92a";
+.crre:before {
+  content: "\e95f";
+  color: #4a4a4a;
 }
-.repeat:before {
-  content: "\e92b";
+.universalis-1:before {
+  content: "\e95e";
+  color: #feffff;
 }
-.search2:before {
-  content: "\e930";
+.briefme:before {
+  content: "\e963";
+  color: #fff;
 }
-.zoom-in:before {
-  content: "\e932";
+.forms:before {
+  content: "\e95c";
+  color: #4a4a4a;
 }
-.zoom-out:before {
-  content: "\e931";
+.presence:before {
+  content: "\e95d";
+  color: #4a4a4a;
 }
-.desktop:before {
-  content: "\e92d";
+.icone-paths:before {
+  content: "\e94d";
 }
-.clock:before {
-  content: "\f017";
+.card-user:before {
+  content: "\e943";
 }
-.phone:before {
-  content: "\f095";
+.import-file:before {
+  content: "\e944";
 }
-.right-click:before {
-  content: "\e928";
+.file-upload:before {
+  content: "\e922";
 }
-.competences:before {
-  content: "\e927";
+.file-interactive:before {
+  content: "\e923";
 }
-.sort-asc:before {
-  content: "\e924";
+.panda-filled:before {
+  content: "\e91f";
 }
-.sort-desc:before {
-  content: "\e925";
+.panda:before {
+  content: "\e920";
 }
-.sort:before {
-  content: "\e926";
+.stats-dots:before {
+  content: "\e909";
 }
-.hashtag:before {
-  content: "\e921";
+.library:before {
+  content: "\e908";
 }
-.check-circle-o:before {
-  content: "\e915";
+.sad:before {
+  content: "\e906";
 }
-.check-circle:before {
-  content: "\e916";
+.emoticon:before {
+  content: "\e906";
 }
-.calendar-o:before {
-  content: "\e917";
+.smiley:before {
+  content: "\e906";
 }
-.puzzle-piece:before {
-  content: "\e918";
+.face:before {
+  content: "\e906";
 }
-.file-text-o:before {
-  content: "\e919";
+.star-empty:before {
+  content: "\e9d7";
 }
-.workspace:before {
-  content: "\e911";
+.star-full:before {
+  content: "\e9d9";
 }
-.workspace-large:before {
-  content: "\e911";
+.formulaire:before {
+  content: "\e95b";
 }
-.cahier-de-textes:before {
-  content: "\e910";
+.burger-icon:before {
+  content: "\e956";
 }
-.cahier-de-texte-large:before {
-  content: "\e910";
+.library-shared:before {
+  content: "\e94c";
 }
-.eye-slash:before {
-  content: "\e904";
+.dashboard:before {
+  content: "\e94b";
 }
-.user-add:before {
-  content: "\e937";
+.school:before {
+  content: "\e949";
 }
-.waiting-predelete:before {
-  content: "\e936";
+.moodle:before {
+  content: "\e948";
 }
-.wallpaper-add:before {
-  content: "\e935";
+.fullscreen-off:before {
+  content: "\e946";
 }
-.wallpaper-remove:before {
-  content: "\e934";
+.fullscreen-on:before {
+  content: "\e947";
+}
+.file:before {
+  content: "\e945";
+}
+.settings-class:before {
+  content: "\e942";
 }
 .chat:before {
   content: "\e914";
@@ -140,7 +159,7 @@ i {
 .talk:before {
   content: "\e914";
 }
-.file:before {
+.file1:before {
   content: "\e90b";
 }
 .new:before {
@@ -148,6 +167,57 @@ i {
 }
 .add:before {
   content: "\e90b";
+}
+.interrogation:before {
+  content: "\e959";
+}
+.user-1d:before {
+  content: "\e95a";
+}
+.reccurent:before {
+  content: "\e958";
+}
+.webconf:before {
+  content: "\e957";
+}
+.camera:before {
+  content: "\e94f";
+}
+.dictaphone:before {
+  content: "\e950";
+}
+.play:before {
+  content: "\e951";
+}
+.pause:before {
+  content: "\e952";
+}
+.stop:before {
+  content: "\e953";
+}
+.redo:before {
+  content: "\e954";
+}
+.save:before {
+  content: "\e955";
+}
+.stop-small:before {
+  content: "\e94e";
+}
+.website1:before {
+  content: "\e94a";
+}
+.user-add:before {
+  content: "\e937";
+}
+.waiting-predelete:before {
+  content: "\e936";
+}
+.wallpaper-add:before {
+  content: "\e935";
+}
+.wallpaper-remove:before {
+  content: "\e934";
 }
 .new_releases:before {
   content: "\e91a";
@@ -449,7 +519,7 @@ i {
 .tools:before {
   content: "\e855";
 }
-.pause:before {
+.pause1:before {
   content: "\e856";
 }
 .file-pdf:before {
@@ -470,7 +540,7 @@ i {
 .hourglass:before {
   content: "\e85c";
 }
-.play:before {
+.play1:before {
   content: "\e85d";
 }
 .plus:before {
@@ -860,42 +930,127 @@ i {
 .dots-three-vertical:before {
   content: "\e912";
 }
-.file-upload:before {
-  content: "\e922";
+.images-solid:before {
+  content: "\e93e";
 }
-.file-interactive:before {
-  content: "\e923";
+.th-list-solid:before {
+  content: "\e93f";
 }
-.panda-filled:before {
-  content: "\e91f";
+.th-solid:before {
+  content: "\e940";
 }
-.panda:before {
-  content: "\e920";
+.view-list:before {
+  content: "\e941";
 }
-.stats-dots:before {
-  content: "\e909";
+.charte:before {
+  content: "\e93b";
 }
-.library:before {
-  content: "\e908";
+.assistance:before {
+  content: "\e93c";
 }
-.sad:before {
-  content: "\e906";
+.qwant:before {
+  content: "\e93d";
 }
-.emoticon:before {
-  content: "\e906";
+.lsu:before {
+  content: "\e93a";
 }
-.smiley:before {
-  content: "\e906";
+.edumoov:before {
+  content: "\e939";
 }
-.face:before {
-  content: "\e906";
+.dicodelazone:before {
+  content: "\e938";
 }
-.star-empty:before {
-  content: "\e9d7";
+.blur:before {
+  content: "\e92e";
 }
-.star-full:before {
-  content: "\e9d9";
+.cloud-upload:before {
+  content: "\e9c3";
 }
-.settings-class:before {
-  content: "\e942";
+.crop:before {
+  content: "\ea57";
+}
+.droplet:before {
+  content: "\e92c";
+}
+.parametrages:before {
+  content: "\e92f";
+}
+.pearltrees:before {
+  content: "\e933";
+}
+.photo_size_select_large:before {
+  content: "\e929";
+}
+.Qwant_Logo:before {
+  content: "\e92a";
+}
+.repeat:before {
+  content: "\e92b";
+}
+.search2:before {
+  content: "\e930";
+}
+.zoom-in:before {
+  content: "\e932";
+}
+.zoom-out:before {
+  content: "\e931";
+}
+.desktop:before {
+  content: "\e92d";
+}
+.clock:before {
+  content: "\f017";
+}
+.phone:before {
+  content: "\f095";
+}
+.right-click:before {
+  content: "\e928";
+}
+.competences:before {
+  content: "\e927";
+  color: #4a4a4a;
+}
+.sort-asc:before {
+  content: "\e924";
+}
+.sort-desc:before {
+  content: "\e925";
+}
+.sort:before {
+  content: "\e926";
+}
+.hashtag:before {
+  content: "\e921";
+}
+.check-circle-o:before {
+  content: "\e915";
+}
+.check-circle:before {
+  content: "\e916";
+}
+.calendar-o:before {
+  content: "\e917";
+}
+.puzzle-piece:before {
+  content: "\e918";
+}
+.file-text-o:before {
+  content: "\e919";
+}
+.workspace:before {
+  content: "\e911";
+}
+.workspace-large:before {
+  content: "\e911";
+}
+.cahier-de-textes:before {
+  content: "\e910";
+}
+.cahier-de-texte-large:before {
+  content: "\e910";
+}
+.eye-slash:before {
+  content: "\e904";
 }
