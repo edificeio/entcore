@@ -24,12 +24,22 @@ public class ViewServiceImpl implements ViewService {
   }
 
   @Override
-  public Future<List<ResourceViewCounter>> getViewCounts(String module, String resourceType, Set<String> resourceIds, UserInfos user) {
+  public Future<List<ResourceViewCounter>> getViewCounts(String module, String resourceType, Set<String> resourceIds) {
     return viewDao.getCounts(module, resourceType, resourceIds);
   }
 
   @Override
-  public Future<ResourceViewDetails> getViewDetails(String module, String resourceType, String resourceId, UserInfos user) {
+  public Future<ResourceViewDetails> getViewDetails(String module, String resourceType, String resourceId) {
     return viewDao.getViewDetails(module, resourceType, resourceId);
+  }
+
+  @Override
+  public Future<Void> mergeUserViews( String keptUserId, String deletedUserId) {
+    return viewDao.mergeUserViews(keptUserId, deletedUserId);
+  }
+
+  @Override
+  public Future<Void> deleteAllViewsOfResources(Set<String> resourceIds) {
+    return viewDao.deleteAllViewsOfResources(resourceIds);
   }
 }

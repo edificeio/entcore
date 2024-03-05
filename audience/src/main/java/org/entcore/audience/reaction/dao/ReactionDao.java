@@ -21,4 +21,7 @@ public interface ReactionDao {
 
     Future<Void> deleteReaction(String module, String resourceType, String resourceId, String userId);
 
+    Future<Void> deleteAllReactionsOfUsers(Set<String> userIds);
+
+    Future<Void> deleteAllReactionsOfResources(Set<String> resourceIds);
 }

@@ -13,4 +13,8 @@ public interface ViewDao {
   Future<List<ResourceViewCounter>> getCounts(String module, String resourceType, Set<String> resourceIds);
 
   Future<ResourceViewDetails> getViewDetails(final String module, final String resourceType, final String resourceId);
+
+  Future<Void> mergeUserViews(String keptUserId, String deletedUserId);
+
+  Future<Void> deleteAllViewsOfResources(Set<String> resourceIds);
 }

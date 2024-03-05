@@ -14,9 +14,18 @@ public interface AudienceService {
 
   /**
    * Replace all references to {@code deletedUserId} by references to {@code keptdUserId}
-   * @param keptdUserId Id of the user to keep
+   * @param keptUserId Id of the user to keep
    * @param deletedUserId Id of the user who has been merged into the other one
    * @return a Future that completes when the deletion is done
    */
-  Future<Void> mergeUsers(final String keptdUserId, final String deletedUserId);
+  Future<Void> mergeUsers(final String keptUserId, final String deletedUserId);
+
+  /**
+   * Purge audiences data (reaction, views) for resources deletion
+   * @param module the module of resources being deleted
+   * @param resourceType the resource type of resources being deleted
+   * @param resourceIds the list of resource ids being deleted
+   * @return a Future that completes when the deletion is done
+   */
+  Future<Void> purgeDeletedResources(final String module, final String resourceType, final Set<String> resourceIds);
 }

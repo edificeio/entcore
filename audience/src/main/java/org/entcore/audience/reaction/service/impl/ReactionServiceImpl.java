@@ -14,8 +14,6 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-
 public class ReactionServiceImpl implements ReactionService {
     public static final String DIRECTORY_ADDRESS = "entcore.directory";
     private final EventBus eventBus;
@@ -94,5 +92,15 @@ public class ReactionServiceImpl implements ReactionService {
     @Override
     public Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos) {
         return reactionDao.deleteReaction(module, resourceType, resourceId, userInfos.getUserId());
+    }
+
+    @Override
+    public Future<Void> deleteAllReactionsOfUsers(Set<String> userIds) {
+        return reactionDao.deleteAllReactionsOfUsers(userIds);
+    }
+
+    @Override
+    public Future<Void> deleteAllReactionsOfResources(Set<String> resourceIds) {
+        return reactionDao.deleteAllReactionsOfResources(resourceIds);
     }
 }

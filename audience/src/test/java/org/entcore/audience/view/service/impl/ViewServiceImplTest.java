@@ -1,6 +1,7 @@
 package org.entcore.audience.view.service.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.ext.unit.Async;
@@ -50,9 +51,14 @@ public class ViewServiceImplTest {
     userInfos.setFirstName("first-name");
     userInfos.setLastName("last-name");
     userInfos.setType("PERSRELELEVE");
+    final UserInfos userInfos2 = new UserInfos();
+    userInfos2.setUserId("user-id-2");
+    userInfos2.setFirstName("first-name-2");
+    userInfos2.setLastName("last-name-2");
+    userInfos2.setType("PERSRELELEVE");
     // Register a view for a user
     viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos)
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0"), userInfos))
+    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size(), "should only have the view recently registered");
       final ResourceViewCounter count = counts.get(0);
@@ -61,7 +67,7 @@ public class ViewServiceImplTest {
     })
     // Try to register a new view but it shouldn't change the counter
     .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos))
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0"), userInfos))
+    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size());
       final ResourceViewCounter count = counts.get(0);
@@ -76,12 +82,21 @@ public class ViewServiceImplTest {
     })
     // Register a new view but thi one should count
     .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos))
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0"), userInfos))
+    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size());
       final ResourceViewCounter count = counts.get(0);
       context.assertEquals("r-id-0", count.getResourceId());
       context.assertEquals(2, count.getViewCounter(), "should have been incremented because it has been more than a minute between the 2 views");
+    })
+    // Register a new view, for the same resource, but for another user
+    .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos2))
+    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .onSuccess(counts -> {
+      context.assertEquals(1, counts.size());
+      final ResourceViewCounter count = counts.get(0);
+      context.assertEquals("r-id-0", count.getResourceId());
+      context.assertEquals(3, count.getViewCounter(), "should have been incremented because another user viewed the resource");
       async.complete();
     })
     .onFailure(context::fail);
@@ -112,7 +127,7 @@ public class ViewServiceImplTest {
     userInfos.setType("PERSRELELEVE");
     // Register a view for a user
     insertMockData()
-    .compose(e -> viewService.getViewDetails("mod-view-details", "rt-details", "rsc-details-0", userInfos))
+    .compose(e -> viewService.getViewDetails("mod-view-details", "rt-details", "rsc-details-0"))
     .onSuccess(details -> {
       context.assertEquals(3, details.getUniqueViewsCounter(), "should only have 3 unique views because 3 users saw it");
       context.assertEquals(7, details.getViewsCounter(), "should only have 7 views because user-1 saw it once, user-2 twice and user-3 4 times");
@@ -134,11 +149,101 @@ public class ViewServiceImplTest {
     .onFailure(context::fail);
   }
 
+  @Test
+  public void testMergeUserViews(TestContext context) {
+    Async async = context.async();
+    final String module = "mod-view-merge";
+    final String resourceType = "r-type-merge";
+    final String resourceId1 = "r-id-merge-1";
+    final String resourceId2 = "r-id-merge-2";
+    final UserInfos userInfos1 = new UserInfos();
+    userInfos1.setUserId("parent-1");
+    userInfos1.setFirstName("first-name-1");
+    userInfos1.setLastName("last-name-1");
+    userInfos1.setType("PERSRELELEVE");
+    final UserInfos userInfos2 = new UserInfos();
+    userInfos2.setUserId("parent-2");
+    userInfos2.setFirstName("first-name-2");
+    userInfos2.setLastName("last-name-2");
+    userInfos2.setType("PERSRELELEVE");
+    viewService.registerView(module, resourceType, resourceId1, userInfos1)
+            .compose(e -> viewService.registerView(module, resourceType, resourceId1, userInfos2))
+            .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos1))
+            .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos2))
+            .compose(e -> viewService.getViewDetails(module, resourceType, resourceId1))
+            // check resource 1 view details before merge
+            .onSuccess(viewDetails -> {
+              context.assertEquals(2, viewDetails.getViewsCounter(), "should be a total of two views, one for each user");
+              context.assertEquals(2, viewDetails.getUniqueViewsCounter(), "should be a total of two unique views, one for each user");
+            })
+            // check resource 2 view details before merge
+		    .compose(e -> viewService.getViewDetails(module, resourceType, resourceId2))
+		    .onSuccess(viewDetails -> {
+			    context.assertEquals(2, viewDetails.getViewsCounter(), "should be a total of two views, one for each user");
+			    context.assertEquals(2, viewDetails.getUniqueViewsCounter(), "should be a total of two unique views, one for each user");
+		    })
+            // merging all views for user 1 and user 2
+            .compose(e -> viewService.mergeUserViews(userInfos1.getUserId(), userInfos2.getUserId()))
+            // check resource 1 view details after merge
+            .compose(e -> viewService.getViewDetails(module, resourceType, resourceId1))
+            .onSuccess(viewDetails -> {
+              context.assertEquals(2, viewDetails.getViewsCounter(), "should still be a total of two views after merge");
+              context.assertEquals(1, viewDetails.getUniqueViewsCounter(), "should now be one unique view after merging user 1 and user 2 views");
+            })
+            // check resource 2 view details after merge
+            .compose(e -> viewService.getViewDetails(module, resourceType, resourceId2))
+            .onSuccess(viewDetails -> {
+              context.assertEquals(2, viewDetails.getViewsCounter(), "should still be a total of two views after merge");
+              context.assertEquals(1, viewDetails.getUniqueViewsCounter(), "should now be one unique view after merging user 1 and user 2 views");
+              async.complete();
+            })
+            .onFailure(context::fail);
+  }
+
+  @Test
+  public void testDeleteAllViewsOfResources(TestContext context) {
+    Async async = context.async();
+    final String module = "mod-view-delete";
+    final String resourceType = "r-type-delete";
+    final String resourceId1 = "r-id-delete-1";
+    final String resourceId2 = "r-id-delete-2";
+    final UserInfos userInfos1 = new UserInfos();
+    userInfos1.setUserId("parent-1");
+    userInfos1.setFirstName("first-name-1");
+    userInfos1.setLastName("last-name-1");
+    userInfos1.setType("PERSRELELEVE");
+    final UserInfos userInfos2 = new UserInfos();
+    userInfos2.setUserId("parent-2");
+    userInfos2.setFirstName("first-name-2");
+    userInfos2.setLastName("last-name-2");
+    userInfos2.setType("PERSRELELEVE");
+    viewService.registerView(module, resourceType, resourceId1, userInfos1)
+            .compose(e -> viewService.registerView(module, resourceType, resourceId1, userInfos2))
+            .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos1))
+            .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos2))
+            .compose(e -> viewService.getViewCounts(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
+            // check views on resource 1 and 2
+            .onSuccess(counts -> {
+              context.assertEquals(2, counts.size(), "should be a total of two views per resource id");
+              context.assertEquals(2, counts.get(0).getViewCounter(), "should be a total of two views for resource 1");
+              context.assertEquals(2, counts.get(1).getViewCounter(), "should be a total of two views for resource 2");
+            })
+            // delete all views on resource 1 and 2
+            .compose(e -> viewService.deleteAllViewsOfResources(Sets.newHashSet(resourceId1, resourceId2)))
+            // check views on resource 1 and 2
+            .compose(e -> viewService.getViewCounts(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
+            .onSuccess(counts -> {
+              context.assertTrue(counts.isEmpty(), "view count of resource 1 and 2 should be empty after purge");
+              async.complete();
+            })
+            .onFailure(context::fail);
+  }
+
   /**
    * Insert views data.
    * @return when preparation is done
    */
-  private static Future<Void> insertMockData() {
+  public static Future<Void> insertMockData() {
     final Promise<Void> promise = Promise.promise();
     final Sql sql = Sql.getInstance();
     final String values = Lists.newArrayList(
