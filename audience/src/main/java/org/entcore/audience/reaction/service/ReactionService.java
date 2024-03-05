@@ -16,4 +16,7 @@ public interface ReactionService {
 
     Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos user);
 
+    Future<Void> deleteAllReactionsOfUsers(Set<String> userIds);
+
+    Future<Void> deleteAllReactionsOfResources(Set<String> resourceIds);
 }
