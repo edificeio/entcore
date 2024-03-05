@@ -812,3 +812,16 @@ i.public::before {
   content:'\e863';
   color:$cyan;
 }
+
+i.edumalin-large,
+i.type.edumalin,
+i.edumalin {
+  @include fonticon;
+}
+
+i.edumalin-large::before,
+i.type.edumalin::before,
+i.edumalin::before {
+  content:'\e967';
+  color:$blue;
+}

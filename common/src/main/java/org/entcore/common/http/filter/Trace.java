@@ -8,4 +8,5 @@ import java.lang.annotation.*;
 public @interface Trace {
     String value();
     boolean body() default true;
+    int retentionDays() default 365;
 }

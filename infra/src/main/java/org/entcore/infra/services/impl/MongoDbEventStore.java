@@ -25,12 +25,24 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.http.HttpServerRequest;
 
+import static org.entcore.common.mongodb.MongoDbResult.validAsyncActionResultHandler;
+import static org.entcore.common.mongodb.MongoDbResult.validAsyncResultsHandler;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.EventStoreService;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class MongoDbEventStore implements EventStoreService {
@@ -114,6 +126,70 @@ public class MongoDbEventStore implements EventStoreService {
 		if (pgEventStore != null) {
 			pgEventStore.storeCustomEvent(baseEventType, payload);
 		}
+	}
+
+	@Override
+	public void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, Handler<AsyncResult<JsonArray>> handler) {
+		final JsonObject query = new JsonObject().put("date", new JsonObject()
+			.put("$gte", startEpoch).put("$lt", (startEpoch + duration)));
+		if (skipSynced) {
+			query.put("synced", new JsonObject().put("$exists", false));
+		}
+		mongoDb.find(eventStoreType, query, validAsyncResultsHandler(handler));
+	}
+
+	@Override
+	public void markSyncedEvents(String eventStoreType, long startEpoch, long duration, Handler<AsyncResult<JsonObject>> handler) {
+		final long endEpoch = (startEpoch + duration);
+		final JsonObject query = new JsonObject()
+			.put("date", new JsonObject()
+				.put("$gte", startEpoch).put("$lt", endEpoch))
+			.put("synced", new JsonObject().put("$exists", false));
+
+		final JsonObject modifier = new JsonObject()
+			.put("$set", new JsonObject().put("synced", new JsonObject().put("$date", endEpoch)));
+
+		if ("traces".equals(eventStoreType)) {
+			mongoDb.distinct(eventStoreType, "retention-days", query, validAsyncActionResultHandler(ar -> {
+				if (ar.succeeded()) {
+					final JsonArray values = ar.result().getJsonArray("values");
+					if (values != null && values.size() > 0) {
+						final List<Future> futures = new ArrayList<>();
+						for (Object retention: values) {
+							final JsonObject q = query.copy().put("retention-days", ((int) retention));
+							final JsonObject m = new JsonObject().put("$set", new JsonObject()
+								.put("synced", new JsonObject().put("$date", endEpoch + (((int) retention) * 24 * 3600 * 1000L)) ));
+							futures.add(execMarkSyncedEvents(eventStoreType, q, m));
+						}
+						CompositeFuture.all(futures).onComplete(res -> {
+							if (res.succeeded()) {
+								handler.handle(Future.succeededFuture(new JsonObject()));
+							} else {
+								handler.handle(Future.failedFuture(res.cause()));
+							}
+						});
+					} else {
+						handler.handle(Future.succeededFuture(new JsonObject()));
+					}
+				} else {
+					handler.handle(Future.failedFuture(ar.cause()));
+				}
+			}));
+		} else {
+			execMarkSyncedEvents(eventStoreType, query, modifier).onComplete(handler);
+		}
+	}
+
+	private Future<JsonObject> execMarkSyncedEvents(String eventStoreType, JsonObject query, JsonObject modifier) {
+		final Promise<JsonObject> promise = Promise.promise();
+		mongoDb.update(eventStoreType, query, modifier, false, true, validAsyncActionResultHandler(ar -> {
+			if (ar.succeeded()) {
+				promise.complete(ar.result());
+			} else {
+				promise.fail(ar.cause());
+			}
+		}));
+		return promise.future();
 	}
 
 }
