@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +63,8 @@ public class ReactionServiceImplTest {
                     .put("user-id", "User Id")
                     .put("user-id-0", "User Id 0")
                     .put("user-id-1", "User Id 1")
-                    .put("user-id-2", "User Id 2");
+                    .put("user-id-2", "User Id 2")
+                    .put("user-id-3", "User Id 3");
             message.reply(displayNamesByUserId);
         } else {
             message.fail(500, "[Directory] " + action);
@@ -315,13 +317,13 @@ public class ReactionServiceImplTest {
     userInfos.setType("PERSRELELEVE");
 
     final UserInfos userInfos2 = new UserInfos();
-    userInfos2.setUserId("user-id2");
+    userInfos2.setUserId("user-id-2");
     userInfos2.setFirstName("first-name-2");
     userInfos2.setLastName("last-name-2");
     userInfos2.setType("ENSEIGNANT");
 
     final UserInfos userInfos3 = new UserInfos();
-    userInfos3.setUserId("user-id3");
+    userInfos3.setUserId("user-id-3");
     userInfos3.setFirstName("first-name-3");
     userInfos3.setLastName("last-name-3");
     userInfos3.setType("PERSEDUCNAT");
@@ -378,7 +380,7 @@ public class ReactionServiceImplTest {
       userInfos.setType("PERSRELELEVE");
 
       final UserInfos userInfos2 = new UserInfos();
-      userInfos2.setUserId("user-id2");
+      userInfos2.setUserId("user-id-2");
       userInfos2.setFirstName("first-name-2");
       userInfos2.setLastName("last-name-2");
       userInfos2.setType("ENSEIGNANT");
@@ -395,7 +397,7 @@ public class ReactionServiceImplTest {
                   context.assertEquals(1, reactionDetails.getReactionCounters().getCountByType().size(), "Should be only one type of reaction");
                   context.assertEquals(2, reactionDetails.getReactionCounters().getCountByType().get("reaction-type-1"), "Should have a count of two for reaction-type-1");
                   context.assertEquals(2, reactionDetails.getUserReactions().size(), "Users' reaction list should contain two reactions");
-                  context.assertTrue(reactionDetails.getUserReactions().stream().map(UserReaction::getUserId).collect(Collectors.toSet()).containsAll(Sets.newHashSet("user-id", "user-id2")), "Users' reaction list should contain user-id and user-id2");
+                  context.assertTrue(reactionDetails.getUserReactions().stream().map(UserReaction::getUserId).collect(Collectors.toSet()).containsAll(Sets.newHashSet("user-id", "user-id-2")), "Users' reaction list should contain user-id and user-id-2");
               })
               .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos))
               .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
@@ -412,7 +414,71 @@ public class ReactionServiceImplTest {
                   context.assertNull(reactionDetails.getReactionCounters(), "Reaction counters should be null, after deleting last reaction");
                   context.assertTrue(reactionDetails.getUserReactions().isEmpty(), "List of users' reactions should be empty after deleting last reaction");
                   async.complete();
-              });
+              })
+              .onFailure(context::fail);
+  }
+
+  @Test
+  public void testDeleteAllReactionsOfUsers(TestContext context) {
+      final Async async = context.async();
+      final String module = "mod-delete-user";
+      final String resourceType = "r-type-delete-user";
+      final String resourceId1 = "r-id-delete-1";
+      final String resourceId2 = "r-id-delete-2";
+      final String reactionType = "reaction-type";
+      final UserInfos userInfos = new UserInfos();
+      userInfos.setUserId("user-id");
+      userInfos.setFirstName("first-name");
+      userInfos.setLastName("last-name");
+      userInfos.setType("PERSRELELEVE");
+
+      reactionService.upsertReaction(module, resourceType, resourceId1, userInfos, reactionType)
+              .compose(e -> reactionService.upsertReaction(module, resourceType, resourceId2, userInfos, reactionType))
+              .compose(e -> reactionService.getReactionsSummary(module, resourceType, Sets.newHashSet(resourceId1, resourceId2), userInfos))
+              .onSuccess(reactionsSummary ->  {
+                  context.assertEquals(reactionType, reactionsSummary.getReactionsByResource().get(resourceId1).getUserReaction(), "there should be a reaction of user on resource 1");
+                  context.assertEquals(reactionType, reactionsSummary.getReactionsByResource().get(resourceId2).getUserReaction(), "there should be a reaction of user on resource 2");
+              })
+              .compose(e -> reactionService.deleteAllReactionsOfUsers(Collections.singleton(userInfos.getUserId())))
+              .compose(e -> reactionService.getReactionsSummary(module, resourceType, Sets.newHashSet(resourceId1, resourceId2), userInfos))
+              .onSuccess(reactionSummary -> {
+                  context.assertTrue(reactionSummary.getReactionsByResource().isEmpty(), "there should be no reaction on resource 1 and 2 after user's reactions deletion");
+                  async.complete();
+              })
+              .onFailure(context::fail);
+  }
+
+  @Test
+  public void testDeleteAllReactionsOfResource(TestContext context) {
+      final Async async = context.async();
+      final String module = "mod-delete-resource";
+      final String resourceType = "r-type-delete-resource";
+      final String resourceId = "r-id-delete-resource";
+      final String reactionType = "reaction-type";
+      final UserInfos userInfos = new UserInfos();
+      userInfos.setUserId("user-id");
+      userInfos.setFirstName("first-name");
+      userInfos.setLastName("last-name");
+      userInfos.setType("PERSRELELEVE");
+      final UserInfos userInfos2 = new UserInfos();
+      userInfos2.setUserId("user-id-2");
+      userInfos2.setFirstName("first-name-2");
+      userInfos2.setLastName("last-name-2");
+      userInfos2.setType("ENSEIGNANT");
+      final int page = 1;
+      final int size = 100;
+
+      reactionService.upsertReaction(module, resourceType, resourceId, userInfos, reactionType)
+              .compose(e -> reactionService.upsertReaction(module, resourceType, resourceId, userInfos2, reactionType))
+              .compose(e -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size))
+              .onSuccess(reactionDetails -> context.assertEquals(2, reactionDetails.getReactionCounters().getAllReactionsCounter(), "there should be 2 reactions on resource"))
+              .compose(e -> reactionService.deleteAllReactionsOfResources(Collections.singleton(resourceId)))
+              .compose(e -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size))
+              .onSuccess(reactionDetails -> {
+                  context.assertNull(reactionDetails.getReactionCounters(), "there should be no reactions after resource's reaction deletion");
+                  async.complete();
+              })
+              .onFailure(context::fail);
   }
 
   /**

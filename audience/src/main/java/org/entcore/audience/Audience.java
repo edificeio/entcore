@@ -1,5 +1,6 @@
 package org.entcore.audience;
 
+import io.vertx.core.Promise;
 import org.entcore.audience.controllers.AudienceController;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.dao.impl.ReactionDaoImpl;
@@ -17,17 +18,25 @@ import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.Sql;
 
 public class Audience extends BaseServer {
+  private AudienceController audienceController;
 
   @Override
   public void start() throws Exception {
     super.start();
-    final AudienceService audienceService = new AudienceServiceImpl();
     final ISql isql = Sql.getInstance();
     final ReactionDao reactionDao = new ReactionDaoImpl(isql);
     final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
     final ViewDao viewDao = new ViewDaoImpl(isql);
     final ViewService viewService = new ViewServiceImpl(viewDao);
-    addController(new AudienceController(vertx, config(), reactionService, viewService));
+    final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
+    audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService);
+    addController(audienceController);
     setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
+  }
+
+  @Override
+  public void stop(Promise<Void> stopPromise) throws Exception {
+    super.stop(stopPromise);
+    audienceController.stopResourceDeletionListener();
   }
 }

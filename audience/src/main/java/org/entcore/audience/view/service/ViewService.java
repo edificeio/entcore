@@ -12,9 +12,13 @@ public interface ViewService {
   Future<Void> registerView(final String module, final String resourceType, final String resourceId,
                             final UserInfos user);
 
-  Future<List<ResourceViewCounter>> getViewCounts(String module, String resourceType, Set<String> resourceIds, UserInfos user);
+  Future<List<ResourceViewCounter>> getViewCounts(String module, String resourceType, Set<String> resourceIds);
 
 
   Future<ResourceViewDetails> getViewDetails(final String module, final String resourceType,
-                                             final String resourceId, final UserInfos user);
+                                             final String resourceId);
+
+  Future<Void> mergeUserViews(String keptUserId, String deletedUserId);
+
+  Future<Void> deleteAllViewsOfResources(Set<String> resourceIds);
 }

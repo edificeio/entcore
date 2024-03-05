@@ -186,6 +186,22 @@ public class Sql implements ISql {
 		return sb.append(")").toString();
 	}
 
+	/**
+	 * Creates a placeholder for IN clause and updates the query params accordingly.
+	 * @param items the set of string items to be checked by the IN clause
+	 * @param params the query params to be updated
+	 * @return the placeholder
+	 */
+	public static String preparePlaceholderAndParamsForInClause(Set<String> items, JsonArray params) {
+		StringBuilder placeholder = new StringBuilder("(");
+		items.forEach(item -> {
+			placeholder.append("?,");
+			params.add(item);
+		});
+		placeholder.deleteCharAt(placeholder.length() - 1);
+		return placeholder.append(")").toString();
+	}
+
 	public static String arrayPrepared(JsonArray array) {
 		return arrayPrepared(array.getList().toArray(), false);
 	}
