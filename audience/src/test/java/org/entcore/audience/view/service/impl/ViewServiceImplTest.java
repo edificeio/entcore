@@ -7,7 +7,7 @@ import io.vertx.core.Promise;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.entcore.audience.view.dao.ViewDaoImpl;
+import org.entcore.audience.view.dao.impl.ViewDaoImpl;
 import org.entcore.audience.view.model.ResourceViewCounter;
 import org.entcore.audience.view.model.ViewsCounterPerProfile;
 import org.entcore.audience.view.service.ViewService;

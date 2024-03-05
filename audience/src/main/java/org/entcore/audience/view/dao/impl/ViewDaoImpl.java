@@ -1,4 +1,4 @@
-package org.entcore.audience.view.dao;
+package org.entcore.audience.view.dao.impl;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.entcore.audience.view.dao.ViewDao;
 import org.entcore.audience.view.model.ResourceViewCounter;
 import org.entcore.audience.view.model.ResourceViewDetails;
 import org.entcore.audience.view.model.ViewsCounterPerProfile;
