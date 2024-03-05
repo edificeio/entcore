@@ -10,12 +10,15 @@ import org.entcore.audience.services.AudienceService;
 import org.entcore.audience.services.impl.AudienceRepositoryEvents;
 import org.entcore.audience.services.impl.AudienceServiceImpl;
 import org.entcore.audience.view.dao.ViewDao;
-import org.entcore.audience.view.dao.ViewDaoImpl;
+import org.entcore.audience.view.dao.impl.ViewDaoImpl;
 import org.entcore.audience.view.service.ViewService;
 import org.entcore.audience.view.service.impl.ViewServiceImpl;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.sql.ISql;
 import org.entcore.common.sql.Sql;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Audience extends BaseServer {
   private AudienceController audienceController;
@@ -29,7 +32,8 @@ public class Audience extends BaseServer {
     final ViewDao viewDao = new ViewDaoImpl(isql);
     final ViewService viewService = new ViewServiceImpl(viewDao);
     final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
-    audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService);
+    final Set<String> validReactionTypes = config.getJsonArray("reaction-types").stream().map(Object::toString).collect(Collectors.toSet());
+    audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService, validReactionTypes);
     addController(audienceController);
     setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
   }

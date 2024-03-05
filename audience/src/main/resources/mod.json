@@ -7,5 +7,6 @@
     "app-name" : "Admin",
     "app-address" : "http://localhost:8091/audience",
 	"sql": true,
-	"db-schema": "audience"
+	"db-schema": "audience",
+	"reaction-types" : ["REACTION_TYPE_1","REACTION_TYPE_2","REACTION_TYPE_3","REACTION_TYPE_4","REACTION_TYPE_5","REACTION_TYPE_6"]
 }
