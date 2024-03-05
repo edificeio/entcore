@@ -20,18 +20,31 @@
 package org.entcore.infra.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.entcore.common.user.UserInfos;
 
 
 public interface EventStoreService {
+
+	List<String> EVENT_STORE_TYPES = Arrays.asList("events", "traces");
+	long ONE_DAY_DURATION = 24 * 3600 * 1000L;
 
 	void store(JsonObject event, Handler<Either<String, Void>> handler);
 
 	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 
 	void storeCustomEvent(String baseEventType, JsonObject payload);
+
+	void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, Handler<AsyncResult<JsonArray>> handler);
+
+	void markSyncedEvents(String eventStoreType, long startEpoch, long duration, Handler<AsyncResult<JsonObject>> handler);
 
 }

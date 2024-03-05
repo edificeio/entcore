@@ -8,6 +8,10 @@ import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * Delegate class of {@link fr.wseduc.sms.Sms Sms} which stores new event for every successfully sent SMS.

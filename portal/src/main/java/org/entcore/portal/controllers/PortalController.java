@@ -488,4 +488,93 @@ public class PortalController extends BaseController {
 		}
 	}
 
+	/**
+	 * Get the configured scriptPath for cantoo script.
+	 * @param request nothing to do
+	 * @return { "scriptPath": "https://cantoo.com/script.js" }
+	 * 
+	 * @security optionalFeature.cantoo
+	 * @workflow optionalFeatureCantoo
+	 */
+	@Get("optionalFeature/cantoo")
+	@SecuredAction("optionalFeature.cantoo")
+	public void optionalFeatureCantoo(HttpServerRequest request) {
+
+		// get scriptPath from config
+		String scriptPath = config.getString("optionalFeature-cantoo-scriptPath", "");
+
+		if(!scriptPath.isEmpty()) {
+			
+			JsonObject result = new JsonObject();
+			result.put("scriptPath", scriptPath);
+
+			request.response().putHeader("content-type", "application/json");
+			request.response().putHeader("Cache-Control", "no-cache, must-revalidate");
+			request.response().putHeader("Expires", "-1");
+			
+			//return scriptPath of script
+			request.response().end(result.encode());
+			
+		} else {
+			unauthorized(request);
+		}
+		
+	}
+
+	//TODO IMPLIMENTATION OF THE ZIMBRA METHODE FOR REDIRECT TO THERE EMAIL SYSTEM USING THE writeTOEmailProvider AND Adding writeTOEmailProviderZimbra WORFLOW
+	/**
+	 * REDIRECTION TO WORDLINE Mail application
+	 * 
+	 * @param request id, login (for user), type of profile(user, group)
+	 * @return url to redirect
+	 * @workflow optionalFeatureWriteToEmailProviderWordline
+	 */
+	@Get("optionalFeature/writeToEmailProvider/wordline")
+	@SecuredAction("optionalFeature.writeToEmailProviderWordline")
+	public void optionalFeatureWriteToEmailProviderWordline(final HttpServerRequest request) {
+		optionalFeatureWriteToEmailProvider(request, "wordline");
+	}
+
+	private void optionalFeatureWriteToEmailProvider(final HttpServerRequest request, String providerId) {
+		
+		final String id = request.params().get("id");
+		final String login = request.params().get("login");
+		final String type = request.params().get("type");
+
+		if(type == null || type.isEmpty() || (id == null && login == null)) {
+			badRequest(request);
+			return;
+		}
+		
+		JsonArray emailProvider = config.getJsonArray("emailProvider",  new JsonArray());
+
+		if(emailProvider != null && !emailProvider.isEmpty()) {
+			JsonObject provider = (JsonObject) emailProvider.stream().filter(o -> ((JsonObject) o).getString("id").equals(providerId)).findFirst().orElse(null);
+			if(provider != null && !provider.getString("url", "").isEmpty()) {
+				UserUtils.getUserInfos(eb, request, user -> {
+					if (user != null) {
+
+						JsonObject result = new JsonObject();
+						// get url from config
+						String url = provider.getString("url", "");
+
+						result.put("url", url + "?id=" + id + "&login=" + login + "&type=" + type);
+
+						request.response().putHeader("content-type", "application/json");
+						request.response().putHeader("Cache-Control", "no-cache, must-revalidate");
+						request.response().putHeader("Expires", "-1");
+						//return url to redirect
+						request.response().end(result.encode());
+					} else {
+						unauthorized(request);
+					}
+				});
+			} else {
+				badRequest(request);
+			}
+		} else {
+			badRequest(request);
+		}
+	}
+
 }
