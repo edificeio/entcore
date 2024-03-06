@@ -20,20 +20,17 @@
 package org.entcore.common.share.impl;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
 import static org.entcore.common.validation.StringValidation.cleanId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -393,102 +390,200 @@ public abstract class GenericShareService implements ShareService {
 		final JsonObject groups = share.getJsonObject("groups");
 		final JsonObject users = share.getJsonObject("users");
 		final JsonObject shareBookmark = share.getJsonObject("bookmarks");
-		final HashMap<String, Set<String>> membersActions = new HashMap<>();
-
-		if (groups != null && groups.size() > 0) {
-			for (String attr : groups.fieldNames()) {
-				JsonArray actions = groups.getJsonArray(attr);
-				if (actionsExists(actions.getList())) {
-					membersActions.put(attr, new HashSet<>(actions.getList()));
+		final Map<String, Set<String>> membersActions = new HashMap<>();
+			if (groups != null && groups.size() > 0) {
+				for (String attr : groups.fieldNames()) {
+					JsonArray actions = groups.getJsonArray(attr);
+					if (actionsExists(actions.getList())) {
+						membersActions.put(attr, new HashSet<>(actions.getList()));
+					}
 				}
 			}
-		}
-		if (users != null && users.size() > 0) {
-			for (String attr : users.fieldNames()) {
-				JsonArray actions = users.getJsonArray(attr);
-				if (actionsExists(actions.getList())) {
-					membersActions.put(attr, new HashSet<>(actions.getList()));
+			if (users != null && users.size() > 0) {
+				for (String attr : users.fieldNames()) {
+					JsonArray actions = users.getJsonArray(attr);
+					if (actionsExists(actions.getList())) {
+						membersActions.put(attr, new HashSet<>(actions.getList()));
+					}
 				}
 			}
-		}
-		if (shareBookmark != null && shareBookmark.size() > 0) {
-			final JsonObject p = new JsonObject().put("userId", userId);
-			StatementsBuilder statements = new StatementsBuilder();
-			for (String sbId : shareBookmark.fieldNames()) {
-				final String csbId = cleanId(sbId);
-				final String query = "MATCH (:User {id:{userId}})-[:HAS_SB]->(sb:ShareBookmark) " + "RETURN DISTINCT '"
-						+ csbId + "' as id, TAIL(sb." + csbId + ") as members ";
-				statements.add(query, p);
-			}
-			Neo4j.getInstance().executeTransaction(statements.build(), null, true,
-					Neo4jResult.validResultsHandler(sbRes -> {
-						if (sbRes.isRight()) {
-							JsonArray a = sbRes.right().getValue();
-							for (Object o : a) {
-								JsonObject r = ((JsonArray) o).getJsonObject(0);
-								JsonArray actions = shareBookmark.getJsonArray(r.getString("id"));
-								JsonArray mIds = r.getJsonArray("members");
-								if (actions != null && mIds != null && mIds.size() > 0
-										&& actionsExists(actions.getList())) {
-									for (Object mId : mIds) {
-										Set<String> actionsShare = membersActions.get(mId.toString());
-										if (actionsShare == null) {
-											actionsShare = new HashSet<>(new HashSet<>(actions.getList()));
-											membersActions.put(mId.toString(), actionsShare);
+			if (shareBookmark != null && shareBookmark.size() > 0) {
+				final JsonObject p = new JsonObject().put("userId", userId);
+				StatementsBuilder statements = new StatementsBuilder();
+				for (String sbId : shareBookmark.fieldNames()) {
+					final String csbId = cleanId(sbId);
+					final String query = "MATCH (:User {id:{userId}})-[:HAS_SB]->(sb:ShareBookmark) " + "RETURN DISTINCT '"
+							+ csbId + "' as id, TAIL(sb." + csbId + ") as members ";
+					statements.add(query, p);
+				}
+				Neo4j.getInstance().executeTransaction(statements.build(), null, true,
+						Neo4jResult.validResultsHandler(sbRes -> {
+							if (sbRes.isRight()) {
+								JsonArray a = sbRes.right().getValue();
+								for (Object o : a) {
+									JsonObject r = ((JsonArray) o).getJsonObject(0);
+									JsonArray actions = shareBookmark.getJsonArray(r.getString("id"));
+									JsonArray mIds = r.getJsonArray("members");
+									if (actions != null && mIds != null && mIds.size() > 0
+											&& actionsExists(actions.getList())) {
+										for (Object mId : mIds) {
+											Set<String> actionsShare = membersActions.get(mId.toString());
+											if (actionsShare == null) {
+												actionsShare = new HashSet<>(new HashSet<>(actions.getList()));
+												membersActions.put(mId.toString(), actionsShare);
 //								} else {
 //									actionsShare.addAll(new HashSet<>(actions.getList()));
+											}
 										}
 									}
 								}
+								shareValidationVisible(userId, resourceId, handler, membersActions,
+										shareBookmark.fieldNames());
+							} else {
+								handler.handle(new Either.Left<>(sbRes.left().getValue()));
 							}
-							shareValidationVisible(userId, resourceId, handler, membersActions,
-									shareBookmark.fieldNames());
-						} else {
-							handler.handle(new Either.Left<>(sbRes.left().getValue()));
-						}
-					}));
-		} else {
-			shareValidationVisible(userId, resourceId, handler, membersActions, null);
-		}
+						}));
+			} else {
+				shareValidationVisible(userId, resourceId, handler, membersActions, null);
+			}
 	}
 
-	private void shareValidationVisible(String userId, String resourceId, Handler<Either<String, JsonObject>> handler,
-			HashMap<String, Set<String>> membersActions, Set<String> shareBookmarkIds) {
-//		final String preFilter = "AND m.id IN {members} ";
-		final Set<String> members = membersActions.keySet();
-		final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
-//		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
-//		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
-		checkMembers(params, res -> {
-			if (res != null) {
-				final JsonArray users = new JsonArray();
-				final JsonArray groups = new JsonArray();
-				final JsonArray shared = new JsonArray();
-				final JsonArray notifyMembers = new JsonArray();
-				for (Object o : res) {
-					JsonObject j = (JsonObject) o;
-					final String attr = j.getString("id");
-					if (Boolean.TRUE.equals(j.getBoolean("isUser"))) {
-						users.add(attr);
-						notifyMembers.add(new JsonObject().put("userId", attr));
-						prepareSharedArray(resourceId, "userId", shared, attr, membersActions.get(attr));
+	/**
+	 * Check that the user can set the specified shares to a resource.
+	 * It allows the user to :
+	 * <ul>
+	 *   <li>let unchanged shares on users or groups that are not visible</li>
+	 *   <li>change or delete rights on users or groups only if they are within
+	 *   the visible users and groups of the user</li>
+	 * </ul>
+	 * @param userId Id of the user who wants to perform the update
+	 * @param originalShares Actual shares of the user
+	 * @param shareUpdates Shares that the user wants to apply
+	 * @return A {@code Future} that completes with {@code true} iff all the detailed conditions
+	 * above were met and {@code false} otherwise.
+	 */
+	private Future<Boolean> checkCanApplyShares(final String userId,
+																					 final JsonArray originalShares,
+																					 final Map<String, Set<String>> shareUpdates) {
+		final Promise<Boolean> promise = Promise.promise();
+		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
+		UserUtils.findVisibles(eb, userId, customReturn, null, true, true, false, "fr", visibleResponse -> {
+			final Set<String> visibleUsersAndGroups = visibleResponse.stream()
+					.map(entry -> ((JsonObject) entry).getString("id"))
+					.collect(Collectors.toSet());
+			// Check that original shares are untouched or that the ones that are modified are modified accordingly to
+			// users/groups visibility
+			boolean ok = true;
+			final Set<String> originalUsersAndGroups = new HashSet<>();
+			for (Object originalShare : originalShares) {
+				final JsonObject share = (JsonObject) originalShare;
+				final String idOfShare = getUserOrGroupIdOfShare(share);
+				originalUsersAndGroups.add(idOfShare);
+				if(visibleUsersAndGroups.contains(idOfShare)) {
+					log.debug(idOfShare + " is visible so it can be changed");
+				} else {
+					final Set<String> originalRights = share.stream()
+							.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
+							.map(Map.Entry::getKey)
+							.collect(Collectors.toSet());
+					final Set<String> desiredRights = shareUpdates.getOrDefault(idOfShare, Collections.emptySet());
+					if(desiredRights.equals(originalRights)) {
+						log.debug("OK - desired rights and original rights are the same for " + idOfShare);
 					} else {
-						groups.add(attr);
-						notifyMembers.add(new JsonObject().put("groupId", attr));
-						prepareSharedArray(resourceId, "groupId", shared, attr, membersActions.get(attr));
+						log.warn("KO - desired rights and original rights differ for " + idOfShare + " but the user has no visibility on it");
+						ok = false;
+						break;
 					}
 				}
-				handler.handle(new Either.Right<>(params.put("shared", shared).put("groups", groups).put("users", users)
-						.put("notify-members", notifyMembers)));
-				if (shareBookmarkIds != null && res.size() < members.size()) {
-					members.removeAll(groups.getList());
-					members.removeAll(users.getList());
-					resyncShareBookmark(userId, members, shareBookmarkIds);
-				}
+			}
+			if(ok) {
+				// Check that added groups or users do not concern users or groups that the user does not have access to
+				ok = shareUpdates.keySet().stream()
+						.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
+						.allMatch(id -> {
+							if(visibleUsersAndGroups.contains(id)) {
+								return true;
+							} else {
+								log.warn("KO - tried to add rights to a user/group " + id + " not visible to user");
+								return false;
+							}
+						});
+			}
+			promise.complete(ok);
+		});
+		return promise.future();
+	}
+
+	private String getUserOrGroupIdOfShare(final JsonObject share) {
+		String id = share.getString("groupId");
+		if(isEmpty(id)) {
+			id = share.getString("userId");
+		}
+		return id;
+	}
+
+	private Future<JsonArray> getOriginalShares(final String resourceId,
+																							 final String userId) {
+		final Promise<JsonArray> promise = Promise.promise();
+		shareInfosWithoutVisible(userId, resourceId, e -> {
+			if(e.isLeft()) {
+				promise.fail(e.left().getValue());
 			} else {
-				handler.handle(new Either.Left<>("Invalid members count."));
+				promise.complete(e.right().getValue());
 			}
 		});
+		return promise.future();
+	}
+
+
+	private void shareValidationVisible(final String userId, final String resourceId,
+																			final Handler<Either<String, JsonObject>> handler,
+																			final Map<String, Set<String>> membersActions,
+																			final Set<String> shareBookmarkIds) {
+		getOriginalShares(resourceId, userId)
+		.compose(shares -> checkCanApplyShares(userId, shares, membersActions))
+		.onSuccess(e -> {
+			if(e) {
+				//		final String preFilter = "AND m.id IN {members} ";
+				final Set<String> members = membersActions.keySet();
+				final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
+				//		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
+				//		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
+				checkMembers(params, res -> {
+					if (res != null) {
+						final JsonArray users = new JsonArray();
+						final JsonArray groups = new JsonArray();
+						final JsonArray shared = new JsonArray();
+						final JsonArray notifyMembers = new JsonArray();
+						for (Object o : res) {
+							JsonObject j = (JsonObject) o;
+							final String attr = j.getString("id");
+							if (Boolean.TRUE.equals(j.getBoolean("isUser"))) {
+								users.add(attr);
+								notifyMembers.add(new JsonObject().put("userId", attr));
+								prepareSharedArray(resourceId, "userId", shared, attr, membersActions.get(attr));
+							} else {
+								groups.add(attr);
+								notifyMembers.add(new JsonObject().put("groupId", attr));
+								prepareSharedArray(resourceId, "groupId", shared, attr, membersActions.get(attr));
+							}
+						}
+						handler.handle(new Either.Right<>(params.put("shared", shared).put("groups", groups).put("users", users)
+								.put("notify-members", notifyMembers)));
+						if (shareBookmarkIds != null && res.size() < members.size()) {
+							members.removeAll(groups.getList());
+							members.removeAll(users.getList());
+							resyncShareBookmark(userId, members, shareBookmarkIds);
+						}
+					} else {
+						handler.handle(new Either.Left<>("Invalid members count."));
+					}
+				});
+			} else {
+				handler.handle(new Either.Left<>("insufficient.rights.to.modify.shares"));
+			}
+		})
+		.onFailure(th -> handler.handle(new Either.Left<>(th.getMessage())));
 	}
 
 	private void checkMembers(JsonObject params, Handler<JsonArray> handler) {
