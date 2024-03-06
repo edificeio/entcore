@@ -55,7 +55,9 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Neo4jContainer;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RunWith(VertxUnitRunner.class)
 public class DocumentTest {
@@ -209,6 +211,21 @@ public class DocumentTest {
     public void testWorkspaceServiceShouldInheritShareDocumentAndAugmentRights(TestContext context) {
         final Async async = context.async();
         final UserInfos user = test.http().sessionUser();
+        final Set<String> userIds = new HashSet<>();
+        userIds.add(user.getUserId());
+        userIds.add(userid);
+        test.vertx().eventBus().consumer("wse.communication.users").handler(message -> {
+          String action = ((JsonObject)message.body()).getString("action", "");
+          if("visibleUsers".equals(action)) {
+            final JsonArray response = new JsonArray();
+            for (String userId : userIds) {
+              response.add(new JsonObject().put("id", userId));
+            }
+            message.reply(response);
+          } else {
+            message.fail(404, "not.found");
+          }
+        });
         createSharedFolder(context, "folder", user).setHandler(res0 -> {
             context.assertTrue(res0.succeeded());
             workspaceService.addFile(Optional.of(res0.result()), document("document1"), user.getUserId(),
