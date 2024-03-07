@@ -118,7 +118,7 @@ public class AudienceController extends BaseController {
               Renders.renderError(request);
             }));
   }
-  @Trace(value = REGISTER_VIEW_ACTION, retentionDays = 5)
+  @Trace(value = REGISTER_VIEW_ACTION, retentionDays = 5, body = false)
   @Post("/views/:module/:resourceType/:resourceId")
   @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
   public void registerView(final HttpServerRequest request) {
