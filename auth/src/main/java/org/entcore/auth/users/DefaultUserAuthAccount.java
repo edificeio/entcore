@@ -43,6 +43,8 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.sms.SmsSender;
+import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.joda.time.DateTime;
@@ -67,6 +69,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final EmailSender notification;
 	private final Renders render;
 	private final EventBus eb;
+	private final SmsSender smsSender;
 
 	private String smsProvider;
 	private final String smsAddress;
@@ -99,6 +102,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
 		this.ignoreSendResetPasswordMailError = config.getBoolean("reset-pwd-mail-ignore-error", false);
+		SmsSenderFactory.getInstance().init(vertx, config);
+		this.smsSender = SmsSenderFactory.getInstance().newInstance(eventStore);
 	}
 
 	@Override
@@ -565,40 +570,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				}));
 	}
 
-	private void sendSms(HttpServerRequest request, final String phone, String template, JsonObject params, final Handler<Either<String, JsonObject>> handler){
+	private void sendSms(HttpServerRequest request, final String phone, String template, JsonObject params,
+											 final String module, final Handler<Either<String, JsonObject>> handler){
 		if (phone == null || phone.trim().isEmpty()) {
-			handler.handle(new Either.Left<String, JsonObject>("invalid.phone"));
+			handler.handle(new Either.Left<>("invalid.phone"));
 			return;
 		}
-
-		final String formattedPhone = fr.wseduc.webutils.StringValidation.formatPhone(phone);
-
-		render.processTemplate(request, template, params, new Handler<String>() {
-			@Override
-			public void handle(String body) {
-				if (body != null) {
-					JsonObject smsObject = new JsonObject()
-						.put("provider", smsProvider)
-		    			.put("action", "send-sms")
-		    			.put("parameters", new JsonObject()
-		    				.put("receivers", new fr.wseduc.webutils.collections.JsonArray().add(formattedPhone))
-		    				.put("message", body)
-		    				.put("senderForResponse", true)
-		    				.put("noStopClause", true));
-
-					vertx.eventBus().send(smsAddress, smsObject, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-						public void handle(Message<JsonObject> event) {
-							if("error".equals(event.body().getString("status"))){
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
-							}
-						}
-					}));
-				} else {
-					handler.handle(new Either.Left<String, JsonObject>("template.error"));
-				}
+		smsSender.send(request, phone, template, params, module)
+		.onSuccess(e -> {
+			final boolean succeeded = e.getValidReceivers() != null && e.getValidReceivers().length == 1;
+			if(succeeded) {
+				handler.handle(new Either.Right<>(new JsonObject().put("success", true)));
+			} else {
+				handler.handle(new Either.Left<>("ko"));
 			}
+		})
+		.onFailure(th -> {
+			handler.handle(new Either.Left<>(th.getMessage()));
 		});
 	}
 
@@ -612,7 +600,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			.put("resetUri", resetCode)
 			.put("displayName", displayName);
 
-		sendSms(request, phone, "phone/forgotPassword.txt", params, handler);
+		sendSms(request, phone, "phone/forgotPassword.txt", params, "RESETPWD", handler);
 	}
 
 	@Override
@@ -621,7 +609,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			.put("login", login);
 		log.info("Sending forgotId by sms: "+login+"/"+phone);
 
-		sendSms(request, phone, "phone/forgotId.txt", params, handler);
+		sendSms(request, phone, "phone/forgotId.txt", params, "FORGOTID", handler);
 	}
 
 	@Override

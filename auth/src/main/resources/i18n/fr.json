@@ -13,6 +13,7 @@
     "auth.activation.password": "Nouveau mot de passe",
     "auth.activation.title": "Activation de votre compte",
     "auth.cancel": "Retour",
+    "auth.charter": "/assets/cgu/Edifice_Charte_d_utilisation.pdf",
     "auth.close": "Fermer",
     "auth.email": "Identifiant",
     "auth.mail": "Courriel",

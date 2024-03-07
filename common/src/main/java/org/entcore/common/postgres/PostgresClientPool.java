@@ -138,36 +138,54 @@ public class PostgresClientPool implements IPostgresClient {
                         future.complete(new RowStream<Row>() {
                             private boolean closed = false;
                             private void closeIfNeeded(){
-                                if(!closed){
-                                    transaction.rollback();
+                                if(closed) {
+                                    log.debug("[PostgresClientPool@queryStream] Transaction already closed");
+                                } else {
+                                    log.debug("[PostgresClientPool@queryStream] Closing transaction...");
+                                    transaction.rollback(e -> {
+                                        if(e.succeeded()) {
+                                            log.debug("[PostgresClientPool@queryStream] ... transaction closed !");
+                                        } else {
+                                            log.error("[PostgresClientPool@queryStream] ... could not close transaction", e.cause());
+                                        }
+                                    });
                                 }
                                 closed = true;
                             }
                             @Override
                             public RowStream<Row> exceptionHandler(Handler<Throwable> handler) {
-                                closeIfNeeded();
-                                return stream.exceptionHandler(handler);
+                                stream.exceptionHandler(e -> {
+                                    closeIfNeeded();
+                                    handler.handle(e);
+                                });
+                                return this;
                             }
 
                             @Override
                             public RowStream<Row> handler(Handler<Row> handler) {
-                                return stream.handler(handler);
+                                stream.handler(handler);
+                                return this;
                             }
 
                             @Override
                             public RowStream<Row> pause() {
-                                return stream.pause();
+                                stream.pause();
+                                return this;
                             }
 
                             @Override
                             public RowStream<Row> resume() {
-                                return stream.resume();
+                                stream.resume();
+                                return this;
                             }
 
                             @Override
                             public RowStream<Row> endHandler(Handler<Void> endHandler) {
-                                closeIfNeeded();
-                                return stream.endHandler(endHandler);
+                                stream.endHandler(e -> {
+                                    closeIfNeeded();
+                                    endHandler.handle(e);
+                                });
+                                return this;
                             }
 
                             @Override

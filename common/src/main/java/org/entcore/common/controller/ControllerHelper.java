@@ -27,9 +27,13 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.json.JsonArray;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
+import org.entcore.common.share.ShareModel;
+import org.entcore.common.share.ShareNormalizer;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.Shareable;
 import org.entcore.common.user.UserInfos;
@@ -42,6 +46,8 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
@@ -78,7 +84,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 							public void handle(Boolean event) {
 								if (Boolean.TRUE.equals(event)) {
 									shareService.shareInfos(user.getUserId(), id,
-											I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
+											I18n.acceptLanguage(request), request.params().get("search"), addNormalizedRights(defaultResponseHandler(request)));
 								} else {
 									unauthorized(request);
 								}
@@ -86,13 +92,98 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						});
 					} else {
 						shareService.shareInfos(user.getUserId(), id,
-								I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
+								I18n.acceptLanguage(request), request.params().get("search"), addNormalizedRights(defaultResponseHandler(request)));
 					}
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	/**
+	 * Add normalized rights to JsonObject
+	 *
+	 * @param json a JsonObject containings "shared" or detailed shared {users:{checked:{}}, groups:{checked:{}}}
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
+	protected JsonObject addNormalizedRights(final JsonObject json) {
+		if(!shouldNormalizedRights()){
+			return json;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(json, jsonToOwnerId());
+	}
+
+	/**
+	 * Add normalized rights to JsonArray
+	 *
+	 * @param jsonArray an array of JsonObject
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
+	protected JsonArray addNormalizedRights(final JsonArray jsonArray){
+		if(!shouldNormalizedRights()){
+			return jsonArray;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(jsonArray, jsonToOwnerId());
+	}
+
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param handler Handler<Either<String,JsonArray | JsonObject>> OR Handler<AsyncResult<JsonArray | JsonObject>>
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
+	protected <T> Handler<T>addNormalizedRights(final Handler<T> handler){
+		if(!shouldNormalizedRights()){
+			return handler;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(handler, jsonToOwnerId());
+	}
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param either Either of a JsonArray OR JsonObject
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
+	protected <T> Either<String, T> addNormalizedRights(final Either<String, T> either){
+		if(!shouldNormalizedRights()){
+			return either;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(either, jsonToOwnerId());
+	}
+
+	/**
+	 * Add normalized rights to JsonArray/JsonObject
+	 *
+	 * @param asyncResult AsyncResult of a JsonArray OR JsonObject
+	 * @return the same JsonArray or JsonObject with the new field "rights" added to each object
+	 */
+	protected <T> AsyncResult<T> addNormalizedRights(final AsyncResult<T> asyncResult){
+		if(!shouldNormalizedRights()){
+			return asyncResult;
+		}
+		return new ShareNormalizer(this.securedActions).addNormalizedRights(asyncResult, jsonToOwnerId());
+	}
+
+	/**
+	 * Wether to enable or not normalized rights. If enabled, the controller will add a field "rights" containing normalized rights into json responses
+	 *
+	 * @return true if normalized rights is enabled
+	 */
+	protected boolean shouldNormalizedRights(){
+		return false;
+	}
+
+	/**
+	 * This method is used by ShareNormalizer to extract the ownerId of a JsonObject.
+	 * Normalized rights contains the special rights: "creator:USER_ID"
+	 *
+	 * <b>If the controller enable normalized rights, this method should be overriden!</b>
+	 *
+	 * @return a Function that take the jsonObject model and return the ownerId as Optional. If the ownerId could not be extracted it returns Optional.empty
+	 */
+	protected Function<JsonObject, Optional<String>> jsonToOwnerId(){
+		throw new NotImplementedException("implement.this.function");
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName) {
@@ -158,7 +249,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 								notifyShare(request, eb, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
 							}
-							renderJson(request, event.right().getValue());
+							renderJson(request, addNormalizedRights(event.right().getValue()));
 						} else {
 							JsonObject error = new JsonObject()
 									.put("error", event.left().getValue());
@@ -305,7 +396,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						@Override
 						public void handle(JsonObject object) {
 							crudService.create(object, user, r -> {
-								notEmptyResponseHandler(request).handle(r);
+								notEmptyResponseHandler(request).handle(addNormalizedRights(r));
 								if (r.isLeft()) {
 									handler.handle(new DefaultAsyncResult<>(new Exception(r.left().getValue())));
 								} else {
@@ -328,7 +419,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 			@Override
 			public void handle(final UserInfos user) {
 				String id = request.params().get("id");
-				crudService.retrieve(id, user, notEmptyResponseHandler(request));
+				crudService.retrieve(id, user, addNormalizedRights(notEmptyResponseHandler(request)));
 			}
 		});
 	}
@@ -342,7 +433,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						@Override
 						public void handle(JsonObject object) {
 							String id = request.params().get("id");
-							crudService.update(id, object, user, notEmptyResponseHandler(request));
+							crudService.update(id, object, user, addNormalizedRights(notEmptyResponseHandler(request)));
 						}
 					});
 				} else {
@@ -384,7 +475,7 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 						}
 					}
 				}
-				crudService.list(v, user, arrayResponseHandler(request));
+				crudService.list(v, user, addNormalizedRights(arrayResponseHandler(request)));
 			}
 		});
 	}

@@ -609,7 +609,7 @@
   "group.details.members.can.communicate": "Les membres du groupe <b>peuvent</b> communiquer entre eux",
   "group.details.members.cannot.communicate": "Les membres du groupe <b>ne peuvent pas</b> communiquer entre eux",
   "group.details.broadcast-group.never.communicate": "Les membres d'une liste de diffusion <b>ne peuvent pas</b> communiquer entre eux",
-  "group.details.broadcast.autoLink.mainSection.title": "Modifier les paramètres de chargement de la liste",
+  "group.details.broadcast.autoLink.mainSection.title": "Voir les paramètres de la liste",
   "group.details.broadcast.autoLink.structuresSection.title": "Sélection des structures",
   "group.details.broadcast.autoLink.structuresSection.includeSubStructuresLabel": "Inclure toutes les sous-structures",
   "group.details.broadcast.autoLink.structuresSection.pickStructuresLabel": "Sélectionner des structures",
@@ -1540,6 +1540,7 @@
   "rss-widget": "RSS",
   "bookmark-widget": "Signets",
   "dicodelazone-widget": "Dico de la zone",
+  "edumalin-widget": "Édumalin",
 
   "panel.motto": "Devise",
   "non-existent.user.motto": "Aucune devise définie pour ce compte",

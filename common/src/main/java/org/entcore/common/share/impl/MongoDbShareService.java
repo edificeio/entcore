@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.mongodb.ReadPreference;
 import org.entcore.common.share.ShareInfosQuery;
 
 import com.mongodb.QueryBuilder;
@@ -241,7 +242,8 @@ public class MongoDbShareService extends GenericShareService {
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
-		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEVent -> {
+		// read from primary to avoid mongo lag on cluster
+		mongo.findOne(collection, MongoQueryBuilder.build(query), keys,null,null, ReadPreference.primary(), mongoEVent -> {
 			if ("ok".equals(mongoEVent.body().getString("status"))) {
 				final JsonObject res = mongoEVent.body().getJsonObject("result", new JsonObject());
 				final JsonArray shared = res.getJsonArray("shared", new JsonArray());

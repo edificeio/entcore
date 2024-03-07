@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { $, angular, idiom as lang, model, moment, ng, notify, template, ui } from 'entcore';
+import { $, angular, http, idiom as lang, model, moment, ng, notify, template, ui } from 'entcore';
 import { directory } from '../model';
 
 export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', '$location', ($scope, $window, route, $location) => {
@@ -1034,4 +1034,28 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			}
 		} 
 	}
+
+	// This function is used to verify if the user has the right to use the Wordline email provider
+	$scope.hasWorkflowOptionalFeatureWriteToEmailProviderWordline = function() {
+		return model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|optionalFeatureWriteToEmailProviderWordline');
+	}
+	
+	//TODO USE THIS FUNCTION TO CHANGE ZIMBRA EMAIL PROVIDER METHOD
+	// This function is used to get the redirect url to the email provider
+	// endPoint : the endPoint of the email provider
+	// profileType : the type of the profile (user, group)
+	$scope.prepareEmailProviderUrl = function(endPoint, profileType) {
+		var urlContent = "";
+
+		if(profileType === "user"){
+			urlContent = `id=${this.currentUser.id}&login=${this.currentUser.login}&type=user`
+		} else if(profileType === "group"){
+			urlContent = `id=${this.currentGroup.id}&type=group`
+		}
+
+		http().get(`/optionalFeature/writeToEmailProvider/${endPoint}?${urlContent}`
+		).done(response =>
+			window.open(response.url, "_self"));
+	}
+
 }]);

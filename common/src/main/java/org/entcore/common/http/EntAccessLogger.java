@@ -20,6 +20,7 @@
 package org.entcore.common.http;
 
 import fr.wseduc.webutils.request.AccessLogger;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -41,7 +42,14 @@ public class EntAccessLogger extends AccessLogger {
 			@Override
 			public void handle(JsonObject session) {
 				if (session != null) {
-					log.trace(formatLog(request) + " - " + session.getString("userId"));
+					final SecureHttpServerRequest secureRequest;
+					if(request instanceof SecureHttpServerRequest) {
+						secureRequest = (SecureHttpServerRequest) request;
+					} else {
+						secureRequest = new SecureHttpServerRequest(request);
+						secureRequest.setSession(session);
+					}
+					log.trace(formatLog(secureRequest) + " - " + session.getString("userId"));
 				} else {
 					log.trace(formatLog(request));
 				}

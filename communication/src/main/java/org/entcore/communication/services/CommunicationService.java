@@ -133,4 +133,17 @@ public interface CommunicationService {
 	void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
 	
 	void removeRelations(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
+
+	/**
+	 * Indicates if a sender (user) can communicate to a receiver (user or group) on using
+	 * Returns JsonObject :
+	 * {
+	 * canCommunicate : true/false
+	 * }
+	 *
+	 * @param senderId    id of the sender
+	 * @param recipientId id of the recipient
+	 * @param handler     final handler
+	 */
+	void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
 }

@@ -20,6 +20,8 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -36,10 +38,36 @@ public class AddFunctionFilter extends AdmlOfUser {
 			@Override
 			public void handle(JsonObject event) {
 				String function = event.getString("functionCode", "").trim();
-				handler.handle(!function.isEmpty() && !"SUPER_ADMIN".equals(function));
+				if(!function.isEmpty() && !"SUPER_ADMIN".equals(function)) {
+					checkScope(event, adminLocal)
+							.onSuccess(handler)
+							.onFailure(th -> handler.handle(false));
+				} else {
+					handler.handle(false);
+				}
 			}
 		});
 		resourceRequest.resume();
+	}
+
+	/**
+	 * Method checking that current user is central admin, or local admin on requested structures scope
+	 * @param requestBody the request body
+	 * @param adminUserFunction the function of the admin user currently granting rights
+	 * @return True if
+	 *   - current user granting requested rights is central admin, or
+	 *   - the requested structures scope matches the local admin structures scope
+	 * False otherwise
+	 */
+	private Future<Boolean> checkScope(JsonObject requestBody, UserInfos.Function adminUserFunction) {
+		final Promise<Boolean> promise = Promise.promise();
+		if ("SUPER_ADMIN".equals(adminUserFunction.getCode())) {
+			promise.complete(true);
+		} else {
+			promise.complete(requestBody.getJsonArray("scope").stream()
+					.allMatch(requestedStructure -> adminUserFunction.getScope().contains((String)requestedStructure)));
+		}
+		return promise.future();
 	}
 
 }

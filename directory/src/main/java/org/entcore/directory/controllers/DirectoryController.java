@@ -544,7 +544,8 @@ public class DirectoryController extends BaseController {
 				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
 				break;
 			case "getUser" :
-				userService.get(userId, false, false, BusResponseHandler.busResponseHandler(message));
+				boolean withClasses = message.body().getBoolean("withClasses", false);
+				userService.get(userId, false, false, withClasses, BusResponseHandler.busResponseHandler(message));
 				break;
 			case "getUserGoups" :
 				userService.getGroups(userId, BusResponseHandler.busArrayHandler(message));

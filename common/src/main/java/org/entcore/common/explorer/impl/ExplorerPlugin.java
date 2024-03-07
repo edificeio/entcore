@@ -17,6 +17,9 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerFolderTree;
@@ -46,6 +49,7 @@ import java.util.stream.Collectors;
 public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
     public static final String FOLDERS_ADDRESS = "explorer.folders";
+    public static final String INGEST_JOB_STATE = "ingest_job_state";
     public enum ResourceActions{
         GetShares,
     }
@@ -267,13 +271,15 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     protected void onReindexAction(final Message<JsonObject> message, final ExplorerReindexResourcesRequest request){
         final long now = currentTimeMillis();
         final Set<String> apps = request.getApps();
-        if(apps !=  null && !apps.isEmpty() && !apps.contains(getApplication())){
+        if(isNotEmpty(apps) && !(apps.contains(getApplication()) || apps.contains("all"))){
             log.info(String.format("Skip indexation for app=%s filter=%s", getApplication(), apps));
             reply(message, new ExplorerReindexResourcesResponse(0, 0, emptyMap()));
             return;
         }
         log.info(String.format("Starting indexation for app=%s type=%s %s",getApplication(), getResourceType(), request));
         final JsonObject metrics = new JsonObject();
+        // each missing id in DB should be deleted from opensearch
+        final Set<String> toDelete = request.getIds() == null? new HashSet<>() : new HashSet<>(request.getIds());
         final ExplorerStream<JsonObject> stream = new ExplorerStream<>(reindexBatchSize, bulk -> {
             // TODO JBE missing saving state and version here
             for (JsonObject entry : bulk) {
@@ -281,6 +287,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
             }
             return toMessage(bulk, e -> {
                 final String id = getIdForModel(e);
+                // id is in DB => should not delete it from OpenSearch
+                toDelete.remove(id);
                 final UserInfos user = getCreatorForModel(e).orElseGet(() -> {
                     log.error("Could not found creator for "+getApplication()+ " with id : "+id);
                     return new UserInfos();
@@ -298,6 +306,17 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
         doFetchForIndex(stream, request);
         stream.getEndFuture().onComplete(root->{
             if(root.succeeded()){
+                // each id not in DB should be deleted from OpenSearch
+                if(!toDelete.isEmpty()){
+                    log.warn(String.format("Cleaning %s id missing in DB for app=%s type=%s", toDelete.size(), getApplication(), getResourceType()));
+                }
+                for(final String id : toDelete){
+                    final UserInfos user = new UserInfos();
+                    user.setUserId("explorer-plugin-cleaner");
+                    user.setUsername("explorer-plugin-cleaner");
+                    final ExplorerMessage mess = ExplorerMessage.delete(new IdAndVersion(id, now), user, isForSearch());
+                    mess.withVersion(now);
+                }
                 //reindex subresources
                 final List<Future> futures = new ArrayList<>();
                 for(final IExplorerSubResource sub : this.subResources){

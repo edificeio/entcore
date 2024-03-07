@@ -18,12 +18,14 @@ public class ExplorerPluginClientDefault extends ExplorerPluginClient {
     private final Optional<String> resourceType;
 
     public ExplorerPluginClientDefault(final Vertx vertx, final String application) {
+        super(vertx);
         this.vertx = vertx;
         this.application = application;
         this.resourceType = Optional.empty();
     }
 
     public ExplorerPluginClientDefault(final Vertx vertx, final String application, final String resourceType) {
+        super(vertx);
         this.vertx = vertx;
         this.application = application;
         this.resourceType = Optional.ofNullable(resourceType);

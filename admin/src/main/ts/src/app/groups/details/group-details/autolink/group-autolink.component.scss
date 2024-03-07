@@ -9,3 +9,9 @@
     cursor: pointer;
     color: dodgerblue;
 }
+
+.readonly-form {
+    input, label, ode-item-tree {
+        pointer-events: none;
+    }
+}

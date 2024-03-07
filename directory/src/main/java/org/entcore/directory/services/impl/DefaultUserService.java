@@ -49,6 +49,7 @@ import org.entcore.directory.services.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -252,45 +253,29 @@ public class DefaultUserService implements UserService {
 				.map(JsonObject.class::cast)
 				.forEach(structureNode -> mapExternalIdWithUai.put(structureNode.getString("externalId"), structureNode.getString("UAI")));
 
-			// Format structures
-			JsonArray structures = new JsonArray();
-			userInfos.getJsonObject("functions").getMap().values().stream()
-				.filter(Objects::nonNull)
-				.map(JsonObject.class::cast)
-				.forEach(function -> function.getJsonArray("structureExternalIds").stream()
-					.distinct()
-					.forEach(externalId -> {
-						String uai = mapExternalIdWithUai.get(externalId);
-						JsonObject matchingStructure = structures.stream()
-							.map(JsonObject.class::cast)
-							.filter(structure -> structure.getString("UAI").equals(uai))
-							.findFirst()
-							.orElse(null);
+            JsonArray structures = new JsonArray();
 
-						// If structure already exist we only add new function
-						if (matchingStructure != null) {
-							JsonArray functions = matchingStructure.getJsonArray("functions").add(function.getString("functionName"));
-							matchingStructure.put("functions", functions);
-						}
-						// Else we create it
-						else {
-							JsonObject structure = new JsonObject()
-								.put("UAI", uai)
-								.put("functions", new JsonArray().add(function.getString("functionName")));
-							structures.add(structure);
-						}
-					})
-				);
+            mapExternalIdWithUai.forEach( (externalId,uai) -> {
+                JsonObject structure = new JsonObject()
+                        .put("UAI", uai)
+                        .put("functions", new JsonArray());
+				//iterate over all user functions
+				userInfos.getJsonObject("functions").getMap().values().stream()
+						.filter(Objects::nonNull)
+						.map(JsonObject.class::cast)
+						.filter(function -> function.getJsonArray("structureExternalIds").contains(externalId)) //Filter functions on externalIds
+						.forEach(function -> function.getJsonObject("subjects").getMap().values().stream()
+                            .map(JsonObject.class::cast)
+                            .forEach(subject -> {
+                                String functionName = function.getString("functionName");
+                                String subjectName = subject.getString("subjectName");
+                                structure.getJsonArray("functions").add(functionName + " / " + subjectName);
+                            }));
+				structures.add(structure);
+            });
 
-			// Format functions
-			for (Object oStruct : structures) {
-				JsonObject structure = (JsonObject)oStruct;
-				JsonArray functions = structure.getJsonArray("functions");
-				if (functions.size() == 0) structure.put("functions", "");
-				else if (functions.size() == 1) structure.put("functions", functions.getString(0));
-			}
 
-			// Fill finalResult with expected data
+            // Fill finalResult with expected data
 			finalResult.put("id", userInfos.getString("id"));
 			finalResult.put("lastName", userInfos.getString("lastName"));
 			finalResult.put("firstName", userInfos.getString("firstName"));
@@ -303,12 +288,31 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
-		get(id, getManualGroups, new JsonArray(), filterNullReturn, result);
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, filterAttributes, filterNullReturn, false, result);
 	}
 
 	@Override
-	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn,
+	public void get(String id, boolean getManualGroups, boolean filterNullReturn, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), filterNullReturn, false, result);
+	}
+
+	@Override
+	public void get(String id, boolean getManualGroups, boolean filterNullReturn, boolean withClasses, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), filterNullReturn, withClasses, result);
+	}
+
+	/**
+	 * This method is used to get user 
+	 * @param id : user id
+	 * @param getManualGroups : if true, add manualGroups to result
+	 * @param filterAttributes : attributes to filter in result
+	 * @param filterNullReturn : if true, filter null attributes in result
+	 * @param withClasses : if true, add classes2D to result, else not, classes2D is a re-construction of classes with subject to make all classes uniform using a precise format : structure.externalId$class.name 
+	 * 
+	*/
+	@Override
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, boolean withClasses,
 					Handler<Either<String, JsonObject>> result) {
 
 		String getMgroups = "";
@@ -327,6 +331,11 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				getMgroups;
+
+		if(withClasses) {
+			query += "OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) WHERE u.classes IS NOT NULL ";
+		}
+		
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
 					"filter(x IN functions WHERE filter(y IN x WHERE y IS NOT NULL)) as functions, u.functions as aafFunctions," +
@@ -344,8 +353,13 @@ public class DefaultUserService implements UserService {
 					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
 		}
 
+		if(withClasses) {
+			query += "CASE WHEN c IS NULL THEN [] ELSE COLLECT(s.externalId + '$' + c.name) END as classes2D, ";
+		}
+
 		query += resultMgroups +
 				"u";
+
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
 			if (event.isRight()) {
 				final JsonObject r = event.right().getValue();
