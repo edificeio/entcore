@@ -1051,6 +1051,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			urlContent = `id=${this.currentUser.id}&login=${this.currentUser.login}&type=user`
 		} else if(profileType === "group"){
 			urlContent = `id=${this.currentGroup.id}&type=group`
+		} else if (profileType === "shareBookmark") {
+			urlContent = `id=${this.currentFavorite.id}&type=shareBookmark`
 		}
 
 		http().get(`/optionalFeature/writeToEmailProvider/${endPoint}?${urlContent}`
