@@ -40,10 +40,6 @@ public class AwsUtils {
         }
     }
 
-    public static void signBodyString(HttpClientRequest request, String accessKey, String secretKey, String region, String bodyString) throws SignatureException {
-        sign(request, accessKey, secretKey, region, getDigest(bodyString.getBytes()));
-    }
-
     public static String getDigest(Buffer buffer) {
         return getDigest(buffer.getBytes());
     }
