@@ -113,7 +113,7 @@ public class MultipartUpload {
             }
         });
 
-        if (!sign(req)) {
+        if (!sign(req, null)) {
             handler.handle(null);
             return;
         }
@@ -184,7 +184,7 @@ public class MultipartUpload {
             }
         });
 
-        if (!sign(req, chunk.getBuffer())) {
+        if (!sign(req, AwsUtils.getDigest(chunk.getBuffer()))) {
             handler.handle(null);
             return;
         }
@@ -217,7 +217,7 @@ public class MultipartUpload {
             return;
         }
 
-        if (!signBodyString(req, body)) {
+        if (!sign(req, AwsUtils.getDigest(body.getBytes()))) {
             handler.handle(null);
             return;
         }
@@ -227,19 +227,10 @@ public class MultipartUpload {
     protected void cancel(final String id, final String uploadId) {
         HttpClientRequest req = httpClient.delete("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> {});
         
-        if (!sign(req)) {
+        if (!sign(req, null)) {
             return;
         }
         req.end();
-    }
-
-    protected boolean sign(HttpClientRequest req) {
-        return sign(req, "");
-    }
-
-    protected boolean sign(HttpClientRequest req, Buffer buffer) {
-        return sign(req, AwsUtils.getDigest(buffer));
-
     }
 
     protected boolean sign(HttpClientRequest req, String hash) {
@@ -255,10 +246,6 @@ public class MultipartUpload {
         }
 
         return true;
-    }
-
-    protected boolean signBodyString(HttpClientRequest req, String body) {
-        return sign(req, AwsUtils.getDigest(body.getBytes()));
     }
 
 }
