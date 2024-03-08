@@ -26,15 +26,12 @@ import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
 import org.apache.james.mime4j.codec.EncoderUtil;
 
-import io.netty.handler.codec.http.HttpRequest;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.Pipe;
 import io.vertx.core.streams.Pump;
 
 import java.io.File;
@@ -43,8 +40,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -506,120 +501,9 @@ public class S3Client {
 			return;
 		}
 
-		vertx.fileSystem().open(path, new OpenOptions(), asyncFileAsyncResult -> {
-				if (asyncFileAsyncResult.succeeded()) {
-
-					final HttpClientRequest req_init = httpClient.post("/" + bucket + "/" + id + "?uploads", response_init -> {
-						System.out.println("Test...");
-						
-						if (response_init.statusCode() == 200) {
-							handler.handle(
-								new JsonObject()
-									.put("_id", id)
-									.put("status", "ok")
-							);
-						} else {
-							handler.handle(new JsonObject().put("status", "error"));
-						}
-					});
-
-					if (req_init == null) {
-						handler.handle(
-							new JsonObject()
-								.put("status", "error")
-								.put("message", "Request is null")
-						);
-						return;
-					}
-			
-					req_init.setHost(host);
-					try {
-						AwsUtils.sign(req_init, accessKey, secretKey, region);
-					} catch (SignatureException e) {
-						log.error("writeFromFileSystem/init signature failed", e);
-						return;
-					}
-
-					req_init.end();
-					
-
-					// final HttpClientRequest req = httpClient.put(
-					// 		"/" + container + "/" + id,
-					// 		response -> {
-					// 			if (response.statusCode() == 200) {
-					// 				handler.handle(new JsonObject().put("_id", id)
-					// 						.put("status", "ok"));
-					// 			} else {
-					// 				handler.handle(new JsonObject().put("status", "error"));
-					// 			}
-					// 		}
-					// 	);
-					
-					// if (req == null) {
-					// 	handler.handle(
-					// 		new JsonObject()
-					// 			.put("status", "error")
-					// 			.put("message", "Request is null")
-					// 	);
-					// 	return;
-					// }
-			
-					// req.setHost(host);
-
-					// AsyncFile asyncFile = asyncFileAsyncResult.result();
-
-					// Chunk chunk = new Chunk();
-
-					// asyncFile.handler(buff -> {
-					// 	if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-					// 		asyncFile.pause();
-					// 		chunk.appendBuffer(buff);
-
-					// 		// TODO: s3 call upload part
-					// 			chunk.nextChunk();
-					// 			asyncFile.resume();
-					// 	}
-					// });
-
-					// asyncFile.endHandler(ar -> {
-					// 	if (chunk.getChunkSize() > 0) {
-					// 		// TODO: s3 call upload part
-					// 			// TODO: s3 call complete
-					// 	} else {
-					// 		// TODO: s3 call complete
-					// 	}
-					// });
-
-
-					// // Buffer buffer = Buffer.buffer();
-					// // asyncFile.handler(buffer::appendBuffer);
-
-					// // try {
-					// // 	AwsUtils.sign(req, accessKey, secretKey, region, buffer);
-					// // } catch (SignatureException e) {
-					// // 	log.error("writeFromFileSystem signature failed", e);
-					// // 	return;
-					// // }
-
-					// req.setChunked(true);
-
-					// Pump p = Pump.pump(asyncFile, req);
-					// asyncFile.endHandler(aVoid -> {
-
-					// 	// try {
-					// 	// 	AwsUtils.sign(req, accessKey, secretKey, region, buffer);
-					// 	// } catch (SignatureException e) {
-					// 	// 	log.error("writeFromFileSystem signature failed", e);
-					// 	// 	return;
-					// 	// }
-
-					// 	req.end();
-					// });
-					// p.start();
-				} else {
-					handler.handle(new JsonObject().put("status", "error")
-							.put("message", asyncFileAsyncResult.cause().getMessage()));
-				}
+		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
+		multipartUpload.upload(path, id, result -> {
+			handler.handle(new JsonObject().put("status", "ok"));
 		});
 	}
 
