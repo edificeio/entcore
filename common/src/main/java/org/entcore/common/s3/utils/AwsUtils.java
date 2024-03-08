@@ -27,22 +27,7 @@ public class AwsUtils {
     }
 
     public static void sign(HttpClientRequest request, String accessKey, String secretKey, String region, Buffer buffer) throws SignatureException {
-        MessageDigest md;
-		try {
-        	md = MessageDigest.getInstance("SHA-256");
-		}
-		catch (NoSuchAlgorithmException e) {
-			log.error(e.getMessage(), e);
-			return;
-		}
-		md.update(buffer.getBytes());
-
-        StringBuilder hexHash = new StringBuilder();
-        for (byte _byte: md.digest()) hexHash.append(Integer.toString((_byte & 0xff) + 0x100, 16).substring(1));
-        
-        long size = buffer.getBytes().length;
-
-        sign(request, accessKey, secretKey, region, hexHash.toString());
+        sign(request, accessKey, secretKey, region, getDigest(buffer));
     }
 
     public static void sign(HttpClientRequest request, String accessKey, String secretKey, String region, String hash) throws SignatureException {
@@ -53,6 +38,31 @@ public class AwsUtils {
         } catch (InvalidKeyException | NoSuchAlgorithmException | IllegalStateException | UnsupportedEncodingException e) {
             throw new SignatureException(e.getMessage());
         }
+    }
+
+    public static void signBodyString(HttpClientRequest request, String accessKey, String secretKey, String region, String bodyString) throws SignatureException {
+        sign(request, accessKey, secretKey, region, getDigest(bodyString.getBytes()));
+    }
+
+    public static String getDigest(Buffer buffer) {
+        return getDigest(buffer.getBytes());
+    }
+
+    public static String getDigest(byte[] bytes) {
+        MessageDigest md;
+		try {
+        	md = MessageDigest.getInstance("SHA-256");
+		}
+		catch (NoSuchAlgorithmException e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+		md.update(bytes);
+
+        StringBuilder hexHash = new StringBuilder();
+        for (byte _byte: md.digest()) hexHash.append(Integer.toString((_byte & 0xff) + 0x100, 16).substring(1));
+
+        return hexHash.toString();
     }
 
 }
