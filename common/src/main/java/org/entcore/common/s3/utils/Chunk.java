@@ -4,22 +4,22 @@ import io.vertx.core.buffer.Buffer;
 
 public class Chunk {
 
-    private static final int DEFAULT_MAX_SIZE = 30 * 1024 * 1024; // 30Mo
+    private static final long DEFAULT_MAX_SIZE = 30 * 1024 * 1024; // 30Mo
 
-    private int maxSize;
+    private long maxSize;
 
     private Buffer buffer;
 
     private int chunkNumber;
 
-    private int chunkSize;
+    private long chunkSize;
 
     public Chunk() {
         // TODO: get maxSize config
         this(DEFAULT_MAX_SIZE);
     }
 
-    public Chunk(int maxSize) {
+    public Chunk(long maxSize) {
         this.maxSize = maxSize;
 
         this.buffer = Buffer.buffer();
@@ -27,7 +27,7 @@ public class Chunk {
         this.chunkSize = 0;
     }
 
-    public int getMaxSize() {
+    public long getMaxSize() {
         return maxSize;
     }
 
@@ -39,7 +39,7 @@ public class Chunk {
         return chunkNumber;
     }
 
-    public int getChunkSize() {
+    public long getChunkSize() {
         return chunkSize;
     }
 
@@ -53,8 +53,5 @@ public class Chunk {
         chunkNumber++;
         chunkSize = 0;
     }
-
-
-
     
 }
