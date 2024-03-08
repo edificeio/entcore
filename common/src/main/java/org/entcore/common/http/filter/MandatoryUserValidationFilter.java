@@ -24,6 +24,8 @@ import static org.entcore.common.datavalidation.UserValidationService.FIELD_NEED
 import static org.entcore.common.datavalidation.UserValidationService.FIELD_MUST_VALIDATE_TERMS;
 
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -36,7 +38,7 @@ import java.util.regex.Matcher;
 public class MandatoryUserValidationFilter implements Filter {
     private final EventBus eventBus;
     private Set<Binding> bindings;
-    
+    private final static List<String> ignoreFilterByAuthorization = Arrays.asList("Basic", "Bearer");
     private final static int    TERMS_OF_USE_IDX  = 0;
     private final static int    EMAIL_ADDRESS_IDX = 1;
     private final static int    MOBILE_PHONE_IDX  = 2;
@@ -114,6 +116,10 @@ public class MandatoryUserValidationFilter implements Filter {
                 final SecureHttpServerRequest sreq = (SecureHttpServerRequest) request;
                 // Chained mandatory validations for connected users.
                 // A failure will deny the filter and then cause a redirection.
+                if (ignoreFilterByAuthorization.contains(sreq.getAttribute("authorization_type"))) {
+                    handler.handle(true);
+                    return;
+                }
                 request.pause();
                 UserValidation.getMandatoryUserValidation(this.eventBus, session)
                 .compose( validations -> {
