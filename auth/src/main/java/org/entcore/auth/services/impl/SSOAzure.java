@@ -19,6 +19,7 @@
 
 package org.entcore.auth.services.impl;
 
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -317,6 +318,14 @@ public class SSOAzure extends AbstractSSOProvider {
 				.put("data", user);
 		eb.request(FEEDER, action, res2 -> {
 			if (res2.succeeded() && "ok".equals(((JsonObject) res2.result().body()).getString("status"))) {
+				final JsonObject r = ((JsonObject) res2.result().body()).getJsonArray("result", new JsonArray()).getJsonObject(0);
+				final JsonArray a = new JsonArray().add(r.getString("id"));
+				ApplicationUtils.sendModifiedUserGroup(eb, a, ar -> {
+					JsonObject j = new JsonObject()
+							.put("action", "setDefaultCommunicationRules")
+							.put("schoolId", structure.getString("structureId"));
+					eb.send("wse.communication", j);
+				});
 				handler.handle(Future.succeededFuture());
 			} else {
 				handler.handle(Future.failedFuture("Error when manual-create-user sso : " +
