@@ -1,0 +1,20 @@
+.action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.gar {
+  > form > .gar-bloc {
+    height: 20%;
+    > div {
+      width: 70%;
+    }
+  }
+
+  ode-lightbox-confirm ul {
+    list-style: inside;
+  }
+  ode-lightbox ul {
+    list-style: inside;
+  }
+}

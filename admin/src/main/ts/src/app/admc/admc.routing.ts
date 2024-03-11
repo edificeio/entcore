@@ -23,6 +23,10 @@ export let routes: Routes = [
                 path: 'apps', 
                 loadChildren: () => import('./apps/admc-apps.module').then(m => m.AdmcAppsModule)
             },
+            {
+                path: 'misc',
+                loadChildren: () => import('./misc/admc-misc.module').then(m => m.AdmcMiscModule)
+            },
         ]
     }
 ];

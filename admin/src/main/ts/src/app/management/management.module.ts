@@ -40,6 +40,7 @@ import {CalendarService} from './calendar/calendar.service';
 import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
+import {StructureGarComponent} from './structure-gar/structure-gar.component';
 
 @NgModule({
     imports: [
@@ -85,7 +86,8 @@ import { StructureAttachmentComponent } from './structure-attachment/structure-a
         SubjectCreate,
         SubjectDetails,
         CalendarComponent,
-        StructureAttachmentComponent
+        StructureAttachmentComponent,
+        StructureGarComponent
 
     ],
     exports: [
