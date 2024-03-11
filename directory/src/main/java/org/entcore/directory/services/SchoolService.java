@@ -93,4 +93,8 @@ public interface SchoolService {
 	void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 									Handler<Either<String, JsonObject>> handler);
 
+	void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler);
+
+	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, Handler<Either<String, JsonObject>> handler);
+
 }

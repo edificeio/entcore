@@ -19,6 +19,7 @@ import {SubjectDetails} from './subjects/details/subject-details.component';
 import {ImportEdtGuardService} from './import-edt/import-edt-guard.service';
 import {CalendarGuardService} from './calendar/calendar-guard.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
+import {StructureGarComponent} from './structure-gar/structure-gar.component';
 
 export let routes: Routes = [
      {
@@ -100,6 +101,10 @@ export let routes: Routes = [
                         component: SubjectDetails
                     },
                 ]
+            },
+            {
+                path: 'gar',
+                component: StructureGarComponent
             }
         ]
      }
