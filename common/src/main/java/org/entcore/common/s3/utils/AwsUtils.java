@@ -9,7 +9,11 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.s3.exception.SignatureException;
 import org.entcore.common.s3.storage.StorageObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -61,4 +65,12 @@ public class AwsUtils {
         return hexHash.toString();
     }
 
+    public static String getContentType(String p) {
+		try {
+			Path source = Paths.get(p);
+			return Files.probeContentType(source);
+		} catch (IOException e) {
+			return "";
+		}
+	}
 }

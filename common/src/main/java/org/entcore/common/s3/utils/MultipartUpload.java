@@ -2,6 +2,7 @@ package org.entcore.common.s3.utils;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.james.mime4j.codec.EncoderUtil;
 import org.entcore.common.s3.dataclasses.CompleteMultipartUpload;
 import org.entcore.common.s3.dataclasses.CompletePart;
 import org.entcore.common.s3.dataclasses.InitiateMultipartUploadResult;
@@ -17,7 +19,6 @@ import org.entcore.common.s3.exception.SignatureException;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -47,7 +48,7 @@ public class MultipartUpload {
     }
 
     public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
-        init(id, uploadId -> {
+        init(id, Paths.get(filepath).getFileName().toString(), AwsUtils.getContentType(filepath), uploadId -> {
             if (uploadId == null) {
                 handler.handle(
                     new JsonObject()
@@ -83,7 +84,11 @@ public class MultipartUpload {
         });        
     }
 
-    protected void init(final String id, final Handler<String> handler) {
+    public void init(final String id, final Handler<String> handler) {
+        init(id, null, null, handler);
+    }
+
+    public void init(final String id, final String filename, final String contentType, final Handler<String> handler) {
         HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploads=", response -> {
             if (response.statusCode() == 200) {
                 response.bodyHandler(bodyBuffer -> {
@@ -112,6 +117,18 @@ public class MultipartUpload {
                 handler.handle(null);
             }
         });
+
+        if (filename != null) {
+            try {
+                req.putHeader("x-amz-meta-filename", EncoderUtil.encodeIfNecessary(filename, EncoderUtil.Usage.WORD_ENTITY, 0));
+            }
+            catch (IllegalArgumentException e) {
+                req.putHeader("x-amz-meta-filename", filename);
+            }
+        }
+        if (contentType != null) {
+            req.putHeader("Content-Type", contentType);
+        }
 
         if (!sign(req, null)) {
             handler.handle(null);
@@ -173,7 +190,7 @@ public class MultipartUpload {
         });
     }
 
-    protected void uploadPart(final String id, final String uploadId, final Chunk chunk, final Handler<String> handler) {
+    public void uploadPart(final String id, final String uploadId, final Chunk chunk, final Handler<String> handler) {
         HttpClientRequest req = httpClient.put("/" + bucket + "/" + id + "?partNumber=" + chunk.getChunkNumber() + "&uploadId=" + uploadId, response -> {
             if (response.statusCode() == 200) {
                 handler.handle(response.headers().get("ETag"));
@@ -191,7 +208,7 @@ public class MultipartUpload {
         req.end(chunk.getBuffer());
     }
 
-    protected void complete(final String id, final String uploadId, final List<String> eTags, final Handler<Boolean> handler) {
+    public void complete(final String id, final String uploadId, final List<String> eTags, final Handler<Boolean> handler) {
         HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> handler.handle(response.statusCode() == 200));
         
         CompleteMultipartUpload completeMultipartUpload = new CompleteMultipartUpload();
@@ -224,7 +241,7 @@ public class MultipartUpload {
         req.end(body);
     }
 
-    protected void cancel(final String id, final String uploadId) {
+    public void cancel(final String id, final String uploadId) {
         HttpClientRequest req = httpClient.delete("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> {});
         
         if (!sign(req, null)) {
