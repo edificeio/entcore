@@ -131,8 +131,7 @@ public class DefaultSchoolService implements SchoolService {
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
 				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.punctualTimetable AS punctualTimetable, " +
 				"s.hasApp as hasApp, s.ignoreMFA as ignoreMFA, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, " +
-				"s.feederName AS feederName, s.source AS source, s.exports as exports, " +
-				"s.feederName AS feederName, s.source AS source, s.joinKey AS joinKey, " +
+				"s.feederName AS feederName, s.source AS source, s.joinKey AS joinKey, s.exports as exports, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, result -> {
