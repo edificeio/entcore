@@ -1,0 +1,60 @@
+<div class="container has-shadow" *ngIf="isADMC == true">
+  <h2>
+    <s5l>management.structure.gar.title</s5l>
+  </h2>
+  <div *ngIf="structHasGAR == false">
+    <h3>
+      <s5l>management.structure.gar.inactive</s5l>
+    </h3>
+  </div>
+  <div *ngIf="structHasGAR == true">
+    <h3>
+      <s5l>management.structure.gar.active</s5l>
+    </h3>
+    <ode-form-field label="management.structure.gar.active.id">
+      <span>{{ garId }}</span>
+    </ode-form-field>
+    <ode-form-field label="management.structure.gar.active.label">
+      <span>{{ garLabel }}</span>
+    </ode-form-field>
+  </div>
+</div>
+<div class="container has-shadow gar" *ngIf="isADMC == true && structHasGAR == false">
+  <h2>
+    <s5l>management.structure.gar.deploy</s5l>
+  </h2>
+  <form #garForm="ngForm" (ngSubmit)="check()">
+    <div class="gar-bloc">
+      <h3>
+        <s5l>management.structure.gar.choice</s5l>
+      </h3>
+      <ode-mono-select
+              class="is-block"
+              [options]="garOptions"
+              [(ngModel)]="garSettings.garOptionSelected"
+              [translateOptions]="false"
+      ></ode-mono-select>
+    </div>
+    <div class="action">
+      <button class="active" [disabled]="!garSettings.canApplyGar()">
+        <s5l>confirm</s5l>
+      </button>
+    </div>
+  </form>
+  <ode-lightbox-confirm
+          [show]="showConfirmLightbox"
+          [lightboxTitle]="garSettings.lightboxTitle"
+          [disableConfirm]="!garSettings.lightboxCanValidate"
+          (onCancel)="closeLightbox()"
+          (onConfirm)="applyGar()"
+  >
+    <p>
+      {{ garSettings.lightboxMessage }}
+    </p>
+    <ul>
+      <li *ngFor="let struc of garSettings.lightboxList">
+        {{ struc }}
+      </li>
+    </ul>
+  </ode-lightbox-confirm>
+</div>

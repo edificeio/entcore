@@ -25,7 +25,8 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.calendar', view: 'calendar', active: 'calendar', right: "fr.openent.DisplayController|view"},
         { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra', right: "fr.openent.zimbra.controllers.ZimbraController|view"},
         { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects', right: "fr.openent.DisplayController|view"},
-        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" }
+        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" },
+        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'}
     ];
 
     private structure: StructureModel;
@@ -49,6 +50,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.subjectsTabEnable();
         this.edtTabEnable();
         this.calendarTabEnable();
+        this.tabEnable("gar", false);
         this.changeDetector.markForCheck();
         // Watch selected structure
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {

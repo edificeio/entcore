@@ -1,0 +1,30 @@
+.action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.gar {
+  > form > .gar-bloc {
+    display: flex;
+    justify-content: space-between;
+    height: 60%;
+    > div {
+      width: 40%;
+    }
+    .sticker {
+      float: right;
+      font-size: 0.8cm;
+    }
+  }
+  textarea {
+    resize: none;
+    width: 100%;
+    height: 75%;
+  }
+  ode-lightbox-confirm ul {
+    list-style: inside;
+  }
+  ode-lightbox ul {
+    list-style: inside;
+  }
+}
