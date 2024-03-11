@@ -846,5 +846,47 @@ public class StructureController extends BaseController {
 			});
 		});
 	}
+
+	@Put("/structure/check/gar")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void checkGAR(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray uais = body.getJsonArray("uais");
+			structureService.checkGAR(uais, handler -> {
+				if (handler.isLeft()) {
+					renderError(request, new JsonObject().put("error", handler.left().getValue()));
+				} else {
+					renderJson(request, handler.right().getValue());
+				}
+			});
+		});
+	}
+
+	@Put("/structure/gar/activate")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void activateGar(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray targetUAIs = body.getJsonArray("uais", new JsonArray());
+			String garId = body.getString("garId");
+
+			if (StringUtils.isEmpty(garId) || targetUAIs.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+
+			this.structureService.activateGar(garId, targetUAIs, config.getString("gar-group-name", "RESP-AFFECT-GAR"),
+				config.getString("gar-app-name", "GAR_AFFECTATION_IHM_CONNECTEUR"), result -> {
+					if (result.isRight()) {
+						renderJson(request, result.right().getValue());
+					} else {
+						renderError(request);
+					}
+				});
+		});
+	}
 }
 
