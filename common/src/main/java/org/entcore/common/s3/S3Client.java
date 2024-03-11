@@ -40,6 +40,8 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,7 +52,6 @@ public class S3Client {
 	private final ResilientHttpClient httpClient;
 	private final String host;
 	private final String defaultBucket;
-	private String basePath;
 	private String token;
 	private String accessKey;
 	private String secretKey;
@@ -74,63 +75,6 @@ public class S3Client {
 		this.defaultBucket = bucket;
 		this.httpClient = new ResilientHttpClient(vertx, uri, keepAlive, timeout, threshold, openDelay);
 	}
-
-	// public void authenticate(final String user, final String key, final Handler<AsyncResult<Void>> handler) {
-	// 	httpClient.setHalfOpenHandler(new Handler<ResilientHttpClient.HalfOpenResult>() {
-	// 		@Override
-	// 		public void handle(final ResilientHttpClient.HalfOpenResult halfOpenResult) {
-	// 			doAuthenticate(user, key, new Handler<AsyncResult<Void>>() {
-	// 				@Override
-	// 				public void handle(AsyncResult<Void> ar) {
-	// 					if (ar.succeeded()) {
-	// 						halfOpenResult.success();
-	// 					} else {
-	// 						halfOpenResult.fail();
-	// 					}
-	// 				}
-	// 			});
-	// 		}
-	// 	});
-	// 	doAuthenticate(user, key, handler);
-	// }
-
-	// private void doAuthenticate(final String user, final String key, final Handler<AsyncResult<Void>> handler) {
-	// 	HttpClientRequest req = httpClient.get("/auth/v1.0", new Handler<HttpClientResponse>() {
-	// 		@Override
-	// 		public void handle(HttpClientResponse response) {
-	// 			if (response.statusCode() == 200 || response.statusCode() == 204) {
-	// 				token = response.headers().get("X-Auth-Token");
-	// 				try {
-	// 					basePath = new URI(response.headers().get("X-Storage-Url")).getPath();
-	// 					handler.handle(new DefaultAsyncResult<>((Void) null));
-	// 					if (tokenPeriodic != 0l) {
-	// 						vertx.cancelTimer(tokenPeriodic);
-	// 					}
-	// 					tokenPeriodic = vertx.setPeriodic(tokenLife, new Handler<Long>() {
-	// 						@Override
-	// 						public void handle(Long aLong) {
-	// 							doAuthenticate(user, key, new Handler<AsyncResult<Void>>() {
-	// 								@Override
-	// 								public void handle(AsyncResult<Void> voidAsyncResult) {
-	// 									if (voidAsyncResult.failed()) {
-	// 										log.error("Periodic authentication error.", voidAsyncResult.cause());
-	// 									}
-	// 								}
-	// 							});
-	// 						}
-	// 					});
-	// 				} catch (URISyntaxException e) {
-	// 					handler.handle(new DefaultAsyncResult<Void>(new AuthenticationException(e.getMessage())));
-	// 				}
-	// 			} else {
-	// 				handler.handle(new DefaultAsyncResult<Void>(new AuthenticationException(response.statusMessage())));
-	// 			}
-	// 		}
-	// 	});
-	// 	req.putHeader("X-Auth-User", user);
-	// 	req.putHeader("X-Auth-Key", key);
-	// 	req.end();
-	// }
 
 	// public void headContainer(Handler<AsyncResult<JsonObject>> handler) {
 	// 	headContainer(defaultBucket, handler);
@@ -173,61 +117,95 @@ public class S3Client {
 		uploadFile(request, defaultBucket, maxSize, handler);
 	}
 
-	public void uploadFile(final HttpServerRequest request, final String container, final Long maxSize,
+	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize,
 			final Handler<JsonObject> handler) {
+
 		request.setExpectMultipart(true);
-		request.uploadHandler(new Handler<HttpServerFileUpload>() {
-			@Override
-			public void handle(final HttpServerFileUpload upload) {
-				upload.pause();
-				final AtomicLong size = new AtomicLong(0l);
-				final JsonObject metadata = FileUtils.metadata(upload);
-				if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-					handler.handle(new JsonObject().put("status", "error")
-							.put("message", "file.too.large"));
-					return;
-				}
-				final String id = UUID.randomUUID().toString();
-				final HttpClientRequest req = httpClient.put(basePath + "/" + container + "/" + id,
-						new Handler<HttpClientResponse>() {
-							@Override
-							public void handle(HttpClientResponse response) {
-								if (response.statusCode() == 201) {
-									if (metadata.getLong("size") == 0l) {
-										metadata.put("size", size.get());
-									}
-									handler.handle(new JsonObject().put("_id", id)
-											.put("status", "ok")
-											.put("metadata", metadata));
-								} else {
-									handler.handle(new JsonObject().put("status", "error"));
-								}
-							}
-						});
-				if (req == null) return;
-				req.putHeader("X-Auth-Token", token);
-				req.putHeader("Content-Type", metadata.getString("content-type"));
-				try {
-					req.putHeader("X-Object-Meta-Filename", EncoderUtil.encodeIfNecessary(
-							metadata.getString("filename"), EncoderUtil.Usage.WORD_ENTITY, 0));
-				} catch (IllegalArgumentException e) {
-					log.error(e.getMessage(), e);
-					req.putHeader("X-Object-Meta-Filename", metadata.getString("filename"));
-				}
-				req.setChunked(true);
-				upload.handler(new Handler<Buffer>() {
-					public void handle(Buffer data) {
-						req.write(data);
-						size.addAndGet(data.length());
-					}
-				});
-				upload.endHandler(new Handler<Void>() {
-					public void handle(Void v) {
-						req.end();
-					}
-				});
-				upload.resume();
+		request.uploadHandler(upload -> {
+			final AtomicLong size = new AtomicLong(0l);
+
+			final JsonObject metadata = FileUtils.metadata(upload);
+			if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+				handler.handle(
+					new JsonObject()
+						.put("status", "error")
+						.put("message", "file.too.large")
+				);
+				return;
 			}
+
+			final String id = UUID.randomUUID().toString();
+
+			MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
+			multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
+				List<String> eTags = new ArrayList<>();
+                Chunk chunk = new Chunk();
+
+				upload.handler(buff -> {
+					chunk.appendBuffer(buff);
+
+                    if (chunk.getChunkSize() >= chunk.getMaxSize()) {
+                        upload.pause();
+
+                        multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+                            if (eTag == null) {
+                                multipartUpload.cancel(id, uploadId);
+                                handler.handle(
+									new JsonObject()
+										.put("status", "error")
+										.put("message", "Upload part failed")
+								);
+                                return;
+                            }
+                            eTags.add(eTag);
+							size.addAndGet(chunk.getChunkSize());
+
+                            chunk.nextChunk();
+                            upload.resume();
+                        });
+                    }
+				});
+
+				upload.endHandler(bVoid -> {
+					if (metadata.getLong("size") == 0l) {
+						metadata.put("size", size.get() + chunk.getChunkSize());
+					}
+
+					if (chunk.getChunkSize() > 0) {
+                        multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+                            if (eTag == null) {
+                                multipartUpload.cancel(id, uploadId);
+                                handler.handle(
+									new JsonObject()
+										.put("status", "error")
+										.put("message", "Upload part failed")
+								);
+                                return;
+                            }
+                            eTags.add(eTag);
+
+                            multipartUpload.complete(id, uploadId, eTags, result -> {
+								handler.handle(
+									new JsonObject()
+										.put("_id", id)
+										.put("status", "ok")
+										.put("metadata", metadata)
+								);
+							});
+                        });
+                    }
+                    else {
+                        multipartUpload.complete(id, uploadId, eTags, result -> {
+							handler.handle(
+								new JsonObject()
+									.put("_id", id)
+									.put("status", "ok")
+									.put("metadata", metadata)
+							);
+						});
+                    }
+				});
+			});
 		});
 	}
 
@@ -235,8 +213,8 @@ public class S3Client {
 		downloadFile(id, request, defaultBucket, true, null, null, null);
 	}
 
-	public void downloadFile(String id, String container, final HttpServerRequest request) {
-		downloadFile(id, request, container, true, null, null, null);
+	public void downloadFile(String id, String bucket, final HttpServerRequest request) {
+		downloadFile(id, request, bucket, true, null, null, null);
 	}
 
 	public void downloadFile(String id, final HttpServerRequest request,
@@ -244,9 +222,9 @@ public class S3Client {
 		downloadFile(id, request, defaultBucket, inline, downloadName, metadata, eTag);
 	}
 
-	public void downloadFile(String id, final HttpServerRequest request, String container,
+	public void downloadFile(String id, final HttpServerRequest request, String bucket,
 			boolean inline, String downloadName, JsonObject metadata, final String eTag) {
-		downloadFile(id, request, container, inline, downloadName, metadata, eTag, null);
+		downloadFile(id, request, bucket, inline, downloadName, metadata, eTag, null);
 	}
 
 	public void downloadFile(String id, final HttpServerRequest request, boolean inline,
@@ -254,51 +232,74 @@ public class S3Client {
 		downloadFile(id, request, defaultBucket, inline, downloadName, metadata, eTag, resultHandler);
 	}
 
-	public void downloadFile(String id, final HttpServerRequest request, String container,
+	public void downloadFile(String id, final HttpServerRequest request, String bucket,
 			boolean inline, String downloadName, JsonObject metadata, final String eTag,
 			final Handler<AsyncResult<Void>> resultHandler) {
 		final HttpServerResponse resp = request.response();
 		if (!inline) {
-			java.lang.String name = FileUtils.getNameWithExtension(downloadName, metadata);
+			String name = FileUtils.getNameWithExtension(downloadName, metadata);
 			resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
 		}
-		HttpClientRequest req = httpClient.get(basePath + "/" + container + "/" + id, new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(HttpClientResponse response) {
-				response.pause();
-				if (response.statusCode() == 200 || response.statusCode() == 304) {
-					resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
-					resp.putHeader("Content-Type", response.headers().get("Content-Type"));
-				}
-				if (response.statusCode() == 200) {
-					resp.setChunked(true);
-					response.handler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer event) {
-							resp.write(event);
-						}
-					});
-					response.endHandler(new Handler<Void>() {
-						@Override
-						public void handle(Void event) {
-							resp.end();
-							if (resultHandler != null) {
-								resultHandler.handle(new DefaultAsyncResult<>((Void) null));
-							}
-						}
-					});
-					response.resume();
-				} else {
-					resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
+
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
+			response.pause();
+
+			if (response.statusCode() == 200 || response.statusCode() == 304) {
+				resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
+				resp.putHeader("Content-Type", response.headers().get("Content-Type"));
+			}
+
+			if (response.statusCode() == 200) {
+				resp.setChunked(true);
+
+				Chunk chunk = new Chunk();
+
+				response.handler(buff -> {
+					chunk.appendBuffer(buff);
+
+                    if (chunk.getChunkSize() >= chunk.getMaxSize()) {
+                        response.pause();
+
+						resp.write(chunk.getBuffer());
+
+						chunk.nextChunk();
+						response.resume();
+					}
+				});
+
+				response.endHandler(aVoid -> {
+					if (chunk.getChunkSize() > 0) {
+						resp.write(chunk.getBuffer());
+					}
+
+					resp.end();
 					if (resultHandler != null) {
 						resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 					}
+				});
+
+			} else {
+				resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
+				if (resultHandler != null) {
+					resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 				}
 			}
+
 		});
-		if (req == null) return;
-		req.putHeader("X-Auth-Token", token);
-		//req.putHeader("If-None-Match", request.headers().get("If-None-Match"));
+		
+		if (req == null) {
+			resultHandler.handle(new DefaultAsyncResult<>((Void) null));
+			return;
+		}
+
+		req.setHost(host);
+        try {
+            AwsUtils.sign(req, accessKey, secretKey, region);
+        } catch (SignatureException e) {
+			log.error("downloadFile signature failed", e);
+			return;
+        }
+
 		req.end();
 	}
 
@@ -372,6 +373,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		req.putHeader("Content-Type", object.getContentType());
         try {
             AwsUtils.sign(req, accessKey, secretKey, region, object);
         } catch (SignatureException e) {
@@ -387,8 +389,8 @@ public class S3Client {
 		deleteFile(id, defaultBucket, handler);
 	}
 
-	public void deleteFile(String id, String container, final Handler<AsyncResult<Void>> handler) {
-		final HttpClientRequest req = httpClient.delete("/" + container + "/" + id, response -> {
+	public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
+		final HttpClientRequest req = httpClient.delete("/" + bucket + "/" + id, response -> {
 			if (response.statusCode() == 204) {
 				handler.handle(new DefaultAsyncResult<>((Void) null));
 			} else {
@@ -416,9 +418,9 @@ public class S3Client {
 		copyFile(from, defaultBucket, handler);
 	}
 
-	public void copyFile(String from, String container, final Handler<AsyncResult<String>> handler) {
+	public void copyFile(String from, String bucket, final Handler<AsyncResult<String>> handler) {
 		final String id = UUID.randomUUID().toString();
-		final HttpClientRequest req = httpClient.put("/" + container + "/" + id, response -> {
+		final HttpClientRequest req = httpClient.put("/" + bucket + "/" + id, response -> {
 			if (response.statusCode() == 200) {
 				handler.handle(new DefaultAsyncResult<>(id));
 			} else {
@@ -439,7 +441,7 @@ public class S3Client {
 			return;
         }
 		
-		req.putHeader("X-Copy-From", "/" + container + "/" + from);
+		req.putHeader("X-Copy-From", "/" + bucket + "/" + from);
 		req.end();
 	}
 
@@ -447,9 +449,9 @@ public class S3Client {
 		writeToFileSystem(id, destination, defaultBucket, handler);
 	}
 
-	public void writeToFileSystem(String id, final String destination, String container,
+	public void writeToFileSystem(String id, final String destination, String bucket,
 			final Handler<AsyncResult<String>> handler) {
-		HttpClientRequest req = httpClient.get("/" + container + "/" + id, response -> {
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
 			response.pause();
 			if (response.statusCode() == 200) {
 				vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
