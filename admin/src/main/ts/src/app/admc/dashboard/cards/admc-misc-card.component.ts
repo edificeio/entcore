@@ -22,6 +22,10 @@ import { OdeComponent } from "ngx-ode-core";
             <i class="fa fa-picture-o" aria-hidden="true"></i>
             <s5l>admc.misc.multimedia</s5l>
         </button>
+        <button routerLink="../misc/gar">
+            <i class="fa fa-wrench" aria-hidden="true"></i>
+            <s5l>admc.misc.gar</s5l>
+        </button>
     </div>
         
     `

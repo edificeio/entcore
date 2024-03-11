@@ -37,6 +37,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -118,6 +119,14 @@ public class DirectoryController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Get("/gar/config")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void garConfig(HttpServerRequest request) {
+		Renders.renderJson(request, config.getJsonArray("gar-config", new JsonArray()));
 	}
 
 	@Post("/import")
