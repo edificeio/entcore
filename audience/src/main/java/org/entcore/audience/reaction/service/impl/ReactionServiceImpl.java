@@ -18,6 +18,7 @@ public class ReactionServiceImpl implements ReactionService {
     public static final String DIRECTORY_ADDRESS = "entcore.directory";
     private final EventBus eventBus;
     private final ReactionDao reactionDao;
+    private final ReactionCounters emptyReactionCounters = new ReactionCounters(new HashMap<>());
 
     public ReactionServiceImpl(EventBus eventBus, ReactionDao reactionDao) {
         this.eventBus =eventBus;
@@ -27,19 +28,23 @@ public class ReactionServiceImpl implements ReactionService {
     @Override
     public Future<ReactionsSummaryResponse> getReactionsSummary(String module, String resourceType, Set<String> resourceIds, UserInfos userInfos) {
         Promise<ReactionsSummaryResponse> reactionsSummaryPromise = Promise.promise();
-        Future<Map<String, ReactionCounters>> reactionsCountersByResourceFuture = reactionDao.getReactionsCountersByResource(module, resourceType, resourceIds);
-        Future<Map<String, String>> userReactionByResourceFuture = reactionDao.getUserReactionByResource(module, resourceType, resourceIds, userInfos.getUserId());
-
-        CompositeFuture.all(reactionsCountersByResourceFuture, userReactionByResourceFuture).compose(result -> {
-            final Map<String, ReactionsSummaryForResource> reactionsSummary = new HashMap<>();
-            reactionsCountersByResourceFuture.result().forEach((resourceId, reactionsCounters) -> reactionsSummary.put(resourceId, new ReactionsSummaryForResource(
-                    reactionsCounters.getCountByType().keySet(),
-                    userReactionByResourceFuture.result().get(resourceId),
-                    reactionsCounters.getAllReactionsCounter()
-            )));
+        final Map<String, ReactionsSummaryForResource> reactionsSummary = new HashMap<>();
+        if (resourceIds == null) {
             reactionsSummaryPromise.complete(new ReactionsSummaryResponse(reactionsSummary));
-            return Future.succeededFuture();
-        }).onFailure(reactionsSummaryPromise::fail);
+        } else {
+            Future<Map<String, ReactionCounters>> reactionsCountersByResourceFuture = reactionDao.getReactionsCountersByResource(module, resourceType, resourceIds);
+            Future<Map<String, String>> userReactionByResourceFuture = reactionDao.getUserReactionByResource(module, resourceType, resourceIds, userInfos.getUserId());
+
+            CompositeFuture.all(reactionsCountersByResourceFuture, userReactionByResourceFuture).compose(result -> {
+                resourceIds.forEach(resourceId -> reactionsSummary.put(resourceId, new ReactionsSummaryForResource(
+                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, emptyReactionCounters).getCountByType().keySet(),
+                        userReactionByResourceFuture.result().get(resourceId),
+                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, emptyReactionCounters).getAllReactionsCounter()
+                )));
+                reactionsSummaryPromise.complete(new ReactionsSummaryResponse(reactionsSummary));
+                return Future.succeededFuture();
+            }).onFailure(reactionsSummaryPromise::fail);
+        }
         return reactionsSummaryPromise.future();
     }
 
@@ -50,7 +55,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         return CompositeFuture.all(reactionCountersByResource, userReactionsFuture)
                 .compose(result -> enrichUserReactionsWithDisplayName(userReactionsFuture.result()))
-                .map(enrichedUserReaction -> new ReactionDetailsResponse(reactionCountersByResource.result().get(resourceId), enrichedUserReaction));
+                .map(enrichedUserReaction -> new ReactionDetailsResponse(reactionCountersByResource.result().getOrDefault(resourceId, emptyReactionCounters), enrichedUserReaction));
     }
 
     private Future<List<UserReaction>> enrichUserReactionsWithDisplayName(List<UserReaction> userReactions) {

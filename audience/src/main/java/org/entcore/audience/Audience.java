@@ -32,7 +32,7 @@ public class Audience extends BaseServer {
     final ViewDao viewDao = new ViewDaoImpl(isql);
     final ViewService viewService = new ViewServiceImpl(viewDao);
     final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
-    final Set<String> validReactionTypes = config.getJsonArray("reaction-types").stream().map(Object::toString).collect(Collectors.toSet());
+    final Set<String> validReactionTypes = config.getJsonObject("publicConf").getJsonArray("reaction-types").stream().map(Object::toString).collect(Collectors.toSet());
     audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService, validReactionTypes);
     addController(audienceController);
     setRepositoryEvents(new AudienceRepositoryEvents(audienceService));

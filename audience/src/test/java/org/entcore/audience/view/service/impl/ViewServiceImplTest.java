@@ -233,7 +233,8 @@ public class ViewServiceImplTest {
             // check views on resource 1 and 2
             .compose(e -> viewService.getViewCounts(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
             .onSuccess(counts -> {
-              context.assertTrue(counts.isEmpty(), "view count of resource 1 and 2 should be empty after purge");
+              context.assertEquals(0, counts.get(0).getViewCounter(), "view count of resource 1 should be 0 after purge");
+              context.assertEquals(0, counts.get(1).getViewCounter(), "view count of resource 2 should be 0 after purge");
               async.complete();
             })
             .onFailure(context::fail);

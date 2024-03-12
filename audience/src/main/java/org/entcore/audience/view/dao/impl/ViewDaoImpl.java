@@ -16,10 +16,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ViewDaoImpl implements ViewDao {
@@ -62,10 +59,10 @@ public class ViewDaoImpl implements ViewDao {
   }
 
   @Override
-  public Future<List<ResourceViewCounter>> getCounts(String module, String resourceType, Set<String> resourceIds) {
-    final Promise<List<ResourceViewCounter>> promise = Promise.promise();
+  public Future<Map<String, Integer>> getCountersByResource(String module, String resourceType, Set<String> resourceIds) {
+    final Promise<Map<String, Integer>> promise = Promise.promise();
     if(CollectionUtils.isEmpty(resourceIds)) {
-      promise.complete(Collections.emptyList());
+      promise.complete(new HashMap<>());
     } else {
       final JsonArray params = new JsonArray();
       params.add(module);
@@ -83,11 +80,11 @@ public class ViewDaoImpl implements ViewDao {
       sql.prepared(query, params, results -> {
         final Either<String, JsonArray> validatedResult = SqlResult.validGroupedResults(results);
         if (validatedResult.isRight()) {
-          final List<ResourceViewCounter> views = validatedResult.right().getValue().stream()
-                  .map(e -> (JsonObject)e)
-                  .map(entry -> new ResourceViewCounter(entry.getString("resource_id"), entry.getInteger("nb_views")))
-                  .collect(Collectors.toList());
-          promise.complete(views);
+          final Map<String, Integer> viewCountsByResource = new HashMap<>();
+          validatedResult.right().getValue().stream()
+                  .map(e -> (JsonObject) e)
+                  .forEach(entry -> viewCountsByResource.put(entry.getString("resource_id"), entry.getInteger("nb_views")));
+          promise.complete(viewCountsByResource);
         } else {
           promise.fail(validatedResult.left().getValue());
         }
