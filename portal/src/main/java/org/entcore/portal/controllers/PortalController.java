@@ -521,4 +521,14 @@ public class PortalController extends BaseController {
 		
 	}
 
+	@Get("zendeskGuide/config")
+	public void zendeskGuideConfig(HttpServerRequest request) {
+		JsonObject zendeskConfig = config.getJsonObject("zendeskGuide", new JsonObject());
+		if(zendeskConfig.isEmpty() || !zendeskConfig.containsKey("key")) {
+			renderJson(request, new JsonObject());
+			return;
+		}
+		renderJson(request, zendeskConfig);
+	}
+
 }
