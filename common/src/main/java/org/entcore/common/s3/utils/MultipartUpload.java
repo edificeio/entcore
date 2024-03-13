@@ -12,6 +12,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.james.mime4j.codec.EncoderUtil;
+import org.entcore.common.s3.S3Client;
 import org.entcore.common.s3.dataclasses.CompleteMultipartUpload;
 import org.entcore.common.s3.dataclasses.CompletePart;
 import org.entcore.common.s3.dataclasses.InitiateMultipartUploadResult;
@@ -23,8 +24,12 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class MultipartUpload {
+
+    private static final Logger log = LoggerFactory.getLogger(MultipartUpload.class);
 
     protected final Vertx vertx;
     protected final ResilientHttpClient httpClient;
@@ -89,7 +94,10 @@ public class MultipartUpload {
     }
 
     public void init(final String id, final String filename, final String contentType, final Handler<String> handler) {
+        log.info("+++ init begin");
+
         HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploads=", response -> {
+            log.info("+++ init statusCode : " + response.statusCode());
             if (response.statusCode() == 200) {
                 response.bodyHandler(bodyBuffer -> {
                     final StringReader stringReader = new StringReader(bodyBuffer.toString());
@@ -110,6 +118,7 @@ public class MultipartUpload {
                         return;
                     }
 
+                    log.info("+++ init uploadId : " + initiateMultipartUploadResult.getUploadId());
                     handler.handle(initiateMultipartUploadResult.getUploadId());
                 });
             }
@@ -131,9 +140,11 @@ public class MultipartUpload {
         }
 
         if (!sign(req, null)) {
+            log.info("+++ init sign failed");
             handler.handle(null);
             return;
         }
+        log.info("+++ init req end");
         req.end();
     }
 
@@ -209,7 +220,10 @@ public class MultipartUpload {
     }
 
     public void complete(final String id, final String uploadId, final List<String> eTags, final Handler<Boolean> handler) {
-        HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> handler.handle(response.statusCode() == 200));
+        HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> {
+            log.info("Upload completed !");    
+            handler.handle(response.statusCode() == 200);
+        });
         
         CompleteMultipartUpload completeMultipartUpload = new CompleteMultipartUpload();
         for(int i = 0; i < eTags.size(); i++) {

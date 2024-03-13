@@ -116,7 +116,9 @@ public class WorkspaceController extends BaseController {
 					}
 					workspaceService.emptySize(userInfos, emptySize -> {
 						request.resume();
+						log.info(">>> before writeUploadFile");
 						storage.writeUploadFile(request, emptySize, uploaded -> {
+							log.info(">>> " + uploaded.getString("status"));
 							if ("ok".equals(uploaded.getString("status"))) {
 								final Handler<AsyncResult<JsonObject>> handler = eventHelper.onCreateResource(request, RESOURCE_NAME, asyncDefaultResponseHandler(request, 201));
 								workspaceService.addDocumentWithParent(resRights.result(),userInfos, quality, name, application, doc,
