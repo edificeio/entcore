@@ -117,95 +117,205 @@ public class S3Client {
 		uploadFile(request, defaultBucket, maxSize, handler);
 	}
 
-	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize,
-			final Handler<JsonObject> handler) {
+	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, final Handler<JsonObject> handler) {
+		log.info(">>> uploadFile begin : " + maxSize);
+
+		final String id = UUID.randomUUID().toString();
+
+		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
+		JsonObject metadata = new JsonObject();
+		AtomicLong size = new AtomicLong(0l);
+		List<String> eTags = new ArrayList<>();
+		Chunk chunk = new Chunk();
+		StringBuilder multipartUploadId = new StringBuilder();
 
 		request.setExpectMultipart(true);
 		request.uploadHandler(upload -> {
-			final AtomicLong size = new AtomicLong(0l);
+			upload.pause();
+			log.info(">>> uploadFile uploadHandler: " + multipartUploadId.toString());
 
-			final JsonObject metadata = FileUtils.metadata(upload);
-			if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-				handler.handle(
-					new JsonObject()
-						.put("status", "error")
-						.put("message", "file.too.large")
-				);
-				return;
+			if (multipartUploadId.toString().isEmpty()) {
+				metadata.mergeIn(FileUtils.metadata(upload));
+				log.info(metadata.toString());
+				if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+					handler.handle(
+						new JsonObject()
+							.put("status", "error")
+							.put("message", "file.too.large")
+					);
+					log.info(">>> uploadFile file.too.large");
+					return;
+				}
+
+				log.info(">>> multipartUpload.init1");
+				multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
+					log.info(">>> multipartUpload.init2");
+					multipartUploadId.append(uploadId);
+					upload.resume();
+				});
 			}
 
-			final String id = UUID.randomUUID().toString();
+			upload.handler(buff -> {
+				log.info(">>> upload.handler");
+				chunk.appendBuffer(buff);
 
-			MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
-			multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
-				List<String> eTags = new ArrayList<>();
-                Chunk chunk = new Chunk();
+				if (chunk.getChunkSize() >= chunk.getMaxSize()) {
+					String uploadId = multipartUploadId.toString();
 
-				upload.handler(buff -> {
-					chunk.appendBuffer(buff);
+					multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+						log.info(">>> multipartUpload.upload.uploadPart");
+						if (eTag == null) {
+							multipartUpload.cancel(id, uploadId);
+							handler.handle(
+								new JsonObject()
+									.put("status", "error")
+									.put("message", "Upload part failed")
+							);
+							return;
+						}
+						eTags.add(eTag);
+						size.addAndGet(chunk.getChunkSize());
 
-                    if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-                        upload.pause();
+						chunk.nextChunk();
+					});
+				}
+			});
 
-                        multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
-                            if (eTag == null) {
-                                multipartUpload.cancel(id, uploadId);
-                                handler.handle(
-									new JsonObject()
-										.put("status", "error")
-										.put("message", "Upload part failed")
-								);
-                                return;
-                            }
-                            eTags.add(eTag);
-							size.addAndGet(chunk.getChunkSize());
+			upload.endHandler(aVoid -> {
+				log.info(">>> upload.endHandler");
+				String uploadId = multipartUploadId.toString();
 
-                            chunk.nextChunk();
-                            upload.resume();
-                        });
-                    }
-				});
+				if (metadata.getLong("size") == 0l) {
+					metadata.put("size", size.get() + chunk.getChunkSize());
+				}
 
-				upload.endHandler(bVoid -> {
-					if (metadata.getLong("size") == 0l) {
-						metadata.put("size", size.get() + chunk.getChunkSize());
-					}
+				if (chunk.getChunkSize() > 0) {
+					multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+						if (eTag == null) {
+							multipartUpload.cancel(id, uploadId);
+							handler.handle(
+								new JsonObject()
+									.put("status", "error")
+									.put("message", "Upload part failed")
+							);
+							return;
+						}
+						eTags.add(eTag);
 
-					if (chunk.getChunkSize() > 0) {
-                        multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
-                            if (eTag == null) {
-                                multipartUpload.cancel(id, uploadId);
-                                handler.handle(
-									new JsonObject()
-										.put("status", "error")
-										.put("message", "Upload part failed")
-								);
-                                return;
-                            }
-                            eTags.add(eTag);
-
-                            multipartUpload.complete(id, uploadId, eTags, result -> {
-								handler.handle(
-									new JsonObject()
-										.put("_id", id)
-										.put("status", "ok")
-										.put("metadata", metadata)
-								);
-							});
-                        });
-                    }
-                    else {
-                        multipartUpload.complete(id, uploadId, eTags, result -> {
+						multipartUpload.complete(id, uploadId, eTags, result -> {
 							handler.handle(
 								new JsonObject()
 									.put("_id", id)
 									.put("status", "ok")
 									.put("metadata", metadata)
 							);
+							log.info(">>> multipartUpload.complete1");
 						});
-                    }
-				});
+					});
+				}
+				else {
+					multipartUpload.complete(id, uploadId, eTags, result -> {
+						handler.handle(
+							new JsonObject()
+								.put("_id", id)
+								.put("status", "ok")
+								.put("metadata", metadata)
+						);
+						log.info(">>> multipartUpload.complete2");
+					});
+				}
 			});
+
+			// final JsonObject metadata = FileUtils.metadata(upload);
+			// if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+			// 	handler.handle(
+			// 		new JsonObject()
+			// 			.put("status", "error")
+			// 			.put("message", "file.too.large")
+			// 	);
+			// 	log.info(">>> uploadFile file.too.large");
+			// 	return;
+			// }
+
+			
+			// log.info(">>> uploadFile id: " + id);
+
+			
+			// log.info(">>> uploadFile multipartUpload created");
+			// multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
+			// 	log.info(">>> multipartUpload.init");
+
+				
+
+			// 	upload.handler(buff -> {
+			// 		log.info(">>> multipartUpload.upload.handler");
+			// 		chunk.appendBuffer(buff);
+
+            //         if (chunk.getChunkSize() >= chunk.getMaxSize()) {
+            //             upload.pause();
+
+            //             multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+			// 				log.info(">>> multipartUpload.upload.uploadPart");
+            //                 if (eTag == null) {
+            //                     multipartUpload.cancel(id, uploadId);
+            //                     handler.handle(
+			// 						new JsonObject()
+			// 							.put("status", "error")
+			// 							.put("message", "Upload part failed")
+			// 					);
+            //                     return;
+            //                 }
+            //                 eTags.add(eTag);
+			// 				size.addAndGet(chunk.getChunkSize());
+
+            //                 chunk.nextChunk();
+            //                 upload.resume();
+            //             });
+            //         }
+			// 	});
+
+			// 	upload.endHandler(bVoid -> {
+			// 		if (metadata.getLong("size") == 0l) {
+			// 			metadata.put("size", size.get() + chunk.getChunkSize());
+			// 		}
+
+			// 		if (chunk.getChunkSize() > 0) {
+            //             multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+            //                 if (eTag == null) {
+            //                     multipartUpload.cancel(id, uploadId);
+            //                     handler.handle(
+			// 						new JsonObject()
+			// 							.put("status", "error")
+			// 							.put("message", "Upload part failed")
+			// 					);
+            //                     return;
+            //                 }
+            //                 eTags.add(eTag);
+
+            //                 multipartUpload.complete(id, uploadId, eTags, result -> {
+			// 					handler.handle(
+			// 						new JsonObject()
+			// 							.put("_id", id)
+			// 							.put("status", "ok")
+			// 							.put("metadata", metadata)
+			// 					);
+			// 					log.info(">>> multipartUpload.complete1");
+			// 				});
+            //             });
+            //         }
+            //         else {
+            //             multipartUpload.complete(id, uploadId, eTags, result -> {
+			// 				handler.handle(
+			// 					new JsonObject()
+			// 						.put("_id", id)
+			// 						.put("status", "ok")
+			// 						.put("metadata", metadata)
+			// 				);
+			// 				log.info(">>> multipartUpload.complete2");
+			// 			});
+            //         }
+			// 	});
+			// });
 		});
 	}
 
@@ -314,7 +424,7 @@ public class S3Client {
 				final Buffer buffer = Buffer.buffer();
 				response.handler(buffer::appendBuffer);
 				response.endHandler(event -> {
-						String filename = response.headers().get("X-Object-Meta-Filename");
+						String filename = response.headers().get("x-amz-meta-filename");
 						if (filename != null) {
 							try {
 								filename = DecoderUtil.decodeEncodedWords(
