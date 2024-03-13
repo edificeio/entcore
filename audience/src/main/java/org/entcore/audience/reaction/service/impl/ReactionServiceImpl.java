@@ -18,7 +18,6 @@ public class ReactionServiceImpl implements ReactionService {
     public static final String DIRECTORY_ADDRESS = "entcore.directory";
     private final EventBus eventBus;
     private final ReactionDao reactionDao;
-    private final ReactionCounters emptyReactionCounters = new ReactionCounters(new HashMap<>());
 
     public ReactionServiceImpl(EventBus eventBus, ReactionDao reactionDao) {
         this.eventBus =eventBus;
@@ -37,9 +36,9 @@ public class ReactionServiceImpl implements ReactionService {
 
             CompositeFuture.all(reactionsCountersByResourceFuture, userReactionByResourceFuture).compose(result -> {
                 resourceIds.forEach(resourceId -> reactionsSummary.put(resourceId, new ReactionsSummaryForResource(
-                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, emptyReactionCounters).getCountByType().keySet(),
+                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, ReactionCounters.emptyReactionCounters).getCountByType().keySet(),
                         userReactionByResourceFuture.result().get(resourceId),
-                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, emptyReactionCounters).getAllReactionsCounter()
+                        reactionsCountersByResourceFuture.result().getOrDefault(resourceId, ReactionCounters.emptyReactionCounters).getAllReactionsCounter()
                 )));
                 reactionsSummaryPromise.complete(new ReactionsSummaryResponse(reactionsSummary));
                 return Future.succeededFuture();
@@ -55,7 +54,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         return CompositeFuture.all(reactionCountersByResource, userReactionsFuture)
                 .compose(result -> enrichUserReactionsWithDisplayName(userReactionsFuture.result()))
-                .map(enrichedUserReaction -> new ReactionDetailsResponse(reactionCountersByResource.result().getOrDefault(resourceId, emptyReactionCounters), enrichedUserReaction));
+                .map(enrichedUserReaction -> new ReactionDetailsResponse(reactionCountersByResource.result().getOrDefault(resourceId, ReactionCounters.emptyReactionCounters), enrichedUserReaction));
     }
 
     private Future<List<UserReaction>> enrichUserReactionsWithDisplayName(List<UserReaction> userReactions) {

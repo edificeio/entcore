@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.audience.view.dao.ViewDao;
-import org.entcore.audience.view.model.ResourceViewCounter;
 import org.entcore.audience.view.model.ResourceViewDetails;
 import org.entcore.audience.view.model.ViewsCounterPerProfile;
 import org.entcore.common.sql.ISql;
@@ -17,7 +16,6 @@ import org.entcore.common.sql.SqlResult;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ViewDaoImpl implements ViewDao {
 
