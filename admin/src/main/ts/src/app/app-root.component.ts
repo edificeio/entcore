@@ -4,6 +4,8 @@ import { OdeComponent } from 'ngx-ode-core';
 import { globalStore } from './core/store/global.store';
 import { SessionModel } from './core/store/models/session.model';
 import { StructureModel } from './core/store/models/structure.model';
+import http from 'axios';
+import {JsonObject} from '@angular/compiler-cli/ngcc/src/utils';
 
 
 @Component({
@@ -87,8 +89,81 @@ export class AppRootComponent extends OdeComponent {
         if (this.isAdmc && this.router.url === '/admin') {
             this.router.navigateByUrl('/admin/admc/dashboard');
         }
-    }
 
+        http.get<any>('/zendeskGuide/config').then((response) => {
+            const data = response.data as JsonObject;
+            if (data && data.key) {
+                const scriptZendesk = document.createElement('script');
+                scriptZendesk.id = 'ze-snippet';
+                scriptZendesk.src = `https://static.zdassets.com/ekr/snippet.js?key=${data.key}`;
+                document.body.appendChild(scriptZendesk).onload = () => {
+                    const currentLanguage = SessionModel.getCurrentLanguage();
+
+                    currentLanguage.then((lang) => {
+                        if ('fr' === lang) {
+                            (window as any).zE(() => {
+                                (window as any).zE.setLocale('fr');
+                            });
+                        } else {
+                            (window as any).zE(() => {
+                                (window as any).zE.setLocale('en-gb');
+                            });
+                        }
+                    });
+                    (window as any).zE('webWidget', 'helpCenter:setSuggestions', { search: 'Console administrateur' });
+                    // (window as any).zE('webWidget', 'helpCenter:setSuggestions', { labels: ['connexion', 'authentification'] } );
+                    (window as any).zE('webWidget', 'updateSettings', {
+                        webWidget: {
+                            color: { theme: data.color || '#ffc400' },
+                            launcher: {
+                                mobile: {
+                                    labelVisible: true
+                                }
+                            },
+                            helpCenter: {
+                                messageButton: {
+                                    '*': 'Assistance ENT'
+                                }
+                            }
+                        },
+                    });
+                    window.addEventListener('scroll', () => {
+                        (window as any).zE('webWidget', 'updateSettings', {
+                            webWidget: {
+                                launcher: {
+                                    mobile: {
+                                        labelVisible:  window.scrollY <= 5
+                                    }
+                                },
+                            },
+                        });
+                    });
+                    (window as any).zE('webWidget:on', 'open', () => {
+                        (window as any).zE('webWidget', 'updateSettings', {
+                            webWidget: {
+                                contactForm: {
+                                    suppress: false
+                                }
+                            }});
+                    });
+                    (window as any).zE('webWidget:on', 'userEvent', (ref: { category: any; action: any; properties: any; }) => {
+                        const category = ref.category;
+                        const action = ref.action;
+                        const properties = ref.properties;
+                        if (action === 'Contact Form Shown' && category === 'Zendesk Web Widget' && properties && properties.name === 'contact-form') {
+                            (window as any).zE('webWidget', 'updateSettings', {
+                                webWidget: {
+                                    contactForm: {
+                                        suppress: true
+                                    }
+                                }});
+                            window.location.href = '/support';
+                        }
+                    });
+                };
+            }
+        });
+    }
     public onSelectStructure(structure: StructureModel) {
         this.router.navigateByUrl(this.getNewPath(structure.id));
     }
