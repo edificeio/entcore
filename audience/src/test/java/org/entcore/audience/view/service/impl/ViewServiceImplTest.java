@@ -8,7 +8,6 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.audience.view.dao.impl.ViewDaoImpl;
-import org.entcore.audience.view.model.ResourceViewCounter;
 import org.entcore.audience.view.model.ViewsCounterPerProfile;
 import org.entcore.audience.view.service.ViewService;
 import org.entcore.common.sql.Sql;
@@ -58,21 +57,17 @@ public class ViewServiceImplTest {
     userInfos2.setType("PERSRELELEVE");
     // Register a view for a user
     viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos)
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .compose(e -> viewService.getViewCounters("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size(), "should only have the view recently registered");
-      final ResourceViewCounter count = counts.get(0);
-      context.assertEquals("r-id-0", count.getResourceId());
-      context.assertEquals(1, count.getViewCounter());
+      context.assertEquals(1, counts.get("r-id-0"));
     })
     // Try to register a new view but it shouldn't change the counter
     .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos))
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .compose(e -> viewService.getViewCounters("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size());
-      final ResourceViewCounter count = counts.get(0);
-      context.assertEquals("r-id-0", count.getResourceId());
-      context.assertEquals(1, count.getViewCounter(), "should not have been incremented because it has been less than a minute between the 2 views");
+      context.assertEquals(1, counts.get("r-id-0"), "should not have been incremented because it has been less than a minute between the 2 views");
     })
     // Wait a bit...
     .compose(e -> {
@@ -82,21 +77,17 @@ public class ViewServiceImplTest {
     })
     // Register a new view but thi one should count
     .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos))
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .compose(e -> viewService.getViewCounters("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size());
-      final ResourceViewCounter count = counts.get(0);
-      context.assertEquals("r-id-0", count.getResourceId());
-      context.assertEquals(2, count.getViewCounter(), "should have been incremented because it has been more than a minute between the 2 views");
+      context.assertEquals(2, counts.get("r-id-0"), "should have been incremented because it has been more than a minute between the 2 views");
     })
     // Register a new view, for the same resource, but for another user
     .compose(e -> viewService.registerView("mod-view", "rt-view", "r-id-0", userInfos2))
-    .compose(e -> viewService.getViewCounts("mod-view", "rt-view", Collections.singleton("r-id-0")))
+    .compose(e -> viewService.getViewCounters("mod-view", "rt-view", Collections.singleton("r-id-0")))
     .onSuccess(counts -> {
       context.assertEquals(1, counts.size());
-      final ResourceViewCounter count = counts.get(0);
-      context.assertEquals("r-id-0", count.getResourceId());
-      context.assertEquals(3, count.getViewCounter(), "should have been incremented because another user viewed the resource");
+      context.assertEquals(3, counts.get("r-id-0"), "should have been incremented because another user viewed the resource");
       async.complete();
     })
     .onFailure(context::fail);
@@ -221,19 +212,20 @@ public class ViewServiceImplTest {
             .compose(e -> viewService.registerView(module, resourceType, resourceId1, userInfos2))
             .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos1))
             .compose(e -> viewService.registerView(module, resourceType, resourceId2, userInfos2))
-            .compose(e -> viewService.getViewCounts(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
+            .compose(e -> viewService.getViewCounters(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
             // check views on resource 1 and 2
             .onSuccess(counts -> {
               context.assertEquals(2, counts.size(), "should be a total of two views per resource id");
-              context.assertEquals(2, counts.get(0).getViewCounter(), "should be a total of two views for resource 1");
-              context.assertEquals(2, counts.get(1).getViewCounter(), "should be a total of two views for resource 2");
+              context.assertEquals(2, counts.get(resourceId1), "should be a total of two views for resource 1");
+              context.assertEquals(2, counts.get(resourceId2), "should be a total of two views for resource 2");
             })
             // delete all views on resource 1 and 2
             .compose(e -> viewService.deleteAllViewsOfResources(Sets.newHashSet(resourceId1, resourceId2)))
             // check views on resource 1 and 2
-            .compose(e -> viewService.getViewCounts(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
+            .compose(e -> viewService.getViewCounters(module, resourceType, Sets.newHashSet(resourceId1, resourceId2)))
             .onSuccess(counts -> {
-              context.assertTrue(counts.isEmpty(), "view count of resource 1 and 2 should be empty after purge");
+              context.assertEquals(0, counts.get(resourceId1), "view count of resource 1 should be 0 after purge");
+              context.assertEquals(0, counts.get(resourceId2), "view count of resource 2 should be 0 after purge");
               async.complete();
             })
             .onFailure(context::fail);

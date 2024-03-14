@@ -14,10 +14,10 @@
         "db-schema": "audience",
         {% if hotjarId is defined %}
         "publicConf": {
+            "reaction-types" : {{ audienceReactionTypes }}
         },
         {% endif %}
         "app-name" : "Audience",
-        "app-address" : "/audience",
-        "reaction-types" : {{ audienceReactionTypes }}
+        "app-address" : "/audience"
     }
 }

@@ -141,7 +141,7 @@ public class AudienceController extends BaseController {
     final String module = request.getParam("module");
     final String resourceType = request.getParam("resourceType");
     verify(module, resourceType, resourceIds, request)
-    .onSuccess(user -> viewService.getViewCounts(module, resourceType, resourceIds)
+    .onSuccess(user -> viewService.getViewCounters(module, resourceType, resourceIds)
         .onSuccess(e -> Renders.render(request, e))
         .onFailure(th -> {
           Renders.log.error("Error while getting views of resource " + module + "@" + resourceType + "@" + resourceIds, th);
