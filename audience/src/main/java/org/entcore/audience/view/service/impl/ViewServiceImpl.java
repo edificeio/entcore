@@ -1,13 +1,14 @@
 package org.entcore.audience.view.service.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.entcore.audience.view.dao.ViewDao;
-import org.entcore.audience.view.model.ResourceViewCounter;
 import org.entcore.audience.view.model.ResourceViewDetails;
 import org.entcore.audience.view.service.ViewService;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class ViewServiceImpl implements ViewService {
@@ -24,8 +25,16 @@ public class ViewServiceImpl implements ViewService {
   }
 
   @Override
-  public Future<List<ResourceViewCounter>> getViewCounts(String module, String resourceType, Set<String> resourceIds) {
-    return viewDao.getCounts(module, resourceType, resourceIds);
+  public Future<Map<String, Integer>> getViewCounters(String module, String resourceType, Set<String> resourceIds) {
+    Promise<Map<String, Integer>> promise = Promise.promise();
+    Map<String, Integer> viewCounters = new HashMap<>();
+    viewDao.getCountersByResource(module, resourceType, resourceIds)
+            .onSuccess(viewCountersByResource -> {
+              resourceIds.forEach(resourceId -> viewCounters.put(resourceId, viewCountersByResource.getOrDefault(resourceId, 0)));
+              promise.complete(viewCounters);
+            })
+            .onFailure(promise::fail);
+    return promise.future();
   }
 
   @Override

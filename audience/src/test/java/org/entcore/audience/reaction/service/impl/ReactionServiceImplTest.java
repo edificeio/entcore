@@ -86,7 +86,10 @@ public class ReactionServiceImplTest {
     .onSuccess(summary -> {
       context.assertNotNull(summary, "getReactionsSummary should never return null");
       context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
-      context.assertEquals(0, summary.getReactionsByResource().size(), "getReactionsSummary should return no data when the filter matches no data");
+      context.assertEquals(1, summary.getReactionsByResource().size(), "getReactionsSummary should always return data for requested resources");
+      context.assertNull(summary.getReactionsByResource().get("id-1").getUserReaction(), "user reaction should be null for this resource");
+      context.assertTrue(summary.getReactionsByResource().get("id-1").getReactionTypes().isEmpty(), "reaction type should be empty for this resource");
+      context.assertEquals(0, summary.getReactionsByResource().get("id-1").getTotalReactionsCounter(), "total reaction should be zero for this resource");
       async.complete();
     });
   }
@@ -218,7 +221,7 @@ public class ReactionServiceImplTest {
         .onSuccess(summary -> {
           context.assertNotNull(summary, "getReactionsSummary should never return null");
           context.assertNotNull(summary.getReactionsByResource(), "getReactionsSummary should never return null");
-          context.assertEquals(2, summary.getReactionsByResource().size(), "getReactionsSummary should return counters for existing resources");
+          context.assertEquals(3, summary.getReactionsByResource().size(), "getReactionsSummary should return counters for requested resources");
 
           ReactionsSummaryForResource resSummary = summary.getReactionsByResource().get("r-id-0");
           context.assertEquals(3, resSummary.getTotalReactionsCounter(), "There should be a total of 3 reactions for this resource");
@@ -232,6 +235,12 @@ public class ReactionServiceImplTest {
           context.assertEquals(1, reactionTypes.size(), "There should be one types of reactions for this resource");
           context.assertTrue(reactionTypes.containsAll(Sets.newHashSet("love")));
 
+          resSummary = summary.getReactionsByResource().get("not-there");
+          reactionTypes = resSummary.getReactionTypes();
+          context.assertEquals(0, resSummary.getTotalReactionsCounter(), "There should be no reaction for this resource");
+          context.assertNull(resSummary.getUserReaction(), "There should be no user reaction for this resource");
+          context.assertTrue(reactionTypes.isEmpty(), "There should be no types of reactions for this resource");
+
           async.complete();
         });
   }
@@ -243,7 +252,8 @@ public class ReactionServiceImplTest {
                 .onFailure(context::fail)
                 .onSuccess(reactionDetails -> {
                     context.assertNotNull(reactionDetails, "getReactionDetails should never return null");
-                    context.assertNull(reactionDetails.getReactionCounters(), "getReactionCounters should return null when the filter matches no data");
+                    context.assertTrue(reactionDetails.getReactionCounters().getCountByType().isEmpty(), "getCountByType should be empty when the filter matches no data");
+                    context.assertEquals(0, reactionDetails.getReactionCounters().getAllReactionsCounter(), "getAllReactionsCounter should return 0 when the filter matches no data");
                     context.assertTrue(reactionDetails.getUserReactions().isEmpty(), "getUserReactions should return no data when the filter matches no data");
                     async.complete();
                 });
@@ -411,7 +421,8 @@ public class ReactionServiceImplTest {
               .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos2))
               .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
               .onSuccess(reactionDetails -> {
-                  context.assertNull(reactionDetails.getReactionCounters(), "Reaction counters should be null, after deleting last reaction");
+                  context.assertTrue(reactionDetails.getReactionCounters().getCountByType().isEmpty(), "Reaction counters by type should be empty, after deleting last reaction");
+                  context.assertEquals(0, reactionDetails.getReactionCounters().getAllReactionsCounter(), "Total reaction counters should be 0, after deleting last reaction");
                   context.assertTrue(reactionDetails.getUserReactions().isEmpty(), "List of users' reactions should be empty after deleting last reaction");
                   async.complete();
               })
@@ -442,7 +453,8 @@ public class ReactionServiceImplTest {
               .compose(e -> reactionService.deleteAllReactionsOfUsers(Collections.singleton(userInfos.getUserId())))
               .compose(e -> reactionService.getReactionsSummary(module, resourceType, Sets.newHashSet(resourceId1, resourceId2), userInfos))
               .onSuccess(reactionSummary -> {
-                  context.assertTrue(reactionSummary.getReactionsByResource().isEmpty(), "there should be no reaction on resource 1 and 2 after user's reactions deletion");
+                  context.assertEquals(0, reactionSummary.getReactionsByResource().get(resourceId1).getTotalReactionsCounter(), "there should be no reaction on resource 1 after user's reactions deletion");
+                  context.assertEquals(0, reactionSummary.getReactionsByResource().get(resourceId2).getTotalReactionsCounter(), "there should be no reaction on resource 2 after user's reactions deletion");
                   async.complete();
               })
               .onFailure(context::fail);
@@ -475,7 +487,8 @@ public class ReactionServiceImplTest {
               .compose(e -> reactionService.deleteAllReactionsOfResources(Collections.singleton(resourceId)))
               .compose(e -> reactionService.getReactionDetails(module, resourceType, resourceId, page, size))
               .onSuccess(reactionDetails -> {
-                  context.assertNull(reactionDetails.getReactionCounters(), "there should be no reactions after resource's reaction deletion");
+                  context.assertTrue(reactionDetails.getReactionCounters().getCountByType().isEmpty(), "there should be no reactions after resource's reaction deletion");
+                  context.assertEquals(0, reactionDetails.getReactionCounters().getAllReactionsCounter(), "reaction counter should be 0 after resource's reaction deletion");
                   async.complete();
               })
               .onFailure(context::fail);
