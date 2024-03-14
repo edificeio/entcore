@@ -45,10 +45,10 @@ import org.entcore.common.storage.BucketStats;
  
      private final S3Client s3Client;
      private final String bucket;
- 
-     public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket) {
-         this.bucket = bucket;
-         this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket);
+
+     public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, boolean keepAlive, int timeout, int threshold, long openDelay) {
+        this.bucket = bucket;
+        this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, keepAlive, timeout, threshold, openDelay);
      }
  
      @Override

@@ -136,8 +136,12 @@ public class StorageFactory {
 			String secretKey = s3.getString("secretKey");
 			String region = s3.getString("region");
 			String bucket = s3.getString("bucket");
+			boolean keepAlive = s3.getBoolean("keepAlive", false);
+			int timeout = s3.getInteger("timeout", 10000);
+			int threshold = s3.getInteger("threshold", 100);
+			long openDelay = s3.getLong("openDelay", 10000l);
 			try {
-				storage = new S3Storage(vertx, new URI(uri), accessKey, secretKey, region, bucket);
+				storage = new S3Storage(vertx, new URI(uri), accessKey, secretKey, region, bucket, keepAlive, timeout, threshold, openDelay);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
