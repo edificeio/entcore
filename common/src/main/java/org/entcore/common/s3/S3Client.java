@@ -24,7 +24,6 @@ import org.entcore.common.s3.utils.*;
 import io.vertx.core.file.OpenOptions;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
-import org.apache.james.mime4j.codec.EncoderUtil;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -118,8 +117,6 @@ public class S3Client {
 	}
 
 	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, final Handler<JsonObject> handler) {
-		log.info(">>> uploadFile begin : " + maxSize);
-
 		final String id = UUID.randomUUID().toString();
 
 		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
@@ -132,38 +129,32 @@ public class S3Client {
 		request.setExpectMultipart(true);
 		request.uploadHandler(upload -> {
 			upload.pause();
-			log.info(">>> uploadFile uploadHandler: " + multipartUploadId.toString());
 
 			if (multipartUploadId.toString().isEmpty()) {
 				metadata.mergeIn(FileUtils.metadata(upload));
-				log.info(metadata.toString());
 				if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
 					handler.handle(
 						new JsonObject()
 							.put("status", "error")
 							.put("message", "file.too.large")
 					);
-					log.info(">>> uploadFile file.too.large");
 					return;
 				}
 
-				log.info(">>> multipartUpload.init1");
 				multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
-					log.info(">>> multipartUpload.init2");
 					multipartUploadId.append(uploadId);
 					upload.resume();
 				});
 			}
 
 			upload.handler(buff -> {
-				log.info(">>> upload.handler");
 				chunk.appendBuffer(buff);
 
 				if (chunk.getChunkSize() >= chunk.getMaxSize()) {
+					upload.pause();
 					String uploadId = multipartUploadId.toString();
 
 					multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
-						log.info(">>> multipartUpload.upload.uploadPart");
 						if (eTag == null) {
 							multipartUpload.cancel(id, uploadId);
 							handler.handle(
@@ -177,12 +168,12 @@ public class S3Client {
 						size.addAndGet(chunk.getChunkSize());
 
 						chunk.nextChunk();
+						upload.resume();
 					});
 				}
 			});
 
 			upload.endHandler(aVoid -> {
-				log.info(">>> upload.endHandler");
 				String uploadId = multipartUploadId.toString();
 
 				if (metadata.getLong("size") == 0l) {
@@ -209,7 +200,6 @@ public class S3Client {
 									.put("status", "ok")
 									.put("metadata", metadata)
 							);
-							log.info(">>> multipartUpload.complete1");
 						});
 					});
 				}
@@ -221,101 +211,9 @@ public class S3Client {
 								.put("status", "ok")
 								.put("metadata", metadata)
 						);
-						log.info(">>> multipartUpload.complete2");
 					});
 				}
 			});
-
-			// final JsonObject metadata = FileUtils.metadata(upload);
-			// if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-			// 	handler.handle(
-			// 		new JsonObject()
-			// 			.put("status", "error")
-			// 			.put("message", "file.too.large")
-			// 	);
-			// 	log.info(">>> uploadFile file.too.large");
-			// 	return;
-			// }
-
-			
-			// log.info(">>> uploadFile id: " + id);
-
-			
-			// log.info(">>> uploadFile multipartUpload created");
-			// multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
-			// 	log.info(">>> multipartUpload.init");
-
-				
-
-			// 	upload.handler(buff -> {
-			// 		log.info(">>> multipartUpload.upload.handler");
-			// 		chunk.appendBuffer(buff);
-
-            //         if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-            //             upload.pause();
-
-            //             multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
-			// 				log.info(">>> multipartUpload.upload.uploadPart");
-            //                 if (eTag == null) {
-            //                     multipartUpload.cancel(id, uploadId);
-            //                     handler.handle(
-			// 						new JsonObject()
-			// 							.put("status", "error")
-			// 							.put("message", "Upload part failed")
-			// 					);
-            //                     return;
-            //                 }
-            //                 eTags.add(eTag);
-			// 				size.addAndGet(chunk.getChunkSize());
-
-            //                 chunk.nextChunk();
-            //                 upload.resume();
-            //             });
-            //         }
-			// 	});
-
-			// 	upload.endHandler(bVoid -> {
-			// 		if (metadata.getLong("size") == 0l) {
-			// 			metadata.put("size", size.get() + chunk.getChunkSize());
-			// 		}
-
-			// 		if (chunk.getChunkSize() > 0) {
-            //             multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
-            //                 if (eTag == null) {
-            //                     multipartUpload.cancel(id, uploadId);
-            //                     handler.handle(
-			// 						new JsonObject()
-			// 							.put("status", "error")
-			// 							.put("message", "Upload part failed")
-			// 					);
-            //                     return;
-            //                 }
-            //                 eTags.add(eTag);
-
-            //                 multipartUpload.complete(id, uploadId, eTags, result -> {
-			// 					handler.handle(
-			// 						new JsonObject()
-			// 							.put("_id", id)
-			// 							.put("status", "ok")
-			// 							.put("metadata", metadata)
-			// 					);
-			// 					log.info(">>> multipartUpload.complete1");
-			// 				});
-            //             });
-            //         }
-            //         else {
-            //             multipartUpload.complete(id, uploadId, eTags, result -> {
-			// 				handler.handle(
-			// 					new JsonObject()
-			// 						.put("_id", id)
-			// 						.put("status", "ok")
-			// 						.put("metadata", metadata)
-			// 				);
-			// 				log.info(">>> multipartUpload.complete2");
-			// 			});
-            //         }
-			// 	});
-			// });
 		});
 	}
 
@@ -362,39 +260,22 @@ public class S3Client {
 			if (response.statusCode() == 200) {
 				resp.setChunked(true);
 
-				Chunk chunk = new Chunk();
-
-				response.handler(buff -> {
-					chunk.appendBuffer(buff);
-
-                    if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-                        response.pause();
-
-						resp.write(chunk.getBuffer());
-
-						chunk.nextChunk();
-						response.resume();
-					}
-				});
+				response.handler(buff -> resp.write(buff));
 
 				response.endHandler(aVoid -> {
-					if (chunk.getChunkSize() > 0) {
-						resp.write(chunk.getBuffer());
-					}
-
 					resp.end();
 					if (resultHandler != null) {
 						resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 					}
 				});
 
+				response.resume();
 			} else {
 				resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
 				if (resultHandler != null) {
 					resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 				}
 			}
-
 		});
 		
 		if (req == null) {
@@ -471,7 +352,7 @@ public class S3Client {
 		final String id = (object.getId() != null) ? object.getId() : UUID.randomUUID().toString();
 		
 		final HttpClientRequest req = httpClient.put("/" + bucket + "/" + id, response -> {
-			if (response.statusCode() == 201) {
+			if (response.statusCode() == 200) {
 				handler.handle(new DefaultAsyncResult<>(id));
 			} else {
 				handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));

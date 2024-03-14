@@ -23,9 +23,9 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
         
-        client.readFile("1c470afc-d21d-4899-adba-0d6f757f7f30", event -> {
+        client.readFile("33eed38f-5600-4458-9f14-93568e76c992", event -> {
             final StorageObject object = event.result();
             if (object == null) context.fail();
 
@@ -46,7 +46,7 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
         
         final Buffer buffer = vertx.fileSystem().readFileBlocking("/home/pbjoubert/Téléchargements/test1234/f38/default/f38-01-day.png");
         final StorageObject object = new StorageObject(buffer, "test.png", null);
@@ -67,7 +67,7 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
         
         client.deleteFile("707365b4-fd59-4935-8699-1a61fdddbb2a", result -> {
             if (result.succeeded()) {
@@ -85,7 +85,7 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
         
         client.copyFile("1c470afc-d21d-4899-adba-0d6f757f7f30", result -> {
             if (result.succeeded()) {
@@ -103,9 +103,9 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
 
-        client.writeToFileSystem("1c470afc-d21d-4899-adba-0d6f757f7f30", "/tmp/testWriteToFileSystem.png", result -> {
+        client.writeToFileSystem("33eed38f-5600-4458-9f14-93568e76c992", "/tmp/testWriteToFileSystem.png", result -> {
             if (result.succeeded()) {
                 async.complete();
             }
@@ -121,9 +121,9 @@ public class S3ClientTest {
         final Vertx vertx = Vertx.vertx();
         
         final URI uri = new URI("https://s3.rbx.io.cloud.ovh.net/");
-        final S3Client client = new S3Client(vertx, uri, "***", "***", "rbx", "tests-s3");
+        final S3Client client = new S3Client(vertx, uri, "07fa23800f354ba88a9e4a84639970f9", "cbbc856ffdb948a797aa9ea22f01a639", "rbx", "tests-s3");
 
-        client.writeFromFileSystem("1c470afc-d21d-4899-adba-0d6f757f7f31", "/tmp/testWriteToFileSystem.png", result -> {
+        client.writeFromFileSystem("1c470afc-d21d-4899-adba-0d6f757f7f32", "/tmp/testWriteToFileSystem.png", result -> {
             if (result.getString("status") == "ok") {
                 async.complete();
             }
