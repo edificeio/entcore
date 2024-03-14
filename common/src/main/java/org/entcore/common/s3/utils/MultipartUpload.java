@@ -94,10 +94,7 @@ public class MultipartUpload {
     }
 
     public void init(final String id, final String filename, final String contentType, final Handler<String> handler) {
-        log.info("+++ init begin");
-
         HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploads=", response -> {
-            log.info("+++ init statusCode : " + response.statusCode());
             if (response.statusCode() == 200) {
                 response.bodyHandler(bodyBuffer -> {
                     final StringReader stringReader = new StringReader(bodyBuffer.toString());
@@ -118,7 +115,6 @@ public class MultipartUpload {
                         return;
                     }
 
-                    log.info("+++ init uploadId : " + initiateMultipartUploadResult.getUploadId());
                     handler.handle(initiateMultipartUploadResult.getUploadId());
                 });
             }
@@ -140,11 +136,9 @@ public class MultipartUpload {
         }
 
         if (!sign(req, null)) {
-            log.info("+++ init sign failed");
             handler.handle(null);
             return;
         }
-        log.info("+++ init req end");
         req.end();
     }
 
@@ -221,7 +215,6 @@ public class MultipartUpload {
 
     public void complete(final String id, final String uploadId, final List<String> eTags, final Handler<Boolean> handler) {
         HttpClientRequest req = httpClient.post("/" + bucket + "/" + id + "?uploadId=" + uploadId, response -> {
-            log.info("Upload completed !");    
             handler.handle(response.statusCode() == 200);
         });
         
