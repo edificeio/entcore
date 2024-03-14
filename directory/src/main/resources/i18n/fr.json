@@ -923,6 +923,7 @@
     "error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance.",
     "directory.default.relative.title" : "Enseignants de mes enfants",
     "directory.default.teacher.title" : "Enseignants et personnels de l'établissement",
-    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage"
-    
+    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage",
+    "class.empty.state.title": "Pas de classe rattachée",
+    "class.empty.state.description": "Votre compte est rattaché à aucune classe.<br>Veuillez contacter votre administrateur si cela est une erreur.<br>Pour rechercher un utilisateur, vous pouvez utiliser l'application \"Annuaire\""
 }
