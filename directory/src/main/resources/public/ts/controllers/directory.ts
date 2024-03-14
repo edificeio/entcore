@@ -175,40 +175,29 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			}
 			await $scope.createAllFavorites();
 			$scope.network = directory.network;
-			directory.network.schools.sync();
-			directory.network.schools.one('sync', function(){
-				$scope.schools = directory.network.schools;
-				$scope.currentSchool = $scope.schools.first();
-				if($scope.currentSchool === undefined){
-					template.open('page', 'noschool');
-					return;
-				}
-				$scope.currentSchool.sync();
-				$scope.showSchool($scope.currentSchool);
 
-				$scope.currentSchool.one('sync', function(){
-					$scope.users = $scope.currentSchool.users;
-					$scope.allUsers = Object.assign([], $scope.users);
+			directory.network.classrooms.sync();
+			directory.network.classrooms.one('sync', function(){
+				$scope.classrooms = directory.network.classrooms.all;
 
+				if(!$scope.classrooms || $scope.classrooms.length === 0){
+					template.open('page', 'no-classroom');
+				} else {
 					template.open('page', 'class');
-
-					$scope.classrooms = $scope.currentSchool.classrooms;
-					if($scope.schools.all.length === 1 && model.me.classes.length === 1){
-						template.open('main', 'mono-class');
-						$scope.myClass = $scope.classrooms.where({id: model.me.classes[0]});
-						if($scope.myClass.length > 0)
-							$scope.selectClassroom($scope.myClass[0]);
-					}
-					else{
+					if ($scope.classrooms.length > 1) {
 						template.open('main', 'multi-class');
+					} else {
+						$scope.currentClass = directory.network.classrooms.first();
+						$scope.selectClassroom($scope.currentClass);
+						template.open('main', 'mono-class');
 					}
+				}
 
-					template.open('list', 'dominos');
-					template.open('dominosUser', 'dominos-user');	
-					$scope.dominoClass ='my-class';
-					$scope.title = 'class';
-					$scope.$apply();
-				});
+				template.open('list', 'dominos');
+				template.open('dominosUser', 'dominos-user');	
+				$scope.dominoClass ='my-class';
+				$scope.title = 'class';
+				$scope.$apply();
 			});
 		}
 	});
