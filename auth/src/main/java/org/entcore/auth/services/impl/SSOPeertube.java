@@ -12,8 +12,17 @@ import org.opensaml.saml2.core.Assertion;
 public class SSOPeertube extends AbstractSSOProvider {
     @Override
     public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
-        String query = "MATCH (u:User {id:{userId}}) RETURN u.id as id, u.login as login, u.displayName as displayName, u.email as email, u.externalId as externalId";
-        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId), Neo4jResult.validUniqueResultHandler(evt -> {
+        String query = "MATCH (u:User {id:{userId}})\n" +
+                "OPTIONAL MATCH (u)-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(a:Application)\n" +
+                "WITH u, COLLECT(a) AS applications\n" +
+                "RETURN u.id AS id,\n" +
+                "u.login AS login,\n" +
+                "u.displayName AS displayName,\n" +
+                "u.email AS email,\n" +
+                "u.externalId AS externalId,\n" +
+                "REDUCE(s = false, i IN applications | s OR i.address CONTAINS({serviceProviderEntityId})) AS hasMatchingApplication";
+
+        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceProviderEntityId",serviceProviderEntityId), Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
                 handler.handle(new Either.Left(evt.left().getValue()));
                 return;
@@ -26,6 +35,7 @@ public class SSOPeertube extends AbstractSSOProvider {
             result.add(new JsonObject().put("displayName", user.getString("displayName", "")));
             result.add(new JsonObject().put("email", user.getString("email", "")));
             result.add(new JsonObject().put("externalId", user.getString("externalId", "")));
+            result.add(new JsonObject().put("hasConnectorAccess", user.getBoolean("hasMatchingApplication").toString()));
             handler.handle(new Either.Right<>(result));
         }));
     }
