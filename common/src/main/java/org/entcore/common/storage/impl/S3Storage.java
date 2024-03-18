@@ -22,12 +22,14 @@
  import io.vertx.core.AsyncResult;
  import io.vertx.core.Future;
  import io.vertx.core.Handler;
- import io.vertx.core.Vertx;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
  import io.vertx.core.buffer.Buffer;
- import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpServerRequest;
  import io.vertx.core.json.JsonArray;
  import io.vertx.core.json.JsonObject;
- import io.vertx.core.streams.ReadStream;
+import io.vertx.core.streams.ReadStream;
  import org.apache.commons.lang3.NotImplementedException;
  import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.s3.S3Client;
@@ -38,8 +40,9 @@ import org.entcore.common.storage.BucketStats;
  import org.entcore.common.validation.FileValidator;
  
  import java.io.File;
- import java.net.URI;
- import java.util.concurrent.atomic.AtomicInteger;
+import java.net.URI;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
  
  public class S3Storage implements Storage {
  
@@ -53,8 +56,7 @@ import org.entcore.common.storage.BucketStats;
  
      @Override
      public void fileStats(String id, Handler<AsyncResult<FileStats>> handler) {
-         // TODO to implement
-         throw new UnsupportedOperationException("not yet implemented");
+         s3Client.getFileStats(id, handler);
      }
  
      @Override
@@ -99,20 +101,30 @@ import org.entcore.common.storage.BucketStats;
      }
  
      @Override
-     public Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
-         return writeBufferStream(null, bufferReadStream, contentType, filename);
-     }
- 
-     @Override
-     public Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
-         throw new NotImplementedException("writeBufferStream not implemented");
+	public Future<JsonObject> writeBufferStream(ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+		return writeBufferStream(S3Client.getPath(UUID.randomUUID().toString()), bufferReadStream, contentType, filename);
+	}
+
+	@Override
+	public Future<JsonObject> writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename) {
+          Promise<JsonObject> promise = Promise.promise();
+
+          s3Client.writeBufferStream(id, bufferReadStream, contentType, filename, ar -> {
+               if (ar.succeeded()) {
+                    promise.complete(ar.result());
+               }
+               else {
+                    promise.fail("An error as occured");
+               }
+          });
+
+          return promise.future();
      }
  
      @Override
      public void writeFsFile(String filename, Handler<JsonObject> handler)
      {
-         // TODO to implement
-         throw new UnsupportedOperationException("not yet implemented");
+        writeFsFile(S3Client.getPath(UUID.randomUUID().toString()), filename, handler);
      }
  
      @Override
@@ -153,7 +165,20 @@ import org.entcore.common.storage.BucketStats;
  
      @Override
      public void readStreamFile(String id, Handler<ReadStream<Buffer>> handler) {
-         throw new NotImplementedException("Error. Not Implemented exception");
+          s3Client.readFileStream(id, ar -> {
+               if (ar.succeeded()) {
+                    HttpClientResponse response = ar.result();
+                    if (response.statusCode() == 200) {
+                         handler.handle(response);
+                    }
+                    else {
+                         handler.handle(null);
+                    }
+               }
+               else {
+                    handler.handle(null);
+               }
+          });
      }
  
      @Override
@@ -273,30 +298,31 @@ import org.entcore.common.storage.BucketStats;
  
      @Override
      public void stats(final Handler<AsyncResult<BucketStats>> handler) {
-        //  s3Client.headContainer(bucket, new Handler<AsyncResult<JsonObject>>() {
-        //      @Override
-        //      public void handle(AsyncResult<JsonObject> event) {
-        //          if (event.succeeded()) {
-        //              BucketStats bucketStats = new BucketStats();
-        //              bucketStats.setObjectNumber(event.result().getLong("X-Container-Object-Count"));
-        //              bucketStats.setStorageSize(event.result().getLong("X-Container-Bytes-Used"));
-        //              handler.handle(new DefaultAsyncResult<>(bucketStats));
-        //          } else {
-        //              handler.handle(new DefaultAsyncResult<BucketStats>(event.cause()));
-        //          }
-        //      }
-        //  });
-        handler.handle(Future.failedFuture(new RuntimeException("Not implemented yet")));
+        final BucketStats bucketStats = new BucketStats();
+        bucketStats.setStorageSize(Integer.MAX_VALUE);
+        handler.handle(Future.succeededFuture(bucketStats));
      }
  
      @Override
      public Future<byte[]> readFileToMemory(final UploadedFileMessage uploadedFileMessage) {
-         throw new NotImplementedException();
-     }
- 
-     @Override
-     public FileValidator getValidator() {
-         return null;
-     }
- 
- }
+        final String id = uploadedFileMessage.getId();
+		final Promise<byte[]> onFileRead = Promise.promise();
+
+          s3Client.readFile(id, storageObject -> {
+               if (storageObject.succeeded()) {
+                    onFileRead.complete(storageObject.result().getBuffer().getBytes());
+               }
+               else {
+                    onFileRead.fail(storageObject.cause());
+               }
+          });
+
+          return onFileRead.future();
+    }
+    
+    @Override
+    public FileValidator getValidator() {
+        return null;
+    }
+
+}

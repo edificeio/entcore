@@ -856,7 +856,7 @@ public class FileStorage implements Storage {
 	}
 
 	private String getFilePath(String file, final String bucket) throws FileNotFoundException {
-		return getFilePath(file, bucket, flat);
+		return Storage.getFilePath(file, bucket, flat);
 	}
 
 	private void getReadPath(String file, Handler<AsyncResult<String>> handler) {
