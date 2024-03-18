@@ -178,14 +178,15 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 			directory.network.classrooms.sync();
 			directory.network.classrooms.one('sync', function(){
-				$scope.classrooms = directory.network.classrooms.all;
+				$scope.classrooms = directory.network.classrooms;
 
-				if(!$scope.classrooms || $scope.classrooms.length === 0){
+				if(!$scope.classrooms || $scope.classrooms.all.length === 0){
 					template.open('page', 'no-classroom');
 				} else {
 					template.open('page', 'class');
-					if ($scope.classrooms.length > 1) {
-						template.open('main', 'multi-class');
+					if ($scope.classrooms.all.length > 1) {
+						$scope.search.placeholder = $scope.translate('class.search');
+						template.open('main', 'class-list');
 					} else {
 						$scope.currentClass = directory.network.classrooms.first();
 						$scope.selectClassroom($scope.currentClass);
@@ -369,7 +370,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.updateSearch = function() {
-		$scope.users.all = $scope.allUsers.all.filter(user => user.displayName.toLowerCase().indexOf($scope.search.text.toLowerCase()) !== -1)
+		$scope.users.all = $scope.allUsers && $scope.allUsers.all.filter(
+			user => user.displayName.toLowerCase().indexOf($scope.search.text.toLowerCase()) !== -1
+		)
 	}
 
 	$scope.createFavorite = async function() {
@@ -518,6 +521,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.currentUser = undefined;
 		$scope.pastUsers = [];
 		template.close('details');
+		template.close('class-list');
+		template.open('main', 'mono-class');
 	};
 
 	const privateInfosMapping = {
@@ -570,6 +575,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		});
 
 		template.open('details', 'user-infos');
+		$scope.search.text = '';
 	};
 
 	$scope.hasSubject = function(user): boolean {
@@ -684,14 +690,41 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.selectClassroom = function(classroom){
+		$scope.search.text = '';
+		$scope.search.placeholder = $scope.translate('userBook.search');
 		classroom.sync();
-		$scope.classrooms = undefined;
+		$scope.currentClass = classroom;
+		template.close('class-list');
+		template.open('main', 'mono-class');
 		$scope.users = { loading: true };
 		classroom.one('users.sync', function(){
 			$scope.users = classroom.users;
 			$scope.allUsers = Object.assign([], $scope.users);
 			$scope.$apply('users');
 		});
+	};
+
+	$scope.deselectClassroom = function () {
+		$scope.currentClass = undefined;
+		$scope.search.placeholder = $scope.translate('class.search');
+		template.close('mono-class');
+		template.open('main', 'class-list');
+	}
+
+	$scope.navigateBack = function() {
+		$scope.search.text = '';
+		if ($scope.currentUser) {
+			$scope.deselectUser();
+			$scope.users.all = Object.assign([], $scope.allUsers.all);
+		} else if ($scope.currentClass) {
+			$scope.deselectClassroom();
+		}
+
+		return;
+	}
+
+	$scope.translate = function (key) {
+		return lang.translate(key);
 	};
 
 	$scope.getType = function(type){
