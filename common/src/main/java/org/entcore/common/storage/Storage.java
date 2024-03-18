@@ -144,7 +144,7 @@ public interface Storage {
 		throw new UnsupportedOperationException("Not supported yet");
 	}
 
-	default String getFilePath(String file, final String bucket, boolean flat) throws FileNotFoundException {
+	static String getFilePath(String file, final String bucket, boolean flat) throws FileNotFoundException {
 		if (isNotEmpty(file)) {
 			if (flat) {
 				return bucket + file;
