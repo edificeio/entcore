@@ -133,7 +133,7 @@
 	</div>	
 
 	<!-- Classrooms -->
-    <div class="item user" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
+    <div ng-if="!classView" class="item user" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
         <section class="domino grey" ng-click="selectClassroom(classroom)">
             <div class="top">
                 <i class="users"></i>
