@@ -925,5 +925,8 @@
     "directory.default.teacher.title" : "Enseignants et personnels de l'établissement",
     "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage",
     "class.empty.state.title": "Pas de classe rattachée",
-    "class.empty.state.description": "Votre compte est rattaché à aucune classe.<br>Veuillez contacter votre administrateur si cela est une erreur.<br>Pour rechercher un utilisateur, vous pouvez utiliser l'application \"Annuaire\""
+    "class.empty.state.description": "Votre compte est rattaché à aucune classe.<br>Veuillez contacter votre administrateur si cela est une erreur.<br>Pour rechercher un utilisateur, vous pouvez utiliser l'application \"Annuaire\"",
+    "class.search": "Rechercher une classe",
+    "class.search.noresults.title": "Pas de résultats",
+    "class.search.noresults.description": "La recherche n'aboutit à aucun résultat.<br>Veuillez changer votre recherche."
 }
